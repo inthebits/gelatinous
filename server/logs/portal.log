@@ -225,3 +225,6 @@
 |Portal| 2023-02-18 23:52:28 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=40418)
 |Portal| 2023-02-18 23:52:28 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=40422)
 |Portal| 2023-02-19 00:04:29 [WW] dropping connection to peer tcp4:127.0.0.1:56704 with abort=False: None
+|Portal| 2023-02-19 04:45:09 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=40552)
+|Portal| 2023-02-19 04:45:09 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=40560)
+|Portal| 2023-02-19 04:47:20 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=40572)
