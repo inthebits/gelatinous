@@ -1,0 +1,186 @@
+2023-02-12 00:52:22 [..] Loaded.
+2023-02-12 00:52:21 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 00:52:22 [..] Loaded.
+2023-02-12 00:52:22 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 00:52:22 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 00:52:22 [..] Webserver starting on 4005
+2023-02-12 00:52:22 [..] Initial setup: Creating objects (Account #1 and Limbo room) ...
+2023-02-12 00:52:22 [..] Initial setup: Running at_initial_setup() hook.
+2023-02-12 00:52:22 [..] Initial setup: Gathering static resources using 'collectstatic'
+None2023-02-12 00:52:22 [..] 0 static files copied to '/home/ubuntu/muddev/gelatinous/server/.static', 205 unmodified.
+2023-02-12 00:52:22 [..] Initial setup complete. Restarting Server once.
+2023-02-12 00:52:22 [..] Evennia Server successfully started.
+2023-02-12 00:52:23 [..] Server disconnected from the portal.
+2023-02-12 00:52:23 [..] Main loop terminated.
+2023-02-12 00:52:23 [..] Server Shut Down.
+2023-02-12 00:52:24 [..] Loaded.
+2023-02-12 00:52:24 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 00:52:24 [..] Loaded.
+2023-02-12 00:52:24 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 00:52:24 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 00:52:24 [..] Webserver starting on 4005
+2023-02-12 00:52:24 [..] Evennia Server successfully restarted in 'reset' mode.
+2023-02-12 00:57:17 [..] Logged in: Drek(account 1) 135.180.34.201 (1 session(s) total)
+2023-02-12 01:07:01 [..] Server disconnected from the portal.
+2023-02-12 01:07:01 [..] Main loop terminated.
+2023-02-12 01:07:01 [..] Server Shut Down.
+2023-02-12 01:45:39 [..] Loaded.
+2023-02-12 01:45:38 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 01:45:39 [..] Loaded.
+2023-02-12 01:45:39 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 01:45:39 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 01:45:39 [..] Webserver starting on 4005
+2023-02-12 01:45:39 [..] Evennia Server successfully started.
+2023-02-12 01:45:50 [..] Server disconnected from the portal.
+2023-02-12 01:45:50 [..] Main loop terminated.
+2023-02-12 01:45:50 [..] Server Shut Down.
+2023-02-12 01:45:53 [..] Loaded.
+2023-02-12 01:45:52 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 01:45:53 [..] Loaded.
+2023-02-12 01:45:53 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 01:45:53 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 01:45:53 [..] Webserver starting on 4005
+2023-02-12 01:45:53 [..] Evennia Server successfully started.
+2023-02-12 01:54:53 [WW] Warning: Idmapper flush called more than once in 5.0 min interval. Check memory usage.
+2023-02-12 01:56:58 [..] Server disconnected from the portal.
+2023-02-12 01:56:58 [..] Main loop terminated.
+2023-02-12 01:56:58 [..] Server Shut Down.
+2023-02-12 01:57:01 [..] Loaded.
+2023-02-12 01:57:00 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 01:57:01 [..] Loaded.
+2023-02-12 01:57:01 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 01:57:01 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 01:57:01 [..] Webserver starting on 4005
+2023-02-12 01:57:01 [..] Evennia Server successfully started.
+2023-02-12 02:06:01 [WW] Warning: Idmapper flush called more than once in 5.0 min interval. Check memory usage.
+2023-02-12 02:12:19 [..] Server disconnected from the portal.
+2023-02-12 02:12:19 [..] Main loop terminated.
+2023-02-12 02:12:19 [..] Server Shut Down.
+2023-02-12 02:12:21 [..] Loaded.
+2023-02-12 02:12:21 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 02:12:21 [..] Loaded.
+2023-02-12 02:12:21 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 02:12:21 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 02:12:21 [..] Webserver starting on 4005
+2023-02-12 02:12:21 [..] Evennia Server successfully started.
+2023-02-12 02:21:21 [WW] Warning: Idmapper flush called more than once in 5.0 min interval. Check memory usage.
+2023-02-12 03:51:30 [..] Server disconnected from the portal.
+2023-02-12 03:51:30 [..] Main loop terminated.
+2023-02-12 03:51:30 [..] Server Shut Down.
+2023-02-12 03:57:24 [..] Loaded.
+2023-02-12 03:57:24 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 03:57:24 [..] Loaded.
+2023-02-12 03:57:24 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 03:57:24 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 03:57:24 [..] Webserver starting on 4005
+2023-02-12 03:57:24 [..] Evennia Server successfully started.
+2023-02-12 03:58:21 [..] Server disconnected from the portal.
+2023-02-12 03:58:21 [..] Main loop terminated.
+2023-02-12 03:58:21 [..] Server Shut Down.
+2023-02-12 03:58:22 [..] Loaded.
+2023-02-12 03:58:21 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 03:58:22 [..] Loaded.
+2023-02-12 03:58:22 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 03:58:22 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 03:58:22 [..] Webserver starting on 4005
+2023-02-12 03:58:22 [..] Server successfully reloaded.
+2023-02-12 03:58:59 [..] Server disconnected from the portal.
+2023-02-12 03:58:59 [..] Main loop terminated.
+2023-02-12 03:58:59 [..] Server Shut Down.
+2023-02-12 03:59:50 [..] Loaded.
+2023-02-12 03:59:49 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 03:59:50 [..] Loaded.
+2023-02-12 03:59:50 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 03:59:50 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 03:59:50 [..] Webserver starting on 4005
+2023-02-12 03:59:50 [..] Evennia Server successfully started.
+2023-02-12 04:08:50 [WW] Warning: Idmapper flush called more than once in 5.0 min interval. Check memory usage.
+2023-02-12 04:44:10 [..] Server disconnected from the portal.
+2023-02-12 04:44:10 [..] Main loop terminated.
+2023-02-12 04:44:10 [..] Server Shut Down.
+2023-02-12 04:44:11 [..] Loaded.
+2023-02-12 04:44:11 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 04:44:11 [..] Loaded.
+2023-02-12 04:44:11 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 04:44:11 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 04:44:11 [..] Webserver starting on 4005
+2023-02-12 04:44:11 [..] Server successfully reloaded.
+2023-02-12 04:44:16 [..] Server disconnected from the portal.
+2023-02-12 04:44:16 [..] Main loop terminated.
+2023-02-12 04:44:16 [..] Server Shut Down.
+2023-02-12 04:44:16 [..] Loaded.
+2023-02-12 04:44:16 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 04:44:16 [..] Loaded.
+2023-02-12 04:44:16 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 04:44:16 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 04:44:17 [..] Webserver starting on 4005
+2023-02-12 04:44:17 [..] Server successfully reloaded.
+2023-02-12 04:48:20 [..] Server disconnected from the portal.
+2023-02-12 04:48:20 [..] Main loop terminated.
+2023-02-12 04:48:20 [..] Server Shut Down.
+2023-02-12 04:48:21 [..] Loaded.
+2023-02-12 04:48:20 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 04:48:21 [..] Loaded.
+2023-02-12 04:48:21 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 04:48:21 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 04:48:21 [..] Webserver starting on 4005
+2023-02-12 04:48:21 [..] Server successfully reloaded.
+2023-02-12 04:49:32 [..] Server disconnected from the portal.
+2023-02-12 04:49:32 [..] Main loop terminated.
+2023-02-12 04:49:32 [..] Server Shut Down.
+2023-02-12 04:49:33 [..] Loaded.
+2023-02-12 04:49:33 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 04:49:33 [..] Loaded.
+2023-02-12 04:49:33 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 04:49:33 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 04:49:33 [..] Webserver starting on 4005
+2023-02-12 04:49:33 [..] Server successfully reloaded.
+2023-02-12 04:58:33 [WW] Warning: Idmapper flush called more than once in 5.0 min interval. Check memory usage.
+2023-02-12 05:00:42 [..] Server disconnected from the portal.
+2023-02-12 05:00:42 [..] Main loop terminated.
+2023-02-12 05:00:42 [..] Server Shut Down.
+2023-02-12 05:00:43 [..] Loaded.
+2023-02-12 05:00:43 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 05:00:43 [..] Loaded.
+2023-02-12 05:00:43 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 05:00:43 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 05:00:43 [..] Webserver starting on 4005
+2023-02-12 05:00:43 [..] Server successfully reloaded.
+2023-02-12 05:01:47 [..] Logged in: Drek(account 1) 127.0.0.1 (1 session(s) total)
+2023-02-12 05:01:52 [..] Logged out: Drek(account 1) 127.0.0.1 (0 sessions(s) remaining)
+2023-02-12 05:08:38 [..] Server disconnected from the portal.
+2023-02-12 05:08:38 [..] Main loop terminated.
+2023-02-12 05:08:38 [..] Server Shut Down.
+2023-02-12 05:08:38 [..] Loaded.
+2023-02-12 05:08:38 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 05:08:38 [..] Loaded.
+2023-02-12 05:08:38 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 05:08:38 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 05:08:38 [..] Webserver starting on 4005
+2023-02-12 05:08:39 [..] Server successfully reloaded.
+2023-02-12 05:09:02 [..] Server disconnected from the portal.
+2023-02-12 05:09:02 [..] Main loop terminated.
+2023-02-12 05:09:02 [..] Server Shut Down.
+2023-02-12 05:09:03 [..] Loaded.
+2023-02-12 05:09:02 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 05:09:03 [..] Loaded.
+2023-02-12 05:09:03 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 05:09:03 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 05:09:03 [..] Webserver starting on 4005
+2023-02-12 05:09:03 [..] Server successfully reloaded.
+2023-02-12 05:18:03 [WW] Warning: Idmapper flush called more than once in 5.0 min interval. Check memory usage.
+2023-02-12 06:47:42 [..] Logged in: Drek(account 1) 127.0.0.1 (1 session(s) total)
+2023-02-12 06:48:17 [..] Logged out: Drek(account 1) 127.0.0.1 (0 sessions(s) remaining)
+2023-02-12 06:48:59 [..] Server disconnected from the portal.
+2023-02-12 06:48:59 [..] Main loop terminated.
+2023-02-12 06:48:59 [..] Server Shut Down.
+2023-02-12 06:49:00 [..] Loaded.
+2023-02-12 06:49:00 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/server.py...
+2023-02-12 06:49:00 [..] Loaded.
+2023-02-12 06:49:00 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
+2023-02-12 06:49:00 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+2023-02-12 06:49:00 [..] Webserver starting on 4005
+2023-02-12 06:49:00 [..] Server successfully reloaded.
+2023-02-12 06:49:15 [..] Logged in: Drek(account 1) 127.0.0.1 (1 session(s) total)
+2023-02-12 06:49:23 [..] Logged out: Drek(account 1) 127.0.0.1 (0 sessions(s) remaining)
+2023-02-12 06:58:00 [WW] Warning: Idmapper flush called more than once in 5.0 min interval. Check memory usage.
