@@ -11,7 +11,7 @@ from evennia.objects.objects import DefaultCharacter
 
 """
 Importing Tim Ashley Jenkins x Griatch Simple turn-based combat system (for inevitable refactor)
-Test
+
 """
 from evennia.contrib.game_systems.turnbattle.tb_basic import TBBasicCharacter
 
