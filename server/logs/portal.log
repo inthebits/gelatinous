@@ -1,230 +1,400 @@
-|Portal| 2023-02-12 00:52:21 [..] Loaded.
-|Portal| 2023-02-12 00:52:20 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/portal/portal.py...
-|Portal| 2023-02-12 00:52:21 [..] Loaded.
-|Portal| 2023-02-12 00:52:21 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
-|Portal| 2023-02-12 00:52:21 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
-|Portal| 2023-02-12 00:52:21 [..] AMP starting on 4006
-|Portal| 2023-02-12 00:52:21 [..] Telnet starting on 4000
-|Portal| 2023-02-12 00:52:21 [..] Websocket starting on 4002
-|Portal| 2023-02-12 00:52:21 [..] Webserver-proxy starting on 4001
-|Portal| 2023-02-12 00:52:21 [..] Portal starting server ... 
-|Portal| 2023-02-12 00:52:23 [..] Portal starting server ... 
-|Portal| 2023-02-12 01:07:01 [..] (TCP Port 4001 Closed)
-|Portal| 2023-02-12 01:07:01 [..] (TCP Port 4002 Closed)
-|Portal| 2023-02-12 01:07:01 [..] (TCP Port 4000 Closed)
-|Portal| 2023-02-12 01:07:01 [..] (TCP Port 4006 Closed)
-|Portal| 2023-02-12 01:07:01 [..] Main loop terminated.
-|Portal| 2023-02-12 01:07:01 [..] Server Shut Down.
-|Portal| 2023-02-12 01:45:38 [..] Loaded.
-|Portal| 2023-02-12 01:45:37 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/portal/portal.py...
-|Portal| 2023-02-12 01:45:38 [..] Loaded.
-|Portal| 2023-02-12 01:45:38 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
-|Portal| 2023-02-12 01:45:38 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
-|Portal| 2023-02-12 01:45:38 [..] AMP starting on 4006
-|Portal| 2023-02-12 01:45:38 [..] Telnet starting on 4000
-|Portal| 2023-02-12 01:45:38 [..] Websocket starting on 4002
-|Portal| 2023-02-12 01:45:38 [..] Webserver-proxy starting on 4001
-|Portal| 2023-02-12 01:45:38 [..] Portal starting server ... 
-|Portal| 2023-02-12 01:45:50 [..] (TCP Port 4001 Closed)
-|Portal| 2023-02-12 01:45:50 [..] (TCP Port 4002 Closed)
-|Portal| 2023-02-12 01:45:50 [..] (TCP Port 4000 Closed)
-|Portal| 2023-02-12 01:45:50 [..] (TCP Port 4006 Closed)
-|Portal| 2023-02-12 01:45:50 [..] Main loop terminated.
-|Portal| 2023-02-12 01:45:50 [..] Server Shut Down.
-|Portal| 2023-02-12 01:45:52 [..] Loaded.
-|Portal| 2023-02-12 01:45:51 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/portal/portal.py...
-|Portal| 2023-02-12 01:45:52 [..] Loaded.
-|Portal| 2023-02-12 01:45:52 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
-|Portal| 2023-02-12 01:45:52 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
-|Portal| 2023-02-12 01:45:52 [..] AMP starting on 4006
-|Portal| 2023-02-12 01:45:52 [..] Telnet starting on 4000
-|Portal| 2023-02-12 01:45:52 [..] Websocket starting on 4002
-|Portal| 2023-02-12 01:45:52 [..] Webserver-proxy starting on 4001
-|Portal| 2023-02-12 01:45:52 [..] Portal starting server ... 
-|Portal| 2023-02-12 01:56:58 [..] (TCP Port 4001 Closed)
-|Portal| 2023-02-12 01:56:58 [..] (TCP Port 4002 Closed)
-|Portal| 2023-02-12 01:56:58 [..] (TCP Port 4000 Closed)
-|Portal| 2023-02-12 01:56:58 [..] (TCP Port 4006 Closed)
-|Portal| 2023-02-12 01:56:58 [..] Main loop terminated.
-|Portal| 2023-02-12 01:56:58 [..] Server Shut Down.
-|Portal| 2023-02-12 01:57:00 [..] Loaded.
-|Portal| 2023-02-12 01:56:59 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/portal/portal.py...
-|Portal| 2023-02-12 01:57:00 [..] Loaded.
-|Portal| 2023-02-12 01:57:00 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
-|Portal| 2023-02-12 01:57:00 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
-|Portal| 2023-02-12 01:57:00 [..] AMP starting on 4006
-|Portal| 2023-02-12 01:57:00 [..] Telnet starting on 4000
-|Portal| 2023-02-12 01:57:00 [..] Websocket starting on 4002
-|Portal| 2023-02-12 01:57:00 [..] Webserver-proxy starting on 4001
-|Portal| 2023-02-12 01:57:00 [..] Portal starting server ... 
-|Portal| 2023-02-12 02:12:19 [..] (TCP Port 4001 Closed)
-|Portal| 2023-02-12 02:12:19 [..] (TCP Port 4002 Closed)
-|Portal| 2023-02-12 02:12:19 [..] (TCP Port 4000 Closed)
-|Portal| 2023-02-12 02:12:19 [..] (TCP Port 4006 Closed)
-|Portal| 2023-02-12 02:12:19 [..] Main loop terminated.
-|Portal| 2023-02-12 02:12:19 [..] Server Shut Down.
-|Portal| 2023-02-12 02:12:20 [..] Loaded.
-|Portal| 2023-02-12 02:12:20 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/portal/portal.py...
-|Portal| 2023-02-12 02:12:20 [..] Loaded.
-|Portal| 2023-02-12 02:12:20 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
-|Portal| 2023-02-12 02:12:20 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
-|Portal| 2023-02-12 02:12:20 [..] AMP starting on 4006
-|Portal| 2023-02-12 02:12:20 [..] Telnet starting on 4000
-|Portal| 2023-02-12 02:12:20 [..] Websocket starting on 4002
-|Portal| 2023-02-12 02:12:20 [..] Webserver-proxy starting on 4001
-|Portal| 2023-02-12 02:12:20 [..] Portal starting server ... 
-|Portal| 2023-02-12 03:51:30 [..] (TCP Port 4001 Closed)
-|Portal| 2023-02-12 03:51:30 [..] (TCP Port 4002 Closed)
-|Portal| 2023-02-12 03:51:30 [..] (TCP Port 4000 Closed)
-|Portal| 2023-02-12 03:51:30 [..] (TCP Port 4006 Closed)
-|Portal| 2023-02-12 03:51:30 [..] Main loop terminated.
-|Portal| 2023-02-12 03:51:30 [..] Server Shut Down.
-|Portal| 2023-02-12 03:57:23 [..] Loaded.
-|Portal| 2023-02-12 03:57:23 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/portal/portal.py...
-|Portal| 2023-02-12 03:57:23 [..] Loaded.
-|Portal| 2023-02-12 03:57:23 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
-|Portal| 2023-02-12 03:57:23 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
-|Portal| 2023-02-12 03:57:23 [..] AMP starting on 4006
-|Portal| 2023-02-12 03:57:23 [..] Telnet starting on 4000
-|Portal| 2023-02-12 03:57:23 [..] Websocket starting on 4002
-|Portal| 2023-02-12 03:57:23 [..] Webserver-proxy starting on 4001
-|Portal| 2023-02-12 03:57:24 [..] Portal starting server ... 
-|Portal| 2023-02-12 03:58:21 [..] Portal starting server ... 
-|Portal| 2023-02-12 03:58:59 [..] (TCP Port 4001 Closed)
-|Portal| 2023-02-12 03:58:59 [..] (TCP Port 4002 Closed)
-|Portal| 2023-02-12 03:58:59 [..] (TCP Port 4000 Closed)
-|Portal| 2023-02-12 03:58:59 [..] (TCP Port 4006 Closed)
-|Portal| 2023-02-12 03:58:59 [..] Main loop terminated.
-|Portal| 2023-02-12 03:58:59 [..] Server Shut Down.
-|Portal| 2023-02-12 03:59:49 [..] Loaded.
-|Portal| 2023-02-12 03:59:48 [..] Loading /home/ubuntu/muddev/evennia/evennia/server/portal/portal.py...
-|Portal| 2023-02-12 03:59:49 [..] Loaded.
-|Portal| 2023-02-12 03:59:49 [..] twistd 22.10.0 (/home/ubuntu/muddev/evenv/bin/python3 3.11.2) starting up.
-|Portal| 2023-02-12 03:59:49 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
-|Portal| 2023-02-12 03:59:49 [..] AMP starting on 4006
-|Portal| 2023-02-12 03:59:49 [..] Telnet starting on 4000
-|Portal| 2023-02-12 03:59:49 [..] Websocket starting on 4002
-|Portal| 2023-02-12 03:59:49 [..] Webserver-proxy starting on 4001
-|Portal| 2023-02-12 03:59:49 [..] Portal starting server ... 
-|Portal| 2023-02-12 04:41:48 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34132)
-|Portal| 2023-02-12 04:42:21 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34150)
-|Portal| 2023-02-12 04:44:10 [..] Portal starting server ... 
-|Portal| 2023-02-12 04:44:16 [..] Portal starting server ... 
-|Portal| 2023-02-12 04:48:20 [..] Portal starting server ... 
-|Portal| 2023-02-12 04:49:32 [..] Portal starting server ... 
-|Portal| 2023-02-12 05:00:42 [..] Portal starting server ... 
-|Portal| 2023-02-12 05:02:31 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34252)
-|Portal| 2023-02-12 05:02:31 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34260)
-|Portal| 2023-02-12 05:07:22 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34342)
-|Portal| 2023-02-12 05:07:22 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34372)
-|Portal| 2023-02-12 05:07:22 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34338)
-|Portal| 2023-02-12 05:07:22 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34328)
-|Portal| 2023-02-12 05:08:38 [..] Portal starting server ... 
-|Portal| 2023-02-12 05:09:02 [..] Portal starting server ... 
-|Portal| 2023-02-12 05:10:11 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34442)
-|Portal| 2023-02-12 05:22:20 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34464)
-|Portal| 2023-02-12 05:22:20 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34470)
-|Portal| 2023-02-12 06:41:58 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34522)
-|Portal| 2023-02-12 06:41:58 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34528)
-|Portal| 2023-02-12 06:41:58 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34532)
-|Portal| 2023-02-12 06:48:42 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34556)
-|Portal| 2023-02-12 06:48:42 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34550)
-|Portal| 2023-02-12 06:48:42 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34566)
-|Portal| 2023-02-12 06:48:42 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34560)
-|Portal| 2023-02-12 06:48:42 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34564)
-|Portal| 2023-02-12 06:48:42 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34536)
-|Portal| 2023-02-12 06:48:59 [..] Portal starting server ... 
-|Portal| 2023-02-12 08:24:58 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34662)
-|Portal| 2023-02-12 10:08:12 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34768)
-|Portal| 2023-02-12 10:43:24 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34894)
-|Portal| 2023-02-12 11:06:50 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34908)
-|Portal| 2023-02-12 11:06:50 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34916)
-|Portal| 2023-02-12 11:07:10 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34920)
-|Portal| 2023-02-12 11:07:10 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=34928)
-|Portal| 2023-02-12 12:51:49 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=35086)
-|Portal| 2023-02-13 00:04:22 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=35434)
-|Portal| 2023-02-13 00:04:34 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=35438)
-|Portal| 2023-02-13 00:04:52 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=35444)
-|Portal| 2023-02-13 00:05:04 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=35448)
-|Portal| 2023-02-13 00:27:18 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=35464)
-|Portal| 2023-02-13 00:27:18 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=35468)
-|Portal| 2023-02-13 00:27:18 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=35472)
-|Portal| 2023-02-13 00:27:18 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=35478)
-|Portal| 2023-02-13 00:27:18 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=35482)
-|Portal| 2023-02-13 01:50:00 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=35580)
-|Portal| 2023-02-13 02:37:36 [WW] dropping connection to peer tcp4:127.0.0.1:51902 with abort=False: None
-|Portal| 2023-02-13 04:48:50 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36020)
-|Portal| 2023-02-13 04:48:50 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36026)
-|Portal| 2023-02-13 07:15:51 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36094)
-|Portal| 2023-02-13 07:28:31 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36102)
-|Portal| 2023-02-13 07:29:06 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36112)
-|Portal| 2023-02-13 08:59:54 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36144)
-|Portal| 2023-02-13 08:59:54 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36140)
-|Portal| 2023-02-13 09:00:44 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36152)
-|Portal| 2023-02-13 09:00:44 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36156)
-|Portal| 2023-02-13 09:01:33 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36168)
-|Portal| 2023-02-13 10:13:49 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36190)
-|Portal| 2023-02-13 18:43:33 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36552)
-|Portal| 2023-02-13 18:58:12 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36556)
-|Portal| 2023-02-13 18:58:12 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36562)
-|Portal| 2023-02-13 18:58:12 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36564)
-|Portal| 2023-02-13 21:34:25 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36622)
-|Portal| 2023-02-13 21:34:43 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36626)
-|Portal| 2023-02-14 00:58:05 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36706)
-|Portal| 2023-02-14 02:59:48 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36754)
-|Portal| 2023-02-14 02:59:48 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36760)
-|Portal| 2023-02-14 02:59:48 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36764)
-|Portal| 2023-02-14 03:01:54 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36768)
-|Portal| 2023-02-14 09:02:02 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36896)
-|Portal| 2023-02-14 10:13:36 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36922)
-|Portal| 2023-02-14 10:20:21 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36932)
-|Portal| 2023-02-14 10:39:18 [WW] dropping connection to peer tcp4:127.0.0.1:53214 with abort=False: None
-|Portal| 2023-02-14 10:39:18 [WW] dropping connection to peer tcp4:127.0.0.1:53216 with abort=False: None
-|Portal| 2023-02-14 10:39:18 [WW] dropping connection to peer tcp4:127.0.0.1:53218 with abort=False: None
-|Portal| 2023-02-14 12:02:32 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36972)
-|Portal| 2023-02-14 12:02:32 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=36964)
-|Portal| 2023-02-15 08:48:20 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=37618)
-|Portal| 2023-02-15 09:44:06 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=37656)
-|Portal| 2023-02-15 11:20:58 [WW] dropping connection to peer tcp4:127.0.0.1:54060 with abort=False: None
-|Portal| 2023-02-15 11:20:59 [WW] dropping connection to peer tcp4:127.0.0.1:54062 with abort=False: None
-|Portal| 2023-02-15 11:20:59 [WW] dropping connection to peer tcp4:127.0.0.1:54064 with abort=False: None
-|Portal| 2023-02-15 13:47:42 [WW] dropping connection to peer tcp4:127.0.0.1:54200 with abort=False: None
-|Portal| 2023-02-15 13:47:52 [WW] dropping connection to peer tcp4:127.0.0.1:54202 with abort=False: None
-|Portal| 2023-02-15 16:03:50 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=37990)
-|Portal| 2023-02-15 16:03:50 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=37996)
-|Portal| 2023-02-15 16:03:50 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=38000)
-|Portal| 2023-02-15 17:29:48 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=38034)
-|Portal| 2023-02-15 17:29:48 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=38038)
-|Portal| 2023-02-16 02:32:38 [WW] dropping connection to peer tcp4:127.0.0.1:54484 with abort=False: None
-|Portal| 2023-02-16 03:23:38 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=38210)
-|Portal| 2023-02-16 03:23:38 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=38214)
-|Portal| 2023-02-16 07:03:21 [WW] dropping connection to peer tcp4:127.0.0.1:54626 with abort=False: None
-|Portal| 2023-02-16 07:43:04 [WW] dropping connection to peer tcp4:127.0.0.1:54654 with abort=False: None
-|Portal| 2023-02-16 09:08:05 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=38402)
-|Portal| 2023-02-16 09:14:12 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=38426)
-|Portal| 2023-02-16 17:14:14 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=38606)
-|Portal| 2023-02-17 06:37:09 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39046)
-|Portal| 2023-02-17 08:44:22 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39114)
-|Portal| 2023-02-17 08:44:22 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39118)
-|Portal| 2023-02-17 09:29:10 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39136)
-|Portal| 2023-02-17 15:52:15 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39368)
-|Portal| 2023-02-17 16:44:32 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39430)
-|Portal| 2023-02-17 22:32:43 [WW] dropping connection to peer tcp4:127.0.0.1:55844 with abort=False: None
-|Portal| 2023-02-17 22:32:53 [WW] dropping connection to peer tcp4:127.0.0.1:55846 with abort=False: None
-|Portal| 2023-02-17 23:09:04 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39570)
-|Portal| 2023-02-18 00:38:23 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39612)
-|Portal| 2023-02-18 00:39:26 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39654)
-|Portal| 2023-02-18 00:39:26 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39652)
-|Portal| 2023-02-18 00:39:26 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39638)
-|Portal| 2023-02-18 00:39:26 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39646)
-|Portal| 2023-02-18 00:39:26 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39650)
-|Portal| 2023-02-18 00:39:27 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39642)
-|Portal| 2023-02-18 02:11:20 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39742)
-|Portal| 2023-02-18 05:48:37 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=39906)
-|Portal| 2023-02-18 08:14:40 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=40004)
-|Portal| 2023-02-18 23:52:28 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=40418)
-|Portal| 2023-02-18 23:52:28 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=40422)
-|Portal| 2023-02-19 00:04:29 [WW] dropping connection to peer tcp4:127.0.0.1:56704 with abort=False: None
-|Portal| 2023-02-19 04:45:09 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=40552)
-|Portal| 2023-02-19 04:45:09 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=40560)
-|Portal| 2023-02-19 04:47:20 [..] Timing out client: IPv4Address(type='TCP', host='127.0.0.1', port=40572)
+|Portal| 2024-09-27 22:42:25 [..] Loaded.
+|Portal| 2024-09-27 22:42:21 [..] Loading /usr/src/evennia/evennia/server/portal/portal.py...
+|Portal| 2024-09-27 22:42:25 [..] Loaded.
+|Portal| 2024-09-27 22:42:25 [..] twistd 23.10.0 (/usr/local/bin/python 3.11.9) starting up.
+|Portal| 2024-09-27 22:42:25 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+|Portal| 2024-09-27 22:42:25 [..] AMP starting on 4006
+|Portal| 2024-09-27 22:42:25 [..] Telnet starting on 4000
+|Portal| 2024-09-27 22:42:25 [..] Websocket starting on 4002
+|Portal| 2024-09-27 22:42:25 [..] Webserver-proxy starting on 4001
+|Portal| 2024-09-27 22:42:25 [..] Portal starting server ... 
+|Portal| 2024-09-27 22:42:31 [..] Portal starting server ... 
+|Portal| 2024-09-27 22:53:02 [..] Loaded.
+|Portal| 2024-09-27 22:52:59 [..] Loading /usr/src/evennia/evennia/server/portal/portal.py...
+|Portal| 2024-09-27 22:53:02 [..] Loaded.
+|Portal| 2024-09-27 22:53:02 [..] twistd 23.10.0 (/usr/local/bin/python 3.11.9) starting up.
+|Portal| 2024-09-27 22:53:02 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+|Portal| 2024-09-27 22:53:03 [..] AMP starting on 4006
+|Portal| 2024-09-27 22:53:03 [..] Telnet starting on 4000
+|Portal| 2024-09-27 22:53:03 [..] Websocket starting on 4002
+|Portal| 2024-09-27 22:53:03 [..] Webserver-proxy starting on 4001
+|Portal| 2024-09-27 22:53:03 [..] Portal starting server ... 
+|Portal| 2024-09-27 22:54:28 [..] Loaded.
+|Portal| 2024-09-27 22:54:25 [..] Loading /usr/src/evennia/evennia/server/portal/portal.py...
+|Portal| 2024-09-27 22:54:28 [..] Loaded.
+|Portal| 2024-09-27 22:54:28 [..] twistd 23.10.0 (/usr/local/bin/python 3.11.9) starting up.
+|Portal| 2024-09-27 22:54:28 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+|Portal| 2024-09-27 22:54:29 [..] AMP starting on 4006
+|Portal| 2024-09-27 22:54:29 [..] Telnet starting on 4000
+|Portal| 2024-09-27 22:54:29 [..] Websocket starting on 4002
+|Portal| 2024-09-27 22:54:29 [..] Webserver-proxy starting on 4001
+|Portal| 2024-09-27 22:54:29 [..] Portal starting server ... 
+|Portal| 2024-09-27 22:54:34 [!!] Unhandled Error
+	Traceback (most recent call last):
+	  File "/usr/local/lib/python3.11/site-packages/twisted/python/log.py", line 96, in callWithLogger
+	    return callWithContext({"system": lp}, func, *args, **kw)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/python/log.py", line 80, in callWithContext
+	    return context.call({ILogContext: newCtx}, func, *args, **kw)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/python/context.py", line 117, in callWithContext
+	    return self.currentContext().callWithContext(ctx, func, *args, **kw)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/python/context.py", line 82, in callWithContext
+	    return func(*args, **kw)
+	--- <exception caught here> ---
+	  File "/usr/local/lib/python3.11/site-packages/twisted/internet/posixbase.py", line 482, in _doReadOrWrite
+	    why = selectable.doRead()
+	  File "/usr/local/lib/python3.11/site-packages/twisted/internet/tcp.py", line 248, in doRead
+	    return self._dataReceived(data)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/internet/tcp.py", line 253, in _dataReceived
+	    rval = self.protocol.dataReceived(data)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/protocols/basic.py", line 555, in dataReceived
+	    why = self.rawDataReceived(data)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/web/http.py", line 735, in rawDataReceived
+	    self.handleResponseEnd()
+	  File "/usr/local/lib/python3.11/site-packages/twisted/web/proxy.py", line 82, in handleResponseEnd
+	    self.father.finish()
+	  File "/usr/local/lib/python3.11/site-packages/twisted/web/server.py", line 277, in finish
+	    return http.Request.finish(self)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/web/http.py", line 1149, in finish
+	    raise RuntimeError(
+	builtins.RuntimeError: Request.finish called on a request after its connection was lost; use Request.notifyFinish to keep track of this.
+	
+|Portal| 2024-09-27 22:55:50 [..] Timing out client: IPv4Address(type='TCP', host='104.28.123.178', port=50726)
+|Portal| 2024-09-27 22:56:28 [..] Loaded.
+|Portal| 2024-09-27 22:56:24 [..] Loading /usr/src/evennia/evennia/server/portal/portal.py...
+|Portal| 2024-09-27 22:56:28 [..] Loaded.
+|Portal| 2024-09-27 22:56:28 [..] twistd 23.10.0 (/usr/local/bin/python 3.11.9) starting up.
+|Portal| 2024-09-27 22:56:28 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+|Portal| 2024-09-27 22:56:28 [..] AMP starting on 4006
+|Portal| 2024-09-27 22:56:28 [..] Telnet starting on 4000
+|Portal| 2024-09-27 22:56:28 [..] Websocket starting on 4002
+|Portal| 2024-09-27 22:56:28 [..] Webserver-proxy starting on 4001
+|Portal| 2024-09-27 22:56:28 [..] Portal starting server ... 
+|Portal| 2024-09-27 23:04:59 [..] Loaded.
+|Portal| 2024-09-27 23:04:55 [..] Loading /usr/src/evennia/evennia/server/portal/portal.py...
+|Portal| 2024-09-27 23:04:59 [..] Loaded.
+|Portal| 2024-09-27 23:04:59 [..] twistd 23.10.0 (/usr/local/bin/python 3.11.9) starting up.
+|Portal| 2024-09-27 23:04:59 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+|Portal| 2024-09-27 23:04:59 [..] AMP starting on 4006
+|Portal| 2024-09-27 23:04:59 [..] Telnet starting on 4000
+|Portal| 2024-09-27 23:04:59 [..] Websocket starting on 4002
+|Portal| 2024-09-27 23:04:59 [..] Webserver-proxy starting on 4001
+|Portal| 2024-09-27 23:04:59 [..] Portal starting server ... 
+|Portal| 2024-09-27 23:06:22 [..] Timing out client: IPv4Address(type='TCP', host='104.28.123.178', port=50909)
+|Portal| 2024-09-27 23:09:32 [..] Loaded.
+|Portal| 2024-09-27 23:09:29 [..] Loading /usr/src/evennia/evennia/server/portal/portal.py...
+|Portal| 2024-09-27 23:09:32 [..] Loaded.
+|Portal| 2024-09-27 23:09:32 [..] twistd 23.10.0 (/usr/local/bin/python 3.11.9) starting up.
+|Portal| 2024-09-27 23:09:32 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+|Portal| 2024-09-27 23:09:32 [..] AMP starting on 4006
+|Portal| 2024-09-27 23:09:32 [..] Telnet starting on 4000
+|Portal| 2024-09-27 23:09:32 [..] Websocket starting on 4002
+|Portal| 2024-09-27 23:09:32 [..] Webserver-proxy starting on 4001
+|Portal| 2024-09-27 23:09:33 [..] Portal starting server ... 
+|Portal| 2024-09-27 23:13:18 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=52890)
+|Portal| 2024-09-27 23:13:54 [..] Timing out client: IPv4Address(type='TCP', host='104.28.123.178', port=60794)
+|Portal| 2024-09-27 23:20:30 [..] Loaded.
+|Portal| 2024-09-27 23:20:27 [..] Loading /usr/src/evennia/evennia/server/portal/portal.py...
+|Portal| 2024-09-27 23:20:30 [..] Loaded.
+|Portal| 2024-09-27 23:20:30 [..] twistd 23.10.0 (/usr/local/bin/python 3.11.9) starting up.
+|Portal| 2024-09-27 23:20:30 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+|Portal| 2024-09-27 23:20:31 [..] AMP starting on 4006
+|Portal| 2024-09-27 23:20:31 [..] Telnet starting on 4000
+|Portal| 2024-09-27 23:20:31 [..] Websocket starting on 4002
+|Portal| 2024-09-27 23:20:31 [..] Webserver-proxy starting on 4001
+|Portal| 2024-09-27 23:20:31 [..] Portal starting server ... 
+|Portal| 2024-09-27 23:23:44 [WW] dropping connection to peer tcp4:157.131.114.10:41471 with abort=True: WebSocket opening handshake timeout (peer did not finish the opening handshake in time)
+|Portal| 2024-09-27 23:24:09 [..] Timing out client: IPv4Address(type='TCP', host='35.196.132.85', port=50195)
+|Portal| 2024-09-27 23:24:18 [..] Timing out client: IPv4Address(type='TCP', host='157.131.114.10', port=41424)
+|Portal| 2024-09-27 23:24:18 [..] Timing out client: IPv4Address(type='TCP', host='157.131.114.10', port=41433)
+|Portal| 2024-09-27 23:24:18 [..] Timing out client: IPv4Address(type='TCP', host='157.131.114.10', port=41430)
+|Portal| 2024-09-27 23:24:18 [..] Timing out client: IPv4Address(type='TCP', host='157.131.114.10', port=41432)
+|Portal| 2024-09-27 23:24:18 [..] Timing out client: IPv4Address(type='TCP', host='157.131.114.10', port=41431)
+|Portal| 2024-09-27 23:24:18 [..] Timing out client: IPv4Address(type='TCP', host='157.131.114.10', port=41434)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=5844)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=5902)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=5886)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=5918)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=5956)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=5940)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=5926)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=5934)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=5966)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=5986)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=5980)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=6002)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=6006)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=6018)
+|Portal| 2024-09-27 23:27:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=6024)
+|Portal| 2024-09-27 23:28:00 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=52706)
+|Portal| 2024-09-27 23:28:24 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=5340)
+|Portal| 2024-09-27 23:36:17 [..] Loaded.
+|Portal| 2024-09-27 23:36:13 [..] Loading /usr/src/evennia/evennia/server/portal/portal.py...
+|Portal| 2024-09-27 23:36:17 [..] Loaded.
+|Portal| 2024-09-27 23:36:17 [..] twistd 23.10.0 (/usr/local/bin/python 3.11.9) starting up.
+|Portal| 2024-09-27 23:36:17 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+|Portal| 2024-09-27 23:36:17 [..] AMP starting on 4006
+|Portal| 2024-09-27 23:36:17 [..] Telnet starting on 4000
+|Portal| 2024-09-27 23:36:17 [..] Websocket starting on 4002
+|Portal| 2024-09-27 23:36:17 [..] Webserver-proxy starting on 4001
+|Portal| 2024-09-27 23:36:17 [..] Portal starting server ... 
+|Portal| 2024-09-27 23:40:48 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=59988)
+|Portal| 2024-09-27 23:40:48 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=59996)
+|Portal| 2024-09-27 23:47:14 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=48858)
+|Portal| 2024-09-28 00:02:36 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=13860)
+|Portal| 2024-09-28 00:04:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=19714)
+|Portal| 2024-09-28 00:14:09 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=31536)
+|Portal| 2024-09-28 00:14:09 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=49048)
+|Portal| 2024-09-28 00:14:09 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=49036)
+|Portal| 2024-09-28 00:14:09 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=31544)
+|Portal| 2024-09-28 00:14:09 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=49086)
+|Portal| 2024-09-28 00:14:09 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=49066)
+|Portal| 2024-09-28 00:14:09 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=49080)
+|Portal| 2024-09-28 00:14:09 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=49094)
+|Portal| 2024-09-28 00:14:09 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=49060)
+|Portal| 2024-09-28 00:15:17 [..] Loaded.
+|Portal| 2024-09-28 00:15:13 [..] Loading /usr/src/evennia/evennia/server/portal/portal.py...
+|Portal| 2024-09-28 00:15:17 [..] Loaded.
+|Portal| 2024-09-28 00:15:17 [..] twistd 23.10.0 (/usr/local/bin/python 3.11.9) starting up.
+|Portal| 2024-09-28 00:15:17 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+|Portal| 2024-09-28 00:15:17 [..] AMP starting on 4006
+|Portal| 2024-09-28 00:15:17 [..] Telnet starting on 4000
+|Portal| 2024-09-28 00:15:17 [..] Websocket starting on 4002
+|Portal| 2024-09-28 00:15:17 [..] Webserver-proxy starting on 4001
+|Portal| 2024-09-28 00:15:18 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:17:52 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=57700)
+|Portal| 2024-09-28 00:18:39 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=8240)
+|Portal| 2024-09-28 00:21:36 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=44650)
+|Portal| 2024-09-28 00:21:36 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=44648)
+|Portal| 2024-09-28 00:21:44 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=19058)
+|Portal| 2024-09-28 00:22:08 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=60646)
+|Portal| 2024-09-28 00:27:09 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=39368)
+|Portal| 2024-09-28 00:27:33 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=45648)
+|Portal| 2024-09-28 00:28:03 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=17450)
+|Portal| 2024-09-28 00:29:24 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=57216)
+|Portal| 2024-09-28 00:30:25 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:31:39 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=40958)
+|Portal| 2024-09-28 00:34:06 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:35:28 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:35:58 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:37:05 [..] Loaded.
+|Portal| 2024-09-28 00:37:01 [..] Loading /usr/src/evennia/evennia/server/portal/portal.py...
+|Portal| 2024-09-28 00:37:05 [..] Loaded.
+|Portal| 2024-09-28 00:37:05 [..] twistd 23.10.0 (/usr/local/bin/python 3.11.9) starting up.
+|Portal| 2024-09-28 00:37:05 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+|Portal| 2024-09-28 00:37:05 [..] AMP starting on 4006
+|Portal| 2024-09-28 00:37:05 [..] Telnet starting on 23
+|Portal| 2024-09-28 00:37:05 [..] Websocket starting on 4002
+|Portal| 2024-09-28 00:37:05 [..] Webserver-proxy starting on 4001
+|Portal| 2024-09-28 00:37:06 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:37:54 [..] Loaded.
+|Portal| 2024-09-28 00:37:51 [..] Loading /usr/src/evennia/evennia/server/portal/portal.py...
+|Portal| 2024-09-28 00:37:54 [..] Loaded.
+|Portal| 2024-09-28 00:37:54 [..] twistd 23.10.0 (/usr/local/bin/python 3.11.9) starting up.
+|Portal| 2024-09-28 00:37:54 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+|Portal| 2024-09-28 00:37:55 [..] AMP starting on 4006
+|Portal| 2024-09-28 00:37:55 [..] Telnet starting on 23
+|Portal| 2024-09-28 00:37:55 [..] Websocket starting on 4002
+|Portal| 2024-09-28 00:37:55 [..] Webserver-proxy starting on 4001
+|Portal| 2024-09-28 00:37:55 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:40:23 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=9000)
+|Portal| 2024-09-28 00:40:23 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=9002)
+|Portal| 2024-09-28 00:40:23 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=8984)
+|Portal| 2024-09-28 00:40:23 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=9010)
+|Portal| 2024-09-28 00:40:23 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=9026)
+|Portal| 2024-09-28 00:40:43 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=61438)
+|Portal| 2024-09-28 00:40:44 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=24670)
+|Portal| 2024-09-28 00:42:14 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=27176)
+|Portal| 2024-09-28 00:42:14 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=27172)
+|Portal| 2024-09-28 00:47:06 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:48:31 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=49318)
+|Portal| 2024-09-28 00:50:17 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=43630)
+|Portal| 2024-09-28 00:50:24 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:51:16 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:51:56 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:52:26 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:52:31 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=35712)
+|Portal| 2024-09-28 00:52:31 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=35724)
+|Portal| 2024-09-28 00:52:31 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=35736)
+|Portal| 2024-09-28 00:52:31 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=35670)
+|Portal| 2024-09-28 00:52:31 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=35668)
+|Portal| 2024-09-28 00:52:31 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=35646)
+|Portal| 2024-09-28 00:52:31 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=35652)
+|Portal| 2024-09-28 00:52:31 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=35700)
+|Portal| 2024-09-28 00:52:31 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=35704)
+|Portal| 2024-09-28 00:52:31 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=35684)
+|Portal| 2024-09-28 00:53:10 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:53:41 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:54:31 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:54:52 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=29988)
+|Portal| 2024-09-28 00:55:21 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=47016)
+|Portal| 2024-09-28 00:55:33 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:55:54 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=64140)
+|Portal| 2024-09-28 00:56:38 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=41090)
+|Portal| 2024-09-28 00:58:47 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:59:15 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=26102)
+|Portal| 2024-09-28 00:59:18 [..] Portal starting server ... 
+|Portal| 2024-09-28 00:59:34 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:00:22 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:00:26 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=50120)
+|Portal| 2024-09-28 01:00:41 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=44432)
+|Portal| 2024-09-28 01:01:36 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:01:51 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=62354)
+|Portal| 2024-09-28 01:03:55 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:04:55 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:04:59 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=10322)
+|Portal| 2024-09-28 01:06:10 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=42840)
+|Portal| 2024-09-28 01:06:42 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:07:15 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:07:26 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=56494)
+|Portal| 2024-09-28 01:08:03 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=25712)
+|Portal| 2024-09-28 01:09:25 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=34844)
+|Portal| 2024-09-28 01:09:35 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:10:29 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=61890)
+|Portal| 2024-09-28 01:12:11 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=32876)
+|Portal| 2024-09-28 01:13:35 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:14:56 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=57074)
+|Portal| 2024-09-28 01:15:00 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=57086)
+|Portal| 2024-09-28 01:15:37 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:16:19 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=23344)
+|Portal| 2024-09-28 01:16:25 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:16:29 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=26652)
+|Portal| 2024-09-28 01:17:05 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:18:08 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:18:13 [!!] Unhandled Error
+	Traceback (most recent call last):
+	  File "/usr/local/lib/python3.11/site-packages/twisted/application/app.py", line 304, in runReactorWithLogging
+	    reactor.run()
+	  File "/usr/local/lib/python3.11/site-packages/twisted/internet/base.py", line 695, in run
+	    self.mainLoop()
+	  File "/usr/local/lib/python3.11/site-packages/twisted/internet/base.py", line 708, in mainLoop
+	    self.doIteration(t)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/internet/epollreactor.py", line 244, in doPoll
+	    log.callWithLogger(selectable, _drdw, selectable, fd, event)
+	--- <exception caught here> ---
+	  File "/usr/local/lib/python3.11/site-packages/twisted/python/log.py", line 96, in callWithLogger
+	    return callWithContext({"system": lp}, func, *args, **kw)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/python/log.py", line 80, in callWithContext
+	    return context.call({ILogContext: newCtx}, func, *args, **kw)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/python/context.py", line 117, in callWithContext
+	    return self.currentContext().callWithContext(ctx, func, *args, **kw)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/python/context.py", line 82, in callWithContext
+	    return func(*args, **kw)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/internet/posixbase.py", line 495, in _doReadOrWrite
+	    self._disconnectSelectable(selectable, why, inRead)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/internet/posixbase.py", line 107, in _disconnectSelectable
+	    selectable.readConnectionLost(f)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/internet/tcp.py", line 309, in readConnectionLost
+	    self.connectionLost(reason)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/internet/tcp.py", line 508, in connectionLost
+	    self._commonConnection.connectionLost(self, reason)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/internet/tcp.py", line 326, in connectionLost
+	    protocol.connectionLost(reason)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/web/http.py", line 688, in connectionLost
+	    self.handleResponseEnd()
+	  File "/usr/local/lib/python3.11/site-packages/twisted/web/proxy.py", line 82, in handleResponseEnd
+	    self.father.finish()
+	  File "/usr/local/lib/python3.11/site-packages/twisted/web/server.py", line 277, in finish
+	    return http.Request.finish(self)
+	  File "/usr/local/lib/python3.11/site-packages/twisted/web/http.py", line 1149, in finish
+	    raise RuntimeError(
+	builtins.RuntimeError: Request.finish called on a request after its connection was lost; use Request.notifyFinish to keep track of this.
+	
+|Portal| 2024-09-28 01:18:30 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:19:36 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=28362)
+|Portal| 2024-09-28 01:19:40 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=28360)
+|Portal| 2024-09-28 01:20:19 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:20:26 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=11288)
+|Portal| 2024-09-28 01:20:37 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=24896)
+|Portal| 2024-09-28 01:21:14 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=10082)
+|Portal| 2024-09-28 01:21:51 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=54948)
+|Portal| 2024-09-28 01:22:02 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:22:06 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=24060)
+|Portal| 2024-09-28 01:22:27 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=54942)
+|Portal| 2024-09-28 01:23:23 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=58168)
+|Portal| 2024-09-28 01:23:36 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:24:53 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=50218)
+|Portal| 2024-09-28 01:25:00 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=1484)
+|Portal| 2024-09-28 01:25:54 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=24622)
+|Portal| 2024-09-28 01:28:42 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:29:55 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:30:47 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:31:16 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=7404)
+|Portal| 2024-09-28 01:31:56 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:32:49 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:33:24 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:33:56 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:34:35 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:34:47 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=48370)
+|Portal| 2024-09-28 01:35:24 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=49884)
+|Portal| 2024-09-28 01:38:45 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=43190)
+|Portal| 2024-09-28 01:42:16 [..] Loaded.
+|Portal| 2024-09-28 01:42:13 [..] Loading /usr/src/evennia/evennia/server/portal/portal.py...
+|Portal| 2024-09-28 01:42:16 [..] Loaded.
+|Portal| 2024-09-28 01:42:16 [..] twistd 23.10.0 (/usr/local/bin/python 3.11.9) starting up.
+|Portal| 2024-09-28 01:42:16 [..] reactor class: twisted.internet.epollreactor.EPollReactor.
+|Portal| 2024-09-28 01:42:17 [..] AMP starting on 4006
+|Portal| 2024-09-28 01:42:17 [..] Telnet starting on 23
+|Portal| 2024-09-28 01:42:17 [..] Webserver-proxy starting on 4001
+|Portal| 2024-09-28 01:42:17 [..] Portal starting server ... 
+|Portal| 2024-09-28 01:50:29 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=44052)
+|Portal| 2024-09-28 01:50:58 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=53882)
+|Portal| 2024-09-28 01:50:58 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=53890)
+|Portal| 2024-09-28 01:51:11 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=44068)
+|Portal| 2024-09-28 01:51:36 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=49158)
+|Portal| 2024-09-28 01:51:44 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=51382)
+|Portal| 2024-09-28 01:52:02 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=61804)
+|Portal| 2024-09-28 01:52:07 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=1114)
+|Portal| 2024-09-28 01:52:07 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=1128)
+|Portal| 2024-09-28 01:52:07 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=1134)
+|Portal| 2024-09-28 01:52:54 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=46948)
+|Portal| 2024-09-28 01:54:39 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=11246)
+|Portal| 2024-09-28 02:01:58 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=16514)
+|Portal| 2024-09-28 02:06:50 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=50832)
+|Portal| 2024-09-28 02:07:25 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=7618)
+|Portal| 2024-09-28 02:09:00 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=59506)
+|Portal| 2024-09-28 02:09:33 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=47526)
+|Portal| 2024-09-28 02:09:58 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=17396)
+|Portal| 2024-09-28 02:12:44 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=50422)
+|Portal| 2024-09-28 02:17:10 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=10416)
+|Portal| 2024-09-28 02:17:22 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=56580)
+|Portal| 2024-09-28 02:17:29 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=15968)
+|Portal| 2024-09-28 02:23:56 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=15912)
+|Portal| 2024-09-28 02:26:25 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=27322)
+|Portal| 2024-09-28 02:31:26 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=42122)
+|Portal| 2024-09-28 02:35:57 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=57700)
+|Portal| 2024-09-28 02:36:03 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=57710)
+|Portal| 2024-09-28 02:43:07 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=51122)
+|Portal| 2024-09-28 02:44:52 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=7534)
+|Portal| 2024-09-28 02:45:20 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=62304)
+|Portal| 2024-09-28 02:46:21 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=36320)
+|Portal| 2024-09-28 02:47:11 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=42456)
+|Portal| 2024-09-28 02:48:09 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=12338)
+|Portal| 2024-09-28 02:50:40 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=2224)
+|Portal| 2024-09-28 02:51:01 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=45800)
+|Portal| 2024-09-28 02:51:07 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=64532)
+|Portal| 2024-09-28 02:57:58 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=36728)
+|Portal| 2024-09-28 03:00:20 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=10326)
+|Portal| 2024-09-28 03:04:27 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=20086)
+|Portal| 2024-09-28 03:08:25 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=45228)
+|Portal| 2024-09-28 03:23:13 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=18898)
+|Portal| 2024-09-28 03:27:28 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=50070)
+|Portal| 2024-09-28 03:27:28 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=50080)
+|Portal| 2024-09-28 03:27:28 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=50092)
+|Portal| 2024-09-28 03:29:22 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=4074)
+|Portal| 2024-09-28 03:36:44 [..] Portal starting server ... 
+|Portal| 2024-09-28 03:36:48 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=1222)
+|Portal| 2024-09-28 03:36:48 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=1226)
+|Portal| 2024-09-28 03:38:10 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=1214)
+|Portal| 2024-09-28 03:42:28 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=39898)
+|Portal| 2024-09-28 03:43:04 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=38966)
+|Portal| 2024-09-28 03:43:43 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=52034)
+|Portal| 2024-09-28 03:45:16 [..] Portal starting server ... 
+|Portal| 2024-09-28 03:46:06 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=19834)
+|Portal| 2024-09-28 03:46:27 [..] Portal starting server ... 
+|Portal| 2024-09-28 03:49:18 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=5646)
+|Portal| 2024-09-28 03:49:30 [..] Timing out client: IPv4Address(type='TCP', host='172.26.35.165', port=52336)
+|Portal| 2024-09-28 03:50:13 [..] Portal starting server ... 
+|Portal| 2024-09-28 03:51:01 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=63520)
+|Portal| 2024-09-28 04:02:19 [..] Timing out client: IPv4Address(type='TCP', host='172.26.0.104', port=33034)
+|Portal| 2024-09-28 04:03:51 [..] Timing out client: IPv4Address(type='TCP', host='172.26.48.176', port=10570)
+|Portal| 2024-09-28 04:04:43 [..] Timing out client: IPv4Address(type='TCP', host='172.26.17.44', port=10388)

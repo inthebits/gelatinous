@@ -4,7 +4,7 @@ Evennia settings file.
 The available options are found in the default settings file found
 here:
 
-/home/ubuntu/muddev/evennia/evennia/settings_default.py
+https://www.evennia.com/docs/latest/Setup/Settings-Default.html
 
 Remember:
 
@@ -35,27 +35,41 @@ from evennia.settings_default import *
 SERVERNAME = "Gelatinous Monster"
 # Short one-sentence blurb describing your game. Shown under the title
 # on the website and could be used in online listings of your game etc.
-GAME_SLOGAN = "A game of Amorphous Oozes"
-# Interface addresses to listen to. If 0.0.0.0, listen to all. Use :: for IPv6.
-WEBSERVER_INTERFACES = ['127.0.0.1']
-# Interface addresses to listen to. If 0.0.0.0, listen to all. Use :: for IPv6.
-WEBSOCKET_CLIENT_INTERFACE = '127.0.0.1'
-# Actual URL for webclient component to reach the websocket. You only need
-# to set this if you know you need it, like using some sort of proxy setup.
-# If given it must be on the form "ws[s]://hostname[:port]". If left at None,
-# the client will itself figure out this url based on the server's hostname.
-# e.g. ws://external.example.com or wss://external.example.com:443
-WEBSOCKET_CLIENT_URL ="wss://gel.monster:4002/"
-# Activate Telnet+SSL protocol (SecureSocketLibrary) for supporting clients
-SSL_ENABLED = False
+GAME_SLOGAN = "An abomination to behold"
+# The url address to your server, like mymudgame.com. This should be the publicly
+# visible location. This is used e.g. on the web site to show how you connect to the
+# game over telnet. Default is localhost (only on your machine).
+SERVER_HOSTNAME = "play.gel.monster"
+# Lockdown mode will cut off the game from any external connections
+# and only allow connections from localhost. Requires a cold reboot.
+LOCKDOWN_MODE = False
+# Controls whether new account registration is available.
+# Set to False to lock down the registration page and the create account command.
+NEW_ACCOUNT_REGISTRATION_ENABLED = True
+# Activate telnet service
+TELNET_ENABLED = True
+# A list of ports the Evennia telnet server listens on Can be one or many.
+TELNET_PORTS = [23]
+# This is a security setting protecting against host poisoning
+# attacks.  It defaults to allowing all. In production, make
+# sure to change this to your actual host addresses/IPs.
+ALLOWED_HOSTS = ["gel.monster", "gelatinous.org", "gelatinous.monster", "96d01c0600eef9c99db924a15939abf3-578402624.us-west-2.elb.amazonaws.com"]
+# This is a security setting protecting against DJANGO CSRF nonsense
+CSRF_TRUSTED_ORIGINS = ['https://gel.monster', 'https://gelatinous.monster', 'https://gelatinous.org', 'https://96d01c0600eef9c99db924a15939abf3-578402624.us-west-2.elb.amazonaws.com', 'https://35.165.102.12']
+# Start the evennia webclient. This requires the webserver to be running and
+# offers the fallback ajax-based webclient backbone for browsers not supporting
+# the websocket one.
+WEBCLIENT_ENABLED = False
+######################################################################
+# Django web features
+######################################################################
+
 # While DEBUG is False, show a regular server error page on the web
 # stuff, email the traceback to the people in the ADMINS tuple
 # below. If True, show a detailed traceback for the web
 # browser to display. Note however that this will leak memory when
 # active, so make sure to turn it off for a production server!
 DEBUG = False
-# Cross Site Request Forgery Trusted Origins
-CSRF_TRUSTED_ORIGINS = ['https://gelatinous.monster','https://gel.monster','https://gelatinous.org']
 
 ######################################################################
 # Settings given in secret_settings.py override those in this file.
