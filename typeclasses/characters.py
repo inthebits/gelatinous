@@ -9,6 +9,7 @@ creation commands.
 """
 
 from evennia.objects.objects import DefaultCharacter
+from evennia.typeclasses.attributes import AttributeProperty
 
 from .objects import ObjectParent
 
@@ -21,6 +22,15 @@ class Character(ObjectParent, DefaultCharacter):
     See mygame/typeclasses/objects.py for a list of
     properties and methods available on all Object child classes like this.
 
+    In this instance, we are also adding the G.R.I.T. attributes using AttributeProperty.
     """
-
+    
+    grit = AttributeProperty(1, category='stat')
+    resonance = AttributeProperty(1, category='stat')
+    intellect = AttributeProperty(1, category='stat')
+    motorics = AttributeProperty(1, category='stat')
+    
+    def at_object_creation(self):
+        # ... I have no idea what this does.
+    
     pass
