@@ -31,6 +31,5 @@ class Character(ObjectParent, DefaultCharacter):
     motorics = AttributeProperty(1, category='stat')
     
     def at_object_creation(self):
-        # ... I have no idea what this does.
     
-    pass
+        pass
