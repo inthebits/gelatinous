@@ -16,3 +16,5 @@ class CmdAttack(Command):
 
     def func(self):
         self.caller.msg(f"Echo: '{self.args.strip()}'")
+
+# ...
