@@ -34,7 +34,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
-
+        self.add(CmdAttack)
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
@@ -94,3 +94,4 @@ class SessionCmdSet(default_cmds.SessionCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+
