@@ -16,6 +16,6 @@ class CmdAttack(Command):
 
     def func(self):
         self.caller.msg(f"Echo: '{self.args.strip()}'")
-        grit = character.db.value('grit', category='stat')
+        grit = self.caller.db.grit
         self.caller.msg(f"Your grit is: {grit}.'")
 # ...
