@@ -14,8 +14,8 @@ class CmdAttack(Command):
     """
     key = "kill"
 
-    def func(self, character):
+    def func(self:
         self.caller.msg(f"Echo: '{self.args.strip()}'")
-        grit = character.caller.db.grit
+        grit = self.db.grit
         self.caller.msg(f"Your grit is: {grit}.'")
 # ...
