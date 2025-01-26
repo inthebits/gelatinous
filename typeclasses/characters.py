@@ -33,4 +33,7 @@ class Character(ObjectParent, DefaultCharacter):
     def at_object_creation(self):
         # Ensure the attribute is set at creation
         self.db.grit = self.grit
+        self.db.resonance = self.resonance
+        self.db.intellect = self.intellect
+        self.db.motorics = self.motorics
         pass
