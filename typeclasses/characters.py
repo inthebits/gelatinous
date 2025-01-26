@@ -31,5 +31,6 @@ class Character(ObjectParent, DefaultCharacter):
     motorics = AttributeProperty(1, category='stat')
     
     def at_object_creation(self):
-    
+        # Ensure the attribute is set at creation
+        self.db.grit = self.grit
         pass
