@@ -13,6 +13,7 @@ class CmdAttack(Command):
         attack Bob
     """
     key = "kill"
+    aliases = ["attack"]
 
     def func(self):
         self.caller.msg(f"Echo: '{self.args.strip()}'")
