@@ -16,5 +16,6 @@ class CmdAttack(Command):
 
     def func(self):
         self.caller.msg(f"Echo: '{self.args.strip()}'")
-
+        truegrit = self.grit
+        self.caller.msg(f"Your grit is: '{self.grit}'.'")
 # ...
