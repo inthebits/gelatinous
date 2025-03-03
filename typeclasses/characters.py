@@ -25,15 +25,15 @@ class Character(ObjectParent, DefaultCharacter):
     In this instance, we are also adding the G.R.I.M. attributes using AttributeProperty.
     """
     
-    grit = AttributeProperty(1, category='stat')
-    resonance = AttributeProperty(1, category='stat')
-    intellect = AttributeProperty(1, category='stat')
-    motorics = AttributeProperty(1, category='stat')
+    grit = AttributeProperty(1, category='stat', autocreate=True)
+    resonance = AttributeProperty(1, category='stat', autocreate=True)
+    intellect = AttributeProperty(1, category='stat', autocreate=True)
+    motorics = AttributeProperty(1, category='stat', autocreate=True)
     
-    def at_object_creation(self):
-        # Ensure the attribute is set at creation
-        self.db.grit = self.grit
-        self.db.resonance = self.resonance
-        self.db.intellect = self.intellect
-        self.db.motorics = self.motorics
-        pass
+    #def at_object_creation(self):
+        # Ensure the attribute is set at creation. Commenting out for testing.
+    #    self.db.grit = self.grit
+    #    self.db.resonance = self.resonance
+    #    self.db.intellect = self.intellect
+    #    self.db.motorics = self.motorics
+    #    pass
