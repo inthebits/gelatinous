@@ -28,7 +28,7 @@ class Character(ObjectParent, DefaultCharacter):
     grit = AttributeProperty(1, category='stat', autocreate=True)
     resonance = AttributeProperty(1, category='stat', autocreate=True)
     intellect = AttributeProperty(1, category='stat', autocreate=True)
-    motorics = AttributeProperty(1, category='stat')
+    motorics = AttributeProperty(1, category='stat', autocreate=True)
     
     #def at_object_creation(self):
         # Ensure the attribute is set at creation. Commenting out for testing.
