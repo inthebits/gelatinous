@@ -17,6 +17,11 @@ class CmdAttack(Command):
 
     def func(self):
         self.caller.msg(f"Echo: '{self.args.strip()}'")
+        
+        # Access grit attribute with and without category
         grit = self.caller.db.grit
-        self.caller.msg(f"Your grit is: {self.caller.db.get("grit", category="stat")}.")
+        if grit is None:
+            grit = self.caller.attributes.get("grit", category="stat")
+        
+        self.caller.msg(f"Your grit is: {grit}.")
 # ...
