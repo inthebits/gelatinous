@@ -29,11 +29,3 @@ class Character(ObjectParent, DefaultCharacter):
     resonance = AttributeProperty(1, category='stat', autocreate=True)
     intellect = AttributeProperty(1, category='stat', autocreate=True)
     motorics = AttributeProperty(1, category='stat', autocreate=True)
-    
-    #def at_object_creation(self):
-        # Ensure the attribute is set at creation. Commenting out for testing.
-    #    self.db.grit = self.grit
-    #    self.db.resonance = self.resonance
-    #    self.db.intellect = self.intellect
-    #    self.db.motorics = self.motorics
-    #    pass
