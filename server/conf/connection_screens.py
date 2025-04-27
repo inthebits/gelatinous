@@ -31,14 +31,27 @@ from django.conf import settings
 import random
 from evennia import utils
 
-# Generate a random signal number
+# Random 2-digit signal number
 signal_number = f"{random.randint(0, 99):02d}"
+
+# Random glitch message
+glitch_messages = [
+    "[ WARNING: Signal instability detected. ]",
+    "[ ERROR: Calibration pattern failed. ]",
+    "[ ALERT: Tone sequence corrupted. ]",
+    "[ NOTICE: Broadcast medium deteriorated. ]"
+]
+glitch_message = random.choice(glitch_messages)
 
 CONNECTION_SCREEN = """
 |b==============================================================|n
  Welcome to |g{}|n, version {}!
 
- (signal {}) 
+ (signal {})
+
+ {glitch_message}
+[ Color bars desaturated. ]
+[ Anomalous resonance detected at 7.8Hz. ] 
  
  If you have an existing account, connect to it by typing:
       |wconnect <username> <password>|n
@@ -49,5 +62,5 @@ CONNECTION_SCREEN = """
  Enter |whelp|n for more info. |wlook|n will re-show this screen.
 |b==============================================================|n
 """.format(
-    settings.SERVERNAME, utils.get_evennia_version("short"), signal_number
+    settings.SERVERNAME, utils.get_evennia_version("short"), signal_number, glitch_message
 )
