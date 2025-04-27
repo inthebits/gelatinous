@@ -44,10 +44,9 @@ glitch_messages = [
 glitch_message = random.choice(glitch_messages)
 
 CONNECTION_SCREEN = """
-|b==============================================================|n
- Welcome to |g{}|n, version {}!
-
- (signal {})
+|b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
+█▒▒▒ |g{} SYSTEM |n :: SIGNAL {} |b▒▒▒▒█
+█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
 
 [ {} ]
 [ Color bars desaturated. ]
@@ -62,5 +61,5 @@ CONNECTION_SCREEN = """
  Enter |whelp|n for more info. |wlook|n will re-show this screen.
 |b==============================================================|n
 """.format(
-    settings.SERVERNAME, utils.get_evennia_version("short"), signal_number, glitch_message
+    settings.SERVERNAME, signal_number, utils.get_evennia_version("short"), glitch_message
 )
