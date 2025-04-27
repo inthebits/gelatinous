@@ -20,43 +20,21 @@ of the screen is done by the unlogged-in "look" command.
 
 """
 
-# -*- coding: utf-8 -*-
-"""
-Connection screen
-
-Dynamic connection screen with random signal number.
-"""
-
 from django.conf import settings
-import random
 from evennia import utils
 
-# Random 2-digit signal number
-signal_number = f"{random.randint(0, 99):02d}"
-
-# Random glitch message
-glitch_messages = [
-    "WARNING: Signal instability detected.",
-    "ERROR: Calibration pattern failed.",
-    "ALERT: Tone sequence corrupted.",
-    "NOTICE: Broadcast medium deteriorated."
-]
-glitch_message = random.choice(glitch_messages)
-
-# Random corrupted year
-year_display = random.choice(["198█", "NULL"])
 
 CONNECTION_SCREEN = """
 
 |b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
-█▒▒▒▒▒▒▒▒▒▒ |g{} SYSTEM |n :::: SIGNAL {} |b▒▒▒▒▒▒▒▒▒▒▒█
+█▒▒▒▒▒▒▒▒▒ |g{} SYSTEM |n :::: SIGNAL {} |b▒▒▒▒▒▒▒▒▒▒█
 █▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
 
-[ {} ]
+[ WARNING: Signal instability detected. ]
 [ Color bars desaturated. ]
 [ Anomalous resonance detected at 7.8Hz. ] 
 
-YEAR: {} (ENDLESS BROADCAST)
+YEAR: 198█ (ENDLESS BROADCAST)
 LOCATION: PARTS UNKNOWN
  
 >> Streets: Flowing.
@@ -74,5 +52,5 @@ Enter |whelp|n for more info. |wlook|n will re-show this screen.
 
 |b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
 """.format(
-    settings.SERVERNAME, signal_number, glitch_message, year_display
+    settings.SERVERNAME, utils.get_evennia_version("short")
 )
