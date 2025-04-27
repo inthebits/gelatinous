@@ -36,10 +36,10 @@ signal_number = f"{random.randint(0, 99):02d}"
 
 # Random glitch message
 glitch_messages = [
-    "[ WARNING: Signal instability detected. ]",
-    "[ ERROR: Calibration pattern failed. ]",
-    "[ ALERT: Tone sequence corrupted. ]",
-    "[ NOTICE: Broadcast medium deteriorated. ]"
+    "WARNING: Signal instability detected.",
+    "ERROR: Calibration pattern failed.",
+    "ALERT: Tone sequence corrupted.",
+    "NOTICE: Broadcast medium deteriorated."
 ]
 glitch_message = random.choice(glitch_messages)
 
@@ -49,7 +49,7 @@ CONNECTION_SCREEN = """
 
  (signal {})
 
- {}
+[ {} ]
 [ Color bars desaturated. ]
 [ Anomalous resonance detected at 7.8Hz. ] 
  
