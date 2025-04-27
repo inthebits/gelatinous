@@ -24,10 +24,15 @@ from django.conf import settings
 import random
 from evennia import utils
 
+# Generate a random signal number
+signal_number = f"{random.randint(0, 99):02d}"
+
 CONNECTION_SCREEN = """
 |b==============================================================|n
  Welcome to |g{}|n, version {}!
 
+ (signal {signal_number}) 
+ 
  If you have an existing account, connect to it by typing:
       |wconnect <username> <password>|n
  If you need to create an account, type (without the <>'s):
