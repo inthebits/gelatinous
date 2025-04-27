@@ -34,7 +34,7 @@ CONNECTION_SCREEN = """
 [ Color bars desaturated. ]
 [ Anomalous resonance detected at 7.8Hz. ] 
 
-YEAR: 198|[blink]█|n (ENDLESS BROADCAST)
+YEAR: 198|[u█|n (ENDLESS BROADCAST)
 LOCATION: PARTS UNKNOWN
  
 >> Streets: Flowing.
