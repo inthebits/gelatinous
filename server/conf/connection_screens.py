@@ -43,24 +43,37 @@ glitch_messages = [
 ]
 glitch_message = random.choice(glitch_messages)
 
+# Random corrupted year
+year_display = random.choice(["198█", "NULL"])
+
 CONNECTION_SCREEN = """
 
 |b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
-█▒▒▒ |g{} SYSTEM |n :: SIGNAL {} |b▒▒▒▒█
+█▒▒▒▒ |g{} SYSTEM |n ::: SIGNAL {} |b▒▒▒▒▒█
 █▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
 
 [ {} ]
 [ Color bars desaturated. ]
 [ Anomalous resonance detected at 7.8Hz. ] 
- 
- If you have an existing account, connect to it by typing:
-      |wconnect <username> <password>|n
- If you need to create an account, type (without the <>'s):
-      |wcreate <username> <password>|n
 
- If you have spaces in your username, enclose it in quotes.
- Enter |whelp|n for more info. |wlook|n will re-show this screen.
-|b==============================================================|n
+YEAR: {} (ENDLESS BROADCAST)
+LOCATION: PARTS UNKNOWN
+ 
+>> Streets: Flowing.
+>> Airwaves: Distorted.
+>> Flesh: Grainy.
+>> Memory: OFFLINE.
+
+__ Connect : |wconnect <accountname> <password>|n
+__ Create  : |wcreate <accountname> <password>|n
+
+If you have spaces in your username, enclose it in quotes.
+Enter |whelp|n for more info. |wlook|n will re-show this screen.
+
+>>> END OF TEST PATTERN. BROADCAST WILL NOT RESUME WITHOUT PROMPT.
+
+|b█████████████████████████████████████████████████████|n
+
 """.format(
-    settings.SERVERNAME, signal_number, utils.get_evennia_version("short"), glitch_message
+    settings.SERVERNAME, signal_number, glitch_message, year_display
 )
