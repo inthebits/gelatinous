@@ -44,9 +44,7 @@ glitch_messages = [
 glitch_message = random.choice(glitch_messages)
 
 CONNECTION_SCREEN = """
-|b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
-█▒▒▒ |g{} SYSTEM |n :: SIGNAL {} |b▒▒▒▒█
-█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
+
 
 [ {} ]
 [ Color bars desaturated. ]
