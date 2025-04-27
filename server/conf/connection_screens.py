@@ -72,7 +72,7 @@ Enter |whelp|n for more info. |wlook|n will re-show this screen.
 
 >>> END OF TEST PATTERN. BROADCAST WILL NOT RESUME WITHOUT PROMPT.
 
-|b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
+|b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
 """.format(
     settings.SERVERNAME, signal_number, glitch_message, year_display
 )
