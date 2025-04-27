@@ -49,7 +49,7 @@ CONNECTION_SCREEN = """
 
  (signal {})
 
- {glitch_message}
+ {}
 [ Color bars desaturated. ]
 [ Anomalous resonance detected at 7.8Hz. ] 
  
