@@ -25,17 +25,24 @@ class CmdStats(Command):
         motorics = caller.motorics
 
         string = """
-|b==============================================================|n
-|g{} SYSTEM SCAN - SUBJECT FILE|n
-|b==============================================================|n
-  |wGrit     |n : {}
-  |wResonance|n : {}
-  |wIntellect|n : {}
-  |wMotorics |n : {}
 
-|b==============================================================|n
+|g╔════════════════════════════════════════════════╗|n
+|g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n
+|g║ Subject ID: [########]                         ║|n
+|g║ File Reference: GEL-MST/PR-221A                ║|n
+|g╠════════════════════════════════════════════════╣|n
+|g║                                                ║|n
+|g║   [ G ] Grit:       {}                         ║|n
+|g║   [ R ] Resonance:  {}                         ║|n
+|g║   [ I ] Intellect:  {}                         ║|n
+|g║   [ M ] Motorics:   {}                         ║|n
+|g║                                                ║|n
+|g╠════════════════════════════════════════════════╣|n
+|g║ Notes:                                         ║|n
+|g║                                                ║|n
+|g╚════════════════════════════════════════════════╝|n
+
 """.format(
-            caller.key,
             grit,
             resonance,
             intellect,
