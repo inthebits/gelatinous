@@ -24,9 +24,7 @@ class CmdStats(Command):
         intellect = caller.intellect
         motorics = caller.motorics
 
-        string = """
-
-|g╔════════════════════════════════════════════════╗|n
+        string = """|g╔════════════════════════════════════════════════╗|n
 |g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n
 |g║ Subject ID: [########]                         ║|n
 |g║ File Reference: GEL-MST/PR-221A                ║|n
@@ -40,9 +38,7 @@ class CmdStats(Command):
 |g╠════════════════════════════════════════════════╣|n
 |g║ Notes:                                         ║|n
 |g║                                                ║|n
-|g╚════════════════════════════════════════════════╝|n
-
-""".format(
+|g╚════════════════════════════════════════════════╝|n""".format(
             grit,
             resonance,
             intellect,
