@@ -17,8 +17,7 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 
 from evennia import default_cmds
 from commands import CmdCombat
-from commands import CmdStats
-
+from commands import CmdCharacter
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
     The `CharacterCmdSet` contains general in-game commands like `look`,
@@ -37,7 +36,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         # any commands you add below will overload the default ones.
         #
         self.add(CmdCombat.CmdAttack)
-        self.add(CmdStats.CmdStats)
+        self.add(CmdCharacter.CmdStats)
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """

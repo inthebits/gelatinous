@@ -13,8 +13,6 @@ class CmdStats(Command):
 
     key = "@stats"
     aliases = ["score"]
-    locks = "cmd:all()"
-    help_category = "Character"
 
     def func(self):
         "Implement the command."
