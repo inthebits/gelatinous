@@ -20,6 +20,13 @@ of the screen is done by the unlogged-in "look" command.
 
 """
 
+# -*- coding: utf-8 -*-
+"""
+Connection screen
+
+Dynamic connection screen with random signal number.
+"""
+
 from django.conf import settings
 import random
 from evennia import utils
@@ -31,7 +38,7 @@ CONNECTION_SCREEN = """
 |b==============================================================|n
  Welcome to |g{}|n, version {}!
 
- (signal {signal_number}) 
+ (signal {}) 
  
  If you have an existing account, connect to it by typing:
       |wconnect <username> <password>|n
@@ -40,6 +47,7 @@ CONNECTION_SCREEN = """
 
  If you have spaces in your username, enclose it in quotes.
  Enter |whelp|n for more info. |wlook|n will re-show this screen.
-|b==============================================================|n""".format(
-    settings.SERVERNAME, utils.get_evennia_version("short")
+|b==============================================================|n
+""".format(
+    settings.SERVERNAME, utils.get_evennia_version("short"), signal_number
 )
