@@ -64,6 +64,4 @@ __ Create  : create <accountname> <password>
 >>> END OF TEST PATTERN. BROADCAST WILL NOT RESUME.
 
 █████████████████████████████████████████████████████
-""".format(
-    settings.SERVERNAME, utils.get_evennia_version("short")
-)
+"""
