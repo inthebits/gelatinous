@@ -24,17 +24,46 @@ from django.conf import settings
 
 from evennia import utils
 
-CONNECTION_SCREEN = """
-|b==============================================================|n
- Welcome to |g{}|n, version {}!
+import random
 
- If you have an existing account, connect to it by typing:
-      |wconnect <username> <password>|n
- If you need to create an account, type (without the <>'s):
-      |wcreate <username> <password>|n
+def get_connection_screen():
+    signal_number = f"{random.randint(0, 99):02d}"
 
- If you have spaces in your username, enclose it in quotes.
- Enter |whelp|n for more info. |wlook|n will re-show this screen.
-|b==============================================================|n""".format(
+    # Randomize a glitch message
+    glitch_messages = [
+        "[ WARNING: Signal instability detected. ]",
+        "[ ERROR: Calibration pattern failed. ]",
+        "[ ALERT: Tone sequence corrupted. ]",
+        "[ NOTICE: Broadcast medium deteriorated. ]"
+    ]
+    glitch_message = random.choice(glitch_messages)
+
+    # Randomize year glitch
+    year_display = random.choice(["198█", "NULL"])
+
+    return fr"""
+█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
+█▒▒▒ GELATINOUS MONSTER SYSTEM :: SIGNAL {signal_number} ▒▒▒▒█
+█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
+
+{glitch_message}
+[ Color bars desaturated. ]
+[ Anomalous resonance detected at 7.8Hz. ]
+
+YEAR: {year_display} (ENDLESS BROADCAST)
+LOCATION: PARTS UNKNOWN
+
+>> Streets: Flowing.
+>> Airwaves: Distorted.
+>> Flesh: Grainy.
+>> Memory: OFFLINE.
+
+__ Connect : connect <accountname> <password>
+__ Create  : create <accountname> <password>
+
+>>> END OF TEST PATTERN. BROADCAST WILL NOT RESUME.
+
+█████████████████████████████████████████████████████
+""".format(
     settings.SERVERNAME, utils.get_evennia_version("short")
 )
