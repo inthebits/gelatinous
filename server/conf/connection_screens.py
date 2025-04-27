@@ -1,35 +1,19 @@
-# -*- coding: utf-8 -*-
 """
-Connection screen
-
-This is the text to show the user when they first connect to the game (before
-they log in).
-
-To change the login screen in this module, do one of the following:
-
-- Define a function `connection_screen()`, taking no arguments. This will be
-  called first and must return the full string to act as the connection screen.
-  This can be used to produce more dynamic screens.
-- Alternatively, define a string variable in the outermost scope of this module
-  with the connection string that should be displayed. If more than one such
-  variable is given, Evennia will pick one of them at random.
-
-The commands available to the user when the connection screen is shown
-are defined in evennia.default_cmds.UnloggedinCmdSet. The parsing and display
-of the screen is done by the unlogged-in "look" command.
-
+Connection screen file for Evennia.
+This version randomizes signal number, glitch message, and year.
 """
-
-from django.conf import settings
-
-from evennia import utils
 
 import random
 
 def get_connection_screen():
+    """
+    Dynamically generates a connection screen with slight randomization
+    for atmosphere (signal degradation, glitches).
+    """
+    # Random 2-digit signal number
     signal_number = f"{random.randint(0, 99):02d}"
 
-    # Randomize a glitch message
+    # Random glitch message
     glitch_messages = [
         "[ WARNING: Signal instability detected. ]",
         "[ ERROR: Calibration pattern failed. ]",
@@ -38,9 +22,10 @@ def get_connection_screen():
     ]
     glitch_message = random.choice(glitch_messages)
 
-    # Randomize year glitch
+    # Random corrupted year
     year_display = random.choice(["198█", "NULL"])
 
+    # Return the full screen
     return fr"""
 █▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
 █▒▒▒ GELATINOUS MONSTER SYSTEM :: SIGNAL {signal_number} ▒▒▒▒█
@@ -65,3 +50,4 @@ __ Create  : create <accountname> <password>
 
 █████████████████████████████████████████████████████
 """
+
