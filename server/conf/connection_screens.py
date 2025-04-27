@@ -46,7 +46,7 @@ glitch_message = random.choice(glitch_messages)
 # Random corrupted year
 year_display = random.choice(["198█", "NULL"])
 
-CONNECTION_SCREEN = f"""
+CONNECTION_SCREEN = """
 
 |b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
 █▒▒▒▒ |g{} SYSTEM |n ::: SIGNAL {} |b▒▒▒▒▒█
