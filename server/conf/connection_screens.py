@@ -48,9 +48,9 @@ year_display = random.choice(["198█", "NULL"])
 
 CONNECTION_SCREEN = """
 
-|b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
-█▒▒▒▒ |g{} SYSTEM |n ::: SIGNAL {} |b▒▒▒▒▒█
-█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
+|b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
+█▒▒▒▒▒▒▒▒▒▒ |g{} SYSTEM |n ::: SIGNAL {} |b▒▒▒▒▒▒▒▒▒▒▒█
+█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
 
 [ {} ]
 [ Color bars desaturated. ]
@@ -72,7 +72,7 @@ Enter |whelp|n for more info. |wlook|n will re-show this screen.
 
 >>> END OF TEST PATTERN. BROADCAST WILL NOT RESUME WITHOUT PROMPT.
 
-█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
+|b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
 """.format(
     settings.SERVERNAME, signal_number, glitch_message, year_display
 )
