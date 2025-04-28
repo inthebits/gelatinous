@@ -40,9 +40,9 @@ class Character(ObjectParent, DefaultCharacter):
         """
         Called once, at creation, to set dynamic stats.
         """
-    super().at_object_creation()
+        super().at_object_creation()
 
-    # Set dynamic hp_max based on grit
-    grit_value = self.grit or 1
-    self.hp_max = 10 + (grit_value * 2)
-    self.hp = self.hp_max  # Start at full health
+        # Set dynamic hp_max based on grit
+        grit_value = self.grit or 1
+        self.hp_max = 10 + (grit_value * 2)
+        self.hp = self.hp_max  # Start at full health
