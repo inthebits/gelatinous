@@ -40,9 +40,11 @@ class CmdStats(Command):
 |g║         Intellect:  {}                          ║|n
 |g║         Motorics:   {}                          ║|n
 |g║                                                ║|n
-|g║         Vitals:     {}                      ║|n
+|g║         Vitals:     {}                     ║|n
+|g║                                                ║|n
 |g╠════════════════════════════════════════════════╣|n
 |g║ Notes:                                         ║|n
+|g║                                                ║|n
 |g║                                                ║|n
 |g╚════════════════════════════════════════════════╝|n""".format(
             grit,
