@@ -23,6 +23,8 @@ class CmdStats(Command):
         resonance = caller.resonance
         intellect = caller.intellect
         motorics = caller.motorics
+        hp = caller.hp
+        hp_max = caller.hp_max
 
         string = """|g╔════════════════════════════════════════════════╗|n
 |g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n
@@ -35,6 +37,7 @@ class CmdStats(Command):
 |g║         Intellect:  {}                          ║|n
 |g║         Motorics:   {}                          ║|n
 |g║                                                ║|n
+|g║         Vitals:     {}/{}                       ║|n
 |g╠════════════════════════════════════════════════╣|n
 |g║ Notes:                                         ║|n
 |g║                                                ║|n
@@ -42,7 +45,9 @@ class CmdStats(Command):
             grit,
             resonance,
             intellect,
-            motorics
+            motorics,
+            hp,
+            hp_max,
         )
 
         caller.msg(string)
