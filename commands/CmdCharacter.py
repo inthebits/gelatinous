@@ -25,6 +25,9 @@ class CmdStats(Command):
         motorics = caller.motorics
         hp = caller.hp
         hp_max = caller.hp_max
+        vitals_display = f"{hp}/{hp_max}".rjust(5)
+        
+
 
         string = """|g╔════════════════════════════════════════════════╗|n
 |g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n
@@ -46,8 +49,7 @@ class CmdStats(Command):
             resonance,
             intellect,
             motorics,
-            hp,
-            hp_max,
+            vitals_display,
         )
 
         caller.msg(string)
