@@ -1,18 +1,18 @@
 from evennia import Command
-from evennia.utils.search import search_object
 from evennia.utils.utils import inherits_from
 from random import randint
 from world.combathandler import get_or_create_combat
 
+
 class CmdAttack(Command):
     """
-    Engage in combat with a target.
+    Attack a target in your current room.
 
     Usage:
         attack <target>
         kill <target>
 
-    Rolls initiative and a to-hit check.
+    Initiates combat and attempts a hit based on your Grit vs their Motorics.
     """
 
     key = "attack"
@@ -26,19 +26,28 @@ class CmdAttack(Command):
             caller.msg("Attack who?")
             return
 
-        matches = search_object(self.args.strip(), location=caller.location)
+        search_name = self.args.strip().lower()
+        candidates = caller.location.contents
+
+        # Match against key or aliases, case-insensitive partials allowed
+        matches = [
+            obj for obj in candidates
+            if search_name in obj.key.lower()
+            or any(search_name in alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else []))
+        ]
+
         if not matches:
-            caller.msg("No such target found.")
+            caller.msg("No valid target found.")
             return
 
         target = matches[0]
 
         if target == caller:
-            caller.msg("Attacking yourself won't get you far.")
+            caller.msg("You can't attack yourself.")
             return
 
         if not inherits_from(target, "typeclasses.characters.Character"):
-            caller.msg("That target can't be attacked.")
+            caller.msg("That can't be attacked.")
             return
 
         # Start or join combat
@@ -46,11 +55,11 @@ class CmdAttack(Command):
         combat.add_combatant(caller)
         combat.add_combatant(target)
 
-        # Attack roll
+        # Attack resolution
         atk_roll = randint(1, max(1, caller.grit))
         def_roll = randint(1, max(1, target.motorics))
 
-        caller.msg(f"You lunge at {target.key}!")
+        caller.msg(f"You attempt to strike {target.key}!")
         target.msg(f"{caller.key} attacks you!")
 
         if atk_roll > def_roll:
@@ -60,9 +69,9 @@ class CmdAttack(Command):
             target.msg(f"|rYou've been hit for {damage} damage!|n")
 
             if target.hp <= 0:
-                caller.msg(f"|r{target.key} collapses.|n")
-                target.msg(f"|RYou feel your body shutting down...|n")
+                caller.msg(f"|R{target.key} collapses from your blow.|n")
+                target.msg(f"|RYou feel your body fail and fall...|n")
                 target.die()
         else:
-            caller.msg("Your strike misses!")
-            target.msg(f"You dodge {caller.key}'s attack.")
+            caller.msg("You miss.")
+            target.msg(f"You dodge {caller.key}'s strike.")
