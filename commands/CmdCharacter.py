@@ -39,34 +39,30 @@ class CmdStats(Command):
         hp_max = target.hp_max
         vitals_display = f"{hp}/{hp_max}".rjust(5)
 
-        def boxed_line(label="", value=""):
-            # creates a padded stat line with perfect alignment
-            label_fmt = f"{label:<16}"  # left-align label
-            value_fmt = f"{str(value):>2}"  # right-align value
-            return f"|g║   {label_fmt}{value_fmt}{' ' * (48 - (len(label_fmt) + 2))}║|n"
-
-        def plain_line(text=""):
-            return f"|g║ {text.ljust(48)} ║|n"
-
-        string = "\n".join([
-            "|g╔════════════════════════════════════════════════╗|n",
-            "|g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n",
-            plain_line(f"Subject: {target.key[:42]}"),
-            "|g║ File Reference: GEL-MST/PR-221A                ║|n",
-            "|g╠════════════════════════════════════════════════╣|n",
-            plain_line(),
-            boxed_line("Grit:", grit),
-            boxed_line("Resonance:", resonance),
-            boxed_line("Intellect:", intellect),
-            boxed_line("Motorics:", motorics),
-            plain_line(),
-            boxed_line("Vitals:", vitals_display),
-            plain_line(),
-            "|g╠════════════════════════════════════════════════╣|n",
-            plain_line("Notes:"),
-            plain_line(),
-            plain_line(),
-            "|g╚════════════════════════════════════════════════╝|n"
-        ])
+        string = """|g╔════════════════════════════════════════════════╗|n
+|g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n
+|g║ Subject: {:<38}║|n
+|g║ File Reference: GEL-MST/PR-221A                ║|n
+|g╠════════════════════════════════════════════════╣|n
+|g║                                                ║|n
+|g║         Grit:       {:<28}║|n
+|g║         Resonance:  {:<28}║|n
+|g║         Intellect:  {:<28}║|n
+|g║         Motorics:   {:<28}║|n
+|g║                                                ║|n
+|g║         Vitals:     {:<28}║|n
+|g║                                                ║|n
+|g╠════════════════════════════════════════════════╣|n
+|g║ Notes:                                         ║|n
+|g║                                                ║|n
+|g║                                                ║|n
+|g╚════════════════════════════════════════════════╝|n""".format(
+            target.key[:38],
+            grit,
+            resonance,
+            intellect,
+            motorics,
+            vitals_display,
+        )
 
         caller.msg(string)
