@@ -32,6 +32,7 @@ class Character(ObjectParent, DefaultCharacter):
     resonance = AttributeProperty(1, category='stat', autocreate=True)
     intellect = AttributeProperty(1, category='stat', autocreate=True)
     motorics = AttributeProperty(1, category='stat', autocreate=True)
+    sex = AttributeProperty("ambiguous", category="biology", autocreate=True)
 
 # Possession Identifier
     def is_possessed(self):
