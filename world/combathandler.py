@@ -104,7 +104,7 @@ class CombatHandler(DefaultScript):
 
             if target.hp <= 0:
                 self.location.msg_contents(f"|R{target.key} collapses to the ground.|n")
-                target.die()
+                target.at_death()
                 self.remove_combatant(target)
         else:
             self.location.msg_contents(f"{actor.key} misses {target.key}.")
