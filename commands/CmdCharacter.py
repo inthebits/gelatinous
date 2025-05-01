@@ -24,7 +24,7 @@ class CmdStats(Command):
 
         if self.args:
             if (
-                self.account.check_permstring("Builders")
+                self.account.check_permstring("Builder")
                 or self.account.check_permstring("Developer")
             ):
                 matches = search_object(self.args.strip())
