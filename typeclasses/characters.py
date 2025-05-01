@@ -33,8 +33,12 @@ class Character(ObjectParent, DefaultCharacter):
     intellect = AttributeProperty(1, category='stat', autocreate=True)
     motorics = AttributeProperty(1, category='stat', autocreate=True)
 
-
-
+# Possession Identifier
+    def is_possessed(self):
+        """
+        Returns True if this character is currently puppeted by a player session.
+        """
+        return bool(self.sessions.all())
 
 # Health Points
     hp = AttributeProperty(10, category='health', autocreate=True)
