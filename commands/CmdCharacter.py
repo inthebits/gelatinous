@@ -44,10 +44,10 @@ class CmdStats(Command):
 |g║ File Reference: GEL-MST/PR-221A                ║|n
 |g╠════════════════════════════════════════════════╣|n
 |g║                                                ║|n
-|g║         Grit:       {:>3}                       ║|n
-|g║         Resonance:  {:>3}                       ║|n
-|g║         Intellect:  {:>3}                       ║|n
-|g║         Motorics:   {:>3}                       ║|n
+|g║         Grit:       {:>3}                        ║|n
+|g║         Resonance:  {:>3}                        ║|n
+|g║         Intellect:  {:>3}                        ║|n
+|g║         Motorics:   {:>3}                        ║|n
 |g║                                                ║|n
 |g║         Vitals:     {:>7}                    ║|n
 |g║                                                ║|n
