@@ -33,14 +33,6 @@ class Character(ObjectParent, DefaultCharacter):
     intellect = AttributeProperty(1, category='stat', autocreate=True)
     motorics = AttributeProperty(1, category='stat', autocreate=True)
 
-# Posession
-# Possession state
-    def is_possessed(self):
-        """
-        Returns True if a player is currently controlling this body.
-        """
-        return bool(self.sessions.all())
-
 
 
 
