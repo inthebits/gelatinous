@@ -22,7 +22,8 @@ class CmdSpawnMob(Command):
     """
 
     key = "@spawnmob"
-    locks = "cmd:perm(Builders)"
+    locks = "cmd:perm(Builders) or perm(Developer)"
+
 
     def func(self):
         caller = self.caller
