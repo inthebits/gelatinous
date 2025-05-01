@@ -66,29 +66,27 @@ class CombatHandler(DefaultScript):
         Called every combat round.
         Handles one combatant's turn per round.
         """
-        combatants = self.db.combatants or []
-
-        # Clean up invalid combatants
-        combatants = [c for c in combatants if c["char"].location == self.obj and c["char"].hp > 0]
-        self.db.combatants = combatants
+        # Purge invalid or dead combatants directly on db
+        self.db.combatants = [c for c in self.db.combatants if c["char"].location == self.obj and c["char"].hp > 0]
+        combatants = self.db.combatants
 
         if not combatants:
             self.stop()
             return
 
+        # Clamp turn index to valid range
         if self.db.turn_index >= len(combatants):
             self.db.turn_index = 0
 
         self.location.msg_contents(f"|c-- Round {self.db.round} --|n")
 
         try:
-            turn_index = self.db.turn_index
-            actor_entry = combatants[turn_index]
+            actor_entry = combatants[self.db.turn_index]
             actor = actor_entry["char"]
+            self.location.msg_contents(f"[DEBUG] Turn index {self.db.turn_index}, actor: {actor.key}")
 
-            self.location.msg_contents(f"[DEBUG] Turn for: {actor.key} (Grit: {actor.grit}, HP: {actor.hp})")
-
-            targets = [c["char"] for i, c in enumerate(combatants) if i != turn_index]
+            # Determine targets
+            targets = [c["char"] for i, c in enumerate(combatants) if i != self.db.turn_index]
             if not targets:
                 self.location.msg_contents(f"|y{actor.key} stands alone.|n")
                 self.stop()
