@@ -38,7 +38,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         self.add(CmdCombat.CmdAttack)
         self.add(CmdCharacter.CmdStats)
-        self.add(CmdSpawnMob())
+        self.add(CmdSpawnMob.CmdSpawnMob)
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
