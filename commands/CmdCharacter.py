@@ -39,29 +39,28 @@ class CmdStats(Command):
         hp_max = target.hp_max
         vitals_display = f"{hp}/{hp_max}"
 
-        name_display = f"Subject: {target.key}".ljust(48)
-        grit_line = f"         Grit:       {grit}".ljust(48)
-        resonance_line = f"         Resonance:  {resonance}".ljust(48)
-        intellect_line = f"         Intellect:  {intellect}".ljust(48)
-        motorics_line = f"         Motorics:   {motorics}".ljust(48)
-        vitals_line = f"         Vitals:     {vitals_display}".ljust(48)
+        def line(text=""):
+            return f"|g║ {text.ljust(50)} ║|n"
 
-        string = f"""|g╔════════════════════════════════════════════════╗|n
-|g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n
-|g║ {name_display} ║|n
-|g║ File Reference: GEL-MST/PR-221A                ║|n
-|g╠════════════════════════════════════════════════╣|n
-|g║ {grit_line} ║|n
-|g║ {resonance_line} ║|n
-|g║ {intellect_line} ║|n
-|g║ {motorics_line} ║|n
-|g║                                                ║|n
-|g║ {vitals_line} ║|n
-|g║                                                ║|n
-|g╠════════════════════════════════════════════════╣|n
-|g║ Notes:                                         ║|n
-|g║                                                ║|n
-|g║                                                ║|n
-|g╚════════════════════════════════════════════════╝|n"""
+        string = "\n".join([
+            "|g╔════════════════════════════════════════════════╗|n",
+            "|g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n",
+            line(f"Subject: {target.key}"),
+            "|g║ File Reference: GEL-MST/PR-221A                ║|n",
+            "|g╠════════════════════════════════════════════════╣|n",
+            line(),
+            line(f"Grit:       {grit}"),
+            line(f"Resonance:  {resonance}"),
+            line(f"Intellect:  {intellect}"),
+            line(f"Motorics:   {motorics}"),
+            line(),
+            line(f"Vitals:     {vitals_display}"),
+            line(),
+            "|g╠════════════════════════════════════════════════╣|n",
+            line("Notes:"),
+            line(),
+            line(),
+            "|g╚════════════════════════════════════════════════╝|n"
+        ])
 
         caller.msg(string)
