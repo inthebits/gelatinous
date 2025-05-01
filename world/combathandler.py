@@ -1,3 +1,4 @@
+
 from evennia import create_script, DefaultScript
 from random import randint
 
@@ -46,7 +47,6 @@ class CombatHandler(DefaultScript):
         combatants.append({"char": char, "initiative": init})
         char.msg(f"|yYou enter combat. Initiative: {init}|n")
 
-        # Sort by initiative
         self.db.combatants = sorted(combatants, key=lambda x: x["initiative"], reverse=True)
 
         if not self.is_active:
@@ -68,7 +68,7 @@ class CombatHandler(DefaultScript):
         """
         combatants = self.db.combatants or []
 
-        # Clean up invalid combatants
+        # Clean up dead or moved combatants
         combatants = [c for c in combatants if c["char"].location == self.obj and c["char"].hp > 0]
         self.db.combatants = combatants
 
@@ -76,38 +76,45 @@ class CombatHandler(DefaultScript):
             self.stop()
             return
 
+        # Clamp turn_index to valid range
+        if self.db.turn_index >= len(combatants):
+            self.db.turn_index = 0
+
         self.location.msg_contents(f"|c-- Round {self.db.round} --|n")
 
-        turn_index = self.db.turn_index % len(combatants)
-        actor_entry = combatants[turn_index]
-        actor = actor_entry["char"]
+        try:
+            turn_index = self.db.turn_index
+            actor_entry = combatants[turn_index]
+            actor = actor_entry["char"]
 
-        # Find valid targets (anyone else still standing)
-        targets = [c["char"] for i, c in enumerate(combatants) if i != turn_index]
-        if not targets:
-            self.location.msg_contents(f"|y{actor.key} stands alone.|n")
-            self.stop()
-            return
+            targets = [c["char"] for i, c in enumerate(combatants) if i != turn_index]
+            if not targets:
+                self.location.msg_contents(f"|y{actor.key} stands alone.|n")
+                self.stop()
+                return
 
-        target = targets[randint(0, len(targets) - 1)]
+            target = targets[randint(0, len(targets) - 1)]
 
-        atk_roll = randint(1, max(1, actor.grit))
-        def_roll = randint(1, max(1, target.motorics))
+            atk_roll = randint(1, max(1, actor.grit))
+            def_roll = randint(1, max(1, target.motorics))
 
-        self.location.msg_contents(f"{actor.key} attacks {target.key}!")
-        actor.msg(f"(Attack Roll: {atk_roll} vs {def_roll})")
+            self.location.msg_contents(f"{actor.key} attacks {target.key}!")
+            actor.msg(f"(Attack Roll: {atk_roll} vs {def_roll})")
 
-        if atk_roll > def_roll:
-            damage = actor.grit
-            target.hp -= damage
-            self.location.msg_contents(f"|rHit! {actor.key} deals {damage} damage to {target.key}.|n")
+            if atk_roll > def_roll:
+                damage = actor.grit
+                target.hp -= damage
+                self.location.msg_contents(f"|rHit! {actor.key} deals {damage} damage to {target.key}.|n")
 
-            if target.hp <= 0:
-                self.location.msg_contents(f"|R{target.key} collapses to the ground.|n")
-                target.at_death()
-                self.remove_combatant(target)
-        else:
-            self.location.msg_contents(f"{actor.key} misses {target.key}.")
+                if target.hp <= 0:
+                    self.location.msg_contents(f"|R{target.key} collapses to the ground.|n")
+                    target.at_death()
+                    self.remove_combatant(target)
+            else:
+                self.location.msg_contents(f"{actor.key} misses {target.key}.")
+
+        except Exception as e:
+            self.location.msg_contents(f"[ERROR] Combat turn failed: {e}")
 
         self.db.turn_index += 1
         self.db.round += 1
