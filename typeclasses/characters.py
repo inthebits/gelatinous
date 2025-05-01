@@ -12,6 +12,7 @@ from evennia.objects.objects import DefaultCharacter
 from evennia.typeclasses.attributes import AttributeProperty
 
 from .objects import ObjectParent
+from .deathscroll import DEATH_SCROLL
 
 
 class Character(ObjectParent, DefaultCharacter):
@@ -46,3 +47,50 @@ class Character(ObjectParent, DefaultCharacter):
         grit_value = self.grit or 1
         self.hp_max = 10 + (grit_value * 2)
         self.hp = self.hp_max  # Start at full health
+   
+    def take_damage(self, amount):
+        """
+        Reduces current HP by `amount`.
+        Triggers death if HP falls to zero or below.
+        """
+        if not isinstance(amount, int) or amount <= 0:
+            return  # Ignore bad inputs
+
+        self.hp = max(self.hp - amount, 0)
+        self.msg(f"|rYou take {amount} damage!|n")
+
+        if self.is_dead():
+            self.at_death()
+
+    def heal(self, amount):
+        """
+        Restores HP by `amount`, without exceeding hp_max.
+        """
+        if not isinstance(amount, int) or amount <= 0:
+            return  # Ignore bad inputs
+
+        new_hp = min(self.hp + amount, self.hp_max)
+        healed = new_hp - self.hp
+        self.hp = new_hp
+
+        self.msg(f"|gYou recover {healed} health.|n")
+
+    def is_dead(self):
+        """
+        Returns True if HP is 0 or lower.
+        """
+        return self.hp <= 0
+
+    def at_death(self):
+        """
+        Handles what happens when this character dies.
+        Override this for player-specific or mob-specific death logic.
+        """
+        location = self.location
+        if location:
+            location.msg_contents(f"|r{self.key} collapses into inert flesh.|n")
+        self.msg("|rYou feel your consciousness unravel...|n")
+        # You can override this to handle possession, corpse creation, etc.
+        # PERMANENT-DEATH. DO NOT ENABLE YET. self.delete()
+        for line in DEATH_SCROLL:
+            self.msg(f"|r{line}|n")
