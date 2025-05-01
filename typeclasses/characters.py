@@ -32,7 +32,12 @@ class Character(ObjectParent, DefaultCharacter):
     resonance = AttributeProperty(1, category='stat', autocreate=True)
     intellect = AttributeProperty(1, category='stat', autocreate=True)
     motorics = AttributeProperty(1, category='stat', autocreate=True)
-    
+
+# Posession
+# Possession state
+    is_possessed = AttributeProperty(False, category="state", autocreate=True)
+
+
 # Health Points
     hp = AttributeProperty(10, category='health', autocreate=True)
     hp_max = AttributeProperty(10, category='health', autocreate=True)
@@ -47,7 +52,20 @@ class Character(ObjectParent, DefaultCharacter):
         grit_value = self.grit or 1
         self.hp_max = 10 + (grit_value * 2)
         self.hp = self.hp_max  # Start at full health
-   
+
+# Possession Management
+    def at_post_login(self, session=None):
+    # Called when this character is possessed by an account.
+        self.is_possessed = True
+        self.msg("|rYou feel the tendrils of selfhood wrap back around your bones.|n")
+
+    def at_post_unpuppet(self, session=None):
+        # Called when this character is unpossessed.
+        self.is_possessed = False
+    # Optional: log it, trigger idle AI, or flag world state
+
+
+# Mortality Management  
     def take_damage(self, amount):
         """
         Reduces current HP by `amount`.
