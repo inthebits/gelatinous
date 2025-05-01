@@ -18,7 +18,7 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 from evennia import default_cmds
 from commands import CmdCombat
 from commands import CmdCharacter
-from commands.cmd_spawnmob import CmdSpawnMob
+from commands.CmdSpawnMob import CmdSpawnMob
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
     The `CharacterCmdSet` contains general in-game commands like `look`,
