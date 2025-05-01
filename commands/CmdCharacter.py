@@ -7,7 +7,7 @@ class CmdStats(Command):
 
     Usage:
       @stats
-      @stats <target>  (Builder+ only)
+      @stats <target>  (Builder or Developer only)
 
     Displays your G.R.I.M. attributes and any future derived stats.
     """
@@ -23,7 +23,10 @@ class CmdStats(Command):
         target = caller
 
         if self.args:
-            if caller.check_permstring("Builders"):
+            if (
+                caller.check_permstring("Builders")
+                or caller.check_permstring("Developers")
+            ):
                 matches = search_object(self.args.strip())
                 if matches:
                     target = matches[0]
