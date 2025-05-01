@@ -37,32 +37,31 @@ class CmdStats(Command):
         motorics = target.motorics
         hp = target.hp
         hp_max = target.hp_max
-        vitals_display = f"{hp}/{hp_max}".rjust(5)
+        vitals_display = f"{hp}/{hp_max}"
 
-        string = """|g╔════════════════════════════════════════════════╗|n
+        name_display = f"Subject: {target.key}".ljust(48)
+        grit_line = f"         Grit:       {grit}".ljust(48)
+        resonance_line = f"         Resonance:  {resonance}".ljust(48)
+        intellect_line = f"         Intellect:  {intellect}".ljust(48)
+        motorics_line = f"         Motorics:   {motorics}".ljust(48)
+        vitals_line = f"         Vitals:     {vitals_display}".ljust(48)
+
+        string = f"""|g╔════════════════════════════════════════════════╗|n
 |g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n
-|g║ Subject: {:<38}║|n
+|g║ {name_display} ║|n
 |g║ File Reference: GEL-MST/PR-221A                ║|n
 |g╠════════════════════════════════════════════════╣|n
+|g║ {grit_line} ║|n
+|g║ {resonance_line} ║|n
+|g║ {intellect_line} ║|n
+|g║ {motorics_line} ║|n
 |g║                                                ║|n
-|g║         Grit:       {:<28}║|n
-|g║         Resonance:  {:<28}║|n
-|g║         Intellect:  {:<28}║|n
-|g║         Motorics:   {:<28}║|n
-|g║                                                ║|n
-|g║         Vitals:     {:<28}║|n
+|g║ {vitals_line} ║|n
 |g║                                                ║|n
 |g╠════════════════════════════════════════════════╣|n
 |g║ Notes:                                         ║|n
 |g║                                                ║|n
 |g║                                                ║|n
-|g╚════════════════════════════════════════════════╝|n""".format(
-            target.key,
-            grit,
-            resonance,
-            intellect,
-            motorics,
-            vitals_display,
-        )
+|g╚════════════════════════════════════════════════╝|n"""
 
         caller.msg(string)
