@@ -28,16 +28,6 @@ class CmdStats(Command):
                 or self.account.check_permstring("Developer")
             ):
                 matches = search_object(self.args.strip(), exact=False)
-                if not matches:
-                    caller.msg("No such target found.")
-                    return
-                elif len(matches) > 1:
-                    caller.msg("Multiple targets found. Please be more specific.")
-                    return
-                else:
-                    # If a match is found, set target to the first match
-                    # This allows for searching by partial name
-                    # and returns the first match.
                 if matches:
                     target = matches[0]
 
