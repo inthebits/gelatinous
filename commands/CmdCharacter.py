@@ -39,27 +39,30 @@ class CmdStats(Command):
         hp_max = target.hp_max
         vitals_display = f"{hp}/{hp_max}"
 
-        def line(text=""):
+        def box_line(text=""):
+            text = str(text)[:50]
             return f"|g║ {text.ljust(50)} ║|n"
+
+        subject_line = f"Subject: {target.key[:42]}"  # 8 for "Subject: ", 42 for name
 
         string = "\n".join([
             "|g╔════════════════════════════════════════════════╗|n",
             "|g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n",
-            line(f"Subject: {target.key}"),
+            box_line(subject_line),
             "|g║ File Reference: GEL-MST/PR-221A                ║|n",
             "|g╠════════════════════════════════════════════════╣|n",
-            line(),
-            line(f"Grit:       {grit}"),
-            line(f"Resonance:  {resonance}"),
-            line(f"Intellect:  {intellect}"),
-            line(f"Motorics:   {motorics}"),
-            line(),
-            line(f"Vitals:     {vitals_display}"),
-            line(),
+            box_line(),
+            box_line(f"Grit:       {grit}"),
+            box_line(f"Resonance:  {resonance}"),
+            box_line(f"Intellect:  {intellect}"),
+            box_line(f"Motorics:   {motorics}"),
+            box_line(),
+            box_line(f"Vitals:     {vitals_display}"),
+            box_line(),
             "|g╠════════════════════════════════════════════════╣|n",
-            line("Notes:"),
-            line(),
-            line(),
+            box_line("Notes:"),
+            box_line(),
+            box_line(),
             "|g╚════════════════════════════════════════════════╝|n"
         ])
 
