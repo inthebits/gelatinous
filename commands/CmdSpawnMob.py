@@ -22,7 +22,7 @@ class CmdSpawnMob(Command):
     """
 
     key = "@spawnmob"
-    locks = "cmd:perm(Builders) or perm(Developer)"
+    locks = "cmd:perm(Builders) or perm(Developers)"
 
 
     def func(self):
