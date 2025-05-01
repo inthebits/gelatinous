@@ -37,29 +37,31 @@ class CmdStats(Command):
         motorics = target.motorics
         vitals_display = f"{target.hp}/{target.hp_max}"
 
-        # Helper to format internal lines to exactly 48 visible characters
-        def fixed_line(label, value):
-            line = f"        {label:<12}{str(value)}"
-            return line + (" " * (48 - len(line)))
-
-        # Box output
-        string = f"""|g╔════════════════════════════════════════════════╗|n
+        # Fixed format to exactly 48 visible characters per row
+        string = """|g╔════════════════════════════════════════════════╗|n
 |g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n
-|g║ Subject: {target.key[:38].ljust(38)}║|n
+|g║ Subject: {:<38}║|n
 |g║ File Reference: GEL-MST/PR-221A                ║|n
 |g╠════════════════════════════════════════════════╣|n
-|g║ {fixed_line('', '')}║|n
-|g║ {fixed_line('Grit:', grit)}║|n
-|g║ {fixed_line('Resonance:', resonance)}║|n
-|g║ {fixed_line('Intellect:', intellect)}║|n
-|g║ {fixed_line('Motorics:', motorics)}║|n
-|g║ {fixed_line('', '')} ║|n
-|g║ {fixed_line('Vitals:', vitals_display)}║|n
-|g║ {fixed_line('', '')}║|n
+|g║                                                ║|n
+|g║         Grit:       {:>3}                       ║|n
+|g║         Resonance:  {:>3}                       ║|n
+|g║         Intellect:  {:>3}                       ║|n
+|g║         Motorics:   {:>3}                       ║|n
+|g║                                                ║|n
+|g║         Vitals:     {:>7}                    ║|n
+|g║                                                ║|n
 |g╠════════════════════════════════════════════════╣|n
 |g║ Notes:                                         ║|n
 |g║                                                ║|n
 |g║                                                ║|n
-|g╚════════════════════════════════════════════════╝|n"""
+|g╚════════════════════════════════════════════════╝|n""".format(
+            target.key[:38],
+            grit,
+            resonance,
+            intellect,
+            motorics,
+            vitals_display[:7],
+        )
 
         caller.msg(string)
