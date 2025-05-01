@@ -1,5 +1,5 @@
 from evennia import Command
-from evennia.create import create_object
+from evennia import create_object
 from random import choice, randint
 from world.namebank import (
     FIRST_NAMES_MALE,
