@@ -37,32 +37,35 @@ class CmdStats(Command):
         motorics = target.motorics
         hp = target.hp
         hp_max = target.hp_max
-        vitals_display = f"{hp}/{hp_max}"
+        vitals_display = f"{hp}/{hp_max}".rjust(5)
 
-        def box_line(text=""):
-            text = str(text)[:50]
-            return f"|g║ {text.ljust(50)} ║|n"
+        def boxed_line(label="", value=""):
+            # creates a padded stat line with perfect alignment
+            label_fmt = f"{label:<16}"  # left-align label
+            value_fmt = f"{str(value):>2}"  # right-align value
+            return f"|g║   {label_fmt}{value_fmt}{' ' * (48 - (len(label_fmt) + 2))}║|n"
 
-        subject_line = f"Subject: {target.key[:42]}"  # 8 for "Subject: ", 42 for name
+        def plain_line(text=""):
+            return f"|g║ {text.ljust(48)} ║|n"
 
         string = "\n".join([
             "|g╔════════════════════════════════════════════════╗|n",
             "|g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n",
-            box_line(subject_line),
+            plain_line(f"Subject: {target.key[:42]}"),
             "|g║ File Reference: GEL-MST/PR-221A                ║|n",
             "|g╠════════════════════════════════════════════════╣|n",
-            box_line(),
-            box_line(f"Grit:       {grit}"),
-            box_line(f"Resonance:  {resonance}"),
-            box_line(f"Intellect:  {intellect}"),
-            box_line(f"Motorics:   {motorics}"),
-            box_line(),
-            box_line(f"Vitals:     {vitals_display}"),
-            box_line(),
+            plain_line(),
+            boxed_line("Grit:", grit),
+            boxed_line("Resonance:", resonance),
+            boxed_line("Intellect:", intellect),
+            boxed_line("Motorics:", motorics),
+            plain_line(),
+            boxed_line("Vitals:", vitals_display),
+            plain_line(),
             "|g╠════════════════════════════════════════════════╣|n",
-            box_line("Notes:"),
-            box_line(),
-            box_line(),
+            plain_line("Notes:"),
+            plain_line(),
+            plain_line(),
             "|g╚════════════════════════════════════════════════╝|n"
         ])
 
