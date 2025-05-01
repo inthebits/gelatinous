@@ -31,38 +31,35 @@ class CmdStats(Command):
                 if matches:
                     target = matches[0]
 
-        grit = str(target.grit).rjust(2)
-        resonance = str(target.resonance).rjust(2)
-        intellect = str(target.intellect).rjust(2)
-        motorics = str(target.motorics).rjust(2)
-        hp = target.hp
-        hp_max = target.hp_max
-        vitals_display = f"{hp}/{hp_max}".rjust(7)[:7]  # fixed-width vitals
+        grit = target.grit
+        resonance = target.resonance
+        intellect = target.intellect
+        motorics = target.motorics
+        vitals_display = f"{target.hp}/{target.hp_max}"
 
-        string = """|g╔════════════════════════════════════════════════╗|n
+        # Helper to format internal lines to exactly 48 visible characters
+        def fixed_line(label, value):
+            line = f"        {label:<12}{str(value)}"
+            return line + (" " * (48 - len(line)))
+
+        # Box output
+        string = f"""|g╔════════════════════════════════════════════════╗|n
 |g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n
-|g║ Subject: {:<38}║|n
+|g║ Subject: {target.key[:38].ljust(38)}║|n
 |g║ File Reference: GEL-MST/PR-221A                ║|n
 |g╠════════════════════════════════════════════════╣|n
-|g║                                                ║|n
-|g║         Grit:       {:<28}║|n
-|g║         Resonance:  {:<28}║|n
-|g║         Intellect:  {:<28}║|n
-|g║         Motorics:   {:<28}║|n
-|g║                                                ║|n
-|g║         Vitals:     {:<28}║|n
-|g║                                                ║|n
+|g║ {fixed_line('', '')} ║|n
+|g║ {fixed_line('Grit:', grit)} ║|n
+|g║ {fixed_line('Resonance:', resonance)} ║|n
+|g║ {fixed_line('Intellect:', intellect)} ║|n
+|g║ {fixed_line('Motorics:', motorics)} ║|n
+|g║ {fixed_line('', '')} ║|n
+|g║ {fixed_line('Vitals:', vitals_display)} ║|n
+|g║ {fixed_line('', '')} ║|n
 |g╠════════════════════════════════════════════════╣|n
 |g║ Notes:                                         ║|n
 |g║                                                ║|n
 |g║                                                ║|n
-|g╚════════════════════════════════════════════════╝|n""".format(
-            target.key[:38],
-            grit,
-            resonance,
-            intellect,
-            motorics,
-            vitals_display,
-        )
+|g╚════════════════════════════════════════════════╝|n"""
 
         caller.msg(string)
