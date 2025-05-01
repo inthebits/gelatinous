@@ -2,7 +2,7 @@ from evennia import Command
 from evennia.utils.search import search_object
 from evennia.utils.utils import inherits_from
 from random import randint
-from world.combat_handler import get_or_create_combat
+from world.combathandler import get_or_create_combat
 
 class CmdAttack(Command):
     """
