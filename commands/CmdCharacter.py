@@ -48,14 +48,14 @@ class CmdStats(Command):
 |g║ Subject: {target.key[:38].ljust(38)}║|n
 |g║ File Reference: GEL-MST/PR-221A                ║|n
 |g╠════════════════════════════════════════════════╣|n
+|g║ {fixed_line('', '')}║|n
+|g║ {fixed_line('Grit:', grit)}║|n
+|g║ {fixed_line('Resonance:', resonance)}║|n
+|g║ {fixed_line('Intellect:', intellect)}║|n
+|g║ {fixed_line('Motorics:', motorics)}║|n
 |g║ {fixed_line('', '')} ║|n
-|g║ {fixed_line('Grit:', grit)} ║|n
-|g║ {fixed_line('Resonance:', resonance)} ║|n
-|g║ {fixed_line('Intellect:', intellect)} ║|n
-|g║ {fixed_line('Motorics:', motorics)} ║|n
-|g║ {fixed_line('', '')} ║|n
-|g║ {fixed_line('Vitals:', vitals_display)} ║|n
-|g║ {fixed_line('', '')} ║|n
+|g║ {fixed_line('Vitals:', vitals_display)}║|n
+|g║ {fixed_line('', '')}║|n
 |g╠════════════════════════════════════════════════╣|n
 |g║ Notes:                                         ║|n
 |g║                                                ║|n
