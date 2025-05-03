@@ -41,11 +41,17 @@ class CombatHandler(DefaultScript):
         delay(self.interval, self.at_repeat)  # Schedule the next execution
 
     def at_stop(self):
+        """
+        Clean up when combat ends.
+        """
         self.obj.msg_contents("[DEBUG] Combat ends.")
         for entry in self.db.combatants:
             char = entry["char"]
             if char.ndb.combat_handler:
                 del char.ndb.combat_handler
+
+        # Cancel any scheduled executions of at_repeat
+        self.is_active = False  # Mark the handler as inactive
 
     def add_combatant(self, char, target=None):
         # Check if the character is already in combat
@@ -97,6 +103,9 @@ class CombatHandler(DefaultScript):
         return sorted(self.db.combatants, key=lambda e: e["initiative"], reverse=True)
 
     def at_repeat(self):
+        if not self.is_active:
+            return  # Exit early if the handler is inactive
+
         if self.db.round == 0:
             # Setup phase: Ensure there are enough combatants to start combat
             active_combatants = [e for e in self.db.combatants if e["char"].location == self.obj]
@@ -147,7 +156,8 @@ class CombatHandler(DefaultScript):
                 target.take_damage(damage)
                 if target.is_dead():
                     self.obj.msg_contents(f"[DEBUG] {target.key} has been defeated and removed from combat.")
-                    self.remove_combatant(target)
+                    self.remove_combatant(target)  # Remove the defeated combatant immediately
+                    continue  # Skip further actions for this target
             else:
                 self.obj.msg_contents(f"{char.key} misses {target.key}.")
 
