@@ -1,7 +1,7 @@
-from evennia.scripts.scripts import Script
+from evennia import DefaultScript
 from random import randint
 
-class CombatHandler(Script):
+class CombatHandler(DefaultScript):
     def at_script_creation(self):
         self.key = "combat_handler"
         self.interval = 6  # seconds per round
