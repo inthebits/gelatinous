@@ -33,7 +33,7 @@ class CombatHandler(DefaultScript):
         to ensure all combatants are added.
         """
         self.obj.msg_contents("[DEBUG] CombatHandler started.")
-        delay(0.1, self.at_repeat)  # Delay the first execution slightly
+        delay(self.interval, self.at_repeat)  # Schedule the next execution
 
     def at_stop(self):
         self.obj.msg_contents("[DEBUG] Combat ends.")
@@ -58,8 +58,12 @@ class CombatHandler(DefaultScript):
         self.obj.msg_contents(f"[DEBUG] {char.key} joins combat with initiative {initiative}.")
         self.obj.msg_contents(f"[DEBUG] {char.key} added to combat. Total combatants: {len(self.db.combatants)}.")
 
-        # Only start the combat handler if there are at least two combatants
-        if len(self.db.combatants) > 1 and not self.is_active:
+        # Mark as ready to start if there are at least two combatants
+        if len(self.db.combatants) > 1:
+            self.db.ready_to_start = True
+
+        # Start the combat handler if ready and not already active
+        if self.db.ready_to_start and not self.is_active:
             self.obj.msg_contents("[DEBUG] Enough combatants added. Starting combat.")
             self.start()
 
@@ -128,3 +132,6 @@ class CombatHandler(DefaultScript):
 
         self.db.round += 1
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} scheduled.")
+
+        # Reschedule the next round
+        self.start()
