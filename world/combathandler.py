@@ -5,16 +5,18 @@ from random import randint
 COMBAT_SCRIPT_KEY = "combat_handler"
 
 def get_or_create_combat(location):
-    combat = None
+    # Kill any broken version of the combat handler
     for script in location.scripts.all():
         if script.key == COMBAT_SCRIPT_KEY:
-            combat = script
-            break
-    if not combat:
-        combat = create_script(CombatHandler, key=COMBAT_SCRIPT_KEY, obj=location)
-    elif not combat.is_active:
-        location.msg_contents("[DEBUG] Reviving existing but inactive combat script...")
-        combat.start()
+            if not script.is_active or not script.is_running:
+                location.msg_contents("[DEBUG] Removing broken combat script...")
+                script.stop()
+                script.delete()
+            else:
+                return script
+
+    location.msg_contents("[DEBUG] Creating new combat script...")
+    combat = create_script(CombatHandler, key=COMBAT_SCRIPT_KEY, obj=location)
     return combat
 
 
@@ -36,9 +38,7 @@ class CombatHandler(DefaultScript):
         combatants.append({ "char": char, "initiative": init })
         self.db.combatants = sorted(combatants, key=lambda x: x["initiative"], reverse=True)
         char.msg(f"|yYou enter combat. Initiative: {init}|n")
-        char.msg(f"[DEBUG] Combat script active: {self.is_active}, running: {self.is_running}")
         if not self.is_active:
-            char.msg("[DEBUG] Starting CombatHandler...")
             self.start()
 
     def remove_combatant(self, char):
