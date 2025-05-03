@@ -1,4 +1,3 @@
-
 from evennia import DefaultScript, create_script
 from random import randint
 from evennia.utils.utils import delay
@@ -36,9 +35,11 @@ class CombatHandler(DefaultScript):
                 del char.ndb.combat_handler
 
     def add_combatant(self, char, target=None):
+        # Check if the character is already in combat
         if any(entry["char"] == char for entry in self.db.combatants):
             return
 
+        # Roll initiative and add the combatant
         initiative = randint(1, max(1, char.db.motorics or 1))
         self.db.combatants.append({
             "char": char,
@@ -47,9 +48,10 @@ class CombatHandler(DefaultScript):
         })
         char.ndb.combat_handler = self
         self.obj.msg_contents(f"[DEBUG] {char.key} joins combat with initiative {initiative}.")
-        if not self.is_active and len(self.db.combatants) > 1:
-            self.start()
 
+        # Only start the combat handler if there are at least two combatants
+        if len(self.db.combatants) > 1 and not self.is_active:
+            self.start()
 
     def remove_combatant(self, char):
         self.db.combatants = [entry for entry in self.db.combatants if entry["char"] != char]
