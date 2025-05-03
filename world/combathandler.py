@@ -5,7 +5,6 @@ from random import randint
 COMBAT_SCRIPT_KEY = "combat_handler"
 
 def get_or_create_combat(location):
-    # Kill any broken version of the combat handler
     for script in location.scripts.all():
         if script.key == COMBAT_SCRIPT_KEY:
             if not script.is_active:
@@ -29,6 +28,8 @@ class CombatHandler(DefaultScript):
         self.db.combatants = []
         self.db.round = 1
         self.db.turn_index = 0
+        if self.obj:
+            self.obj.msg_contents("[DEBUG] at_script_creation() was called.")
 
     def add_combatant(self, char):
         combatants = self.db.combatants or []
