@@ -10,7 +10,7 @@ def get_or_create_combat(location):
         return script
     if script:
         script.stop()
-    new_script = create_script(CombatHandler, key=COMBAT_SCRIPT_KEY, obj=location)
+    new_script = create_script("world.combathandler.CombatHandler", key=COMBAT_SCRIPT_KEY, obj=location)
     location.msg_contents("[DEBUG] CombatHandler created.")
     return new_script
 
