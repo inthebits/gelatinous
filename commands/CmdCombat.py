@@ -12,7 +12,7 @@ class CmdAttack(Command):
         attack <target>
         kill <target>
 
-    Initiates combat and attempts a hit based on your Grit vs their Motorics.
+    Initiates combat and adds you and your target to the CombatHandler.
     """
 
     key = "attack"
@@ -41,8 +41,6 @@ class CmdAttack(Command):
             return
 
         target = matches[0]
-        caller.msg('[DEBUG] Target found. Proceeding to get_or_create_combat.')
-        caller.msg(f'[DEBUG] Target is: {target.key}, Grit: {caller.grit}, Motorics: {target.motorics}')
 
         if target == caller:
             caller.msg("You can't attack yourself.")
@@ -53,34 +51,12 @@ class CmdAttack(Command):
             return
 
         # Start or join combat
-        caller.msg('[DEBUG] Calling get_or_create_combat...')
         combat = get_or_create_combat(caller.location)
-        caller.msg('[DEBUG] Adding self to combat...')
-        combat.add_combatant(caller)
-        caller.msg('[DEBUG] Adding target to combat...')
+        combat.add_combatant(caller, target)
         combat.add_combatant(target)
 
-        # Attack resolution
-        atk_roll = randint(1, max(1, caller.grit))
-        def_roll = randint(1, max(1, target.motorics))
-
-        caller.msg(f"You attempt to strike {target.key}!")
-        target.msg(f"{caller.key} attacks you!")
-
-        if atk_roll > def_roll:
-            damage = caller.grit
-            target.hp -= damage
-            caller.msg(f"|rHit!|n You deal {damage} damage.")
-            target.msg(f"|rYou've been hit for {damage} damage!|n")
-
-            if target.hp <= 0:
-                caller.msg(f"|R{target.key} collapses from your blow.|n")
-                target.msg(f"|RYou feel your body fail and fall...|n")
-                target.die()
-        else:
-            caller.msg("You miss.")
-            target.msg(f"You dodge {caller.key}'s strike.")
-
+        caller.msg(f"You prepare to attack {target.key}!")
+        target.msg(f"{caller.key} prepares to attack you!")
 
 
 class CmdFlee(Command):
