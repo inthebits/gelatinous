@@ -1,22 +1,27 @@
-from evennia import DefaultScript
+
+from evennia import DefaultScript, create_script
+from evennia.utils.utils import delay
 from random import randint
 
 COMBAT_SCRIPT_KEY = "combat_handler"
 
 def get_or_create_combat(location):
-    # Remove broken scripts
     for script in location.scripts.all():
         if script.key == COMBAT_SCRIPT_KEY:
             if not script.is_active:
-                location.msg_contents("[DEBUG] Removing broken combat script...")
+                location.msg_contents("[DEBUG] Found broken combat script. Removing...")
                 script.stop()
                 script.delete()
             else:
+                location.msg_contents("[DEBUG] Reusing existing combat script.")
                 return script
 
-    from evennia import create_script
     location.msg_contents("[DEBUG] Creating new combat script...")
     combat = create_script("world.combathandler.CombatHandler", key=COMBAT_SCRIPT_KEY, obj=location)
+    if combat:
+        location.msg_contents("[DEBUG] Combat script successfully created.")
+    else:
+        location.msg_contents("[ERROR] Combat script creation failed.")
     return combat
 
 
@@ -24,79 +29,86 @@ class CombatHandler(DefaultScript):
     def at_script_creation(self):
         self.key = COMBAT_SCRIPT_KEY
         self.interval = 6
-        self.desc = "Handles room combat logic."
         self.persistent = True
+        self.desc = "Handles room combat logic."
         self.db.combatants = []
         self.db.round = 1
         self.db.turn_index = 0
+
         if self.obj:
-            self.obj.msg_contents("[DEBUG] at_script_creation() was called.")
+            self.obj.msg_contents("[DEBUG] CombatHandler created and attached to location.")
+
+        delay(0.1, self.start)
 
     def add_combatant(self, char):
         combatants = self.db.combatants or []
         if any(c["char"] == char for c in combatants):
             return
-        init = randint(1, max(1, char.motorics))
-        combatants.append({ "char": char, "initiative": init })
-        self.db.combatants = sorted(combatants, key=lambda x: x["initiative"], reverse=True)
-        char.msg(f"|yYou enter combat. Initiative: {init}|n")
-        if not self.is_active:
-            self.start()
+        initiative = randint(1, max(1, char.motorics))
+        combatants.append({"char": char, "initiative": initiative})
+        combatants.sort(key=lambda x: x["initiative"], reverse=True)
+        self.db.combatants = combatants
+        char.msg(f"|y[DEBUG] You enter combat. Initiative: {initiative}|n")
 
     def remove_combatant(self, char):
         self.db.combatants = [c for c in self.db.combatants if c["char"] != char]
-        if not self.db.combatants:
-            self.stop()
 
     def at_repeat(self):
-        self.location.msg_contents("[DEBUG] at_repeat() tick fired")
+        location = self.obj
+        if not location:
+            return
 
-        self.db.combatants = [
-            c for c in self.db.combatants
-            if c["char"].location == self.obj and c["char"].hp > 0
-        ]
-        combatants = self.db.combatants
-        if not combatants:
+        location.msg_contents("[DEBUG] at_repeat() tick triggered.")
+
+        combatants = [c for c in self.db.combatants if c["char"].location == location and c["char"].hp > 0]
+        self.db.combatants = combatants
+
+        if len(combatants) <= 1:
+            location.msg_contents("[DEBUG] Not enough combatants. Ending combat.")
             self.stop()
             return
 
-        if self.db.turn_index >= len(combatants):
+        current_index = self.db.turn_index
+        if current_index >= len(combatants):
             self.db.turn_index = 0
             self.db.round += 1
-            self.location.msg_contents(f"[DEBUG] New round begins: Round {self.db.round}")
+            location.msg_contents(f"[DEBUG] New round begins: Round {self.db.round}")
+            return
 
-        try:
-            actor_entry = combatants[self.db.turn_index]
-            actor = actor_entry["char"]
-            self.location.msg_contents(f"[DEBUG] Turn index {self.db.turn_index} | Actor: {actor.key}")
+        entry = combatants[current_index]
+        # Check if attacker is skipping this round
+        if hasattr(attacker.ndb, 'skip_combat_round') and attacker.ndb.skip_combat_round:
+            attacker.ndb.skip_combat_round = False
+            location.msg_contents(f"[DEBUG] {attacker.key} skips their turn.")
+            self.db.turn_index += 1
+            return
 
-            targets = [c["char"] for i, c in enumerate(combatants) if i != self.db.turn_index]
-            if not targets:
-                self.location.msg_contents(f"|y{actor.key} stands alone.|n")
-                self.stop()
-                return
+        attacker = entry["char"]
 
-            target = targets[randint(0, len(targets) - 1)]
-            atk_roll = randint(1, max(1, actor.grit))
-            def_roll = randint(1, max(1, target.motorics))
+        if not attacker or not attacker.location == location:
+            self.db.turn_index += 1
+            return
 
-            self.location.msg_contents(f"{actor.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
+        targets = [c["char"] for c in combatants if c["char"] != attacker and c["char"].location == location and c["char"].hp > 0]
+        if not targets:
+            location.msg_contents("[DEBUG] No valid targets. Skipping turn.")
+            self.db.turn_index += 1
+            return
 
-            if atk_roll > def_roll:
-                dmg = actor.grit
-                target.hp -= dmg
-                self.location.msg_contents(f"|rHit! {actor.key} deals {dmg} damage to {target.key}.|n")
-                if target.hp <= 0:
-                    self.location.msg_contents(f"|R{target.key} collapses.|n")
-                    target.at_death()
-                    self.remove_combatant(target)
-            else:
-                self.location.msg_contents(f"{actor.key} misses {target.key}.")
-        except Exception as e:
-            self.location.msg_contents(f"[ERROR] Turn failed: {e}")
+        target = targets[randint(0, len(targets) - 1)]
+        atk_roll = randint(1, max(1, attacker.grit))
+        def_roll = randint(1, max(1, target.motorics))
+
+        location.msg_contents(f"{attacker.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
+
+        if atk_roll > def_roll:
+            damage = attacker.grit
+            target.hp = max(0, target.hp - damage)
+            location.msg_contents(f"{target.key} is hit for {damage} damage. HP: {target.hp}/{target.hp_max}")
+            if target.hp <= 0:
+                location.msg_contents(f"{target.key} collapses!")
+                target.at_death()
+        else:
+            location.msg_contents(f"{attacker.key} misses.")
 
         self.db.turn_index += 1
-
-    def stop(self):
-        self.location.msg_contents("|rCombat ends.|n")
-        super().stop()
