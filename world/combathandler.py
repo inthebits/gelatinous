@@ -16,7 +16,7 @@ class CombatHandler(Script):
             return
 
         initiative = randint(1, char.motorics)
-        combatants.append({"char": char, "initiative": initiative, "target": target}")
+        combatants.append({"char": char, "initiative": initiative, "target": target})
         combatants.sort(key=lambda c: c["initiative"], reverse=True)
 
         char.ndb.combat_handler = self
