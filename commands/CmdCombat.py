@@ -1,6 +1,6 @@
 from evennia import Command
 from evennia.utils.utils import inherits_from
-from random import randint
+from random import randint, choice
 from world.combathandler import get_or_create_combat
 
 
@@ -82,44 +82,58 @@ class CmdAttack(Command):
             target.msg(f"You dodge {caller.key}'s strike.")
 
 
+
 class CmdFlee(Command):
-    '''
+    """
     Attempt to flee combat.
 
     Usage:
       flee
 
-    Attempts to escape from combat. If successful, you are removed from combat.
-    If you fail, you lose your turn this round.
-    '''
+    If successful, you will escape the current combat and leave the room.
+    If you fail, you will skip your next turn.
+    """
 
     key = "flee"
+    locks = "cmd:all()"
 
     def func(self):
         caller = self.caller
-        location = caller.location
+        handler = caller.ndb.combat_handler
 
-        handler = location.scripts.get("combat_handler")
         if not handler:
-            caller.msg("[DEBUG] You are not in combat.")
+            caller.msg("You're not in combat.")
             return
 
-        handler = handler[0]
-        combatants = [entry["char"] for entry in handler.db.combatants if entry["char"] != caller and entry["char"].location == location]
-
-        if not combatants:
-            caller.msg("[DEBUG] There's no one left to flee from.")
+        target = handler.get_target(caller)
+        if not target:
+            caller.msg("You have no current target to flee from.")
             return
 
-        flee_roll = randint(1, max(1, caller.motorics))
-        avg_motorics = sum(c.motorics for c in combatants) / len(combatants)
-        opponent_roll = randint(1, max(1, int(avg_motorics)))
+        flee_roll = randint(1, caller.motorics)
+        resist_roll = randint(1, target.motorics)
+        caller.msg(f"[DEBUG] Flee roll: {flee_roll} vs {resist_roll} ({target.key})")
 
-        location.msg_contents(f"[DEBUG] {caller.key} attempts to flee! (You: {flee_roll} vs Opponents: {opponent_roll})")
-
-        if flee_roll > opponent_roll:
-            handler.remove_combatant(caller)
-            location.msg_contents(f"[DEBUG] {caller.key} successfully flees from combat.")
-        else:
+        if flee_roll > resist_roll:
+            caller.msg("You flee successfully!")
             caller.ndb.skip_combat_round = True
-            location.msg_contents(f"[DEBUG] {caller.key} fails to flee and loses their action.")
+
+            exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
+            if exits:
+                chosen_exit = choice(exits)
+                caller.msg(f"[DEBUG] You flee through {chosen_exit.key}!")
+                caller.location.msg_contents(
+                    f"[DEBUG] {caller.key} flees {chosen_exit.key}.",
+                    exclude=caller
+                )
+                chosen_exit.at_traverse(caller, chosen_exit.destination)
+            else:
+                caller.msg("You flee, but there's nowhere to go!")
+
+        else:
+            caller.msg("You try to flee, but fail!")
+            caller.location.msg_contents(
+                f"[DEBUG] {caller.key} tries to flee but fails.",
+                exclude=caller
+            )
+            caller.ndb.skip_combat_round = True
