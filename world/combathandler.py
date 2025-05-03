@@ -98,7 +98,7 @@ class CombatHandler(DefaultScript):
             self.obj.msg_contents(f"[DEBUG] {char.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
 
             if atk_roll > def_roll:
-                damage = char.db.grit or 1
+                damage = char.grit or 1
                 self.obj.msg_contents(f"[DEBUG] {char.key} hits {target.key} for {damage} damage.")
                 target.take_damage(damage)
                 if target.is_dead():
