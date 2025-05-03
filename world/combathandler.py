@@ -1,6 +1,6 @@
 
 from evennia import DefaultScript, create_script
-from evennia.scripts.taskhandler import delay
+from evennia.utils.utils import delay
 from random import randint
 
 COMBAT_SCRIPT_KEY = "combat_handler"
