@@ -12,6 +12,9 @@ def get_or_create_combat(location):
             break
     if not combat:
         combat = create_script(CombatHandler, key=COMBAT_SCRIPT_KEY, obj=location)
+    elif not combat.is_active:
+        location.msg_contents("[DEBUG] Reviving existing but inactive combat script...")
+        combat.start()
     return combat
 
 
