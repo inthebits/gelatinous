@@ -2,7 +2,6 @@ from evennia import DefaultScript, create_script
 from random import randint
 from evennia.utils.utils import delay
 
-
 COMBAT_SCRIPT_KEY = "combat_handler"
 
 def get_or_create_combat(location):
