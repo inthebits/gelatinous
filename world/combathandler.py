@@ -33,7 +33,7 @@ class CombatHandler(Script):
         char.ndb.has_acted = None
         char.ndb.in_combat = None
 
-        if len(combatants") <= 1:
+        if len(combatants) <= 1:
             self.stop(")
 
     def get_target(self, char):
