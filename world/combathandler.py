@@ -4,6 +4,7 @@ import random
 
 class CombatHandler(DefaultScript):
 	def at_script_creation(self):
+		self.start()
 		self.key = "combat_handler"
 		self.interval = 6
 		self.persistent = True
@@ -94,18 +95,22 @@ class CombatHandler(DefaultScript):
 
 		self.obj.msg_contents(f"[DEBUG] New round begins: Round {self.db.round}")
 
+	
+	def at_start(self):
+		self.obj.msg_contents("[DEBUG] CombatHandler started.")
+
 	def at_stop(self):
 		self.obj.msg_contents("[DEBUG] Combat ends.")
 		for combatant in self.db.combatants:
 			if combatant["char"].db.combat_handler:
 				del combatant["char"].db.combat_handler
 
-def get_or_create_combat(location):
-	combat = next((s for s in location.scripts.all() if s.key == "combat_handler"), None)
-	if combat and (not combat.is_active or not combat.is_running):
-		combat.stop()
-		combat = None
-	if not combat:
-		combat = location.scripts.add(CombatHandler)
-		location.msg_contents("[DEBUG] CombatHandler created and attached to location.")
-	return combat
+	def get_or_create_combat(location):
+		combat = next((s for s in location.scripts.all() if s.key == "combat_handler"), None)
+		if combat and (not combat.is_active or not combat.is_running):
+			combat.stop()
+			combat = None
+		if not combat:
+			combat = location.scripts.add(CombatHandler)
+			location.msg_contents("[DEBUG] CombatHandler created and attached to location.")
+		return combat
