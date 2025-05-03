@@ -51,7 +51,7 @@ class CombatHandler(DefaultScript):
             self.stop()
 
     def at_repeat(self):
-        self.location.msg_contents("[DEBUG] at_repeat() tick fired")
+        self.obj.msg_contents("[DEBUG] at_repeat() tick fired")
         self.db.combatants = [
             c for c in self.db.combatants
             if c["char"].location == self.obj and c["char"].hp > 0
@@ -62,36 +62,36 @@ class CombatHandler(DefaultScript):
             return
         if self.db.turn_index >= len(combatants):
             self.db.turn_index = 0
-        self.location.msg_contents(f"|c-- Round {self.db.round} --|n")
+        self.obj.msg_contents(f"|c-- Round {self.db.round} --|n")
         try:
             actor_entry = combatants[self.db.turn_index]
             actor = actor_entry["char"]
-            self.location.msg_contents(f"[DEBUG] Turn index {self.db.turn_index} | Actor: {actor.key}")
+            self.obj.msg_contents(f"[DEBUG] Turn index {self.db.turn_index} | Actor: {actor.key}")
             targets = [c["char"] for i, c in enumerate(combatants) if i != self.db.turn_index]
             if not targets:
-                self.location.msg_contents(f"|y{actor.key} stands alone.|n")
+                self.obj.msg_contents(f"|y{actor.key} stands alone.|n")
                 self.stop()
                 return
             target = targets[randint(0, len(targets) - 1)]
             atk_roll = randint(1, max(1, actor.grit))
             def_roll = randint(1, max(1, target.motorics))
-            self.location.msg_contents(f"{actor.key} attacks {target.key}!")
+            self.obj.msg_contents(f"{actor.key} attacks {target.key}!")
             actor.msg(f"(Attack Roll: {atk_roll} vs {def_roll})")
             if atk_roll > def_roll:
                 dmg = actor.grit
                 target.hp -= dmg
-                self.location.msg_contents(f"|rHit! {actor.key} deals {dmg} damage to {target.key}.|n")
+                self.obj.msg_contents(f"|rHit! {actor.key} deals {dmg} damage to {target.key}.|n")
                 if target.hp <= 0:
-                    self.location.msg_contents(f"|R{target.key} collapses.|n")
+                    self.obj.msg_contents(f"|R{target.key} collapses.|n")
                     target.at_death()
                     self.remove_combatant(target)
             else:
-                self.location.msg_contents(f"{actor.key} misses {target.key}.")
+                self.obj.msg_contents(f"{actor.key} misses {target.key}.")
         except Exception as e:
-            self.location.msg_contents(f"[ERROR] Turn failed: {e}")
+            self.obj.msg_contents(f"[ERROR] Turn failed: {e}")
         self.db.turn_index += 1
         self.db.round += 1
 
     def stop(self):
-        self.location.msg_contents("|rCombat ends.|n")
+        self.obj.msg_contents("|rCombat ends.|n")
         super().stop()
