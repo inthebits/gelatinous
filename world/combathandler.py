@@ -48,11 +48,12 @@ class CombatHandler(DefaultScript):
         })
         char.ndb.combat_handler = self
         self.obj.msg_contents(f"[DEBUG] {char.key} joins combat with initiative {initiative}.")
+        self.obj.msg_contents(f"[DEBUG] {char.key} added to combat. Total combatants: {len(self.db.combatants)}.")
 
         # Only start the combat handler if there are at least two combatants
         if len(self.db.combatants) > 1 and not self.is_active:
-            self.obj.msg_contents("[DEBUG] Enough combatants added. Starting combat after delay.")
-            delay(0.1, self.start)  # Delay the start slightly to ensure all combatants are added
+            self.obj.msg_contents("[DEBUG] Enough combatants added. Starting combat.")
+            self.start()
 
     def remove_combatant(self, char):
         self.db.combatants = [entry for entry in self.db.combatants if entry["char"] != char]
@@ -79,6 +80,9 @@ class CombatHandler(DefaultScript):
     def at_repeat(self):
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} begins.")
         active_combatants = [e for e in self.db.combatants if e["char"].location == self.obj]
+        self.obj.msg_contents(f"[DEBUG] Active combatants: {[e['char'].key for e in active_combatants]}.")
+
+        # Ensure there are enough combatants to proceed
         if len(active_combatants) <= 1:
             self.obj.msg_contents("[DEBUG] Not enough combatants remain. Ending combat.")
             self.stop()
