@@ -164,5 +164,6 @@ class CombatHandler(DefaultScript):
         self.db.round += 1
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} scheduled.")
 
-        # Reschedule the next round directly
-        delay(self.interval, self.at_repeat)
+        # Reschedule the next round only if the handler is still active
+        if self.is_active:
+            delay(self.interval, self.at_repeat)
