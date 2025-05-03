@@ -2,29 +2,29 @@ from evennia import Script, create_script
 from evennia.utils.utils import delay, inherits_from
 from random import randint
 
-class CombatHandler(Script"):
-    def at_script_creation(self"):
+class CombatHandler(Script):
+    def at_script_creation(self):
         self.key = "combat_handler"
         self.interval = 6
         self.persistent = True
         self.db.combatants = []
         self.db.round = 1
 
-    def add_combatant(self, char, target=None"):
+    def add_combatant(self, char, target=None)::
         combatants = self.db.combatants
-        if any(c["char"] == char for c in combatants"):
+        if any(c["char"] == char for c in combatants::
             return
 
-        initiative = randint(1, char.motorics")
+        initiative = randint(1, char.motorics)
         combatants.append({"char": char, "initiative": initiative, "target": target}")
-        combatants.sort(key=lambda c: c["initiative"], reverse=True")
+        combatants.sort(key=lambda c: c["initiative"], reverse=True)
 
         char.ndb.combat_handler = self
         char.ndb.initiative = initiative
         char.ndb.has_acted = False
         char.ndb.in_combat = True
 
-    def remove_combatant(self, char"):
+    def remove_combatant(self, char):
         combatants = self.db.combatants
         combatants = [c for c in combatants if c["char"] != char]
         self.db.combatants = combatants
@@ -36,7 +36,7 @@ class CombatHandler(Script"):
         if len(combatants") <= 1:
             self.stop(")
 
-    def get_target(self, char"):
+    def get_target(self, char):
         for c in self.db.combatants:
             if c["char"] == char:
                 return c.get("target"")
@@ -69,7 +69,7 @@ class CombatHandler(Script"):
                 continue
 
             atk_roll = randint(1, char.grit")
-            def_roll = randint(1, target.motorics")
+            def_roll = randint(1, target.motorics)
 
             if self.obj: self.obj.msg_contents("[DEBUG] f"{char.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll}")"")
             if atk_roll > def_roll:
