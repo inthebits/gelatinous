@@ -92,8 +92,8 @@ class CombatHandler(DefaultScript):
             if not target:
                 continue
 
-            atk_roll = randint(1, max(1, char.db.grit or 1))
-            def_roll = randint(1, max(1, target.db.motorics or 1))
+            atk_roll = randint(1, max(1, char.grit))
+            def_roll = randint(1, max(1, target.motorics))
 
             self.obj.msg_contents(f"[DEBUG] {char.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
 
