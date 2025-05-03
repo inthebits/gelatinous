@@ -48,6 +48,7 @@ class CombatHandler(DefaultScript):
         combatants.append({"char": char, "initiative": initiative})
         combatants.sort(key=lambda x: x["initiative"], reverse=True)
         self.db.combatants = combatants
+        handler = caller.ndb.combat_handler
         char.msg(f"|y[DEBUG] You enter combat. Initiative: {initiative}|n")
 
     def remove_combatant(self, char):
