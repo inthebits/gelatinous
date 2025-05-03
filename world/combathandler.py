@@ -24,6 +24,10 @@ def get_or_create_combat(location):
 
 class CombatHandler(DefaultScript):
     def at_script_creation(self):
+        self.start()
+        if self.obj:
+            self.obj.msg_contents("|g[DEBUG] at_script_creation() was called.|n")
+
         self.key = COMBAT_SCRIPT_KEY
         self.interval = 6
         self.desc = "Handles room combat logic."
@@ -51,9 +55,6 @@ class CombatHandler(DefaultScript):
             self.stop()
 
     def at_repeat(self):
-        if self.obj:
-            self.obj.msg_contents("|y[TRACE] at_repeat() tick fired.|n")
-
         self.obj.msg_contents("[DEBUG] at_repeat() tick fired")
         self.db.combatants = [
             c for c in self.db.combatants
