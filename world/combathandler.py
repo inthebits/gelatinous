@@ -108,7 +108,7 @@ class CombatHandler(DefaultScript):
             else:
                 self.obj.msg_contents("[DEBUG] Waiting for more combatants to join...")
                 delay(self.interval, self.at_repeat)  # Reschedule round 0
-                return
+            return  # Exit early to prevent combat logic from running
 
         # Proceed with combat rounds
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} begins.")
