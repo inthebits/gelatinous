@@ -41,6 +41,8 @@ class CmdAttack(Command):
             return
 
         target = matches[0]
+        caller.msg('[DEBUG] Target found. Proceeding to get_or_create_combat.')
+        caller.msg(f'[DEBUG] Target is: {target.key}, Grit: {caller.grit}, Motorics: {target.motorics}')
 
         if target == caller:
             caller.msg("You can't attack yourself.")
@@ -51,8 +53,11 @@ class CmdAttack(Command):
             return
 
         # Start or join combat
+        caller.msg('[DEBUG] Calling get_or_create_combat...')
         combat = get_or_create_combat(caller.location)
+        caller.msg('[DEBUG] Adding self to combat...')
         combat.add_combatant(caller)
+        caller.msg('[DEBUG] Adding target to combat...')
         combat.add_combatant(target)
 
         # Attack resolution
