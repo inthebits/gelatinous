@@ -51,7 +51,8 @@ class CombatHandler(DefaultScript):
 
         # Only start the combat handler if there are at least two combatants
         if len(self.db.combatants) > 1 and not self.is_active:
-            self.start()
+            self.obj.msg_contents("[DEBUG] Enough combatants added. Starting combat after delay.")
+            delay(0.1, self.start)  # Delay the start slightly to ensure all combatants are added
 
     def remove_combatant(self, char):
         self.db.combatants = [entry for entry in self.db.combatants if entry["char"] != char]
@@ -83,6 +84,7 @@ class CombatHandler(DefaultScript):
             self.stop()
             return
 
+        # Proceed with combat round logic
         for entry in self.get_initiative_order():
             char = entry["char"]
             target = entry.get("target")
