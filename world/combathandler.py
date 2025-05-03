@@ -51,10 +51,8 @@ class CombatHandler(DefaultScript):
             self.stop()
 
     def at_repeat(self):
-        import traceback
-        with open('/tmp/combat_tick.log', 'a') as f:
-            f.write('Tick fired!\n')
-            traceback.print_stack(file=f)
+        if self.obj:
+            self.obj.msg_contents("|y[TRACE] at_repeat() tick fired.|n")
 
         self.obj.msg_contents("[DEBUG] at_repeat() tick fired")
         self.db.combatants = [
