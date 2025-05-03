@@ -41,6 +41,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdCharacter.CmdStats)
         self.add(CmdSpawnMob())
         self.add(CmdHeal())
+        self.add(CmdCombat.CmdFlee)
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
