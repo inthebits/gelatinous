@@ -23,7 +23,7 @@ class CombatHandler(DefaultScript):
         self.persistent = True
         self.db.combatants = []
         self.db.round = 1
-        delay(2, self.start)
+
 
     def at_start(self):
         self.obj.msg_contents("[DEBUG] CombatHandler started.")
@@ -47,6 +47,9 @@ class CombatHandler(DefaultScript):
         })
         char.ndb.combat_handler = self
         self.obj.msg_contents(f"[DEBUG] {char.key} joins combat with initiative {initiative}.")
+        if not self.is_active and len(self.db.combatants) > 1:
+            self.start()
+
 
     def remove_combatant(self, char):
         self.db.combatants = [entry for entry in self.db.combatants if entry["char"] != char]
