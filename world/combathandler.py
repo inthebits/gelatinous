@@ -27,6 +27,14 @@ class CombatHandler(DefaultScript):
     def at_start(self):
         self.obj.msg_contents("[DEBUG] CombatHandler started.")
 
+    def start(self):
+        """
+        Start the combat handler, but delay the first execution of at_repeat
+        to ensure all combatants are added.
+        """
+        self.obj.msg_contents("[DEBUG] CombatHandler started.")
+        delay(0.1, self.at_repeat)  # Delay the first execution slightly
+
     def at_stop(self):
         self.obj.msg_contents("[DEBUG] Combat ends.")
         for entry in self.db.combatants:
