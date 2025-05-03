@@ -23,7 +23,7 @@ class CombatHandler(DefaultScript):
         self.persistent = True
         self.db.combatants = []
         self.db.round = 1
-        delay(0.2, self.start)
+        delay(0.5, self.start)
 
     def at_start(self):
         self.obj.msg_contents("[DEBUG] CombatHandler started.")
