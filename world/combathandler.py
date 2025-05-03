@@ -39,7 +39,7 @@ class CombatHandler(Script):
     def get_target(self, char):
         for c in self.db.combatants:
             if c["char"] == char:
-                return c.get("target"")
+                return c.get("target")
         return None
 
     def at_repeat(self"):
