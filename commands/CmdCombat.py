@@ -80,3 +80,46 @@ class CmdAttack(Command):
         else:
             caller.msg("You miss.")
             target.msg(f"You dodge {caller.key}'s strike.")
+
+
+class CmdFlee(Command):
+    '''
+    Attempt to flee combat.
+
+    Usage:
+      flee
+
+    Attempts to escape from combat. If successful, you are removed from combat.
+    If you fail, you lose your turn this round.
+    '''
+
+    key = "flee"
+
+    def func(self):
+        caller = self.caller
+        location = caller.location
+
+        handler = location.scripts.get("combat_handler")
+        if not handler:
+            caller.msg("[DEBUG] You are not in combat.")
+            return
+
+        handler = handler[0]
+        combatants = [entry["char"] for entry in handler.db.combatants if entry["char"] != caller and entry["char"].location == location]
+
+        if not combatants:
+            caller.msg("[DEBUG] There's no one left to flee from.")
+            return
+
+        flee_roll = randint(1, max(1, caller.motorics))
+        avg_motorics = sum(c.motorics for c in combatants) / len(combatants)
+        opponent_roll = randint(1, max(1, int(avg_motorics)))
+
+        location.msg_contents(f"[DEBUG] {caller.key} attempts to flee! (You: {flee_roll} vs Opponents: {opponent_roll})")
+
+        if flee_roll > opponent_roll:
+            handler.remove_combatant(caller)
+            location.msg_contents(f"[DEBUG] {caller.key} successfully flees from combat.")
+        else:
+            caller.ndb.skip_combat_round = True
+            location.msg_contents(f"[DEBUG] {caller.key} fails to flee and loses their action.")

@@ -76,6 +76,13 @@ class CombatHandler(DefaultScript):
             return
 
         entry = combatants[current_index]
+        # Check if attacker is skipping this round
+        if hasattr(attacker.ndb, 'skip_combat_round') and attacker.ndb.skip_combat_round:
+            attacker.ndb.skip_combat_round = False
+            location.msg_contents(f"[DEBUG] {attacker.key} skips their turn.")
+            self.db.turn_index += 1
+            return
+
         attacker = entry["char"]
 
         if not attacker or not attacker.location == location:
