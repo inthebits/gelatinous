@@ -1,10 +1,11 @@
 
-from evennia import create_script, DefaultScript
+from evennia import DefaultScript
 from random import randint
 
 COMBAT_SCRIPT_KEY = "combat_handler"
 
 def get_or_create_combat(location):
+    # Remove broken scripts
     for script in location.scripts.all():
         if script.key == COMBAT_SCRIPT_KEY:
             if not script.is_active:
@@ -14,8 +15,10 @@ def get_or_create_combat(location):
             else:
                 return script
 
+    # Correct usage: reference by string path
     location.msg_contents("[DEBUG] Creating new combat script...")
-    combat = create_script(CombatHandler, key=COMBAT_SCRIPT_KEY, obj=location)
+    from evennia import create_script
+    combat = create_script("world.combathandler.CombatHandler", key=COMBAT_SCRIPT_KEY, obj=location)
     return combat
 
 
