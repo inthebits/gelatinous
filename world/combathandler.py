@@ -1,12 +1,11 @@
 
 from evennia import DefaultScript, create_script
-from evennia.scripts.scripts import delay
+from evennia.scripts.taskhandler import delay
 from random import randint
 
 COMBAT_SCRIPT_KEY = "combat_handler"
 
 def get_or_create_combat(location):
-    # Remove broken/inactive scripts
     for script in location.scripts.all():
         if script.key == COMBAT_SCRIPT_KEY:
             if not script.is_active:
@@ -39,10 +38,8 @@ class CombatHandler(DefaultScript):
         if self.obj:
             self.obj.msg_contents("[DEBUG] CombatHandler created and attached to location.")
 
-        # Delayed start to fix Evennia lazy instantiation
-        def delayed_start(script):
-            script.start()
-        delay(0.1, delayed_start, self)
+        # Evennia-native delayed start
+        delay(0.1, self.start)
 
     def add_combatant(self, char):
         combatants = self.db.combatants or []
@@ -87,7 +84,6 @@ class CombatHandler(DefaultScript):
             self.db.turn_index += 1
             return
 
-        # Pick any valid target
         targets = [c["char"] for c in combatants if c["char"] != attacker and c["char"].location == location]
         if not targets:
             location.msg_contents("[DEBUG] No valid targets. Skipping turn.")
