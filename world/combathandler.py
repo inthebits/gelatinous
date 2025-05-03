@@ -38,7 +38,6 @@ class CombatHandler(DefaultScript):
         if self.obj:
             self.obj.msg_contents("[DEBUG] CombatHandler created and attached to location.")
 
-        # Evennia-native delayed start
         delay(0.1, self.start)
 
     def add_combatant(self, char):
@@ -49,14 +48,10 @@ class CombatHandler(DefaultScript):
         combatants.append({"char": char, "initiative": initiative})
         combatants.sort(key=lambda x: x["initiative"], reverse=True)
         self.db.combatants = combatants
-
         char.msg(f"|y[DEBUG] You enter combat. Initiative: {initiative}|n")
 
     def remove_combatant(self, char):
         self.db.combatants = [c for c in self.db.combatants if c["char"] != char]
-        if not self.db.combatants:
-            self.obj.msg_contents("[DEBUG] No combatants left. Ending combat.")
-            self.stop()
 
     def at_repeat(self):
         location = self.obj
@@ -65,9 +60,11 @@ class CombatHandler(DefaultScript):
 
         location.msg_contents("[DEBUG] at_repeat() tick triggered.")
 
-        combatants = self.db.combatants or []
-        if not combatants:
-            location.msg_contents("[DEBUG] No combatants found. Stopping.")
+        combatants = [c for c in self.db.combatants if c["char"].location == location and c["char"].hp > 0]
+        self.db.combatants = combatants
+
+        if len(combatants) <= 1:
+            location.msg_contents("[DEBUG] Not enough combatants. Ending combat.")
             self.stop()
             return
 
@@ -80,11 +77,12 @@ class CombatHandler(DefaultScript):
 
         entry = combatants[current_index]
         attacker = entry["char"]
+
         if not attacker or not attacker.location == location:
             self.db.turn_index += 1
             return
 
-        targets = [c["char"] for c in combatants if c["char"] != attacker and c["char"].location == location]
+        targets = [c["char"] for c in combatants if c["char"] != attacker and c["char"].location == location and c["char"].hp > 0]
         if not targets:
             location.msg_contents("[DEBUG] No valid targets. Skipping turn.")
             self.db.turn_index += 1
@@ -103,7 +101,6 @@ class CombatHandler(DefaultScript):
             if target.hp <= 0:
                 location.msg_contents(f"{target.key} collapses!")
                 target.at_death()
-                self.remove_combatant(target)
         else:
             location.msg_contents(f"{attacker.key} misses.")
 
