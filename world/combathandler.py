@@ -21,8 +21,8 @@ class CombatHandler(DefaultScript):
         self.interval = 6
         self.persistent = True
         self.db.combatants = []
-        self.db.round = 1
-
+        self.db.round = 0  # Start at round 0
+        self.db.ready_to_start = False  # Ensure this is initialized
 
     def at_start(self):
         self.obj.msg_contents("[DEBUG] CombatHandler started.")
@@ -62,6 +62,8 @@ class CombatHandler(DefaultScript):
         char.ndb.combat_handler = self
         self.obj.msg_contents(f"[DEBUG] {char.key} joins combat with initiative {initiative}.")
         self.obj.msg_contents(f"[DEBUG] {char.key} added to combat. Total combatants: {len(self.db.combatants)}.")
+        if self.db.round == 0:
+            self.obj.msg_contents("[DEBUG] Combat is in setup phase (round 0). Waiting for more combatants.")
 
         # Mark as ready to start if there are at least two combatants
         if len(self.db.combatants) > 1:
@@ -95,6 +97,20 @@ class CombatHandler(DefaultScript):
         return sorted(self.db.combatants, key=lambda e: e["initiative"], reverse=True)
 
     def at_repeat(self):
+        if self.db.round == 0:
+            # Setup phase: Ensure there are enough combatants to start combat
+            active_combatants = [e for e in self.db.combatants if e["char"].location == self.obj]
+            self.obj.msg_contents(f"[DEBUG] Round 0: Active combatants: {[e['char'].key for e in active_combatants]}.")
+
+            if len(active_combatants) > 1:
+                self.obj.msg_contents("[DEBUG] Enough combatants present. Starting combat in round 1.")
+                self.db.round = 1  # Transition to round 1
+            else:
+                self.obj.msg_contents("[DEBUG] Waiting for more combatants to join...")
+                delay(self.interval, self.at_repeat)  # Reschedule round 0
+                return
+
+        # Proceed with combat rounds
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} begins.")
         active_combatants = [e for e in self.db.combatants if e["char"].location == self.obj]
         self.obj.msg_contents(f"[DEBUG] Active combatants: {[e['char'].key for e in active_combatants]}.")
