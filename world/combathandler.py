@@ -1,4 +1,4 @@
-from evennia import Script
+from evennia.scripts.scripts import Script
 from random import randint
 
 class CombatHandler(Script):
