@@ -76,6 +76,7 @@ class CombatHandler(DefaultScript):
             return
 
         entry = combatants[current_index]
+        attacker = entry["char"]  # <-- Fix: define attacker before use
         # Check if attacker is skipping this round
         if hasattr(attacker.ndb, 'skip_combat_round') and attacker.ndb.skip_combat_round:
             attacker.ndb.skip_combat_round = False
