@@ -8,7 +8,7 @@ def get_or_create_combat(location):
     # Kill any broken version of the combat handler
     for script in location.scripts.all():
         if script.key == COMBAT_SCRIPT_KEY:
-            if not script.is_active or not script.is_running:
+            if not script.is_active:
                 location.msg_contents("[DEBUG] Removing broken combat script...")
                 script.stop()
                 script.delete()
