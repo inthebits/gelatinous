@@ -1,8 +1,8 @@
-from evennia import Script
+from evennia import DefaultScript
 from evennia.utils.utils import delay
 import random
 
-class CombatHandler(Script):
+class CombatHandler(DefaultScript):
 	def at_script_creation(self):
 		self.key = "combat_handler"
 		self.interval = 6
