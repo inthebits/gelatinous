@@ -98,7 +98,7 @@ class CombatHandler(DefaultScript):
             self.obj.msg_contents(f"[DEBUG] {char.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
 
             if atk_roll > def_roll:
-                damage = char.db.grit or 1
+                damage = char.grit or 1
                 target.db.hp = max(0, target.db.hp - damage)
                 self.obj.msg_contents(f"{char.key} hits {target.key} for {damage} damage! HP: {target.db.hp}/{target.db.hp_max}")
                 if target.db.hp <= 0:
