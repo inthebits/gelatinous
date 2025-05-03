@@ -32,8 +32,9 @@ class CombatHandler(DefaultScript):
         Start the combat handler, but delay the first execution of at_repeat
         to ensure all combatants are added.
         """
-        self.obj.msg_contents("[DEBUG] CombatHandler started.")
-        delay(self.interval, self.at_repeat)  # Schedule the next execution
+        if not self.is_active:
+            self.obj.msg_contents("[DEBUG] CombatHandler started.")
+            delay(self.interval, self.at_repeat)  # Schedule the next execution
 
     def at_stop(self):
         self.obj.msg_contents("[DEBUG] Combat ends.")
@@ -133,5 +134,5 @@ class CombatHandler(DefaultScript):
         self.db.round += 1
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} scheduled.")
 
-        # Reschedule the next round
-        self.start()
+        # Reschedule the next round directly
+        delay(self.interval, self.at_repeat)
