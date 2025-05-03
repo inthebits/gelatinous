@@ -5,9 +5,6 @@ from random import randint
 COMBAT_SCRIPT_KEY = "combat_handler"
 
 def get_or_create_combat(location):
-    """
-    Get or create a CombatHandler script for the given location.
-    """
     combat = None
     for script in location.scripts.all():
         if script.key == COMBAT_SCRIPT_KEY:
@@ -34,9 +31,11 @@ class CombatHandler(DefaultScript):
             return
         init = randint(1, max(1, char.motorics))
         combatants.append({ "char": char, "initiative": init })
-        char.msg(f"|yYou enter combat. Initiative: {init}|n")
         self.db.combatants = sorted(combatants, key=lambda x: x["initiative"], reverse=True)
+        char.msg(f"|yYou enter combat. Initiative: {init}|n")
+        char.msg(f"[DEBUG] Combat script active: {self.is_active}, running: {self.is_running}")
         if not self.is_active:
+            char.msg("[DEBUG] Starting CombatHandler...")
             self.start()
 
     def remove_combatant(self, char):
@@ -45,6 +44,7 @@ class CombatHandler(DefaultScript):
             self.stop()
 
     def at_repeat(self):
+        self.location.msg_contents("[DEBUG] at_repeat() tick fired")
         self.db.combatants = [
             c for c in self.db.combatants
             if c["char"].location == self.obj and c["char"].hp > 0
