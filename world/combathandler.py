@@ -1,5 +1,6 @@
 
 from evennia import DefaultScript, create_script
+from evennia.scripts.scripts import delay
 from random import randint
 
 COMBAT_SCRIPT_KEY = "combat_handler"
@@ -38,7 +39,10 @@ class CombatHandler(DefaultScript):
         if self.obj:
             self.obj.msg_contents("[DEBUG] CombatHandler created and attached to location.")
 
-        self.start()
+        # Delayed start to fix Evennia lazy instantiation
+        def delayed_start(script):
+            script.start()
+        delay(0.1, delayed_start, self)
 
     def add_combatant(self, char):
         combatants = self.db.combatants or []
@@ -50,9 +54,6 @@ class CombatHandler(DefaultScript):
         self.db.combatants = combatants
 
         char.msg(f"|y[DEBUG] You enter combat. Initiative: {initiative}|n")
-
-        if not self.is_active:
-            self.start()
 
     def remove_combatant(self, char):
         self.db.combatants = [c for c in self.db.combatants if c["char"] != char]
