@@ -22,6 +22,7 @@ class CombatHandler(DefaultScript):
         self.db.combatants = []
         self.db.round = 0  # Start at round 0
         self.db.ready_to_start = False  # Ensure this is initialized
+        self.db.round_scheduled = False  # Track if a round is already scheduled
 
     def at_start(self):
         self.obj.msg_contents("[DEBUG] CombatHandler started.")
@@ -105,6 +106,9 @@ class CombatHandler(DefaultScript):
         if not self.is_active:
             return  # Exit early if the handler is inactive
 
+        # Reset the round_scheduled flag at the start of the round
+        self.db.round_scheduled = False
+
         if self.db.round == 0:
             # Setup phase: Ensure there are enough combatants to start combat
             active_combatants = [e for e in self.db.combatants if e["char"].location == self.obj]
@@ -115,8 +119,10 @@ class CombatHandler(DefaultScript):
                 self.db.round = 1  # Transition to round 1
             else:
                 self.obj.msg_contents("[DEBUG] Waiting for more combatants to join...")
-                delay(self.interval, self.at_repeat)  # Reschedule round 0
-            return  # Exit early to prevent combat logic from running
+                if not self.db.round_scheduled:
+                    delay(self.interval, self.at_repeat)  # Reschedule round 0
+                    self.db.round_scheduled = True
+                return  # Exit early to prevent combat logic from running
 
         # Proceed with combat rounds
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} begins.")
@@ -164,5 +170,6 @@ class CombatHandler(DefaultScript):
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} scheduled.")
 
         # Reschedule the next round only if the handler is still active
-        if self.is_active:
+        if self.is_active and not self.db.round_scheduled:
             delay(self.interval, self.at_repeat)
+            self.db.round_scheduled = True
