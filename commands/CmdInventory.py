@@ -120,7 +120,7 @@ class CmdInventory(Command):
 
         # Carried (not wielded)
         if items:
-            lines.append("|wCarried:|n")
+            lines.append("|wCarrying:|n")
             for obj in items:
                 lines.append(f"  {obj.name}")
             lines.append("")
@@ -129,9 +129,9 @@ class CmdInventory(Command):
         lines.append("|wHeld:|n")
         for hand, item in hands.items():
             if item:
-                lines.append(f"  {hand.title()} Hand: {item.name}")
+                lines.append(f"A {item.name} is held in your {hand.title()} hand.")
             else:
-                lines.append(f"  {hand.title()} Hand: (empty)")
+                lines.append(f"Nothing is in your {hand.title()} hand.")
 
         caller.msg("\n".join(lines))
 
