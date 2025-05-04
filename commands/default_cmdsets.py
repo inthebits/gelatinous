@@ -18,6 +18,7 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 from evennia import default_cmds
 from commands import CmdCombat
 from commands import CmdCharacter
+from commands import CmdInventory
 from commands.CmdAdmin import CmdHeal
 from commands.CmdSpawnMob import CmdSpawnMob
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
