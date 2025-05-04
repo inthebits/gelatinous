@@ -2,6 +2,7 @@ from evennia import Command
 from evennia.utils.utils import inherits_from
 from random import randint, choice
 from world.combathandler import get_or_create_combat
+from world.combat_messages import get_combat_message
 
 
 class CmdAttack(Command):

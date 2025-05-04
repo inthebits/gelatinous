@@ -1,6 +1,7 @@
 from evennia import DefaultScript, create_script
 from random import randint
 from evennia.utils.utils import delay
+from world.combat_messages import get_combat_message
 
 COMBAT_SCRIPT_KEY = "combat_handler"
 
