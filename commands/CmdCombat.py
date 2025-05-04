@@ -113,3 +113,61 @@ class CmdFlee(Command):
                 exclude=caller
             )
             caller.ndb.skip_combat_round = True
+
+#Mr. Hands System Inventory Management
+# This should probably be moved to a separate file
+# but for now, it's here for simplicity.
+class CmdWield(Command):
+    """
+    Wield an item into a specific hand.
+
+    Usage:
+        wield <item> [= <hand>]
+
+    Example:
+        wield shiv = right
+        wield baton        (defaults to right)
+    """
+
+    key = "wield"
+
+    def func(self):
+        caller = self.caller
+
+        if "=" in self.args:
+            itemname, hand = [s.strip() for s in self.args.split("=", 1)]
+        else:
+            itemname = self.args.strip()
+            hand = "right"
+
+        item = caller.search(itemname, location=caller)
+        if not item:
+            return
+
+        result = caller.wield_item(item, hand)
+        caller.msg(result)
+
+class CmdUnwield(Command):
+    """
+    Unwield an item from a specific hand.
+
+    Usage:
+        unwield <hand>
+
+    Example:
+        unwield right
+        unwield left
+    """
+
+    key = "unwield"
+
+    def func(self):
+        caller = self.caller
+        hand = self.args.strip().lower()
+
+        if not hand:
+            caller.msg("You must specify which hand to unwield from.")
+            return
+
+        result = caller.unwield_item(hand)
+        caller.msg(result)
