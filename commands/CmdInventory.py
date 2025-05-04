@@ -2,6 +2,7 @@
 # This should probably be moved to a separate file
 # but for now, it's here for simplicity.
 from evennia import Command
+from evennia.utils.search import search_object
 
 class CmdWield(Command):
     """
@@ -136,35 +137,50 @@ class CmdInventory(Command):
 
 from evennia import Command
 
-
 class CmdDrop(Command):
     """
-    Drop an item you're carrying (not one in your hands).
+    Drop an item from your inventory or your hand.
 
     Usage:
         drop <item>
+
+    This drops an item you're carrying or currently holding.
     """
 
     key = "drop"
 
     def func(self):
         caller = self.caller
-        itemname = self.args.strip()
+        args = self.args.strip()
 
-        if not itemname:
+        if not args:
             caller.msg("Drop what?")
             return
 
-        obj = caller.search(itemname, location=caller)
+        # Try inventory first
+        obj = caller.search(args, location=caller, quiet=True)
+
+        # If not found, search hands
         if not obj:
+            for hand, item in caller.hands.items():
+                if item and args.lower() in item.key.lower():
+                    obj = [item]
+                    break
+
+        if not obj:
+            caller.msg("You aren't carrying or holding that.")
             return
 
-        # Check if the item is wielded
-        for hand, held_item in caller.hands.items():
-            if held_item and obj == held_item:
-                caller.msg(f"You must unwield {obj.key} before dropping it.")
-                return
+        obj = obj[0]
 
+        # If it's wielded, remove it from the hand
+        for hand, item in caller.hands.items():
+            if item == obj:
+                caller.hands[hand] = None
+                caller.msg(f"You release {obj.key} from your {hand} hand.")
+                break
+
+        # Move the item to the room
         obj.move_to(caller.location, quiet=True)
         caller.msg(f"You drop {obj.key}.")
-        caller.location.msg_contents(f"{caller.key} drops {obj.key}.", exclude=caller)
+        caller.location.msg_contents(f"{caller.key} drops {obj.key}.", exclude=caller
