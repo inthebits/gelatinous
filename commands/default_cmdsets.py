@@ -42,9 +42,10 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdSpawnMob())
         self.add(CmdHeal())
         self.add(CmdCombat.CmdFlee)
-        self.add(CmdCombat.CmdWield())
-        self.add(CmdCombat.CmdUnwield())
-        self.add(CmdCombat.CmdInventory())
+        self.add(CmdInventory.CmdWield())
+        self.add(CmdInventory.CmdUnwield())
+        self.add(CmdInventory.CmdInventory())
+        self.add(CmdInventory.CmdDrop())
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
