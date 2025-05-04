@@ -149,25 +149,31 @@ class CmdWield(Command):
 
 class CmdUnwield(Command):
     """
-    Unwield an item from a specific hand.
+    Unwield an item you are currently holding.
 
     Usage:
-        unwield <hand>
+        unwield <item>
 
     Example:
-        unwield right
-        unwield left
+        unwield shiv
     """
 
     key = "unwield"
 
     def func(self):
         caller = self.caller
-        hand = self.args.strip().lower()
+        itemname = self.args.strip().lower()
 
-        if not hand:
-            caller.msg("You must specify which hand to unwield from.")
+        if not itemname:
+            caller.msg("What do you want to unwield?")
             return
 
-        result = caller.unwield_item(hand)
-        caller.msg(result)
+        hands = caller.hands
+        for hand, held_item in hands.items():
+            if held_item and itemname in held_item.key.lower():
+                result = caller.unwield_item(hand)
+                caller.msg(result)
+                return
+
+        caller.msg(f"You aren't holding '{itemname}'.")
+
