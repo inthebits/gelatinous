@@ -184,3 +184,59 @@ class CmdDrop(Command):
         obj.move_to(caller.location, quiet=True)
         caller.msg(f"You drop {obj.key}.")
         caller.location.msg_contents(f"{caller.key} drops {obj.key}.", exclude=caller)
+
+
+class CmdGet(Command):
+    """
+    Pick up an item and hold it if a hand is free.
+
+    Usage:
+        get <item>
+    """
+
+    key = "get"
+    aliases = ["take", "grab"]
+
+    def func(self):
+        caller = self.caller
+        itemname = self.args.strip().lower()
+
+        if not itemname:
+            caller.msg("Get what?")
+            return
+
+        # Search in the room
+        item = caller.search(itemname, location=caller.location)
+        if not item:
+            return
+
+        # Try to put it in a free hand
+        for hand, held in caller.hands.items():
+            if held is None:
+                caller.hands[hand] = item
+                item.location = caller
+                caller.msg(f"You pick up {item.key} and hold it in your {hand} hand.")
+                caller.location.msg_contents(
+                    f"{caller.key} picks up {item.key} and holds it in {hand} hand.", exclude=caller
+                )
+                return
+
+        # No free hands — move the first held item to inventory
+        for hand, held in caller.hands.items():
+            if held:
+                held.location = caller  # move to inventory
+                caller.hands[hand] = item
+                item.location = caller
+                caller.msg(
+                    f"Your hands are full. You move {held.key} to inventory "
+                    f"and hold {item.key} in your {hand} hand."
+                )
+                caller.location.msg_contents(
+                    f"{caller.key} picks up {item.key}, shifting {held.key} to inventory.",
+                    exclude=caller
+                )
+                return
+
+        # Edge case fallback — just add to inventory
+        item.location = caller
+        caller.msg(f"You pick up {item.key} and stow it.")

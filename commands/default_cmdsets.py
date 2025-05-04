@@ -47,6 +47,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdInventory.CmdUnwield())
         self.add(CmdInventory.CmdInventory())
         self.add(CmdInventory.CmdDrop())
+        self.add(CmdInventory.CmdGet())
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
