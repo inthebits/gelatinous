@@ -104,3 +104,49 @@ class Character(ObjectParent, DefaultCharacter):
         # PERMANENT-DEATH. DO NOT ENABLE YET. self.delete()
         for line in DEATH_SCROLL:
             self.msg(f"|r{line}|n")
+
+    # MR. HANDS SYSTEM
+    # Persistent hand slots: supports dynamic anatomy
+    hands = AttributeProperty(
+        {"left": None, "right": None},
+        category="equipment",
+        autocreate=True
+    )
+
+    def wield_item(self, item, hand="right"):
+        hands = self.hands
+        if hand not in hands:
+            return f"You don't have a {hand} hand."
+
+        if hands[hand]:
+            return f"You're already holding something in your {hand}."
+
+        if item.location != self:
+            return "You're not carrying that item."
+
+        hands[hand] = item
+        item.location = None
+        self.hands = hands  # Save updated hands dict
+        return f"You wield {item.key} in your {hand} hand."
+    
+    def unwield_item(self, hand="right"):
+        hands = self.hands
+        item = hands.get(hand, None)
+
+        if not item:
+            return f"You're not holding anything in your {hand} hand."
+
+        item.location = self
+        hands[hand] = None
+        self.hands = hands
+        return f"You unwield {item.key} from your {hand} hand."
+    
+    def list_held_items(self):
+        hands = self.hands
+        lines = []
+        for hand, item in hands.items():
+            if item:
+                lines.append(f"{hand.title()} Hand: {item.key}")
+            else:
+                lines.append(f"{hand.title()} Hand: (empty)")
+        return lines
