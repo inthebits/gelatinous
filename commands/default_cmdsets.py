@@ -44,6 +44,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdCombat.CmdFlee)
         self.add(CmdCombat.CmdWield())
         self.add(CmdCombat.CmdUnwield())
+        self.add(CmdCombat.CmdInventory(), replace_existing=True)
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
