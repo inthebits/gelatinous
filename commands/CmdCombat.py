@@ -117,35 +117,67 @@ class CmdFlee(Command):
 #Mr. Hands System Inventory Management
 # This should probably be moved to a separate file
 # but for now, it's here for simplicity.
+from evennia import Command
+
 class CmdWield(Command):
     """
-    Wield an item into a specific hand.
+    Wield an item into one of your hands.
 
     Usage:
-        wield <item> [= <hand>]
+        wield <item>
+        wield <item> in <hand>
 
-    Example:
-        wield shiv = right
-        wield baton        (defaults to right)
+    Examples:
+        wield shiv
+        wield baton in left
+        hold crowbar
     """
 
     key = "wield"
+    aliases = ["hold"]
 
     def func(self):
         caller = self.caller
+        args = self.args.strip().lower()
 
-        if "=" in self.args:
-            itemname, hand = [s.strip() for s in self.args.split("=", 1)]
-        else:
-            itemname = self.args.strip()
-            hand = "right"
-
-        item = caller.search(itemname, location=caller)
-        if not item:
+        if not args:
+            caller.msg("Wield what?")
             return
 
-        result = caller.wield_item(item, hand)
-        caller.msg(result)
+        # Parse syntax: "<item> in <hand>"
+        if " in " in args:
+            itemname, hand = [s.strip() for s in args.split(" in ", 1)]
+        else:
+            itemname, hand = args, None
+
+        # Search for item in inventory
+        item = caller.search(itemname, location=caller)
+        if not item:
+            return  # error already sent
+
+        hands = caller.hands
+
+        # If hand is specified, match it
+        if hand:
+            matched_hand = next((h for h in hands if hand in h.lower()), None)
+            if not matched_hand:
+                caller.msg(f"You don't have a hand named '{hand}'.")
+                return
+
+            result = caller.wield_item(item, matched_hand)
+            caller.msg(result)
+            return
+
+        # No hand specified — find the first free one
+        for hand_name, held_item in hands.items():
+            if held_item is None:
+                result = caller.wield_item(item, hand_name)
+                caller.msg(result)
+                return
+
+        # All hands are full
+        caller.msg("Your hands are full.")
+
 
 class CmdUnwield(Command):
     """
