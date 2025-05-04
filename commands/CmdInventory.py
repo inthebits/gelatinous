@@ -183,4 +183,4 @@ class CmdDrop(Command):
         # Move the item to the room
         obj.move_to(caller.location, quiet=True)
         caller.msg(f"You drop {obj.key}.")
-        caller.location.msg_contents(f"{caller.key} drops {obj.key}.", exclude=caller
+        caller.location.msg_contents(f"{caller.key} drops {obj.key}.", exclude=caller)
