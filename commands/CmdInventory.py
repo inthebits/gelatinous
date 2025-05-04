@@ -129,9 +129,9 @@ class CmdInventory(Command):
         lines.append("|wHeld:|n")
         for hand, item in hands.items():
             if item:
-                lines.append(f"A {item.name} is held in your {hand.title()} hand.")
+                lines.append(f"A {item.name} is held in your {hand.lower()} hand.")
             else:
-                lines.append(f"Nothing is in your {hand.title()} hand.")
+                lines.append(f"Nothing is in your {hand.lower()} hand.")
 
         caller.msg("\n".join(lines))
 
