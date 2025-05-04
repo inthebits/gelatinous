@@ -209,3 +209,43 @@ class CmdUnwield(Command):
 
         caller.msg(f"You aren't holding '{itemname}'.")
 
+
+class CmdInventory(Command):
+    """
+    Check what you're carrying or holding.
+
+    Usage:
+      inventory
+      inv
+    """
+
+    key = "inventory"
+    aliases = ["inv"]
+
+    def func(self):
+        caller = self.caller
+        items = caller.contents
+        hands = caller.hands
+
+        if not items and all(v is None for v in hands.values()):
+            caller.msg("You aren't carrying or holding anything.")
+            return
+
+        lines = []
+
+        # Carried (not wielded)
+        if items:
+            lines.append("|wCarried:|n")
+            for obj in items:
+                lines.append(f"  {obj.name}")
+            lines.append("")
+
+        # Held (in hands)
+        lines.append("|wHeld:|n")
+        for hand, item in hands.items():
+            if item:
+                lines.append(f"  {hand.title()} Hand: {item.name}")
+            else:
+                lines.append(f"  {hand.title()} Hand: (empty)")
+
+        caller.msg("\n".join(lines))
