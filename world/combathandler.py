@@ -105,19 +105,21 @@ class CombatHandler(DefaultScript):
 
     def at_repeat(self):
         if not self.is_active:
-            return  # Exit early if the handler is inactive
+            return
 
+        # Setup phase: only run ONCE
         if self.db.round == 0:
-            # Setup phase: Ensure there are enough combatants to start combat
             active_combatants = [e for e in self.db.combatants if e["char"].location == self.obj]
             self.obj.msg_contents(f"[DEBUG] Round 0: Active combatants: {[e['char'].key for e in active_combatants]}.")
-
             if len(active_combatants) > 1:
                 self.obj.msg_contents("[DEBUG] Enough combatants present. Starting combat in round 1.")
-                self.db.round = 1  # Transition to round 1
+                self.db.round = 1  # Only set ONCE
             else:
                 self.obj.msg_contents("[DEBUG] Waiting for more combatants to join...")
-                return  # Exit early to prevent combat logic from running
+                return
+            return  # <--- ADD THIS LINE to prevent running the rest of the round logic on the same tick
+
+        # From here on, self.db.round >= 1, so setup phase is never re-entered
 
         # Proceed with combat rounds
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} begins.")
