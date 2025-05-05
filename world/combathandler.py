@@ -6,6 +6,15 @@ from world.combat_messages import get_combat_message
 COMBAT_SCRIPT_KEY = "combat_handler"
 
 def get_or_create_combat(location):
+    """
+    Retrieve an existing CombatHandler for the location or create a new one.
+
+    Args:
+        location (Object): The location where the combat is taking place.
+
+    Returns:
+        CombatHandler: The existing or newly created CombatHandler.
+    """
     script = next((s for s in location.scripts.all() if s.key == COMBAT_SCRIPT_KEY), None)
     if script and script.is_active:
         return script
@@ -23,7 +32,6 @@ class CombatHandler(DefaultScript):
         self.db.combatants = []
         self.db.round = 0  # Start at round 0
         self.db.ready_to_start = False  # Ensure this is initialized
-        self.db.round_scheduled = False  # Track if a round is already scheduled
 
     def at_start(self):
         self.obj.msg_contents("[DEBUG] CombatHandler started.")
@@ -55,7 +63,9 @@ class CombatHandler(DefaultScript):
         self.is_active = False  # Mark the handler as inactive
 
     def add_combatant(self, char, target=None):
-        # Check if the character is already in combat
+        """
+        Add a combatant to the combat handler.
+        """
         if any(entry["char"] == char for entry in self.db.combatants):
             return
 
@@ -82,6 +92,9 @@ class CombatHandler(DefaultScript):
             self.start()
 
     def remove_combatant(self, char):
+        """
+        Remove a combatant from the combat handler.
+        """
         self.db.combatants = [entry for entry in self.db.combatants if entry["char"] != char]
         if char.ndb.combat_handler:
             del char.ndb.combat_handler
@@ -90,20 +103,32 @@ class CombatHandler(DefaultScript):
             self.stop()
 
     def get_target(self, char):
+        """
+        Get the target of a combatant.
+        """
         for entry in self.db.combatants:
             if entry["char"] == char:
                 return entry.get("target")
         return None
 
     def set_target(self, char, target):
+        """
+        Set the target for a combatant.
+        """
         for entry in self.db.combatants:
             if entry["char"] == char:
                 entry["target"] = target
 
     def get_initiative_order(self):
+        """
+        Get the combatants sorted by initiative order.
+        """
         return sorted(self.db.combatants, key=lambda e: e["initiative"], reverse=True)
 
     def at_repeat(self):
+        """
+        Execute the combat logic for each round.
+        """
         if not self.is_active:
             return  # Exit early if the handler is inactive
 
@@ -145,6 +170,18 @@ class CombatHandler(DefaultScript):
             if not target:
                 continue
 
+            # Determine weapon and weapon_type
+            weapon = None
+            hands = getattr(char.db, "hands", {})
+            for hand, item in hands.items():
+                if item:
+                    weapon = item
+                    break
+            weapon_type = "unarmed"  # Default to unarmed
+            if weapon and hasattr(weapon.db, "weapon_type"):
+                weapon_type = weapon.db.weapon_type
+
+            # Roll to hit
             atk_roll = randint(1, max(1, char.grit))
             def_roll = randint(1, max(1, target.motorics))
 
@@ -152,14 +189,20 @@ class CombatHandler(DefaultScript):
 
             if atk_roll > def_roll:
                 damage = char.grit or 1
-                self.obj.msg_contents(f"[DEBUG] {char.key} hits {target.key} for {damage} damage.")
-                target.take_damage(damage)
-                if target.is_dead():
+                target.take_damage(damage)  # Use take_damage to apply damage
+
+                if target.is_dead():  # Check if the target is dead
+                    msg = get_combat_message(weapon_type, "kill", attacker=char, target=target, damage=damage)
+                    self.obj.msg_contents(msg)
                     self.obj.msg_contents(f"[DEBUG] {target.key} has been defeated and removed from combat.")
                     self.remove_combatant(target)  # Remove the defeated combatant immediately
                     continue  # Skip further actions for this target
+                else:
+                    msg = get_combat_message(weapon_type, "hit", attacker=char, target=target, damage=damage)
+                    self.obj.msg_contents(msg)
             else:
-                self.obj.msg_contents(f"{char.key} misses {target.key}.")
+                msg = get_combat_message(weapon_type, "miss", attacker=char, target=target)
+                self.obj.msg_contents(msg)
 
         self.db.round += 1
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} scheduled.")
