@@ -153,42 +153,13 @@ class CombatHandler(DefaultScript):
             if atk_roll > def_roll:
                 damage = char.grit or 1
                 self.obj.msg_contents(f"[DEBUG] {char.key} hits {target.key} for {damage} damage.")
-                # --- Player-facing hit message ---
-                # Determine weapon_type
-                weapon = None
-                hands = getattr(char.db, "hands", {})
-                for hand, item in hands.items():
-                    if item:
-                        weapon = item
-                        break
-                weapon_type = "unarmed"
-                if weapon and hasattr(weapon.db, "weapon_type"):
-                    weapon_type = weapon.db.weapon_type
-                # Show hit message
-                msg = get_combat_message(weapon_type, "hit", attacker=char, target=target, damage=damage)
-                self.obj.msg_contents(msg)
                 target.take_damage(damage)
                 if target.is_dead():
                     self.obj.msg_contents(f"[DEBUG] {target.key} has been defeated and removed from combat.")
-                    # --- Player-facing kill message ---
-                    msg = get_combat_message(weapon_type, "kill", attacker=char, target=target, damage=damage)
-                    self.obj.msg_contents(msg)
-                    self.remove_combatant(target)
+                    self.remove_combatant(target)  # Remove the defeated combatant immediately
                     continue  # Skip further actions for this target
             else:
                 self.obj.msg_contents(f"{char.key} misses {target.key}.")
-                # --- Player-facing miss message ---
-                weapon = None
-                hands = getattr(char.db, "hands", {})
-                for hand, item in hands.items():
-                    if item:
-                        weapon = item
-                        break
-                weapon_type = "unarmed"
-                if weapon and hasattr(weapon.db, "weapon_type"):
-                    weapon_type = weapon.db.weapon_type
-                msg = get_combat_message(weapon_type, "miss", attacker=char, target=target)
-                self.obj.msg_contents(msg)
 
         self.db.round += 1
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} scheduled.")
