@@ -23,7 +23,7 @@ class CombatHandler(DefaultScript):
         self.db.combatants = []
         self.db.round = 0  # Start at round 0
         self.db.ready_to_start = False  # Ensure this is initialized
-        self.db.round_scheduled = False  # Track if a round is already scheduled
+        self.db.round_scheduled = False  # Track if a round is already scheduled test
 
     def at_start(self):
         self.obj.msg_contents("[DEBUG] CombatHandler started.")
