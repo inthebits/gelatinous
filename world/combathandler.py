@@ -90,73 +90,77 @@ class CombatHandler(DefaultScript):
         return sorted(self.db.combatants, key=lambda e: e["initiative"], reverse=True)
 
     def at_repeat(self):
-        if not self.is_active:
-            return
+    if not self.is_active:
+        return
 
-        if self.db.round == 0:
-            active_combatants = [e for e in self.db.combatants if e["char"].location == self.obj]
-            self.obj.msg_contents(f"[DEBUG] Round 0: Active combatants: {[e['char'].key for e in active_combatants]}.")
-            if len(active_combatants) > 1:
-                self.obj.msg_contents("[DEBUG] Enough combatants present. Starting combat in round 1.")
-                self.db.round = 1
-            else:
-                self.obj.msg_contents("[DEBUG] Waiting for more combatants to join...")
-                return
-
-        self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} begins.")
+    # Setup phase: wait for enough combatants
+    if self.db.round == 0:
         active_combatants = [e for e in self.db.combatants if e["char"].location == self.obj]
-        self.obj.msg_contents(f"[DEBUG] Active combatants: {[e['char'].key for e in active_combatants]}.")
-
-        if len(active_combatants) <= 1:
-            self.obj.msg_contents("[DEBUG] Not enough combatants remain. Ending combat.")
-            self.stop()
+        self.obj.msg_contents(f"[DEBUG] Round 0: Active combatants: {[e['char'].key for e in active_combatants]}.")
+        if len(active_combatants) > 1:
+            self.obj.msg_contents("[DEBUG] Enough combatants present. Starting combat in round 1.")
+            self.db.round = 1
+        else:
+            self.obj.msg_contents("[DEBUG] Waiting for more combatants to join...")
             return
 
-        for entry in self.get_initiative_order():
-            char = entry["char"]
-            target = entry.get("target")
+    # Check for active combatants before the round
+    active_combatants = [e for e in self.db.combatants if e["char"].location == self.obj]
+    if len(active_combatants) <= 1:
+        self.obj.msg_contents("[DEBUG] Not enough combatants remain. Ending combat.")
+        self.stop()
+        return
 
-            if not target or target not in [e["char"] for e in self.db.combatants]:
-                others = [e["char"] for e in self.db.combatants if e["char"] != char]
-                if not others:
-                    continue
-                target = others[randint(0, len(others) - 1)]
-                self.set_target(char, target)
+    self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} begins.")
+    self.obj.msg_contents(f"[DEBUG] Active combatants: {[e['char'].key for e in active_combatants]}.")
 
-            if not target:
+    for entry in self.get_initiative_order():
+        char = entry["char"]
+        target = entry.get("target")
+
+        if not target or target not in [e["char"] for e in self.db.combatants]:
+            others = [e["char"] for e in self.db.combatants if e["char"] != char]
+            if not others:
                 continue
+            target = others[randint(0, len(others) - 1)]
+            self.set_target(char, target)
 
-            # Determine weapon and weapon_type
-            weapon = None
-            hands = getattr(char.db, "hands", {})
-            for hand, item in hands.items():
-                if item:
-                    weapon = item
-                    break
-            weapon_type = "unarmed"
-            if weapon and hasattr(weapon.db, "weapon_type"):
-                weapon_type = weapon.db.weapon_type
+        if not target:
+            continue
 
-            atk_roll = randint(1, max(1, getattr(char, "grit", 1)))
-            def_roll = randint(1, max(1, getattr(target, "motorics", 1)))
+        # Determine weapon and weapon_type
+        weapon = None
+        hands = getattr(char.db, "hands", {})
+        for hand, item in hands.items():
+            if item:
+                weapon = item
+                break
+        weapon_type = "unarmed"
+        if weapon and hasattr(weapon.db, "weapon_type"):
+            weapon_type = weapon.db.weapon_type
 
-            self.obj.msg_contents(f"[DEBUG] {char.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
+        atk_roll = randint(1, max(1, getattr(char, "grit", 1)))
+        def_roll = randint(1, max(1, getattr(target, "motorics", 1)))
 
-            if atk_roll > def_roll:
-                damage = getattr(char, "grit", 1) or 1
-                target.take_damage(damage)
-                if target.is_dead():
-                    msg = get_combat_message(weapon_type, "kill", attacker=char, target=target, damage=damage)
-                    self.obj.msg_contents(msg)
-                    self.obj.msg_contents(f"[DEBUG] {target.key} has been defeated and removed from combat.")
-                    self.remove_combatant(target)
-                    continue
-                else:
-                    msg = get_combat_message(weapon_type, "hit", attacker=char, target=target, damage=damage)
-                    self.obj.msg_contents(msg)
-            else:
-                msg = get_combat_message(weapon_type, "miss", attacker=char, target=target)
+        self.obj.msg_contents(f"[DEBUG] {char.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
+
+        if atk_roll > def_roll:
+            damage = getattr(char, "grit", 1) or 1
+            target.take_damage(damage)
+            if target.is_dead():
+                msg = get_combat_message(weapon_type, "kill", attacker=char, target=target, damage=damage)
                 self.obj.msg_contents(msg)
+                self.obj.msg_contents(f"[DEBUG] {target.key} has been defeated and removed from combat.")
+                self.remove_combatant(target)
+                continue
+            else:
+                msg = get_combat_message(weapon_type, "hit", attacker=char, target=target, damage=damage)
+                self.obj.msg_contents(msg)
+        else:
+            msg = get_combat_message(weapon_type, "miss", attacker=char, target=target)
+            self.obj.msg_contents(msg)
 
+    # Only increment the round if combat is still active
+    if len([e for e in self.db.combatants if e["char"].location == self.obj]) > 1:
         self.db.round += 1
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} scheduled.")
