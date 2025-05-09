@@ -26,16 +26,12 @@ class CombatHandler(DefaultScript):
         self.db.ready_to_start = False  # Ensure this is initialized
         self.db.round_scheduled = False  # Track if a round is already scheduled
 
-# This looks redundant and should be removed
-    def at_start(self):
-        ChannelDB.objects.get_channel("Splattercast").msg(f"[DEBUG] CombatHandler started.")
-
     def start(self):
         """
         Start the combat handler, ensuring that at_repeat is called at regular intervals.
         """
         if self.is_active:
-            ChannelDB.objects.get_channel("Splattercast").msg(f"[DEBUG] CombatHandler is already active. Skipping redundant start.")
+            ChannelDB.objects.get_channel("Splattercast").msg(f"CombatHandler is already active. Skipping redundant start.")
             return
 
         ChannelDB.objects.get_channel("Splattercast").msg(f"CombatHandler started.")
@@ -46,7 +42,7 @@ class CombatHandler(DefaultScript):
         """
         Clean up when combat ends.
         """
-        ChannelDB.objects.get_channel("Splattercast").msg(f"[DEBUG] Combat ends.")
+        ChannelDB.objects.get_channel("Splattercast").msg(f"Combat ends.")
         for entry in self.db.combatants:
             char = entry["char"]
             if char.ndb.combat_handler:
