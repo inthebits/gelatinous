@@ -174,7 +174,7 @@ class CombatHandler(DefaultScript):
                 )
                 ChannelDB.objects.get_channel("Splattercast").msg(f"get_combat_message (hit) returned: {msg!r}")
                 if msg:
-                    self.obj.msg_contents(msg)
+                    self.obj.msg_contents(f"|[R{msg}|n")
 
                 target.take_damage(damage)
                 if target.is_dead():
@@ -191,7 +191,7 @@ class CombatHandler(DefaultScript):
                     )
                     ChannelDB.objects.get_channel("Splattercast").msg(f"get_combat_message (kill) returned: {msg!r}")
                     if msg:
-                        self.obj.msg_contents(msg)
+                        self.obj.msg_contents(f"|[R{msg}|n")
 
                     self.remove_combatant(target)
                     continue
@@ -206,7 +206,7 @@ class CombatHandler(DefaultScript):
                 )
                 ChannelDB.objects.get_channel("Splattercast").msg(f"get_combat_message (miss) returned: {msg!r}")
                 if msg:
-                    self.obj.msg_contents(msg)
+                    self.obj.msg_contents(f"|[R{msg}|n")
                 else:
                     self.obj.msg_contents(f"{char.key} misses {target.key}.")
 
