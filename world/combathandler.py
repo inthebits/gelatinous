@@ -153,6 +153,29 @@ class CombatHandler(DefaultScript):
             if atk_roll > def_roll:
                 damage = char.grit or 1
                 self.obj.msg_contents(f"[DEBUG] {char.key} hits {target.key} for {damage} damage.")
+
+                # --- Player-facing combat message ---
+                weapon = None
+                hands = getattr(char.db, "hands", {})
+                for hand, item in hands.items():
+                    if item:
+                        weapon = item
+                        break
+                weapon_type = "unarmed"
+                if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
+                    weapon_type = weapon.db.weapon_type
+
+                msg = get_combat_message(
+                    weapon_type,
+                    "hit",
+                    attacker=char,
+                    target=target,
+                    item=weapon,
+                    damage=damage
+                )
+                if msg:
+                    self.obj.msg_contents(msg)
+
                 target.take_damage(damage)
                 if target.is_dead():
                     self.obj.msg_contents(f"[DEBUG] {target.key} has been defeated and removed from combat.")
