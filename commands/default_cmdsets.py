@@ -19,7 +19,7 @@ from evennia import default_cmds
 from commands import CmdCombat
 from commands import CmdCharacter
 from commands import CmdInventory
-from commands.CmdAdmin import CmdHeal
+from commands import CmdAdmin
 from commands.CmdSpawnMob import CmdSpawnMob
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -41,7 +41,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdCombat.CmdAttack)
         self.add(CmdCharacter.CmdStats)
         self.add(CmdSpawnMob())
-        self.add(CmdHeal())
+        self.add(CmdAdmin.CmdHeal())
+        self.add(CmdAdmin.CmdTestCombatMsg())
         self.add(CmdCombat.CmdFlee)
         self.add(CmdInventory.CmdWield())
         self.add(CmdInventory.CmdUnwield())
