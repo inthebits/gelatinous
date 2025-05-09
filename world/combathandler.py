@@ -206,7 +206,7 @@ class CombatHandler(DefaultScript):
                 )
                 ChannelDB.objects.get_channel("Splattercast").msg(f"get_combat_message (miss) returned: {msg!r}")
                 if msg:
-                    self.obj.msg_contents(f"|R{msg}|n")
+                    self.obj.msg_contents(f"|[X{msg}|n")
                 else:
                     self.obj.msg_contents(f"{char.key} misses {target.key}.")
 
