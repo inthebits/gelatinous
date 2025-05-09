@@ -150,44 +150,67 @@ class CombatHandler(DefaultScript):
 
             self.obj.msg_contents(f"[DEBUG] {char.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
 
+            # --- Find weapon and weapon_type for both hit and miss ---
+            hands = char.hands
+            weapon = None
+            for hand, item in hands.items():
+                if item:
+                    weapon = item
+                    break
+            weapon_type = "unarmed"
+            if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
+                weapon_type = str(weapon.db.weapon_type).lower()
+
             if atk_roll > def_roll:
                 damage = char.grit or 1
                 self.obj.msg_contents(f"[DEBUG] {char.key} hits {target.key} for {damage} damage.")
 
-                # --- Player-facing combat message ---
-                try:
-                    hands = char.hands  # Always use the property, not char.db.hands
-                    weapon = None
-                    for hand, item in hands.items():
-                        if item:
-                            weapon = item
-                            break  # Stop at the first found item
-                    weapon_type = "unarmed"
-                    if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
-                        weapon_type = str(weapon.db.weapon_type).lower()
-                    self.obj.msg_contents(f"[DEBUG] Using weapon_type: {weapon_type!r}, weapon: {getattr(weapon, 'key', None)}")
-                    self.obj.msg_contents(f"[DEBUG] get_combat_message({weapon_type!r}, 'hit', damage={damage})")
+                # --- Player-facing hit message ---
+                msg = get_combat_message(
+                    weapon_type,
+                    "hit",
+                    attacker=char,
+                    target=target,
+                    item=weapon,
+                    damage=damage
+                )
+                self.obj.msg_contents(f"[DEBUG] get_combat_message (hit) returned: {msg!r}")
+                if msg:
+                    self.obj.msg_contents(msg)
+
+                target.take_damage(damage)
+                if target.is_dead():
+                    self.obj.msg_contents(f"[DEBUG] {target.key} has been defeated and removed from combat.")
+
+                    # --- Player-facing kill message ---
                     msg = get_combat_message(
                         weapon_type,
-                        "hit",
+                        "kill",
                         attacker=char,
                         target=target,
                         item=weapon,
                         damage=damage
                     )
-                    self.obj.msg_contents(f"[DEBUG] get_combat_message returned: {msg!r}")
+                    self.obj.msg_contents(f"[DEBUG] get_combat_message (kill) returned: {msg!r}")
                     if msg:
                         self.obj.msg_contents(msg)
-                except Exception as e:
-                    self.obj.msg_contents(f"[DEBUG] Exception in combat message block: {e}")
 
-                target.take_damage(damage)
-                if target.is_dead():
-                    self.obj.msg_contents(f"[DEBUG] {target.key} has been defeated and removed from combat.")
-                    self.remove_combatant(target)  # Remove the defeated combatant immediately
-                    continue  # Skip further actions for this target
+                    self.remove_combatant(target)
+                    continue
             else:
-                self.obj.msg_contents(f"{char.key} misses {target.key}.")
+                # --- Player-facing miss message ---
+                msg = get_combat_message(
+                    weapon_type,
+                    "miss",
+                    attacker=char,
+                    target=target,
+                    item=weapon
+                )
+                self.obj.msg_contents(f"[DEBUG] get_combat_message (miss) returned: {msg!r}")
+                if msg:
+                    self.obj.msg_contents(msg)
+                else:
+                    self.obj.msg_contents(f"{char.key} misses {target.key}.")
 
         self.db.round += 1
         self.obj.msg_contents(f"[DEBUG] Combat round {self.db.round} scheduled.")
