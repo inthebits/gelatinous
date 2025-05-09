@@ -56,14 +56,18 @@ class CmdAttack(Command):
         combat.add_combatant(caller, target)
         combat.add_combatant(target)
 
-        # Get wielded weapon or fallback to "unarmed"
+        # --- Find weapon and weapon_type for both hit and miss ---
+        hands = caller.hands
         weapon = None
-        for hand, item in getattr(caller.db, "hands", {}).items():
+        for hand, item in hands.items():
             if item:
                 weapon = item
                 break
+            weapon_type = "unarmed"
+            if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
+                weapon_type = str(weapon.db.weapon_type).lower()
 
-        weapon_type = weapon.db.weapon_type if weapon else "unarmed"
+        # --- Player-facing initiate message ---
         msg = get_combat_message(weapon_type, "initiate", attacker=caller, target=target, item=weapon)
         caller.location.msg_contents(msg)
 
