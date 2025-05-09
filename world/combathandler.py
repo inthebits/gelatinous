@@ -156,15 +156,12 @@ class CombatHandler(DefaultScript):
 
                 # --- Player-facing combat message ---
                 try:
+                    hands = char.hands  # Always use the property, not char.db.hands
                     weapon = None
-                    hands = getattr(char.db, "hands", {})
-                    if not isinstance(hands, dict):
-                        self.obj.msg_contents(f"[DEBUG] char.db.hands is not a dict: {hands!r}")
-                        hands = {}
                     for hand, item in hands.items():
                         if item:
                             weapon = item
-                            break
+                            break  # Stop at the first found item
                     weapon_type = "unarmed"
                     if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
                         weapon_type = str(weapon.db.weapon_type).lower()
