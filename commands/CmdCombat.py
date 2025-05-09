@@ -56,8 +56,16 @@ class CmdAttack(Command):
         combat.add_combatant(caller, target)
         combat.add_combatant(target)
 
-        caller.msg(f"You prepare to attack {target.key}!")
-        target.msg(f"{caller.key} prepares to attack you!")
+        # Get wielded weapon or fallback to "unarmed"
+        weapon = None
+        for hand, item in getattr(caller.db, "hands", {}).items():
+        if item:
+            weapon = item
+            break
+
+        weapon_type = weapon.db.weapon_type if weapon else "unarmed"
+        msg = get_combat_message(weapon_type, "initiate", attacker=caller, target=target, item=weapon)
+        caller.location.msg_contents(msg)
 
 
 class CmdFlee(Command):
