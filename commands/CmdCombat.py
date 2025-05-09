@@ -69,7 +69,7 @@ class CmdAttack(Command):
 
         # --- Player-facing initiate message ---
         msg = get_combat_message(weapon_type, "initiate", attacker=caller, target=target, item=weapon)
-        caller.location.msg_contents(msg)
+        caller.location.msg_contents(f"|R{msg}|n")
 
 
 class CmdFlee(Command):
