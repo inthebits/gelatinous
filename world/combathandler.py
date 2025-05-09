@@ -2,7 +2,7 @@ from evennia import DefaultScript, create_script
 from random import randint
 from evennia.utils.utils import delay
 from world.combat_messages import get_combat_message
-from evennia.utils.logger import log_channel
+from evennia.utils.logger import ChannelDB
 
 COMBAT_SCRIPT_KEY = "combat_handler"
 
@@ -13,7 +13,7 @@ def get_or_create_combat(location):
     if script:
         script.stop()
     new_script = create_script("world.combathandler.CombatHandler", key=COMBAT_SCRIPT_KEY, obj=location)
-    log_channel("Splattercast", f"CombatHandler created.")
+    ChannelDB.objects.get_channel("Splattercast").msg("CombatHandler created.")
     return new_script
 
 class CombatHandler(DefaultScript):
@@ -28,17 +28,17 @@ class CombatHandler(DefaultScript):
 
 # This looks redundant and should be removed
     def at_start(self):
-        log_channel("Splattercast", f"[DEBUG] CombatHandler started.")
+        ChannelDB.objects.get_channel("Splattercast").msg("[DEBUG] CombatHandler started.")
 
     def start(self):
         """
         Start the combat handler, ensuring that at_repeat is called at regular intervals.
         """
         if self.is_active:
-            log_channel("Splattercast", f"[DEBUG] CombatHandler is already active. Skipping redundant start.")
+            ChannelDB.objects.get_channel("Splattercast").msg("[DEBUG] CombatHandler is already active. Skipping redundant start.")
             return
 
-        log_channel("Splattercast", f"CombatHandler started.")
+        ChannelDB.objects.get_channel("Splattercast").msg("CombatHandler started.")
         self.is_active = True  # Mark the handler as active
         self.start_repeat(self.interval)  # Schedule at_repeat to run at regular intervals
 
@@ -46,7 +46,7 @@ class CombatHandler(DefaultScript):
         """
         Clean up when combat ends.
         """
-        log_channel("Splattercast", f"[DEBUG] Combat ends.")
+        ChannelDB.objects.get_channel("Splattercast").msg("[DEBUG] Combat ends.")
         for entry in self.db.combatants:
             char = entry["char"]
             if char.ndb.combat_handler:
@@ -69,10 +69,10 @@ class CombatHandler(DefaultScript):
             "target": target
         })
         char.ndb.combat_handler = self
-        log_channel("Splattercast", f"{char.key} joins combat with initiative {initiative}.")
-        log_channel("Splattercast", f"{char.key} added to combat. Total combatants: {len(self.db.combatants)}.")
+        ChannelDB.objects.get_channel("Splattercast").msg("{char.key} joins combat with initiative {initiative}.")
+        ChannelDB.objects.get_channel("Splattercast").msg("{char.key} added to combat. Total combatants: {len(self.db.combatants)}.")
         if self.db.round == 0:
-            log_channel("Splattercast", f"Combat is in setup phase (round 0). Waiting for more combatants.")
+            ChannelDB.objects.get_channel("Splattercast").msg("Combat is in setup phase (round 0). Waiting for more combatants.")
 
         # Mark as ready to start if there are at least two combatants
         if len(self.db.combatants) > 1:
@@ -80,14 +80,14 @@ class CombatHandler(DefaultScript):
 
         # Start the combat handler if ready and not already active
         if self.db.ready_to_start and not self.is_active:
-            log_channel("Splattercast", f"Enough combatants added. Starting combat.")
+            ChannelDB.objects.get_channel("Splattercast").msg("Enough combatants added. Starting combat.")
             self.start()
 
     def remove_combatant(self, char):
         self.db.combatants = [entry for entry in self.db.combatants if entry["char"] != char]
         if char.ndb.combat_handler:
             del char.ndb.combat_handler
-        log_channel("Splattercast", f"{char.key} removed from combat.")
+        ChannelDB.objects.get_channel("Splattercast").msg("{char.key} removed from combat.")
         if len(self.db.combatants) <= 1:
             self.stop()
 
@@ -112,23 +112,23 @@ class CombatHandler(DefaultScript):
         if self.db.round == 0:
             # Setup phase: Ensure there are enough combatants to start combat
             active_combatants = [e for e in self.db.combatants if e["char"].location == self.obj]
-            log_channel("Splattercast", f"Round 0: Active combatants: {[e['char'].key for e in active_combatants]}.")
+            ChannelDB.objects.get_channel("Splattercast").msg("Round 0: Active combatants: {[e['char'].key for e in active_combatants]}.")
 
             if len(active_combatants) > 1:
-                log_channel("Splattercast", f"Enough combatants present. Starting combat in round 1.")
+                ChannelDB.objects.get_channel("Splattercast").msg("Enough combatants present. Starting combat in round 1.")
                 self.db.round = 1  # Transition to round 1
             else:
-                log_channel("Splattercast", f"Waiting for more combatants to join...")
+                ChannelDB.objects.get_channel("Splattercast").msg("Waiting for more combatants to join...")
                 return  # Exit early to prevent combat logic from running
 
         # Proceed with combat rounds
-        log_channel("Splattercast", f"Combat round {self.db.round} begins.")
+        ChannelDB.objects.get_channel("Splattercast").msg("Combat round {self.db.round} begins.")
         active_combatants = [e for e in self.db.combatants if e["char"].location == self.obj]
-        log_channel("Splattercast", f"Active combatants: {[e['char'].key for e in active_combatants]}.")
+        ChannelDB.objects.get_channel("Splattercast").msg("Active combatants: {[e['char'].key for e in active_combatants]}.")
 
         # Ensure there are enough combatants to proceed
         if len(active_combatants) <= 1:
-            log_channel("Splattercast", f"Not enough combatants remain. Ending combat.")
+            ChannelDB.objects.get_channel("Splattercast").msg("Not enough combatants remain. Ending combat.")
             self.stop()
             return
 
@@ -150,7 +150,7 @@ class CombatHandler(DefaultScript):
             atk_roll = randint(1, max(1, char.grit))
             def_roll = randint(1, max(1, target.motorics))
 
-            log_channel("Splattercast", f"{char.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
+            ChannelDB.objects.get_channel("Splattercast").msg("{char.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
 
             # --- Find weapon and weapon_type for both hit and miss ---
             hands = char.hands
@@ -165,7 +165,7 @@ class CombatHandler(DefaultScript):
 
             if atk_roll > def_roll:
                 damage = char.grit or 1
-                log_channel("Splattercast", f"{char.key} hits {target.key} for {damage} damage.")
+                ChannelDB.objects.get_channel("Splattercast").msg("{char.key} hits {target.key} for {damage} damage.")
 
                 # --- Player-facing hit message ---
                 msg = get_combat_message(
@@ -176,13 +176,13 @@ class CombatHandler(DefaultScript):
                     item=weapon,
                     damage=damage
                 )
-                log_channel("Splattercast", f"get_combat_message (hit) returned: {msg!r}")
+                ChannelDB.objects.get_channel("Splattercast").msg("get_combat_message (hit) returned: {msg!r}")
                 if msg:
                     self.obj.msg_contents(msg)
 
                 target.take_damage(damage)
                 if target.is_dead():
-                    log_channel("Splattercast", f"{target.key} has been defeated and removed from combat.")
+                    ChannelDB.objects.get_channel("Splattercast").msg("{target.key} has been defeated and removed from combat.")
 
                     # --- Player-facing kill message ---
                     msg = get_combat_message(
@@ -193,7 +193,7 @@ class CombatHandler(DefaultScript):
                         item=weapon,
                         damage=damage
                     )
-                    log_channel("Splattercast", f"get_combat_message (kill) returned: {msg!r}")
+                    ChannelDB.objects.get_channel("Splattercast").msg("get_combat_message (kill) returned: {msg!r}")
                     if msg:
                         self.obj.msg_contents(msg)
 
@@ -208,11 +208,11 @@ class CombatHandler(DefaultScript):
                     target=target,
                     item=weapon
                 )
-                log_channel("Splattercast", f"get_combat_message (miss) returned: {msg!r}")
+                ChannelDB.objects.get_channel("Splattercast").msg("get_combat_message (miss) returned: {msg!r}")
                 if msg:
                     self.obj.msg_contents(msg)
                 else:
                     self.obj.msg_contents(f"{char.key} misses {target.key}.")
 
         self.db.round += 1
-        log_channel("Splattercast", f"{self.db.round} scheduled.")
+        ChannelDB.objects.get_channel("Splattercast").msg("{self.db.round} scheduled.")
