@@ -155,28 +155,34 @@ class CombatHandler(DefaultScript):
                 self.obj.msg_contents(f"[DEBUG] {char.key} hits {target.key} for {damage} damage.")
 
                 # --- Player-facing combat message ---
-                weapon = None
-                hands = getattr(char.db, "hands", {})
-                for hand, item in hands.items():
-                    if item:
-                        weapon = item
-                        break
-                weapon_type = "unarmed"
-                if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
-                    weapon_type = weapon.db.weapon_type
-
-                self.obj.msg_contents(f"[DEBUG] get_combat_message({weapon_type!r}, 'hit', damage={damage})")
-                msg = get_combat_message(
-                    weapon_type,
-                    "hit",
-                    attacker=char,
-                    target=target,
-                    item=weapon,
-                    damage=damage
-                )
-                self.obj.msg_contents(f"[DEBUG] get_combat_message returned: {msg!r}")
-                if msg:
-                    self.obj.msg_contents(msg)
+                try:
+                    weapon = None
+                    hands = getattr(char.db, "hands", {})
+                    if not isinstance(hands, dict):
+                        self.obj.msg_contents(f"[DEBUG] char.db.hands is not a dict: {hands!r}")
+                        hands = {}
+                    for hand, item in hands.items():
+                        if item:
+                            weapon = item
+                            break
+                    weapon_type = "unarmed"
+                    if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
+                        weapon_type = str(weapon.db.weapon_type).lower()
+                    self.obj.msg_contents(f"[DEBUG] Using weapon_type: {weapon_type!r}, weapon: {getattr(weapon, 'key', None)}")
+                    self.obj.msg_contents(f"[DEBUG] get_combat_message({weapon_type!r}, 'hit', damage={damage})")
+                    msg = get_combat_message(
+                        weapon_type,
+                        "hit",
+                        attacker=char,
+                        target=target,
+                        item=weapon,
+                        damage=damage
+                    )
+                    self.obj.msg_contents(f"[DEBUG] get_combat_message returned: {msg!r}")
+                    if msg:
+                        self.obj.msg_contents(msg)
+                except Exception as e:
+                    self.obj.msg_contents(f"[DEBUG] Exception in combat message block: {e}")
 
                 target.take_damage(damage)
                 if target.is_dead():
