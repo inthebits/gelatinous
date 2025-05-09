@@ -211,4 +211,4 @@ class CombatHandler(DefaultScript):
                     self.obj.msg_contents(f"{char.key} misses {target.key}.")
 
         self.db.round += 1
-        ChannelDB.objects.get_channel("Splattercast").msg(f"{self.db.round} scheduled.")
+        ChannelDB.objects.get_channel("Splattercast").msg(f"Round {self.db.round} scheduled.")
