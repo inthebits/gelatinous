@@ -1,8 +1,7 @@
 import importlib
 import random
 
-
-def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None):
+def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None, **kwargs):
     """
     Load the appropriate combat message from a specific weapon_type module.
 
@@ -12,6 +11,7 @@ def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None
         attacker (Object): The attacker
         target (Object): The target
         item (Object): The weapon/item used
+        **kwargs: Any extra variables for formatting (e.g., damage)
 
     Returns:
         str: A formatted combat message string.
@@ -29,5 +29,6 @@ def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None
     return random.choice(templates).format(
         attacker=attacker.key if attacker else "Someone",
         target=target.key if target else "someone",
-        item=item.key if item else "something"
+        item=item.key if item else "something",
+        **kwargs
     )
