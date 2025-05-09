@@ -165,6 +165,7 @@ class CombatHandler(DefaultScript):
                 if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
                     weapon_type = weapon.db.weapon_type
 
+                self.obj.msg_contents(f"[DEBUG] get_combat_message({weapon_type!r}, 'hit', damage={damage})")
                 msg = get_combat_message(
                     weapon_type,
                     "hit",
@@ -173,6 +174,7 @@ class CombatHandler(DefaultScript):
                     item=weapon,
                     damage=damage
                 )
+                self.obj.msg_contents(f"[DEBUG] get_combat_message returned: {msg!r}")
                 if msg:
                     self.obj.msg_contents(msg)
 
