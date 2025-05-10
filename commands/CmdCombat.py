@@ -3,6 +3,7 @@ from evennia.utils.utils import inherits_from
 from random import randint, choice
 from world.combathandler import get_or_create_combat
 from world.combat_messages import get_combat_message
+from evennia.comms.models import ChannelDB
 
 
 class CmdAttack(Command):
@@ -101,7 +102,9 @@ class CmdFlee(Command):
 
         flee_roll = randint(1, caller.motorics)
         resist_roll = randint(1, target.motorics)
-        caller.msg(f"[DEBUG] Flee roll: {flee_roll} vs {resist_roll} ({target.key})")
+        ChannelDB.objects.get_channel("Splattercast").msg(
+            f"{caller.key} attempts to flee: {flee_roll} vs {resist_roll} ({target.key})"
+        )
 
         if flee_roll > resist_roll:
             caller.msg("You flee successfully!")
@@ -110,9 +113,11 @@ class CmdFlee(Command):
             exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
             if exits:
                 chosen_exit = choice(exits)
-                caller.msg(f"[DEBUG] You flee through {chosen_exit.key}!")
+                ChannelDB.objects.get_channel("Splattercast").msg(
+                    f"{caller.key} flees through {chosen_exit.key}."
+                )
                 caller.location.msg_contents(
-                    f"[DEBUG] {caller.key} flees {chosen_exit.key}.",
+                    f"{caller.key} flees {chosen_exit.key}.",
                     exclude=caller
                 )
                 chosen_exit.at_traverse(caller, chosen_exit.destination)
@@ -121,8 +126,11 @@ class CmdFlee(Command):
 
         else:
             caller.msg("You try to flee, but fail!")
+            ChannelDB.objects.get_channel("Splattercast").msg(
+                f"{caller.key} tries to flee but fails."
+            )
             caller.location.msg_contents(
-                f"[DEBUG] {caller.key} tries to flee but fails.",
+                f"{caller.key} tries to flee but fails.",
                 exclude=caller
             )
             caller.ndb.skip_combat_round = True
