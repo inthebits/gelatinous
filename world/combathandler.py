@@ -219,6 +219,18 @@ class CombatHandler(DefaultScript):
                         self.obj.msg_contents(f"|R{msg}|n")
 
                     self.remove_combatant(target)
+
+                    # Re-acquire targets for anyone who was targeting the now-removed character
+                    for entry in self.db.combatants:
+                        if entry.get("target") == target:
+                            new_target = self.get_target(entry["char"])
+                            old_name = target.key if hasattr(target, "key") else str(target)
+                            new_name = new_target.key if new_target else "None"
+                            ChannelDB.objects.get_channel("Splattercast").msg(
+                                f"{entry['char'].key} was targeting {old_name} (now removed) and now targets {new_name}."
+                            )
+                            entry["target"] = new_target
+
                     continue
             else:
                 # --- Player-facing miss message ---
