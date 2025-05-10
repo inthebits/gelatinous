@@ -7,13 +7,28 @@ from evennia.comms.models import ChannelDB
 COMBAT_SCRIPT_KEY = "combat_handler"
 
 def get_or_create_combat(location):
-    script = next((s for s in location.scripts.all() if s.key == COMBAT_SCRIPT_KEY), None)
-    if script and script.is_active:
-        return script
-    if script:
-        script.stop()
-    new_script = create_script("world.combathandler.CombatHandler", key=COMBAT_SCRIPT_KEY, obj=location)
-    ChannelDB.objects.get_channel("Splattercast").msg(f"CombatHandler created.")
+    """
+    Returns the active CombatHandler for this location, or creates one if needed.
+    Logs all actions to Splattercast for debugging.
+    """
+    splattercast = ChannelDB.objects.get_channel("Splattercast")
+    # Look for an existing handler on this location
+    for script in location.scripts.all():
+        if script.key == COMBAT_SCRIPT_KEY:
+            if script.is_active:
+                splattercast.msg(f"Found active CombatHandler on {location.key}.")
+                return script
+            else:
+                splattercast.msg(f"Found inactive CombatHandler on {location.key}, stopping it.")
+                script.stop()
+    # If not found, create a new one
+    new_script = create_script(
+        "world.combathandler.CombatHandler",
+        key=COMBAT_SCRIPT_KEY,
+        obj=location,
+        persistent=True,
+    )
+    splattercast.msg(f"Created new CombatHandler on {location.key}.")
     return new_script
 
 class CombatHandler(DefaultScript):
