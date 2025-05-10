@@ -40,20 +40,32 @@ class CmdAttack(Command):
 
         if not matches:
             caller.msg("No valid target found.")
+            ChannelDB.objects.get_channel("Splattercast").msg(
+                f"{caller.key} tried to attack '{search_name}' but found no valid target."
+            )
             return
 
         target = matches[0]
 
         if target == caller:
             caller.msg("You can't attack yourself.")
+            ChannelDB.objects.get_channel("Splattercast").msg(
+                f"{caller.key} tried to attack themselves. Ignored."
+            )
             return
 
         if not inherits_from(target, "typeclasses.characters.Character"):
             caller.msg("That can't be attacked.")
+            ChannelDB.objects.get_channel("Splattercast").msg(
+                f"{caller.key} tried to attack {target.key}, but it's not a valid character."
+            )
             return
 
         # Start or join combat
         combat = get_or_create_combat(caller.location)
+        ChannelDB.objects.get_channel("Splattercast").msg(
+            f"{caller.key} initiates combat with {target.key}."
+        )
         combat.add_combatant(caller, target)
         combat.add_combatant(target)
 
@@ -64,9 +76,13 @@ class CmdAttack(Command):
             if item:
                 weapon = item
                 break
-            weapon_type = "unarmed"
-            if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
-                weapon_type = str(weapon.db.weapon_type).lower()
+        weapon_type = "unarmed"
+        if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
+            weapon_type = str(weapon.db.weapon_type).lower()
+
+        ChannelDB.objects.get_channel("Splattercast").msg(
+            f"{caller.key} is wielding {weapon.key if weapon else 'nothing'} ({weapon_type})."
+        )
 
         # --- Player-facing initiate message ---
         msg = get_combat_message(weapon_type, "initiate", attacker=caller, target=target, item=weapon)
