@@ -88,10 +88,38 @@ class CombatHandler(DefaultScript):
             self.stop()
 
     def get_target(self, char):
-        for entry in self.db.combatants:
-            if entry["char"] == char:
-                return entry.get("target")
-        return None
+        entry = next((e for e in self.db.combatants if e["char"] == char), None)
+        if not entry:
+            ChannelDB.objects.get_channel("Splattercast").msg(f"No combat entry found for {char.key}.")
+            return None
+        target = entry.get("target")
+        valid_chars = [e["char"] for e in self.db.combatants]
+
+        if not target or target not in valid_chars:
+            ChannelDB.objects.get_channel("Splattercast").msg(
+                f"{char.key} has no valid target or their target is not in combat."
+            )
+            attackers = [e["char"] for e in self.db.combatants if e.get("target") == char and e["char"] != char]
+            ChannelDB.objects.get_channel("Splattercast").msg(
+                f"Attackers targeting {char.key}: {[a.key for a in attackers]}"
+            )
+            if attackers:
+                target = attackers[randint(0, len(attackers) - 1)]
+                ChannelDB.objects.get_channel("Splattercast").msg(
+                    f"{char.key} now targets {target.key} (was being targeted)."
+                )
+                self.set_target(char, target)
+            else:
+                ChannelDB.objects.get_channel("Splattercast").msg(
+                    f"{char.key} is not being targeted by anyone and will be removed from combat."
+                )
+                return None
+        else:
+            ChannelDB.objects.get_channel("Splattercast").msg(
+                f"{char.key} keeps current target {target.key}."
+            )
+
+        return target
 
     def set_target(self, char, target):
         for entry in self.db.combatants:
@@ -131,16 +159,13 @@ class CombatHandler(DefaultScript):
         # Proceed with combat round logic
         for entry in self.get_initiative_order():
             char = entry["char"]
-            target = entry.get("target")
-
-            if not target or target not in [e["char"] for e in self.db.combatants]:
-                others = [e["char"] for e in self.db.combatants if e["char"] != char]
-                if not others:
-                    continue
-                target = others[randint(0, len(others) - 1)]
-                self.set_target(char, target)
+            target = self.get_target(char)
 
             if not target:
+                ChannelDB.objects.get_channel("Splattercast").msg(
+                    f"{char.key} has no valid target and is not being targeted. Removing from combat."
+                )
+                self.remove_combatant(char)
                 continue
 
             atk_roll = randint(1, max(1, char.grit))
