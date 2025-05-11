@@ -42,7 +42,6 @@ class Exit(DefaultExit):
             self.aliases.add(alias)
 
     def at_traverse(self, traversing_object, target_location):
-        traversing_object.msg("DEBUG: at_traverse called on exit.")
         if getattr(traversing_object.ndb, "combat_handler", None):
             traversing_object.msg("|rYou can't leave while in combat! Try to flee instead.|n")
             splattercast = ChannelDB.objects.get_channel("Splattercast")
