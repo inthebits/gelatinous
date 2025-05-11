@@ -59,7 +59,7 @@ class CombatHandler(DefaultScript):
         for entry in self.db.combatants:
             char = entry["char"]
             ChannelDB.objects.get_channel("Splattercast").msg(f"{char.key} removed from combat.")
-                ChannelDB.objects.get_channel("Splattercast").msg(f"Combat ends.")
+            ChannelDB.objects.get_channel("Splattercast").msg(f"Combat ends.")
             if char.ndb.combat_handler:
                 del char.ndb.combat_handler
         self.stop_repeat()
