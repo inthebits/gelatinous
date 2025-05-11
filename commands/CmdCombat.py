@@ -111,20 +111,33 @@ class CmdFlee(Command):
             caller.msg("You're not in combat.")
             return
 
-        target = handler.get_target(caller)
-        if not target:
-            caller.msg("You have no current target to flee from.")
+        # Find all attackers targeting the caller
+        attackers = [e["char"] for e in handler.db.combatants if e.get("target") == caller and e["char"] != caller]
+        if not attackers:
+            caller.msg("No one is attacking you; you can just leave.")
+            ChannelDB.objects.get_channel("Splattercast").msg(
+                f"{caller.key} flees unopposed and leaves combat."
+            )
+            handler.remove_combatant(caller)
+            # End combat if only one or zero remain
+            if len(handler.db.combatants) <= 1:
+                handler.stop()
             return
 
         flee_roll = randint(1, caller.motorics)
-        resist_roll = randint(1, target.motorics)
+        resist_rolls = [(attacker, randint(1, attacker.motorics)) for attacker in attackers]
+        highest_attacker, highest_resist = max(resist_rolls, key=lambda x: x[1])
+
         ChannelDB.objects.get_channel("Splattercast").msg(
-            f"{caller.key} attempts to flee: {flee_roll} vs {resist_roll} ({target.key})"
+            f"{caller.key} attempts to flee: {flee_roll} vs highest resist {highest_resist} ({highest_attacker.key})"
         )
 
-        if flee_roll > resist_roll:
+        if flee_roll > highest_resist:
             caller.msg("You flee successfully!")
-            caller.ndb.skip_combat_round = True
+            ChannelDB.objects.get_channel("Splattercast").msg(
+                f"{caller.key} flees successfully from combat."
+            )
+            handler.remove_combatant(caller)
 
             exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
             if exits:
@@ -140,6 +153,9 @@ class CmdFlee(Command):
             else:
                 caller.msg("You flee, but there's nowhere to go!")
 
+            # End combat if only one or zero remain
+            if len(handler.db.combatants) <= 1:
+                handler.stop()
         else:
             caller.msg("You try to flee, but fail!")
             ChannelDB.objects.get_channel("Splattercast").msg(
