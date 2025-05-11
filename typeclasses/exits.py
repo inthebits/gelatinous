@@ -22,7 +22,7 @@ class Exit(DefaultExit):
 
     def at_object_creation(self):
         super().at_object_creation()
-        # Add abbreviation aliases for cardinal directions
+        # Add abbreviation aliases for cardinal directions TEST
         cardinal_aliases = {
             "north": "n",
             "south": "s",
