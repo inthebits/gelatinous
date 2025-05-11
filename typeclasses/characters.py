@@ -155,6 +155,7 @@ class Character(ObjectParent, DefaultCharacter):
         """
         Prevent movement if the character is in combat.
         """
+        self.msg("DEBUG: at_before_traverse called.")
         if getattr(self.ndb, "combat_handler", None):
             self.msg("|rYou can't leave while in combat! Try to flee instead.|n")
             return False  # Block movement
