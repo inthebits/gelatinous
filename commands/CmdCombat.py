@@ -147,10 +147,24 @@ class CmdFlee(Command):
             splattercast.msg(
                 f"{caller.key} flees unopposed and leaves combat."
             )
+            # Remove from combat first so exit doesn't block movement
             handler.remove_combatant(caller)
             if handler and handler.db.combatants and len(handler.db.combatants) <= 1:
                 handler.stop()
-            # Do not check len(handler.db.combatants) after this, as handler may be deleted!
+            # Now move through a random available exit
+            exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
+            if exits:
+                chosen_exit = choice(exits)
+                splattercast.msg(
+                    f"{caller.key} flees through {chosen_exit.key}."
+                )
+                caller.location.msg_contents(
+                    f"{caller.key} flees {chosen_exit.key}.",
+                    exclude=caller
+                )
+                chosen_exit.at_traverse(caller, chosen_exit.destination)
+            else:
+                caller.msg("You flee, but there's nowhere to go!")
             return
 
         flee_roll = randint(1, getattr(caller, "motorics", 1))
