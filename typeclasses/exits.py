@@ -42,6 +42,7 @@ class Exit(ObjectParent, DefaultExit):
             self.aliases.add(alias)
 
     def at_before_traverse(self, traversing_object):
+        traversing_object.msg("DEBUG: at_before_traverse called on exit.")
         """
         Prevent movement if the traversing object is in combat.
         """
