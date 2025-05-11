@@ -112,16 +112,19 @@ class CmdInventory(Command):
         items = caller.contents
         hands = caller.hands
 
-        if not items and all(v is None for v in hands.values()):
+        held_items = set(item for item in hands.values() if item)
+        inventory_items = [obj for obj in items if obj not in held_items]
+
+        if not inventory_items and all(v is None for v in hands.values()):
             caller.msg("You aren't carrying or holding anything.")
             return
 
         lines = []
 
         # Carried (not wielded)
-        if items:
+        if inventory_items:
             lines.append("|wCarrying:|n")
-            for obj in items:
+            for obj in inventory_items:
                 lines.append(f"  {obj.name}")
             lines.append("")
 
