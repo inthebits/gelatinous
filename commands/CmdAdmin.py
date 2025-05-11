@@ -1,5 +1,5 @@
 from evennia import Command
-from evennia.utils.search import search_object, search_object_by_key
+from evennia.utils.search import search_object
 from world.combat_messages import get_combat_message
 
 class CmdHeal(Command):
