@@ -232,6 +232,21 @@ class CmdDisarm(Command):
             splattercast.msg(f"{caller.key} tried to disarm {target.key}, but they have nothing in their hands.")
             return
 
+        # Grit vs Grit check
+        attacker_grit = getattr(caller, "grit", 1)
+        defender_grit = getattr(target, "grit", 1)
+        disarm_roll = randint(1, max(1, attacker_grit))
+        resist_roll = randint(1, max(1, defender_grit))
+        splattercast.msg(
+            f"{caller.key} attempts to disarm {target.key}: {disarm_roll} (grit) vs {resist_roll} (grit)"
+        )
+
+        if disarm_roll < resist_roll:
+            caller.msg(f"You try to disarm {target.key}, but they resist!")
+            target.msg(f"{caller.key} tried to disarm you, but you resisted!")
+            splattercast.msg(f"{caller.key} failed to disarm {target.key}.")
+            return
+
         # Prioritize weapon-type items
         weapon_hand = None
         for hand, item in hands.items():
@@ -262,5 +277,3 @@ class CmdDisarm(Command):
             exclude=[caller, target]
         )
         splattercast.msg(f"{caller.key} disarmed {target.key} ({item.key}) in {target.location.key}.")
-
-        # Optionally: you could add a roll or resistance mechanic here for more depth.
