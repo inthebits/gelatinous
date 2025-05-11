@@ -1,0 +1,11 @@
+*.pyc
+__pycache__/
+server/*.db3
+server/*.pid
+server/logs/
+server/.static/
+web/static/
+world/__pycache__/
+typeclasses/__pycache__/
+commands/__pycache__/
+
