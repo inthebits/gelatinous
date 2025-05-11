@@ -6,6 +6,27 @@ from world.combat_messages import get_combat_message
 from evennia.comms.models import ChannelDB
 
 
+def get_or_create_combat(location):
+    splattercast = ChannelDB.objects.get_channel("Splattercast")
+    for script in location.scripts.all():
+        if script.key == COMBAT_SCRIPT_KEY:
+            if script.is_active:
+                splattercast.msg(f"Found active CombatHandler on {location.key}.")
+                return script
+            else:
+                splattercast.msg(f"Found inactive CombatHandler on {location.key}, stopping and deleting it.")
+                script.stop()
+                script.delete()  # <-- Add this line
+    new_script = create_script(
+        "world.combathandler.CombatHandler",
+        key=COMBAT_SCRIPT_KEY,
+        obj=location,
+        persistent=True,
+    )
+    splattercast.msg(f"Created new CombatHandler on {location.key}.")
+    return new_script
+
+
 class CmdAttack(Command):
     """
     Attack a target in your current room.
