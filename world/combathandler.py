@@ -19,8 +19,9 @@ def get_or_create_combat(location):
                 splattercast.msg(f"Found active CombatHandler on {location.key}.")
                 return script
             else:
-                splattercast.msg(f"Found inactive CombatHandler on {location.key}, stopping it.")
+                splattercast.msg(f"Found inactive CombatHandler on {location.key}, stopping and deleting it.")
                 script.stop()
+                script.delete()  # <-- Add this line
     # If not found, create a new one
     new_script = create_script(
         "world.combathandler.CombatHandler",
