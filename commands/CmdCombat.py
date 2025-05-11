@@ -31,7 +31,6 @@ class CmdAttack(Command):
         search_name = self.args.strip().lower()
         candidates = caller.location.contents
 
-        # Match against key or aliases, case-insensitive partials allowed
         matches = [
             obj for obj in candidates
             if search_name in obj.key.lower()
@@ -61,7 +60,26 @@ class CmdAttack(Command):
             )
             return
 
-        # Start or join combat
+        # --- Combat/targeting logic ---
+        caller_handler = getattr(caller.ndb, "combat_handler", None)
+        target_handler = getattr(target.ndb, "combat_handler", None)
+
+        if caller_handler:
+            if not target_handler or target_handler != caller_handler:
+                caller.msg("You can't attack someone not already in combat while you're fighting!")
+                ChannelDB.objects.get_channel("Splattercast").msg(
+                    f"{caller.key} tried to attack {target.key} but target is not in same combat."
+                )
+                return
+            # Both are in the same combat, switch target
+            caller_handler.set_target(caller, target)
+            caller.msg(f"You switch your target to {target.key}.")
+            ChannelDB.objects.get_channel("Splattercast").msg(
+                f"{caller.key} switches target to {target.key} in combat."
+            )
+            return
+
+        # If not in combat, initiate as normal
         combat = get_or_create_combat(caller.location)
         ChannelDB.objects.get_channel("Splattercast").msg(
             f"{caller.key} initiates combat with {target.key}."
