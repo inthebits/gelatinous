@@ -106,7 +106,7 @@ class Character(ObjectParent, DefaultCharacter):
             self.msg(f"|r{line}|n")
 
     # MR. HANDS SYSTEM
-    # Persistent hand slots: supports dynamic anatomy
+    # Persistent hand slots: supports dynamic anatomy eventually
     hands = AttributeProperty(
         {"left": None, "right": None},
         category="equipment",
