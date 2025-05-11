@@ -79,6 +79,7 @@ class CombatHandler(DefaultScript):
     def add_combatant(self, char, target=None):
         """
         Add a character to combat, assigning initiative and an optional target.
+        Logs if joining an already-running combat.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
         if any(entry["char"] == char for entry in self.db.combatants):
@@ -94,6 +95,8 @@ class CombatHandler(DefaultScript):
         splattercast.msg(f"{char.key} added to combat. Total combatants: {len(self.db.combatants)}.")
         if self.db.round == 0:
             splattercast.msg(f"Combat is in setup phase (round 0). Waiting for more combatants.")
+        elif self.is_active:
+            splattercast.msg(f"{char.key} joined an already-running combat.")
         if len(self.db.combatants) > 1:
             self.db.ready_to_start = True
         if self.db.ready_to_start and not self.is_active:
