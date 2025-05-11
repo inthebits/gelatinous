@@ -1,5 +1,3 @@
-# chain_consolidated.py
-
 MESSAGES = {
     'initiate': [
         "A flick of the elbow sends the chain unfurling into space. The metal stretches and sighs.",
