@@ -71,7 +71,16 @@ class CmdAttack(Command):
                     f"{caller.key} tried to attack {target.key} but target is not in same combat."
                 )
                 return
-            # Both are in the same combat, switch target
+            # Both are in the same combat
+            # Check if already targeting this person
+            for entry in caller_handler.db.combatants:
+                if entry["char"] == caller and entry.get("target") == target:
+                    caller.msg(f"You're already attacking {target.key}.")
+                    ChannelDB.objects.get_channel("Splattercast").msg(
+                        f"{caller.key} tried to switch target to {target.key}, but was already targeting them."
+                    )
+                    return
+            # Switch target
             caller_handler.set_target(caller, target)
             caller.msg(f"You switch your target to {target.key}.")
             ChannelDB.objects.get_channel("Splattercast").msg(
