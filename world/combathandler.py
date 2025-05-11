@@ -68,6 +68,9 @@ class CombatHandler(DefaultScript):
         self.stop_repeat()
         self.is_active = False  # Mark the handler as inactive
 
+        # Delete the script to fully clean up
+        self.delete()
+
     def add_combatant(self, char, target=None):
         # Check if the character is already in combat
         if any(entry["char"] == char for entry in self.db.combatants):
