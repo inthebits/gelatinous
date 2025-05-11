@@ -94,8 +94,8 @@ class CmdAttack(Command):
         splattercast.msg(
             f"{caller.key} initiates combat with {target.key}."
         )
-        combat.add_combatant(caller, target)
-        combat.add_combatant(target)
+        combat.add_combatant(caller, target)      # Attacker targets defender
+        combat.add_combatant(target, caller)      # Defender targets attacker
 
         # --- Find weapon and weapon_type for both hit and miss ---
         hands = getattr(caller, "hands", {})
