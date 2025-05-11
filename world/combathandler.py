@@ -55,11 +55,11 @@ class CombatHandler(DefaultScript):
         self.start_repeat(self.interval)  # Schedule at_repeat to run at regular intervals
 
     def at_stop(self):
-        ChannelDB.objects.get_channel("Splattercast").msg(f"Combat ends.")
         # Announce and clean up any remaining combatant
         for entry in self.db.combatants:
             char = entry["char"]
             ChannelDB.objects.get_channel("Splattercast").msg(f"{char.key} removed from combat.")
+                ChannelDB.objects.get_channel("Splattercast").msg(f"Combat ends.")
             if char.ndb.combat_handler:
                 del char.ndb.combat_handler
         self.stop_repeat()
