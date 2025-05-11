@@ -10,8 +10,8 @@ for allowing Characters to traverse the exit to its destination.
 from evennia.objects.objects import DefaultExit
 from evennia.comms.models import ChannelDB
 
-# REMOVE ObjectParent for troubleshooting
-# from .objects import ObjectParent
+
+from .objects import ObjectParent
 
 class Exit(DefaultExit):
     """
@@ -41,12 +41,11 @@ class Exit(DefaultExit):
         if alias and alias not in self.aliases.all():
             self.aliases.add(alias)
 
-    def at_before_traverse(self, traversing_object):
-        traversing_object.msg("DEBUG: at_before_traverse called on exit.")
-        # Prevent movement if the traversing object is in combat.
+    def at_traverse(self, traversing_object, target_location):
+        traversing_object.msg("DEBUG: at_traverse called on exit.")
         if getattr(traversing_object.ndb, "combat_handler", None):
             traversing_object.msg("|rYou can't leave while in combat! Try to flee instead.|n")
             splattercast = ChannelDB.objects.get_channel("Splattercast")
             splattercast.msg(f"{traversing_object.key} tried to move via exit '{self.key}' while in combat.")
-            return False  # Block movement
-        return True  # Allow movement
+            return  # Block movement by not calling super()
+        super().at_traverse(traversing_object, target_location)
