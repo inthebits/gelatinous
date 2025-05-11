@@ -42,6 +42,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdCharacter.CmdStats)
         self.add(CmdSpawnMob())
         self.add(CmdAdmin.CmdHeal())
+        self.add(CmdAdmin.CmdPeace())
         self.add(CmdCombat.CmdFlee)
         self.add(CmdInventory.CmdWield())
         self.add(CmdInventory.CmdUnwield())
