@@ -195,3 +195,73 @@ class CmdFlee(Command):
                 exclude=caller
             )
             caller.ndb.skip_combat_round = True
+
+
+class CmdDisarm(Command):
+    """
+    Attempt to disarm your current combat target, sending their weapon (or held item) to the ground.
+
+    Usage:
+        disarm
+
+    You must be in combat and have a valid target.
+    The command will prioritize disarming weapons, but will disarm any held item if no weapon is found.
+    """
+
+    key = "disarm"
+    locks = "cmd:all()"
+
+    def func(self):
+        caller = self.caller
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+
+        handler = getattr(caller.ndb, "combat_handler", None)
+        if not handler:
+            caller.msg("You are not in combat.")
+            splattercast.msg(f"{caller.key} tried to disarm but is not in combat.")
+            return
+
+        target = handler.get_target(caller)
+        if not target:
+            caller.msg("You have no valid target to disarm.")
+            splattercast.msg(f"{caller.key} tried to disarm but has no valid target.")
+            return
+
+        hands = getattr(target, "hands", {})
+        if not hands:
+            caller.msg(f"{target.key} has nothing in their hands to disarm.")
+            splattercast.msg(f"{caller.key} tried to disarm {target.key}, but they have nothing in their hands.")
+            return
+
+        # Prioritize weapon-type items
+        weapon_hand = None
+        for hand, item in hands.items():
+            if item and hasattr(item.db, "weapon_type") and item.db.weapon_type:
+                weapon_hand = hand
+                break
+
+        # If no weapon, disarm any held item
+        if not weapon_hand:
+            for hand, item in hands.items():
+                if item:
+                    weapon_hand = hand
+                    break
+
+        if not weapon_hand:
+            caller.msg(f"{target.key} has nothing to disarm.")
+            splattercast.msg(f"{caller.key} tried to disarm {target.key}, but nothing was found.")
+            return
+
+        item = hands[weapon_hand]
+        # Remove from hand and move to ground
+        hands[weapon_hand] = None
+        item.move_to(target.location, quiet=True)
+        caller.msg(f"You disarm {target.key}, sending {item.key} to the ground!")
+        target.msg(f"{caller.key} disarms you! {item.key} falls to the ground.")
+        target.location.msg_contents(
+            f"{caller.key} disarms {target.key}, and {item.key} falls to the ground.",
+            exclude=[caller, target]
+        )
+        splattercast.msg(f"{caller.key} disarmed {target.key} ({item.key}) in {target.location.key}.")
+
+        # Optionally: you could add a roll or resistance mechanic here for more depth.
