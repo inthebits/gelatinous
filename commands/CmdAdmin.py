@@ -1,6 +1,7 @@
 from evennia import Command
 from evennia.utils.search import search_object
 from world.combat_messages import get_combat_message
+from evennia.comms.models import ChannelDB
 
 class CmdHeal(Command):
     """
@@ -121,6 +122,7 @@ class CmdPeace(Command):
 
     def func(self):
         caller = self.caller
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
 
         # Default to caller's location
         location = caller.location
@@ -132,22 +134,27 @@ class CmdPeace(Command):
                 room = search_object(room_arg)
                 if not room:
                     caller.msg(f"|rNo room found with dbref {room_arg}.|n")
+                    splattercast.msg(f"@peace failed: No room found with dbref {room_arg}.")
                     return
                 location = room[0]
             else:
                 caller.msg("|rUsage: @peace [<room #>]|n")
+                splattercast.msg("@peace failed: Invalid room argument.")
                 return
 
         if not location:
             caller.msg("|rYou have no location.|n")
+            splattercast.msg("@peace failed: Caller has no location.")
             return
 
         # Find all combat handlers on this location
         handlers = [script for script in location.scripts.all() if script.key == "combat_handler"]
         if not handlers:
             caller.msg(f"|yNo combat to end in {location.key}.|n")
+            splattercast.msg(f"@peace: No combat to end in {location.key}.")
             return
 
         for handler in handlers:
             handler.stop()
         caller.msg(f"|gAll combat in {location.key} has been ended.|n")
+        splattercast.msg(f"@peace: All combat in {location.key} has been ended by {caller.key}.")
