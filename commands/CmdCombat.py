@@ -148,9 +148,7 @@ class CmdFlee(Command):
                 f"{caller.key} flees unopposed and leaves combat."
             )
             handler.remove_combatant(caller)
-            # End combat if only one or zero remain
-            if len(handler.db.combatants) <= 1:
-                handler.stop()
+            # Do not check len(handler.db.combatants) after this, as handler may be deleted!
             return
 
         flee_roll = randint(1, getattr(caller, "motorics", 1))
