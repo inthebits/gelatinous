@@ -150,3 +150,12 @@ class Character(ObjectParent, DefaultCharacter):
             else:
                 lines.append(f"{hand.title()} Hand: (empty)")
         return lines
+
+    def at_before_traverse(self, destination):
+        """
+        Prevent movement if the character is in combat.
+        """
+        if getattr(self.ndb, "combat_handler", None):
+            self.msg("|rYou can't leave while in combat! Try to flee instead.|n")
+            return False  # Block movement
+        return super().at_before_traverse(destination)
