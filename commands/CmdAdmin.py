@@ -103,3 +103,51 @@ class CmdHeal(Command):
 
         if len(targets) > 1:
             caller.msg(f"|gHealed {len(targets)} targets in {target_desc}.|n")
+
+class CmdPeace(Command):
+    """
+    Instantly end all combat in your current room or a specified room.
+
+    Usage:
+        @peace
+        @peace <room #>
+
+    This will stop all combat handlers in your current location or in the specified room.
+    """
+
+    key = "@peace"
+    locks = "cmd:perm(Builders) or perm(Developers)"
+    help_category = "Admin"
+
+    def func(self):
+        caller = self.caller
+
+        # Default to caller's location
+        location = caller.location
+
+        # If a room dbref is provided, use that instead
+        if self.args:
+            room_arg = self.args.strip()
+            if room_arg.startswith("#") and room_arg[1:].isdigit():
+                room = search_object(room_arg)
+                if not room:
+                    caller.msg(f"|rNo room found with dbref {room_arg}.|n")
+                    return
+                location = room[0]
+            else:
+                caller.msg("|rUsage: @peace [<room #>]|n")
+                return
+
+        if not location:
+            caller.msg("|rYou have no location.|n")
+            return
+
+        # Find all combat handlers on this location
+        handlers = [script for script in location.scripts.all() if script.key == "combat_handler"]
+        if not handlers:
+            caller.msg(f"|yNo combat to end in {location.key}.|n")
+            return
+
+        for handler in handlers:
+            handler.stop()
+        caller.msg(f"|gAll combat in {location.key} has been ended.|n")
