@@ -72,7 +72,6 @@ class CombatHandler(DefaultScript):
             if char.ndb.combat_handler:
                 del char.ndb.combat_handler
         splattercast.msg("Combat ends.")
-        self.stop()
         self.is_active = False
         self.delete()
 
