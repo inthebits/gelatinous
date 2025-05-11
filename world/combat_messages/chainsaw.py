@@ -1,5 +1,3 @@
-# chainsaw_consolidated.py
-
 MESSAGES = {
     'initiate': [
         "A guttural sound fills the room as the saw turns over. It doesn’t want to start — it *needs* to.",
