@@ -205,12 +205,12 @@ class CombatHandler(DefaultScript):
                 )
                 self.remove_combatant(char)
                 continue
-            # Roll for attack and defense
-            atk_roll = randint(1, max(1, char.grit))
-            def_roll = randint(1, max(1, target.motorics))
+            # Defensive attribute access for combat stats
+            atk_roll = randint(1, max(1, getattr(char, "grit", 1)))
+            def_roll = randint(1, max(1, getattr(target, "motorics", 1)))
             splattercast.msg(f"{char.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
-            # Determine weapon and type
-            hands = char.hands
+            # Defensive access for hands/weapon
+            hands = getattr(char, "hands", {})
             weapon = None
             for hand, item in hands.items():
                 if item:
@@ -221,7 +221,7 @@ class CombatHandler(DefaultScript):
                 weapon_type = str(weapon.db.weapon_type).lower()
             if atk_roll > def_roll:
                 # Successful hit
-                damage = char.grit or 1
+                damage = getattr(char, "grit", 1) or 1
                 splattercast.msg(f"{char.key} hits {target.key} for {damage} damage.")
                 msg = get_combat_message(
                     weapon_type,
@@ -234,8 +234,10 @@ class CombatHandler(DefaultScript):
                 splattercast.msg(f"get_combat_message (hit) returned: {msg!r}")
                 if msg:
                     self.obj.msg_contents(f"|R{msg}|n")
-                target.take_damage(damage)
-                if target.is_dead():
+                # Defensive: ensure take_damage exists
+                if hasattr(target, "take_damage"):
+                    target.take_damage(damage)
+                if hasattr(target, "is_dead") and target.is_dead():
                     # Handle death and retargeting
                     splattercast.msg(f"{target.key} has been defeated and removed from combat.")
                     msg = get_combat_message(
