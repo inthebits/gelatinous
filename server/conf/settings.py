@@ -60,6 +60,10 @@ CSRF_TRUSTED_ORIGINS = ['https://gel.monster', 'https://gelatinous.monster', 'ht
 # offers the fallback ajax-based webclient backbone for browsers not supporting
 # the websocket one.
 WEBCLIENT_ENABLED = False
+
+# Default exit typeclass
+DEFAULT_EXIT_TYPECLASS = "typeclasses.exits.Exit"
+
 ######################################################################
 # Django web features
 ######################################################################
