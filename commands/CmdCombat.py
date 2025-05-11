@@ -23,6 +23,7 @@ class CmdAttack(Command):
 
     def func(self):
         caller = self.caller
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
 
         if not self.args:
             caller.msg("Attack who?")
@@ -39,7 +40,7 @@ class CmdAttack(Command):
 
         if not matches:
             caller.msg("No valid target found.")
-            ChannelDB.objects.get_channel("Splattercast").msg(
+            splattercast.msg(
                 f"{caller.key} tried to attack '{search_name}' but found no valid target."
             )
             return
@@ -48,14 +49,14 @@ class CmdAttack(Command):
 
         if target == caller:
             caller.msg("You can't attack yourself.")
-            ChannelDB.objects.get_channel("Splattercast").msg(
+            splattercast.msg(
                 f"{caller.key} tried to attack themselves. Ignored."
             )
             return
 
         if not inherits_from(target, "typeclasses.characters.Character"):
             caller.msg("That can't be attacked.")
-            ChannelDB.objects.get_channel("Splattercast").msg(
+            splattercast.msg(
                 f"{caller.key} tried to attack {target.key}, but it's not a valid character."
             )
             return
@@ -67,7 +68,7 @@ class CmdAttack(Command):
         if caller_handler:
             if not target_handler or target_handler != caller_handler:
                 caller.msg("You can't attack someone not already in combat while you're fighting!")
-                ChannelDB.objects.get_channel("Splattercast").msg(
+                splattercast.msg(
                     f"{caller.key} tried to attack {target.key} but target is not in same combat."
                 )
                 return
@@ -76,28 +77,28 @@ class CmdAttack(Command):
             for entry in caller_handler.db.combatants:
                 if entry["char"] == caller and entry.get("target") == target:
                     caller.msg(f"You're already attacking {target.key}.")
-                    ChannelDB.objects.get_channel("Splattercast").msg(
+                    splattercast.msg(
                         f"{caller.key} tried to switch target to {target.key}, but was already targeting them."
                     )
                     return
             # Switch target
             caller_handler.set_target(caller, target)
             caller.msg(f"You switch your target to {target.key}.")
-            ChannelDB.objects.get_channel("Splattercast").msg(
+            splattercast.msg(
                 f"{caller.key} switches target to {target.key} in combat."
             )
             return
 
         # If not in combat, initiate as normal
         combat = get_or_create_combat(caller.location)
-        ChannelDB.objects.get_channel("Splattercast").msg(
+        splattercast.msg(
             f"{caller.key} initiates combat with {target.key}."
         )
         combat.add_combatant(caller, target)
         combat.add_combatant(target)
 
         # --- Find weapon and weapon_type for both hit and miss ---
-        hands = caller.hands
+        hands = getattr(caller, "hands", {})
         weapon = None
         for hand, item in hands.items():
             if item:
@@ -107,7 +108,7 @@ class CmdAttack(Command):
         if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
             weapon_type = str(weapon.db.weapon_type).lower()
 
-        ChannelDB.objects.get_channel("Splattercast").msg(
+        splattercast.msg(
             f"{caller.key} is wielding {weapon.key if weapon else 'nothing'} ({weapon_type})."
         )
 
@@ -133,6 +134,7 @@ class CmdFlee(Command):
     def func(self):
         caller = self.caller
         handler = caller.ndb.combat_handler
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
 
         if not handler:
             caller.msg("You're not in combat.")
@@ -142,7 +144,7 @@ class CmdFlee(Command):
         attackers = [e["char"] for e in handler.db.combatants if e.get("target") == caller and e["char"] != caller]
         if not attackers:
             caller.msg("No one is attacking you; you can just leave.")
-            ChannelDB.objects.get_channel("Splattercast").msg(
+            splattercast.msg(
                 f"{caller.key} flees unopposed and leaves combat."
             )
             handler.remove_combatant(caller)
@@ -151,17 +153,17 @@ class CmdFlee(Command):
                 handler.stop()
             return
 
-        flee_roll = randint(1, caller.motorics)
-        resist_rolls = [(attacker, randint(1, attacker.motorics)) for attacker in attackers]
+        flee_roll = randint(1, getattr(caller, "motorics", 1))
+        resist_rolls = [(attacker, randint(1, getattr(attacker, "motorics", 1))) for attacker in attackers]
         highest_attacker, highest_resist = max(resist_rolls, key=lambda x: x[1])
 
-        ChannelDB.objects.get_channel("Splattercast").msg(
+        splattercast.msg(
             f"{caller.key} attempts to flee: {flee_roll} vs highest resist {highest_resist} ({highest_attacker.key})"
         )
 
         if flee_roll > highest_resist:
             caller.msg("You flee successfully!")
-            ChannelDB.objects.get_channel("Splattercast").msg(
+            splattercast.msg(
                 f"{caller.key} flees successfully from combat."
             )
             handler.remove_combatant(caller)
@@ -169,7 +171,7 @@ class CmdFlee(Command):
             exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
             if exits:
                 chosen_exit = choice(exits)
-                ChannelDB.objects.get_channel("Splattercast").msg(
+                splattercast.msg(
                     f"{caller.key} flees through {chosen_exit.key}."
                 )
                 caller.location.msg_contents(
@@ -185,7 +187,7 @@ class CmdFlee(Command):
                 handler.stop()
         else:
             caller.msg("You try to flee, but fail!")
-            ChannelDB.objects.get_channel("Splattercast").msg(
+            splattercast.msg(
                 f"{caller.key} tries to flee but fails."
             )
             caller.location.msg_contents(
