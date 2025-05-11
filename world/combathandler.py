@@ -196,7 +196,7 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"Not enough combatants remain. Ending combat.")
             self.stop()
             return
-        for entry in self.get_initiative_order():
+        for entry in list(self.get_initiative_order()):
             char = entry["char"]
             target = self.get_target(char)
             if not target:
