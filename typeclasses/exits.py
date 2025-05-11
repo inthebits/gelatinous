@@ -20,6 +20,27 @@ class Exit(ObjectParent, DefaultExit):
     and methods to represent the exits.
     """
 
+    def at_object_creation(self):
+        super().at_object_creation()
+        # Add abbreviation aliases for cardinal directions
+        cardinal_aliases = {
+            "north": "n",
+            "south": "s",
+            "east": "e",
+            "west": "w",
+            "northeast": "ne",
+            "northwest": "nw",
+            "southeast": "se",
+            "southwest": "sw",
+            "up": "u",
+            "down": "d",
+            "in": "in",
+            "out": "out"
+        }
+        alias = cardinal_aliases.get(self.key.lower())
+        if alias and alias not in self.aliases.all():
+            self.aliases.add(alias)
+
     def at_before_traverse(self, traversing_object):
         """
         Prevent movement if the traversing object is in combat.
