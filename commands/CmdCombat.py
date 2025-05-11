@@ -148,6 +148,8 @@ class CmdFlee(Command):
                 f"{caller.key} flees unopposed and leaves combat."
             )
             handler.remove_combatant(caller)
+            if handler and handler.db.combatants and len(handler.db.combatants) <= 1:
+                handler.stop()
             # Do not check len(handler.db.combatants) after this, as handler may be deleted!
             return
 
@@ -165,6 +167,8 @@ class CmdFlee(Command):
                 f"{caller.key} flees successfully from combat."
             )
             handler.remove_combatant(caller)
+            if handler and handler.db.combatants and len(handler.db.combatants) <= 1:
+                handler.stop()
 
             exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
             if exits:
@@ -180,9 +184,6 @@ class CmdFlee(Command):
             else:
                 caller.msg("You flee, but there's nowhere to go!")
 
-            # End combat if only one or zero remain
-            if len(handler.db.combatants) <= 1:
-                handler.stop()
         else:
             caller.msg("You try to flee, but fail!")
             splattercast.msg(
