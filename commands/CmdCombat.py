@@ -12,7 +12,7 @@ class CmdAttack(Command):
 
     Usage:
         attack <target>
-        kill <target>
+        kill <target>test
 
     Initiates combat and adds you and your target to the CombatHandler.
     """
