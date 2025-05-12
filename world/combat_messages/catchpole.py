@@ -1,5 +1,3 @@
-# catchpole.py
-
 MESSAGES = {
     "initiate": [
         "{attacker} lunges the catchpole forward, its hooked end snapping through the air with vicious intent as {target} braces for impact.",
