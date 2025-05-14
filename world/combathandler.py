@@ -245,7 +245,18 @@ class CombatHandler(DefaultScript):
                     splattercast.msg(f"DEBUG: char.ndb is None or does not exist.")
             # --- Debugging End ---
 
-            action_intent = char.ndb.get("combat_action")
+            action_intent = None
+            # Safely attempt to get the combat_action
+            # First, get the 'get' attribute from char.ndb, if it exists
+            ndb_get_method = getattr(char.ndb, 'get', None) 
+            
+            if callable(ndb_get_method):
+                action_intent = ndb_get_method("combat_action")
+            else:
+                splattercast.msg(f"CRITICAL WARNING for {char.key}: char.ndb.get is not a callable method! Value: {ndb_get_method}. Cannot retrieve combat_action.")
+                # action_intent will remain None, and the turn will proceed as if no special action was set.
+                # You might want to add further error handling or logging here if this state is unexpected.
+
             if action_intent: # Clear after reading
                 del char.ndb.combat_action
 
