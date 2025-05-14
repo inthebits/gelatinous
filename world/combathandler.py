@@ -235,11 +235,6 @@ class CombatHandler(DefaultScript):
             if not current_char_combat_entry: # Should not happen if char is still in active_combatants
                 splattercast.msg(f"Error: Could not find combat entry for {char.key} mid-turn.")
                 continue
-            
-            # --- Debugging Start ---
-            # You can remove these debug logs now if you wish, or keep them for a bit
-            splattercast.msg(f"DEBUG: Processing char: {char.key if char else 'NoneChar'}, type: {type(char)}")
-            # --- Debugging End ---
 
             # Retrieve action_intent from the combatant's entry in the handler
             action_intent = current_char_combat_entry.get("combat_action")
