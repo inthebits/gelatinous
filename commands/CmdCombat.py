@@ -291,3 +291,152 @@ class CmdDisarm(Command):
             exclude=[caller, target]
         )
         splattercast.msg(f"{caller.key} disarmed {target.key} ({item.key}) in {target.location.key}.")
+
+
+class CmdGrapple(Command):
+    """
+    Attempt to grapple a target in your current room.
+
+    Usage:
+        grapple <target>
+
+    You must be in combat to attempt a grapple.
+    If successful, you will be grappling the target, and they will be grappled by you.
+    """
+    key = "grapple"
+    locks = "cmd:all()"
+
+    def func(self):
+        caller = self.caller
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+
+        if not self.args:
+            caller.msg("Grapple whom?")
+            return
+
+        handler = getattr(caller.ndb, "combat_handler", None)
+        if not handler:
+            caller.msg("You are not in combat.")
+            splattercast.msg(f"{caller.key} tried to grapple but is not in combat.")
+            return
+        
+        # Check if caller is already grappling someone
+        caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        if caller_entry and caller_entry.get("grappling"):
+            caller.msg(f"You are already grappling {caller_entry['grappling'].key}. You must release them first.")
+            splattercast.msg(f"{caller.key} tried to grapple while already grappling {caller_entry['grappling'].key}.")
+            return
+        
+        # Check if caller is currently grappled by someone else
+        if caller_entry and caller_entry.get("grappled_by"):
+            caller.msg(f"You cannot initiate a grapple while {caller_entry['grappled_by'].key} is grappling you. Try to escape first.")
+            splattercast.msg(f"{caller.key} tried to grapple while being grappled by {caller_entry['grappled_by'].key}.")
+            return
+
+        search_name = self.args.strip().lower()
+        # Ensure target is in the same combat
+        valid_targets = [e["char"] for e in handler.db.combatants if e["char"] != caller]
+        
+        matches = [
+            obj for obj in valid_targets
+            if search_name in obj.key.lower()
+            or any(search_name in alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else []))
+        ]
+
+        if not matches:
+            caller.msg("No valid target to grapple in this combat.")
+            splattercast.msg(
+                f"{caller.key} tried to grapple '{search_name}' but found no valid target in combat."
+            )
+            return
+
+        target = matches[0]
+
+        if target == caller: # Should be caught by valid_targets but good to double check
+            caller.msg("You can't grapple yourself.")
+            return
+
+        # Check if target is already grappled by someone else
+        target_entry = next((e for e in handler.db.combatants if e["char"] == target), None)
+        if target_entry and target_entry.get("grappled_by"):
+            caller.msg(f"{target.key} is already being grappled by {target_entry['grappled_by'].key}.")
+            splattercast.msg(f"{caller.key} tried to grapple {target.key}, but they are already grappled by {target_entry['grappled_by'].key}.")
+            return
+
+        caller.ndb.combat_action = {"type": "grapple", "target": target}
+        caller.msg(f"You attempt to grapple {target.key}...")
+        splattercast.msg(f"{caller.key} sets combat action to grapple {target.key}.")
+        # The combat handler will process this on the character's turn
+
+
+class CmdEscapeGrapple(Command):
+    """
+    Attempt to escape from a grapple.
+
+    Usage:
+        escape
+
+    You must be grappled by someone to use this command.
+    """
+    key = "escape"
+    aliases = ["resist"]
+    locks = "cmd:all()"
+
+    def func(self):
+        caller = self.caller
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+
+        handler = getattr(caller.ndb, "combat_handler", None)
+        if not handler:
+            caller.msg("You are not in combat.")
+            splattercast.msg(f"{caller.key} tried to escape grapple but is not in combat.")
+            return
+
+        caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        if not caller_entry or not caller_entry.get("grappled_by"):
+            caller.msg("You are not currently being grappled by anyone.")
+            splattercast.msg(f"{caller.key} tried to escape grapple but is not grappled.")
+            return
+        
+        grappler = caller_entry["grappled_by"]
+        caller.ndb.combat_action = {"type": "escape"}
+        caller.msg(f"You attempt to escape from {grappler.key}'s grapple...")
+        splattercast.msg(f"{caller.key} sets combat action to escape grapple from {grappler.key}.")
+        # The combat handler will process this
+
+
+class CmdReleaseGrapple(Command):
+    """
+    Release a target you are currently grappling.
+
+    Usage:
+        release
+        release grapple
+
+    You must be grappling someone to use this command.
+    """
+    key = "release"
+    aliases = ["release grapple"]
+    locks = "cmd:all()"
+
+    def func(self):
+        caller = self.caller
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+
+        handler = getattr(caller.ndb, "combat_handler", None)
+        if not handler:
+            caller.msg("You are not in combat.")
+            splattercast.msg(f"{caller.key} tried to release grapple but is not in combat.")
+            return
+
+        caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        if not caller_entry or not caller_entry.get("grappling"):
+            caller.msg("You are not currently grappling anyone.")
+            splattercast.msg(f"{caller.key} tried to release grapple but is not grappling anyone.")
+            return
+            
+        grappled_victim = caller_entry["grappling"]
+        caller.ndb.combat_action = {"type": "release_grapple"} # Target is implicit (who they are grappling)
+        caller.msg(f"You prepare to release {grappled_victim.key}...")
+        splattercast.msg(f"{caller.key} sets combat action to release grapple on {grappled_victim.key}.")
+        # The combat handler will process this

@@ -79,6 +79,7 @@ class CombatHandler(DefaultScript):
         """
         Add a character to combat, assigning initiative and an optional target.
         Logs if joining an already-running combat.
+        Initializes grapple status.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
         if any(entry["char"] == char for entry in self.db.combatants):
@@ -87,7 +88,9 @@ class CombatHandler(DefaultScript):
         self.db.combatants.append({
             "char": char,
             "initiative": initiative,
-            "target": target
+            "target": target,
+            "grappling": None,  # Character object this char is grappling
+            "grappled_by": None,  # Character object grappling this char
         })
         char.ndb.combat_handler = self
         splattercast.msg(f"{char.key} joins combat with initiative {initiative}.")
@@ -106,8 +109,31 @@ class CombatHandler(DefaultScript):
         """
         Remove a character from combat and clean up their handler reference.
         If only one or zero combatants remain, end combat.
+        Also handles releasing any grapples involving this character.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
+
+        # Check if the removed character was grappling someone
+        char_combat_entry = next((e for e in self.db.combatants if e["char"] == char), None)
+        if char_combat_entry and char_combat_entry.get("grappling"):
+            grappled_victim = char_combat_entry["grappling"]
+            victim_entry = next((e for e in self.db.combatants if e["char"] == grappled_victim), None)
+            if victim_entry:
+                victim_entry["grappled_by"] = None
+                splattercast.msg(f"{char.key} was grappling {grappled_victim.key}. {grappled_victim.key} is now free.")
+        
+        # Check if the removed character was grappled by someone
+        # and release that grapple from the grappler's side
+        for entry in self.db.combatants:
+            if entry.get("grappling") == char:
+                entry["grappling"] = None
+                splattercast.msg(f"{entry['char'].key} was grappling {char.key} (now removed). {entry['char'].key} is no longer grappling.")
+            if entry.get("char") == char and entry.get("grappled_by"): # Redundant due to above, but safe
+                grappler = entry["grappled_by"]
+                grappler_entry = next((e for e in self.db.combatants if e["char"] == grappler), None)
+                if grappler_entry:
+                    grappler_entry["grappling"] = None
+
         self.db.combatants = [entry for entry in self.db.combatants if entry["char"] != char]
         if char.ndb.combat_handler:
             del char.ndb.combat_handler
@@ -174,6 +200,7 @@ class CombatHandler(DefaultScript):
         Main combat loop, processes each combatant's turn in initiative order.
         Handles attacks, misses, deaths, and round progression.
         Removes combatants with no valid target or who are not being targeted.
+        Includes logic for grapple actions.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
         if not self.is_active:
@@ -195,37 +222,163 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"Not enough combatants remain. Ending combat.")
             self.stop()
             return
-        for entry in list(self.get_initiative_order()):
-            char = entry["char"]
-            target = self.get_target(char)
-            if not target:
-                # Remove combatants with no valid target or who are not being targeted
-                splattercast.msg(
-                    f"{char.key} has no valid target and is not being targeted. Removing from combat."
-                )
-                self.remove_combatant(char)
+
+        for combat_entry in list(self.get_initiative_order()): # Use list() for safe removal
+            char = combat_entry["char"]
+            if not char or char not in [e["char"] for e in self.db.combatants]: # char might have been removed
                 continue
+
+            # Retrieve the most current entry for char, as it might have been modified
+            # by a previous combatant's grapple action in this same turn.
+            current_char_combat_entry = next((e for e in self.db.combatants if e["char"] == char), None)
+            if not current_char_combat_entry: # Should not happen if char is still in active_combatants
+                splattercast.msg(f"Error: Could not find combat entry for {char.key} mid-turn.")
+                continue
+            
+            action_intent = char.ndb.get("combat_action")
+            if action_intent: # Clear after reading
+                del char.ndb.combat_action
+
+            # --- Handle Grapple States and Actions ---
+            # State 1: Character is grappled by someone else
+            if current_char_combat_entry.get("grappled_by"):
+                grappler = current_char_combat_entry["grappled_by"]
+                grappler_entry = next((e for e in self.db.combatants if e["char"] == grappler), None)
+
+                if not grappler_entry: # Grappler might have been removed from combat
+                    current_char_combat_entry["grappled_by"] = None
+                    splattercast.msg(f"{char.key} was grappled by {grappler.key if grappler else 'Unknown'}, but grappler is gone. Releasing grapple.")
+                    # Fall through to normal action or next state check
+                
+                elif action_intent and action_intent.get("type") == "escape":
+                    splattercast.msg(f"{char.key} (grappled by {grappler.key}) attempts to escape.")
+                    # Escape roll: char's grit vs grappler's grit (example)
+                    escape_roll = randint(1, max(1, getattr(char, "grit", 1)))
+                    hold_roll = randint(1, max(1, getattr(grappler, "grit", 1)))
+                    if escape_roll > hold_roll:
+                        current_char_combat_entry["grappled_by"] = None
+                        if grappler_entry:
+                             grappler_entry["grappling"] = None
+                        msg = f"{char.key} escapes from {grappler.key}'s grapple!"
+                        # msg = get_combat_message("grapple", "escape_success", attacker=char, target=grappler)
+                        self.obj.msg_contents(f"|G{msg}|n")
+                        splattercast.msg(msg)
+                    else:
+                        msg = f"{char.key} fails to escape from {grappler.key}'s grapple."
+                        # msg = get_combat_message("grapple", "escape_fail", attacker=char, target=grappler)
+                        self.obj.msg_contents(f"|y{msg}|n")
+                        splattercast.msg(msg)
+                    continue # Turn ends after escape attempt
+
+                else: # Default action for grappled char: attack grappler
+                    target = grappler
+                    splattercast.msg(f"{char.key} is grappled by {grappler.key}, attacks back.")
+                    # Proceed to standard attack logic below, with target set to grappler
+
+            # State 2: Character is not grappled, and intends to grapple someone
+            elif action_intent and action_intent.get("type") == "grapple":
+                victim_char = action_intent.get("target")
+                victim_entry = next((e for e in self.db.combatants if e["char"] == victim_char), None)
+
+                if victim_char and victim_entry and victim_char != char:
+                    if victim_entry.get("grappled_by"):
+                        msg = f"{char.key} cannot grapple {victim_char.key}, they are already grappled by {victim_entry['grappled_by'].key}."
+                        self.obj.msg_contents(f"|y{msg}|n")
+                        splattercast.msg(msg)
+                    elif current_char_combat_entry.get("grappling"):
+                        msg = f"{char.key} cannot grapple {victim_char.key}, {char.key} is already grappling {current_char_combat_entry['grappling'].key}."
+                        self.obj.msg_contents(f"|y{msg}|n")
+                        splattercast.msg(msg)
+                    else:
+                        splattercast.msg(f"{char.key} attempts to grapple {victim_char.key}.")
+                        # Grapple roll: char's grit vs victim's motorics (example)
+                        grapple_roll = randint(1, max(1, getattr(char, "grit", 1)))
+                        resist_roll = randint(1, max(1, getattr(victim_char, "motorics", 1)))
+                        if grapple_roll > resist_roll:
+                            current_char_combat_entry["grappling"] = victim_char
+                            victim_entry["grappled_by"] = char
+                            msg = f"{char.key} successfully grapples {victim_char.key}!"
+                            # msg = get_combat_message("grapple", "grapple_success", attacker=char, target=victim_char)
+                            self.obj.msg_contents(f"|g{msg}|n")
+                            splattercast.msg(msg)
+                        else:
+                            msg = f"{char.key} fails to grapple {victim_char.key}."
+                            # msg = get_combat_message("grapple", "grapple_fail", attacker=char, target=victim_char)
+                            self.obj.msg_contents(f"|y{msg}|n")
+                            splattercast.msg(msg)
+                else:
+                    splattercast.msg(f"{char.key} tried to grapple invalid target {victim_char}.")
+                    self.obj.msg_contents(f"{char.key} cannot grapple that.")
+                continue # Turn ends after grapple attempt
+
+            # State 3: Character is grappling someone, and not grappled themselves
+            elif current_char_combat_entry.get("grappling"):
+                grappled_victim = current_char_combat_entry["grappling"]
+                victim_entry = next((e for e in self.db.combatants if e["char"] == grappled_victim), None)
+
+                if not victim_entry: # Victim might have been removed
+                    current_char_combat_entry["grappling"] = None
+                    splattercast.msg(f"{char.key} was grappling {grappled_victim.key if grappled_victim else 'Unknown'}, but victim is gone. Releasing grapple.")
+                    # Fall through to normal action selection if any
+                
+                elif action_intent and action_intent.get("type") == "release_grapple":
+                    current_char_combat_entry["grappling"] = None
+                    if victim_entry: # Should exist if grappled_victim is valid
+                        victim_entry["grappled_by"] = None
+                    msg = f"{char.key} releases {grappled_victim.key}."
+                    # msg = get_combat_message("grapple", "release", attacker=char, target=grappled_victim)
+                    self.obj.msg_contents(f"|G{msg}|n")
+                    splattercast.msg(msg)
+                    continue # Turn ends
+
+                else: # Default action for grappling char: attack victim
+                    target = grappled_victim
+                    splattercast.msg(f"{char.key} is grappling {grappled_victim.key}, attacks.")
+                    # Proceed to standard attack logic below, with target set
+
+            # State 4: Standard action (usually attack)
+            else:
+                target = self.get_target(char) # Standard targeting
+                if not target:
+                    splattercast.msg(
+                        f"{char.key} has no valid target and is not being targeted. Removing from combat."
+                    )
+                    self.remove_combatant(char)
+                    continue
+
+            # --- Standard Attack Sequence (if applicable after grapple logic) ---
+            # This part only runs if no grapple action consumed the turn, 
+            # or if a grapple state led to an attack.
+            # 'target' should be set by now if an attack is to occur.
+
+            if not target: # Could be cleared if target was removed or grapple logic decided no attack
+                splattercast.msg(f"{char.key} has no target for an attack this turn.")
+                continue
+
             # Defensive attribute access for combat stats
             atk_roll = randint(1, max(1, getattr(char, "grit", 1)))
             def_roll = randint(1, max(1, getattr(target, "motorics", 1)))
-            splattercast.msg(f"{char.key} attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
+            
             # Defensive access for hands/weapon
             hands = getattr(char, "hands", {})
             weapon = None
             for hand, item in hands.items():
-                if item:
+                if item: # Assuming item is a weapon object
                     weapon = item
                     break
             weapon_type = "unarmed"
             if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
                 weapon_type = str(weapon.db.weapon_type).lower()
+
+            splattercast.msg(f"{char.key} (using {weapon_type}) attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
+
             if atk_roll > def_roll:
                 # Successful hit
-                damage = getattr(char, "grit", 1) or 1
-                splattercast.msg(f"{char.key} hits {target.key} for {damage} damage.")
+                damage = getattr(char, "grit", 1) or 1 # Basic damage
+                splattercast.msg(f"{char.key} hits {target.key} with {weapon_type} for {damage} damage.")
                 msg = get_combat_message(
                     weapon_type,
-                    "hit",
+                    "hit", # You might want specific messages for "grapple_hit"
                     attacker=char,
                     target=target,
                     item=weapon,
@@ -267,7 +420,7 @@ class CombatHandler(DefaultScript):
                 # Missed attack
                 msg = get_combat_message(
                     weapon_type,
-                    "miss",
+                    "miss", # You might want specific messages for "grapple_miss"
                     attacker=char,
                     target=target,
                     item=weapon
