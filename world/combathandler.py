@@ -235,6 +235,16 @@ class CombatHandler(DefaultScript):
                 splattercast.msg(f"Error: Could not find combat entry for {char.key} mid-turn.")
                 continue
             
+            # --- Debugging Start ---
+            splattercast.msg(f"DEBUG: Processing char: {char.key if char else 'NoneChar'}, type: {type(char)}")
+            if char:
+                splattercast.msg(f"DEBUG: char.ndb: {char.ndb}, type: {type(char.ndb)}")
+                if hasattr(char, "ndb") and char.ndb is not None:
+                    splattercast.msg(f"DEBUG: char.ndb.get: {getattr(char.ndb, 'get', 'GET_METHOD_NOT_FOUND')}, type: {type(getattr(char.ndb, 'get', None))}")
+                else:
+                    splattercast.msg(f"DEBUG: char.ndb is None or does not exist.")
+            # --- Debugging End ---
+
             action_intent = char.ndb.get("combat_action")
             if action_intent: # Clear after reading
                 del char.ndb.combat_action
