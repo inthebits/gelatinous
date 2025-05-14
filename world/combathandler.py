@@ -294,33 +294,43 @@ class CombatHandler(DefaultScript):
                         splattercast.msg(msg)
                     else:
                         splattercast.msg(f"{char.key} attempts to grapple {victim_char.key}.")
-                        # Grapple roll: char's grit vs victim's motorics (example)
                         grapple_roll = randint(1, max(1, getattr(char, "grit", 1)))
                         resist_roll = randint(1, max(1, getattr(victim_char, "motorics", 1)))
                         if grapple_roll > resist_roll:
-                            # Fetch attacker's entry fresh for update, similar to victim_entry
-                            attacker_s2_entry = next((e for e in self.db.combatants if e["char"] == char), None)
+                            # Find the index of the attacker's entry
+                            attacker_idx = -1
+                            for i, entry_dict in enumerate(self.db.combatants):
+                                if entry_dict["char"] == char:
+                                    attacker_idx = i
+                                    break
                             
-                            if attacker_s2_entry and victim_entry: # Ensure both entries are valid
-                                attacker_s2_entry["grappling"] = victim_char
-                                victim_entry["grappled_by"] = char
+                            # Find the index of the victim's entry
+                            victim_idx = -1
+                            if victim_entry:
+                                for i, entry_dict in enumerate(self.db.combatants):
+                                    if entry_dict["char"] == victim_char:
+                                        victim_idx = i
+                                        break
+                            
+                            if attacker_idx != -1 and victim_idx != -1:
+                                self.db.combatants[attacker_idx]["grappling"] = victim_char
+                                self.db.combatants[victim_idx]["grappled_by"] = char
+                                splattercast.msg(f"DEBUG ASSIGN VIA INDEX: Assigned to self.db.combatants[{attacker_idx}]['grappling'] and self.db.combatants[{victim_idx}]['grappled_by']")
                             else:
-                                splattercast.msg(f"CRITICAL ERROR: Attacker or Victim entry not found during grapple success for {char.key} and {victim_char.key}.")
-                                # Decide how to handle this error, perhaps skip setting grapple states
+                                splattercast.msg(f"CRITICAL ERROR: Attacker (idx {attacker_idx}) or Victim (idx {victim_idx}) entry not found by index during grapple success for {char.key} and {victim_char.key}.")
+                                # Decide how to handle this error
 
-                            # --- EXISTING IMMEDIATE DEBUG (should now reflect the change if successful) ---
+                            # --- Debug checks remain the same ---
                             splattercast.msg(
-                                f"DEBUG GRAPPLE SET: Attacker {char.key}'s entry['grappling'] intended as {victim_char.key}. " # Reworded slightly
+                                f"DEBUG GRAPPLE SET: Attacker {char.key}'s entry['grappling'] intended as {victim_char.key}. " 
                                 f"Victim {victim_char.key}'s entry['grappled_by'] recorded as {char.key}."
                             )
-                            # Check the actual entry in self.db.combatants for the attacker
                             attacker_entry_in_db = next((e for e in self.db.combatants if e["char"] == char), None)
                             if attacker_entry_in_db:
                                 splattercast.msg(
                                     f"DEBUG GRAPPLE SET (DB CHECK): Attacker {char.key}'s DB entry['grappling'] is now "
                                     f"{attacker_entry_in_db.get('grappling').key if attacker_entry_in_db.get('grappling') else 'None'}"
                                 )
-                            # Check the actual entry in self.db.combatants for the victim
                             victim_entry_in_db = next((e for e in self.db.combatants if e["char"] == victim_char), None)
                             if victim_entry_in_db:
                                 splattercast.msg(
