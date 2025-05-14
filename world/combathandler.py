@@ -251,32 +251,51 @@ class CombatHandler(DefaultScript):
                 if not grappler_entry: # Grappler might have been removed from combat
                     current_char_combat_entry["grappled_by"] = None
                     splattercast.msg(f"{char.key} was grappled by {grappler.key if grappler else 'Unknown'}, but grappler is gone. Releasing grapple.")
-                    # Fall through to normal action or next state check
+                    # Fall through to normal action or next state check, as they are no longer grappled.
                 
                 elif action_intent and action_intent.get("type") == "escape":
-                    splattercast.msg(f"{char.key} (grappled by {grappler.key}) attempts to escape.")
-                    # Escape roll: char's grit vs grappler's grit (example)
+                    # Explicit intent to escape (already handled correctly)
+                    splattercast.msg(f"{char.key} (grappled by {grappler.key}) attempts to escape via explicit command.")
                     escape_roll = randint(1, max(1, getattr(char, "grit", 1)))
-                    hold_roll = randint(1, max(1, getattr(grappler, "grit", 1)))
+                    hold_roll = randint(1, max(1, getattr(grappler, "grit", 1))) # Assuming grappler's grit to hold
                     if escape_roll > hold_roll:
                         current_char_combat_entry["grappled_by"] = None
-                        if grappler_entry:
-                             grappler_entry["grappling"] = None
+                        # grappler_entry is guaranteed to be valid here
+                        grappler_entry["grappling"] = None
                         msg = f"{char.key} escapes from {grappler.key}'s grapple!"
-                        # msg = get_combat_message("grapple", "escape_success", attacker=char, target=grappler)
                         self.obj.msg_contents(f"|G{msg}|n")
                         splattercast.msg(msg)
                     else:
                         msg = f"{char.key} fails to escape from {grappler.key}'s grapple."
-                        # msg = get_combat_message("grapple", "escape_fail", attacker=char, target=grappler)
                         self.obj.msg_contents(f"|y{msg}|n")
                         splattercast.msg(msg)
-                    continue # Turn ends after escape attempt
+                    continue # Turn ends after explicit escape attempt
 
-                else: # Default action for grappled char: attack grappler
-                    target = grappler
-                    splattercast.msg(f"{char.key} is grappled by {grappler.key}, attacks back.")
-                    # Proceed to standard attack logic below, with target set to grappler
+                else: 
+                    # Default action for grappled char: AUTOMATICALLY ATTEMPT TO ESCAPE.
+                    # This block is reached if:
+                    # 1. They are grappled by someone (current_char_combat_entry.get("grappled_by") is true).
+                    # 2. Their grappler is still in combat (grappler_entry is valid).
+                    # 3. They do not have an explicit "escape" intent.
+                    
+                    splattercast.msg(f"{char.key} is grappled by {grappler.key} and defaults to attempting to escape.")
+                    escape_roll = randint(1, max(1, getattr(char, "grit", 1))) # Or char.db.motorics, etc.
+                    hold_roll = randint(1, max(1, getattr(grappler, "grit", 1))) # Grappler's grit or relevant stat
+                    
+                    if escape_roll > hold_roll:
+                        current_char_combat_entry["grappled_by"] = None
+                        # grappler_entry is guaranteed to be valid here
+                        grappler_entry["grappling"] = None
+                        msg = f"{char.key} automatically breaks free from {grappler.key}'s grapple!"
+                        # Consider: msg = get_combat_message("grapple", "escape_auto_success", attacker=char, target=grappler)
+                        self.obj.msg_contents(f"|g{msg}|n") # Using lowercase 'g' for auto-escape success
+                        splattercast.msg(f"AUTO-ESCAPE SUCCESS: {msg}")
+                    else:
+                        msg = f"{char.key} struggles but fails to automatically break {grappler.key}'s hold."
+                        # Consider: msg = get_combat_message("grapple", "escape_auto_fail", attacker=char, target=grappler)
+                        self.obj.msg_contents(f"|y{msg}|n")
+                        splattercast.msg(f"AUTO-ESCAPE FAIL: {msg}")
+                    continue # Turn ends after automatic escape attempt. They do not attack.
 
             # State 2: Character is not grappled, and intends to grapple someone
             elif action_intent and action_intent.get("type") == "grapple":
