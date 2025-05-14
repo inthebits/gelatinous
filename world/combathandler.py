@@ -298,11 +298,19 @@ class CombatHandler(DefaultScript):
                         grapple_roll = randint(1, max(1, getattr(char, "grit", 1)))
                         resist_roll = randint(1, max(1, getattr(victim_char, "motorics", 1)))
                         if grapple_roll > resist_roll:
-                            current_char_combat_entry["grappling"] = victim_char
-                            victim_entry["grappled_by"] = char
-                            # --- ADD IMMEDIATE DEBUG ---
+                            # Fetch attacker's entry fresh for update, similar to victim_entry
+                            attacker_s2_entry = next((e for e in self.db.combatants if e["char"] == char), None)
+                            
+                            if attacker_s2_entry and victim_entry: # Ensure both entries are valid
+                                attacker_s2_entry["grappling"] = victim_char
+                                victim_entry["grappled_by"] = char
+                            else:
+                                splattercast.msg(f"CRITICAL ERROR: Attacker or Victim entry not found during grapple success for {char.key} and {victim_char.key}.")
+                                # Decide how to handle this error, perhaps skip setting grapple states
+
+                            # --- EXISTING IMMEDIATE DEBUG (should now reflect the change if successful) ---
                             splattercast.msg(
-                                f"DEBUG GRAPPLE SET: Attacker {char.key}'s entry['grappling'] recorded as {victim_char.key}. "
+                                f"DEBUG GRAPPLE SET: Attacker {char.key}'s entry['grappling'] intended as {victim_char.key}. " # Reworded slightly
                                 f"Victim {victim_char.key}'s entry['grappled_by'] recorded as {char.key}."
                             )
                             # Check the actual entry in self.db.combatants for the attacker
@@ -322,7 +330,6 @@ class CombatHandler(DefaultScript):
                             # --- END IMMEDIATE DEBUG ---
                             msg = f"{char.key} successfully grapples {victim_char.key}!"
                             self.obj.msg_contents(f"|g{msg}|n")
-                            splattercast.msg(msg)
                         else:
                             msg = f"{char.key} fails to grapple {victim_char.key}."
                             self.obj.msg_contents(f"|y{msg}|n")
