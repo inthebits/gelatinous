@@ -351,28 +351,44 @@ class CombatHandler(DefaultScript):
 
             # State 3: Character is grappling someone, and not grappled themselves
             elif current_char_combat_entry.get("grappling"):
-                grappled_victim = current_char_combat_entry["grappling"]
-                victim_entry = next((e for e in self.db.combatants if e["char"] == grappled_victim), None)
+                grappled_victim_obj = current_char_combat_entry["grappling"] # Store the object for clarity
+                victim_entry = next((e for e in self.db.combatants if e["char"] == grappled_victim_obj), None)
 
-                if not victim_entry: # Victim might have been removed
+                if not victim_entry: 
+                    # Victim is gone from combat. Character is no longer grappling them.
                     current_char_combat_entry["grappling"] = None
-                    splattercast.msg(f"{char.key} was grappling {grappled_victim.key if grappled_victim else 'Unknown'}, but victim is gone. Releasing grapple.")
-                    # Fall through to normal action selection if any
+                    splattercast.msg(f"{char.key} was grappling {grappled_victim_obj.key if grappled_victim_obj else 'Unknown'}, but victim is gone. Releasing grapple.")
+                    # No 'continue' here. Character is no longer grappling, 
+                    # so they should proceed to State 4 to determine a new target/action for this turn.
                 
                 elif action_intent and action_intent.get("type") == "release_grapple":
+                    # Explicit intent to release
                     current_char_combat_entry["grappling"] = None
-                    if victim_entry: # Should exist if grappled_victim is valid
-                        victim_entry["grappled_by"] = None
-                    msg = f"{char.key} releases {grappled_victim.key}."
-                    # msg = get_combat_message("grapple", "release", attacker=char, target=grappled_victim)
+                    # victim_entry is guaranteed to be valid here because (not victim_entry) was false.
+                    victim_entry["grappled_by"] = None
+                    msg = f"{char.key} releases {grappled_victim_obj.key}."
+                    # Consider using: msg = get_combat_message("grapple", "release_success", attacker=char, target=grappled_victim_obj)
                     self.obj.msg_contents(f"|G{msg}|n")
                     splattercast.msg(msg)
                     continue # Turn ends
 
-                else: # Default action for grappling char: attack victim
-                    target = grappled_victim
-                    splattercast.msg(f"{char.key} is grappling {grappled_victim.key}, attacks.")
-                    # Proceed to standard attack logic below, with target set
+                else: 
+                    # Default action for a character who is grappling someone: auto-release.
+                    # This block is reached if:
+                    # 1. They are grappling someone (current_char_combat_entry.get("grappling") is true).
+                    # 2. Their victim is still in combat (victim_entry is valid).
+                    # 3. They do not have an explicit "release_grapple" intent (or any other overriding intent).
+                    
+                    splattercast.msg(f"{char.key} is grappling {grappled_victim_obj.key}, and defaults to releasing them this turn.")
+                    current_char_combat_entry["grappling"] = None
+                    # victim_entry is guaranteed to be valid here.
+                    victim_entry["grappled_by"] = None
+                    
+                    msg = f"{char.key} automatically releases {grappled_victim_obj.key}."
+                    # Consider using: msg = get_combat_message("grapple", "release_auto", attacker=char, target=grappled_victim_obj)
+                    self.obj.msg_contents(f"|g{msg}|n") # Using lowercase 'g' for auto-release, or choose another style.
+                    splattercast.msg(f"AUTO-RELEASE: {msg}")
+                    continue # Turn ends. They do not proceed to attack.
 
             # State 4: Standard action (usually attack)
             else:
