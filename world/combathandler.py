@@ -401,7 +401,7 @@ class CombatHandler(DefaultScript):
                     # Handle death and retargeting
                     splattercast.msg(f"{target.key} has been defeated and removed from combat.")
                     msg = get_combat_message(
-                        weapon_type,
+                        ("grapple" if (current_char_combat_entry and current_char_combat_entry.get("grappling") == target) else weapon_type),
                         "kill",
                         attacker=char,
                         target=target,
