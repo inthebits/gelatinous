@@ -300,13 +300,31 @@ class CombatHandler(DefaultScript):
                         if grapple_roll > resist_roll:
                             current_char_combat_entry["grappling"] = victim_char
                             victim_entry["grappled_by"] = char
+                            # --- ADD IMMEDIATE DEBUG ---
+                            splattercast.msg(
+                                f"DEBUG GRAPPLE SET: Attacker {char.key}'s entry['grappling'] recorded as {victim_char.key}. "
+                                f"Victim {victim_char.key}'s entry['grappled_by'] recorded as {char.key}."
+                            )
+                            # Check the actual entry in self.db.combatants for the attacker
+                            attacker_entry_in_db = next((e for e in self.db.combatants if e["char"] == char), None)
+                            if attacker_entry_in_db:
+                                splattercast.msg(
+                                    f"DEBUG GRAPPLE SET (DB CHECK): Attacker {char.key}'s DB entry['grappling'] is now "
+                                    f"{attacker_entry_in_db.get('grappling').key if attacker_entry_in_db.get('grappling') else 'None'}"
+                                )
+                            # Check the actual entry in self.db.combatants for the victim
+                            victim_entry_in_db = next((e for e in self.db.combatants if e["char"] == victim_char), None)
+                            if victim_entry_in_db:
+                                splattercast.msg(
+                                    f"DEBUG GRAPPLE SET (DB CHECK): Victim {victim_char.key}'s DB entry['grappled_by'] is now "
+                                    f"{victim_entry_in_db.get('grappled_by').key if victim_entry_in_db.get('grappled_by') else 'None'}"
+                                )
+                            # --- END IMMEDIATE DEBUG ---
                             msg = f"{char.key} successfully grapples {victim_char.key}!"
-                            # msg = get_combat_message("grapple", "grapple_success", attacker=char, target=victim_char)
                             self.obj.msg_contents(f"|g{msg}|n")
                             splattercast.msg(msg)
                         else:
                             msg = f"{char.key} fails to grapple {victim_char.key}."
-                            # msg = get_combat_message("grapple", "grapple_fail", attacker=char, target=victim_char)
                             self.obj.msg_contents(f"|y{msg}|n")
                             splattercast.msg(msg)
                 else:
