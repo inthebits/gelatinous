@@ -426,12 +426,16 @@ class CombatHandler(DefaultScript):
             else:
                 # Missed attack
                 msg = get_combat_message(
-                    weapon_type,
-                    "miss", # You might want specific messages for "grapple_miss"
+                    # Conditionally pass "grapple" as the weapon_type context if char is grappling target,
+                    # otherwise, use the actual weapon_type.
+                    ("grapple" if (current_char_combat_entry and current_char_combat_entry.get("grappling") == target) else weapon_type),
+                    "miss", 
                     attacker=char,
                     target=target,
                     item=weapon
                 )
+                # This log shows the message retrieved. The specific context (grapple or actual weapon)
+                # would have been used by get_combat_message to select the appropriate string.
                 splattercast.msg(f"get_combat_message (miss) returned: {msg!r}")
                 if msg:
                     self.obj.msg_contents(f"|[X{msg}|n")
