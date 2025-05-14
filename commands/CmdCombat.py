@@ -1,7 +1,7 @@
 from evennia import Command
 from evennia.utils.utils import inherits_from
 from random import randint, choice
-from world.combathandler import get_or_create_combat
+from world.combathandler import get_or_create_combat, COMBAT_SCRIPT_KEY
 from world.combat_messages import get_combat_message
 from evennia.comms.models import ChannelDB
 
@@ -374,38 +374,50 @@ class CmdGrapple(Command):
 
 class CmdEscapeGrapple(Command):
     """
-    Attempt to escape from a grapple.
+    Attempts to escape from a grapple.
 
     Usage:
-        escape
+      escape
 
-    You must be grappled by someone to use this command.
+    This command allows a character to attempt to break free if they
+    are currently being grappled by another character in combat.
     """
     key = "escape"
     aliases = ["resist"]
-    locks = "cmd:all()"
+    help_category = "Combat"
+    locks = "cmd:in_combat()" # Ensure character is in combat
 
     def func(self):
         caller = self.caller
         splattercast = ChannelDB.objects.get_channel("Splattercast")
 
-        handler = getattr(caller.ndb, "combat_handler", None)
-        if not handler:
-            caller.msg("You are not in combat.")
-            splattercast.msg(f"{caller.key} tried to escape grapple but is not in combat.")
+        # Get the combat handler for the caller's location
+        handler = caller.location.scripts.get(COMBAT_SCRIPT_KEY).first() # More direct way if it must exist
+        if not handler or not handler.db.is_active: # Check if handler is active
+            caller.msg("You are not in active combat or there's an issue with the combat handler.")
+            splattercast.msg(f"{caller.key} tried to escape, but no active combat handler found or handler inactive.")
             return
 
-        caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
-        if not caller_entry or not caller_entry.get("grappled_by"):
-            caller.msg("You are not currently being grappled by anyone.")
-            splattercast.msg(f"{caller.key} tried to escape grapple but is not grappled.")
+        # Find the caller's entry in the combat handler
+        caller_combat_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+
+        if not caller_combat_entry:
+            caller.msg("You are not properly registered in the current combat.")
+            splattercast.msg(f"{caller.key} tried to escape, but not found in combatants list.")
             return
-        
-        grappler = caller_entry["grappled_by"]
-        caller.ndb.combat_action = {"type": "escape"}
-        caller.msg(f"You attempt to escape from {grappler.key}'s grapple...")
-        splattercast.msg(f"{caller.key} sets combat action to escape grapple from {grappler.key}.")
-        # The combat handler will process this
+
+        grappler = caller_combat_entry.get("grappled_by")
+
+        if not grappler:
+            caller.msg("You are not currently being grappled by anyone.")
+            splattercast.msg(f"{caller.key} tried to escape, but is not grappled.")
+            return
+
+        # Set the combat action in the handler's list for the caller
+        caller_combat_entry["combat_action"] = {"type": "escape"}
+        caller.msg(f"You prepare to escape from {grappler.key}'s grasp...")
+        splattercast.msg(f"{caller.key} sets combat action to escape from {grappler.key} (via handler).")
+        # The combat handler will process this on the character's turn
 
 
 class CmdReleaseGrapple(Command):
