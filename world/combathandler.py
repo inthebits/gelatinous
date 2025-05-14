@@ -342,18 +342,8 @@ class CombatHandler(DefaultScript):
             # State 4: Standard action (usually attack)
             else:
                 target = self.get_target(char) # Standard targeting
-                if not target:
-                    splattercast.msg(
-                        f"{char.key} has no valid target and is not being targeted. Removing from combat."
-                    )
-                    self.remove_combatant(char)
-                    continue
 
             # --- Standard Attack Sequence (if applicable after grapple logic) ---
-            # This part only runs if no grapple action consumed the turn, 
-            # or if a grapple state led to an attack.
-            # 'target' should be set by now if an attack is to occur.
-
             if not target: # Could be cleared if target was removed or grapple logic decided no attack
                 splattercast.msg(f"{char.key} has no target for an attack this turn.")
                 continue
@@ -373,19 +363,33 @@ class CombatHandler(DefaultScript):
             if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
                 weapon_type = str(weapon.db.weapon_type).lower()
 
+            # --- Debugging for grapple message context ---
+            grappling_this_target = False
+            if current_char_combat_entry and current_char_combat_entry.get("grappling") and current_char_combat_entry.get("grappling") == target:
+                grappling_this_target = True
+            
+            effective_message_weapon_type = "grapple" if grappling_this_target else weapon_type
+
+            splattercast.msg(
+                f"DEBUG MSG CONTEXT: Attacker: {char.key}, Target: {target.key}, "
+                f"Attacker Grappling Target?: {grappling_this_target}, "
+                f"Actual Weapon: {weapon_type}, Effective Msg Type: {effective_message_weapon_type}"
+            )
+            if current_char_combat_entry:
+                splattercast.msg(
+                    f"DEBUG MSG CONTEXT: current_char_combat_entry['grappling'] = {current_char_combat_entry.get('grappling').key if current_char_combat_entry.get('grappling') else 'None'}"
+                )
+            # --- End Debugging ---
+
             splattercast.msg(f"{char.key} (using {weapon_type}) attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
 
             if atk_roll > def_roll:
                 # Successful hit
                 damage = getattr(char, "grit", 1) or 1 # Basic damage
-                
-                # This log reflects the actual weapon/unarmed attack as it happened
                 splattercast.msg(f"{char.key} hits {target.key} with {weapon_type} for {damage} damage.")
                 
                 msg = get_combat_message(
-                    # Conditionally pass "grapple" as the weapon_type context if char is grappling target,
-                    # otherwise, use the actual weapon_type.
-                    ("grapple" if (current_char_combat_entry and current_char_combat_entry.get("grappling") == target) else weapon_type),
+                    effective_message_weapon_type, # Use the debugged effective type
                     "hit", 
                     attacker=char,
                     target=target,
@@ -404,7 +408,7 @@ class CombatHandler(DefaultScript):
                     # Handle death and retargeting
                     splattercast.msg(f"{target.key} has been defeated and removed from combat.")
                     msg = get_combat_message(
-                        ("grapple" if (current_char_combat_entry and current_char_combat_entry.get("grappling") == target) else weapon_type),
+                        effective_message_weapon_type, # Use the debugged effective type
                         "kill",
                         attacker=char,
                         target=target,
@@ -429,9 +433,7 @@ class CombatHandler(DefaultScript):
             else:
                 # Missed attack
                 msg = get_combat_message(
-                    # Conditionally pass "grapple" as the weapon_type context if char is grappling target,
-                    # otherwise, use the actual weapon_type.
-                    ("grapple" if (current_char_combat_entry and current_char_combat_entry.get("grappling") == target) else weapon_type),
+                    effective_message_weapon_type, # Use the debugged effective type
                     "miss", 
                     attacker=char,
                     target=target,
