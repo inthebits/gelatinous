@@ -378,6 +378,7 @@ class CmdEscapeGrapple(Command):
 
     Usage:
       escape
+      resist
 
     This command allows a character to attempt to break free if they
     are currently being grappled by another character in combat.
@@ -391,11 +392,14 @@ class CmdEscapeGrapple(Command):
         caller = self.caller
         splattercast = ChannelDB.objects.get_channel("Splattercast")
 
-        # Get the combat handler for the caller's location
-        handler = caller.location.scripts.get(COMBAT_SCRIPT_KEY).first() # More direct way if it must exist
-        if not handler or not handler.db.is_active: # Check if handler is active
-            caller.msg("You are not in active combat or there's an issue with the combat handler.")
-            splattercast.msg(f"{caller.key} tried to escape, but no active combat handler found or handler inactive.")
+        # Get the combat handler from the caller's NDB.
+        # The cmd:in_combat() lock should ensure this is set if they are in combat.
+        handler = getattr(caller.ndb, "combat_handler", None) 
+        
+        if not handler:
+            # This message should ideally not be reached if the in_combat lock is effective.
+            caller.msg("You are not in combat.") 
+            splattercast.msg(f"{caller.key} tried to escape, but no combat_handler found in ndb (check cmd:in_combat() lock).")
             return
 
         # Find the caller's entry in the combat handler
@@ -403,7 +407,7 @@ class CmdEscapeGrapple(Command):
 
         if not caller_combat_entry:
             caller.msg("You are not properly registered in the current combat.")
-            splattercast.msg(f"{caller.key} tried to escape, but not found in combatants list.")
+            splattercast.msg(f"{caller.key} tried to escape, but not found in combatants list of handler {handler.key}.")
             return
 
         grappler = caller_combat_entry.get("grappled_by")
@@ -416,7 +420,7 @@ class CmdEscapeGrapple(Command):
         # Set the combat action in the handler's list for the caller
         caller_combat_entry["combat_action"] = {"type": "escape"}
         caller.msg(f"You prepare to escape from {grappler.key}'s grasp...")
-        splattercast.msg(f"{caller.key} sets combat action to escape from {grappler.key} (via handler).")
+        splattercast.msg(f"{caller.key} sets combat action to escape from {grappler.key} (via handler {handler.key}).")
         # The combat handler will process this on the character's turn
 
 
