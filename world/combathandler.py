@@ -373,22 +373,15 @@ class CombatHandler(DefaultScript):
                     continue # Turn ends
 
                 else: 
-                    # Default action for a character who is grappling someone: auto-release.
+                    # Default action for a character who is grappling someone: ATTACK THE VICTIM.
                     # This block is reached if:
                     # 1. They are grappling someone (current_char_combat_entry.get("grappling") is true).
                     # 2. Their victim is still in combat (victim_entry is valid).
-                    # 3. They do not have an explicit "release_grapple" intent (or any other overriding intent).
+                    # 3. They do not have an explicit "release_grapple" intent.
                     
-                    splattercast.msg(f"{char.key} is grappling {grappled_victim_obj.key}, and defaults to releasing them this turn.")
-                    current_char_combat_entry["grappling"] = None
-                    # victim_entry is guaranteed to be valid here.
-                    victim_entry["grappled_by"] = None
-                    
-                    msg = f"{char.key} automatically releases {grappled_victim_obj.key}."
-                    # Consider using: msg = get_combat_message("grapple", "release_auto", attacker=char, target=grappled_victim_obj)
-                    self.obj.msg_contents(f"|g{msg}|n") # Using lowercase 'g' for auto-release, or choose another style.
-                    splattercast.msg(f"AUTO-RELEASE: {msg}")
-                    continue # Turn ends. They do not proceed to attack.
+                    target = grappled_victim_obj # Set the grappled victim as the target
+                    splattercast.msg(f"{char.key} is grappling {grappled_victim_obj.key}, and defaults to attacking them this turn.")
+                    # No 'continue' here. The flow will proceed to the Standard Attack Sequence below.
 
             # State 4: Standard action (usually attack)
             else:
