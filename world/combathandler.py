@@ -79,7 +79,7 @@ class CombatHandler(DefaultScript):
         """
         Add a character to combat, assigning initiative and an optional target.
         Logs if joining an already-running combat.
-        Initializes grapple status.
+        Initializes grapple status and combat_action.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
         if any(entry["char"] == char for entry in self.db.combatants):
@@ -91,6 +91,7 @@ class CombatHandler(DefaultScript):
             "target": target,
             "grappling": None,  # Character object this char is grappling
             "grappled_by": None,  # Character object grappling this char
+            "combat_action": None, # Add combat_action here
         })
         char.ndb.combat_handler = self
         splattercast.msg(f"{char.key} joins combat with initiative {initiative}.")
@@ -236,29 +237,15 @@ class CombatHandler(DefaultScript):
                 continue
             
             # --- Debugging Start ---
+            # You can remove these debug logs now if you wish, or keep them for a bit
             splattercast.msg(f"DEBUG: Processing char: {char.key if char else 'NoneChar'}, type: {type(char)}")
-            if char:
-                splattercast.msg(f"DEBUG: char.ndb: {char.ndb}, type: {type(char.ndb)}")
-                if hasattr(char, "ndb") and char.ndb is not None:
-                    splattercast.msg(f"DEBUG: char.ndb.get: {getattr(char.ndb, 'get', 'GET_METHOD_NOT_FOUND')}, type: {type(getattr(char.ndb, 'get', None))}")
-                else:
-                    splattercast.msg(f"DEBUG: char.ndb is None or does not exist.")
             # --- Debugging End ---
 
-            action_intent = None
-            # Safely attempt to get the combat_action
-            # First, get the 'get' attribute from char.ndb, if it exists
-            ndb_get_method = getattr(char.ndb, 'get', None) 
-            
-            if callable(ndb_get_method):
-                action_intent = ndb_get_method("combat_action")
-            else:
-                splattercast.msg(f"CRITICAL WARNING for {char.key}: char.ndb.get is not a callable method! Value: {ndb_get_method}. Cannot retrieve combat_action.")
-                # action_intent will remain None, and the turn will proceed as if no special action was set.
-                # You might want to add further error handling or logging here if this state is unexpected.
+            # Retrieve action_intent from the combatant's entry in the handler
+            action_intent = current_char_combat_entry.get("combat_action")
 
             if action_intent: # Clear after reading
-                del char.ndb.combat_action
+                current_char_combat_entry["combat_action"] = None # Clear it from the handler's list
 
             # --- Handle Grapple States and Actions ---
             # State 1: Character is grappled by someone else

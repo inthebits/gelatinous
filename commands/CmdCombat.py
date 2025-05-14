@@ -314,23 +314,26 @@ class CmdGrapple(Command):
             caller.msg("Grapple whom?")
             return
 
-        handler = getattr(caller.ndb, "combat_handler", None)
+        handler = get_or_create_combat(caller.location)
         if not handler:
-            caller.msg("You are not in combat.")
-            splattercast.msg(f"{caller.key} tried to grapple but is not in combat.")
+            caller.msg("Error: Could not find or create combat handler.")
             return
-        
+
+        caller_combat_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        if not caller_combat_entry:
+            caller.msg("You are not in combat or there's an issue finding your combat entry.")
+            return
+
         # Check if caller is already grappling someone
-        caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
-        if caller_entry and caller_entry.get("grappling"):
-            caller.msg(f"You are already grappling {caller_entry['grappling'].key}. You must release them first.")
-            splattercast.msg(f"{caller.key} tried to grapple while already grappling {caller_entry['grappling'].key}.")
+        if caller_combat_entry.get("grappling"):
+            caller.msg(f"You are already grappling {caller_combat_entry['grappling'].key}. You must release them first.")
+            splattercast.msg(f"{caller.key} tried to grapple while already grappling {caller_combat_entry['grappling'].key}.")
             return
         
         # Check if caller is currently grappled by someone else
-        if caller_entry and caller_entry.get("grappled_by"):
-            caller.msg(f"You cannot initiate a grapple while {caller_entry['grappled_by'].key} is grappling you. Try to escape first.")
-            splattercast.msg(f"{caller.key} tried to grapple while being grappled by {caller_entry['grappled_by'].key}.")
+        if caller_combat_entry.get("grappled_by"):
+            caller.msg(f"You cannot initiate a grapple while {caller_combat_entry['grappled_by'].key} is grappling you. Try to escape first.")
+            splattercast.msg(f"{caller.key} tried to grapple while being grappled by {caller_combat_entry['grappled_by'].key}.")
             return
 
         search_name = self.args.strip().lower()
@@ -363,9 +366,9 @@ class CmdGrapple(Command):
             splattercast.msg(f"{caller.key} tried to grapple {target.key}, but they are already grappled by {target_entry['grappled_by'].key}.")
             return
 
-        caller.ndb.combat_action = {"type": "grapple", "target": target}
-        caller.msg(f"You attempt to grapple {target.key}...")
-        splattercast.msg(f"{caller.key} sets combat action to grapple {target.key}.")
+        caller_combat_entry["combat_action"] = {"type": "grapple", "target": target}
+        caller.msg(f"You prepare to grapple {target.key}...")
+        splattercast.msg(f"{caller.key} sets combat action to grapple {target.key} (via handler).")
         # The combat handler will process this on the character's turn
 
 
