@@ -259,10 +259,28 @@ class CombatHandler(DefaultScript):
                     escape_roll = randint(1, max(1, getattr(char, "grit", 1)))
                     hold_roll = randint(1, max(1, getattr(grappler, "grit", 1))) # Assuming grappler's grit to hold
                     if escape_roll > hold_roll:
-                        current_char_combat_entry["grappled_by"] = None
-                        # grappler_entry is guaranteed to be valid here
-                        grappler_entry["grappling"] = None
-                        msg = f"{char.key} escapes from {grappler.key}'s grapple!"
+                        escaper_idx = -1
+                        for i, entry_dict in enumerate(self.db.combatants):
+                            if entry_dict["char"] == char: # char is the escaper
+                                escaper_idx = i
+                                break
+                        
+                        grappler_idx = -1
+                        if grappler: # grappler is the character object who was grappling char
+                            for i, entry_dict in enumerate(self.db.combatants):
+                                if entry_dict["char"] == grappler:
+                                    grappler_idx = i
+                                    break
+                        
+                        if escaper_idx != -1:
+                            self.db.combatants[escaper_idx]["grappled_by"] = None
+                        # else: log error if escaper_idx not found
+
+                        if grappler_idx != -1:
+                            self.db.combatants[grappler_idx]["grappling"] = None
+                        # else: log error if grappler_idx not found (and grappler was expected)
+                        
+                        msg = f"{char.key} automatically breaks free from {grappler.key}'s grapple!"
                         self.obj.msg_contents(f"|G{msg}|n")
                         splattercast.msg(msg)
                     else:
@@ -283,16 +301,32 @@ class CombatHandler(DefaultScript):
                     hold_roll = randint(1, max(1, getattr(grappler, "grit", 1))) # Grappler's grit or relevant stat
                     
                     if escape_roll > hold_roll:
-                        current_char_combat_entry["grappled_by"] = None
-                        # grappler_entry is guaranteed to be valid here
-                        grappler_entry["grappling"] = None
+                        escaper_idx = -1
+                        for i, entry_dict in enumerate(self.db.combatants):
+                            if entry_dict["char"] == char: # char is the escaper
+                                escaper_idx = i
+                                break
+                        
+                        grappler_idx = -1
+                        if grappler: # grappler is the character object who was grappling char
+                            for i, entry_dict in enumerate(self.db.combatants):
+                                if entry_dict["char"] == grappler:
+                                    grappler_idx = i
+                                    break
+                        
+                        if escaper_idx != -1:
+                            self.db.combatants[escaper_idx]["grappled_by"] = None
+                        # else: log error if escaper_idx not found
+
+                        if grappler_idx != -1:
+                            self.db.combatants[grappler_idx]["grappling"] = None
+                        # else: log error if grappler_idx not found (and grappler was expected)
+                        
                         msg = f"{char.key} automatically breaks free from {grappler.key}'s grapple!"
-                        # Consider: msg = get_combat_message("grapple", "escape_auto_success", attacker=char, target=grappler)
                         self.obj.msg_contents(f"|g{msg}|n") # Using lowercase 'g' for auto-escape success
                         splattercast.msg(f"AUTO-ESCAPE SUCCESS: {msg}")
                     else:
                         msg = f"{char.key} struggles but fails to automatically break {grappler.key}'s hold."
-                        # Consider: msg = get_combat_message("grapple", "escape_auto_fail", attacker=char, target=grappler)
                         self.obj.msg_contents(f"|y{msg}|n")
                         splattercast.msg(f"AUTO-ESCAPE FAIL: {msg}")
                     continue # Turn ends after automatic escape attempt. They do not attack.
