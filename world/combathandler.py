@@ -169,23 +169,19 @@ class CombatHandler(DefaultScript):
                 f"{char.key} has no valid target or their target is not in combat."
             )
             # Find attackers targeting this char
-            attackers = [e["char"] for e in self.db.combatants if e.get("target") == char and e["char"] != char]
-            splattercast.msg(
-                f"Attackers targeting {char.key}: {[a.key for a in attackers]}"
-            )
-            if attackers:
-                # Retarget to a random attacker
-                target = attackers[randint(0, len(attackers) - 1)]
-                splattercast.msg(
-                    f"{char.key} now targets {target.key} (was being targeted)."
-                )
-                self.set_target(char, target)
+            attackers = [
+                e["char"] for e in self.db.combatants 
+                if e.get("target") == char and e["char"] != char
+            ]
+            splattercast.msg(f"Attackers targeting {char.key}: {[a.key for a in attackers]}.")
+
+            if not attackers:
+                # Character has no explicit target AND no one is targeting them.
+                splattercast.msg(f"{char.key} has no offensive target and is not being targeted by anyone for an attack. Potential for disengagement.") # Changed log
+                return None # No offensive target found under these conditions
             else:
-                # No attackers, remove from combat
-                splattercast.msg(
-                    f"{char.key} is not being targeted by anyone and will be removed from combat."
-                )
-                return None
+                # No explicit target, but is being attacked. Default to targeting first attacker.
+                target = attackers[0]
         else:
             splattercast.msg(
                 f"{char.key} keeps current target {target.key}."
@@ -447,12 +443,39 @@ class CombatHandler(DefaultScript):
                 target = self.get_target(char) # Standard targeting
 
             # --- Standard Attack Sequence (if applicable after grapple logic) ---
-            if not target: # Could be cleared if target was removed or grapple logic decided no attack
-                # get_target() logs "will be removed from combat" if it returns None because
-                # the char has no target AND is not being targeted. Honor this.
-                splattercast.msg(f"{char.key} has no target and is not being targeted, removing from combat (as per get_target).")
-                self.remove_combatant(char) # Actually remove the combatant
-                continue
+            if not target: # target is None, meaning get_target(char) found no offensive target
+                # Character has no offensive target. Should they be removed?
+                # Only remove if they are NOT actively engaged in a grapple
+                # with another present combatant.
+                
+                is_grappling_active_combatant = False
+                grappled_victim_char = current_char_combat_entry.get("grappling")
+                if grappled_victim_char:
+                    if any(e["char"] == grappled_victim_char for e in self.db.combatants):
+                        is_grappling_active_combatant = True
+
+                is_grappled_by_active_combatant = False
+                grappler_char = current_char_combat_entry.get("grappled_by")
+                if grappler_char:
+                    if any(e["char"] == grappler_char for e in self.db.combatants):
+                        is_grappled_by_active_combatant = True
+                
+                if not is_grappling_active_combatant and not is_grappled_by_active_combatant:
+                    # Not grappling anyone present, AND not grappled by anyone present.
+                    # AND has no offensive target (because target is None from get_target).
+                    # This is the "awkward moment" or true disengagement.
+                    splattercast.msg(f"{char.key} has no offensive target and is not in an active grapple. Removing from combat.")
+                    self.remove_combatant(char)
+                else:
+                    # Character has no offensive target BUT IS in an active grapple.
+                    # Their turn might involve yielding (if grappler and yielding) 
+                    # or attempting escape (if grappled by someone still present).
+                    # These specific actions are typically handled by the grapple logic blocks 
+                    # earlier in at_repeat, which would 'continue'.
+                    # If flow reaches here, it means they are in a grapple, have no offensive target,
+                    # and their grapple-specific action for the turn (if any) has concluded or was passive.
+                    splattercast.msg(f"{char.key} has no offensive target but is in an active grapple. Turn passes for offensive action.")
+                continue # End current character's turn processing for standard attack sequence
 
             # Defensive attribute access for combat stats
             atk_roll = randint(1, max(1, getattr(char, "grit", 1)))
