@@ -66,6 +66,15 @@ class CmdAttack(Command):
         target_handler = getattr(target.ndb, "combat_handler", None)
 
         if caller_handler:
+            # Character is already in combat
+            caller_combat_entry = next((e for e in caller_handler.db.combatants if e["char"] == caller), None)
+            if not caller_combat_entry: # Should not happen if caller_handler exists
+                caller.msg("|rError: Your combat entry is missing. Please report to an admin.|n")
+                splattercast.msg(f"CRITICAL: {caller.key} has a combat_handler but no entry in {caller_handler.key}")
+                return
+
+            caller_combat_entry["is_yielding"] = False # Attacking means no longer yielding
+
             if not target_handler or target_handler != caller_handler:
                 caller.msg("You can't attack someone not already in combat while you're fighting!")
                 splattercast.msg(
@@ -94,6 +103,7 @@ class CmdAttack(Command):
         splattercast.msg(
             f"{caller.key} initiates combat with {target.key}."
         )
+        # add_combatant will set is_yielding to False by default
         combat.add_combatant(caller, target)      # Attacker targets defender
         combat.add_combatant(target, caller)      # Defender targets attacker
 
@@ -350,18 +360,17 @@ class CmdGrapple(Command):
             return
 
         # --- Add caller and target to combat if not already in ---
-        # Check if caller is in combat; if not, add both.
-        # If caller is in, target must also be in (or this command could add them).
-        # For simplicity, let's ensure both are added if not present.
+        # Record if the caller initiated combat with this action
+        caller_initiated_combat_this_action = not any(e["char"] == caller for e in handler.db.combatants)
 
         caller_is_in_combat = any(e["char"] == caller for e in handler.db.combatants)
-        target_is_in_combat = any(e["char"] == target for e in handler.db.combatants)
+        target_is_in_combat = any(e["char"] == target for e in handler.db.combatants) # 'target' is the grapple victim
 
         if not caller_is_in_combat:
             splattercast.msg(f"{caller.key} is initiating grapple combat with {target.key}.")
-            handler.add_combatant(caller) # No initial target for grapple action itself
-            handler.add_combatant(target) # No initial target for victim
-        elif not target_is_in_combat: # Caller is in, but target is not
+            handler.add_combatant(caller) 
+            handler.add_combatant(target) 
+        elif not target_is_in_combat: 
             splattercast.msg(f"{caller.key} (in combat) is attempting to grapple {target.key} (adding to combat).")
             handler.add_combatant(target)
         
@@ -369,14 +378,18 @@ class CmdGrapple(Command):
         caller_combat_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
         target_combat_entry = next((e for e in handler.db.combatants if e["char"] == target), None)
 
-        if not caller_combat_entry: # Should not happen if add_combatant worked
+        if not caller_combat_entry: 
             caller.msg("There was an issue adding you to combat. Please try again.")
             splattercast.msg(f"CRITICAL: {caller.key} failed to be added to combat by CmdGrapple.")
             return
-        if not target_combat_entry: # Should not happen
+        if not target_combat_entry: 
             caller.msg(f"There was an issue adding {target.key} to combat. Please try again.")
             splattercast.msg(f"CRITICAL: {target.key} failed to be added to combat by CmdGrapple.")
             return
+
+        # Default to not yielding if already in combat or grapple fails.
+        # This will be overridden if grapple is successful AND initiated combat.
+        caller_combat_entry["is_yielding"] = False 
 
         # --- Grapple-specific checks (already grappling, being grappled, target grappled) ---
         if caller_combat_entry.get("grappling"):
@@ -402,9 +415,14 @@ class CmdGrapple(Command):
         if "combat_action" not in caller_combat_entry:
             caller_combat_entry["combat_action"] = {}
             
-        caller_combat_entry["combat_action"] = {"type": "grapple", "target": target}
+        # Store the flag for the handler to check upon successful grapple
+        caller_combat_entry["combat_action"] = {
+            "type": "grapple", 
+            "target": target,
+            "initiated_combat": caller_initiated_combat_this_action 
+        }
         caller.msg(f"You prepare to grapple {target.key}...")
-        splattercast.msg(f"{caller.key} sets combat action to grapple {target.key} (via handler).")
+        splattercast.msg(f"{caller.key} sets combat action to grapple {target.key} (initiated_combat: {caller_initiated_combat_this_action}).")
         # The combat handler will process this on the character's turn
 
 
@@ -491,7 +509,58 @@ class CmdReleaseGrapple(Command):
             return
             
         grappled_victim = caller_entry["grappling"]
-        caller.ndb.combat_action = {"type": "release_grapple"} # Target is implicit (who they are grappling)
+        caller_entry["combat_action"] = {"type": "release_grapple"} 
         caller.msg(f"You prepare to release {grappled_victim.key}...")
         splattercast.msg(f"{caller.key} sets combat action to release grapple on {grappled_victim.key}.")
         # The combat handler will process this
+
+
+class CmdYield(Command):
+    """
+    Stop actively attacking in combat.
+
+    Usage:
+      yield
+      hold fire
+
+    If you are in combat, this signals you are no longer taking
+    aggressive actions. You will skip your attack turn unless you
+    use 'attack' or 'kill' again, or initiate another aggressive action.
+    This does not make you immune to attacks.
+    """
+    key = "yield"
+    aliases = ["hold fire", "disengage"] # "disengage" might be confused with fleeing
+    locks = "cmd:all()" # Simplification, actual check for combat is in func
+
+    def func(self):
+        caller = self.caller
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+
+        handler = getattr(caller.ndb, "combat_handler", None)
+        if not handler:
+            caller.msg("You are not in combat.")
+            splattercast.msg(f"{caller.key} tried to yield but is not in combat.")
+            return
+
+        caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        if not caller_entry:
+            caller.msg("You are not properly registered in the current combat.")
+            splattercast.msg(f"{caller.key} tried to yield, but not found in combatants list of handler {handler.key}.")
+            return
+
+        if caller_entry.get("is_yielding"):
+            caller.msg("You are already yielding.")
+            return
+
+        caller_entry["is_yielding"] = True
+        caller_entry["target"] = None # Explicitly clear their offensive target
+        
+        # If they were grappling someone, yielding implies they stop actively trying to maintain it aggressively.
+        # The grapple itself might persist until explicitly released or broken,
+        # but their default action won't be to attack the grappled person.
+        # For now, yielding won't automatically release a grapple, but it will stop the default attack.
+        
+        msg_room = f"{caller.key} lowers their guard, appearing to yield."
+        caller.location.msg_contents(f"|y{msg_room}|n", exclude=[caller])
+        caller.msg("|gYou lower your guard and will not actively attack.|n")
+        splattercast.msg(f"{caller.key} is now yielding. Their target has been cleared.")

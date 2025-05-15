@@ -91,7 +91,8 @@ class CombatHandler(DefaultScript):
             "target": target,
             "grappling": None,  # Character object this char is grappling
             "grappled_by": None,  # Character object grappling this char
-            "combat_action": None, # Add combat_action here
+            "combat_action": None, 
+            "is_yielding": False, # New flag: True if character is not actively attacking
         })
         char.ndb.combat_handler = self
         splattercast.msg(f"{char.key} joins combat with initiative {initiative}.")
@@ -350,47 +351,37 @@ class CombatHandler(DefaultScript):
                         grapple_roll = randint(1, max(1, getattr(char, "grit", 1)))
                         resist_roll = randint(1, max(1, getattr(victim_char, "motorics", 1)))
                         if grapple_roll > resist_roll:
-                            # Find the index of the attacker's entry
                             attacker_idx = -1
                             for i, entry_dict in enumerate(self.db.combatants):
-                                if entry_dict["char"] == char:
+                                if entry_dict["char"] == char: # char is the attacker
                                     attacker_idx = i
                                     break
                             
-                            # Find the index of the victim's entry
                             victim_idx = -1
-                            if victim_entry:
-                                for i, entry_dict in enumerate(self.db.combatants):
-                                    if entry_dict["char"] == victim_char:
-                                        victim_idx = i
-                                        break
+                            # victim_entry is already defined and checked
+                            for i, entry_dict in enumerate(self.db.combatants):
+                                if entry_dict["char"] == victim_char:
+                                    victim_idx = i
+                                    break
                             
                             if attacker_idx != -1 and victim_idx != -1:
                                 self.db.combatants[attacker_idx]["grappling"] = victim_char
                                 self.db.combatants[victim_idx]["grappled_by"] = char
                                 splattercast.msg(f"DEBUG ASSIGN VIA INDEX: Assigned to self.db.combatants[{attacker_idx}]['grappling'] and self.db.combatants[{victim_idx}]['grappled_by']")
+                                
+                                # NEW: Set yielding if grapple initiated combat
+                                if action_intent.get("initiated_combat"):
+                                    self.db.combatants[attacker_idx]["is_yielding"] = True
+                                    self.db.combatants[attacker_idx]["target"] = None # Clear offensive target
+                                    splattercast.msg(f"{char.key} successfully grappled and initiated combat, now yielding.")
+                                else:
+                                    # If already in combat, a successful grapple is an aggressive follow-up
+                                    self.db.combatants[attacker_idx]["is_yielding"] = False
+                                    splattercast.msg(f"{char.key} successfully grappled (was already in combat), not yielding.")
+
                             else:
                                 splattercast.msg(f"CRITICAL ERROR: Attacker (idx {attacker_idx}) or Victim (idx {victim_idx}) entry not found by index during grapple success for {char.key} and {victim_char.key}.")
-                                # Decide how to handle this error
 
-                            # --- Debug checks remain the same ---
-                            splattercast.msg(
-                                f"DEBUG GRAPPLE SET: Attacker {char.key}'s entry['grappling'] intended as {victim_char.key}. " 
-                                f"Victim {victim_char.key}'s entry['grappled_by'] recorded as {char.key}."
-                            )
-                            attacker_entry_in_db = next((e for e in self.db.combatants if e["char"] == char), None)
-                            if attacker_entry_in_db:
-                                splattercast.msg(
-                                    f"DEBUG GRAPPLE SET (DB CHECK): Attacker {char.key}'s DB entry['grappling'] is now "
-                                    f"{attacker_entry_in_db.get('grappling').key if attacker_entry_in_db.get('grappling') else 'None'}"
-                                )
-                            victim_entry_in_db = next((e for e in self.db.combatants if e["char"] == victim_char), None)
-                            if victim_entry_in_db:
-                                splattercast.msg(
-                                    f"DEBUG GRAPPLE SET (DB CHECK): Victim {victim_char.key}'s DB entry['grappled_by'] is now "
-                                    f"{victim_entry_in_db.get('grappled_by').key if victim_entry_in_db.get('grappled_by') else 'None'}"
-                                )
-                            # --- END IMMEDIATE DEBUG ---
                             msg = f"{char.key} successfully grapples {victim_char.key}!"
                             self.obj.msg_contents(f"|g{msg}|n")
                         else:
@@ -435,6 +426,12 @@ class CombatHandler(DefaultScript):
                     target = grappled_victim_obj # Set the grappled victim as the target
                     splattercast.msg(f"{char.key} is grappling {grappled_victim_obj.key}, and defaults to attacking them this turn.")
                     # No 'continue' here. The flow will proceed to the Standard Attack Sequence below.
+
+            # NEW: Check for yielding before standard action determination
+            elif current_char_combat_entry.get("is_yielding"):
+                splattercast.msg(f"{char.key} is yielding and takes no hostile action this turn.")
+                self.obj.msg_contents(f"|y{char.key} holds their action, appearing non-hostile.|n")
+                continue # Skip to the next combatant
 
             # State 4: Standard action (usually attack)
             else:
