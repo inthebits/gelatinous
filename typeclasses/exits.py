@@ -81,6 +81,25 @@ class Exit(DefaultExit):
                     traversing_object.msg("|rYour grapple target seems to have vanished from combat. You can't drag them.|n")
                     return
 
+                # --- Immediate resistance check ---
+                from random import randint
+                victim_grit = getattr(grappled_victim_obj, "grit", 1)
+                grappler_grit = getattr(traversing_object, "grit", 1)
+                resist_roll = randint(1, max(1, victim_grit))
+                drag_roll = randint(1, max(1, grappler_grit))
+                splattercast.msg(f"DRAG RESIST: {grappled_victim_obj.key} rolls {resist_roll} vs {drag_roll} ({traversing_object.key})")
+
+                if resist_roll > drag_roll:
+                    traversing_object.msg(f"|r{grappled_victim_obj.key} resists your attempt to drag them!|n")
+                    grappled_victim_obj.msg(f"|gYou resist {traversing_object.key}'s attempt to drag you!|n")
+                    splattercast.msg(f"{grappled_victim_obj.key} successfully resisted being dragged by {traversing_object.key}.")
+                    return
+
+                # Proceed with drag if resistance fails
+                traversing_object.msg(f"|g{grappled_victim_obj.key} struggles but fails to resist.|n")
+                grappled_victim_obj.msg(f"|rYou struggle but fail to resist {traversing_object.key}'s attempt to drag you.|n")
+                splattercast.msg(f"{grappled_victim_obj.key} failed to resist being dragged by {traversing_object.key}.")
+
                 old_handler = handler
                 old_location = traversing_object.location
 
