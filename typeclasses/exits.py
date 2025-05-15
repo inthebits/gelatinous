@@ -135,20 +135,18 @@ class Exit(DefaultExit):
                 target_location.msg_contents(msg_arrive_room, exclude=[traversing_object, grappled_victim_obj])
 
                 # --- Transfer combat state to the new location ---
-                # 1. Remove combatants from the old handler.
-                old_handler.remove_combatant(traversing_object)
-                old_handler.remove_combatant(grappled_victim_obj)
-
-                # 2. Get or create a combat handler in the new location.
-                new_handler = get_or_create_combat(target_location)
-
-                # 3. Add combatants to the new handler with their transferred state.
-                # Before adding to new_handler, determine if victim is yielding
-                victim_is_yielding = getattr(grappled_victim_obj, "is_yielding", False)
-                # Or, if you track yielding in the combat entry, fetch it from the old handler:
+                # 1. Before removing, determine if victim is yielding
                 victim_entry_in_handler = next((e for e in handler.db.combatants if e["char"] == grappled_victim_obj), None)
                 victim_is_yielding = victim_entry_in_handler.get("is_yielding", False) if victim_entry_in_handler else False
 
+                # 2. Remove combatants from the old handler.
+                old_handler.remove_combatant(traversing_object)
+                old_handler.remove_combatant(grappled_victim_obj)
+
+                # 3. Get or create a combat handler in the new location.
+                new_handler = get_or_create_combat(target_location)
+
+                # 4. Add combatants to the new handler with their transferred state.
                 new_handler.add_combatant(
                     traversing_object, 
                     target=None, # Grappler is always yielding when dragging
