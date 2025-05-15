@@ -93,6 +93,19 @@ class Exit(DefaultExit):
                     traversing_object.msg(f"|r{grappled_victim_obj.key} resists your attempt to drag them!|n")
                     grappled_victim_obj.msg(f"|gYou resist {traversing_object.key}'s attempt to drag you!|n")
                     splattercast.msg(f"{grappled_victim_obj.key} successfully resisted being dragged by {traversing_object.key}.")
+
+                    # --- Break the grapple on successful resistance ---
+                    # Find both entries in the handler
+                    grappler_entry = next((e for e in handler.db.combatants if e["char"] == traversing_object), None)
+                    victim_entry = next((e for e in handler.db.combatants if e["char"] == grappled_victim_obj), None)
+                    if grappler_entry:
+                        grappler_entry["grappling"] = None
+                    if victim_entry:
+                        victim_entry["grappled_by"] = None
+                    msg = f"{grappled_victim_obj.key} breaks free from {traversing_object.key}'s grapple!"
+                    traversing_object.location.msg_contents(f"|g{msg}|n")
+                    splattercast.msg(f"GRAPPLE BROKEN: {msg}")
+
                     return
 
                 # Proceed with drag if resistance fails
