@@ -442,7 +442,10 @@ class CombatHandler(DefaultScript):
 
             # --- Standard Attack Sequence (if applicable after grapple logic) ---
             if not target: # Could be cleared if target was removed or grapple logic decided no attack
-                splattercast.msg(f"{char.key} has no target for an attack this turn.")
+                # get_target() logs "will be removed from combat" if it returns None because
+                # the char has no target AND is not being targeted. Honor this.
+                splattercast.msg(f"{char.key} has no target and is not being targeted, removing from combat (as per get_target).")
+                self.remove_combatant(char) # Actually remove the combatant
                 continue
 
             # Defensive attribute access for combat stats
