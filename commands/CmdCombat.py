@@ -136,6 +136,7 @@ class CmdFlee(Command):
 
     If successful, you will escape the current combat and leave the room.
     If you fail, you will skip your next turn.
+    Cannot be used if you are currently grappled.
     """
 
     key = "flee"
@@ -149,6 +150,20 @@ class CmdFlee(Command):
         if not handler:
             caller.msg("You're not in combat.")
             return
+
+        # --- NEW: Check if grappled ---
+        caller_combat_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        if not caller_combat_entry: # Should ideally not happen if handler exists
+            caller.msg("|rError: Your combat entry is missing. Please report to an admin.|n")
+            splattercast.msg(f"CRITICAL: {caller.key} tried to flee, has combat_handler but no entry in {handler.key}")
+            return
+
+        if caller_combat_entry.get("grappled_by"):
+            grappler = caller_combat_entry.get("grappled_by")
+            caller.msg(f"|rYou cannot flee while {grappler.key if grappler else 'someone'} is grappling you! Try 'escape' or 'resist'.|n")
+            splattercast.msg(f"{caller.key} tried to flee while grappled by {grappler.key if grappler else 'Unknown'}. Flee blocked.")
+            return
+        # --- END NEW ---
 
         # Find all attackers targeting the caller
         attackers = [e["char"] for e in handler.db.combatants if e.get("target") == caller and e["char"] != caller]
