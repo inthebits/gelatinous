@@ -416,23 +416,31 @@ class CombatHandler(DefaultScript):
                     # victim_entry is guaranteed to be valid here because (not victim_entry) was false.
                     victim_entry["grappled_by"] = None
                     msg = f"{char.key} releases {grappled_victim_obj.key}."
-                    # Consider using: msg = get_combat_message("grapple", "release_success", attacker=char, target=grappled_victim_obj)
                     self.obj.msg_contents(f"|G{msg}|n")
                     splattercast.msg(msg)
                     continue # Turn ends
 
+                # NEW: Check if the grappling character is yielding
+                elif current_char_combat_entry.get("is_yielding"):
+                    splattercast.msg(f"{char.key} is grappling {grappled_victim_obj.key} but is yielding, so takes no hostile action.")
+                    self.obj.msg_contents(f"|y{char.key} maintains their grapple on {grappled_victim_obj.key} but holds back from attacking.|n")
+                    # target remains None or whatever it was before, they don't attack.
+                    # The flow will go to "Standard Attack Sequence", where 'if not target:' will be true.
+                    # The existing logic there correctly handles not removing them because they are in an active grapple.
+                    # We need to ensure 'target' is not set here if they are yielding.
+                    target = None # Explicitly ensure no offensive target if yielding while grappling
+                    # No 'continue' here, let it fall to the 'if not target:' check which now handles grapplers correctly.
+                    # OR, we can 'continue' here to be more explicit that their turn for hostile action is done.
+                    # Let's try 'continue' for clarity.
+                    continue # Yielding grappler's turn for hostile action ends.
+
                 else: 
-                    # Default action for a character who is grappling someone: ATTACK THE VICTIM.
-                    # This block is reached if:
-                    # 1. They are grappling someone (current_char_combat_entry.get("grappling") is true).
-                    # 2. Their victim is still in combat (victim_entry is valid).
-                    # 3. They do not have an explicit "release_grapple" intent.
-                    
+                    # Default action for a character who is grappling someone (and NOT yielding): ATTACK THE VICTIM.
                     target = grappled_victim_obj # Set the grappled victim as the target
-                    splattercast.msg(f"{char.key} is grappling {grappled_victim_obj.key}, and defaults to attacking them this turn.")
+                    splattercast.msg(f"{char.key} is grappling {grappled_victim_obj.key}, and defaults to attacking them this turn (not yielding).")
                     # No 'continue' here. The flow will proceed to the Standard Attack Sequence below.
 
-            # NEW: Check for yielding before standard action determination
+            # NEW: Check for yielding before standard action determination (this handles non-grappling yielders)
             elif current_char_combat_entry.get("is_yielding"):
                 splattercast.msg(f"{char.key} is yielding and takes no hostile action this turn.")
                 self.obj.msg_contents(f"|y{char.key} holds their action, appearing non-hostile.|n")
