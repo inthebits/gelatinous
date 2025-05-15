@@ -143,19 +143,25 @@ class Exit(DefaultExit):
                 new_handler = get_or_create_combat(target_location)
 
                 # 3. Add combatants to the new handler with their transferred state.
+                # Before adding to new_handler, determine if victim is yielding
+                victim_is_yielding = getattr(grappled_victim_obj, "is_yielding", False)
+                # Or, if you track yielding in the combat entry, fetch it from the old handler:
+                victim_entry_in_handler = next((e for e in handler.db.combatants if e["char"] == grappled_victim_obj), None)
+                victim_is_yielding = victim_entry_in_handler.get("is_yielding", False) if victim_entry_in_handler else False
+
                 new_handler.add_combatant(
                     traversing_object, 
-                    target=None, # Drek's offensive target is cleared as he's yielding
+                    target=None, # Grappler is always yielding when dragging
                     initial_grappling=grappled_victim_obj, 
                     initial_grappled_by=None, 
                     initial_is_yielding=True
                 )
                 new_handler.add_combatant(
                     grappled_victim_obj, 
-                    target=traversing_object, # Victim might default to targeting grappler
+                    target=None if victim_is_yielding else traversing_object,  # <--- Fix is here!
                     initial_grappling=None, 
                     initial_grappled_by=traversing_object, 
-                    initial_is_yielding=False # Victim is not yielding by default
+                    initial_is_yielding=victim_is_yielding
                 )
                 
                 splattercast.msg(f"DRAG: Combatants re-added to new handler {new_handler.key} with transferred grapple state.")
