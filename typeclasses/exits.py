@@ -156,10 +156,10 @@ class Exit(DefaultExit):
                 )
                 new_handler.add_combatant(
                     grappled_victim_obj, 
-                    target=None if victim_is_yielding else traversing_object,  # <--- Fix is here!
+                    target=None,  # Victim never has an offensive target immediately after being dragged
                     initial_grappling=None, 
                     initial_grappled_by=traversing_object, 
-                    initial_is_yielding=victim_is_yielding
+                    initial_is_yielding=victim_is_yielding # Preserve their yielding state from before the drag
                 )
                 
                 splattercast.msg(f"DRAG: Combatants re-added to new handler {new_handler.key} with transferred grapple state.")

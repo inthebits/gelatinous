@@ -278,11 +278,11 @@ class CombatHandler(DefaultScript):
                 grappler = current_char_combat_entry["grappled_by"]
                 grappler_entry = next((e for e in self.db.combatants if e["char"] == grappler), None)
 
-                if not grappler_entry: # Grappler might have been removed from combat
+                if not grappler_entry:
                     current_char_combat_entry["grappled_by"] = None
                     splattercast.msg(f"{char.key} was grappled by {grappler.key if grappler else 'Unknown'}, but grappler is gone. Releasing grapple.")
                     # Fall through to normal action or next state check, as they are no longer grappled.
-                
+
                 elif action_intent and action_intent.get("type") == "escape":
                     # Explicit intent to escape (already handled correctly)
                     splattercast.msg(f"{char.key} (grappled by {grappler.key}) attempts to escape via explicit command.")
@@ -319,13 +319,14 @@ class CombatHandler(DefaultScript):
                         splattercast.msg(msg)
                     continue # Turn ends after explicit escape attempt
 
+                # --- NEW: If yielding, do not attempt to escape ---
+                elif current_char_combat_entry.get("is_yielding"):
+                    splattercast.msg(f"{char.key} is grappled by {grappler.key} but is yielding, so does not attempt to escape or attack.")
+                    self.obj.msg_contents(f"|y{char.key} is grappled by {grappler.key} but yields, making no attempt to break free.|n")
+                    continue # Skip to next combatant
+
                 else: 
                     # Default action for grappled char: AUTOMATICALLY ATTEMPT TO ESCAPE.
-                    # This block is reached if:
-                    # 1. They are grappled by someone (current_char_combat_entry.get("grappled_by") is true).
-                    # 2. Their grappler is still in combat (grappler_entry is valid).
-                    # 3. They do not have an explicit "escape" intent.
-                    
                     splattercast.msg(f"{char.key} is grappled by {grappler.key} and defaults to attempting to escape.")
                     escape_roll = randint(1, max(1, getattr(char, "grit", 1))) # Or char.db.motorics, etc.
                     hold_roll = randint(1, max(1, getattr(grappler, "grit", 1))) # Grappler's grit or relevant stat
