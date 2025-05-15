@@ -548,50 +548,88 @@ class CombatHandler(DefaultScript):
             if atk_roll > def_roll:
                 # Successful hit
                 damage = getattr(char, "grit", 1) or 1 # Basic damage
-                splattercast.msg(f"{char.key} hits {target.key} with {weapon_type} for {damage} damage.")
                 
-                msg = get_combat_message(
-                    effective_message_weapon_type, # Use the debugged effective type
+                actual_damage_recipient = target # By default, the original target takes damage
+                
+                # --- BODY SHIELD LOGIC ---
+                target_combat_entry = next((e for e in self.db.combatants if e["char"] == target), None)
+                shield_char = None
+                if target_combat_entry and target_combat_entry.get("grappling"):
+                    shield_char = target_combat_entry.get("grappling")
+                    shield_char_entry = next((e for e in self.db.combatants if e["char"] == shield_char), None)
+
+                    if shield_char and shield_char_entry: # Ensure shield_char is valid and still in combat
+                        splattercast.msg(f"BODY SHIELD CHECK: {target.key} is grappling {shield_char.key}. Performing body shield roll.")
+                        
+                        target_motorics = getattr(target, "motorics", 1)
+                        shield_char_motorics = getattr(shield_char, "motorics", 1)
+                        
+                        # Target tries to use shield_char, shield_char tries to avoid being used/get out of the way
+                        target_positioning_roll = randint(1, max(1, target_motorics))
+                        shield_evasion_roll = randint(1, max(1, shield_char_motorics))
+
+                        splattercast.msg(f"BODY SHIELD ROLL: {target.key} (target trying to use shield) rolls {target_positioning_roll} vs {shield_char.key} (shield trying to evade) rolls {shield_evasion_roll} (motorics).")
+
+                        # If the shield_char fails to evade (shield_evasion_roll is not greater)
+                        # AND the target successfully positions them (target_positioning_roll is greater or equal to shield_evasion_roll, or simply wins)
+                        # Let's simplify: If target's roll is better, they use the shield.
+                        if target_positioning_roll > shield_evasion_roll:
+                            actual_damage_recipient = shield_char
+                            splattercast.msg(f"BODY SHIELD SUCCESS: {target.key} successfully uses {shield_char.key} as a shield! {shield_char.key} takes the hit.")
+                            self.obj.msg_contents(f"|c{target.key} yanks {shield_char.key} in the way! {shield_char.key} takes the hit!|n")
+                        else:
+                            splattercast.msg(f"BODY SHIELD FAIL: {target.key} fails to use {shield_char.key} as a shield. {target.key} takes the hit.")
+                            self.obj.msg_contents(f"|y{target.key} tries to use {shield_char.key} as a shield but can't position them effectively!|n")
+                # --- END BODY SHIELD LOGIC ---
+
+                # Announce the hit on the ACTUAL recipient
+                hit_msg = get_combat_message(
+                    effective_message_weapon_type,
                     "hit", 
                     attacker=char,
-                    target=target,
+                    target=actual_damage_recipient, # Use the one who actually takes damage
                     item=weapon,
-                    damage=damage
+                    damage=damage 
                 )
-                # This log shows the message retrieved. The specific context (grapple or actual weapon)
-                # would have been used by get_combat_message to select the appropriate string.
-                splattercast.msg(f"get_combat_message (hit) returned: {msg!r}")
-                if msg:
-                    self.obj.msg_contents(f"|R{msg}|n")
-                # Defensive: ensure take_damage exists
-                if hasattr(target, "take_damage"):
-                    target.take_damage(damage)
-                if hasattr(target, "is_dead") and target.is_dead():
-                    # Handle death and retargeting
-                    splattercast.msg(f"{target.key} has been defeated and removed from combat.")
-                    msg = get_combat_message(
-                        effective_message_weapon_type, # Use the debugged effective type
+                splattercast.msg(f"get_combat_message (hit on {actual_damage_recipient.key}) returned: {hit_msg!r}")
+                if hit_msg:
+                    self.obj.msg_contents(f"|R{hit_msg}|n")
+                
+                # Now, apply damage to whoever ended up being the actual_damage_recipient
+                splattercast.msg(f"{char.key}'s attack will damage {actual_damage_recipient.key} for {damage} due to body shield outcome (or lack thereof).")
+
+                if hasattr(actual_damage_recipient, "take_damage"):
+                    actual_damage_recipient.take_damage(damage)
+                
+                if hasattr(actual_damage_recipient, "is_dead") and actual_damage_recipient.is_dead():
+                    splattercast.msg(f"{actual_damage_recipient.key} has been defeated and removed from combat.")
+                    
+                    kill_msg_target = actual_damage_recipient # The one who actually died
+                    
+                    kill_msg = get_combat_message(
+                        effective_message_weapon_type,
                         "kill",
                         attacker=char,
-                        target=target,
+                        target=kill_msg_target,
                         item=weapon,
                         damage=damage
                     )
-                    splattercast.msg(f"get_combat_message (kill) returned: {msg!r}")
-                    if msg:
-                        self.obj.msg_contents(f"|R{msg}|n")
-                    self.remove_combatant(target)
-                    # Retarget anyone who was targeting the now-removed character
-                    for entry in self.db.combatants:
-                        if entry.get("target") == target:
-                            new_target = self.get_target(entry["char"])
-                            old_name = target.key if hasattr(target, "key") else str(target)
-                            new_name = new_target.key if new_target else "None"
+                    splattercast.msg(f"get_combat_message (kill of {kill_msg_target.key}) returned: {kill_msg!r}")
+                    if kill_msg:
+                        self.obj.msg_contents(f"|R{kill_msg}|n")
+                    
+                    self.remove_combatant(actual_damage_recipient)
+                    
+                    for entry in list(self.db.combatants): # Iterate over a copy if modifying
+                        if entry.get("target") == actual_damage_recipient:
+                            new_target_for_entry = self.get_target(entry["char"])
+                            old_name = actual_damage_recipient.key if hasattr(actual_damage_recipient, "key") else str(actual_damage_recipient)
+                            new_name = new_target_for_entry.key if new_target_for_entry else "None"
                             splattercast.msg(
                                 f"{entry['char'].key} was targeting {old_name} (now removed) and now targets {new_name}."
                             )
-                            entry["target"] = new_target
-                    continue
+                            entry["target"] = new_target_for_entry
+                    continue # Attacker's turn ends if they killed someone
             else:
                 # Missed attack
                 msg = get_combat_message(
