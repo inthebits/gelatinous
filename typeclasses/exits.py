@@ -60,15 +60,20 @@ class Exit(DefaultExit):
             grappled_victim_obj = char_entry_in_handler.get("grappling")
             is_yielding = char_entry_in_handler.get("is_yielding")
             
-            is_targeted_by_others = False
-            if handler.db.combatants: # Ensure list is not empty before iterating
-                is_targeted_by_others = any(
-                    entry.get("target") == traversing_object
-                    for entry in handler.db.combatants
-                    if entry["char"] != traversing_object
-                )
-
-            if grappled_victim_obj and is_yielding and not is_targeted_by_others:
+            is_targeted_by_others_not_victim = False
+            if handler.db.combatants:
+                for entry in handler.db.combatants:
+                    # Check if this entry is targeting the traversing_object
+                    if entry.get("target") == traversing_object:
+                        # And this entry is not the traversing_object itself
+                        if entry["char"] != traversing_object:
+                            # AND this entry is not the person being grappled by the traversing_object
+                            if entry["char"] != grappled_victim_obj:
+                                is_targeted_by_others_not_victim = True
+                                break # Found someone else targeting, no need to check further
+            
+            # Drag conditions: grappling someone, yielding, and not targeted by anyone *else* (other than the victim)
+            if grappled_victim_obj and is_yielding and not is_targeted_by_others_not_victim:
                 # Conditions for dragging are met
                 victim_entry_in_handler = next((e for e in handler.db.combatants if e["char"] == grappled_victim_obj), None)
                 if not victim_entry_in_handler:
@@ -134,7 +139,7 @@ class Exit(DefaultExit):
             else:
                 # In combat, but conditions for dragging are not met
                 traversing_object.msg("|rYou can't leave while in combat! Try to flee instead.|n")
-                splattercast.msg(f"{traversing_object.key} tried to move via exit '{self.key}' while in combat. Drag conditions not met (grappling: {bool(grappled_victim_obj)}, yielding: {is_yielding}, targeted_by_others: {is_targeted_by_others}).")
+                splattercast.msg(f"{traversing_object.key} tried to move via exit '{self.key}' while in combat. Drag conditions not met (grappling: {bool(grappled_victim_obj)}, yielding: {is_yielding}, targeted_by_others_not_victim: {is_targeted_by_others_not_victim}).")
                 return  # Block movement
 
         # Not in combat, standard traversal
