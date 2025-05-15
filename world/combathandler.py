@@ -232,17 +232,35 @@ class CombatHandler(DefaultScript):
 
         for combat_entry in list(self.get_initiative_order()): # Use list() for safe removal
             char = combat_entry["char"]
-            if not char or char not in [e["char"] for e in self.db.combatants]: # char might have been removed
+            if not char or char not in [e["char"] for e in self.db.combatants]: 
                 continue
 
-            # Retrieve the most current entry for char, as it might have been modified
-            # by a previous combatant's grapple action in this same turn.
             current_char_combat_entry = next((e for e in self.db.combatants if e["char"] == char), None)
-            if not current_char_combat_entry: # Should not happen if char is still in active_combatants
+            if not current_char_combat_entry: 
                 splattercast.msg(f"Error: Could not find combat entry for {char.key} mid-turn.")
                 continue
 
-            # Retrieve action_intent from the combatant's entry in the handler
+            # ---- START OF TURN STATE DEBUG ----
+            # Log this for all chars, or specifically for drek if needed
+            splattercast.msg(f"AT_REPEAT TURN START for {char.key}:")
+            grappling_target_key = "None"
+            if current_char_combat_entry.get("grappling"):
+                grappling_target_key = current_char_combat_entry.get("grappling").key
+            splattercast.msg(f"  - grappling: {grappling_target_key}")
+            
+            grappled_by_key = "None"
+            if current_char_combat_entry.get("grappled_by"):
+                grappled_by_key = current_char_combat_entry.get("grappled_by").key
+            splattercast.msg(f"  - grappled_by: {grappled_by_key}")
+            
+            splattercast.msg(f"  - is_yielding: {current_char_combat_entry.get('is_yielding')}")
+            
+            current_target_key = "None"
+            if current_char_combat_entry.get("target"):
+                current_target_key = current_char_combat_entry.get("target").key
+            splattercast.msg(f"  - entry's target: {current_target_key}")
+            # ---- END OF TURN STATE DEBUG ----
+
             action_intent = current_char_combat_entry.get("combat_action")
 
             if action_intent: # Clear after reading
