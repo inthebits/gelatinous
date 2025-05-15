@@ -9,6 +9,7 @@ for allowing Characters to traverse the exit to its destination.
 
 from evennia.objects.objects import DefaultExit
 from evennia.comms.models import ChannelDB
+from world.combathandler import get_or_create_combat 
 
 
 from .objects import ObjectParent
