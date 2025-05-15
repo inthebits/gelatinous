@@ -300,7 +300,7 @@ class CmdGrapple(Command):
     Usage:
         grapple <target>
 
-    You must be in combat to attempt a grapple.
+    If you are not in combat, this will initiate combat.
     If successful, you will be grappling the target, and they will be grappled by you.
     """
     key = "grapple"
@@ -314,58 +314,94 @@ class CmdGrapple(Command):
             caller.msg("Grapple whom?")
             return
 
-        handler = get_or_create_combat(caller.location)
-        if not handler:
-            caller.msg("Error: Could not find or create combat handler.")
-            return
-
-        caller_combat_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
-        if not caller_combat_entry:
-            caller.msg("You are not in combat or there's an issue finding your combat entry.")
-            return
-
-        # Check if caller is already grappling someone
-        if caller_combat_entry.get("grappling"):
-            caller.msg(f"You are already grappling {caller_combat_entry['grappling'].key}. You must release them first.")
-            splattercast.msg(f"{caller.key} tried to grapple while already grappling {caller_combat_entry['grappling'].key}.")
-            return
-        
-        # Check if caller is currently grappled by someone else
-        if caller_combat_entry.get("grappled_by"):
-            caller.msg(f"You cannot initiate a grapple while {caller_combat_entry['grappled_by'].key} is grappling you. Try to escape first.")
-            splattercast.msg(f"{caller.key} tried to grapple while being grappled by {caller_combat_entry['grappled_by'].key}.")
-            return
-
+        # --- Target searching (similar to CmdAttack) ---
         search_name = self.args.strip().lower()
-        # Ensure target is in the same combat
-        valid_targets = [e["char"] for e in handler.db.combatants if e["char"] != caller]
-        
+        candidates = caller.location.contents
         matches = [
-            obj for obj in valid_targets
+            obj for obj in candidates
             if search_name in obj.key.lower()
             or any(search_name in alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else []))
         ]
 
         if not matches:
-            caller.msg("No valid target to grapple in this combat.")
+            caller.msg("No valid target found to grapple.")
             splattercast.msg(
-                f"{caller.key} tried to grapple '{search_name}' but found no valid target in combat."
+                f"{caller.key} tried to grapple '{search_name}' but found no valid target in the room."
             )
             return
 
         target = matches[0]
 
-        if target == caller: # Should be caught by valid_targets but good to double check
+        if target == caller:
             caller.msg("You can't grapple yourself.")
             return
 
-        # Check if target is already grappled by someone else
-        target_entry = next((e for e in handler.db.combatants if e["char"] == target), None)
-        if target_entry and target_entry.get("grappled_by"):
-            caller.msg(f"{target.key} is already being grappled by {target_entry['grappled_by'].key}.")
-            splattercast.msg(f"{caller.key} tried to grapple {target.key}, but they are already grappled by {target_entry['grappled_by'].key}.")
+        if not inherits_from(target, "typeclasses.characters.Character"):
+            caller.msg("That can't be grappled.")
+            splattercast.msg(
+                f"{caller.key} tried to grapple {target.key}, but it's not a valid character."
+            )
             return
 
+        # --- Get or create combat handler ---
+        handler = get_or_create_combat(caller.location)
+        if not handler:
+            caller.msg("Error: Could not find or create combat handler.") # Should be rare
+            return
+
+        # --- Add caller and target to combat if not already in ---
+        # Check if caller is in combat; if not, add both.
+        # If caller is in, target must also be in (or this command could add them).
+        # For simplicity, let's ensure both are added if not present.
+
+        caller_is_in_combat = any(e["char"] == caller for e in handler.db.combatants)
+        target_is_in_combat = any(e["char"] == target for e in handler.db.combatants)
+
+        if not caller_is_in_combat:
+            splattercast.msg(f"{caller.key} is initiating grapple combat with {target.key}.")
+            handler.add_combatant(caller) # No initial target for grapple action itself
+            handler.add_combatant(target) # No initial target for victim
+        elif not target_is_in_combat: # Caller is in, but target is not
+            splattercast.msg(f"{caller.key} (in combat) is attempting to grapple {target.key} (adding to combat).")
+            handler.add_combatant(target)
+        
+        # --- Now retrieve combat entries; they should exist ---
+        caller_combat_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        target_combat_entry = next((e for e in handler.db.combatants if e["char"] == target), None)
+
+        if not caller_combat_entry: # Should not happen if add_combatant worked
+            caller.msg("There was an issue adding you to combat. Please try again.")
+            splattercast.msg(f"CRITICAL: {caller.key} failed to be added to combat by CmdGrapple.")
+            return
+        if not target_combat_entry: # Should not happen
+            caller.msg(f"There was an issue adding {target.key} to combat. Please try again.")
+            splattercast.msg(f"CRITICAL: {target.key} failed to be added to combat by CmdGrapple.")
+            return
+
+        # --- Grapple-specific checks (already grappling, being grappled, target grappled) ---
+        if caller_combat_entry.get("grappling"):
+            caller.msg(f"You are already grappling {caller_combat_entry['grappling'].key}. You must release them first.")
+            splattercast.msg(f"{caller.key} tried to grapple {target.key} while already grappling {caller_combat_entry['grappling'].key}.")
+            return
+        
+        if caller_combat_entry.get("grappled_by"):
+            caller.msg(f"You cannot initiate a grapple while {caller_combat_entry['grappled_by'].key} is grappling you. Try to escape first.")
+            splattercast.msg(f"{caller.key} tried to grapple {target.key} while being grappled by {caller_combat_entry['grappled_by'].key}.")
+            return
+
+        if target_combat_entry.get("grappled_by"):
+            # Check if it's the caller grappling them (should be caught above, but good for clarity)
+            # Or if someone *else* is grappling them
+            if target_combat_entry["grappled_by"] != caller:
+                 caller.msg(f"{target.key} is already being grappled by {target_combat_entry['grappled_by'].key}.")
+                 splattercast.msg(f"{caller.key} tried to grapple {target.key}, but they are already grappled by {target_combat_entry['grappled_by'].key}.")
+                 return
+        
+        # --- Set combat action ---
+        # Ensure combat_action key exists for the entry
+        if "combat_action" not in caller_combat_entry:
+            caller_combat_entry["combat_action"] = {}
+            
         caller_combat_entry["combat_action"] = {"type": "grapple", "target": target}
         caller.msg(f"You prepare to grapple {target.key}...")
         splattercast.msg(f"{caller.key} sets combat action to grapple {target.key} (via handler).")
