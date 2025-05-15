@@ -115,6 +115,15 @@ class CombatHandler(DefaultScript):
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
 
+        # Guard against operations on a deleted/cleaned-up script
+        if not self.pk or not self.db or not hasattr(self.db, 'combatants') or self.db.combatants is None:
+            splattercast.msg(f"RMV_COMB: Attempted to remove {char.key} from handler {self.key}, but handler/combatants list is gone (handler likely already deleted/stopped).")
+            # Still try to clean up NDB reference if it points to this (now defunct) handler
+            if hasattr(char, "ndb") and char.ndb.combat_handler == self:
+                splattercast.msg(f"RMV_COMB: Cleaning ndb.combat_handler for {char.key} as a fallback for defunct handler {self.key}.")
+                del char.ndb.combat_handler
+            return # Exit early, nothing more to do with this handler
+
         # Check if the removed character was grappling someone
         char_combat_entry = next((e for e in self.db.combatants if e["char"] == char), None)
         if char_combat_entry and char_combat_entry.get("grappling"):
