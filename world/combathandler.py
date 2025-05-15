@@ -75,27 +75,33 @@ class CombatHandler(DefaultScript):
         self.is_active = False
         self.delete()
 
-    def add_combatant(self, char, target=None):
+    def add_combatant(self, char, target=None, initial_grappling=None, initial_grappled_by=None, initial_is_yielding=False):
         """
         Add a character to combat, assigning initiative and an optional target.
         Logs if joining an already-running combat.
         Initializes grapple status and combat_action.
+        Can accept initial grapple/yielding states.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
         if any(entry["char"] == char for entry in self.db.combatants):
+            # If char already exists, perhaps update their state if new states are provided?
+            # For now, just return to avoid duplicates, assuming exits.py removes then re-adds.
+            # If exits.py didn't remove first, this would be a point to update existing entry.
+            splattercast.msg(f"ADD_COMB: {char.key} already in combatants list. Skipping add, assuming update or re-add.")
             return
+
         initiative = randint(1, max(1, char.db.motorics or 1))
         self.db.combatants.append({
             "char": char,
             "initiative": initiative,
             "target": target,
-            "grappling": None,  # Character object this char is grappling
-            "grappled_by": None,  # Character object grappling this char
+            "grappling": initial_grappling,
+            "grappled_by": initial_grappled_by,
             "combat_action": None, 
-            "is_yielding": False, # New flag: True if character is not actively attacking
+            "is_yielding": initial_is_yielding,
         })
         char.ndb.combat_handler = self
-        splattercast.msg(f"{char.key} joins combat with initiative {initiative}.")
+        splattercast.msg(f"{char.key} joins combat with initiative {initiative} (Yielding: {initial_is_yielding}, Grappling: {initial_grappling.key if initial_grappling else 'None'}).")
         splattercast.msg(f"{char.key} added to combat. Total combatants: {len(self.db.combatants)}.")
         if self.db.round == 0:
             splattercast.msg(f"Combat is in setup phase (round 0). Waiting for more combatants.")
