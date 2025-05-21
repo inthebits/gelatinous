@@ -631,3 +631,38 @@ class CmdAim(Command):
             caller.ndb.aiming_direction = direction
             caller.msg(f"You aim in the {direction} direction.")
             splattercast.msg(f"{caller.key} is aiming in the {direction} direction.")
+
+
+class CmdStop(Command):
+    """
+    Stop aiming.
+
+    Usage:
+        stop
+
+    This command will stop you from aiming in a direction or at a character.
+    """
+
+    key = "stop"
+    locks = "cmd:all()"
+
+    def func(self):
+        caller = self.caller
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+
+        if getattr(caller.ndb, "aiming_at", None):
+            target = caller.ndb.aiming_at
+            del caller.ndb.aiming_at
+            if getattr(target.ndb, "aimed_at_by", None) == caller:
+                del target.ndb.aimed_at_by
+            caller.msg(f"You stop aiming at {target.key}.")
+            target.msg(f"{caller.key} stops aiming at you.")
+            splattercast.msg(f"{caller.key} stops aiming at {target.key}.")
+        elif getattr(caller.ndb, "aiming_direction", None):
+            direction = caller.ndb.aiming_direction
+            del caller.ndb.aiming_direction
+            caller.msg(f"You stop aiming in the {direction} direction.")
+            splattercast.msg(f"{caller.key} stops aiming in the {direction} direction.")
+        else:
+            caller.msg("You are not aiming at anything or in any direction.")
+            splattercast.msg(f"{caller.key} tried to stop aiming, but was not aiming at anything or in any direction.")

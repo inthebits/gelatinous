@@ -54,6 +54,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdInventory.CmdDrop())
         self.add(CmdInventory.CmdGet())
         self.add(CmdCombat.CmdAim)  # Add CmdAim to the CharacterCmdSet
+        self.add(CmdCombat.CmdStop)  # Add CmdStop to the CharacterCmdSet
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
