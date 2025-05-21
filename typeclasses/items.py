@@ -21,3 +21,6 @@ class Item(DefaultObject):
         # Generic descriptor
         if not self.db.desc:
             self.db.desc = "It's a thing. Heavy enough to hurt if used wrong."
+
+        # Add a boolean attribute `is_ranged` to the `Item` class
+        self.db.is_ranged = False

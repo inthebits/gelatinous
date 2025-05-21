@@ -579,3 +579,55 @@ class CmdYield(Command):
         caller.location.msg_contents(f"|y{msg_room}|n", exclude=[caller])
         caller.msg("|gYou lower your guard and will not actively attack.|n")
         splattercast.msg(f"{caller.key} is now yielding. Their target has been cleared.")
+
+
+class CmdAim(Command):
+    """
+    Aim in a direction or at a character.
+
+    Usage:
+        aim <direction>
+        aim at <character>
+
+    Aiming in a direction allows you to use look and kill as though you were in the room.
+    Aiming at a character locks them in place, preventing them from traversing exits unless they successfully flee.
+    """
+
+    key = "aim"
+    locks = "cmd:all()"
+
+    def func(self):
+        caller = self.caller
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+
+        if not self.args:
+            caller.msg("Aim where or at whom?")
+            return
+
+        args = self.args.strip().lower()
+        if args.startswith("at "):
+            target_name = args[3:]
+            target = caller.search(target_name)
+            if not target:
+                caller.msg(f"No character named '{target_name}' found.")
+                return
+
+            if not inherits_from(target, "typeclasses.characters.Character"):
+                caller.msg("You can only aim at characters.")
+                return
+
+            if target == caller:
+                caller.msg("You can't aim at yourself.")
+                return
+
+            # Lock the target in place
+            caller.ndb.aiming_at = target
+            target.ndb.aimed_at_by = caller
+            caller.msg(f"You aim at {target.key}, locking them in place.")
+            target.msg(f"{caller.key} is aiming at you, locking you in place.")
+            splattercast.msg(f"{caller.key} is aiming at {target.key}, locking them in place.")
+        else:
+            direction = args
+            caller.ndb.aiming_direction = direction
+            caller.msg(f"You aim in the {direction} direction.")
+            splattercast.msg(f"{caller.key} is aiming in the {direction} direction.")
