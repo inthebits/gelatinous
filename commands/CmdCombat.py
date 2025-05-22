@@ -767,7 +767,6 @@ class CmdLook(Command):
                 if not args: 
                     caller.msg(f"You peer into the {aiming_direction_name} direction, towards {remote_room.get_display_name(caller)}...")
                     caller.msg(remote_room.return_appearance(caller))
-                    self._show_characters_in_room(caller, remote_room, f"Looking {aiming_direction_name}, you also see")
                     splattercast.msg(f"LOOK: {caller.key} successfully looked into {remote_room.key} via aiming {aiming_direction_name}.")
                     return
                 else: 
