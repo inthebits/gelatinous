@@ -122,7 +122,6 @@ class CombatHandler(DefaultScript):
 
         splattercast.msg(f"CH_MERGE: Stopping and deleting other handler {other_handler.key}.")
         other_handler.is_active = False  # Prevent further at_repeats
-        other_handler.stop_repeat()  # Explicitly stop its timer
         for entry in list(other_handler.db.combatants):
             if hasattr(entry["char"], "ndb") and entry["char"].ndb.combat_handler == other_handler:
                 del entry["char"].ndb.combat_handler
