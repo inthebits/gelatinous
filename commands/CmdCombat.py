@@ -528,55 +528,70 @@ class CmdReleaseGrapple(Command):
         # The combat handler will process this
 
 
-class CmdYield(Command):
+class CmdStop(Command):
     """
-    Stop actively attacking in combat.
+    Stop a specific action, such as aiming or attacking.
 
     Usage:
-      yield
-      hold fire
+        stop aiming
+        stop attacking
 
-    If you are in combat, this signals you are no longer taking
-    aggressive actions. You will skip your attack turn unless you
-    use 'attack' or 'kill' again, or initiate another aggressive action.
-    This does not make you immune to attacks.
+    'stop aiming' will cease any current aiming.
+    'stop attacking' will cause you to yield in combat.
     """
-    key = "yield"
-    aliases = ["hold fire", "disengage"] # "disengage" might be confused with fleeing
-    locks = "cmd:all()" # Simplification, actual check for combat is in func
+
+    key = "stop"
+    locks = "cmd:all()"
 
     def func(self):
         caller = self.caller
+        args = self.args.strip().lower()
         splattercast = ChannelDB.objects.get_channel("Splattercast")
 
+        if args == "aiming":
+            self._stop_aiming(caller, splattercast)
+        elif args == "attacking":
+            self._stop_attacking(caller, splattercast)
+        else:
+            caller.msg("Stop what? You can 'stop aiming' or 'stop attacking'.")
+
+    def _stop_aiming(self, caller, splattercast):
+        """Helper function to handle stopping aim."""
+        action_taken_aiming = False
+        if hasattr(caller, "clear_aim_state"):
+            if hasattr(caller.ndb, "aiming_at") or hasattr(caller.ndb, "aiming_direction"):
+                action_taken_aiming = caller.clear_aim_state(reason_for_clearing="as you stop aiming")
+                if action_taken_aiming: # clear_aim_state gives its own message
+                    splattercast.msg(f"STOP_CMD: {caller.key} stopped aiming.")
+            else:
+                caller.msg("You are not currently aiming at anything.")
+        else:
+            caller.msg("|rError: Cannot process 'stop aiming'. Character is missing 'clear_aim_state' method.|n")
+            splattercast.msg(f"CRITICAL_STOP_AIMING: {caller.key} lacks 'clear_aim_state' method.")
+
+    def _stop_attacking(self, caller, splattercast):
+        """Helper function to handle stopping attacks (yielding)."""
         handler = getattr(caller.ndb, "combat_handler", None)
         if not handler:
-            caller.msg("You are not in combat.")
-            splattercast.msg(f"{caller.key} tried to yield but is not in combat.")
+            caller.msg("You are not in combat to stop attacking.")
             return
 
         caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
         if not caller_entry:
             caller.msg("You are not properly registered in the current combat.")
-            splattercast.msg(f"{caller.key} tried to yield, but not found in combatants list of handler {handler.key}.")
+            splattercast.msg(f"STOP_ATTACKING_WARNING: {caller.key} has combat_handler but no entry in {handler.key}.")
             return
 
-        if caller_entry.get("is_yielding"):
-            caller.msg("You are already yielding.")
-            return
-
-        caller_entry["is_yielding"] = True
-        caller_entry["target"] = None # Explicitly clear their offensive target
-        
-        # If they were grappling someone, yielding implies they stop actively trying to maintain it aggressively.
-        # The grapple itself might persist until explicitly released or broken,
-        # but their default action won't be to attack the grappled person.
-        # For now, yielding won't automatically release a grapple, but it will stop the default attack.
-        
-        msg_room = f"{caller.key} lowers their guard, appearing to yield."
-        caller.location.msg_contents(f"|y{msg_room}|n", exclude=[caller])
-        caller.msg("|gYou lower your guard and will not actively attack.|n")
-        splattercast.msg(f"{caller.key} is now yielding. Their target has been cleared.")
+        if not caller_entry.get("is_yielding"):
+            caller_entry["is_yielding"] = True
+            caller_entry["target"] = None # Explicitly clear their offensive target
+            
+            msg_room = f"{caller.key} lowers their guard, appearing to yield."
+            caller.location.msg_contents(f"|y{msg_room}|n", exclude=[caller])
+            caller.msg("|gYou lower your guard and will not actively attack (you are now yielding).|n")
+            splattercast.msg(f"STOP_ATTACKING: {caller.key} is now yielding. Their target has been cleared.")
+        else:
+            caller.msg("You are already yielding (not actively attacking).")
 
 
 class CmdAim(Command):
@@ -664,34 +679,6 @@ class CmdAim(Command):
         # 3. If neither character nor direction found
         caller.msg(f"You can't aim at '{raw_args}'. It's not a character present here or a clear direction you can aim towards.")
         splattercast.msg(f"AIM_FAIL: {caller.key} tried to aim at '{raw_args}', no valid character or direction found.")
-
-
-class CmdStop(Command):
-    """
-    Stop aiming.
-
-    Usage:
-        stop
-
-    This command will stop you from aiming in a direction or at a character.
-    """
-
-    key = "stop"
-    locks = "cmd:all()"
-
-    def func(self):
-        caller = self.caller
-        # splattercast is now handled by clear_aim_state
-
-        if hasattr(caller, "clear_aim_state"):
-            action_taken = caller.clear_aim_state(reason_for_clearing="as you stop aiming")
-            if not action_taken:
-                caller.msg("You are not aiming at anything or in any direction.")
-        else:
-            # Fallback or error if the method isn't on the object
-            caller.msg("|rError: Cannot process stop aim command. Character is missing 'clear_aim_state' method.|n")
-            splattercast = ChannelDB.objects.get_channel("Splattercast") 
-            splattercast.msg(f"CRITICAL_AIM_STOP: {caller.key} tried to stop aiming, but 'clear_aim_state' method is missing.")
 
 
 class CmdLook(Command):
