@@ -70,24 +70,38 @@ class CombatHandler(DefaultScript):
 
     def start(self):
         """
-        Start the combat handler's repeat timer if combat logic isn't already running.
+        Start the combat handler's repeat timer if combat logic isn't already running
+        or if the Evennia ticker isn't active.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
-        if self.db.combat_is_running: # Check your custom flag
-            splattercast.msg(f"CH_START: Handler {self.key} on {self.obj.key} combat logic is already running. Skipping redundant start.")
-            return
-        
-        # Check Evennia's script active state before trying to force_repeat
-        # This ensures we don't try to force_repeat on a script Evennia has already stopped/is stopping.
-        if not super().is_active: # Use super() to get the real property if you've overridden is_active
-             # Or just self.is_active if you haven't overridden it with a property setter
-            splattercast.msg(f"CH_START: Handler {self.key} on {self.obj.key} Evennia script.is_active=False. Attempting to start Evennia ticker.")
-            # Evennia's own script.start() might be needed if it was fully stopped.
-            # However, force_repeat() should also work if the script object itself is valid.
 
-        splattercast.msg(f"CH_START: Handler {self.key} on {self.obj.key} (managing {[r.key for r in self.db.managed_rooms]}) starting combat logic and ticker.")
-        self.db.combat_is_running = True  # Set your custom flag
-        self.force_repeat()  # This should now be called reliably
+        # Use super().is_active to check Evennia's ticker status
+        evennia_ticker_is_active = super().is_active
+
+        if self.db.combat_is_running and evennia_ticker_is_active:
+            splattercast.msg(f"CH_START: Handler {self.key} on {self.obj.key} - combat logic and Evennia ticker are already active. Skipping redundant start.")
+            return
+
+        splattercast.msg(f"CH_START: Handler {self.key} on {self.obj.key} (managing {[r.key for r in self.db.managed_rooms]}) - ensuring combat logic is running and ticker is scheduled.")
+        
+        if not self.db.combat_is_running:
+            splattercast.msg(f"CH_START_DETAIL: Setting self.db.combat_is_running = True for {self.key}.")
+            self.db.combat_is_running = True
+        
+        if not evennia_ticker_is_active:
+            splattercast.msg(f"CH_START_DETAIL: Evennia ticker for {self.key} is not active (super().is_active=False). Calling force_repeat().")
+            self.force_repeat()
+        else:
+            # This case implies:
+            # 1. self.db.combat_is_running was False (now True) AND evennia_ticker_is_active was True.
+            #    (Our flag was out of sync with a running ticker - now corrected)
+            # OR
+            # 2. self.db.combat_is_running was True AND evennia_ticker_is_active was True.
+            #    (This case is caught by the initial check and return, so shouldn't be common here unless logic changes)
+            splattercast.msg(f"CH_START_DETAIL: self.db.combat_is_running is now True. Evennia ticker for {self.key} was already active. State synchronized.")
+            
+        # For debugging, log the final states
+        splattercast.msg(f"CH_START_COMPLETE: Handler {self.key} - self.db.combat_is_running: {self.db.combat_is_running}, super().is_active after updates: {super().is_active}")
 
     def stop_combat_logic(self, cleanup_combatants=True):
         """Stops the combat rounds and optionally cleans up combatants."""
@@ -172,7 +186,10 @@ class CombatHandler(DefaultScript):
             self.enroll_room(char.location)
 
         if any(entry["char"] == char for entry in self.db.combatants):
-            splattercast.msg(f"ADD_COMB: {char.key} already in combatants list. Skipping add, assuming update or re-add.")
+            splattercast.msg(f"ADD_COMB: {char.key} already in combatants list. Assuming update or re-add. Verifying combat state.")
+            # Even if re-adding, ensure combat starts/restarts if necessary
+            if len(self.db.combatants) > 0: # Should always be true if they are in the list
+                 self.start()
             return
 
         initiative = randint(1, max(1, char.db.motorics or 1))
@@ -188,10 +205,13 @@ class CombatHandler(DefaultScript):
         char.ndb.combat_handler = self
         splattercast.msg(f"{char.key} joins combat (handler {self.key}) with initiative {initiative} (Yielding: {initial_is_yielding}, Grappling: {initial_grappling.key if initial_grappling else 'None'}).")
         splattercast.msg(f"{char.key} added to combat (handler {self.key}). Total combatants: {len(self.db.combatants)}.")
-        if self.db.round == 0:
+        
+        if self.db.round == 0: # This is just a status message
             splattercast.msg(f"Combat (handler {self.key}) is in setup phase (round 0).")
-        if len(self.db.combatants) > 0 and not self.db.combat_is_running: # Use your custom flag
-            splattercast.msg(f"Combatants present in handler {self.key}. Starting combat logic.")
+
+        # If there are any combatants, ensure the combat handler's logic and ticker are started.
+        if len(self.db.combatants) > 0:
+            splattercast.msg(f"ADD_COMB: Combatants present in handler {self.key}. Calling start() to ensure combat is active.")
             self.start()
 
     def remove_combatant(self, char):
