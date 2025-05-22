@@ -149,9 +149,8 @@ class CmdFlee(Command):
             caller.msg("You're not in combat.")
             return
 
-        # --- NEW: Check if grappled ---
         caller_combat_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
-        if not caller_combat_entry: # Should ideally not happen if handler exists
+        if not caller_combat_entry:
             caller.msg("|rError: Your combat entry is missing. Please report to an admin.|n")
             splattercast.msg(f"CRITICAL: {caller.key} tried to flee, has combat_handler but no entry in {handler.key}")
             return
@@ -161,76 +160,70 @@ class CmdFlee(Command):
             caller.msg(f"|rYou cannot flee while {grappler.key if grappler else 'someone'} is grappling you! Try 'escape' or 'resist'.|n")
             splattercast.msg(f"{caller.key} tried to flee while grappled by {grappler.key if grappler else 'Unknown'}. Flee blocked.")
             return
-        # --- END NEW ---
 
-        # Find all attackers targeting the caller
         attackers = [e["char"] for e in handler.db.combatants if e.get("target") == caller and e["char"] != caller]
+        
+        flee_successful = False
         if not attackers:
             caller.msg("No one is attacking you; you can just leave.")
+            splattercast.msg(f"{caller.key} flees unopposed and leaves combat.")
+            flee_successful = True
+        else:
+            flee_roll = randint(1, getattr(caller, "motorics", 1))
+            resist_rolls = [(attacker, randint(1, getattr(attacker, "motorics", 1))) for attacker in attackers]
+            highest_attacker, highest_resist = max(resist_rolls, key=lambda x: x[1])
+
             splattercast.msg(
-                f"{caller.key} flees unopposed and leaves combat."
+                f"{caller.key} attempts to flee: {flee_roll} vs highest resist {highest_resist} ({highest_attacker.key})"
             )
-            # Remove from combat first so exit doesn't block movement
-            handler.remove_combatant(caller)
-            if handler and handler.db.combatants and len(handler.db.combatants) <= 1:
-                handler.stop()
+            if flee_roll > highest_resist:
+                caller.msg("You flee successfully!")
+                splattercast.msg(f"{caller.key} flees successfully from combat.")
+                flee_successful = True
+            else:
+                caller.msg("You try to flee, but fail!")
+                splattercast.msg(f"{caller.key} tries to flee but fails.")
+                caller.location.msg_contents(
+                    f"{caller.key} tries to flee but fails.",
+                    exclude=caller
+                )
+                caller.ndb.skip_combat_round = True # Assuming this is still desired for failed flee
+
+        if flee_successful:
+            # Remove from combat first. This might trigger handler deletion if caller was the last one.
+            if handler.pk and handler.db: # Check if handler still exists
+                handler.remove_combatant(caller)
+            else: # Handler was likely already deleted (e.g. by a previous action)
+                splattercast.msg(f"CmdFlee: Handler for {caller.key} was already gone before remove_combatant call.")
+                if hasattr(caller.ndb, "combat_handler"): # Clean NDB just in case
+                    del caller.ndb.combat_handler
+
+            # Check if the handler still exists and if combat should be fully stopped.
+            # The handler might have self-deleted if 'caller' was the last combatant.
+            if handler.pk and handler.db: # Check if script object is still valid (not deleted)
+                if len(handler.db.combatants) <= 1:
+                    splattercast.msg(f"CmdFlee: {caller.key} fled. Remaining combatants: {len(handler.db.combatants)}. Calling stop_combat_logic.")
+                    # Pass cleanup_combatants=True to ensure the last one is also removed
+                    # and the handler correctly identifies itself as empty for deletion.
+                    handler.stop_combat_logic(cleanup_combatants=True)
+                # If > 1 combatants, combat continues without the fleer.
+            else:
+                splattercast.msg(f"CmdFlee: {caller.key} fled. Handler {handler.key if handler else 'Unknown'} seems to have been deleted (likely by remove_combatant).")
+
             # Now move through a random available exit
             exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
             if exits:
                 chosen_exit = choice(exits)
-                splattercast.msg(
-                    f"{caller.key} flees through {chosen_exit.key}."
-                )
+                splattercast.msg(f"{caller.key} flees through {chosen_exit.key}.")
+                # Message to room before actual traversal
                 caller.location.msg_contents(
                     f"{caller.key} flees {chosen_exit.key}.",
                     exclude=caller
                 )
+                # Perform traversal (this will also clear aim)
                 chosen_exit.at_traverse(caller, chosen_exit.destination)
             else:
                 caller.msg("You flee, but there's nowhere to go!")
-            return
-
-        flee_roll = randint(1, getattr(caller, "motorics", 1))
-        resist_rolls = [(attacker, randint(1, getattr(attacker, "motorics", 1))) for attacker in attackers]
-        highest_attacker, highest_resist = max(resist_rolls, key=lambda x: x[1])
-
-        splattercast.msg(
-            f"{caller.key} attempts to flee: {flee_roll} vs highest resist {highest_resist} ({highest_attacker.key})"
-        )
-
-        if flee_roll > highest_resist:
-            caller.msg("You flee successfully!")
-            splattercast.msg(
-                f"{caller.key} flees successfully from combat."
-            )
-            handler.remove_combatant(caller)
-            if handler and handler.db.combatants and len(handler.db.combatants) <= 1:
-                handler.stop()
-
-            exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
-            if exits:
-                chosen_exit = choice(exits)
-                splattercast.msg(
-                    f"{caller.key} flees through {chosen_exit.key}."
-                )
-                caller.location.msg_contents(
-                    f"{caller.key} flees {chosen_exit.key}.",
-                    exclude=caller
-                )
-                chosen_exit.at_traverse(caller, chosen_exit.destination)
-            else:
-                caller.msg("You flee, but there's nowhere to go!")
-
-        else:
-            caller.msg("You try to flee, but fail!")
-            splattercast.msg(
-                f"{caller.key} tries to flee but fails."
-            )
-            caller.location.msg_contents(
-                f"{caller.key} tries to flee but fails.",
-                exclude=caller
-            )
-            caller.ndb.skip_combat_round = True
 
 
 class CmdDisarm(Command):
