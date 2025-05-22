@@ -688,9 +688,9 @@ class CmdLook(Command):
         'look' will show a detailed view of the character you are aiming at.
         'look <target>' will look at <target> in your current room, without breaking your aim.
     If aiming in a direction:
-        'look' will show the room you are aiming into, including characters present.
+        'look' will show the characters present in the room you are aiming into.
         'look <object>' will try to find and describe the object in the room you are aiming into.
-    If not aiming, 'look <direction>' will show the room in that direction, including characters.
+    If not aiming, 'look <direction>' will show the characters present in the room in that direction.
     """
 
     key = "look"
@@ -767,7 +767,6 @@ class CmdLook(Command):
                 remote_room = exit_obj.destination
                 if not args: 
                     caller.msg(f"You peer into the {aiming_direction_name} direction, towards {remote_room.get_display_name(caller)}...")
-                    caller.msg(remote_room.return_appearance(caller))
                     self._show_characters_in_room(caller, remote_room, f"Looking {aiming_direction_name}, you also see")
                     splattercast.msg(f"LOOK: {caller.key} successfully looked into {remote_room.key} via aiming {aiming_direction_name}.")
                     return
@@ -777,9 +776,9 @@ class CmdLook(Command):
                     target_in_remote_room_result = caller.search(args, location=remote_room, quiet=True)
                     target_in_remote_room = None
                     if isinstance(target_in_remote_room_result, list):
-                        if target_in_remote_room_result: # If list is not empty
+                        if target_in_remote_room_result: 
                             target_in_remote_room = target_in_remote_room_result[0]
-                    else: # It's a single object or None
+                    else: 
                         target_in_remote_room = target_in_remote_room_result
                                         
                     if target_in_remote_room:
@@ -802,7 +801,6 @@ class CmdLook(Command):
             if possible_exit_obj and possible_exit_obj.destination:
                 remote_room = possible_exit_obj.destination
                 caller.msg(f"You look {possible_exit_obj.key} (towards {remote_room.get_display_name(caller)})...")
-                caller.msg(remote_room.return_appearance(caller))
                 self._show_characters_in_room(caller, remote_room, f"Looking {possible_exit_obj.key}, you also see")
                 splattercast.msg(f"LOOK: {caller.key} looked into direction {possible_exit_obj.key} at {remote_room.key}.")
                 return
@@ -817,7 +815,6 @@ class CmdLook(Command):
 
                 if target:
                     caller.msg(target.return_appearance(caller))
-                # caller.search() handles "not found" message if target is None after this.
                 return 
         
         # --- 4. Handle plain 'look' (no args, not aiming at char, not aiming directionally) ---
