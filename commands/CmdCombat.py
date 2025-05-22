@@ -4,7 +4,8 @@ from random import randint, choice
 from world.combathandler import get_or_create_combat, COMBAT_SCRIPT_KEY
 from world.combat_messages import get_combat_message
 from evennia.comms.models import ChannelDB
-from evennia.utils import utils, display_formatter
+from evennia.utils import utils
+from evennia.utils.evtable import EvTable 
 
 
 class CmdAttack(Command):
