@@ -10,6 +10,7 @@ creation commands.
 
 from evennia.objects.objects import DefaultCharacter
 from evennia.typeclasses.attributes import AttributeProperty
+from evennia.comms.models import ChannelDB  # Ensure this is imported
 
 from .objects import ObjectParent
 from .deathscroll import DEATH_SCROLL
@@ -150,3 +151,61 @@ class Character(ObjectParent, DefaultCharacter):
             else:
                 lines.append(f"{hand.title()} Hand: (empty)")
         return lines
+
+    def clear_aim_state(self, reason_for_clearing=""):
+        """
+        Clears any current aiming state (character or direction) for this character.
+        Provides feedback to the character and any previously aimed-at target.
+
+        Args:
+            reason_for_clearing (str, optional): A short phrase describing why aim is cleared,
+                                                 e.g., "as you move", "as you stop aiming".
+        Returns:
+            bool: True if an aim state was actually cleared, False otherwise.
+        """
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        stopped_aiming_message_parts = []
+        log_message_parts = []
+        action_taken = False
+
+        # Clear character-specific aim
+        old_aim_target_char = getattr(self.ndb, "aiming_at", None)
+        if old_aim_target_char:
+            action_taken = True
+            del self.ndb.aiming_at
+            log_message_parts.append(f"stopped aiming at {old_aim_target_char.key}")
+            
+            if hasattr(old_aim_target_char, "ndb") and getattr(old_aim_target_char.ndb, "aimed_at_by", None) == self:
+                del old_aim_target_char.ndb.aimed_at_by
+                old_aim_target_char.msg(f"{self.get_display_name(old_aim_target_char)} is no longer aiming directly at you.")
+            
+            stopped_aiming_message_parts.append(f"at {old_aim_target_char.get_display_name(self)}")
+
+        # Clear directional aim
+        old_aim_direction = getattr(self.ndb, "aiming_direction", None)
+        if old_aim_direction:
+            action_taken = True
+            del self.ndb.aiming_direction
+            log_message_parts.append(f"stopped aiming {old_aim_direction}")
+            stopped_aiming_message_parts.append(f"{old_aim_direction}")
+
+        if action_taken:
+            final_message_verb_phrase = "stop aiming"
+            # Construct the reason phrase carefully
+            reason_suffix = ""
+            if reason_for_clearing:
+                if reason_for_clearing.startswith("as you"): # "as you move", "as you stop aiming"
+                    final_message_verb_phrase = f"stop aiming {reason_for_clearing}"
+                else: # "anew", "due to stun" - becomes "stop aiming anew"
+                    final_message_verb_phrase = f"stop aiming {reason_for_clearing}"
+                reason_suffix = f" ({reason_for_clearing.strip()})"
+
+
+            aim_details = ""
+            if stopped_aiming_message_parts:
+                aim_details = f" {', '.join(stopped_aiming_message_parts)}"
+
+            self.msg(f"You {final_message_verb_phrase}{aim_details}.")
+            splattercast.msg(f"AIM_CLEAR: {self.key} {', '.join(log_message_parts)}{reason_suffix}.")
+        
+        return action_taken

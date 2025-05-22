@@ -62,6 +62,15 @@ class Exit(DefaultExit):
                 return # Block traversal
         # --- END AIMING LOCK CHECK ---
 
+        # --- CLEAR TRAVERSER'S OWN AIM STATE UPON MOVING ---
+        if hasattr(traversing_object, "clear_aim_state"):
+            # This will only send messages if an aim state was actually cleared.
+            traversing_object.clear_aim_state(reason_for_clearing="as you move")
+        else:
+            # Fallback or error if the method isn't on the object
+            splattercast.msg(f"AIM_CLEAR_ON_MOVE_FAIL: {traversing_object.key} lacks clear_aim_state method during traversal of {self.key}.")
+        # --- END CLEAR TRAVERSER'S OWN AIM STATE ---
+
         handler = getattr(traversing_object.ndb, "combat_handler", None)
 
         if handler:

@@ -586,6 +586,7 @@ class CmdAim(Command):
     Usage:
         aim <direction or character>
         aim at <character or direction>
+        aim stop  (or aim with no args to stop aiming)
 
     Aiming in a direction allows you to use look and attack/kill as though you were in the room.
     Aiming at a character locks them in place, preventing them from traversing exits unless they successfully flee.
@@ -594,43 +595,38 @@ class CmdAim(Command):
     key = "aim"
     locks = "cmd:all()"
 
-    def _clear_previous_aim_state(self, caller, splattercast):
-        """Helper to silently clear any existing aim state and notify old targets."""
-        # Clear previous character aiming
-        old_target_char = getattr(caller.ndb, "aiming_at", None)
-        if old_target_char:
-            if hasattr(old_target_char.ndb, "aimed_at_by") and old_target_char.ndb.aimed_at_by == caller:
-                del old_target_char.ndb.aimed_at_by
-                # Feedback to the previously aimed-at target
-                old_target_char.msg(f"{caller.get_display_name(old_target_char)} is no longer aiming directly at you.")
-            del caller.ndb.aiming_at
-            splattercast.msg(f"AIM_CLEANUP: {caller.key} cleared aiming_at {old_target_char.key}.")
-
-        # Clear previous direction aiming
-        old_direction = getattr(caller.ndb, "aiming_direction", None)
-        if old_direction:
-            del caller.ndb.aiming_direction
-            splattercast.msg(f"AIM_CLEANUP: {caller.key} cleared aiming_direction {old_direction}.")
-
     def func(self):
         caller = self.caller
         splattercast = ChannelDB.objects.get_channel("Splattercast")
         raw_args = self.args.strip()
 
-        if not raw_args:
-            caller.msg("Aim where or at whom?")
+        # Handle "aim stop" or "aim" with no args to stop aiming
+        if not raw_args or raw_args.lower() == "stop":
+            if hasattr(caller, "clear_aim_state"):
+                action_taken = caller.clear_aim_state(reason_for_clearing="as you stop aiming")
+                if not action_taken: 
+                    caller.msg("You are not aiming at anything or in any direction. To aim, use 'aim <target/direction>'.")
+            else:
+                caller.msg("|rError: Cannot process stop aim command. Character is missing 'clear_aim_state' method.|n")
+                splattercast.msg(f"CRITICAL_AIM_STOP (via CmdAim): {caller.key} lacks 'clear_aim_state' method.")
             return
 
         search_term = raw_args.lower()
-        # If "at " is used, strip it. The subsequent logic will try character then direction.
         if search_term.startswith("at "):
             search_term = search_term[3:].strip() 
-            if not search_term: # User typed "aim at " with nothing after
+            if not search_term:
                 caller.msg("Aim at whom or in what direction?")
                 return
         
+        # Clear any previous aim state before setting a new one.
+        if hasattr(caller, "clear_aim_state"):
+            # The reason "as you aim anew" will be used if something was cleared.
+            caller.clear_aim_state(reason_for_clearing="as you aim anew") 
+        else:
+            # This would be a problem, as old aim state might persist.
+            splattercast.msg(f"AIM_WARNING: {caller.key} lacks clear_aim_state method, cannot clear old aim before setting new in CmdAim.")
+
         # 1. Attempt to aim at a character
-        # Use quiet=True to suppress default "not found" messages from caller.search
         target_character = caller.search(search_term, typeclass="typeclasses.characters.Character", quiet=True)
 
         if target_character:
@@ -638,23 +634,18 @@ class CmdAim(Command):
                 caller.msg("You can't aim at yourself.")
                 return
 
-            # Successfully found a character to aim at
-            self._clear_previous_aim_state(caller, splattercast) 
-
             caller.ndb.aiming_at = target_character
             target_character.ndb.aimed_at_by = caller
             
             caller.msg(f"You take careful aim at {target_character.get_display_name(caller)}.")
             target_character.msg(f"|r{caller.get_display_name(target_character)} takes careful aim at you! You are locked in place.|n")
             
-            # Announce to room, excluding caller and target
             room_message = f"{caller.get_display_name(caller.location)} takes careful aim at {target_character.get_display_name(caller.location)}."
             caller.location.msg_contents(room_message, exclude=[caller, target_character])
             splattercast.msg(f"AIM: {caller.key} is now aiming at character {target_character.key}.")
             return
 
         # 2. If not a character, attempt to aim in a direction
-        # search_term is already prepared (lowercased, "at " stripped if present)
         found_exit = None
         for ex in caller.location.exits:
             exit_aliases_lower = [alias.lower() for alias in ex.aliases.all()] if hasattr(ex.aliases, 'all') else []
@@ -663,13 +654,8 @@ class CmdAim(Command):
                 break
         
         if found_exit:
-            # Successfully found a direction to aim in
-            self._clear_previous_aim_state(caller, splattercast)
-
-            caller.ndb.aiming_direction = found_exit.key # Store the canonical exit key
+            caller.ndb.aiming_direction = found_exit.key 
             caller.msg(f"You aim towards the {found_exit.key} direction.")
-
-            # Announce to room, excluding caller
             room_message = f"{caller.get_display_name(caller.location)} aims towards the {found_exit.key} direction."
             caller.location.msg_contents(room_message, exclude=[caller])
             splattercast.msg(f"AIM: {caller.key} is now aiming in direction {found_exit.key}.")
@@ -695,30 +681,17 @@ class CmdStop(Command):
 
     def func(self):
         caller = self.caller
-        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        # splattercast is now handled by clear_aim_state
 
-        aiming_at_target = getattr(caller.ndb, "aiming_at", None)
-        aiming_direction_val = getattr(caller.ndb, "aiming_direction", None)
-        stopped_something = False
-
-        if aiming_at_target:
-            del caller.ndb.aiming_at
-            if hasattr(aiming_at_target.ndb, "aimed_at_by") and aiming_at_target.ndb.aimed_at_by == caller:
-                del aiming_at_target.ndb.aimed_at_by
-            caller.msg(f"You stop aiming at {aiming_at_target.get_display_name(caller)}.")
-            aiming_at_target.msg(f"{caller.get_display_name(aiming_at_target)} stops aiming at you.")
-            splattercast.msg(f"AIM_STOP: {caller.key} stopped aiming at {aiming_at_target.key}.")
-            stopped_something = True
-            
-        if aiming_direction_val: # Use 'if' not 'elif' in case both were somehow set (shouldn't happen with new CmdAim)
-            del caller.ndb.aiming_direction
-            caller.msg(f"You stop aiming in the {aiming_direction_val} direction.")
-            splattercast.msg(f"AIM_STOP: {caller.key} stopped aiming in the {aiming_direction_val} direction.")
-            stopped_something = True
-
-        if not stopped_something:
-            caller.msg("You are not aiming at anything or in any direction.")
-            splattercast.msg(f"AIM_STOP_FAIL: {caller.key} tried to stop aiming, but was not aiming.")
+        if hasattr(caller, "clear_aim_state"):
+            action_taken = caller.clear_aim_state(reason_for_clearing="as you stop aiming")
+            if not action_taken:
+                caller.msg("You are not aiming at anything or in any direction.")
+        else:
+            # Fallback or error if the method isn't on the object
+            caller.msg("|rError: Cannot process stop aim command. Character is missing 'clear_aim_state' method.|n")
+            splattercast = ChannelDB.objects.get_channel("Splattercast") 
+            splattercast.msg(f"CRITICAL_AIM_STOP: {caller.key} tried to stop aiming, but 'clear_aim_state' method is missing.")
 
 
 class CmdLook(Command):
