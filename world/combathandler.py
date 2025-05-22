@@ -125,15 +125,17 @@ class CombatHandler(DefaultScript):
         
         should_delete_script = False
         # Condition for deleting the script entirely
-        # Ensure self.obj is a valid room object before checking if it's in managed_rooms
-        if self.obj and hasattr(self.obj, 'key'):
-            if not self.db.combatants and self.db.managed_rooms and len(self.db.managed_rooms) == 1 and self.db.managed_rooms[0] == self.obj:
-                if self.pk: # Check if script is saved (i.e., not already deleted)
+        # This logic correctly handles multiple rooms. If len(managed_rooms) > 1, it won't delete.
+        if not self.db.combatants and self.obj and hasattr(self.obj, 'key'): # Ensure self.obj is valid
+            if self.db.managed_rooms and len(self.db.managed_rooms) == 1 and self.db.managed_rooms[0] == self.obj:
+                 if self.pk: # Check if script is saved (i.e., not already deleted)
                     splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} is empty and only managing its host room ({self.obj.key}). Marking for deletion.")
                     should_delete_script = True
         
         if not self.db.combatants and not should_delete_script:
-            splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} has no combatants. Rounds stopped. Still managing rooms: {[r.key for r in self.db.managed_rooms if r]}.")
+            # Log the actual room objects for clarity if possible, or their dbrefs
+            managed_room_keys = [f"{r.key}(#{r.id})" for r in self.db.managed_rooms if r and hasattr(r, 'id')]
+            splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} has no combatants. Rounds stopped. Still managing rooms: {managed_room_keys}.")
 
         if should_delete_script:
             splattercast.msg(f"STOP_COMBAT_LOGIC: Deleting handler script {self.key}.")
@@ -144,7 +146,7 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} is not being deleted. Calling self.stop() to halt ticker and mark script inactive.")
             self.stop() # This calls self.unrepeat() and sets self.db_is_active = False.
             # self.at_stop() will be called by self.stop() if not already stopped.
-            # Our at_stop() also sets self.db.combat_is_running = False, which is fine.
+            # Our at_stop() also sets self.db.combat_is_running = False.
 
     def at_stop(self):
         """
