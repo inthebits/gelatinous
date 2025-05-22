@@ -39,7 +39,15 @@ class CmdAttack(Command):
         aiming_direction = getattr(caller.ndb, "aiming_direction", None)
         if aiming_direction:
             splattercast.msg(f"ATTACK_CMD: {caller.key} is aiming {aiming_direction}, attempting remote attack on '{args}'.")
-            exit_obj = next((ex for ex in caller.location.exits if ex.key.lower() == aiming_direction.lower() or aiming_direction.lower() in ex.aliases.all()), None)
+            
+            # Make alias check more robust for case
+            aiming_direction_lower = aiming_direction.lower()
+            exit_obj = None
+            for ex in caller.location.exits:
+                current_exit_aliases_lower = [alias.lower() for alias in (ex.aliases.all() if hasattr(ex.aliases, "all") else [])]
+                if ex.key.lower() == aiming_direction_lower or aiming_direction_lower in current_exit_aliases_lower:
+                    exit_obj = ex
+                    break
             
             if not exit_obj or not exit_obj.destination:
                 caller.msg(f"You are aiming {aiming_direction}, but there's no clear path to attack through.")
