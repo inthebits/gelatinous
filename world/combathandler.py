@@ -106,25 +106,43 @@ class CombatHandler(DefaultScript):
     def stop_combat_logic(self, cleanup_combatants=True):
         """Stops the combat rounds and optionally cleans up combatants."""
         splattercast = ChannelDB.objects.get_channel("Splattercast")
-        splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} stopping combat rounds.")
-        self.db.combat_is_running = False
-        # self.unrepeat() # This would stop the ticker if it was running
+        splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} stopping combat rounds. Initial state - combat_is_running: {self.db.combat_is_running}, Evennia ticker active (super().is_active): {super().is_active}")
+        
+        # Check if the ticker was effectively running for our combat logic *before* we change flags
+        ticker_was_active_for_combat = self.db.combat_is_running and super().is_active
+        
+        self.db.combat_is_running = False # Mark our combat logic as stopped
 
         if cleanup_combatants:
-            for entry in list(self.db.combatants):
+            splattercast.msg(f"STOP_COMBAT_LOGIC: Cleaning up combatants for handler {self.key}.")
+            for entry in list(self.db.combatants): # Iterate copy
                 char = entry["char"]
                 if hasattr(char, "ndb") and char.ndb.combat_handler == self:
                     del char.ndb.combat_handler
-            self.db.combatants = []
+            self.db.combatants = [] # Clear the list
             self.db.round = 0
+            splattercast.msg(f"STOP_COMBAT_LOGIC: Combatants list cleared for handler {self.key}.")
         
-        # If no combatants and no managed rooms other than self.obj, consider full stop/delete
+        should_delete_script = False
+        # Condition for deleting the script entirely
         if not self.db.combatants and len(self.db.managed_rooms) <=1 and self.obj in self.db.managed_rooms:
-             if self.pk: # Check if script is saved
-                splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} is empty and only managing its host. Deleting script.")
-                self.delete() # This will call at_stop
-        elif not self.db.combatants:
-            splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} has no combatants. Rounds stopped. Still managing rooms: {[r.key for r in self.db.managed_rooms]}")
+             if self.pk: # Check if script is saved (i.e., not already deleted)
+                splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} is empty and only managing its host room ({self.obj.key}). Marking for deletion.")
+                should_delete_script = True
+        
+        if not self.db.combatants and not should_delete_script:
+            splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} has no combatants. Rounds stopped. Still managing rooms: {[r.key for r in self.db.managed_rooms]}.")
+
+        if should_delete_script:
+            splattercast.msg(f"STOP_COMBAT_LOGIC: Deleting handler script {self.key}.")
+            self.delete() # This will call at_stop() and Evennia's underlying stop mechanism which includes unrepeat.
+        elif ticker_was_active_for_combat:
+            # If not deleting, but our combat logic was using an active ticker, explicitly stop the ticker.
+            splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} is not being deleted. Combat was running with active ticker. Explicitly calling unrepeat().")
+            self.unrepeat()
+        else:
+            # Not deleting, and ticker wasn't active for our combat (or combat wasn't running).
+            splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} is not being deleted. Ticker was not active for combat or combat was not running. No explicit unrepeat() needed from here.")
 
     def at_stop(self):
         """
