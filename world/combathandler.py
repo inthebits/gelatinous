@@ -63,36 +63,63 @@ class CombatHandler(DefaultScript):
         self.persistent = True
         self.db.combatants = []
         self.db.round = 0
-        self.db.round_scheduled = False
         self.db.managed_rooms = [self.obj]  # Initially manages only its host room
+        self.db.combat_is_running = False  # <<< ADD THIS
         splattercast = ChannelDB.objects.get_channel("Splattercast")
-        splattercast.msg(f"CH_CREATE: New handler {self.key} created on {self.obj.key}, initially managing: {[r.key for r in self.db.managed_rooms]}.")
+        splattercast.msg(f"CH_CREATE: New handler {self.key} created on {self.obj.key}, initially managing: {[r.key for r in self.db.managed_rooms]}. Combat logic initially not running.")
 
     def start(self):
         """
-        Start the combat handler's repeat timer if not already active.
+        Start the combat handler's repeat timer if combat logic isn't already running.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
-        if self.is_active:
-            splattercast.msg(f"CH_START: Handler {self.key} on {self.obj.key} (managing {[r.key for r in self.db.managed_rooms]}) is already active. Skipping redundant start.")
+        if self.db.combat_is_running: # Check your custom flag
+            splattercast.msg(f"CH_START: Handler {self.key} on {self.obj.key} combat logic is already running. Skipping redundant start.")
             return
-        splattercast.msg(f"CH_START: Handler {self.key} on {self.obj.key} (managing {[r.key for r in self.db.managed_rooms]}) started.")
-        self.is_active = True
-        self.force_repeat()  # CORRECTED LINE
+        
+        # Check Evennia's script active state before trying to force_repeat
+        # This ensures we don't try to force_repeat on a script Evennia has already stopped/is stopping.
+        if not super().is_active: # Use super() to get the real property if you've overridden is_active
+             # Or just self.is_active if you haven't overridden it with a property setter
+            splattercast.msg(f"CH_START: Handler {self.key} on {self.obj.key} Evennia script.is_active=False. Attempting to start Evennia ticker.")
+            # Evennia's own script.start() might be needed if it was fully stopped.
+            # However, force_repeat() should also work if the script object itself is valid.
+
+        splattercast.msg(f"CH_START: Handler {self.key} on {self.obj.key} (managing {[r.key for r in self.db.managed_rooms]}) starting combat logic and ticker.")
+        self.db.combat_is_running = True  # Set your custom flag
+        self.force_repeat()  # This should now be called reliably
+
+    def stop_combat_logic(self, cleanup_combatants=True):
+        """Stops the combat rounds and optionally cleans up combatants."""
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} stopping combat rounds.")
+        self.db.combat_is_running = False
+        # self.unrepeat() # This would stop the ticker if it was running
+
+        if cleanup_combatants:
+            for entry in list(self.db.combatants):
+                char = entry["char"]
+                if hasattr(char, "ndb") and char.ndb.combat_handler == self:
+                    del char.ndb.combat_handler
+            self.db.combatants = []
+            self.db.round = 0
+        
+        # If no combatants and no managed rooms other than self.obj, consider full stop/delete
+        if not self.db.combatants and len(self.db.managed_rooms) <=1 and self.obj in self.db.managed_rooms:
+             if self.pk: # Check if script is saved
+                splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} is empty and only managing its host. Deleting script.")
+                self.delete() # This will call at_stop
+        elif not self.db.combatants:
+            splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} has no combatants. Rounds stopped. Still managing rooms: {[r.key for r in self.db.managed_rooms]}")
 
     def at_stop(self):
         """
-        Clean up when combat ends. Remove all combatants and delete the handler.
+        Clean up when combat ends or script is stopped.
+        This method is called by Evennia when script.stop() is used.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
-        splattercast.msg(f"CH_STOP: Handler {self.key} on {self.obj.key} (managing {[r.key for r in self.db.managed_rooms]}) stopping.")
-        for entry in list(self.db.combatants):  # Use list for safe iteration if modified
-            char = entry["char"]
-            splattercast.msg(f"CH_STOP: {char.key} removed from combat by handler {self.key}.")
-            if hasattr(char, "ndb") and char.ndb.combat_handler == self:
-                del char.ndb.combat_handler
-        splattercast.msg(f"CH_STOP: Combat ends for handler {self.key}.")
-        self.is_active = False
+        splattercast.msg(f"AT_STOP (Evennia): Handler {self.key} on {self.obj.key} is being stopped by Evennia. Ensuring combat logic is marked as not running.")
+        self.db.combat_is_running = False
 
     def enroll_room(self, room_to_add):
         """Adds a room to this handler's managed_rooms if not already present."""
@@ -129,7 +156,7 @@ class CombatHandler(DefaultScript):
         other_handler.delete()
 
         splattercast.msg(f"CH_MERGE: Merge complete. Handler {self.key} now manages: {[r.key for r in self.db.managed_rooms]} with {len(self.db.combatants)} combatants.")
-        if not self.is_active and len(self.db.combatants) > 0:
+        if not self.db.combat_is_running and len(self.db.combatants) > 0: # Use your custom flag
             self.start()
 
     def add_combatant(self, char, target=None, initial_grappling=None, initial_grappled_by=None, initial_is_yielding=False):
@@ -163,8 +190,8 @@ class CombatHandler(DefaultScript):
         splattercast.msg(f"{char.key} added to combat (handler {self.key}). Total combatants: {len(self.db.combatants)}.")
         if self.db.round == 0:
             splattercast.msg(f"Combat (handler {self.key}) is in setup phase (round 0).")
-        if len(self.db.combatants) > 0 and not self.is_active:
-            splattercast.msg(f"Combatants present in handler {self.key}. Starting combat.")
+        if len(self.db.combatants) > 0 and not self.db.combat_is_running: # Use your custom flag
+            splattercast.msg(f"Combatants present in handler {self.key}. Starting combat logic.")
             self.start()
 
     def remove_combatant(self, char):
@@ -207,8 +234,7 @@ class CombatHandler(DefaultScript):
         splattercast.msg(f"{char.key} removed from combat.")
         if len(self.db.combatants) == 0:
             splattercast.msg(f"RMV_COMB: No combatants remain in handler {self.key}. Stopping.")
-            self.stop()
-            self.delete()
+            self.stop_combat_logic()
 
     def get_target(self, char):
         """
@@ -263,9 +289,15 @@ class CombatHandler(DefaultScript):
         Handles attacks, misses, deaths, and round progression across managed rooms.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
-        if not self.is_active:
-            splattercast.msg(f"AT_REPEAT: Handler {self.key} on {self.obj.key} is not active. Returning.")
+        if not self.db.combat_is_running: # Check your custom flag FIRST
+            splattercast.msg(f"AT_REPEAT: Handler {self.key} on {self.obj.key} combat logic is not running (self.db.combat_is_running=False). Returning.")
             return
+
+        # Optional: Also check Evennia's underlying script active state for robustness
+        if not super().is_active: # Or self.is_active if not overridden
+             splattercast.msg(f"AT_REPEAT: Handler {self.key} on {self.obj.key} Evennia script.is_active=False. Marking combat_is_running=False and returning.")
+             self.db.combat_is_running = False # Sync our flag
+             return
 
         # Prune combatants: Ensure they exist and are in a managed room.
         valid_combatants_entries = []
@@ -290,7 +322,7 @@ class CombatHandler(DefaultScript):
 
         if not self.db.combatants:
             splattercast.msg(f"AT_REPEAT: No valid combatants remain in managed rooms for handler {self.key}. Stopping.")
-            self.stop() # This will call self.delete() if it's part of stop or if remove_combatant does
+            self.stop_combat_logic()
             return
 
         if self.db.round == 0:
@@ -308,7 +340,7 @@ class CombatHandler(DefaultScript):
         # Consider only active, non-yielding combatants for "active participants" count if desired
         if len(self.db.combatants) <= 1: # If only one or zero combatants are left
             splattercast.msg(f"AT_REPEAT: Handler {self.key}. Not enough combatants ({len(self.db.combatants)}) to continue. Ending combat.")
-            self.stop()
+            self.stop_combat_logic()
             return
 
         for combat_entry in list(self.get_initiative_order()): # Iterate copy in case of mid-turn removals
@@ -522,7 +554,7 @@ class CombatHandler(DefaultScript):
         # --- End of Round ---
         if not self.db.combatants: # Check if all combatants were removed during the round
             splattercast.msg(f"AT_REPEAT: Handler {self.key}. No combatants left after round processing. Stopping.")
-            self.stop()
+            self.stop_combat_logic()
             return
 
         self.db.round += 1
