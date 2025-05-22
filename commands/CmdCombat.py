@@ -9,7 +9,7 @@ from evennia.utils import utils, display_formatter
 
 class CmdAttack(Command):
     """
-    Attack a target in your current room.
+    Attack a target in your current room or in the direction you are aiming.
 
     Usage:
         attack <target>
@@ -24,108 +24,104 @@ class CmdAttack(Command):
 
     def func(self):
         caller = self.caller
+        args = self.args.strip()
         splattercast = ChannelDB.objects.get_channel("Splattercast")
 
-        if not self.args:
+        if not args:
             caller.msg("Attack who?")
             return
 
-        search_name = self.args.strip().lower()
-        candidates = caller.location.contents
+        target_room = caller.location
+        target_search_name = args
 
-        matches = [
-            obj for obj in candidates
-            if search_name in obj.key.lower()
-            or any(search_name in alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else []))
+        # --- AIMING DIRECTION ATTACK ---
+        aiming_direction = getattr(caller.ndb, "aiming_direction", None)
+        if aiming_direction:
+            splattercast.msg(f"ATTACK_CMD: {caller.key} is aiming {aiming_direction}, attempting remote attack on '{args}'.")
+            exit_obj = next((ex for ex in caller.location.exits if ex.key.lower() == aiming_direction.lower() or aiming_direction.lower() in ex.aliases.all()), None)
+            
+            if not exit_obj or not exit_obj.destination:
+                caller.msg(f"You are aiming {aiming_direction}, but there's no clear path to attack through.")
+                return
+            target_room = exit_obj.destination
+            splattercast.msg(f"ATTACK_CMD: Remote attack target room is {target_room.key}.")
+        # --- END AIMING DIRECTION ATTACK ---
+
+        # Search for target in the determined target_room
+        # Using a more robust search that considers character type
+        potential_targets = [
+            obj for obj in target_room.contents
+            if inherits_from(obj, "typeclasses.characters.Character") and
+               (target_search_name.lower() in obj.key.lower() or
+                any(target_search_name.lower() in alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else [])))
         ]
-
-        if not matches:
-            caller.msg("No valid target found.")
-            splattercast.msg(
-                f"{caller.key} tried to attack '{search_name}' but found no valid target."
-            )
+        if not potential_targets:
+            caller.msg(f"You don't see '{target_search_name}' {(f'in the {aiming_direction} direction' if aiming_direction else 'here')}.")
             return
-
-        target = matches[0]
+        target = potential_targets[0]
 
         if target == caller:
             caller.msg("You can't attack yourself.")
-            splattercast.msg(
-                f"{caller.key} tried to attack themselves. Ignored."
-            )
             return
+        # (Keep other initial validations for target type)
 
-        if not inherits_from(target, "typeclasses.characters.Character"):
-            caller.msg("That can't be attacked.")
-            splattercast.msg(
-                f"{caller.key} tried to attack {target.key}, but it's not a valid character."
-            )
-            return
+        # --- Get/Create/Merge Combat Handlers ---
+        caller_handler = get_or_create_combat(caller.location)
+        target_handler = get_or_create_combat(target.location) # Might be the same if target_room is caller.location
 
-        # --- Combat/targeting logic ---
-        caller_handler = getattr(caller.ndb, "combat_handler", None)
-        target_handler = getattr(target.ndb, "combat_handler", None)
+        final_handler = caller_handler
+        if caller_handler != target_handler:
+            splattercast.msg(f"ATTACK_CMD: Cross-handler engagement! Caller's handler: {caller_handler.key} (on {caller_handler.obj.key}). Target's handler: {target_handler.key} (on {target_handler.obj.key}). Merging...")
+            # Simple merge rule: caller's handler absorbs target's handler
+            # More complex rules could be: older handler, handler with more combatants, etc.
+            caller_handler.merge_handler(target_handler)
+            # final_handler is already caller_handler
+            splattercast.msg(f"ATTACK_CMD: Merge complete. Final handler is {final_handler.key}, now managing rooms: {[r.key for r in final_handler.db.managed_rooms]}.")
+        else:
+            splattercast.msg(f"ATTACK_CMD: Caller and target are (or will be) in the same handler zone: {final_handler.key} (on {final_handler.obj.key}).")
+            # Ensure both rooms are explicitly managed if it's a local attack but aiming expanded the zone
+            final_handler.enroll_room(caller.location)
+            final_handler.enroll_room(target.location)
 
-        if caller_handler:
-            # Character is already in combat
-            caller_combat_entry = next((e for e in caller_handler.db.combatants if e["char"] == caller), None)
-            if not caller_combat_entry: # Should not happen if caller_handler exists
-                caller.msg("|rError: Your combat entry is missing. Please report to an admin.|n")
-                splattercast.msg(f"CRITICAL: {caller.key} has a combat_handler but no entry in {caller_handler.key}")
-                return
 
-            caller_combat_entry["is_yielding"] = False # Attacking means no longer yielding
+        # --- Add combatants to the final_handler ---
+        # add_combatant now also enrolls the char's room if needed.
+        # It also handles not re-adding if already present.
+        if not any(e["char"] == caller for e in final_handler.db.combatants):
+            final_handler.add_combatant(caller, target=target)
+        else: # Caller already in this handler, update target and ensure not yielding
+            caller_entry = next(e for e in final_handler.db.combatants if e["char"] == caller)
+            caller_entry["target"] = target
+            caller_entry["is_yielding"] = False
 
-            if not target_handler or target_handler != caller_handler:
-                caller.msg("You can't attack someone not already in combat while you're fighting!")
-                splattercast.msg(
-                    f"{caller.key} tried to attack {target.key} but target is not in same combat."
-                )
-                return
-            # Both are in the same combat
-            # Check if already targeting this person
-            for entry in caller_handler.db.combatants:
-                if entry["char"] == caller and entry.get("target") == target:
-                    caller.msg(f"You're already attacking {target.key}.")
-                    splattercast.msg(
-                        f"{caller.key} tried to switch target to {target.key}, but was already targeting them."
-                    )
-                    return
-            # Switch target
-            caller_handler.set_target(caller, target)
-            caller.msg(f"You switch your target to {target.key}.")
-            splattercast.msg(
-                f"{caller.key} switches target to {target.key} in combat."
-            )
-            return
 
-        # If not in combat, initiate as normal
-        combat = get_or_create_combat(caller.location)
-        splattercast.msg(
-            f"{caller.key} initiates combat with {target.key}."
-        )
-        # add_combatant will set is_yielding to False by default
-        combat.add_combatant(caller, target)      # Attacker targets defender
-        combat.add_combatant(target, caller)      # Defender targets attacker
+        if not any(e["char"] == target for e in final_handler.db.combatants):
+            final_handler.add_combatant(target, target=caller) # Target initially targets attacker
+        else: # Target already in this handler, ensure they target back if not already
+            target_entry = next(e for e in final_handler.db.combatants if e["char"] == target)
+            if not target_entry.get("target"): # If they had no target, they target the attacker
+                 target_entry["target"] = caller
 
-        # --- Find weapon and weapon_type for both hit and miss ---
-        hands = getattr(caller, "hands", {})
-        weapon = None
-        for hand, item in hands.items():
-            if item:
-                weapon = item
-                break
-        weapon_type = "unarmed"
-        if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
-            weapon_type = str(weapon.db.weapon_type).lower()
 
-        splattercast.msg(
-            f"{caller.key} is wielding {weapon.key if weapon else 'nothing'} ({weapon_type})."
-        )
+        # --- Messaging and Action ---
+        if aiming_direction:
+            caller.msg(f"|yYou take aim {aiming_direction} and attack {target.key} in {target_room.get_display_name(caller)}!|n")
+            caller.location.msg_contents(f"|y{caller.key} attacks towards the {aiming_direction} direction!|n", exclude=[caller])
+        else:
+            # Standard local attack initiation message (use get_combat_message)
+            hands = getattr(caller, "hands", {})
+            weapon = next((item for hand, item in hands.items() if item), None)
+            weapon_type = (str(weapon.db.weapon_type).lower() if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type else "unarmed")
+            initiate_msg = get_combat_message(weapon_type, "initiate", attacker=caller, target=target, item=weapon)
+            caller.location.msg_contents(f"|R{initiate_msg}|n")
 
-        # --- Player-facing initiate message ---
-        msg = get_combat_message(weapon_type, "initiate", attacker=caller, target=target, item=weapon)
-        caller.location.msg_contents(f"|R{msg}|n")
+
+        splattercast.msg(f"ATTACK_CMD: {caller.key} attacks {target.key}. Combat managed by {final_handler.key}.")
+        
+        # The combat handler will resolve the actual hit on its next at_repeat
+        # Ensure it's running if it wasn't
+        if not final_handler.is_active:
+            final_handler.start()
 
 
 class CmdFlee(Command):
