@@ -4,6 +4,7 @@ from random import randint, choice
 from world.combathandler import get_or_create_combat, COMBAT_SCRIPT_KEY
 from world.combat_messages import get_combat_message
 from evennia.comms.models import ChannelDB
+from evennia.utils import utils, display_formatter
 
 
 class CmdAttack(Command):
@@ -666,3 +667,68 @@ class CmdStop(Command):
         else:
             caller.msg("You are not aiming at anything or in any direction.")
             splattercast.msg(f"{caller.key} tried to stop aiming, but was not aiming at anything or in any direction.")
+
+
+class CmdLook(Command):
+    """
+    Look around or at a specific object.
+
+    Usage:
+        look
+        look <object>
+        look <direction>
+
+    Allows you to look around the room or at a specific object or direction.
+    """
+
+    key = "look"
+    locks = "cmd:all()"
+
+    def func(self):
+        caller = self.caller
+        args = self.args.strip()
+        splattercast = ChannelDB.objects.get_channel("Splattercast")  # Optional: if you want to log this
+
+        # --- AIMING DIRECTION LOOK ---
+        aiming_direction = getattr(caller.ndb, "aiming_direction", None)
+        if aiming_direction and not args:  # Only override default 'look' if aiming and no other args given
+            splattercast.msg(f"LOOK: {caller.key} is aiming {aiming_direction}, attempting to look remotely.")
+
+            # Find the exit corresponding to the aiming_direction
+            exit_obj = None
+            for ex in caller.location.exits:
+                if ex.key.lower() == aiming_direction.lower() or aiming_direction.lower() in ex.aliases.all():
+                    exit_obj = ex
+                    break
+
+            if exit_obj and exit_obj.destination:
+                remote_room = exit_obj.destination
+                caller.msg(f"You peer into the {aiming_direction} direction, towards {remote_room.get_display_name(caller)}...")
+
+                # Use Evennia's standard look display for the remote room
+                caller.msg(remote_room.return_appearance(caller))
+                splattercast.msg(f"LOOK: {caller.key} successfully looked into {remote_room.key} via aiming {aiming_direction}.")
+                return
+            else:
+                caller.msg(f"You aim in the {aiming_direction} direction, but there's no clear path or view that way.")
+                splattercast.msg(f"LOOK: {caller.key} tried to look via aiming {aiming_direction}, but no valid exit/destination found.")
+                return
+        # --- END AIMING DIRECTION LOOK ---
+
+        # Original 'look' command logic (if not aiming or if args were provided)
+        if args:
+            target = caller.search(args)
+            if not target:
+                return
+            self.msg(target.return_appearance(caller))
+            if hasattr(target, 'locks'):  # Evennia 1.0
+                self.msg(f"Locks: {target.locks}")
+            else:  # Evennia 0.9.5
+                self.msg(f"Locks: {target.locks.get_lock_string(target, caller)}")
+        else:
+            # look in current room
+            self.msg(caller.location.return_appearance(caller))
+            if hasattr(caller.location, 'locks'):  # Evennia 1.0
+                self.msg(f"Locks: {caller.location.locks}")
+            else:  # Evennia 0.9.5
+                self.msg(f"Locks: {caller.location.locks.get_lock_string(caller.location, caller)}")

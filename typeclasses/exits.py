@@ -44,6 +44,24 @@ class Exit(DefaultExit):
 
     def at_traverse(self, traversing_object, target_location):
         splattercast = ChannelDB.objects.get_channel("Splattercast")
+        
+        # --- AIMING LOCK CHECK ---
+        aimer = getattr(traversing_object.ndb, "aimed_at_by", None)
+        if aimer:
+            # Check if the aimer is still valid and in the same location
+            if not aimer.location or aimer.location != traversing_object.location:
+                # Aimer is gone or no longer in the same room, clear the lock
+                splattercast.msg(f"AIM LOCK: {traversing_object.key} was aimed at by {aimer.key if aimer else 'Unknown'}, but aimer is no longer present/valid. Clearing lock.")
+                del traversing_object.ndb.aimed_at_by
+                if hasattr(aimer, "ndb") and getattr(aimer.ndb, "aiming_at", None) == traversing_object:
+                    del aimer.ndb.aiming_at
+            else:
+                traversing_object.msg(f"|r{aimer.key} is aiming at you, locking you in place! You cannot move.|n")
+                aimer.msg(f"|yYour target, {traversing_object.key}, tries to move but is locked by your aim!|n")
+                splattercast.msg(f"AIM LOCK: {traversing_object.key} attempted to traverse {self.key} but is locked by {aimer.key}'s aim.")
+                return # Block traversal
+        # --- END AIMING LOCK CHECK ---
+
         handler = getattr(traversing_object.ndb, "combat_handler", None)
 
         if handler:
