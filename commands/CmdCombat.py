@@ -707,7 +707,9 @@ class CmdLook(Command):
             if inherits_from(char, "typeclasses.characters.Character") and char != caller
         ]
         if characters_in_room:
-            caller.msg(f"{prefix_message} {', '.join(characters_in_room)} here.")
+            # Ensure the message ends with a period if not already.
+            suffix = " here." if not prefix_message.endswith(".") else ""
+            caller.msg(f"{prefix_message} {', '.join(characters_in_room)}{suffix}")
 
 
     def func(self):
@@ -716,7 +718,6 @@ class CmdLook(Command):
         splattercast = ChannelDB.objects.get_channel("Splattercast")
 
         # --- 1. Handle 'look' while AIMING AT A CHARACTER ---
-        # (This logic is assumed to be as per previous discussions, user happy with it for now)
         aiming_at_char = getattr(caller.ndb, "aiming_at", None)
         if aiming_at_char:
             splattercast.msg(f"LOOK: {caller.key} is aiming at character {aiming_at_char.key}.")
@@ -726,7 +727,14 @@ class CmdLook(Command):
                 splattercast.msg(f"LOOK: {caller.key} looked at aimed character {aiming_at_char.key}.")
                 return
             else:
-                target_in_current_room = caller.search(args, quiet=True)
+                target_in_current_room_result = caller.search(args, quiet=True)
+                target_in_current_room = None
+                if isinstance(target_in_current_room_result, list):
+                    if target_in_current_room_result:
+                        target_in_current_room = target_in_current_room_result[0]
+                else:
+                    target_in_current_room = target_in_current_room_result
+                
                 if target_in_current_room:
                     if target_in_current_room == aiming_at_char:
                          caller.msg(f"You continue to focus on {aiming_at_char.get_display_name(caller)} (aimed)...")
@@ -755,18 +763,25 @@ class CmdLook(Command):
                 caller.msg(f"You aim in the {aiming_direction_name} direction, but there's no clear path or view that way.")
                 splattercast.msg(f"LOOK: {caller.key} tried to look via aiming {aiming_direction_name}, but no valid exit/destination found.")
                 if not args: return 
-                # Fall through to normal look in current room if args were given
             else:
                 remote_room = exit_obj.destination
-                if not args: # Plain 'look' while aiming in a direction
+                if not args: 
                     caller.msg(f"You peer into the {aiming_direction_name} direction, towards {remote_room.get_display_name(caller)}...")
                     caller.msg(remote_room.return_appearance(caller))
                     self._show_characters_in_room(caller, remote_room, f"Looking {aiming_direction_name}, you also see")
                     splattercast.msg(f"LOOK: {caller.key} successfully looked into {remote_room.key} via aiming {aiming_direction_name}.")
                     return
-                else: # 'look <object>' while aiming in a direction
+                else: 
                     caller.msg(f"You peer into the {aiming_direction_name} direction (towards {remote_room.get_display_name(caller)}) and look for '{args}'...")
-                    target_in_remote_room = caller.search(args, location=remote_room, quiet=True)                   
+                    
+                    target_in_remote_room_result = caller.search(args, location=remote_room, quiet=True)
+                    target_in_remote_room = None
+                    if isinstance(target_in_remote_room_result, list):
+                        if target_in_remote_room_result: # If list is not empty
+                            target_in_remote_room = target_in_remote_room_result[0]
+                    else: # It's a single object or None
+                        target_in_remote_room = target_in_remote_room_result
+                                        
                     if target_in_remote_room:
                         caller.msg(target_in_remote_room.return_appearance(caller))
                         splattercast.msg(f"LOOK: {caller.key} successfully looked at {target_in_remote_room.key} in remote room {remote_room.key} via aiming.")
@@ -777,7 +792,6 @@ class CmdLook(Command):
 
         # --- 3. Handle 'look <args>' (when NOT aiming, or aiming look failed and fell through) ---
         if args:
-            # A. Try to interpret 'args' as a direction from the current room
             possible_exit_obj = None
             for ex in caller.location.exits:
                 exit_aliases_lower = [alias.lower() for alias in ex.aliases.all()] if ex.aliases and hasattr(ex.aliases, 'all') else []
@@ -786,7 +800,6 @@ class CmdLook(Command):
                     break
             
             if possible_exit_obj and possible_exit_obj.destination:
-                # User typed 'look <valid_direction_from_current_room>'
                 remote_room = possible_exit_obj.destination
                 caller.msg(f"You look {possible_exit_obj.key} (towards {remote_room.get_display_name(caller)})...")
                 caller.msg(remote_room.return_appearance(caller))
@@ -794,17 +807,20 @@ class CmdLook(Command):
                 splattercast.msg(f"LOOK: {caller.key} looked into direction {possible_exit_obj.key} at {remote_room.key}.")
                 return
             else:
-                # B. 'args' is not a recognized direction, treat as object/character search in current room.
-                target = caller.search(args) 
+                target_result = caller.search(args) 
+                target = None
+                if isinstance(target_result, list):
+                    if target_result:
+                        target = target_result[0]
+                else:
+                    target = target_result
+
                 if target:
                     caller.msg(target.return_appearance(caller))
-                # caller.search() handles "not found" message.
+                # caller.search() handles "not found" message if target is None after this.
                 return 
         
         # --- 4. Handle plain 'look' (no args, not aiming at char, not aiming directionally) ---
-        else: # No args
+        else: 
             caller.msg(caller.location.return_appearance(caller))
-            # The room's return_appearance usually lists characters.
-            # If it doesn't, or for explicit control, use the helper:
-            self._show_characters_in_room(caller, caller.location, "Around you, you also see")
             return
