@@ -78,7 +78,7 @@ class CombatHandler(DefaultScript):
             return
         splattercast.msg(f"CH_START: Handler {self.key} on {self.obj.key} (managing {[r.key for r in self.db.managed_rooms]}) started.")
         self.is_active = True
-        self.force_repeat(self.interval)
+        self.force_repeat()  # CORRECTED LINE
 
     def at_stop(self):
         """
