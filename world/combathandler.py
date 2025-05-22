@@ -124,18 +124,16 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"STOP_COMBAT_LOGIC: Combatants list cleared for handler {self.key}.")
         
         should_delete_script = False
-        # Condition for deleting the script entirely
-        # This logic correctly handles multiple rooms. If len(managed_rooms) > 1, it won't delete.
-        if not self.db.combatants and self.obj and hasattr(self.obj, 'key'): # Ensure self.obj is valid
-            if self.db.managed_rooms and len(self.db.managed_rooms) == 1 and self.db.managed_rooms[0] == self.obj:
-                 if self.pk: # Check if script is saved (i.e., not already deleted)
-                    splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} is empty and only managing its host room ({self.obj.key}). Marking for deletion.")
-                    should_delete_script = True
+        # New condition: Delete if no combatants and script is persistent (saved in DB)
+        if not self.db.combatants and self.pk:
+            splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} is empty and persistent. Marking for deletion.")
+            should_delete_script = True
         
         if not self.db.combatants and not should_delete_script:
-            # Log the actual room objects for clarity if possible, or their dbrefs
+            # This log will now only appear if self.pk is False (e.g., script not yet saved, which is rare for persistent scripts)
+            # or if some other logic prevents deletion.
             managed_room_keys = [f"{r.key}(#{r.id})" for r in self.db.managed_rooms if r and hasattr(r, 'id')]
-            splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} has no combatants. Rounds stopped. Still managing rooms: {managed_room_keys}.")
+            splattercast.msg(f"STOP_COMBAT_LOGIC: Handler {self.key} has no combatants but is not being deleted (e.g. not persistent or other logic). Rounds stopped. Still managing rooms: {managed_room_keys}.")
 
         if should_delete_script:
             splattercast.msg(f"STOP_COMBAT_LOGIC: Deleting handler script {self.key}.")
