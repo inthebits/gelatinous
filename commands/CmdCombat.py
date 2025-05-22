@@ -676,87 +676,135 @@ class CmdAim(Command):
 
 class CmdLook(Command):
     """
-    Look around or at a specific object.
+    Look around or at a specific object/character or in a direction.
 
     Usage:
         look
-        look <object>
+        look <object or character>
         look <direction>
 
     Allows you to look around the room or at a specific object or direction.
+    If aiming at a character:
+        'look' will show a detailed view of the character you are aiming at.
+        'look <target>' will look at <target> in your current room, without breaking your aim.
     If aiming in a direction:
-        'look' will show the room you are aiming into.
+        'look' will show the room you are aiming into, including characters present.
         'look <object>' will try to find and describe the object in the room you are aiming into.
+    If not aiming, 'look <direction>' will show the room in that direction, including characters.
     """
 
     key = "look"
     locks = "cmd:all()"
+
+    def _show_characters_in_room(self, caller, room, prefix_message="You also see"):
+        """Helper to list characters in a given room, excluding the caller."""
+        if not room or not hasattr(room, "contents"):
+            return
+
+        characters_in_room = [
+            char.get_display_name(caller) 
+            for char in room.contents 
+            if inherits_from(char, "typeclasses.characters.Character") and char != caller
+        ]
+        if characters_in_room:
+            caller.msg(f"{prefix_message} {', '.join(characters_in_room)} here.")
+
 
     def func(self):
         caller = self.caller
         args = self.args.strip()
         splattercast = ChannelDB.objects.get_channel("Splattercast")
 
-        aiming_direction = getattr(caller.ndb, "aiming_direction", None)
+        # --- 1. Handle 'look' while AIMING AT A CHARACTER ---
+        # (This logic is assumed to be as per previous discussions, user happy with it for now)
+        aiming_at_char = getattr(caller.ndb, "aiming_at", None)
+        if aiming_at_char:
+            splattercast.msg(f"LOOK: {caller.key} is aiming at character {aiming_at_char.key}.")
+            if not args:
+                caller.msg(f"You focus your gaze on {aiming_at_char.get_display_name(caller)} (aimed)...")
+                caller.msg(aiming_at_char.return_appearance(caller))
+                splattercast.msg(f"LOOK: {caller.key} looked at aimed character {aiming_at_char.key}.")
+                return
+            else:
+                target_in_current_room = caller.search(args, quiet=True)
+                if target_in_current_room:
+                    if target_in_current_room == aiming_at_char:
+                         caller.msg(f"You continue to focus on {aiming_at_char.get_display_name(caller)} (aimed)...")
+                    else:
+                        caller.msg(f"While still aiming at {aiming_at_char.get_display_name(caller)}, you look at {target_in_current_room.get_display_name(caller)}...")
+                    caller.msg(target_in_current_room.return_appearance(caller))
+                    splattercast.msg(f"LOOK: {caller.key} (aiming at {aiming_at_char.key}) looked at {target_in_current_room.key} in current room.")
+                else:
+                    caller.msg(f"While aiming at {aiming_at_char.get_display_name(caller)}, you don't see '{args}' here.")
+                    splattercast.msg(f"LOOK: {caller.key} (aiming at {aiming_at_char.key}) failed to find '{args}' in current room.")
+                return
 
-        if aiming_direction:
-            splattercast.msg(f"LOOK: {caller.key} is aiming {aiming_direction}, attempting remote look.")
-
+        # --- 2. Handle 'look' while AIMING IN A DIRECTION ---
+        aiming_direction_name = getattr(caller.ndb, "aiming_direction", None)
+        if aiming_direction_name:
+            splattercast.msg(f"LOOK: {caller.key} is aiming {aiming_direction_name}, attempting remote look.")
+            
             exit_obj = None
             for ex in caller.location.exits:
-                exit_aliases_lower = [alias.lower() for alias in ex.aliases.all()] if hasattr(ex.aliases, 'all') else []
-                if ex.key.lower() == aiming_direction.lower() or aiming_direction.lower() in exit_aliases_lower:
+                exit_aliases_lower = [alias.lower() for alias in ex.aliases.all()] if ex.aliases and hasattr(ex.aliases, 'all') else []
+                if ex.key.lower() == aiming_direction_name.lower() or aiming_direction_name.lower() in exit_aliases_lower:
                     exit_obj = ex
                     break
             
             if not exit_obj or not exit_obj.destination:
-                caller.msg(f"You aim in the {aiming_direction} direction, but there's no clear path or view that way.")
-                splattercast.msg(f"LOOK: {caller.key} tried to look via aiming {aiming_direction}, but no valid exit/destination found.")
-                # Fall through to normal look in current room if args were given, or just stop if 'look' was plain.
-                if not args:
-                    return # Nothing more to do if 'look' was plain and remote look failed.
-                # If args were given, let the normal look logic handle it in the current room.
+                caller.msg(f"You aim in the {aiming_direction_name} direction, but there's no clear path or view that way.")
+                splattercast.msg(f"LOOK: {caller.key} tried to look via aiming {aiming_direction_name}, but no valid exit/destination found.")
+                if not args: return 
+                # Fall through to normal look in current room if args were given
             else:
                 remote_room = exit_obj.destination
-                if not args:
-                    # 'look' while aiming (no specific target) - show the remote room
-                    caller.msg(f"You peer into the {aiming_direction} direction, towards {remote_room.get_display_name(caller)}...")
-                    self.msg(remote_room.return_appearance(caller)) # Use self.msg for consistency
-                    splattercast.msg(f"LOOK: {caller.key} successfully looked into {remote_room.key} via aiming {aiming_direction}.")
+                if not args: # Plain 'look' while aiming in a direction
+                    caller.msg(f"You peer into the {aiming_direction_name} direction, towards {remote_room.get_display_name(caller)}...")
+                    caller.msg(remote_room.return_appearance(caller))
+                    self._show_characters_in_room(caller, remote_room, f"Looking {aiming_direction_name}, you also see")
+                    splattercast.msg(f"LOOK: {caller.key} successfully looked into {remote_room.key} via aiming {aiming_direction_name}.")
                     return
-                else:
-                    # 'look <object>' while aiming - search in the remote room
-                    caller.msg(f"You peer into the {aiming_direction} direction (towards {remote_room.get_display_name(caller)}) and look for '{args}'...")
-                    # Perform search within the remote_room's contents
-                    # Note: caller.search() by default searches caller.location.
-                    # We need a way to search another room's contents from the caller's perspective.
-                    # A simple way is to iterate contents and check names/aliases.
-                    
-                    target_in_remote_room = None
-                    # Prioritize characters if Character typeclass is available
-                    if inherits_from(remote_room, "typeclasses.rooms.Room"): # Check if remote_room is a Room type
-                        for item in remote_room.contents:
-                            if args.lower() in item.key.lower():
-                                target_in_remote_room = item
-                                break
-                            if hasattr(item, "aliases") and item.aliases.has(args.lower()):
-                                target_in_remote_room = item
-                                break
-                    
+                else: # 'look <object>' while aiming in a direction
+                    caller.msg(f"You peer into the {aiming_direction_name} direction (towards {remote_room.get_display_name(caller)}) and look for '{args}'...")
+                    target_in_remote_room = caller.search(args, location=remote_room, quiet=True)                   
                     if target_in_remote_room:
-                        self.msg(target_in_remote_room.return_appearance(caller))
+                        caller.msg(target_in_remote_room.return_appearance(caller))
                         splattercast.msg(f"LOOK: {caller.key} successfully looked at {target_in_remote_room.key} in remote room {remote_room.key} via aiming.")
                     else:
-                        caller.msg(f"You don't see '{args}' clearly in the {aiming_direction} direction (in {remote_room.get_display_name(caller)}).")
+                        caller.msg(f"You don't see '{args}' clearly in the {aiming_direction_name} direction (in {remote_room.get_display_name(caller)}).")
                         splattercast.msg(f"LOOK: {caller.key} tried to look at '{args}' in remote room {remote_room.key} via aiming, but not found.")
                     return
 
-        # Original 'look' command logic (if not aiming, or if aiming but remote look failed AND args were given)
+        # --- 3. Handle 'look <args>' (when NOT aiming, or aiming look failed and fell through) ---
         if args:
-            # This is the default search in the caller's current location
-            target = caller.search(args) # caller.search handles "not found"
-            if target:
-                self.msg(target.return_appearance(caller))
-        else:
-            # look in current room (no args, not aiming or remote look failed without args)
-            self.msg(caller.location.return_appearance(caller))
+            # A. Try to interpret 'args' as a direction from the current room
+            possible_exit_obj = None
+            for ex in caller.location.exits:
+                exit_aliases_lower = [alias.lower() for alias in ex.aliases.all()] if ex.aliases and hasattr(ex.aliases, 'all') else []
+                if args.lower() == ex.key.lower() or args.lower() in exit_aliases_lower:
+                    possible_exit_obj = ex
+                    break
+            
+            if possible_exit_obj and possible_exit_obj.destination:
+                # User typed 'look <valid_direction_from_current_room>'
+                remote_room = possible_exit_obj.destination
+                caller.msg(f"You look {possible_exit_obj.key} (towards {remote_room.get_display_name(caller)})...")
+                caller.msg(remote_room.return_appearance(caller))
+                self._show_characters_in_room(caller, remote_room, f"Looking {possible_exit_obj.key}, you also see")
+                splattercast.msg(f"LOOK: {caller.key} looked into direction {possible_exit_obj.key} at {remote_room.key}.")
+                return
+            else:
+                # B. 'args' is not a recognized direction, treat as object/character search in current room.
+                target = caller.search(args) 
+                if target:
+                    caller.msg(target.return_appearance(caller))
+                # caller.search() handles "not found" message.
+                return 
+        
+        # --- 4. Handle plain 'look' (no args, not aiming at char, not aiming directionally) ---
+        else: # No args
+            caller.msg(caller.location.return_appearance(caller))
+            # The room's return_appearance usually lists characters.
+            # If it doesn't, or for explicit control, use the helper:
+            self._show_characters_in_room(caller, caller.location, "Around you, you also see")
+            return
