@@ -731,6 +731,9 @@ class CmdLook(Command):
         look <direction>
 
     Allows you to look around the room or at a specific object or direction.
+    If aiming in a direction:
+        'look' will show the room you are aiming into.
+        'look <object>' will try to find and describe the object in the room you are aiming into.
     """
 
     key = "look"
@@ -739,48 +742,68 @@ class CmdLook(Command):
     def func(self):
         caller = self.caller
         args = self.args.strip()
-        splattercast = ChannelDB.objects.get_channel("Splattercast")  # Optional: if you want to log this
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
 
-        # --- AIMING DIRECTION LOOK ---
         aiming_direction = getattr(caller.ndb, "aiming_direction", None)
-        if aiming_direction and not args:  # Only override default 'look' if aiming and no other args given
-            splattercast.msg(f"LOOK: {caller.key} is aiming {aiming_direction}, attempting to look remotely.")
 
-            # Find the exit corresponding to the aiming_direction
+        if aiming_direction:
+            splattercast.msg(f"LOOK: {caller.key} is aiming {aiming_direction}, attempting remote look.")
+
             exit_obj = None
             for ex in caller.location.exits:
-                if ex.key.lower() == aiming_direction.lower() or aiming_direction.lower() in ex.aliases.all():
+                exit_aliases_lower = [alias.lower() for alias in ex.aliases.all()] if hasattr(ex.aliases, 'all') else []
+                if ex.key.lower() == aiming_direction.lower() or aiming_direction.lower() in exit_aliases_lower:
                     exit_obj = ex
                     break
-
-            if exit_obj and exit_obj.destination:
-                remote_room = exit_obj.destination
-                caller.msg(f"You peer into the {aiming_direction} direction, towards {remote_room.get_display_name(caller)}...")
-
-                # Use Evennia's standard look display for the remote room
-                caller.msg(remote_room.return_appearance(caller))
-                splattercast.msg(f"LOOK: {caller.key} successfully looked into {remote_room.key} via aiming {aiming_direction}.")
-                return
-            else:
+            
+            if not exit_obj or not exit_obj.destination:
                 caller.msg(f"You aim in the {aiming_direction} direction, but there's no clear path or view that way.")
                 splattercast.msg(f"LOOK: {caller.key} tried to look via aiming {aiming_direction}, but no valid exit/destination found.")
-                return
-        # --- END AIMING DIRECTION LOOK ---
+                # Fall through to normal look in current room if args were given, or just stop if 'look' was plain.
+                if not args:
+                    return # Nothing more to do if 'look' was plain and remote look failed.
+                # If args were given, let the normal look logic handle it in the current room.
+            else:
+                remote_room = exit_obj.destination
+                if not args:
+                    # 'look' while aiming (no specific target) - show the remote room
+                    caller.msg(f"You peer into the {aiming_direction} direction, towards {remote_room.get_display_name(caller)}...")
+                    self.msg(remote_room.return_appearance(caller)) # Use self.msg for consistency
+                    splattercast.msg(f"LOOK: {caller.key} successfully looked into {remote_room.key} via aiming {aiming_direction}.")
+                    return
+                else:
+                    # 'look <object>' while aiming - search in the remote room
+                    caller.msg(f"You peer into the {aiming_direction} direction (towards {remote_room.get_display_name(caller)}) and look for '{args}'...")
+                    # Perform search within the remote_room's contents
+                    # Note: caller.search() by default searches caller.location.
+                    # We need a way to search another room's contents from the caller's perspective.
+                    # A simple way is to iterate contents and check names/aliases.
+                    
+                    target_in_remote_room = None
+                    # Prioritize characters if Character typeclass is available
+                    if inherits_from(remote_room, "typeclasses.rooms.Room"): # Check if remote_room is a Room type
+                        for item in remote_room.contents:
+                            if args.lower() in item.key.lower():
+                                target_in_remote_room = item
+                                break
+                            if hasattr(item, "aliases") and item.aliases.has(args.lower()):
+                                target_in_remote_room = item
+                                break
+                    
+                    if target_in_remote_room:
+                        self.msg(target_in_remote_room.return_appearance(caller))
+                        splattercast.msg(f"LOOK: {caller.key} successfully looked at {target_in_remote_room.key} in remote room {remote_room.key} via aiming.")
+                    else:
+                        caller.msg(f"You don't see '{args}' clearly in the {aiming_direction} direction (in {remote_room.get_display_name(caller)}).")
+                        splattercast.msg(f"LOOK: {caller.key} tried to look at '{args}' in remote room {remote_room.key} via aiming, but not found.")
+                    return
 
-        # Original 'look' command logic (if not aiming or if args were provided)
+        # Original 'look' command logic (if not aiming, or if aiming but remote look failed AND args were given)
         if args:
-            target = caller.search(args)
-            if not target:
-                return
-            self.msg(target.return_appearance(caller))
-            if hasattr(target, 'locks'):  # Evennia 1.0
-                self.msg(f"Locks: {target.locks}")
-            else:  # Evennia 0.9.5
-                self.msg(f"Locks: {target.locks.get_lock_string(target, caller)}")
+            # This is the default search in the caller's current location
+            target = caller.search(args) # caller.search handles "not found"
+            if target:
+                self.msg(target.return_appearance(caller))
         else:
-            # look in current room
+            # look in current room (no args, not aiming or remote look failed without args)
             self.msg(caller.location.return_appearance(caller))
-            if hasattr(caller.location, 'locks'):  # Evennia 1.0
-                self.msg(f"Locks: {caller.location.locks}")
-            else:  # Evennia 0.9.5
-                self.msg(f"Locks: {caller.location.locks.get_lock_string(caller.location, caller)}")
