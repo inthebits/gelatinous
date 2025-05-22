@@ -688,7 +688,7 @@ class CmdLook(Command):
         'look' will show a detailed view of the character you are aiming at.
         'look <target>' will look at <target> in your current room, without breaking your aim.
     If aiming in a direction:
-        'look' will show the characters present in the room you are aiming into.
+        'look' will show the room you are aiming into (description and characters).
         'look <object>' will try to find and describe the object in the room you are aiming into.
     If not aiming, 'look <direction>' will show the characters present in the room in that direction.
     """
@@ -697,7 +697,6 @@ class CmdLook(Command):
     locks = "cmd:all()"
 
     def _show_characters_in_room(self, caller, room, prefix_message="You also see"):
-        """Helper to list characters in a given room, excluding the caller."""
         if not room or not hasattr(room, "contents"):
             return
 
@@ -767,6 +766,7 @@ class CmdLook(Command):
                 remote_room = exit_obj.destination
                 if not args: 
                     caller.msg(f"You peer into the {aiming_direction_name} direction, towards {remote_room.get_display_name(caller)}...")
+                    caller.msg(remote_room.return_appearance(caller))
                     self._show_characters_in_room(caller, remote_room, f"Looking {aiming_direction_name}, you also see")
                     splattercast.msg(f"LOOK: {caller.key} successfully looked into {remote_room.key} via aiming {aiming_direction_name}.")
                     return
