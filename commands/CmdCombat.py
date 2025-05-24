@@ -121,11 +121,29 @@ class CmdAttack(Command):
             hands = getattr(caller, "hands", {})
             weapon = next((item for hand, item in hands.items() if item), None)
             weapon_type = (str(weapon.db.weapon_type).lower() if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type else "unarmed")
-            initiate_msg = get_combat_message(weapon_type, "initiate", attacker=caller, target=target, item=weapon)
-            caller.location.msg_contents(f"|R{initiate_msg}|n")
+            initiate_msg_obj = get_combat_message(weapon_type, "initiate", attacker=caller, target=target, item=weapon)
+            
+            final_initiate_str = ""
+            if isinstance(initiate_msg_obj, dict):
+                # For types like "unarmed", get_combat_message may return a dict.
+                # We need the observer message for a general room broadcast.
+                final_initiate_str = initiate_msg_obj.get("observer_msg")
+                if not final_initiate_str:
+                    # Fallback if "observer_msg" is missing
+                    splattercast.msg(f"CmdAttack: weapon_type {weapon_type} initiate message was dict but missing 'observer_msg'. Dict: {initiate_msg_obj}")
+                    final_initiate_str = f"{caller.key} begins an action against {target.key if target else 'someone'}."
+            elif isinstance(initiate_msg_obj, str):
+                # For types that return a single formatted string.
+                final_initiate_str = initiate_msg_obj
+            else:
+                # Unexpected type, provide a generic fallback
+                splattercast.msg(f"CmdAttack: Unexpected initiate_msg_obj type from get_combat_message for {weapon_type}: {type(initiate_msg_obj)}. Content: {initiate_msg_obj}")
+                final_initiate_str = f"{caller.key} initiates an attack on {target.key if target else 'someone'}."
+
+            caller.location.msg_contents(f"|R{final_initiate_str}|n")
 
 
-        splattercast.msg(f"ATTACK_CMD: {caller.key} attacks {target.key}. Combat managed by {final_handler.key}.")
+        splattercast.msg(f"ATTACK_CMD: {caller.key} attacks {target.key if target else 'a direction'}. Combat managed by {final_handler.key}.")
         
         # The combat handler will resolve the actual hit on its next at_repeat
         # Ensure it's running if it wasn't
