@@ -530,69 +530,101 @@ class CombatHandler(DefaultScript):
                             splattercast.msg(f"BODY SHIELD FAIL: {target.key} fails to use {shield_char.key}.")
                 # --- End Body Shield ---
 
-                hit_msg_observer = get_combat_message(
+                combat_messages = get_combat_message(
                     effective_message_weapon_type, "hit", 
                     attacker=char, target=actual_damage_recipient, item=weapon, damage=damage
                 )
-                splattercast.msg(f"get_combat_message (hit observer) returned: {hit_msg_observer!r}")
 
-                # Send to attacker's room
-                char.location.msg_contents(f"|R{hit_msg_observer}|n", exclude=[char, actual_damage_recipient])
-                # Send to recipient's room if different from attacker's
-                if actual_damage_recipient.location != char.location:
-                    actual_damage_recipient.location.msg_contents(f"|R{hit_msg_observer}|n", exclude=[char, actual_damage_recipient])
+                attacker_msg = combat_messages.get("attacker_msg", f"You hit {actual_damage_recipient.key}.")
+                victim_msg = combat_messages.get("victim_msg", f"{char.key} hits you.")
+                observer_msg = combat_messages.get("observer_msg", f"{char.key} hits {actual_damage_recipient.key}.")
 
-                # Direct messages
-                char.msg(f"|gYour attack hits {actual_damage_recipient.key}!|n")
-                actual_damage_recipient.msg(f"|r{char.key}'s attack hits you!|n")
-                
+                char.msg(attacker_msg)
+                if actual_damage_recipient != char:
+                    actual_damage_recipient.msg(victim_msg)
+
+                observer_locations = set()
+                if char.location:
+                    observer_locations.add(char.location)
+                if actual_damage_recipient.location:
+                    observer_locations.add(actual_damage_recipient.location)
+
+                for loc in observer_locations:
+                    exclude_list = []
+                    if loc == char.location:
+                        exclude_list.append(char)
+                    if loc == actual_damage_recipient.location:
+                        if actual_damage_recipient not in exclude_list:
+                            exclude_list.append(actual_damage_recipient)
+                    loc.msg_contents(observer_msg, exclude=exclude_list)
+
                 splattercast.msg(f"{char.key}'s attack damages {actual_damage_recipient.key} for {damage}.")
                 if hasattr(actual_damage_recipient, "take_damage"):
                     actual_damage_recipient.take_damage(damage)
                 
                 if hasattr(actual_damage_recipient, "is_dead") and actual_damage_recipient.is_dead():
-                    kill_msg_observer = get_combat_message(
+                    combat_messages = get_combat_message(
                         effective_message_weapon_type, "kill",
                         attacker=char, target=actual_damage_recipient, item=weapon, damage=damage
                     )
-                    splattercast.msg(f"get_combat_message (kill observer) returned: {kill_msg_observer!r}")
 
-                    # Send to attacker's room
-                    char.location.msg_contents(f"|R{kill_msg_observer}|n", exclude=[char, actual_damage_recipient])
-                    # Send to recipient's room if different
-                    if actual_damage_recipient.location != char.location:
-                        actual_damage_recipient.location.msg_contents(f"|R{kill_msg_observer}|n", exclude=[char, actual_damage_recipient])
-                    
-                    char.msg(f"|gYou have slain {actual_damage_recipient.key}!|n")
-                    # Target's death message usually handled by their own death system/take_damage
+                    attacker_msg = combat_messages.get("attacker_msg", f"You defeat {actual_damage_recipient.key}!")
+                    victim_msg = combat_messages.get("victim_msg", f"{char.key} defeats you!")
+                    observer_msg = combat_messages.get("observer_msg", f"{char.key} defeats {actual_damage_recipient.key}!")
+
+                    char.msg(attacker_msg)
+                    actual_damage_recipient.msg(victim_msg)
+
+                    observer_locations = set()
+                    if char.location:
+                        observer_locations.add(char.location)
+                    if actual_damage_recipient.location:
+                        observer_locations.add(actual_damage_recipient.location)
+
+                    for loc in observer_locations:
+                        exclude_list = []
+                        if loc == char.location:
+                            exclude_list.append(char)
+                        if loc == actual_damage_recipient.location:
+                            if actual_damage_recipient not in exclude_list:
+                                exclude_list.append(actual_damage_recipient)
+                        loc.msg_contents(observer_msg, exclude=exclude_list)
 
                     splattercast.msg(f"{actual_damage_recipient.key} has been defeated.")
-                    self.remove_combatant(actual_damage_recipient) # This also clears NDB
+                    self.remove_combatant(actual_damage_recipient)
                     
-                    # Retarget anyone who was targeting the slain combatant
                     for entry in list(self.db.combatants):
                         if entry.get("target") == actual_damage_recipient:
-                            entry["target"] = self.get_target(entry["char"]) # Get new target
+                            entry["target"] = self.get_target(entry["char"])
                             splattercast.msg(f"{entry['char'].key} was targeting slain {actual_damage_recipient.key}, now targets {entry['target'].key if entry['target'] else 'None'}.")
-                    continue # Attacker's turn ends if they killed someone
-            else: # Attack missed
-                miss_msg_observer = get_combat_message(
+                    continue
+            else:
+                combat_messages = get_combat_message(
                     effective_message_weapon_type, "miss", 
-                    attacker=char, target=target, item=weapon # Original target for miss message
+                    attacker=char, target=target, item=weapon
                 )
-                splattercast.msg(f"get_combat_message (miss observer) returned: {miss_msg_observer!r}")
 
-                # Send to attacker's room
-                char.location.msg_contents(f"|[X{miss_msg_observer}|n", exclude=[char, target])
-                # Send to original target's room if different
-                if target.location != char.location:
-                    target.location.msg_contents(f"|[X{miss_msg_observer}|n", exclude=[char, target])
-                
-                char.msg(f"|yYour attack on {target.key} misses.|n")
-                target.msg(f"|g{char.key}'s attack on you misses.|n")
+                attacker_msg = combat_messages.get("attacker_msg", f"You miss {target.key}.")
+                observer_msg = combat_messages.get("observer_msg", f"{char.key} misses {target.key}.")
 
-        # --- End of Round ---
-        if not self.db.combatants: # Check if all combatants were removed during the round
+                char.msg(attacker_msg)
+
+                observer_locations = set()
+                if char.location:
+                    observer_locations.add(char.location)
+                if target.location:
+                    observer_locations.add(target.location)
+
+                for loc in observer_locations:
+                    exclude_list = []
+                    if loc == char.location:
+                        exclude_list.append(char)
+                    if loc == target.location:
+                        if target not in exclude_list:
+                            exclude_list.append(target)
+                    loc.msg_contents(observer_msg, exclude=exclude_list)
+
+        if not self.db.combatants:
             splattercast.msg(f"AT_REPEAT: Handler {self.key}. No combatants left after round processing. Stopping.")
             self.stop_combat_logic()
             return

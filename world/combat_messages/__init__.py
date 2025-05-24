@@ -4,31 +4,101 @@ import random
 def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None, **kwargs):
     """
     Load the appropriate combat message from a specific weapon_type module.
+    Returns a dictionary with "attacker_msg", "victim_msg", and "observer_msg".
 
     Args:
-        weapon_type (str): e.g., "melee", "blade"
-        phase (str): One of "initiate", "hit", "miss", "kill"
+        weapon_type (str): e.g., "unarmed", "blade"
+        phase (str): One of "initiate", "hit", "miss", "kill", etc.
         attacker (Object): The attacker
         target (Object): The target
-        item (Object): The weapon/item used
+        item (Object): The weapon/item used (can be None for unarmed)
         **kwargs: Any extra variables for formatting (e.g., damage)
 
     Returns:
-        str: A formatted combat message string.
+        dict: A dictionary containing formatted "attacker_msg", "victim_msg",
+              and "observer_msg" strings.
     """
+    attacker_s = attacker.key if attacker else "Someone"
+    target_s = target.key if target else "someone"
+    item_s = item.key if item else "fists" # Default item name if None
+
+    # Determine verb forms for fallback messages based on phase
+    verb_root = phase.lower()
+    attacker_verb = verb_root # For "You verb..."
+    third_person_verb = f"{verb_root}s" # Default for "Someone verbs..."
+
+    if verb_root.endswith("s") or verb_root.endswith("sh") or \
+       verb_root.endswith("ch") or verb_root.endswith("x") or \
+       verb_root.endswith("z"):
+        third_person_verb = f"{verb_root}es"
+    elif verb_root.endswith("y") and len(verb_root) > 1 and verb_root[-2].lower() not in "aeiou":
+        third_person_verb = f"{verb_root[:-1]}ies"
+    
+    # Specific overrides for common verbs if needed
+    if verb_root == "hit":
+        attacker_verb = "hit"
+        third_person_verb = "hits"
+    elif verb_root == "miss": # "miss" -> "misses"
+        attacker_verb = "miss" # "You miss"
+        third_person_verb = "misses" # "Someone misses"
+    # Add more overrides if other phases require special verb forms
+
+    # Fallback message templates (using placeholders)
+    fallback_template_set = {
+        "attacker_msg": f"You {attacker_verb} {{target_name}} with {{item_name}}.",
+        "victim_msg": f"{{attacker_name}} {third_person_verb} you with {{item_name}}.",
+        "observer_msg": f"{{attacker_name}} {third_person_verb} {{target_name}} with {{item_name}}."
+    }
+    # Simpler fallbacks if item is not always relevant or desired in fallback
+    # fallback_template_set = {
+    #     "attacker_msg": f"You {attacker_verb} {{target_name}}.",
+    #     "victim_msg": f"{{attacker_name}} {third_person_verb} you.",
+    #     "observer_msg": f"{{attacker_name}} {third_person_verb} {{target_name}}."
+    # }
+
+
+    chosen_template_set = None
     try:
-        module = importlib.import_module(f"world.combat_messages.{weapon_type}")
-        messages = getattr(module, "MESSAGES", {})
-        templates = messages.get(phase, [])
+        module_path = f"world.combat_messages.{weapon_type}"
+        module = importlib.import_module(module_path)
+        messages_for_weapon = getattr(module, "MESSAGES", {})
+        templates_for_phase = messages_for_weapon.get(phase, [])
+        
+        if templates_for_phase and isinstance(templates_for_phase, list):
+            valid_templates = [t for t in templates_for_phase if isinstance(t, dict)]
+            if valid_templates:
+                chosen_template_set = random.choice(valid_templates)
     except ModuleNotFoundError:
-        templates = []
+        pass # chosen_template_set remains None, will use fallback
+    except Exception as e:
+        pass # chosen_template_set remains None, will use fallback
 
-    if not templates:
-        return ""
+    # If no specific template was loaded (or error), use the fallback set
+    if not chosen_template_set:
+        chosen_template_set = fallback_template_set
 
-    return random.choice(templates).format(
-        attacker=attacker.key if attacker else "Someone",
-        target=target.key if target else "someone",
-        item=item.key if item else "something",
-        **kwargs
-    )
+    # Prepare combined kwargs for formatting.
+    # These are the names templates should use, e.g., {attacker_name}, {target_name}, {item_name}, {damage}
+    format_kwargs = {
+        "attacker_name": attacker_s,
+        "target_name": target_s,
+        "item_name": item_s,
+        "attacker": attacker_s,  # Alias for convenience if templates use {attacker}
+        "target": target_s,      # Alias for convenience if templates use {target}
+        "item": item_s,          # Alias for convenience if templates use {item}
+        "phase": phase,          # Pass phase itself if templates need it
+        **kwargs                 # e.g., damage, any other custom placeholders
+    }
+
+    final_messages = {}
+    for msg_key in ["attacker_msg", "victim_msg", "observer_msg"]:
+        # Get template string from chosen set, or from fallback_template_set if key is missing in chosen
+        template_str = chosen_template_set.get(msg_key, fallback_template_set.get(msg_key, "Error: Message template key missing."))
+        try:
+            final_messages[msg_key] = template_str.format(**format_kwargs)
+        except KeyError as e_key:
+            final_messages[msg_key] = f"(Error: Missing placeholder {e_key} in template for '{msg_key}')"
+        except Exception as e_fmt:
+            final_messages[msg_key] = f"(Error: Formatting issue for '{msg_key}': {e_fmt})"
+
+    return final_messages
