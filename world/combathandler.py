@@ -404,19 +404,144 @@ class CombatHandler(DefaultScript):
 
             splattercast.msg(f"--- Turn: {char.key} (Loc: {char.location.key}, Init: {current_char_combat_entry['initiative']}) ---")
 
-            action_intent = current_char_combat_entry.get("combat_action")
-            if action_intent:
-                splattercast.msg(f"AT_REPEAT: {char.key} has action_intent: {action_intent}")
-                current_char_combat_entry["combat_action"] = None # Consume the intent
+            # Capture the intent for this turn. The DB version is cleared immediately.
+            # This local 'action_intent_this_turn' variable holds the details for the current turn's logic.
+            action_intent_this_turn = current_char_combat_entry.get("combat_action")
+            if action_intent_this_turn:
+                splattercast.msg(f"AT_REPEAT: {char.key} has action_intent: {action_intent_this_turn}")
+                current_char_combat_entry["combat_action"] = None # Consume the intent from DB immediately
 
-            # --- Handle Grapple States and Grapple-Related Actions ---
-            # (This extensive grapple logic from your provided code seems mostly self-contained for messaging to char.location)
-            # Ensure any msg_contents calls are to char.location or target.location as appropriate.
-            # ... (Your existing grapple, escape, release grapple logic) ...
-            # Example adjustment for a message within grapple logic:
-            # msg = f"{char.key} automatically breaks free from {grappler.key}'s grapple!"
-            # char.location.msg_contents(f"|G{msg}|n") # This is good, it's local to the event
+                # Now, process based on the content of 'action_intent_this_turn'
+                intent_type = action_intent_this_turn.get("type")
+                action_target_char = action_intent_this_turn.get("target") # This is a character object
 
+                # Validate the target of the action intent
+                is_action_target_valid = False
+                if action_target_char and any(e["char"] == action_target_char for e in self.db.combatants):
+                    if action_target_char.location and action_target_char.location in self.db.managed_rooms:
+                        is_action_target_valid = True
+                
+                if not is_action_target_valid and action_target_char:
+                    char.msg(f"The target of your planned action ({action_target_char.key}) is no longer valid.")
+                    splattercast.msg(f"{char.key}'s action_intent target {action_target_char.key} is invalid. Intent cleared, falling through.")
+                    # No 'continue', allow fall-through to yielding/standard attack if applicable
+                
+                elif intent_type == "grapple" and is_action_target_valid:
+                    splattercast.msg(f"AT_REPEAT: {char.key} attempting to grapple {action_target_char.key} based on intent.")
+                    
+                    can_grapple_target = (char.location == action_target_char.location) # Must be in the same room
+                    
+                    if can_grapple_target:
+                        attacker_roll = randint(1, max(1, getattr(char, "motorics", 1)))
+                        defender_roll = randint(1, max(1, getattr(action_target_char, "motorics", 1)))
+                        splattercast.msg(f"GRAPPLE ATTEMPT: {char.key} (roll {attacker_roll}) vs {action_target_char.key} (roll {defender_roll}).")
+
+                        if attacker_roll > defender_roll:
+                            current_char_combat_entry["grappling"] = action_target_char
+                            target_entry = next((e for e in self.db.combatants if e["char"] == action_target_char), None)
+                            if target_entry:
+                                target_entry["grappled_by"] = char
+                            
+                            grapple_messages = get_combat_message("grapple", "hit", attacker=char, target=action_target_char)
+                            char.msg(grapple_messages.get("attacker_msg"))
+                            action_target_char.msg(grapple_messages.get("victim_msg"))
+                            obs_msg = grapple_messages.get("observer_msg")
+                            # Send to relevant locations (attacker's room, should be same as target's for grapple)
+                            if char.location:
+                                char.location.msg_contents(obs_msg, exclude=[char, action_target_char])
+                            splattercast.msg(f"GRAPPLE SUCCESS: {char.key} grappled {action_target_char.key}.")
+                        else: # Grapple failed
+                            grapple_messages = get_combat_message("grapple", "miss", attacker=char, target=action_target_char)
+                            char.msg(grapple_messages.get("attacker_msg"))
+                            action_target_char.msg(grapple_messages.get("victim_msg"))
+                            obs_msg = grapple_messages.get("observer_msg")
+                            if char.location:
+                                char.location.msg_contents(obs_msg, exclude=[char, action_target_char])
+                            splattercast.msg(f"GRAPPLE FAIL: {char.key} failed to grapple {action_target_char.key}.")
+                    else: # Cannot reach
+                        char.msg(f"You can't reach {action_target_char.key} to grapple them from here.")
+                        splattercast.msg(f"GRAPPLE FAIL (REACH): {char.key} cannot reach {action_target_char.key}.")
+                    
+                    splattercast.msg(f"AT_REPEAT: {char.key}'s turn concluded by 'grapple' intent processing.")
+                    continue # Grapple attempt (success or fail) concludes the offensive action for this turn.
+                
+                elif intent_type == "escape_grapple":
+                    grappler = current_char_combat_entry.get("grappled_by")
+                    is_grappler_valid = False
+                    if grappler and any(e["char"] == grappler for e in self.db.combatants):
+                        if grappler.location and grappler.location in self.db.managed_rooms:
+                             is_grappler_valid = True
+                    
+                    if is_grappler_valid:
+                        escaper_roll = randint(1, max(1, getattr(char, "motorics", 1)))
+                        grappler_roll = randint(1, max(1, getattr(grappler, "motorics", 1)))
+                        splattercast.msg(f"ESCAPE ATTEMPT: {char.key} (roll {escaper_roll}) vs {grappler.key} (roll {grappler_roll}).")
+
+                        if escaper_roll > grappler_roll:
+                            current_char_combat_entry["grappled_by"] = None
+                            grappler_entry = next((e for e in self.db.combatants if e["char"] == grappler), None)
+                            if grappler_entry:
+                                grappler_entry["grappling"] = None
+                            escape_messages = get_combat_message("grapple", "escape_hit", attacker=char, target=grappler)
+                            char.msg(escape_messages.get("attacker_msg"))
+                            grappler.msg(escape_messages.get("victim_msg"))
+                            obs_msg = escape_messages.get("observer_msg")
+                            for loc in {char.location, grappler.location}: # Could be different if one moved while grappled
+                                if loc: loc.msg_contents(obs_msg, exclude=[char, grappler])
+                            splattercast.msg(f"ESCAPE SUCCESS: {char.key} escaped from {grappler.key}.")
+                        else: # Escape failed
+                            escape_messages = get_combat_message("grapple", "escape_miss", attacker=char, target=grappler)
+                            char.msg(escape_messages.get("attacker_msg"))
+                            grappler.msg(escape_messages.get("victim_msg"))
+                            obs_msg = escape_messages.get("observer_msg")
+                            for loc in {char.location, grappler.location}:
+                                if loc: loc.msg_contents(obs_msg, exclude=[char, grappler])
+                            splattercast.msg(f"ESCAPE FAIL: {char.key} failed to escape {grappler.key}.")
+                    else: # Not grappled or grappler invalid
+                        char.msg("You are not currently grappled by a valid opponent to escape from.")
+                        if current_char_combat_entry.get("grappled_by"): # Clean up if grappler was invalid
+                            current_char_combat_entry["grappled_by"] = None
+                            splattercast.msg(f"CLEANUP: {char.key} was grappled_by an invalid char. Cleared.")
+                    
+                    splattercast.msg(f"AT_REPEAT: {char.key}'s turn concluded by 'escape_grapple' intent processing.")
+                    continue # Escape attempt concludes the offensive action.
+
+                elif intent_type == "release_grapple":
+                    victim_char_being_grappled = current_char_combat_entry.get("grappling")
+                    is_victim_valid = False
+                    if victim_char_being_grappled and any(e["char"] == victim_char_being_grappled for e in self.db.combatants):
+                        if victim_char_being_grappled.location and victim_char_being_grappled.location in self.db.managed_rooms:
+                            is_victim_valid = True
+                    
+                    if is_victim_valid:
+                        current_char_combat_entry["grappling"] = None
+                        victim_entry = next((e for e in self.db.combatants if e["char"] == victim_char_being_grappled), None)
+                        if victim_entry:
+                            victim_entry["grappled_by"] = None
+                        release_messages = get_combat_message("grapple", "release", attacker=char, target=victim_char_being_grappled)
+                        char.msg(release_messages.get("attacker_msg"))
+                        victim_char_being_grappled.msg(release_messages.get("victim_msg"))
+                        obs_msg = release_messages.get("observer_msg")
+                        for loc in {char.location, victim_char_being_grappled.location}:
+                             if loc: loc.msg_contents(obs_msg, exclude=[char, victim_char_being_grappled])
+                        splattercast.msg(f"RELEASE GRAPPLE: {char.key} released {victim_char_being_grappled.key}.")
+                    else: # Not grappling anyone valid
+                        char.msg("You are not grappling a valid opponent to release.")
+                        if current_char_combat_entry.get("grappling"): # Clean up if victim was invalid
+                            current_char_combat_entry["grappling"] = None
+                            splattercast.msg(f"CLEANUP: {char.key} was grappling an invalid char. Cleared.")
+
+                    splattercast.msg(f"AT_REPEAT: {char.key}'s turn concluded by 'release_grapple' intent processing.")
+                    continue # Releasing a grapple concludes the offensive action.
+
+                # Add other 'elif intent_type == "your_other_action_type":' blocks here
+                # Ensure they also 'continue' if they complete the turn's action.
+                
+                else: # Intent type not recognized or doesn't consume the turn by default
+                    char.msg(f"You briefly consider your plan to '{intent_type}' but it doesn't seem applicable right now, or it's an unknown action.")
+                    splattercast.msg(f"AT_REPEAT: {char.key}'s intent '{intent_type}' not fully processed or doesn't end turn. Falling through.")
+                    # No 'continue' here, so logic will fall through to yielding/standard attack.
+            
             # --- Handle Yielding ---
             if current_char_combat_entry.get("is_yielding"):
                 # Check if they were grappled and escaped, if so, they might not be yielding anymore
