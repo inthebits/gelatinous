@@ -605,9 +605,12 @@ class CombatHandler(DefaultScript):
                 )
 
                 attacker_msg = combat_messages.get("attacker_msg", f"You miss {target.key}.")
+                victim_msg = combat_messages.get("victim_msg", f"{char.key} misses you.")
                 observer_msg = combat_messages.get("observer_msg", f"{char.key} misses {target.key}.")
 
                 char.msg(attacker_msg)
+                if target != char: # Ensure victim is not the attacker
+                    target.msg(victim_msg)
 
                 observer_locations = set()
                 if char.location:
