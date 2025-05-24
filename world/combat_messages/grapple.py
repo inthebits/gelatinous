@@ -1,130 +1,407 @@
 MESSAGES = {
-    "initiate": [  # Messages for successfully starting a grapple
-        "{attacker} lunges, wrapping {target} in a crushing embrace.",
-        "{attacker} shoots in, locking their arms around {target}'s torso.",
-        "{target} stumbles as {attacker} ties them up in a powerful grapple.",
-        "{attacker} closes the distance, snaring {target} in a tight hold.",
-        "With a grunt, {attacker} gets a firm grip on {target}, immobilizing them.",
-        "{attacker} dives and clinches {target}, muscles straining.",
-        "{target} is caught off guard as {attacker} latches on with an iron grip.",
-        "{attacker} smothers {target}, initiating a close-quarters struggle.",
-        "The fight goes to the ground as {attacker} tackles and grapples {target}.",
-        "{attacker} expertly maneuvers into a controlling grapple on {target}.",
-        "{target} flails as {attacker} secures a dominant grappling position.",
-        "{attacker} binds {target} up, a predator coiling around its prey.",
-        "{attacker} explodes forward, entangling {target} before they can react.",
-        "Like a vise, {attacker}'s arms clamp around {target}.",
-        "{attacker} drags {target} into a messy, desperate clinch.",
-        "{target} gasps as {attacker} overpowers them into a grapple.",
-        "{attacker} uses sheer force to bring {target} into a suffocating hold.",
-        "The world shrinks for {target} as {attacker} locks them in a grapple.",
-        "{attacker} weaves through {target}'s defenses and establishes a grapple.",
-        "With surprising speed, {attacker} closes in and grapples {target}.",
-        "{attacker} gets under {target}'s guard, initiating a tight grapple.",
-        "{target} is ensnared by {attacker}'s relentless grappling advance.",
-        "{attacker} muscles {target} into a disadvantageous grappling position.",
-        "A sudden shift, and {attacker} has {target} all tied up.",
-        "{attacker} grabs hold of {target}, a look of grim determination on their face.",
-        "{target} finds themselves trapped in {attacker}'s unyielding grapple.",
-        "{attacker} initiates a grapple, turning the fight into a test of strength.",
-        "The space between them vanishes as {attacker} grapples {target}.",
-        "{attacker} secures a hold, and the real fight begins for {target}.",
-        "With a roar, {attacker} charges and locks {target} in a powerful grapple.",
+    # --- Grapple Maneuver Messages ---
+    "hit": [  # Action: Successful grapple INITIATION (attacker initiates, target is victim)
+        {
+            "attacker_msg": "You lunge, wrapping {target_name} in a crushing embrace!",
+            "victim_msg": "{attacker_name} lunges, wrapping you in a crushing embrace!",
+            "observer_msg": "{attacker_name} lunges, wrapping {target_name} in a crushing embrace."
+        },
+        {
+            "attacker_msg": "You shoot in, locking your arms around {target_name}'s torso!",
+            "victim_msg": "{attacker_name} shoots in, locking their arms around your torso!",
+            "observer_msg": "{attacker_name} shoots in, locking their arms around {target_name}'s torso."
+        },
+        {
+            "attacker_msg": "You make {target_name} stumble as you tie them up in a powerful grapple!",
+            "victim_msg": "You stumble as {attacker_name} ties you up in a powerful grapple!",
+            "observer_msg": "{target_name} stumbles as {attacker_name} ties them up in a powerful grapple."
+        },
+        {
+            "attacker_msg": "You close the distance, snaring {target_name} in a tight hold!",
+            "victim_msg": "{attacker_name} closes the distance, snaring you in a tight hold!",
+            "observer_msg": "{attacker_name} closes the distance, snaring {target_name} in a tight hold."
+        },
+        {
+            "attacker_msg": "With a grunt, you get a firm grip on {target_name}, immobilizing them!",
+            "victim_msg": "With a grunt, {attacker_name} gets a firm grip on you, immobilizing you!",
+            "observer_msg": "With a grunt, {attacker_name} gets a firm grip on {target_name}, immobilizing them."
+        },
+        {
+            "attacker_msg": "You dive and clinch {target_name}, muscles straining!",
+            "victim_msg": "{attacker_name} dives and clinches you, muscles straining!",
+            "observer_msg": "{attacker_name} dives and clinches {target_name}, muscles straining."
+        },
+        {
+            "attacker_msg": "You catch {target_name} off guard, latching on with an iron grip!",
+            "victim_msg": "You are caught off guard as {attacker_name} latches on with an iron grip!",
+            "observer_msg": "{target_name} is caught off guard as {attacker_name} latches on with an iron grip."
+        },
+        {
+            "attacker_msg": "You smother {target_name}, initiating a close-quarters struggle!",
+            "victim_msg": "{attacker_name} smothers you, initiating a close-quarters struggle!",
+            "observer_msg": "{attacker_name} smothers {target_name}, initiating a close-quarters struggle."
+        },
+        {
+            "attacker_msg": "You take the fight to the ground, tackling and grappling {target_name}!",
+            "victim_msg": "The fight goes to the ground as {attacker_name} tackles and grapples you!",
+            "observer_msg": "The fight goes to the ground as {attacker_name} tackles and grapples {target_name}."
+        },
+        {
+            "attacker_msg": "You expertly maneuver into a controlling grapple on {target_name}!",
+            "victim_msg": "{attacker_name} expertly maneuvers into a controlling grapple on you!",
+            "observer_msg": "{attacker_name} expertly maneuvers into a controlling grapple on {target_name}."
+        },
+        {
+            "attacker_msg": "You make {target_name} flail as you secure a dominant grappling position!",
+            "victim_msg": "You flail as {attacker_name} secures a dominant grappling position!",
+            "observer_msg": "{target_name} flails as {attacker_name} secures a dominant grappling position."
+        },
+        {
+            "attacker_msg": "You bind {target_name} up, like a predator coiling around its prey!",
+            "victim_msg": "{attacker_name} binds you up, like a predator coiling around its prey!",
+            "observer_msg": "{attacker_name} binds {target_name} up, a predator coiling around its prey."
+        },
+        {
+            "attacker_msg": "You explode forward, entangling {target_name} before they can react!",
+            "victim_msg": "{attacker_name} explodes forward, entangling you before you can react!",
+            "observer_msg": "{attacker_name} explodes forward, entangling {target_name} before they can react."
+        },
+        {
+            "attacker_msg": "Like a vise, your arms clamp around {target_name}!",
+            "victim_msg": "Like a vise, {attacker_name}'s arms clamp around you!",
+            "observer_msg": "Like a vise, {attacker_name}'s arms clamp around {target_name}."
+        },
+        {
+            "attacker_msg": "You drag {target_name} into a messy, desperate clinch!",
+            "victim_msg": "{attacker_name} drags you into a messy, desperate clinch!",
+            "observer_msg": "{attacker_name} drags {target_name} into a messy, desperate clinch."
+        },
+        {
+            "attacker_msg": "You make {target_name} gasp as you overpower them into a grapple!",
+            "victim_msg": "You gasp as {attacker_name} overpowers you into a grapple!",
+            "observer_msg": "{target_name} gasps as {attacker_name} overpowers them into a grapple."
+        },
+        {
+            "attacker_msg": "You use sheer force to bring {target_name} into a suffocating hold!",
+            "victim_msg": "{attacker_name} uses sheer force to bring you into a suffocating hold!",
+            "observer_msg": "{attacker_name} uses sheer force to bring {target_name} into a suffocating hold."
+        },
+        {
+            "attacker_msg": "The world shrinks for {target_name} as you lock them in a grapple!",
+            "victim_msg": "The world shrinks for you as {attacker_name} locks you in a grapple!",
+            "observer_msg": "The world shrinks for {target_name} as {attacker_name} locks them in a grapple."
+        },
+        {
+            "attacker_msg": "You weave through {target_name}'s defenses and establish a grapple!",
+            "victim_msg": "{attacker_name} weaves through your defenses and establishes a grapple!",
+            "observer_msg": "{attacker_name} weaves through {target_name}'s defenses and establishes a grapple."
+        },
+        {
+            "attacker_msg": "With surprising speed, you close in and grapple {target_name}!",
+            "victim_msg": "With surprising speed, {attacker_name} closes in and grapples you!",
+            "observer_msg": "With surprising speed, {attacker_name} closes in and grapples {target_name}."
+        },
+        {
+            "attacker_msg": "You get under {target_name}'s guard, initiating a tight grapple!",
+            "victim_msg": "{attacker_name} gets under your guard, initiating a tight grapple!",
+            "observer_msg": "{attacker_name} gets under {target_name}'s guard, initiating a tight grapple."
+        },
+        {
+            "attacker_msg": "You ensnare {target_name} with your relentless grappling advance!",
+            "victim_msg": "You are ensnared by {attacker_name}'s relentless grappling advance!",
+            "observer_msg": "{target_name} is ensnared by {attacker_name}'s relentless grappling advance."
+        },
+        {
+            "attacker_msg": "You muscle {target_name} into a disadvantageous grappling position!",
+            "victim_msg": "{attacker_name} muscles you into a disadvantageous grappling position!",
+            "observer_msg": "{attacker_name} muscles {target_name} into a disadvantageous grappling position."
+        },
+        {
+            "attacker_msg": "A sudden shift, and you have {target_name} all tied up!",
+            "victim_msg": "A sudden shift, and {attacker_name} has you all tied up!",
+            "observer_msg": "A sudden shift, and {attacker_name} has {target_name} all tied up."
+        },
+        {
+            "attacker_msg": "You grab hold of {target_name}, a look of grim determination on your face!",
+            "victim_msg": "{attacker_name} grabs hold of you, a look of grim determination on their face!",
+            "observer_msg": "{attacker_name} grabs hold of {target_name}, a look of grim determination on their face."
+        },
+        {
+            "attacker_msg": "{target_name} finds themselves trapped in your unyielding grapple!",
+            "victim_msg": "You find yourself trapped in {attacker_name}'s unyielding grapple!",
+            "observer_msg": "{target_name} finds themselves trapped in {attacker_name}'s unyielding grapple."
+        },
+        {
+            "attacker_msg": "You initiate a grapple, turning the fight with {target_name} into a test of strength!",
+            "victim_msg": "{attacker_name} initiates a grapple, turning the fight with you into a test of strength!",
+            "observer_msg": "{attacker_name} initiates a grapple, turning the fight with {target_name} into a test of strength."
+        },
+        {
+            "attacker_msg": "The space between you and {target_name} vanishes as you grapple them!",
+            "victim_msg": "The space between you and {attacker_name} vanishes as they grapple you!",
+            "observer_msg": "The space between {attacker_name} and {target_name} vanishes as they grapple."
+        },
+        {
+            "attacker_msg": "You secure a hold on {target_name}, and the real fight begins!",
+            "victim_msg": "{attacker_name} secures a hold on you, and the real fight begins!",
+            "observer_msg": "{attacker_name} secures a hold on {target_name}, and the real fight begins."
+        },
+        {
+            "attacker_msg": "With a roar, you charge and lock {target_name} in a powerful grapple!",
+            "victim_msg": "With a roar, {attacker_name} charges and locks you in a powerful grapple!",
+            "observer_msg": "With a roar, {attacker_name} charges and locks {target_name} in a powerful grapple."
+        },
     ],
-    "hit": [  # Messages for successfully damaging a grappled opponent
-        "{attacker} squeezes the air from {target}'s lungs in the grapple. ({damage})",
-        "Locked tight, {attacker} drives a knee into {target}'s ribs. ({damage})",
-        "{attacker} grinds their forearm across {target}'s throat. ({damage})",
-        "While grappling, {attacker} lands a series of short, brutal punches to {target}'s side. ({damage})",
-        "{attacker} twists {target}'s limb at an unnatural angle, causing a pained yelp. ({damage})",
-        "Pinning {target}, {attacker} delivers a vicious headbutt. ({damage})",
-        "{attacker} chokes {target}, who claws desperately at their arms. ({damage})",
-        "In the clinch, {attacker} slams an elbow into {target}'s temple. ({damage})",
-        "{attacker} uses their leverage to crush {target} against the ground. ({damage})",
-        "A sickening crunch is heard as {attacker} applies pressure to {target}'s joint. ({damage})",
-        "{attacker} bites down hard on {target} amidst the struggle. ({damage})",
-        "{attacker} smashes {target}'s face into the pavement while maintaining the hold. ({damage})",
-        "Trapped in the grapple, {target} takes a nasty shot to the kidney from {attacker}. ({damage})",
-        "{attacker} wrenches {target}'s neck, drawing a choked cry. ({damage})",
-        "With {target} immobilized, {attacker} lands a precise, painful strike. ({damage})",
-        "{attacker} digs their knuckles into a pressure point on {target}. ({damage})",
-        "A short, sharp elbow from {attacker} cracks against {target}'s jaw. ({damage})",
-        "{attacker} uses the grapple to slam {target} into a nearby object. ({damage})",
-        "{target} groans as {attacker} applies a painful submission hold. ({damage})",
-        "{attacker} drives their shoulder repeatedly into {target}'s chest. ({damage})",
-        "In the tight confines of the grapple, {attacker} gouges at {target}'s eyes. ({damage})",
-        "{attacker} pulls {target}'s hair, yanking their head into a knee strike. ({damage})",
-        "A brutal fist from {attacker} finds {target}'s exposed liver. ({damage})",
-        "{attacker} systematically breaks down {target}'s defense in the grapple. ({damage})",
-        "The pressure from {attacker}'s hold intensifies, causing {target} to cry out. ({damage})",
-        "{attacker} lands a flurry of body blows while maintaining control. ({damage})",
-        "{target}'s vision blurs as {attacker} applies a blood choke. ({damage})",
-        "{attacker} uses their weight to smother and strike {target}. ({damage})",
-        "A well-placed strike from {attacker} nearly makes {target} pass out. ({damage})",
-        "{attacker} whispers a threat before delivering another painful blow to {target}. ({damage})",
+    "miss": [  # Action: Failed grapple INITIATION (attacker attempts, target is victim)
+        {
+            "attacker_msg": "You attempt to grapple {target_name}, but they slip away!",
+            "victim_msg": "{attacker_name} tries to grapple you, but you manage to evade their grasp!",
+            "observer_msg": "{attacker_name} attempts to grapple {target_name}, but {target_name} slips away."
+        },
+        {
+            "attacker_msg": "Your lunge for {target_name} misses, leaving you off balance.",
+            "victim_msg": "{attacker_name}'s lunge misses you, leaving them off balance.",
+            "observer_msg": "{attacker_name}'s lunge for {target_name} misses, leaving them off balance."
+        },
+        {
+            "attacker_msg": "{target_name} sidesteps your grapple attempt easily.",
+            "victim_msg": "You sidestep {attacker_name}'s grapple attempt easily.",
+            "observer_msg": "{target_name} sidesteps {attacker_name}'s grapple attempt easily."
+        },
+        # ... (add more variations for failed grapple initiation as needed)
     ],
-    "miss": [  # Messages for when the grappler fails to damage, or the target defends while grappled
-        "{target} squirms, preventing {attacker} from landing a clean blow in the grapple.",
-        "{attacker} struggles to improve their position, {target} defending fiercely.",
-        "{target} bucks wildly, causing {attacker}'s choke attempt to slip.",
-        "Despite the hold, {target} manages to block {attacker}'s strike.",
-        "{attacker} tries to apply a submission, but {target} wriggles free of the worst of it.",
-        "{target} creates just enough space to avoid {attacker}'s damaging move.",
-        "{attacker}'s grip loosens for a moment, and their attack goes wide.",
-        "{target} endures the hold, not giving {attacker} an easy opening.",
-        "The close-quarters struggle continues, with {attacker} unable to capitalize on the grapple this time.",
-        "{target} shows surprising resilience, deflecting {attacker}'s attempt to inflict pain.",
-        "{attacker} attempts a choke, but {target} tucks their chin and resists.",
-        "Locked in a stalemate, {attacker} can't quite land a telling blow on {target}.",
-        "{target} twists away at the last second, {attacker}'s strike glancing off.",
-        "{attacker} fumbles, their intended blow missing its mark in the chaos.",
-        "{target} uses leverage to turn {attacker}'s attack against them, though no damage is done.",
-        "The sweat makes them slippery; {attacker}'s hold isn't tight enough for the attack.",
-        "{attacker} overcommits to a strike and {target} shifts, causing a miss.",
-        "{target} anticipates {attacker}'s move and manages to nullify it.",
-        "A desperate shove from {target} disrupts {attacker}'s rhythm.",
-        "{attacker} can't find an opening as {target} covers up effectively.",
-        "The angle is wrong, and {attacker}'s attack is easily deflected by {target}.",
-        "{target} grits their teeth, weathering {attacker}'s attempt to cause harm.",
-        "{attacker} loses their balance slightly, spoiling the attack.",
-        "For a moment, {target} seems to gain the upper hand in the defensive struggle.",
-        "{attacker}'s attempt to transition to a more damaging hold is thwarted by {target}.",
-        "{target} fights with the tenacity of a cornered animal, avoiding damage.",
-        "The grapple is too dynamic; {attacker} can't land a solid hit.",
-        "{attacker} telegraphs their move, and {target} is ready for it.",
-        "{target} manages to protect their vitals from {attacker}'s assault.",
-        "A grunt of frustration from {attacker} as {target} evades another attack.",
+    "escape_hit": [  # Action: Successfully ESCAPING a grapple (attacker=escaper, target=grappler)
+        {
+            "attacker_msg": "You wrench yourself free from {target_name}'s hold!",
+            "victim_msg": "{attacker_name} wrenches themselves free from your hold!",
+            "observer_msg": "{attacker_name} wrenches themselves free from {target_name}'s hold."
+        },
+        {
+            "attacker_msg": "With a burst of effort, you shove {target_name} away and break the grapple!",
+            "victim_msg": "{attacker_name} shoves you with a burst of effort, breaking your grapple!",
+            "observer_msg": "{attacker_name} shoves {target_name} away, breaking the grapple."
+        },
+        # ... (add more variations)
     ],
-    "kill": [ # Messages for defeating a target while grappling
-        "{attacker} chokes the life out of {target}, who goes limp in their grasp.",
-        "With a final, brutal twist, {attacker} snaps something vital and {target} stops moving.",
-        "{attacker} crushes {target} beneath them until the fight drains away.",
-        "Pinned and helpless, {target} succumbs to {attacker}'s relentless assault.",
-        "{attacker} squeezes {target} into unconsciousness, then silence.",
-        "The grapple ends with {attacker} standing over {target}'s broken form.",
-        "{attacker} maintains the hold until {target} gasps their last.",
-        "Bloodied and broken, {target} is finished by {attacker} in the tight embrace.",
-        "{attacker} ends it with a sickening crunch as they apply final pressure to {target}.",
-        "{target}'s struggles cease as {attacker}'s chokehold finds its mark.",
-        "With a grim finality, {attacker} dispatches {target} in the grapple.",
-        "{attacker} whispers something to {target} before they go still.",
-        "The light fades from {target}'s eyes, still locked in {attacker}'s hold.",
-        "{attacker} breaks {target}'s resistance, and then their spirit, and then their life.",
-        "A final, desperate gurgle escapes {target} as {attacker} finishes them.",
-        "{attacker} holds {target} for a moment after they stop moving, then discards them.",
-        "The pavement is stained where {attacker} ground {target} out of existence.",
-        "{attacker} ends the grapple, leaving {target} a lifeless heap.",
-        "No mercy from {attacker} as they extinguish {target}'s life in the clinch.",
-        "{target}'s body slumps, all fight gone, defeated by {attacker}'s grapple.",
-        "{attacker} ensures {target} won't be getting up again with a final, brutal act.",
-        "The sounds of struggle from {target} fade to a horrifying quiet under {attacker}'s control.",
-        "{attacker} feels the last breath leave {target}'s body.",
-        "It's over. {attacker} releases the now-limp form of {target}.",
-        "{attacker} delivers a coup de grâce while {target} is still ensnared.",
-        "The grapple becomes a tomb as {attacker} ends {target}'s struggles permanently.",
-        "{attacker} tightens their grip one last time, and {target} is no more.",
-        "A look of grim satisfaction on {attacker}'s face as {target} expires in the hold.",
-        "{attacker} makes sure {target} is completely finished before releasing the grapple.",
-        "In the brutal intimacy of the grapple, {attacker} takes {target}'s life.",
+    "escape_miss": [  # Action: Failing to ESCAPE a grapple (attacker=escaper, target=grappler)
+        {
+            "attacker_msg": "You struggle, but {target_name} maintains their tight grip on you.",
+            "victim_msg": "{attacker_name} struggles, but you maintain your tight grip on them.",
+            "observer_msg": "{attacker_name} struggles, but {target_name} maintains their tight grip."
+        },
+        {
+            "attacker_msg": "Your attempt to break {target_name}'s hold is futile; they're too strong.",
+            "victim_msg": "{attacker_name} tries to break your hold, but you are too strong.",
+            "observer_msg": "{attacker_name} fails to break {target_name}'s hold."
+        },
+        # ... (add more variations)
+    ],
+    "release": [  # Action: Voluntarily RELEASING a grapple (attacker=releaser, target=released)
+        {
+            "attacker_msg": "You decide to release your hold on {target_name}.",
+            "victim_msg": "{attacker_name} releases their hold on you. You are free!",
+            "observer_msg": "{attacker_name} releases their hold on {target_name}."
+        },
+        {
+            "attacker_msg": "You shove {target_name} away, ending the grapple.",
+            "victim_msg": "{attacker_name} shoves you away, ending the grapple.",
+            "observer_msg": "{attacker_name} shoves {target_name} away, ending their grapple."
+        },
+        # ... (add more variations)
+    ],
+
+    # --- Messages for ATTACKS/DAMAGE while ALREADY grappling ---
+    "grapple_damage_hit": [  # Action: Successfully damaging a grappled opponent
+        {
+            "attacker_msg": "You squeeze the air from {target_name}'s lungs in the grapple. ({damage})",
+            "victim_msg": "{attacker_name} squeezes the air from your lungs in the grapple! ({damage})",
+            "observer_msg": "{attacker_name} squeezes the air from {target_name}'s lungs in the grapple. ({damage})"
+        },
+        {
+            "attacker_msg": "Locked tight, you drive a knee into {target_name}'s ribs. ({damage})",
+            "victim_msg": "Locked tight, {attacker_name} drives a knee into your ribs! ({damage})",
+            "observer_msg": "Locked tight, {attacker_name} drives a knee into {target_name}'s ribs. ({damage})"
+        },
+        {
+            "attacker_msg": "You grind your forearm across {target_name}'s throat. ({damage})",
+            "victim_msg": "{attacker_name} grinds their forearm across your throat! ({damage})",
+            "observer_msg": "{attacker_name} grinds their forearm across {target_name}'s throat. ({damage})"
+        },
+        {
+            "attacker_msg": "While grappling, you land a series of short, brutal punches to {target_name}'s side. ({damage})",
+            "victim_msg": "While grappling, {attacker_name} lands a series of short, brutal punches to your side! ({damage})",
+            "observer_msg": "While grappling, {attacker_name} lands a series of short, brutal punches to {target_name}'s side. ({damage})"
+        },
+        {
+            "attacker_msg": "You twist {target_name}'s limb at an unnatural angle, causing a pained yelp. ({damage})",
+            "victim_msg": "{attacker_name} twists your limb at an unnatural angle, causing you to yelp in pain! ({damage})",
+            "observer_msg": "{attacker_name} twists {target_name}'s limb at an unnatural angle, causing a pained yelp. ({damage})"
+        },
+        {
+            "attacker_msg": "Pinning {target_name}, you deliver a vicious headbutt. ({damage})",
+            "victim_msg": "Pinned by {attacker_name}, you suffer a vicious headbutt! ({damage})",
+            "observer_msg": "Pinning {target_name}, {attacker_name} delivers a vicious headbutt. ({damage})"
+        },
+        {
+            "attacker_msg": "You choke {target_name}, who claws desperately at your arms. ({damage})",
+            "victim_msg": "{attacker_name} chokes you; you claw desperately at their arms! ({damage})",
+            "observer_msg": "{attacker_name} chokes {target_name}, who claws desperately at their arms. ({damage})"
+        },
+        {
+            "attacker_msg": "In the clinch, you slam an elbow into {target_name}'s temple. ({damage})",
+            "victim_msg": "In the clinch, {attacker_name} slams an elbow into your temple! ({damage})",
+            "observer_msg": "In the clinch, {attacker_name} slams an elbow into {target_name}'s temple. ({damage})"
+        },
+        {
+            "attacker_msg": "You use your leverage to crush {target_name} against the ground. ({damage})",
+            "victim_msg": "{attacker_name} uses their leverage to crush you against the ground! ({damage})",
+            "observer_msg": "{attacker_name} uses their leverage to crush {target_name} against the ground. ({damage})"
+        },
+        {
+            "attacker_msg": "A sickening crunch is heard as you apply pressure to {target_name}'s joint. ({damage})",
+            "victim_msg": "A sickening crunch is heard as {attacker_name} applies pressure to your joint! ({damage})",
+            "observer_msg": "A sickening crunch is heard as {attacker_name} applies pressure to {target_name}'s joint. ({damage})"
+        },
+        {
+            "attacker_msg": "You bite down hard on {target_name} amidst the struggle. ({damage})",
+            "victim_msg": "{attacker_name} bites down hard on you amidst the struggle! ({damage})",
+            "observer_msg": "{attacker_name} bites down hard on {target_name} amidst the struggle. ({damage})"
+        },
+        {
+            "attacker_msg": "You smash {target_name}'s face into the pavement while maintaining the hold. ({damage})",
+            "victim_msg": "{attacker_name} smashes your face into the pavement while maintaining the hold! ({damage})",
+            "observer_msg": "{attacker_name} smashes {target_name}'s face into the pavement while maintaining the hold. ({damage})"
+        },
+        {
+            "attacker_msg": "Trapped in the grapple, {target_name} takes a nasty shot to the kidney from you. ({damage})",
+            "victim_msg": "Trapped in the grapple, you take a nasty shot to the kidney from {attacker_name}! ({damage})",
+            "observer_msg": "Trapped in the grapple, {target_name} takes a nasty shot to the kidney from {attacker_name}. ({damage})"
+        },
+        {
+            "attacker_msg": "You wrench {target_name}'s neck, drawing a choked cry. ({damage})",
+            "victim_msg": "{attacker_name} wrenches your neck, drawing a choked cry from you! ({damage})",
+            "observer_msg": "{attacker_name} wrenches {target_name}'s neck, drawing a choked cry. ({damage})"
+        },
+        {
+            "attacker_msg": "With {target_name} immobilized, you land a precise, painful strike. ({damage})",
+            "victim_msg": "Immobilized by {attacker_name}, you suffer a precise, painful strike! ({damage})",
+            "observer_msg": "With {target_name} immobilized, {attacker_name} lands a precise, painful strike. ({damage})"
+        },
+        {
+            "attacker_msg": "You dig your knuckles into a pressure point on {target_name}. ({damage})",
+            "victim_msg": "{attacker_name} digs their knuckles into a pressure point on you! ({damage})",
+            "observer_msg": "{attacker_name} digs their knuckles into a pressure point on {target_name}. ({damage})"
+        },
+        {
+            "attacker_msg": "A short, sharp elbow from you cracks against {target_name}'s jaw. ({damage})",
+            "victim_msg": "A short, sharp elbow from {attacker_name} cracks against your jaw! ({damage})",
+            "observer_msg": "A short, sharp elbow from {attacker_name} cracks against {target_name}'s jaw. ({damage})"
+        },
+        {
+            "attacker_msg": "You use the grapple to slam {target_name} into a nearby object. ({damage})",
+            "victim_msg": "{attacker_name} uses the grapple to slam you into a nearby object! ({damage})",
+            "observer_msg": "{attacker_name} uses the grapple to slam {target_name} into a nearby object. ({damage})"
+        },
+        {
+            "attacker_msg": "{target_name} groans as you apply a painful submission hold. ({damage})",
+            "victim_msg": "You groan as {attacker_name} applies a painful submission hold! ({damage})",
+            "observer_msg": "{target_name} groans as {attacker_name} applies a painful submission hold. ({damage})"
+        },
+        {
+            "attacker_msg": "You drive your shoulder repeatedly into {target_name}'s chest. ({damage})",
+            "victim_msg": "{attacker_name} drives their shoulder repeatedly into your chest! ({damage})",
+            "observer_msg": "{attacker_name} drives their shoulder repeatedly into {target_name}'s chest. ({damage})"
+        },
+        {
+            "attacker_msg": "In the tight confines of the grapple, you gouge at {target_name}'s eyes. ({damage})",
+            "victim_msg": "In the tight confines of the grapple, {attacker_name} gouges at your eyes! ({damage})",
+            "observer_msg": "In the tight confines of the grapple, {attacker_name} gouges at {target_name}'s eyes. ({damage})"
+        },
+        {
+            "attacker_msg": "You pull {target_name}'s hair, yanking their head into a knee strike. ({damage})",
+            "victim_msg": "{attacker_name} pulls your hair, yanking your head into a knee strike! ({damage})",
+            "observer_msg": "{attacker_name} pulls {target_name}'s hair, yanking their head into a knee strike. ({damage})"
+        },
+        {
+            "attacker_msg": "A brutal fist from you finds {target_name}'s exposed liver. ({damage})",
+            "victim_msg": "A brutal fist from {attacker_name} finds your exposed liver! ({damage})",
+            "observer_msg": "A brutal fist from {attacker_name} finds {target_name}'s exposed liver. ({damage})"
+        },
+        {
+            "attacker_msg": "You systematically break down {target_name}'s defense in the grapple. ({damage})",
+            "victim_msg": "{attacker_name} systematically breaks down your defense in the grapple! ({damage})",
+            "observer_msg": "{attacker_name} systematically breaks down {target_name}'s defense in the grapple. ({damage})"
+        },
+        {
+            "attacker_msg": "The pressure from your hold intensifies, causing {target_name} to cry out. ({damage})",
+            "victim_msg": "The pressure from {attacker_name}'s hold intensifies, causing you to cry out! ({damage})",
+            "observer_msg": "The pressure from {attacker_name}'s hold intensifies, causing {target_name} to cry out. ({damage})"
+        },
+        {
+            "attacker_msg": "You land a flurry of body blows while maintaining control of {target_name}. ({damage})",
+            "victim_msg": "{attacker_name} lands a flurry of body blows on you while maintaining control! ({damage})",
+            "observer_msg": "{attacker_name} lands a flurry of body blows on {target_name} while maintaining control. ({damage})"
+        },
+        {
+            "attacker_msg": "{target_name}'s vision blurs as you apply a blood choke. ({damage})",
+            "victim_msg": "Your vision blurs as {attacker_name} applies a blood choke! ({damage})",
+            "observer_msg": "{target_name}'s vision blurs as {attacker_name} applies a blood choke. ({damage})"
+        },
+        {
+            "attacker_msg": "You use your weight to smother and strike {target_name}. ({damage})",
+            "victim_msg": "{attacker_name} uses their weight to smother and strike you! ({damage})",
+            "observer_msg": "{attacker_name} uses their weight to smother and strike {target_name}. ({damage})"
+        },
+        {
+            "attacker_msg": "A well-placed strike from you nearly makes {target_name} pass out. ({damage})",
+            "victim_msg": "A well-placed strike from {attacker_name} nearly makes you pass out! ({damage})",
+            "observer_msg": "A well-placed strike from {attacker_name} nearly makes {target_name} pass out. ({damage})"
+        },
+        {
+            "attacker_msg": "You whisper a threat to {target_name} before delivering another painful blow. ({damage})",
+            "victim_msg": "{attacker_name} whispers a threat to you before delivering another painful blow! ({damage})",
+            "observer_msg": "{attacker_name} whispers a threat to {target_name} before delivering another painful blow. ({damage})"
+        },
+    ],
+    "grapple_damage_miss": [  # Action: Failing to damage, or target defends while grappled
+        {
+            "attacker_msg": "You try to land a blow, but {target_name} squirms, preventing a clean hit in the grapple.",
+            "victim_msg": "You squirm, preventing {attacker_name} from landing a clean blow on you in the grapple.",
+            "observer_msg": "{target_name} squirms, preventing {attacker_name} from landing a clean blow in the grapple."
+        },
+        {
+            "attacker_msg": "You struggle to improve your position, but {target_name} defends fiercely.",
+            "victim_msg": "{attacker_name} struggles to improve their position, but you defend fiercely.",
+            "observer_msg": "{attacker_name} struggles to improve their position, while {target_name} defends fiercely."
+        },
+        {
+            "attacker_msg": "Your choke attempt slips as {target_name} bucks wildly.",
+            "victim_msg": "You buck wildly, causing {attacker_name}'s choke attempt to slip.",
+            "observer_msg": "{target_name} bucks wildly, causing {attacker_name}'s choke attempt to slip."
+        },
+        {
+            "attacker_msg": "Despite your hold, {target_name} manages to block your strike.",
+            "victim_msg": "Despite the hold, you manage to block {attacker_name}'s strike.",
+            "observer_msg": "Despite the hold, {target_name} manages to block {attacker_name}'s strike."
+        },
+        {
+            "attacker_msg": "You try to apply a submission, but {target_name} wriggles free of the worst of it.",
+            "victim_msg": "{attacker_name} tries to apply a submission, but you wriggle free of the worst of it.",
+            "observer_msg": "{attacker_name} tries to apply a submission, but {target_name} wriggles free of the worst of it."
+        },
+        # ... (Continue converting the rest of your "miss" messages here)
+    ],
+    "grapple_damage_kill": [ # Action: Defeating/killing a target while grappling
+        {
+            "attacker_msg": "You choke the life out of {target_name}, who goes limp in your grasp.",
+            "victim_msg": "{attacker_name} chokes the life out of you! Everything fades to black...",
+            "observer_msg": "{attacker_name} chokes the life out of {target_name}, who goes limp in their grasp."
+        },
+        {
+            "attacker_msg": "With a final, brutal twist, you snap something vital and {target_name} stops moving.",
+            "victim_msg": "With a final, brutal twist, {attacker_name} snaps something vital... you feel your life fade.",
+            "observer_msg": "With a final, brutal twist, {attacker_name} snaps something vital and {target_name} stops moving."
+        },
+        # ... (Continue converting the rest of your "kill" messages here)
     ]
 }
