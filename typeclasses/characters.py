@@ -68,7 +68,8 @@ class Character(ObjectParent, DefaultCharacter):
             return  # Ignore bad inputs
 
         self.hp = max(self.hp - amount, 0)
-        self.msg(f"|rYou take {amount} damage!|n")
+        # This is where descriptive indicator of how damaged you are would go.
+        # self.msg(f"|rYou take {amount} damage!|n")
 
         if self.is_dead():
             self.at_death()
