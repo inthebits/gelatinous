@@ -652,41 +652,44 @@ class CombatHandler(DefaultScript):
                 # --- End Body Shield ---
                 splattercast.msg(f"HIT_DEBUG: After body shield, final recipient: {actual_damage_recipient.key}.")
 
-                is_lethal_blow = False
+                # PREDICT lethality if possible
+                is_lethal_blow_predicted = False 
                 if hasattr(actual_damage_recipient, "db") and hasattr(actual_damage_recipient.db, "hp") and actual_damage_recipient.db.hp is not None:
-                    if actual_damage_recipient.db.hp <= damage:
-                        is_lethal_blow = True
-                    splattercast.msg(f"HIT_DEBUG: Lethality check using db.hp ({actual_damage_recipient.db.hp} <= {damage}). is_lethal_blow: {is_lethal_blow}.")
+                    try:
+                        hp_val = float(actual_damage_recipient.db.hp) # Ensure hp is a number
+                        if hp_val <= damage:
+                            is_lethal_blow_predicted = True
+                        splattercast.msg(f"HIT_DEBUG: Lethality PREDICTED using db.hp (value: {hp_val} <= damage: {damage}). Predicted lethal: {is_lethal_blow_predicted}.")
+                    except (ValueError, TypeError):
+                        splattercast.msg(f"HIT_DEBUG: db.hp for {actual_damage_recipient.key} is not a valid number ('{actual_damage_recipient.db.hp}'). Cannot PREDICT lethality via HP.")
+                        is_lethal_blow_predicted = False 
                 elif hasattr(actual_damage_recipient, "is_dead"):
-                    splattercast.msg(f"HIT_DEBUG: db.hp not found or None for {actual_damage_recipient.key}, cannot reliably pre-determine lethality.")
-                    # is_lethal_blow remains False, will be confirmed after damage.
+                    splattercast.msg(f"HIT_DEBUG: db.hp not found or None for {actual_damage_recipient.key}. Cannot reliably PREDICT lethality via HP. Will rely on post-damage check.")
                 else:
-                    splattercast.msg(f"HIT_DEBUG: No hp or is_dead method for {actual_damage_recipient.key} for lethality pre-check.")
+                    splattercast.msg(f"HIT_DEBUG: No db.hp or is_dead method for {actual_damage_recipient.key} for lethality PRE-check.")
 
-
-                current_phase = ""
-                if is_lethal_blow:
-                    current_phase = "grapple_damage_kill" if grappling_this_target else "kill"
+                initial_message_phase = ""
+                if is_lethal_blow_predicted:
+                    initial_message_phase = "grapple_damage_kill" if grappling_this_target else "kill"
                 else:
-                    current_phase = "grapple_damage_hit" if grappling_this_target else "hit"
-                splattercast.msg(f"HIT_DEBUG: Phase determined: '{current_phase}'. Weapon type: '{effective_message_weapon_type}'.")
+                    initial_message_phase = "grapple_damage_hit" if grappling_this_target else "hit"
+                splattercast.msg(f"HIT_DEBUG: Phase for initial message: '{initial_message_phase}'.")
 
-                combat_messages = {}
+                initial_combat_messages = {}
                 try:
-                    combat_messages = get_combat_message(
-                        effective_message_weapon_type, current_phase, 
+                    initial_combat_messages = get_combat_message(
+                        effective_message_weapon_type, initial_message_phase, 
                         attacker=char, target=actual_damage_recipient, item=weapon, damage=damage
                     )
-                    splattercast.msg(f"HIT_DEBUG: get_combat_message returned: {str(combat_messages)[:200]}...") # Log part of the result
+                    splattercast.msg(f"HIT_DEBUG: get_combat_message for initial message returned: {str(initial_combat_messages)[:200]}...")
                 except Exception as e_get_msg:
-                    splattercast.msg(f"HIT_DEBUG: ERROR during get_combat_message: {e_get_msg}")
-                    # Fallback to ensure combat_messages is a dict
-                    combat_messages = {} 
+                    splattercast.msg(f"HIT_DEBUG: ERROR during get_combat_message for initial message: {e_get_msg}")
+                    initial_combat_messages = {} 
 
-                attacker_msg = combat_messages.get("attacker_msg", f"You {current_phase} {actual_damage_recipient.key} (default msg).")
-                victim_msg = combat_messages.get("victim_msg", f"{char.key} {current_phase}s you (default msg).")
-                observer_msg = combat_messages.get("observer_msg", f"{char.key} {current_phase}s {actual_damage_recipient.key} (default msg).")
-                splattercast.msg(f"HIT_DEBUG: Messages retrieved/defaulted. Attacker: '{attacker_msg[:100]}...'")
+                attacker_msg = initial_combat_messages.get("attacker_msg", f"You {initial_message_phase} {actual_damage_recipient.key} (default msg).")
+                victim_msg = initial_combat_messages.get("victim_msg", f"{char.key} {initial_message_phase}s you (default msg).")
+                observer_msg = initial_combat_messages.get("observer_msg", f"{char.key} {initial_message_phase}s {actual_damage_recipient.key} (default msg).")
+                splattercast.msg(f"HIT_DEBUG: Initial messages retrieved/defaulted. Attacker: '{attacker_msg[:100]}...'")
 
                 try:
                     char.msg(attacker_msg)
@@ -694,37 +697,64 @@ class CombatHandler(DefaultScript):
                         actual_damage_recipient.msg(victim_msg)
                     
                     observer_locations = {char.location, actual_damage_recipient.location}
+                    observer_locations.discard(None)
                     for loc in observer_locations:
-                        if loc: # Ensure location is not None
-                            exclude_list = [char]
-                            if actual_damage_recipient != char:
-                                exclude_list.append(actual_damage_recipient)
-                            loc.msg_contents(observer_msg, exclude=exclude_list)
-                    splattercast.msg(f"HIT_DEBUG: Player-facing messages sent for phase '{current_phase}'.")
+                        exclude_list = [char]
+                        if actual_damage_recipient != char:
+                            exclude_list.append(actual_damage_recipient)
+                        loc.msg_contents(observer_msg, exclude=exclude_list)
+                    splattercast.msg(f"HIT_DEBUG: Player-facing initial messages sent for phase '{initial_message_phase}'.")
                 except Exception as e_send_msg:
-                    splattercast.msg(f"HIT_DEBUG: ERROR sending player-facing messages: {e_send_msg}")
+                    splattercast.msg(f"HIT_DEBUG: ERROR sending player-facing initial messages: {e_send_msg}")
                 
-                splattercast.msg(f"{char.key}'s attack (phase: {current_phase}) will attempt to deal {damage} to {actual_damage_recipient.key}.") # This is the existing crucial splattercast
+                splattercast.msg(f"{char.key}'s attack (initial phase: {initial_message_phase}) will attempt to deal {damage} to {actual_damage_recipient.key}.")
                 
                 if hasattr(actual_damage_recipient, "take_damage"):
-                    actual_damage_recipient.take_damage(damage)
+                    actual_damage_recipient.take_damage(damage) # Character's own death messages (e.g. "collapses") may occur here
                 
-                if is_lethal_blow and hasattr(actual_damage_recipient, "is_dead") and actual_damage_recipient.is_dead():
-                    splattercast.msg(f"HIT_DEBUG: Confirmed lethal. {actual_damage_recipient.key} defeated by {char.key}.")
+                # Check ACTUAL death status
+                actually_dead = hasattr(actual_damage_recipient, "is_dead") and actual_damage_recipient.is_dead()
+
+                if actually_dead:
+                    splattercast.msg(f"HIT_DEBUG: Confirmed ACTUAL death of {actual_damage_recipient.key}.")
+                    
+                    # If the initial message was a "hit" (because prediction failed/was wrong)
+                    # but they ACTUALLY died, send the definitive "kill" message now.
+                    if not is_lethal_blow_predicted: 
+                        splattercast.msg(f"HIT_DEBUG: Initial prediction was NOT lethal (sent '{initial_message_phase}'), but target IS dead. Sending definitive 'kill' message now.")
+                        
+                        final_kill_phase = "grapple_damage_kill" if grappling_this_target else "kill"
+                        final_kill_messages = get_combat_message(
+                            effective_message_weapon_type, final_kill_phase,
+                            attacker=char, target=actual_damage_recipient, item=weapon, damage=damage
+                        )
+
+                        fk_attacker_msg = final_kill_messages.get("attacker_msg", f"You deliver a fatal blow to {actual_damage_recipient.key} (default kill msg).")
+                        # fk_victim_msg = final_kill_messages.get("victim_msg") # Victim is dead.
+                        fk_observer_msg = final_kill_messages.get("observer_msg", f"{char.key} delivers a fatal blow to {actual_damage_recipient.key} (default kill msg).")
+                        
+                        char.msg(fk_attacker_msg)
+                        # actual_damage_recipient.msg(fk_victim_msg) # Already dead, likely won't see.
+
+                        final_observer_locations = {char.location, actual_damage_recipient.location if actual_damage_recipient.location else None}
+                        final_observer_locations.discard(None)
+                        for loc in final_observer_locations:
+                            exclude_list = [char, actual_damage_recipient]
+                            loc.msg_contents(fk_observer_msg, exclude=exclude_list)
+                        splattercast.msg(f"HIT_DEBUG: Definitive 'kill' messages sent for phase '{final_kill_phase}'.")
+
+                    # Standard death cleanup for the combat system
                     self.remove_combatant(actual_damage_recipient)
-                    for entry in list(self.db.combatants):
+                    for entry in list(self.db.combatants): # Iterate copy
                         if entry.get("target") == actual_damage_recipient:
                             entry["target"] = self.get_target(entry["char"])
                             splattercast.msg(f"{entry['char'].key} retargeted from slain {actual_damage_recipient.key} to {entry['target'].key if entry['target'] else 'None'}.")
-                    continue 
-                elif not is_lethal_blow and hasattr(actual_damage_recipient, "is_dead") and actual_damage_recipient.is_dead():
-                    splattercast.msg(f"HIT_DEBUG: Death confirmed post-damage (was not pre-determined as lethal). {actual_damage_recipient.key} defeated by {char.key}.")
-                    self.remove_combatant(actual_damage_recipient)
-                    for entry in list(self.db.combatants):
-                        if entry.get("target") == actual_damage_recipient:
-                            entry["target"] = self.get_target(entry["char"])
-                            splattercast.msg(f"{entry['char'].key} retargeted from slain {actual_damage_recipient.key} to {entry['target'].key if entry['target'] else 'None'}.")
-                    continue
+                    continue # End turn for attacker
+                
+                # If not actually_dead:
+                # If is_lethal_blow_predicted was True but they aren't dead, the "kill" message was sent. This is an edge case.
+                # If is_lethal_blow_predicted was False and they aren't dead, "hit" message was sent. Correct.
+                # No further combat system messages needed here if not dead.
 
             else: # Attack missed
                 miss_phase = "grapple_damage_miss" if grappling_this_target else "miss"
