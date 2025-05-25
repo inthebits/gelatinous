@@ -655,8 +655,9 @@ class CombatHandler(DefaultScript):
                             splattercast.msg(f"BODY SHIELD FAIL: {target.key} fails to use {shield_char.key}.")
                 # --- End Body Shield ---
 
+                hit_phase = "grapple_damage_hit" if grappling_this_target else "hit"
                 combat_messages = get_combat_message(
-                    effective_message_weapon_type, "hit", 
+                    effective_message_weapon_type, hit_phase, 
                     attacker=char, target=actual_damage_recipient, item=weapon, damage=damage
                 )
 
@@ -688,8 +689,9 @@ class CombatHandler(DefaultScript):
                     actual_damage_recipient.take_damage(damage)
                 
                 if hasattr(actual_damage_recipient, "is_dead") and actual_damage_recipient.is_dead():
+                    kill_phase = "grapple_damage_kill" if grappling_this_target else "kill"
                     combat_messages = get_combat_message(
-                        effective_message_weapon_type, "kill",
+                        effective_message_weapon_type, kill_phase,
                         attacker=char, target=actual_damage_recipient, item=weapon, damage=damage
                     )
 
@@ -723,9 +725,10 @@ class CombatHandler(DefaultScript):
                             entry["target"] = self.get_target(entry["char"])
                             splattercast.msg(f"{entry['char'].key} was targeting slain {actual_damage_recipient.key}, now targets {entry['target'].key if entry['target'] else 'None'}.")
                     continue
-            else:
+            else: # Attack missed
+                miss_phase = "grapple_damage_miss" if grappling_this_target else "miss"
                 combat_messages = get_combat_message(
-                    effective_message_weapon_type, "miss", 
+                    effective_message_weapon_type, miss_phase, 
                     attacker=char, target=target, item=weapon
                 )
 

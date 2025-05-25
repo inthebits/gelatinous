@@ -91,11 +91,35 @@ def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None
     }
 
     final_messages = {}
+    # Define which phases should be colored red for "successful hits"
+    # This assumes 'hit' for grapple initiation should also be red, as per "like the initiate message"
+    successful_hit_phases = [
+        "hit",  # Covers standard weapon hits and grapple initiation success
+        "grapple_damage_hit",
+        "kill",
+        "grapple_damage_kill"
+        # Add any other phases that represent a "successful hit" you want red
+    ]
+
     for msg_key in ["attacker_msg", "victim_msg", "observer_msg"]:
         # Get template string from chosen set, or from fallback_template_set if key is missing in chosen
         template_str = chosen_template_set.get(msg_key, fallback_template_set.get(msg_key, "Error: Message template key missing."))
         try:
-            final_messages[msg_key] = template_str.format(**format_kwargs)
+            formatted_msg = template_str.format(**format_kwargs)
+            
+            # Apply red color if the phase is a "successful hit"
+            # Assumes the template_str itself does not contain color codes for these phases.
+            if phase in successful_hit_phases:
+                # Basic check to avoid double-coloring if a template accidentally had it.
+                # A more robust solution might involve stripping existing color codes first,
+                # or simply enforcing that message files provide plain text for these phases.
+                if not (formatted_msg.startswith("|") and formatted_msg.endswith("|n")): # very basic check
+                    final_messages[msg_key] = f"|r{formatted_msg}|n"
+                else:
+                    final_messages[msg_key] = formatted_msg # Already colored, pass through
+            else:
+                final_messages[msg_key] = formatted_msg
+
         except KeyError as e_key:
             final_messages[msg_key] = f"(Error: Missing placeholder {e_key} in template for '{msg_key}')"
         except Exception as e_fmt:
