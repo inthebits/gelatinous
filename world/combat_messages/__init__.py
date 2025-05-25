@@ -112,7 +112,7 @@ def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None
             # Assumes the template_str itself does not contain color codes for these phases.
             if phase in successful_hit_phases:
                 if not (formatted_msg.startswith("|") and formatted_msg.endswith("|n")):
-                    final_messages[msg_key] = f"|r{formatted_msg}|n" # Apply non-bold red
+                    final_messages[msg_key] = f"|R{formatted_msg}|n" # Apply non-bold red
                 else:
                     final_messages[msg_key] = formatted_msg # Pass through if already colored
             else:
