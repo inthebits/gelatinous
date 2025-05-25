@@ -94,7 +94,8 @@ def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None
     # Define which phases should be colored red for "successful hits"
     # This assumes 'hit' for grapple initiation should also be red, as per "like the initiate message"
     successful_hit_phases = [
-        "hit",  # Covers standard weapon hits and grapple initiation success
+        "initiate", # Add this line
+        "hit",
         "grapple_damage_hit",
         "kill",
         "grapple_damage_kill"
@@ -110,13 +111,10 @@ def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None
             # Apply red color if the phase is a "successful hit"
             # Assumes the template_str itself does not contain color codes for these phases.
             if phase in successful_hit_phases:
-                # Basic check to avoid double-coloring if a template accidentally had it.
-                # A more robust solution might involve stripping existing color codes first,
-                # or simply enforcing that message files provide plain text for these phases.
-                if not (formatted_msg.startswith("|") and formatted_msg.endswith("|n")): # very basic check
-                    final_messages[msg_key] = f"|r{formatted_msg}|n"
+                if not (formatted_msg.startswith("|") and formatted_msg.endswith("|n")):
+                    final_messages[msg_key] = f"|r{formatted_msg}|n" # Apply non-bold red
                 else:
-                    final_messages[msg_key] = formatted_msg # Already colored, pass through
+                    final_messages[msg_key] = formatted_msg # Pass through if already colored
             else:
                 final_messages[msg_key] = formatted_msg
 

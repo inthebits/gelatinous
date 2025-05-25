@@ -140,7 +140,8 @@ class CmdAttack(Command):
                 splattercast.msg(f"CmdAttack: Unexpected initiate_msg_obj type from get_combat_message for {weapon_type}: {type(initiate_msg_obj)}. Content: {initiate_msg_obj}")
                 final_initiate_str = f"{caller.key} initiates an attack on {target.key if target else 'someone'}."
 
-            caller.location.msg_contents(f"|R{final_initiate_str}|n")
+            # Send the string directly; get_combat_message now handles coloring for "initiate"
+            caller.location.msg_contents(final_initiate_str)
 
 
         splattercast.msg(f"ATTACK_CMD: {caller.key} attacks {target.key if target else 'a direction'}. Combat managed by {final_handler.key}.")
