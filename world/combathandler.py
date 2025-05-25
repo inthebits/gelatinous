@@ -618,9 +618,12 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"{char.key} (using {effective_message_weapon_type}) attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
 
             if atk_roll > def_roll:
+                splattercast.msg(f"HIT_DEBUG: Attack by {char.key} on {target.key} is a HIT. Processing...")
                 damage = getattr(char, "grit", 1) or 1
                 actual_damage_recipient = target # Default
                 
+                splattercast.msg(f"HIT_DEBUG: Initial damage: {damage}, initial recipient: {actual_damage_recipient.key}.")
+
                 # --- Body Shield Logic (ensure messages are room-aware) ---
                 target_combat_entry = next((e for e in self.db.combatants if e["char"] == target), None)
                 if target_combat_entry and target_combat_entry.get("grappling"):
@@ -628,94 +631,99 @@ class CombatHandler(DefaultScript):
                     shield_char_entry = next((e for e in self.db.combatants if e["char"] == shield_char), None)
 
                     if shield_char_entry and shield_char.location in self.db.managed_rooms: 
-                        splattercast.msg(f"BODY SHIELD CHECK: {target.key} is grappling {shield_char.key}. Performing body shield roll.")
+                        splattercast.msg(f"HIT_DEBUG: Body shield check. Target {target.key} grappling {shield_char.key}.")
                         target_motorics = getattr(target, "motorics", 1)
                         shield_char_motorics = getattr(shield_char, "motorics", 1)
                         target_positioning_roll = randint(1, max(1, target_motorics))
                         shield_evasion_roll = randint(1, max(1, shield_char_motorics))
-                        splattercast.msg(f"BODY SHIELD ROLL: {target.key} (target trying to use shield) rolls {target_positioning_roll} vs {shield_char.key} (shield trying to evade) rolls {shield_evasion_roll} (motorics).")
+                        splattercast.msg(f"HIT_DEBUG: Body shield roll: {target.key} ({target_positioning_roll}) vs {shield_char.key} ({shield_evasion_roll}).")
 
                         if target_positioning_roll > shield_evasion_roll: 
                             actual_damage_recipient = shield_char
                             msg_shield_event = f"|c{target.key} yanks {shield_char.key} in the way! {shield_char.key} takes the hit!|n"
-                            # Announce in relevant rooms
                             relevant_shield_locations = {target.location, shield_char.location}
                             for loc in relevant_shield_locations:
                                 if loc: loc.msg_contents(msg_shield_event, exclude=[target, shield_char])
-                            splattercast.msg(f"BODY SHIELD SUCCESS: {target.key} uses {shield_char.key}. {shield_char.key} takes hit.")
+                            splattercast.msg(f"HIT_DEBUG: Body shield SUCCESS. New recipient: {actual_damage_recipient.key}.")
                         else:
                             msg_shield_fail = f"|y{target.key} tries to use {shield_char.key} as a shield but fails!|n"
                             if target.location: target.location.msg_contents(msg_shield_fail, exclude=[target, shield_char])
-                            splattercast.msg(f"BODY SHIELD FAIL: {target.key} fails to use {shield_char.key}.")
+                            splattercast.msg(f"HIT_DEBUG: Body shield FAIL. Recipient remains {actual_damage_recipient.key}.")
                 # --- End Body Shield ---
+                splattercast.msg(f"HIT_DEBUG: After body shield, final recipient: {actual_damage_recipient.key}.")
 
-                # Determine if the blow is lethal BEFORE sending combat messages
                 is_lethal_blow = False
-                # Assuming 'hp' is stored in db.hp; adjust if your character stores health differently
-                if hasattr(actual_damage_recipient, "db") and hasattr(actual_damage_recipient.db, "hp"):
+                if hasattr(actual_damage_recipient, "db") and hasattr(actual_damage_recipient.db, "hp") and actual_damage_recipient.db.hp is not None:
                     if actual_damage_recipient.db.hp <= damage:
                         is_lethal_blow = True
-                elif hasattr(actual_damage_recipient, "is_dead"): # Fallback if hp not directly accessible
-                    # This is less precise as is_dead might only update after take_damage
-                    # For better precision, direct hp check is preferred.
-                    # If is_dead can preview, that's also an option.
-                    pass # Cannot reliably determine lethality beforehand without HP
+                    splattercast.msg(f"HIT_DEBUG: Lethality check using db.hp ({actual_damage_recipient.db.hp} <= {damage}). is_lethal_blow: {is_lethal_blow}.")
+                elif hasattr(actual_damage_recipient, "is_dead"):
+                    splattercast.msg(f"HIT_DEBUG: db.hp not found or None for {actual_damage_recipient.key}, cannot reliably pre-determine lethality.")
+                    # is_lethal_blow remains False, will be confirmed after damage.
+                else:
+                    splattercast.msg(f"HIT_DEBUG: No hp or is_dead method for {actual_damage_recipient.key} for lethality pre-check.")
+
 
                 current_phase = ""
                 if is_lethal_blow:
                     current_phase = "grapple_damage_kill" if grappling_this_target else "kill"
                 else:
                     current_phase = "grapple_damage_hit" if grappling_this_target else "hit"
+                splattercast.msg(f"HIT_DEBUG: Phase determined: '{current_phase}'. Weapon type: '{effective_message_weapon_type}'.")
+
+                combat_messages = {}
+                try:
+                    combat_messages = get_combat_message(
+                        effective_message_weapon_type, current_phase, 
+                        attacker=char, target=actual_damage_recipient, item=weapon, damage=damage
+                    )
+                    splattercast.msg(f"HIT_DEBUG: get_combat_message returned: {str(combat_messages)[:200]}...") # Log part of the result
+                except Exception as e_get_msg:
+                    splattercast.msg(f"HIT_DEBUG: ERROR during get_combat_message: {e_get_msg}")
+                    # Fallback to ensure combat_messages is a dict
+                    combat_messages = {} 
+
+                attacker_msg = combat_messages.get("attacker_msg", f"You {current_phase} {actual_damage_recipient.key} (default msg).")
+                victim_msg = combat_messages.get("victim_msg", f"{char.key} {current_phase}s you (default msg).")
+                observer_msg = combat_messages.get("observer_msg", f"{char.key} {current_phase}s {actual_damage_recipient.key} (default msg).")
+                splattercast.msg(f"HIT_DEBUG: Messages retrieved/defaulted. Attacker: '{attacker_msg[:100]}...'")
+
+                try:
+                    char.msg(attacker_msg)
+                    if actual_damage_recipient != char:
+                        actual_damage_recipient.msg(victim_msg)
+                    
+                    observer_locations = {char.location, actual_damage_recipient.location}
+                    for loc in observer_locations:
+                        if loc: # Ensure location is not None
+                            exclude_list = [char]
+                            if actual_damage_recipient != char:
+                                exclude_list.append(actual_damage_recipient)
+                            loc.msg_contents(observer_msg, exclude=exclude_list)
+                    splattercast.msg(f"HIT_DEBUG: Player-facing messages sent for phase '{current_phase}'.")
+                except Exception as e_send_msg:
+                    splattercast.msg(f"HIT_DEBUG: ERROR sending player-facing messages: {e_send_msg}")
                 
-                combat_messages = get_combat_message(
-                    effective_message_weapon_type, current_phase, 
-                    attacker=char, target=actual_damage_recipient, item=weapon, damage=damage
-                )
-
-                attacker_msg = combat_messages.get("attacker_msg", f"You {current_phase} {actual_damage_recipient.key}.")
-                victim_msg = combat_messages.get("victim_msg", f"{char.key} {current_phase}s you.")
-                observer_msg = combat_messages.get("observer_msg", f"{char.key} {current_phase}s {actual_damage_recipient.key}.")
-
-                char.msg(attacker_msg)
-                if actual_damage_recipient != char:
-                    actual_damage_recipient.msg(victim_msg)
-
-                observer_locations = {char.location, actual_damage_recipient.location}
-                for loc in observer_locations:
-                    if loc:
-                        exclude_list = [char]
-                        if actual_damage_recipient != char:
-                            exclude_list.append(actual_damage_recipient)
-                        loc.msg_contents(observer_msg, exclude=exclude_list)
+                splattercast.msg(f"{char.key}'s attack (phase: {current_phase}) will attempt to deal {damage} to {actual_damage_recipient.key}.") # This is the existing crucial splattercast
                 
-                # Apply damage (this is where "collapses" message might be triggered from character's code)
-                splattercast.msg(f"{char.key}'s attack (phase: {current_phase}) will attempt to deal {damage} to {actual_damage_recipient.key}.")
                 if hasattr(actual_damage_recipient, "take_damage"):
                     actual_damage_recipient.take_damage(damage)
                 
-                # Now, handle combat system's death cleanup if the blow was lethal
-                # The character's own death messages (like "collapses") should have occurred during take_damage
                 if is_lethal_blow and hasattr(actual_damage_recipient, "is_dead") and actual_damage_recipient.is_dead():
-                    splattercast.msg(f"{actual_damage_recipient.key} has been defeated by {char.key}.")
-                    self.remove_combatant(actual_damage_recipient)
-                    
-                    for entry in list(self.db.combatants):
-                        if entry.get("target") == actual_damage_recipient:
-                            entry["target"] = self.get_target(entry["char"]) # Retarget
-                            splattercast.msg(f"{entry['char'].key} was targeting slain {actual_damage_recipient.key}, now targets {entry['target'].key if entry['target'] else 'None'}.")
-                    continue # End turn for the attacker
-                elif not is_lethal_blow and hasattr(actual_damage_recipient, "is_dead") and actual_damage_recipient.is_dead():
-                    # This case handles if is_lethal_blow check was imprecise (e.g. no direct HP access)
-                    # but character died anyway. We still need to clean them up.
-                    # The "hit" message was already sent. The "kill" message from get_combat_message was NOT.
-                    # This might be acceptable if the "hit" message was descriptive enough.
-                    # Or, you could opt to send a generic "is defeated" message here if no kill message was sent.
-                    splattercast.msg(f"{actual_damage_recipient.key} was defeated by {char.key} (death confirmed post-damage).")
+                    splattercast.msg(f"HIT_DEBUG: Confirmed lethal. {actual_damage_recipient.key} defeated by {char.key}.")
                     self.remove_combatant(actual_damage_recipient)
                     for entry in list(self.db.combatants):
                         if entry.get("target") == actual_damage_recipient:
                             entry["target"] = self.get_target(entry["char"])
-                            splattercast.msg(f"{entry['char'].key} was targeting slain {actual_damage_recipient.key}, now targets {entry['target'].key if entry['target'] else 'None'}.")
+                            splattercast.msg(f"{entry['char'].key} retargeted from slain {actual_damage_recipient.key} to {entry['target'].key if entry['target'] else 'None'}.")
+                    continue 
+                elif not is_lethal_blow and hasattr(actual_damage_recipient, "is_dead") and actual_damage_recipient.is_dead():
+                    splattercast.msg(f"HIT_DEBUG: Death confirmed post-damage (was not pre-determined as lethal). {actual_damage_recipient.key} defeated by {char.key}.")
+                    self.remove_combatant(actual_damage_recipient)
+                    for entry in list(self.db.combatants):
+                        if entry.get("target") == actual_damage_recipient:
+                            entry["target"] = self.get_target(entry["char"])
+                            splattercast.msg(f"{entry['char'].key} retargeted from slain {actual_damage_recipient.key} to {entry['target'].key if entry['target'] else 'None'}.")
                     continue
 
             else: # Attack missed
