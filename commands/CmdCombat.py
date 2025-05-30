@@ -266,9 +266,9 @@ class CmdFlee(Command):
                 splattercast.msg(f"FLEE_AIM_ROLL: {caller.key}(motorics:{flee_roll}) vs {aimer_locking_caller.key}(perception:{resist_roll})")
 
                 if flee_roll > resist_roll:
-                    caller.msg(f"|rYou deftly break free from {aimer_locking_caller.get_display_name(caller)}'s aim!|n")
-                    if aimer_locking_caller.access(caller, "view"): # Check if aimer can see it
-                        aimer_locking_caller.msg(f"|r{caller.get_display_name(aimer_locking_caller)} breaks free from your aim!|n")
+                    caller.msg(f"|gYou deftly break free from {aimer_locking_caller.get_display_name(caller)}'s aim!|n")
+                    if aimer_locking_caller.access(caller, "view"): 
+                        aimer_locking_caller.msg(f"|y{caller.get_display_name(aimer_locking_caller)} breaks free from your aim!|n")
                     
                     # Use clear_aim_state on the aimer to notify them and clear their aim
                     if hasattr(aimer_locking_caller, "clear_aim_state"):
@@ -292,29 +292,27 @@ class CmdFlee(Command):
 
                     # --- Aimer attacks on failed flee attempt ---
                     attacker_char = aimer_locking_caller
-                    target_char = caller # 'caller' is the one who typed 'flee'
+                    target_char = caller 
 
-                    # 1. Get/Create Combat Handler (they are in the same room)
+                    # 1. Get/Create Combat Handler 
                     final_handler = get_or_create_combat(attacker_char.location)
-                    final_handler.enroll_room(attacker_char.location) # Ensure room is managed
+                    final_handler.enroll_room(attacker_char.location) 
 
                     # 2. Add/Update combatants
-                    # Attacker (the aimer)
                     attacker_entry = next((e for e in final_handler.db.combatants if e["char"] == attacker_char), None)
                     if not attacker_entry:
                         final_handler.add_combatant(attacker_char, target=target_char)
                     else:
                         attacker_entry["target"] = target_char
-                        attacker_entry["is_yielding"] = False # No longer yielding if they take this opportunity
+                        attacker_entry["is_yielding"] = False 
                     
-                    # Target (the fleer)
                     target_entry = next((e for e in final_handler.db.combatants if e["char"] == target_char), None)
                     if not target_entry:
-                        final_handler.add_combatant(target_char, target=attacker_char) # Target might auto-retaliate
+                        final_handler.add_combatant(target_char, target=attacker_char) 
                     else:
-                        if not target_entry.get("target"): # If they had no target, they might target back
+                        if not target_entry.get("target"): 
                             target_entry["target"] = attacker_char
-                        target_entry["is_yielding"] = False # Being attacked, no longer yielding if they were
+                        target_entry["is_yielding"] = False 
 
                     # 3. Messaging for the attack
                     hands = getattr(attacker_char, "hands", {})
@@ -323,40 +321,29 @@ class CmdFlee(Command):
                     
                     initiate_msg_obj = get_combat_message(weapon_type, "initiate", attacker=attacker_char, target=target_char, item=weapon)
                     
-                    # Ensure fallbacks are colored with standard red |r
-                    atk_msg_attacker = initiate_msg_obj.get("attacker_msg", f"|rYou attack {target_char.get_display_name(attacker_char)}!|n") if isinstance(initiate_msg_obj, dict) else f"|rYou attack {target_char.get_display_name(attacker_char)} with your {weapon_type}!|n"
-                    atk_msg_victim = initiate_msg_obj.get("victim_msg", f"|r{attacker_char.get_display_name(target_char)} attacks you!|n") if isinstance(initiate_msg_obj, dict) else f"|r{attacker_char.get_display_name(target_char)} attacks you with their {weapon_type}!|n"
-                    atk_msg_observer = initiate_msg_obj.get("observer_msg", f"|r{attacker_char.get_display_name(attacker_char.location)} attacks {target_char.get_display_name(target_char.location)}!|n") if isinstance(initiate_msg_obj, dict) else f"|r{attacker_char.get_display_name(attacker_char.location)} attacks {target_char.get_display_name(target_char.location)} with their {weapon_type}!|n"
+                    atk_msg_attacker = initiate_msg_obj.get("attacker_msg", f"|RYou attack {target_char.get_display_name(attacker_char)}!|n") if isinstance(initiate_msg_obj, dict) else f"|RYou attack {target_char.get_display_name(attacker_char)} with your {weapon_type}!|n"
+                    atk_msg_victim = initiate_msg_obj.get("victim_msg", f"|R{attacker_char.get_display_name(target_char)} attacks you!|n") if isinstance(initiate_msg_obj, dict) else f"|R{attacker_char.get_display_name(target_char)} attacks you with their {weapon_type}!|n"
+                    atk_msg_observer = initiate_msg_obj.get("observer_msg", f"|R{attacker_char.get_display_name(attacker_char.location)} attacks {target_char.get_display_name(target_char.location)}!|n") if isinstance(initiate_msg_obj, dict) else f"|R{attacker_char.get_display_name(attacker_char.location)} attacks {target_char.get_display_name(target_char.location)} with their {weapon_type}!|n"
 
-                    # Prepare texts for clarity, using standard red |r
-                    opportunity_text_victim = f"|r{attacker_char.get_display_name(target_char)} seizes the opportunity!|n"
-                    opportunity_text_attacker = "|rYou seize the opportunity!|n"
+                    opportunity_text_victim = f"|R{attacker_char.get_display_name(target_char)} seizes the opportunity!|n"
+                    opportunity_text_attacker = "|RYou seize the opportunity!|n"
                     
-                    # Send combined messages
-                    # To the fleer (target_char)
-                    # caller_msg_flee_fail is already "|r...|n"
                     caller.msg(caller_msg_flee_fail + " " + opportunity_text_victim + " " + atk_msg_victim)
                     
-                    # To the aimer (attacker_char)
-                    if aimer_msg_flee_fail: # Aimer saw the flee attempt (aimer_msg_flee_fail is plain)
-                        aimer_locking_caller.msg(f"|r{aimer_msg_flee_fail}|n {opportunity_text_attacker} {atk_msg_attacker}")
-                    else: # Aimer might not have seen the flee attempt
-                        aimer_locking_caller.msg(f"|rYou maintain your aim on {target_char.get_display_name(aimer_locking_caller)} as they falter, and press the attack!|n {opportunity_text_attacker} {atk_msg_attacker}")
+                    if aimer_msg_flee_fail: 
+                        aimer_locking_caller.msg(f"|R{aimer_msg_flee_fail}|n {opportunity_text_attacker} {atk_msg_attacker}")
+                    else: 
+                        aimer_locking_caller.msg(f"|RYou maintain your aim on {target_char.get_display_name(aimer_locking_caller)} as they falter, and press the attack!|n {opportunity_text_attacker} {atk_msg_attacker}")
                     
-                    # To room observers
                     observer_flee_fail_prefix = f"{caller.key} tries to break free from {aimer_locking_caller.key}'s aim but is kept pinned."
                     observer_opportunity_text = f"{aimer_locking_caller.key} seizes the opportunity!"
-                    # Ensure the entire observer message string is consistently colored
-                    room_observer_msg = f"|r{observer_flee_fail_prefix} {observer_opportunity_text}|n {atk_msg_observer}" 
+                    room_observer_msg = f"|R{observer_flee_fail_prefix} {observer_opportunity_text}|n {atk_msg_observer}"
                     caller.location.msg_contents(room_observer_msg, exclude=[caller, aimer_locking_caller])
 
-                    # 4. Ensure combat handler is active
                     if not final_handler.is_active:
                         final_handler.start()
                     
-                    return # Failed to break aim, attack was initiated. Flee command ends here.
-        else: # Not being aimed at initially
-            aim_successfully_broken = True # Effectively, no aim to break
+                    return 
 
         # --- Part 2: Attempt to flee from combat handler (if present and aim is not an issue) ---
         fled_combat_successfully = False
