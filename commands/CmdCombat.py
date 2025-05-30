@@ -757,10 +757,21 @@ class CmdAim(Command):
         
         if found_exit:
             caller.ndb.aiming_direction = found_exit.key 
-            caller.msg(f"You aim towards the {found_exit.key} direction.")
-            room_message = f"{caller.get_display_name(caller.location)} aims towards the {found_exit.key} direction."
-            caller.location.msg_contents(room_message, exclude=[caller])
-            splattercast.msg(f"AIM: {caller.key} is now aiming in direction {found_exit.key}.")
+            
+            # Get weapon details
+            hands = getattr(caller, "hands", {})
+            weapon = next((item for hand, item in hands.items() if item), None)
+            
+            if weapon:
+                caller_msg_text = f"You aim your {weapon.key} towards the {found_exit.key}."
+                room_msg_text = f"{caller.get_display_name(caller.location)} aims their {weapon.key} towards the {found_exit.key}."
+            else:
+                caller_msg_text = f"You fix your gaze towards the {found_exit.key}."
+                room_msg_text = f"{caller.get_display_name(caller.location)} fixes their gaze towards the {found_exit.key}."
+
+            caller.msg(caller_msg_text)
+            caller.location.msg_contents(room_msg_text, exclude=[caller])
+            splattercast.msg(f"AIM: {caller.key} is now aiming in direction {found_exit.key} {'with ' + weapon.key if weapon else 'unarmed'}.")
             return
 
         # 3. If neither character nor direction found
