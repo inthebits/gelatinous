@@ -191,22 +191,28 @@ class Character(ObjectParent, DefaultCharacter):
             stopped_aiming_message_parts.append(f"{old_aim_direction}")
 
         if action_taken:
-            final_message_verb_phrase = "stop aiming"
-            # Construct the reason phrase carefully
-            reason_suffix = ""
-            if reason_for_clearing:
-                if reason_for_clearing.startswith("as you"): # "as you move", "as you stop aiming"
-                    final_message_verb_phrase = f"stop aiming {reason_for_clearing}"
-                else: # "anew", "due to stun" - becomes "stop aiming anew"
-                    final_message_verb_phrase = f"stop aiming {reason_for_clearing}"
-                reason_suffix = f" ({reason_for_clearing.strip()})"
-
-
-            aim_details = ""
+            # Construct details of what was being aimed at for the player message
+            aim_details_for_msg = ""
             if stopped_aiming_message_parts:
-                aim_details = f" {', '.join(stopped_aiming_message_parts)}"
+                # stopped_aiming_message_parts contains things like "at {target_name}" or "{direction}"
+                # Example: " at YourTarget", " east", or " at YourTarget, east"
+                aim_details_for_msg = f" {', '.join(stopped_aiming_message_parts)}"
 
-            self.msg(f"You {final_message_verb_phrase}{aim_details}.")
-            splattercast.msg(f"AIM_CLEAR: {self.key} {', '.join(log_message_parts)}{reason_suffix}.")
+            # Base player message
+            player_msg_text = f"You stop aiming{aim_details_for_msg}"
+
+            # Append the reason, but only if it's not the default "as you stop aiming"
+            # (which is implicit when the player uses the 'stop aiming' command)
+            if reason_for_clearing and reason_for_clearing != "as you stop aiming":
+                player_msg_text += f" {reason_for_clearing.strip()}"
+            
+            player_msg_text += "." # Add a period at the end.
+            self.msg(player_msg_text)
+
+            # Construct log message (this part's logic for suffix remains the same)
+            log_reason_suffix = ""
+            if reason_for_clearing:
+                log_reason_suffix = f" ({reason_for_clearing.strip()})" # Log always includes the reason clearly
+            splattercast.msg(f"AIM_CLEAR: {self.key} {', '.join(log_message_parts)}{log_reason_suffix}.")
         
         return action_taken
