@@ -270,17 +270,83 @@ class CmdFlee(Command):
                     if aimer_locking_caller.access(caller, "view"): # Check if aimer can see it
                         aimer_locking_caller.msg(f"|y{caller.get_display_name(aimer_locking_caller)} breaks free from your aim!|n")
                     
-                    if hasattr(aimer_locking_caller.ndb, "aiming_at"): del aimer_locking_caller.ndb.aiming_at
+                    # Use clear_aim_state on the aimer to notify them and clear their aim
+                    if hasattr(aimer_locking_caller, "clear_aim_state"):
+                        aimer_locking_caller.clear_aim_state(reason_for_clearing=f"as {caller.key} breaks free")
+                    else: # Fallback if aimer doesn't have the method
+                        if hasattr(aimer_locking_caller.ndb, "aiming_at"): del aimer_locking_caller.ndb.aiming_at
+                    
+                    # Clear on the caller as well
                     if hasattr(caller.ndb, "aimed_at_by"): del caller.ndb.aimed_at_by
+                    
                     splattercast.msg(f"FLEE_AIM_SUCCESS: {caller.key} broke free from {aimer_locking_caller.key}'s aim.")
                     aimer_locking_caller = None # Aim lock now broken
                     aim_successfully_broken = True
-                else:
-                    caller.msg(f"|rYou try to break free from {aimer_locking_caller.get_display_name(caller)}'s aim, but they keep you pinned!|n")
+                else: # Failed to break aim - AIMER ATTACKS!
+                    caller_msg_flee_fail = f"|rYou try to break free from {aimer_locking_caller.get_display_name(caller)}'s aim, but they keep you pinned!|n"
+                    aimer_msg_flee_fail = ""
                     if aimer_locking_caller.access(caller, "view"):
-                        aimer_locking_caller.msg(f"{caller.get_display_name(aimer_locking_caller)} tries to break your aim, but you maintain focus.")
-                    splattercast.msg(f"FLEE_AIM_FAIL: {caller.key} failed to break {aimer_locking_caller.key}'s aim.")
-                    return # Failed to break aim, cannot flee.
+                        aimer_msg_flee_fail = f"{caller.get_display_name(aimer_locking_caller)} tries to break your aim, but you maintain focus."
+                    
+                    splattercast.msg(f"FLEE_AIM_FAIL: {caller.key} failed to break {aimer_locking_caller.key}'s aim. {aimer_locking_caller.key} initiates an attack.")
+
+                    # --- Aimer attacks on failed flee attempt ---
+                    attacker_char = aimer_locking_caller
+                    target_char = caller # 'caller' is the one who typed 'flee'
+
+                    # 1. Get/Create Combat Handler (they are in the same room)
+                    final_handler = get_or_create_combat(attacker_char.location)
+                    final_handler.enroll_room(attacker_char.location) # Ensure room is managed
+
+                    # 2. Add/Update combatants
+                    # Attacker (the aimer)
+                    attacker_entry = next((e for e in final_handler.db.combatants if e["char"] == attacker_char), None)
+                    if not attacker_entry:
+                        final_handler.add_combatant(attacker_char, target=target_char)
+                    else:
+                        attacker_entry["target"] = target_char
+                        attacker_entry["is_yielding"] = False # No longer yielding if they take this opportunity
+                    
+                    # Target (the fleer)
+                    target_entry = next((e for e in final_handler.db.combatants if e["char"] == target_char), None)
+                    if not target_entry:
+                        final_handler.add_combatant(target_char, target=attacker_char) # Target might auto-retaliate
+                    else:
+                        if not target_entry.get("target"): # If they had no target, they might target back
+                            target_entry["target"] = attacker_char
+                        target_entry["is_yielding"] = False # Being attacked, no longer yielding if they were
+
+                    # 3. Messaging for the attack
+                    hands = getattr(attacker_char, "hands", {})
+                    weapon = next((item for hand, item in hands.items() if item), None)
+                    weapon_type = (str(weapon.db.weapon_type).lower() if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type else "unarmed")
+                    
+                    initiate_msg_obj = get_combat_message(weapon_type, "initiate", attacker=attacker_char, target=target_char, item=weapon)
+                    
+                    atk_msg_attacker = initiate_msg_obj.get("attacker_msg", f"You attack {target_char.get_display_name(attacker_char)}!") if isinstance(initiate_msg_obj, dict) else f"You attack {target_char.get_display_name(attacker_char)} with your {weapon_type}!"
+                    atk_msg_victim = initiate_msg_obj.get("victim_msg", f"{attacker_char.get_display_name(target_char)} attacks you!") if isinstance(initiate_msg_obj, dict) else f"{attacker_char.get_display_name(target_char)} attacks you with their {weapon_type}!"
+                    atk_msg_observer = initiate_msg_obj.get("observer_msg", f"{attacker_char.get_display_name(attacker_char.location)} attacks {target_char.get_display_name(target_char.location)}!") if isinstance(initiate_msg_obj, dict) else f"{attacker_char.get_display_name(attacker_char.location)} attacks {target_char.get_display_name(target_char.location)} with their {weapon_type}!"
+
+                    # Send combined messages
+                    # To the fleer (target_char)
+                    caller.msg(caller_msg_flee_fail + f" {attacker_char.get_display_name(target_char)} seizes the opportunity! " + atk_msg_victim)
+                    
+                    # To the aimer (attacker_char)
+                    aimer_opportunity_prefix = f" You seize the opportunity! "
+                    if aimer_msg_flee_fail: # Aimer saw the flee attempt
+                        aimer_locking_caller.msg(aimer_msg_flee_fail + aimer_opportunity_prefix + atk_msg_attacker)
+                    else: # Aimer might not have seen the flee attempt (e.g., if !attacker.access(target, "view")) but still gets the attack due to mechanics
+                        aimer_locking_caller.msg(f"You maintain your aim on {target_char.get_display_name(aimer_locking_caller)} as they falter, and press the attack!" + aimer_opportunity_prefix + atk_msg_attacker)
+                    
+                    # To room observers
+                    room_observer_msg = f"{caller.key} tries to break free from {aimer_locking_caller.key}'s aim but is kept pinned. {aimer_locking_caller.key} seizes the opportunity! " + atk_msg_observer
+                    caller.location.msg_contents(room_observer_msg, exclude=[caller, aimer_locking_caller])
+
+                    # 4. Ensure combat handler is active
+                    if not final_handler.is_active:
+                        final_handler.start()
+                    
+                    return # Failed to break aim, attack was initiated. Flee command ends here.
         else: # Not being aimed at initially
             aim_successfully_broken = True # Effectively, no aim to break
 
