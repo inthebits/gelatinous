@@ -158,20 +158,20 @@ class CmdAttack(Command):
             # 4. Construct and send messages (using |r for normal red)
 
             # Attacker's message
-            prefix_attacker = f"|RAiming {aiming_direction} into {target_room.get_display_name(caller)}, "
+            prefix_attacker = f"|rAiming {aiming_direction} into {target_room.get_display_name(caller)}, "
             caller.msg(prefix_attacker + std_attacker_initiate)
 
             # Victim's message (in target_room)
-            prefix_victim = f"|RSuddenly, you notice {caller.get_display_name(target)} to the {attacker_direction_from_target_perspective} aiming at you from {caller.location.get_display_name(target)}), "
+            prefix_victim = f"|rSuddenly, you notice {caller.get_display_name(target)} to the {attacker_direction_from_target_perspective} aiming at you from {caller.location.get_display_name(target)}), "
             target.msg(prefix_victim + std_victim_initiate)
 
             # Observer message in caller's room (attacker's room)
-            prefix_observer_caller_room = f"|R{caller.key} takes aim {aiming_direction} into {target_room.get_display_name(caller.location)}, "
+            prefix_observer_caller_room = f"|r{caller.key} takes aim {aiming_direction} into {target_room.get_display_name(caller.location)}, "
             # Exclude caller; target is not in this room.
             caller.location.msg_contents(prefix_observer_caller_room + std_observer_initiate, exclude=[caller])
 
             # Observer message in target's room
-            prefix_observer_target_room = f"|RYour attention is drawn to the {attacker_direction_from_target_perspective} as {caller.key} aiming from {caller.location.get_display_name(target_room)}, "
+            prefix_observer_target_room = f"|rYour attention is drawn to the {attacker_direction_from_target_perspective} as {caller.key} aiming from {caller.location.get_display_name(target_room)}, "
             # Exclude target; caller is not in this room.
             target_room.msg_contents(prefix_observer_target_room + std_observer_initiate, exclude=[target])
             
