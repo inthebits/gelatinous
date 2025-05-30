@@ -721,7 +721,15 @@ class CmdAim(Command):
             splattercast.msg(f"AIM_WARNING: {caller.key} lacks clear_aim_state method, cannot clear old aim before setting new in CmdAim.")
 
         # 1. Attempt to aim at a character
-        target_character = caller.search(search_term, typeclass="typeclasses.characters.Character", quiet=True)
+        target_character_result = caller.search(search_term, typeclass="typeclasses.characters.Character", quiet=True)
+        target_character = None # Initialize target_character
+
+        if isinstance(target_character_result, list):
+            if target_character_result: # If the list is not empty
+                target_character = target_character_result[0] # Take the first match
+        else: # If search returned a single object or None
+            target_character = target_character_result
+
 
         if target_character:
             if target_character == caller:
