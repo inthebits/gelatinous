@@ -114,8 +114,8 @@ class CmdAttack(Command):
 
         # --- Messaging and Action ---
         if aiming_direction:
-            caller.msg(f"|rYou take aim {aiming_direction} and attack {target.key} in {target_room.get_display_name(caller)}!|n")
-            caller.location.msg_contents(f"|r{caller.key} attacks towards the {aiming_direction} direction!|n", exclude=[caller])
+            caller.msg(f"|RYou take aim {aiming_direction} and attack {target.key} in {target_room.get_display_name(caller)}!|n")
+            caller.location.msg_contents(f"|R{caller.key} attacks towards the {aiming_direction} direction!|n", exclude=[caller])
         else:
             # Standard local attack initiation message (use get_combat_message)
             hands = getattr(caller, "hands", {})
