@@ -158,7 +158,7 @@ class CmdAttack(Command):
             # 4. Construct and send messages (using |r for normal red)
 
             # Attacker's message
-            prefix_attacker = f"|rYou take aim {aiming_direction} (into {target_room.get_display_name(caller)}) and unleash your attack! "
+            prefix_attacker = f"|rAiming {aiming_direction} into {target_room.get_display_name(caller)}, "
             caller.msg(prefix_attacker + std_attacker_initiate)
 
             # Victim's message (in target_room)
