@@ -114,8 +114,67 @@ class CmdAttack(Command):
 
         # --- Messaging and Action ---
         if aiming_direction:
-            caller.msg(f"|RYou take aim {aiming_direction} and attack {target.key} in {target_room.get_display_name(caller)}!|n")
-            caller.location.msg_contents(f"|R{caller.key} attacks towards the {aiming_direction} direction!|n", exclude=[caller])
+            # --- Attacking into an adjacent room ---
+            splattercast.msg(f"ATTACK_CMD: Aiming direction attack by {caller.key} towards {aiming_direction} into {target_room.key} at {target.key}.")
+
+            # 1. Get weapon details
+            hands = getattr(caller, "hands", {})
+            weapon = next((item for hand, item in hands.items() if item), None)
+            weapon_type = (str(weapon.db.weapon_type).lower() if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type else "unarmed")
+
+            # 2. Get standard initiate messages from get_combat_message
+            initiate_msg_obj = get_combat_message(weapon_type, "initiate", attacker=caller, target=target, item=weapon)
+            
+            std_attacker_initiate = ""
+            std_victim_initiate = ""
+            std_observer_initiate = ""
+
+            if isinstance(initiate_msg_obj, dict):
+                std_attacker_initiate = initiate_msg_obj.get("attacker_msg", f"You prepare to strike {target.key}!")
+                std_victim_initiate = initiate_msg_obj.get("victim_msg", f"{caller.key} prepares to strike you!")
+                std_observer_initiate = initiate_msg_obj.get("observer_msg", f"{caller.key} prepares to strike {target.key}!")
+            elif isinstance(initiate_msg_obj, str): # Fallback if get_combat_message returns a single string for initiate
+                splattercast.msg(f"CmdAttack (aiming): initiate_msg_obj for {weapon_type} was a string. Using generic attacker/victim messages. String: {initiate_msg_obj}")
+                std_observer_initiate = initiate_msg_obj
+                std_attacker_initiate = f"You prepare to strike {target.key} with your {weapon_type}!"
+                std_victim_initiate = f"{caller.key} prepares to strike you with their {weapon_type}!"
+            else: # Unexpected type
+                splattercast.msg(f"CmdAttack (aiming): Unexpected initiate_msg_obj type from get_combat_message for {weapon_type}: {type(initiate_msg_obj)}. Content: {initiate_msg_obj}")
+                std_attacker_initiate = f"You initiate an attack on {target.key}."
+                std_victim_initiate = f"{caller.key} initiates an attack on you."
+                std_observer_initiate = f"{caller.key} initiates an attack on {target.key}."
+
+            # 3. Determine the direction from which the attack arrives in the target's room
+            attacker_direction_from_target_perspective = "a nearby location" # Default
+            # Find the exit in target_room that leads back to caller.location
+            exit_from_target_to_caller_room = None
+            for ex_obj in target_room.exits:
+                if ex_obj.destination == caller.location:
+                    exit_from_target_to_caller_room = ex_obj
+                    break
+            if exit_from_target_to_caller_room:
+                attacker_direction_from_target_perspective = exit_from_target_to_caller_room.key
+
+            # 4. Construct and send messages (using |r for normal red)
+
+            # Attacker's message
+            prefix_attacker = f"|rYou take aim {aiming_direction} (into {target_room.get_display_name(caller)}) and unleash your attack! "
+            caller.msg(prefix_attacker + std_attacker_initiate)
+
+            # Victim's message (in target_room)
+            prefix_victim = f"|rSuddenly, {caller.get_display_name(target)} attacks from the {attacker_direction_from_target_perspective} (aiming from {caller.location.get_display_name(target)})! "
+            target.msg(prefix_victim + std_victim_initiate)
+
+            # Observer message in caller's room (attacker's room)
+            prefix_observer_caller_room = f"|r{caller.key} takes aim {aiming_direction} (into {target_room.get_display_name(caller.location)}) and unleashes an attack! "
+            # Exclude caller; target is not in this room.
+            caller.location.msg_contents(prefix_observer_caller_room + std_observer_initiate, exclude=[caller])
+
+            # Observer message in target's room
+            prefix_observer_target_room = f"|rSuddenly, an attack erupts from the {attacker_direction_from_target_perspective} as {caller.key} (aiming from {caller.location.get_display_name(target_room)}) strikes! "
+            # Exclude target; caller is not in this room.
+            target_room.msg_contents(prefix_observer_target_room + std_observer_initiate, exclude=[target])
+            
         else:
             # Standard local attack initiation message (use get_combat_message)
             hands = getattr(caller, "hands", {})
