@@ -697,7 +697,7 @@ class CmdAim(Command):
         # Handle "aim stop" or "aim" with no args to stop aiming
         if not raw_args or raw_args.lower() == "stop":
             if hasattr(caller, "clear_aim_state"):
-                action_taken = caller.clear_aim_state(reason_for_clearing="as you stop aiming")
+                action_taken = caller.clear_aim_state(reason_for_clearing="")
                 if not action_taken: 
                     caller.msg("You are not aiming at anything or in any direction. To aim, use 'aim <target/direction>'.")
             else:
