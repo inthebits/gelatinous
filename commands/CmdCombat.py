@@ -323,14 +323,14 @@ class CmdFlee(Command):
                     
                     initiate_msg_obj = get_combat_message(weapon_type, "initiate", attacker=attacker_char, target=target_char, item=weapon)
                     
-                    # Ensure fallbacks are colored
-                    atk_msg_attacker = initiate_msg_obj.get("attacker_msg", f"|RYou attack {target_char.get_display_name(attacker_char)}!|n") if isinstance(initiate_msg_obj, dict) else f"|rYou attack {target_char.get_display_name(attacker_char)} with your {weapon_type}!|n"
-                    atk_msg_victim = initiate_msg_obj.get("victim_msg", f"|R{attacker_char.get_display_name(target_char)} attacks you!|n") if isinstance(initiate_msg_obj, dict) else f"|r{attacker_char.get_display_name(target_char)} attacks you with their {weapon_type}!|n"
-                    atk_msg_observer = initiate_msg_obj.get("observer_msg", f"|R{attacker_char.get_display_name(attacker_char.location)} attacks {target_char.get_display_name(target_char.location)}!|n") if isinstance(initiate_msg_obj, dict) else f"|r{attacker_char.get_display_name(attacker_char.location)} attacks {target_char.get_display_name(target_char.location)} with their {weapon_type}!|n"
+                    # Ensure fallbacks are colored with standard red |r
+                    atk_msg_attacker = initiate_msg_obj.get("attacker_msg", f"|rYou attack {target_char.get_display_name(attacker_char)}!|n") if isinstance(initiate_msg_obj, dict) else f"|rYou attack {target_char.get_display_name(attacker_char)} with your {weapon_type}!|n"
+                    atk_msg_victim = initiate_msg_obj.get("victim_msg", f"|r{attacker_char.get_display_name(target_char)} attacks you!|n") if isinstance(initiate_msg_obj, dict) else f"|r{attacker_char.get_display_name(target_char)} attacks you with their {weapon_type}!|n"
+                    atk_msg_observer = initiate_msg_obj.get("observer_msg", f"|r{attacker_char.get_display_name(attacker_char.location)} attacks {target_char.get_display_name(target_char.location)}!|n") if isinstance(initiate_msg_obj, dict) else f"|r{attacker_char.get_display_name(attacker_char.location)} attacks {target_char.get_display_name(target_char.location)} with their {weapon_type}!|n"
 
-                    # Prepare texts for clarity
-                    opportunity_text_victim = f"|R{attacker_char.get_display_name(target_char)} seizes the opportunity!|n"
-                    opportunity_text_attacker = "|RYou seize the opportunity!|n"
+                    # Prepare texts for clarity, using standard red |r
+                    opportunity_text_victim = f"|r{attacker_char.get_display_name(target_char)} seizes the opportunity!|n"
+                    opportunity_text_attacker = "|rYou seize the opportunity!|n"
                     
                     # Send combined messages
                     # To the fleer (target_char)
@@ -346,7 +346,8 @@ class CmdFlee(Command):
                     # To room observers
                     observer_flee_fail_prefix = f"{caller.key} tries to break free from {aimer_locking_caller.key}'s aim but is kept pinned."
                     observer_opportunity_text = f"{aimer_locking_caller.key} seizes the opportunity!"
-                    room_observer_msg = f"|r{observer_flee_fail_prefix} {observer_opportunity_text}|n {atk_msg_observer}"
+                    # Ensure the entire observer message string is consistently colored
+                    room_observer_msg = f"|r{observer_flee_fail_prefix} {observer_opportunity_text}|n {atk_msg_observer}" 
                     caller.location.msg_contents(room_observer_msg, exclude=[caller, aimer_locking_caller])
 
                     # 4. Ensure combat handler is active
