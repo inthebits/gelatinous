@@ -266,9 +266,9 @@ class CmdFlee(Command):
                 splattercast.msg(f"FLEE_AIM_ROLL: {caller.key}(motorics:{flee_roll}) vs {aimer_locking_caller.key}(perception:{resist_roll})")
 
                 if flee_roll > resist_roll:
-                    caller.msg(f"|gYou deftly break free from {aimer_locking_caller.get_display_name(caller)}'s aim!|n")
+                    caller.msg(f"|rYou deftly break free from {aimer_locking_caller.get_display_name(caller)}'s aim!|n")
                     if aimer_locking_caller.access(caller, "view"): # Check if aimer can see it
-                        aimer_locking_caller.msg(f"|y{caller.get_display_name(aimer_locking_caller)} breaks free from your aim!|n")
+                        aimer_locking_caller.msg(f"|r{caller.get_display_name(aimer_locking_caller)} breaks free from your aim!|n")
                     
                     # Use clear_aim_state on the aimer to notify them and clear their aim
                     if hasattr(aimer_locking_caller, "clear_aim_state"):
