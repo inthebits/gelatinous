@@ -382,8 +382,10 @@ class CmdFlee(Command):
         if handler:
             if not aim_successfully_broken: # Should have returned if aim break failed
                 # This case implies they were aimed at, and failed to break it.
-                caller.msg(f"You must first break free from {getattr(caller.ndb, 'aimed_at_by', 'someone').get_display_name(caller)}'s aim to flee combat.")
-                return
+                current_aimer_on_caller = getattr(caller.ndb, "aimed_at_by", None)
+                if current_aimer_on_caller:
+                    caller.msg(f"You must first break free from {current_aimer_on_caller.get_display_name(caller)}'s aim to flee combat.")
+                    return
 
             splattercast.msg(f"FLEE_CMD: {caller.key} in handler {handler.key}, attempting combat flee.")
             caller_combat_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
