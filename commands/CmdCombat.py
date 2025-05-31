@@ -424,7 +424,7 @@ class CmdFlee(Command):
 
                     splattercast.msg(f"{caller.key} attempts to flee combat: {flee_roll} vs highest resist {highest_resist} ({highest_attacker.key})")
                     if flee_roll > highest_resist:
-                        caller.msg("|gYou successfully flee from combat!|n")
+                        caller.msg("|RYou wrench yourself from the melee, the metallic tang of fear and blood still sharp as you make your escape.|n")
                         splattercast.msg(f"{caller.key} flees successfully from combat (handler {handler.key}).")
                         fled_combat_successfully = True
                     else:
