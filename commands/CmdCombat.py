@@ -267,9 +267,14 @@ class CmdFlee(Command):
         handler = getattr(caller.ndb, "combat_handler", None)
         aimer_locking_caller = getattr(caller.ndb, "aimed_at_by", None)
 
+        # ADD THIS DEBUG LINE:
+        splattercast.msg(f"FLEE_CMD_DEBUG ({caller.key}): handler='{handler.key if handler else None}', aimer_locking_caller='{aimer_locking_caller.key if aimer_locking_caller else None}'")
+
         # --- Pre-checks: Nothing to flee from? ---
         if not handler and not aimer_locking_caller:
             caller.msg("You have nothing to flee from.")
+            # Optional: Add log here too if condition met
+            splattercast.msg(f"FLEE_CMD_DEBUG ({caller.key}): 'Nothing to flee from' condition met.")
             return
 
         # --- Part 1: Attempt to break an aim lock if present ---
