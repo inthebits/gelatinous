@@ -122,6 +122,16 @@ class CmdAttack(Command):
             weapon = next((item for hand, item in hands.items() if item), None)
             weapon_type = (str(weapon.db.weapon_type).lower() if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type else "unarmed")
 
+            # --- ADD RANGED WEAPON CHECK FOR AIMED ATTACKS ---
+            if not weapon or not getattr(weapon.db, "is_ranged", False):
+                caller.msg(f"You need a ranged weapon to attack {target.key} in the {aiming_direction} direction.")
+                # Optionally, clear aim state if you want the failed attack to stop their aim
+                # if hasattr(caller, "clear_aim_state"):
+                #     caller.clear_aim_state(reason_for_clearing="as your ranged attack failed")
+                splattercast.msg(f"ATTACK_CMD: {caller.key} tried to attack {target.key} in {target_room.key} (aiming {aiming_direction}) without a ranged weapon ({weapon.key if weapon else 'unarmed'}). Attack aborted.")
+                return
+            # --- END RANGED WEAPON CHECK ---
+
             # 2. Get standard initiate messages from get_combat_message
             initiate_msg_obj = get_combat_message(weapon_type, "initiate", attacker=caller, target=target, item=weapon)
             
