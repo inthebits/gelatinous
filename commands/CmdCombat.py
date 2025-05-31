@@ -92,47 +92,69 @@ class CmdAttack(Command):
             final_handler.enroll_room(caller.location)
             final_handler.enroll_room(target.location)
 
+        # --- CAPTURE PRE-ADDITION COMBAT STATE ---
+        # These flags check if they were in the *specific final_handler* before this command instance.
+        caller_was_in_final_handler = any(e["char"] == caller for e in final_handler.db.combatants)
+        target_was_in_final_handler = any(e["char"] == target for e in final_handler.db.combatants)
+        
+        original_caller_target_in_handler = None
+        if caller_was_in_final_handler:
+            caller_entry_snapshot = next((e for e in final_handler.db.combatants if e["char"] == caller), None)
+            if caller_entry_snapshot:
+                original_caller_target_in_handler = caller_entry_snapshot.get("target")
 
         # --- Add combatants to the final_handler ---
-        # add_combatant now also enrolls the char's room if needed.
-        # It also handles not re-adding if already present.
-        if not any(e["char"] == caller for e in final_handler.db.combatants):
+        if not caller_was_in_final_handler:
             final_handler.add_combatant(caller, target=target)
-        else: # Caller already in this handler, update target and ensure not yielding
+        else: 
             caller_entry = next(e for e in final_handler.db.combatants if e["char"] == caller)
-            caller_entry["target"] = target
+            caller_entry["target"] = target # This command updates the target
             caller_entry["is_yielding"] = False
 
-
-        if not any(e["char"] == target for e in final_handler.db.combatants):
-            final_handler.add_combatant(target, target=caller) # Target initially targets attacker
-        else: # Target already in this handler, ensure they target back if not already
+        if not target_was_in_final_handler:
+            final_handler.add_combatant(target, target=caller) 
+        else: 
             target_entry = next(e for e in final_handler.db.combatants if e["char"] == target)
-            if not target_entry.get("target"): # If they had no target, they target the attacker
+            if not target_entry.get("target"): 
                  target_entry["target"] = caller
-
 
         # --- Messaging and Action ---
         if aiming_direction:
             # --- Attacking into an adjacent room ---
             splattercast.msg(f"ATTACK_CMD: Aiming direction attack by {caller.key} towards {aiming_direction} into {target_room.key} at {target.key}.")
 
-            # 1. Get weapon details
             hands = getattr(caller, "hands", {})
             weapon = next((item for hand, item in hands.items() if item), None)
             weapon_type = (str(weapon.db.weapon_type).lower() if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type else "unarmed")
 
-            # --- ADD RANGED WEAPON CHECK FOR AIMED ATTACKS ---
+            # --- RANGED WEAPON CHECK FOR AIMED ATTACKS ---
             if not weapon or not getattr(weapon.db, "is_ranged", False):
                 caller.msg(f"You need a ranged weapon to attack {target.key} in the {aiming_direction} direction.")
-                # Optionally, clear aim state if you want the failed attack to stop their aim
+                splattercast.msg(f"ATTACK_CMD: {caller.key} tried to attack {target.key} in {target_room.key} (aiming {aiming_direction}) without a ranged weapon ({weapon.key if weapon else 'unarmed'}). Attack aborted.")
+
+                # --- CLEANUP LOGIC FOR ABORTED RANGED ATTACK ---
+                if not caller_was_in_final_handler:
+                    splattercast.msg(f"ATTACK_CMD_CLEANUP: Ranged attack aborted. Removing newly added caller {caller.key} from handler {final_handler.key}.")
+                    final_handler.remove_combatant(caller)
+                elif caller_was_in_final_handler:
+                    # Caller was already in combat. If this command changed their target, revert it.
+                    current_caller_entry = next((e for e in final_handler.db.combatants if e["char"] == caller), None)
+                    if current_caller_entry and current_caller_entry.get("target") == target: # Check if *this command* set the target
+                        current_caller_entry["target"] = original_caller_target_in_handler
+                        splattercast.msg(f"ATTACK_CMD_CLEANUP: Ranged attack aborted. Reverted {caller.key}'s target in handler {final_handler.key} to '{original_caller_target_in_handler.key if original_caller_target_in_handler else None}'.")
+                
+                if not target_was_in_final_handler:
+                    splattercast.msg(f"ATTACK_CMD_CLEANUP: Ranged attack aborted. Removing newly added target {target.key} from handler {final_handler.key}.")
+                    final_handler.remove_combatant(target)
+                
+                # Optionally, clear aim state
                 # if hasattr(caller, "clear_aim_state"):
                 #     caller.clear_aim_state(reason_for_clearing="as your ranged attack failed")
-                splattercast.msg(f"ATTACK_CMD: {caller.key} tried to attack {target.key} in {target_room.key} (aiming {aiming_direction}) without a ranged weapon ({weapon.key if weapon else 'unarmed'}). Attack aborted.")
-                return
-            # --- END RANGED WEAPON CHECK ---
+                return 
+            # --- END RANGED WEAPON CHECK AND CLEANUP ---
 
-            # 2. Get standard initiate messages from get_combat_message
+            # --- ADDITIONAL AIMING DIRECTION LOGIC ---
+            # 1. Get standard initiate messages from get_combat_message
             initiate_msg_obj = get_combat_message(weapon_type, "initiate", attacker=caller, target=target, item=weapon)
             
             std_attacker_initiate = ""
@@ -154,7 +176,7 @@ class CmdAttack(Command):
                 std_victim_initiate = f"{caller.key} initiates an attack on you."
                 std_observer_initiate = f"{caller.key} initiates an attack on {target.key}."
 
-            # 3. Determine the direction from which the attack arrives in the target's room
+            # 2. Determine the direction from which the attack arrives in the target's room
             attacker_direction_from_target_perspective = "a nearby location" # Default
             # Find the exit in target_room that leads back to caller.location
             exit_from_target_to_caller_room = None
@@ -165,7 +187,7 @@ class CmdAttack(Command):
             if exit_from_target_to_caller_room:
                 attacker_direction_from_target_perspective = exit_from_target_to_caller_room.key
 
-            # 4. Construct and send messages (using |r for normal red)
+            # 3. Construct and send messages (using |r for normal red)
 
             # Attacker's message
             prefix_attacker = f"|RAiming {aiming_direction} into {target_room.get_display_name(caller)}, "
