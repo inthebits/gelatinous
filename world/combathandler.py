@@ -672,8 +672,15 @@ class CombatHandler(DefaultScript):
             # --- END PROXIMITY AND WEAPON VALIDATION ---
 
             # --- Resolve Standard Attack ---
-            atk_roll_base = randint(1, max(1, getattr(char, "grit", 1)))
-            def_roll_base = randint(1, max(1, getattr(target, "motorics", 1)))
+            # Robust stat fetching for attack roll
+            char_grit_val = getattr(char, "grit", 1)
+            # Ensure the value is numeric before using in max(), default to 1 if not
+            atk_roll_base = randint(1, max(1, char_grit_val if isinstance(char_grit_val, (int, float)) else 1))
+
+            # Robust stat fetching for defense roll
+            target_motorics_val = getattr(target, "motorics", 1)
+            # Ensure the value is numeric before using in max(), default to 1 if not
+            def_roll_base = randint(1, max(1, target_motorics_val if isinstance(target_motorics_val, (int, float)) else 1))
             
             atk_roll_final = atk_roll_base
             def_roll_final = def_roll_base
@@ -687,16 +694,32 @@ class CombatHandler(DefaultScript):
             if hasattr(target.ndb, "charging_vulnerability_active") and target.ndb.charging_vulnerability_active:
                 splattercast.msg(f"AT_REPEAT_VULNERABILITY_PENDING: {target.key} had charging_vulnerability_active (effects temporarily disabled).")
 
+            # Safely determine weapon_type_stat
             weapon_type_stat = "unarmed"
+            if weapon_obj:  # Check if weapon_obj exists
+                if hasattr(weapon_obj, "db"):  # Then check if it has a .db attribute
+                    if hasattr(weapon_obj.db, "weapon_type") and weapon_obj.db.weapon_type:
+                        weapon_type_stat = str(weapon_obj.db.weapon_type).lower()
+                # else: # Optional: Log if weapon_obj exists but has no .db (for deeper debugging if needed)
+                #     splattercast.msg(f"DEBUG_WEAPON_INFO: {char.key}'s weapon_obj '{weapon_obj.key}' has no .db attribute.")
+            # else: # Optional: Log if no weapon_obj
+                # splattercast.msg(f"DEBUG_WEAPON_INFO: {char.key} has no weapon_obj for this attack.")
 
+            # Determine effective_message_weapon_type (assuming current_char_combat_entry is valid)
+            grappling_this_target = current_char_combat_entry.get("grappling") == target
+            effective_message_weapon_type = "grapple" if grappling_this_target else weapon_type_stat
+            
+            # This is the splattercast message that was not appearing
             splattercast.msg(f"{char.key} (using {effective_message_weapon_type}, base atk {atk_roll_base}, final {atk_roll_final}) attacks {target.key} (base def {def_roll_base}, final {def_roll_final})")
 
             if atk_roll_final > def_roll_final:
                 splattercast.msg(f"HIT_DEBUG: Attack by {char.key} on {target.key} is a HIT. Processing...")
-                damage = (getattr(char, "grit", 1) or 1)
-                actual_damage_recipient = target 
+                # Robust damage calculation
+                char_damage_grit_val = getattr(char, "grit", 1)
+                damage = (char_damage_grit_val if isinstance(char_damage_grit_val, (int, float)) else 1)
+                damage = max(1, damage) # Ensure damage is at least 1
                 
-                splattercast.msg(f"HIT_DEBUG: Initial damage: {damage}, initial recipient: {actual_damage_recipient.key}.")
+                actual_damage_recipient = target 
 
                 target_combat_entry = next((e for e in self.db.combatants if e["char"] == target), None)
                 if target_combat_entry and target_combat_entry.get("grappling"):

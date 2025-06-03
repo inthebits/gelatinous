@@ -53,12 +53,12 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdInventory.CmdInventory())
         self.add(CmdInventory.CmdDrop())
         self.add(CmdInventory.CmdGet())
-        self.add(CmdCombat.CmdAim)  # Add CmdAim to the CharacterCmdSet
-        self.add(CmdCombat.CmdStop)  # Add CmdStop to the CharacterCmdSet
-        self.add(CmdCombat.CmdLook)  # Add CmdReady to the CharacterCmdSet
+        self.add(CmdCombat.CmdAim) 
+        self.add(CmdCombat.CmdStop)
+        self.add(CmdCombat.CmdLook)
         self.add(CmdCombat.CmdAdvance)
         self.add(CmdCombat.CmdRetreat)
-        self.add(CmdCombat.CmdCharge)  # Add CmdReady to the CharacterCmdSet
+        self.add(CmdCombat.CmdCharge)
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
