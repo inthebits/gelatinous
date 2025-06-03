@@ -518,26 +518,39 @@ class CmdRetreat(Command):
         # Simplistic: Highest motorics of anyone they are near.
         # More complex: Highest motorics of those in proximity *who are targeting the caller*.
         # For now, let's keep it simple.
-        highest_opponent_motorics = 0
+        highest_opponent_motorics_val = 0
         resisting_opponent_for_log = None
         if opponents_in_proximity:
             # Filter for valid characters with motorics
             valid_opponents = [
                 opp for opp in opponents_in_proximity 
-                if opp and hasattr(opp, "db") and hasattr(opp.db, "motorics")
+                if opp and hasattr(opp, "motorics") # Check direct attribute
             ]
             if valid_opponents:
-                highest_opponent_motorics = max(getattr(opp.db, "motorics", 1) for opp in valid_opponents)
-                # For logging, find one of the opponents with max motorics
-                resisting_opponent_for_log = next((opp for opp in valid_opponents if getattr(opp.db, "motorics", 1) == highest_opponent_motorics), None)
-
-        caller_motorics = getattr(caller.db, "motorics", 1)
+                # Get numeric motorics values, defaulting to 1 if non-numeric
+                opponent_motorics_values = []
+                for opp in valid_opponents:
+                    val = getattr(opp, "motorics", 1)
+                    opponent_motorics_values.append(val if isinstance(val, (int, float)) else 1)
+                
+                if opponent_motorics_values: # Ensure list is not empty after filtering
+                    highest_opponent_motorics_val = max(opponent_motorics_values)
+                    # For logging, find one of the opponents with max motorics
+                    for opp in valid_opponents:
+                        val = getattr(opp, "motorics", 1)
+                        numeric_val = val if isinstance(val, (int, float)) else 1
+                        if numeric_val == highest_opponent_motorics_val:
+                            resisting_opponent_for_log = opp
+                            break
         
-        retreat_roll = randint(1, max(1, caller_motorics))
-        resist_roll = randint(1, max(1, highest_opponent_motorics)) # If no opponents, this will be vs 1
+        caller_motorics_val = getattr(caller, "motorics", 1) # Changed from caller.db
+        caller_motorics_for_roll = caller_motorics_val if isinstance(caller_motorics_val, (int, float)) else 1
+        
+        retreat_roll = randint(1, max(1, caller_motorics_for_roll))
+        resist_roll = randint(1, max(1, highest_opponent_motorics_val))
 
-        splattercast.msg(f"RETREAT_ROLL: {caller.key} (motorics:{caller_motorics}, roll:{retreat_roll}) vs "
-                         f"Proximity (highest motorics:{highest_opponent_motorics}, opponent for log: {resisting_opponent_for_log.key if resisting_opponent_for_log else 'N/A'}, roll:{resist_roll})")
+        splattercast.msg(f"RETREAT_ROLL: {caller.key} (motorics:{caller_motorics_for_roll}, roll:{retreat_roll}) vs "
+                         f"Proximity (highest motorics:{highest_opponent_motorics_val}, opponent for log: {resisting_opponent_for_log.key if resisting_opponent_for_log else 'N/A'}, roll:{resist_roll})")
 
         if retreat_roll > resist_roll:
             # --- Success ---
@@ -678,14 +691,17 @@ class CmdAdvance(Command):
             return
 
         # --- Opposed Roll to Advance/Engage ---
-        caller_motorics = getattr(caller.db, "motorics", 1)
-        target_motorics = getattr(target_char.db, "motorics", 1) # Or perception to notice advance
+        caller_motorics_val = getattr(caller, "motorics", 1) # Changed from caller.db
+        caller_motorics_for_roll = caller_motorics_val if isinstance(caller_motorics_val, (int, float)) else 1
+        
+        target_motorics_val = getattr(target_char, "motorics", 1) # Changed from target_char.db
+        target_motorics_for_roll = target_motorics_val if isinstance(target_motorics_val, (int, float)) else 1
 
-        advance_roll = randint(1, max(1, caller_motorics))
-        resist_roll = randint(1, max(1, target_motorics))
+        advance_roll = randint(1, max(1, caller_motorics_for_roll))
+        resist_roll = randint(1, max(1, target_motorics_for_roll))
 
-        splattercast.msg(f"ADVANCE_ROLL: {caller.key} (motorics:{caller_motorics}, roll:{advance_roll}) vs "
-                         f"{target_char.key} (motorics:{target_motorics}, roll:{resist_roll})")
+        splattercast.msg(f"ADVANCE_ROLL: {caller.key} (motorics:{caller_motorics_for_roll}, roll:{advance_roll}) vs "
+                         f"{target_char.key} (motorics:{target_motorics_for_roll}, roll:{resist_roll})")
 
         if advance_roll > resist_roll:
             # --- Success ---
@@ -840,15 +856,18 @@ class CmdCharge(Command):
         # --- Opposed Roll for Charge ---
         # Charge might be Motorics (for speed/force) vs Motorics (to evade/counter-charge) or Perception (to react)
         # Let's give the charger a slight bonus to the roll, but a penalty if they fail.
-        caller_motorics = getattr(caller.db, "motorics", 1)
-        target_motorics = getattr(target_char.db, "motorics", 1) 
+        caller_motorics_val = getattr(caller, "motorics", 1) # Changed from caller.db
+        caller_motorics_for_roll = caller_motorics_val if isinstance(caller_motorics_val, (int, float)) else 1
+        
+        target_motorics_val = getattr(target_char, "motorics", 1) # Changed from target_char.db
+        target_motorics_for_roll = target_motorics_val if isinstance(target_motorics_val, (int, float)) else 1
 
-        charge_bonus = 2 # Example bonus for charging
-        charge_roll = randint(1, max(1, caller_motorics)) + charge_bonus
-        resist_roll = randint(1, max(1, target_motorics))
+        charge_bonus = 2 
+        charge_roll = randint(1, max(1, caller_motorics_for_roll)) + charge_bonus
+        resist_roll = randint(1, max(1, target_motorics_for_roll))
 
-        splattercast.msg(f"CHARGE_ROLL: {caller.key} (motorics:{caller_motorics}, roll:{charge_roll} incl. bonus {charge_bonus}) vs "
-                         f"{target_char.key} (motorics:{target_motorics}, roll:{resist_roll})")
+        splattercast.msg(f"CHARGE_ROLL: {caller.key} (motorics:{caller_motorics_for_roll}, roll:{charge_roll} incl. bonus {charge_bonus}) vs "
+                         f"{target_char.key} (motorics:{target_motorics_for_roll}, roll:{resist_roll})")
         
         # Set a temporary NDB flag for vulnerability during/after charge
         # This could be checked by the combat handler or attack command
