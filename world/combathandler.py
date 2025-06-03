@@ -197,13 +197,18 @@ class CombatHandler(DefaultScript):
         """
         Add a character to combat, assigning initiative and an optional target.
         Logs if joining an already-running combat.
-        Initializes grapple status and combat_action.
+        Initializes grapple status, combat_action, and proximity NDB.
         Can accept initial grapple/yielding states.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
         if char.location not in self.db.managed_rooms:
             splattercast.msg(f"ADD_COMB: {char.key} is in {char.location.key}, which is not yet managed by handler {self.key} (on {self.obj.key}). Enrolling room.")
             self.enroll_room(char.location)
+
+        # Initialize proximity NDB if it doesn't exist or is not a set
+        if not hasattr(char.ndb, "in_proximity_with") or not isinstance(char.ndb.in_proximity_with, set):
+            char.ndb.in_proximity_with = set()
+            splattercast.msg(f"ADD_COMB: Initialized char.ndb.in_proximity_with as a new set for {char.key}.")
 
         if any(entry["char"] == char for entry in self.db.combatants):
             splattercast.msg(f"ADD_COMB: {char.key} already in combatants list. Assuming update or re-add. Verifying combat state.")
@@ -238,17 +243,37 @@ class CombatHandler(DefaultScript):
         """
         Remove a character from combat and clean up their handler reference.
         If only one or zero combatants remain, end combat.
-        Also handles releasing any grapples involving this character.
+        Also handles releasing any grapples involving this character and clears proximity.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
         splattercast.msg(f"RMV_COMB: Attempted to remove {char.key} from handler {self.key}...")
 
         if not self.pk or not self.db or not hasattr(self.db, 'combatants') or self.db.combatants is None:
             splattercast.msg(f"RMV_COMB: Attempted to remove {char.key} from handler {self.key}, but handler/combatants list is gone (handler likely already deleted/stopped).")
-            if hasattr(char, "ndb") and char.ndb.combat_handler == self:
+            if hasattr(char, "ndb") and hasattr(char.ndb, "combat_handler") and char.ndb.combat_handler == self:
                 splattercast.msg(f"RMV_COMB: Cleaning ndb.combat_handler for {char.key} as a fallback for defunct handler {self.key}.")
                 del char.ndb.combat_handler
+            # Fallback proximity cleanup if handler is gone
+            if hasattr(char.ndb, "in_proximity_with") and isinstance(char.ndb.in_proximity_with, set):
+                splattercast.msg(f"RMV_COMB_FALLBACK: Cleaning proximity for {char.key} (defunct handler). Was with: {[o.key for o in char.ndb.in_proximity_with]}.")
+                for other_char in list(char.ndb.in_proximity_with): # Iterate a copy
+                    if hasattr(other_char.ndb, "in_proximity_with") and isinstance(other_char.ndb.in_proximity_with, set):
+                        other_char.ndb.in_proximity_with.discard(char)
+                char.ndb.in_proximity_with.clear()
             return
+
+        # --- Proximity Cleanup ---
+        if hasattr(char.ndb, "in_proximity_with") and isinstance(char.ndb.in_proximity_with, set):
+            splattercast.msg(f"RMV_COMB: Clearing proximity for {char.key}. They were in proximity with: {[o.key for o in char.ndb.in_proximity_with]}.")
+            for other_char in list(char.ndb.in_proximity_with): # Iterate a copy
+                if hasattr(other_char.ndb, "in_proximity_with") and isinstance(other_char.ndb.in_proximity_with, set):
+                    other_char.ndb.in_proximity_with.discard(char)
+                    splattercast.msg(f"RMV_COMB: Removed {char.key} from {other_char.key}'s proximity list.")
+            char.ndb.in_proximity_with.clear()
+        # Optionally: if you want to remove the attribute entirely when not in combat:
+        # if hasattr(char.ndb, "in_proximity_with"):
+        #     del char.ndb.in_proximity_with
+        #     splattercast.msg(f"RMV_COMB: Deleted char.ndb.in_proximity_with for {char.key}.")
 
         char_combat_entry = next((e for e in self.db.combatants if e["char"] == char), None)
         if char_combat_entry and char_combat_entry.get("grappling"):
@@ -269,7 +294,7 @@ class CombatHandler(DefaultScript):
                     grappler_entry["grappling"] = None
 
         self.db.combatants = [entry for entry in self.db.combatants if entry["char"] != char]
-        if char.ndb.combat_handler:
+        if hasattr(char.ndb, "combat_handler") and char.ndb.combat_handler == self: # Check if attribute exists before deleting
             del char.ndb.combat_handler
         splattercast.msg(f"{char.key} removed from combat.")
         if len(self.db.combatants) == 0:
@@ -329,24 +354,22 @@ class CombatHandler(DefaultScript):
         Handles attacks, misses, deaths, and round progression across managed rooms.
         """
         splattercast = ChannelDB.objects.get_channel("Splattercast")
-        if not self.db.combat_is_running: # Check your custom flag FIRST
+        if not self.db.combat_is_running:
             splattercast.msg(f"AT_REPEAT: Handler {self.key} on {self.obj.key} combat logic is not running (self.db.combat_is_running=False). Returning.")
             return
 
-        # Optional: Also check Evennia's underlying script active state for robustness
-        if not super().is_active: # Or self.is_active if not overridden
+        if not super().is_active:
              splattercast.msg(f"AT_REPEAT: Handler {self.key} on {self.obj.key} Evennia script.is_active=False. Marking combat_is_running=False and returning.")
-             self.db.combat_is_running = False # Sync our flag
+             self.db.combat_is_running = False
              return
 
-        # Prune combatants: Ensure they exist and are in a managed room.
         valid_combatants_entries = []
-        for entry in list(self.db.combatants): # Iterate a copy for safe removal
+        for entry in list(self.db.combatants):
             char = entry.get("char")
-            if not char: # Character object is gone
+            if not char:
                 splattercast.msg(f"AT_REPEAT: Pruning missing character from handler {self.key}.")
-                continue # Skip this entry
-            if not char.location: # Character has no location (e.g., destroyed, in limbo)
+                continue
+            if not char.location:
                 splattercast.msg(f"AT_REPEAT: Pruning {char.key} (no location) from handler {self.key}.")
                 if hasattr(char, "ndb") and char.ndb.combat_handler == self:
                     del char.ndb.combat_handler
@@ -354,7 +377,7 @@ class CombatHandler(DefaultScript):
             if char.location not in self.db.managed_rooms:
                 splattercast.msg(f"AT_REPEAT: Pruning {char.key} (in unmanaged room {char.location.key}) from handler {self.key}.")
                 if hasattr(char, "ndb") and char.ndb.combat_handler == self:
-                    del char.ndb.combat_handler # Clean NDB if they left the zone
+                    del char.ndb.combat_handler
                 continue
             valid_combatants_entries.append(entry)
         
@@ -366,56 +389,64 @@ class CombatHandler(DefaultScript):
             return
 
         if self.db.round == 0:
-            if len(self.db.combatants) > 0: # Any combatant can start the round
+            if len(self.db.combatants) > 0:
                 splattercast.msg(f"AT_REPEAT: Handler {self.key}. Combatants present. Starting combat in round 1.")
                 self.db.round = 1
             else:
-                # This case should be rare due to the check above, but good for safety
                 splattercast.msg(f"AT_REPEAT: Handler {self.key}. Waiting for combatants to join...")
                 return
 
         splattercast.msg(f"AT_REPEAT: Handler {self.key} (managing {[r.key for r in self.db.managed_rooms]}). Round {self.db.round} begins.")
         
-        # Check if combat should end due to too few participants
-        # Consider only active, non-yielding combatants for "active participants" count if desired
-        if len(self.db.combatants) <= 1: # If only one or zero combatants are left
+        if len(self.db.combatants) <= 1:
             splattercast.msg(f"AT_REPEAT: Handler {self.key}. Not enough combatants ({len(self.db.combatants)}) to continue. Ending combat.")
             self.stop_combat_logic()
             return
 
-        for combat_entry in list(self.get_initiative_order()): # Iterate copy in case of mid-turn removals
+        for combat_entry in list(self.get_initiative_order()):
             char = combat_entry.get("char")
 
-            # Re-validate char and their presence in self.db.combatants, as they might have been removed by a previous turn's action
             if not char or not any(e["char"] == char for e in self.db.combatants):
                 splattercast.msg(f"AT_REPEAT: Skipping turn for {char.key if char else 'UnknownChar'} as they are no longer in combat list.")
                 continue
             
-            # Ensure char is still in a managed room (could have been moved by a non-combat effect mid-round)
             if not char.location or char.location not in self.db.managed_rooms:
                 splattercast.msg(f"AT_REPEAT: {char.key} moved out of managed zone mid-round to {char.location.key if char.location else 'None'}. Removing.")
-                self.remove_combatant(char) # This will also clean NDB
+                self.remove_combatant(char)
                 continue
 
             current_char_combat_entry = next((e for e in self.db.combatants if e["char"] == char), None)
-            if not current_char_combat_entry: # Should be redundant due to above check, but safety first
+            if not current_char_combat_entry:
                 splattercast.msg(f"Error: Could not find combat entry for {char.key} mid-turn (second check).")
                 continue
 
             splattercast.msg(f"--- Turn: {char.key} (Loc: {char.location.key}, Init: {current_char_combat_entry['initiative']}) ---")
 
-            # Capture the intent for this turn. The DB version is cleared immediately.
-            # This local 'action_intent_this_turn' variable holds the details for the current turn's logic.
+            # --- START-OF-TURN NDB CLEANUP for char (Charge Flags) ---
+            if hasattr(char.ndb, "charging_vulnerability_active"):
+                splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing charging_vulnerability_active for {char.key} (was active from their own previous charge).")
+                del char.ndb.charging_vulnerability_active
+            
+            if hasattr(char.ndb, "charge_attack_bonus_active"): # Bonus from *previous* turn expired if not used
+                splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing expired/unused charge_attack_bonus_active for {char.key}.")
+                del char.ndb.charge_attack_bonus_active
+
+            # --- TURN SKIP CHECK (e.g. from failed charge/flee) ---
+            if hasattr(char.ndb, "skip_combat_round") and char.ndb.skip_combat_round:
+                char.msg("|yYou are recovering or off-balance and cannot act this turn.|n")
+                splattercast.msg(f"AT_REPEAT_SKIP_TURN: {char.key} is skipping turn due to ndb.skip_combat_round.")
+                del char.ndb.skip_combat_round # Consume the flag
+                continue # Skip to next combatant
+
+            # --- PROCESS COMBAT ACTION INTENT ---
             action_intent_this_turn = current_char_combat_entry.get("combat_action")
             if action_intent_this_turn:
                 splattercast.msg(f"AT_REPEAT: {char.key} has action_intent: {action_intent_this_turn}")
-                current_char_combat_entry["combat_action"] = None # Consume the intent from DB immediately
+                current_char_combat_entry["combat_action"] = None 
 
-                # Now, process based on the content of 'action_intent_this_turn'
                 intent_type = action_intent_this_turn.get("type")
-                action_target_char = action_intent_this_turn.get("target") # This is a character object
+                action_target_char = action_intent_this_turn.get("target") 
 
-                # Validate the target of the action intent
                 is_action_target_valid = False
                 if action_target_char and any(e["char"] == action_target_char for e in self.db.combatants):
                     if action_target_char.location and action_target_char.location in self.db.managed_rooms:
@@ -424,14 +455,25 @@ class CombatHandler(DefaultScript):
                 if not is_action_target_valid and action_target_char:
                     char.msg(f"The target of your planned action ({action_target_char.key}) is no longer valid.")
                     splattercast.msg(f"{char.key}'s action_intent target {action_target_char.key} is invalid. Intent cleared, falling through.")
-                    # No 'continue', allow fall-through to yielding/standard attack if applicable
                 
+                # === YOUR EXISTING GRAPPLE INTENT LOGIC STARTS HERE ===
                 elif intent_type == "grapple" and is_action_target_valid:
                     splattercast.msg(f"AT_REPEAT: {char.key} attempting to grapple {action_target_char.key} based on intent.")
                     
                     can_grapple_target = (char.location == action_target_char.location) # Must be in the same room
                     
                     if can_grapple_target:
+                        # Proximity Check for Grapple (NEW)
+                        if not hasattr(char.ndb, "in_proximity_with"): char.ndb.in_proximity_with = set()
+                        if action_target_char not in char.ndb.in_proximity_with:
+                            char.msg(f"You need to be in melee proximity with {action_target_char.get_display_name(char)} to grapple them. Try advancing or charging.")
+                            splattercast.msg(f"GRAPPLE FAIL (PROXIMITY): {char.key} not in proximity with {action_target_char.key}.")
+                            # Do not 'continue' here, let it fall through if you want default attack
+                            # Or 'continue' if grapple attempt (even if proximity failed) consumes the turn.
+                            # For now, let's assume it consumes the turn if intent was grapple.
+                            continue
+
+
                         attacker_roll = randint(1, max(1, getattr(char, "motorics", 1)))
                         defender_roll = randint(1, max(1, getattr(action_target_char, "motorics", 1)))
                         splattercast.msg(f"GRAPPLE ATTEMPT: {char.key} (roll {attacker_roll}) vs {action_target_char.key} (roll {defender_roll}).")
@@ -446,7 +488,6 @@ class CombatHandler(DefaultScript):
                             char.msg(grapple_messages.get("attacker_msg"))
                             action_target_char.msg(grapple_messages.get("victim_msg"))
                             obs_msg = grapple_messages.get("observer_msg")
-                            # Send to relevant locations (attacker's room, should be same as target's for grapple)
                             if char.location:
                                 char.location.msg_contents(obs_msg, exclude=[char, action_target_char])
                             splattercast.msg(f"GRAPPLE SUCCESS: {char.key} grappled {action_target_char.key}.")
@@ -458,12 +499,12 @@ class CombatHandler(DefaultScript):
                             if char.location:
                                 char.location.msg_contents(obs_msg, exclude=[char, action_target_char])
                             splattercast.msg(f"GRAPPLE FAIL: {char.key} failed to grapple {action_target_char.key}.")
-                    else: # Cannot reach
+                    else: # Cannot reach (different rooms)
                         char.msg(f"You can't reach {action_target_char.key} to grapple them from here.")
                         splattercast.msg(f"GRAPPLE FAIL (REACH): {char.key} cannot reach {action_target_char.key}.")
                     
                     splattercast.msg(f"AT_REPEAT: {char.key}'s turn concluded by 'grapple' intent processing.")
-                    continue # Grapple attempt (success or fail) concludes the offensive action for this turn.
+                    continue 
                 
                 elif intent_type == "escape_grapple":
                     grappler = current_char_combat_entry.get("grappled_by")
@@ -486,7 +527,7 @@ class CombatHandler(DefaultScript):
                             char.msg(escape_messages.get("attacker_msg"))
                             grappler.msg(escape_messages.get("victim_msg"))
                             obs_msg = escape_messages.get("observer_msg")
-                            for loc in {char.location, grappler.location}: # Could be different if one moved while grappled
+                            for loc in {char.location, grappler.location}: 
                                 if loc: loc.msg_contents(obs_msg, exclude=[char, grappler])
                             splattercast.msg(f"ESCAPE SUCCESS: {char.key} escaped from {grappler.key}.")
                         else: # Escape failed
@@ -497,14 +538,14 @@ class CombatHandler(DefaultScript):
                             for loc in {char.location, grappler.location}:
                                 if loc: loc.msg_contents(obs_msg, exclude=[char, grappler])
                             splattercast.msg(f"ESCAPE FAIL: {char.key} failed to escape {grappler.key}.")
-                    else: # Not grappled or grappler invalid
+                    else: 
                         char.msg("You are not currently grappled by a valid opponent to escape from.")
-                        if current_char_combat_entry.get("grappled_by"): # Clean up if grappler was invalid
+                        if current_char_combat_entry.get("grappled_by"): 
                             current_char_combat_entry["grappled_by"] = None
                             splattercast.msg(f"CLEANUP: {char.key} was grappled_by an invalid char. Cleared.")
                     
                     splattercast.msg(f"AT_REPEAT: {char.key}'s turn concluded by 'escape_grapple' intent processing.")
-                    continue # Escape attempt concludes the offensive action.
+                    continue 
 
                 elif intent_type == "release_grapple":
                     victim_char_being_grappled = current_char_combat_entry.get("grappling")
@@ -525,49 +566,42 @@ class CombatHandler(DefaultScript):
                         for loc in {char.location, victim_char_being_grappled.location}:
                              if loc: loc.msg_contents(obs_msg, exclude=[char, victim_char_being_grappled])
                         splattercast.msg(f"RELEASE GRAPPLE: {char.key} released {victim_char_being_grappled.key}.")
-                    else: # Not grappling anyone valid
+                    else: 
                         char.msg("You are not grappling a valid opponent to release.")
-                        if current_char_combat_entry.get("grappling"): # Clean up if victim was invalid
+                        if current_char_combat_entry.get("grappling"): 
                             current_char_combat_entry["grappling"] = None
                             splattercast.msg(f"CLEANUP: {char.key} was grappling an invalid char. Cleared.")
 
                     splattercast.msg(f"AT_REPEAT: {char.key}'s turn concluded by 'release_grapple' intent processing.")
-                    continue # Releasing a grapple concludes the offensive action.
-
-                # Add other 'elif intent_type == "your_other_action_type":' blocks here
-                # Ensure they also 'continue' if they complete the turn's action.
+                    continue 
+                # === YOUR EXISTING GRAPPLE INTENT LOGIC ENDS HERE ===
                 
-                else: # Intent type not recognized or doesn't consume the turn by default
+                else: 
                     char.msg(f"You briefly consider your plan to '{intent_type}' but it doesn't seem applicable right now, or it's an unknown action.")
                     splattercast.msg(f"AT_REPEAT: {char.key}'s intent '{intent_type}' not fully processed or doesn't end turn. Falling through.")
-                    # No 'continue' here, so logic will fall through to yielding/standard attack.
             
-            # --- Handle Yielding ---
+            # --- Handle Yielding (if no intent consumed turn) ---
             if current_char_combat_entry.get("is_yielding"):
-                # Check if they were grappled and escaped, if so, they might not be yielding anymore
-                # For now, if they are yielding at this point, they do nothing offensively.
                 splattercast.msg(f"{char.key} is yielding and takes no hostile action this turn.")
                 char.location.msg_contents(f"|y{char.key} holds their action, appearing non-hostile.|n", exclude=[char])
                 char.msg("|yYou hold your action, appearing non-hostile.|n")
-                continue # Skip to next combatant
+                continue
 
-            # --- Determine Target for Standard Attack ---
+            # --- Determine Target for Standard Attack (if no intent consumed turn and not yielding) ---
             target = None
-            if current_char_combat_entry.get("grappling"): # If grappling, default target is the one grappled
+            if current_char_combat_entry.get("grappling"):
                 target = current_char_combat_entry["grappling"]
-                # Validate grappled target is still in combat
                 if not any(e["char"] == target for e in self.db.combatants):
                     splattercast.msg(f"{char.key} was grappling {target.key if target else 'Unknown'}, but they are no longer in combat. Clearing grapple.")
                     current_char_combat_entry["grappling"] = None
-                    target = None # No longer a valid target
+                    target = None 
                 else:
                      splattercast.msg(f"{char.key} is grappling {target.key}, and defaults to attacking them this turn.")
             
-            if not target: # If not grappling or grappled target invalid, get general target
+            if not target: 
                 target = self.get_target(char)
 
             if not target:
-                # Check if still in an active grapple (e.g. being grappled) even if no offensive target
                 is_in_active_grapple = current_char_combat_entry.get("grappled_by") and \
                                        any(e["char"] == current_char_combat_entry.get("grappled_by") for e in self.db.combatants)
                 if not is_in_active_grapple:
@@ -575,56 +609,95 @@ class CombatHandler(DefaultScript):
                     self.remove_combatant(char)
                 else:
                     splattercast.msg(f"{char.key} has no offensive target but is being grappled. Turn passes for offensive action.")
-                continue # Skip to next combatant
+                continue 
 
-            # --- Validate Target Location and Reachability for Attack ---
-            can_attack_target = False
-            if char.location == target.location:
-                can_attack_target = True
-                splattercast.msg(f"AT_REPEAT: {char.key} attacking {target.key} in same room: {char.location.key}.")
-            elif target.location in self.db.managed_rooms:
-                # Check for direct connection via an exit for inter-room attack
-                is_adjacent = any(ex.destination == target.location for ex in char.location.exits)
-                if is_adjacent:
-                    can_attack_target = True
-                    splattercast.msg(f"AT_REPEAT: {char.key} (in {char.location.key}) attacking {target.key} (in {target.location.key}) - rooms are adjacent and managed.")
-                else:
-                    char.msg(f"You can't reach {target.key} in {target.location.key} from here; they are not in an adjacent part of the combat zone.")
-                    splattercast.msg(f"AT_REPEAT: {char.key} cannot attack {target.key}, rooms {char.location.key} and {target.location.key} not adjacent.")
-            else:
-                # Target is in a room not managed by this combat (should be rare if get_target is robust and pruning works)
-                char.msg(f"{target.key} is not in the current combat zone.")
-                splattercast.msg(f"AT_REPEAT: {char.key}'s target {target.key} is in {target.location.key}, which is not managed by {self.key}.")
-
-            if not can_attack_target:
-                # If cannot attack, clear their current target to avoid repeated failed attempts if target doesn't move
-                current_char_combat_entry["target"] = None 
-                splattercast.msg(f"AT_REPEAT: {char.key} could not attack target {target.key}. Target cleared for next round decision.")
-                continue # Skip to next combatant's turn
-
-            # --- Resolve Attack ---
-            atk_roll = randint(1, max(1, getattr(char, "grit", 1)))
-            def_roll = randint(1, max(1, getattr(target, "motorics", 1)))
-            
+            # --- WEAPON IDENTIFICATION for current attacker char ---
             hands = getattr(char, "hands", {})
-            weapon = next((item for hand, item in hands.items() if item), None)
-            weapon_type = "unarmed"
-            if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type:
-                weapon_type = str(weapon.db.weapon_type).lower()
+            weapon_obj = next((item for hand, item in hands.items() if item), None)
+            is_ranged_weapon = weapon_obj and hasattr(weapon_obj.db, "is_ranged") and weapon_obj.db.is_ranged
+            weapon_name_for_msg = weapon_obj.key if weapon_obj else "their fists"
+            # --- END WEAPON IDENTIFICATION ---
 
-            grappling_this_target = current_char_combat_entry.get("grappling") == target
-            effective_message_weapon_type = "grapple" if grappling_this_target else weapon_type
+            # --- PROXIMITY AND WEAPON VALIDATION FOR HANDLER-DRIVEN STANDARD ATTACK ---
+            can_attack_target_based_on_proximity_and_weapon = False
+            if char.location == target.location: # SAME ROOM
+                if not hasattr(char.ndb, "in_proximity_with"): char.ndb.in_proximity_with = set() 
+                if not hasattr(target.ndb, "in_proximity_with"): target.ndb.in_proximity_with = set()
+                
+                is_in_melee_proximity = target in char.ndb.in_proximity_with
 
-            splattercast.msg(f"{char.key} (using {effective_message_weapon_type}) attacks {target.key} (atk:{atk_roll} vs def:{def_roll})")
+                if is_in_melee_proximity: 
+                    if is_ranged_weapon:
+                        char.msg(f"|rYou can't effectively use your {weapon_name_for_msg} while locked in melee with {target.get_display_name(char)}!|n")
+                        splattercast.msg(f"AT_REPEAT_INVALID_ATTACK: {char.key} tried to use ranged '{weapon_name_for_msg}' on {target.key} in melee. Attack fails.")
+                        current_char_combat_entry["target"] = None 
+                        continue 
+                    else: 
+                        can_attack_target_based_on_proximity_and_weapon = True
+                        splattercast.msg(f"AT_REPEAT_PROXIMITY_VALID: {char.key} (melee/unarmed) vs {target.key} (in proximity).")
+                else: 
+                    if not is_ranged_weapon:
+                        char.msg(f"|rYou are too far away to hit {target.get_display_name(char)} with your {weapon_name_for_msg}. Try advancing or charging.|n")
+                        splattercast.msg(f"AT_REPEAT_INVALID_ATTACK: {char.key} tried to use non-ranged '{weapon_name_for_msg}' on {target.key} (not in prox). Attack fails.")
+                        current_char_combat_entry["target"] = None
+                        continue
+                    else: 
+                        can_attack_target_based_on_proximity_and_weapon = True
+                        splattercast.msg(f"AT_REPEAT_PROXIMITY_VALID: {char.key} (ranged) vs {target.key} (not in proximity, same room).")
+            
+            elif target.location in self.db.managed_rooms: # DIFFERENT MANAGED ROOMS
+                is_adjacent = any(ex.destination == target.location for ex in char.location.exits)
+                if not is_adjacent: 
+                    char.msg(f"|rYou can't reach {target.key} in {target.location.key}; they are not in an adjacent part of the combat zone.|n")
+                    splattercast.msg(f"AT_REPEAT_INVALID_ATTACK: {char.key} vs {target.key}, rooms not adjacent ({char.location.key} -> {target.location.key}). Attack fails.")
+                    current_char_combat_entry["target"] = None
+                    continue
+                if not is_ranged_weapon:
+                    char.msg(f"|rYou need a ranged weapon to attack {target.get_display_name(char)} in {target.location.get_display_name(char)}.|n")
+                    splattercast.msg(f"AT_REPEAT_INVALID_ATTACK: {char.key} tried to attack {target.key} in different room without ranged. Attack fails.")
+                    current_char_combat_entry["target"] = None
+                    continue
+                else: 
+                    can_attack_target_based_on_proximity_and_weapon = True
+                    splattercast.msg(f"AT_REPEAT_PROXIMITY_VALID: {char.key} (ranged) vs {target.key} (different room).")
+            else: 
+                char.msg(f"|r{target.key} is not in the current combat zone or is unreachable.|n")
+                splattercast.msg(f"AT_REPEAT_INVALID_ATTACK: Target {target.key} in unmanaged/unreachable room {target.location.key if target.location else 'None'}. Attack fails.")
+                current_char_combat_entry["target"] = None
+                continue
 
-            if atk_roll > def_roll:
+            if not can_attack_target_based_on_proximity_and_weapon:
+                splattercast.msg(f"AT_REPEAT_ERROR: Attack validation failed for {char.key} vs {target.key} but did not 'continue'. Stopping attack explicitly.")
+                continue
+            # --- END PROXIMITY AND WEAPON VALIDATION ---
+
+            # --- Resolve Standard Attack ---
+            atk_roll_base = randint(1, max(1, getattr(char, "grit", 1)))
+            def_roll_base = randint(1, max(1, getattr(target, "motorics", 1)))
+            
+            atk_roll_final = atk_roll_base
+            def_roll_final = def_roll_base
+
+            # Apply CHARGE ATTACK BONUS for attacker (char)
+            if hasattr(char.ndb, "charge_attack_bonus_active") and char.ndb.charge_attack_bonus_active:
+                splattercast.msg(f"AT_REPEAT_CHARGE_BONUS_PENDING: {char.key} had charge_attack_bonus_active (effects temporarily disabled).")
+                del char.ndb.charge_attack_bonus_active
+
+            # Apply CHARGING VULNERABILITY for defender (target)
+            if hasattr(target.ndb, "charging_vulnerability_active") and target.ndb.charging_vulnerability_active:
+                splattercast.msg(f"AT_REPEAT_VULNERABILITY_PENDING: {target.key} had charging_vulnerability_active (effects temporarily disabled).")
+
+            weapon_type_stat = "unarmed"
+
+            splattercast.msg(f"{char.key} (using {effective_message_weapon_type}, base atk {atk_roll_base}, final {atk_roll_final}) attacks {target.key} (base def {def_roll_base}, final {def_roll_final})")
+
+            if atk_roll_final > def_roll_final:
                 splattercast.msg(f"HIT_DEBUG: Attack by {char.key} on {target.key} is a HIT. Processing...")
-                damage = getattr(char, "grit", 1) or 1
-                actual_damage_recipient = target # Default
+                damage = (getattr(char, "grit", 1) or 1)
+                actual_damage_recipient = target 
                 
                 splattercast.msg(f"HIT_DEBUG: Initial damage: {damage}, initial recipient: {actual_damage_recipient.key}.")
 
-                # --- Body Shield Logic (ensure messages are room-aware) ---
                 target_combat_entry = next((e for e in self.db.combatants if e["char"] == target), None)
                 if target_combat_entry and target_combat_entry.get("grappling"):
                     shield_char = target_combat_entry.get("grappling")
@@ -649,14 +722,12 @@ class CombatHandler(DefaultScript):
                             msg_shield_fail = f"|y{target.key} tries to use {shield_char.key} as a shield but fails!|n"
                             if target.location: target.location.msg_contents(msg_shield_fail, exclude=[target, shield_char])
                             splattercast.msg(f"HIT_DEBUG: Body shield FAIL. Recipient remains {actual_damage_recipient.key}.")
-                # --- End Body Shield ---
                 splattercast.msg(f"HIT_DEBUG: After body shield, final recipient: {actual_damage_recipient.key}.")
 
-                # PREDICT lethality if possible
                 is_lethal_blow_predicted = False 
                 if hasattr(actual_damage_recipient, "db") and hasattr(actual_damage_recipient.db, "hp") and actual_damage_recipient.db.hp is not None:
                     try:
-                        hp_val = float(actual_damage_recipient.db.hp) # Ensure hp is a number
+                        hp_val = float(actual_damage_recipient.db.hp) 
                         if hp_val <= damage:
                             is_lethal_blow_predicted = True
                         splattercast.msg(f"HIT_DEBUG: Lethality PREDICTED using db.hp (value: {hp_val} <= damage: {damage}). Predicted lethal: {is_lethal_blow_predicted}.")
@@ -679,7 +750,7 @@ class CombatHandler(DefaultScript):
                 try:
                     initial_combat_messages = get_combat_message(
                         effective_message_weapon_type, initial_message_phase, 
-                        attacker=char, target=actual_damage_recipient, item=weapon, damage=damage
+                        attacker=char, target=actual_damage_recipient, item=weapon_obj, damage=damage # Use weapon_obj
                     )
                     splattercast.msg(f"HIT_DEBUG: get_combat_message for initial message returned: {str(initial_combat_messages)[:200]}...")
                 except Exception as e_get_msg:
@@ -710,31 +781,26 @@ class CombatHandler(DefaultScript):
                 splattercast.msg(f"{char.key}'s attack (initial phase: {initial_message_phase}) will attempt to deal {damage} to {actual_damage_recipient.key}.")
                 
                 if hasattr(actual_damage_recipient, "take_damage"):
-                    actual_damage_recipient.take_damage(damage) # Character's own death messages (e.g. "collapses") may occur here
+                    actual_damage_recipient.take_damage(damage) 
                 
-                # Check ACTUAL death status
                 actually_dead = hasattr(actual_damage_recipient, "is_dead") and actual_damage_recipient.is_dead()
 
                 if actually_dead:
                     splattercast.msg(f"HIT_DEBUG: Confirmed ACTUAL death of {actual_damage_recipient.key}.")
                     
-                    # If the initial message was a "hit" (because prediction failed/was wrong)
-                    # but they ACTUALLY died, send the definitive "kill" message now.
                     if not is_lethal_blow_predicted: 
                         splattercast.msg(f"HIT_DEBUG: Initial prediction was NOT lethal (sent '{initial_message_phase}'), but target IS dead. Sending definitive 'kill' message now.")
                         
                         final_kill_phase = "grapple_damage_kill" if grappling_this_target else "kill"
                         final_kill_messages = get_combat_message(
                             effective_message_weapon_type, final_kill_phase,
-                            attacker=char, target=actual_damage_recipient, item=weapon, damage=damage
+                            attacker=char, target=actual_damage_recipient, item=weapon_obj, damage=damage # Use weapon_obj
                         )
 
                         fk_attacker_msg = final_kill_messages.get("attacker_msg", f"You deliver a fatal blow to {actual_damage_recipient.key} (default kill msg).")
-                        # fk_victim_msg = final_kill_messages.get("victim_msg") # Victim is dead.
                         fk_observer_msg = final_kill_messages.get("observer_msg", f"{char.key} delivers a fatal blow to {actual_damage_recipient.key} (default kill msg).")
                         
                         char.msg(fk_attacker_msg)
-                        # actual_damage_recipient.msg(fk_victim_msg) # Already dead, likely won't see.
 
                         final_observer_locations = {char.location, actual_damage_recipient.location if actual_damage_recipient.location else None}
                         final_observer_locations.discard(None)
@@ -743,24 +809,17 @@ class CombatHandler(DefaultScript):
                             loc.msg_contents(fk_observer_msg, exclude=exclude_list)
                         splattercast.msg(f"HIT_DEBUG: Definitive 'kill' messages sent for phase '{final_kill_phase}'.")
 
-                    # Standard death cleanup for the combat system
                     self.remove_combatant(actual_damage_recipient)
-                    for entry in list(self.db.combatants): # Iterate copy
+                    for entry in list(self.db.combatants): 
                         if entry.get("target") == actual_damage_recipient:
                             entry["target"] = self.get_target(entry["char"])
                             splattercast.msg(f"{entry['char'].key} retargeted from slain {actual_damage_recipient.key} to {entry['target'].key if entry['target'] else 'None'}.")
-                    continue # End turn for attacker
-                
-                # If not actually_dead:
-                # If is_lethal_blow_predicted was True but they aren't dead, the "kill" message was sent. This is an edge case.
-                # If is_lethal_blow_predicted was False and they aren't dead, "hit" message was sent. Correct.
-                # No further combat system messages needed here if not dead.
-
+                    continue 
             else: # Attack missed
                 miss_phase = "grapple_damage_miss" if grappling_this_target else "miss"
                 combat_messages = get_combat_message(
                     effective_message_weapon_type, miss_phase, 
-                    attacker=char, target=target, item=weapon
+                    attacker=char, target=target, item=weapon_obj # Use weapon_obj
                 )
 
                 attacker_msg = combat_messages.get("attacker_msg", f"You miss {target.key}.")
@@ -768,7 +827,7 @@ class CombatHandler(DefaultScript):
                 observer_msg = combat_messages.get("observer_msg", f"{char.key} misses {target.key}.")
 
                 char.msg(attacker_msg)
-                if target != char: # Ensure victim is not the attacker
+                if target != char: 
                     target.msg(victim_msg)
 
                 observer_locations = set()
@@ -785,6 +844,7 @@ class CombatHandler(DefaultScript):
                         if target not in exclude_list:
                             exclude_list.append(target)
                     loc.msg_contents(observer_msg, exclude=exclude_list)
+                splattercast.msg(f"MISS_DEBUG: Attack by {char.key} on {target.key} is a MISS.")
 
         if not self.db.combatants:
             splattercast.msg(f"AT_REPEAT: Handler {self.key}. No combatants left after round processing. Stopping.")
