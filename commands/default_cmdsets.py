@@ -56,6 +56,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdCombat.CmdAim)  # Add CmdAim to the CharacterCmdSet
         self.add(CmdCombat.CmdStop)  # Add CmdStop to the CharacterCmdSet
         self.add(CmdCombat.CmdLook)  # Add CmdReady to the CharacterCmdSet
+        self.add(CmdCombat.CmdAdvance)
+        self.add(CmdCombat.CmdRetreat)
+        self.add(CmdCombat.CmdCharge)  # Add CmdReady to the CharacterCmdSet
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
