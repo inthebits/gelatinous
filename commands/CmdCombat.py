@@ -596,8 +596,10 @@ class CmdAdvance(Command):
     Attempt to close distance and engage a target in melee.
 
     Usage:
-      advance <target>
+      advance [target]
 
+    If no target is specified, attempts to advance on your current
+    combat target.
     If the target is in the same room but not in melee proximity,
     you will attempt to close the distance.
     If the target is in an adjacent room, you will attempt to move
@@ -621,60 +623,73 @@ class CmdAdvance(Command):
             # Or, allow advance to initiate combat if desired, similar to CmdAttack
             return
 
-        if not args:
-            caller.msg("Advance on whom?")
-            return
-
-        # --- Target Acquisition ---
-        # First, search in the current room
-        target = caller.search(args, location=caller.location, quiet=True)
         target_char = None
-        if isinstance(target, list):
-            if target: target_char = target[0]
+        target_search_name = args
+
+        if not args:
+            # --- NO ARGUMENTS GIVEN, TRY TO USE CURRENT TARGET ---
+            caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+            if caller_entry and caller_entry.get("target"):
+                target_char = caller_entry.get("target")
+                # Validate this target is still in a managed room by this handler
+                if not (target_char.location and target_char.location in handler.db.managed_rooms and \
+                        any(e["char"] == target_char for e in handler.db.combatants)):
+                    caller.msg(f"Your current target ({target_char.key if target_char else 'None'}) is no longer valid or reachable.")
+                    splattercast.msg(f"ADVANCE_CMD: {caller.key} tried to advance on default target {target_char.key if target_char else 'None'}, but target invalid/unreachable.")
+                    return
+                splattercast.msg(f"ADVANCE_CMD: No target specified. Defaulting to current target: {target_char.key}.")
+                target_search_name = target_char.key # For logging consistency if needed later
+            else:
+                caller.msg("Advance on whom? (You have no current target).")
+                return
         else:
-            target_char = target
+            # --- ARGUMENTS GIVEN, SEARCH FOR TARGET ---
+            # First, search in the current room
+            target_result = caller.search(args, location=caller.location, quiet=True) # Changed from target to target_result
+            if isinstance(target_result, list):
+                if target_result: target_char = target_result[0]
+            else:
+                target_char = target_result
         
         target_in_adjacent_room = False
-        original_room = caller.location
+        # original_room = caller.location # Not needed here
 
         if not target_char or not inherits_from(target_char, "typeclasses.characters.Character"):
-            # If not found in current room, check adjacent rooms if caller is in combat
-            # This part is more complex if we allow advancing into *any* adjacent room towards a named target
-            # For now, let's simplify: if target not in current room, assume they might be in a known combat zone room.
-            # A more robust search would iterate exits and search destinations.
-            # For this iteration, we'll focus on same-room advance first, then expand.
-            
-            # Placeholder for adjacent room search logic:
-            # For now, if not in current room, we'll assume it's an error or needs more specific targeting.
-            # We will expand this to search adjacent managed rooms by the handler.
-            all_combatants_in_handler = [entry["char"] for entry in handler.db.combatants if entry["char"]]
-            potential_remote_targets = [
-                char for char in all_combatants_in_handler 
-                if args.lower() in char.key.lower() and char.location != caller.location
-            ]
-            if potential_remote_targets:
-                # Simplistic: take the first one found. Could be ambiguous.
-                target_char = potential_remote_targets[0]
-                if target_char.location in handler.db.managed_rooms:
-                     # Check if there's a direct exit to target's room
-                    can_reach_adj_room = False # Initialize before loop
-                    for ex in caller.location.exits:
-                        if ex.destination == target_char.location:
-                            can_reach_adj_room = True # SET THE FLAG HERE
-                            break # Exit loop once found
-                    if can_reach_adj_room:
-                        target_in_adjacent_room = True
-                        splattercast.msg(f"ADVANCE_TARGET: {caller.key} targeting {target_char.key} in adjacent room {target_char.location.key}.")
+            # This block is now primarily for when args were provided but target not found in current room
+            if args: # Only do remote search if args were initially provided
+                all_combatants_in_handler = [entry["char"] for entry in handler.db.combatants if entry["char"]]
+                potential_remote_targets = [
+                    char for char in all_combatants_in_handler 
+                    if args.lower() in char.key.lower() and char.location != caller.location
+                ]
+                if potential_remote_targets:
+                    target_char = potential_remote_targets[0]
+                    if target_char.location in handler.db.managed_rooms:
+                        can_reach_adj_room = False 
+                        for ex in caller.location.exits:
+                            if ex.destination == target_char.location:
+                                can_reach_adj_room = True 
+                                break 
+                        if can_reach_adj_room:
+                            target_in_adjacent_room = True
+                            splattercast.msg(f"ADVANCE_TARGET: {caller.key} targeting {target_char.key} in adjacent room {target_char.location.key}.")
+                        else:
+                            caller.msg(f"You see {target_char.key} in the distance, but there's no direct path to advance on them from here.")
+                            return
                     else:
-                        caller.msg(f"You see {target_char.key} in the distance, but there's no direct path to advance on them from here.")
+                        caller.msg(f"You know of {target_char.key}, but they are not in a directly accessible combat area.")
                         return
                 else:
-                    caller.msg(f"You know of {target_char.key}, but they are not in a directly accessible combat area.")
+                    caller.msg(f"You don't see '{args}' here or in an adjacent combat area to advance on.")
                     return
-            else:
-                caller.msg(f"You don't see '{args}' here to advance on.")
+            elif not target_char: # This case means no args were given, and default target logic above failed to find one or it was invalid.
+                # The message "Advance on whom? (You have no current target)." should have been sent already.
                 return
 
+
+        if not target_char: # Final check if target_char is still None
+            caller.msg(f"You don't see '{target_search_name}' to advance on.")
+            return
 
         if target_char == caller:
             caller.msg("You cannot advance on yourself.")
