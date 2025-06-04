@@ -418,6 +418,9 @@ class CombatHandler(DefaultScript):
 
             splattercast.msg(f"--- Turn: {char.key} (Loc: {char.location.key}, Init: {current_char_combat_entry['initiative']}) ---")
 
+            # --- Initialize attack condition flags for this turn ---
+            attack_has_disadvantage = False # NEW FLAG
+
             # --- START-OF-TURN NDB CLEANUP for char (Charge Flags) ---
             if hasattr(char.ndb, "charging_vulnerability_active"):
                 splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing charging_vulnerability_active for {char.key} (was active from their own previous charge).")
@@ -624,10 +627,12 @@ class CombatHandler(DefaultScript):
 
                 if is_in_melee_proximity: 
                     if is_ranged_weapon:
-                        char.msg(f"|rYou can't effectively use your {weapon_name_for_msg} while locked in melee with {target.get_display_name(char)}!|n")
-                        splattercast.msg(f"AT_REPEAT_INVALID_ATTACK: {char.key} tried to use ranged '{weapon_name_for_msg}' on {target.key} in melee. Attack fails.")
-                        current_char_combat_entry["target"] = None 
-                        continue 
+                        # MODIFIED BLOCK FOR RANGED IN MELEE
+                        char.msg(f"|yYou struggle to aim your {weapon_name_for_msg} effectively while locked in melee with {target.get_display_name(char)}. You attack at disadvantage.|n")
+                        splattercast.msg(f"AT_REPEAT_ATTACK_CONDITION: {char.key} attacking with ranged '{weapon_name_for_msg}' vs {target.key} in melee. Applying disadvantage.")
+                        attack_has_disadvantage = True
+                        can_attack_target_based_on_proximity_and_weapon = True 
+                        # No longer clearing target or continuing
                     else: 
                         can_attack_target_based_on_proximity_and_weapon = True
                         splattercast.msg(f"AT_REPEAT_PROXIMITY_VALID: {char.key} (melee/unarmed) vs {target.key} (in proximity).")
@@ -670,8 +675,18 @@ class CombatHandler(DefaultScript):
             # --- Resolve Standard Attack ---
             # Robust stat fetching for attack roll
             char_grit_val = getattr(char, "grit", 1)
-            # Ensure the value is numeric before using in max(), default to 1 if not
-            atk_roll_base = randint(1, max(1, char_grit_val if isinstance(char_grit_val, (int, float)) else 1))
+            char_grit_val_numeric = char_grit_val if isinstance(char_grit_val, (int, float)) else 1
+            
+            # MODIFIED ATTACK ROLL CALCULATION
+            if attack_has_disadvantage:
+                roll1 = randint(1, max(1, char_grit_val_numeric))
+                roll2 = randint(1, max(1, char_grit_val_numeric))
+                atk_roll_base = min(roll1, roll2)
+                splattercast.msg(f"AT_REPEAT_ATTACK_ROLL: {char.key} attacking with disadvantage. Rolls: {roll1}, {roll2}. Base attack: {atk_roll_base}.")
+            else:
+                atk_roll_base = randint(1, max(1, char_grit_val_numeric))
+                # Optional: Add a log for normal rolls if desired for consistency
+                # splattercast.msg(f"AT_REPEAT_ATTACK_ROLL: {char.key} attacking normally. Base attack: {atk_roll_base}.")
 
             # Robust stat fetching for defense roll
             target_motorics_val = getattr(target, "motorics", 1)
