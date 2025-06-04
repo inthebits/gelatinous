@@ -657,11 +657,11 @@ class CmdAdvance(Command):
                 target_char = potential_remote_targets[0]
                 if target_char.location in handler.db.managed_rooms:
                      # Check if there's a direct exit to target's room
-                    can_reach_adj_room = False
+                    can_reach_adj_room = False # Initialize before loop
                     for ex in caller.location.exits:
                         if ex.destination == target_char.location:
-                            can_reach_adj_room = True
-                            break
+                            can_reach_adj_room = True # SET THE FLAG HERE
+                            break # Exit loop once found
                     if can_reach_adj_room:
                         target_in_adjacent_room = True
                         splattercast.msg(f"ADVANCE_TARGET: {caller.key} targeting {target_char.key} in adjacent room {target_char.location.key}.")
@@ -752,7 +752,20 @@ class CmdAdvance(Command):
                             callers_original_prox_char.ndb.in_proximity_with.add(targets_new_prox_char)
                             targets_new_prox_char.ndb.in_proximity_with.add(callers_original_prox_char)
                             splattercast.msg(f"ADVANCE_SCRUM_CALLER_TARGET_GROUP: {callers_original_prox_char.key} also now in proximity with {targets_new_prox_char.key}.")
-
+            
+            # Set the advancer's target in the combat handler
+            if handler:
+                advancer_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+                if advancer_entry:
+                    advancer_entry["target"] = target_char
+                    advancer_entry["is_yielding"] = False 
+                    splattercast.msg(f"ADVANCE_TARGET_SET: {caller.key}'s target in handler set to {target_char.key}.")
+                    # Diagnostic Log:
+                    splattercast.msg(f"ADVANCE_DEBUG_POST_SET: In CmdAdvance for {caller.key} (advancer), handler ID {handler.id if handler else 'None'}, entry target is now {advancer_entry.get('target').key if advancer_entry.get('target') else 'None'}. Full entry: {advancer_entry}")
+                else:
+                    splattercast.msg(f"ADVANCE_WARNING: Could not find {caller.key}'s entry in handler {handler.key} to set target after advance.")
+            else: 
+                splattercast.msg(f"ADVANCE_WARNING: No handler found for {caller.key} after successful advance to set target.")
 
         else:
             # --- Failure ---
