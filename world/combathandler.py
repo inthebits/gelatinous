@@ -632,16 +632,14 @@ class CombatHandler(DefaultScript):
                         splattercast.msg(f"AT_REPEAT_ATTACK_CONDITION: {char.key} attacking with ranged '{weapon_name_for_msg}' vs {target.key} in melee. Applying disadvantage.")
                         attack_has_disadvantage = True
                         can_attack_target_based_on_proximity_and_weapon = True 
-                        # No longer clearing target or continuing
                     else: 
                         can_attack_target_based_on_proximity_and_weapon = True
                         splattercast.msg(f"AT_REPEAT_PROXIMITY_VALID: {char.key} (melee/unarmed) vs {target.key} (in proximity).")
-                else: 
-                    if not is_ranged_weapon:
+                else: # Not in melee proximity (at range in same room)
+                    if not is_ranged_weapon: # Trying non-ranged attack at someone not in proximity
                         char.msg(f"|rYou are too far away to hit {target.get_display_name(char)} with your {weapon_name_for_msg}. Try advancing or charging.|n")
                         splattercast.msg(f"AT_REPEAT_INVALID_ATTACK: {char.key} tried to use non-ranged '{weapon_name_for_msg}' on {target.key} (not in prox). Attack fails.")
-                        current_char_combat_entry["target"] = None
-                        continue
+                        continue # Attack still fails and turn ends for this attack
                     else: 
                         can_attack_target_based_on_proximity_and_weapon = True
                         splattercast.msg(f"AT_REPEAT_PROXIMITY_VALID: {char.key} (ranged) vs {target.key} (not in proximity, same room).")
