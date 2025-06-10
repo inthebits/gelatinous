@@ -903,12 +903,15 @@ class CmdCharge(Command):
     Charge recklessly at a target to engage in melee.
 
     Usage:
-      charge <target>
+      charge [target]
 
+    If no target is specified, attempts to charge your current
+    combat target.
     A more aggressive, but potentially more dangerous, way to close
     distance with a target in the same room or an adjacent one.
     Success may grant a bonus on your next attack, but failure or
     the act of charging might leave you vulnerable.
+    Charge always attempts to establish melee proximity on success.
     """
     key = "charge"
     aliases = ["rush"]
@@ -925,63 +928,103 @@ class CmdCharge(Command):
             caller.msg("You need to be in combat to charge a target.")
             return
 
-        if not args:
-            caller.msg("Charge whom?")
-            return
-
-        # --- Target Acquisition (Similar to CmdAdvance) ---
-        target = caller.search(args, location=caller.location, quiet=True)
         target_char = None
-        if isinstance(target, list):
-            if target: target_char = target[0]
-        else:
-            target_char = target
-        
-        target_in_adjacent_room = False
+        target_search_name = args # Used for error messages if a specific name was given
+        target_in_adjacent_room = False # Initialize here
 
-        if not target_char or not inherits_from(target_char, "typeclasses.characters.Character"):
-            all_combatants_in_handler = [entry["char"] for entry in handler.db.combatants if entry["char"]]
-            potential_remote_targets = [
-                char for char in all_combatants_in_handler 
-                if args.lower() in char.key.lower() and char.location != caller.location
-            ]
-            if potential_remote_targets:
-                target_char = potential_remote_targets[0] # Simplistic: take first
-                if target_char.location in handler.db.managed_rooms:
-                    can_reach_adj_room = any(ex.destination == target_char.location for ex in caller.location.exits)
-                    if can_reach_adj_room:
-                        target_in_adjacent_room = True
-                        splattercast.msg(f"CHARGE_TARGET: {caller.key} targeting {target_char.key} in adjacent room {target_char.location.key}.")
-                    else:
-                        caller.msg(f"You see {target_char.key} in the distance, but there's no direct path to charge them from here.")
-                        return
-                else:
-                    caller.msg(f"You know of {target_char.key}, but they are not in a directly accessible combat area to charge.")
+        if not args:
+            # --- NO ARGUMENTS GIVEN, TRY TO USE CURRENT TARGET ---
+            caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+            if caller_entry and caller_entry.get("target"):
+                target_char = caller_entry.get("target")
+                target_search_name = target_char.key # For error messages
+
+                # Validate current target
+                if not (target_char.location and target_char.location in handler.db.managed_rooms and \
+                        any(e["char"] == target_char for e in handler.db.combatants)):
+                    caller.msg(f"Your current target ({target_char.key if target_char else 'None'}) is no longer valid or reachable for a charge.")
+                    splattercast.msg(f"CHARGE_CMD (NO ARGS): {caller.key} tried to charge default target {target_char.key if target_char else 'None'}, but target invalid/unreachable.")
                     return
+                
+                # Check if this default target is in an adjacent room
+                if target_char.location != caller.location:
+                    if target_char.location in handler.db.managed_rooms:
+                        can_reach_adj_room = any(ex.destination == target_char.location for ex in caller.location.exits)
+                        if can_reach_adj_room:
+                            target_in_adjacent_room = True
+                            splattercast.msg(f"CHARGE_CMD (NO ARGS): Default target {target_char.key} is in adjacent room {target_char.location.key}. Path exists.")
+                        else:
+                            # If no direct path, they can't charge there.
+                            caller.msg(f"Your current target ({target_char.key}) is in {target_char.location.key}, but there's no direct path to charge there from here.")
+                            splattercast.msg(f"CHARGE_CMD (NO ARGS): Default target {target_char.key} in {target_char.location.key}, but no direct path. Charge aborted.")
+                            return # Cannot charge to non-adjacent/unreachable room
+                    # else: target is in an unmanaged room, already caught by initial validation.
+                else: # Target is in the same room as caller
+                    splattercast.msg(f"CHARGE_CMD (NO ARGS): Default target {target_char.key} is in the same room ({caller.location.key}).")
+                
+                splattercast.msg(f"CHARGE_CMD: No target specified. Defaulting to current target: {target_char.key}. Adjacent: {target_in_adjacent_room}.")
             else:
-                caller.msg(f"You don't see '{args}' here to charge at.")
+                caller.msg("Charge whom? (You have no current target).")
                 return
+        else:
+            # --- ARGUMENTS GIVEN, SEARCH FOR TARGET (LOCAL FIRST) ---
+            target_result = caller.search(args, location=caller.location, quiet=True)
+            if isinstance(target_result, list):
+                if target_result: target_char = target_result[0]
+            else:
+                target_char = target_result
+        
+            # If no local target found by name, or if initial target_char is invalid, check for remote targets
+            if not target_char or not inherits_from(target_char, "typeclasses.characters.Character"):
+                if args: # Only search remote if args were provided
+                    all_combatants_in_handler = [entry["char"] for entry in handler.db.combatants if entry["char"]]
+                    potential_remote_targets = [
+                        char for char in all_combatants_in_handler 
+                        if args.lower() in char.key.lower() and char.location != caller.location
+                    ]
+                    if potential_remote_targets:
+                        target_char = potential_remote_targets[0] # Simplistic: take first match
+                        if target_char.location in handler.db.managed_rooms:
+                            can_reach_adj_room = any(ex.destination == target_char.location for ex in caller.location.exits)
+                            if can_reach_adj_room:
+                                target_in_adjacent_room = True
+                                splattercast.msg(f"CHARGE_TARGET (ARGS): {caller.key} targeting {target_char.key} in adjacent room {target_char.location.key}.")
+                            else:
+                                caller.msg(f"You see {target_char.key} in the distance, but there's no direct path to charge them from here.")
+                                return
+                        else:
+                            caller.msg(f"You know of {target_char.key}, but they are not in a directly accessible combat area to charge.")
+                            return
+                    else: # No local or remote target found by this name
+                        caller.msg(f"You don't see '{args}' here or in an adjacent combat area to charge.")
+                        return
+            # If a local target was found with args, target_in_adjacent_room remains False, which is correct.
+
+        # Final check on target_char validity
+        if not target_char:
+            caller.msg(f"You don't see '{target_search_name}' to charge.") # Use target_search_name which holds original arg or default target's name
+            return
 
         if target_char == caller:
             caller.msg("You cannot charge yourself. That would be silly.")
             return
 
-        for char_obj in [caller, target_char]: # Failsafe NDB init
+        # Failsafe NDB init for proximity sets
+        for char_obj in [caller, target_char]:
             if not hasattr(char_obj.ndb, "in_proximity_with") or not isinstance(char_obj.ndb.in_proximity_with, set):
                 char_obj.ndb.in_proximity_with = set()
                 splattercast.msg(f"CHARGE_FAILSAFE: Initialized in_proximity_with for {char_obj.key}.")
 
-        if target_char in caller.ndb.in_proximity_with:
+        # Check if already in proximity (only if target is in the same room)
+        if not target_in_adjacent_room and target_char in caller.ndb.in_proximity_with:
             caller.msg(f"You are already in melee proximity with {target_char.get_display_name(caller)}; no need to charge.")
             return
 
         # --- Opposed Roll for Charge ---
-        # Charge might be Motorics (for speed/force) vs Motorics (to evade/counter-charge) or Perception (to react)
-        # Let's give the charger a slight bonus to the roll, but a penalty if they fail.
-        caller_motorics_val = getattr(caller, "motorics", 1) # Changed from caller.db
+        caller_motorics_val = getattr(caller, "motorics", 1)
         caller_motorics_for_roll = caller_motorics_val if isinstance(caller_motorics_val, (int, float)) else 1
         
-        target_motorics_val = getattr(target_char, "motorics", 1) # Changed from target_char.db
+        target_motorics_val = getattr(target_char, "motorics", 1)
         target_motorics_for_roll = target_motorics_val if isinstance(target_motorics_val, (int, float)) else 1
 
         charge_bonus = 2 
@@ -991,30 +1034,24 @@ class CmdCharge(Command):
         splattercast.msg(f"CHARGE_ROLL: {caller.key} (motorics:{caller_motorics_for_roll}, roll:{charge_roll} incl. bonus {charge_bonus}) vs "
                          f"{target_char.key} (motorics:{target_motorics_for_roll}, roll:{resist_roll})")
         
-        # Set a temporary NDB flag for vulnerability during/after charge
-        # This could be checked by the combat handler or attack command
         caller.ndb.charging_vulnerability_active = True 
-        # We'll need to clear this flag, e.g., at the end of the caller's next turn or after their next action.
 
         if charge_roll > resist_roll:
             # --- Success ---
             if target_in_adjacent_room:
                 # --- SUCCESSFUL CHARGE TO ADJACENT ROOM ---
-                original_caller_location = caller.location # Store original location for messages
-                caller.location.msg_contents(f"{caller.get_display_name(original_caller_location)} charges {target_char.location.get_display_name(original_caller_location)}!", exclude=[caller])
+                original_caller_location = caller.location 
+                caller.location.msg_contents(f"{caller.get_display_name(original_caller_location)} charges towards {target_char.location.get_display_name(original_caller_location)}!", exclude=[caller])
                 
-                # Move the caller
                 caller.move_to(target_char.location, quiet=False, move_hooks=False)
                 
-                # 1. Clear the charger's (caller's) own aim state
                 if hasattr(caller, "clear_aim_state"):
                     caller.clear_aim_state(reason_for_clearing="as you charge into another area")
                     splattercast.msg(f"CHARGE_AIM_CLEAR (CALLER): {caller.key}'s aim state cleared after charging to {target_char.location.key}.")
                 else:
                     splattercast.msg(f"CHARGE_AIM_CLEAR_FAIL (CALLER): {caller.key} lacks clear_aim_state method after charging.")
 
-                # 2. Handle target_char's aim adjustment if they were focused on the caller or caller's direction of approach
-                if target_char and target_char.location == caller.location: # Ensure target is still in the new room with caller
+                if target_char and target_char.location == caller.location: 
                     was_aiming_at_caller_specifically = getattr(target_char.ndb, "aiming_at", None) == caller
                     target_aiming_direction = getattr(target_char.ndb, "aiming_direction", None)
                     was_aiming_directionally_towards_caller = False
@@ -1022,7 +1059,7 @@ class CmdCharge(Command):
                     if target_aiming_direction and not was_aiming_at_caller_specifically:
                         exit_towards_caller_original_room = None
                         for ex in target_char.location.exits:
-                            if ex.destination == original_caller_location: # original_caller_location is where caller came from
+                            if ex.destination == original_caller_location: 
                                 if ex.key.lower() == target_aiming_direction.lower() or \
                                    any(alias.lower() == target_aiming_direction.lower() for alias in (ex.aliases.all() if hasattr(ex.aliases, "all") else [])):
                                     exit_towards_caller_original_room = ex
@@ -1031,13 +1068,11 @@ class CmdCharge(Command):
                             was_aiming_directionally_towards_caller = True
 
                     if was_aiming_at_caller_specifically:
-                        # Target was already aiming at the caller. Aim persists.
                         target_char.msg(f"|y{caller.get_display_name(target_char)} charges directly into your sights! Your aim remains locked.|n")
                         caller.msg(f"|y{target_char.get_display_name(caller)} keeps you in their sights as you charge in!|n")
                         splattercast.msg(f"CHARGE_AIM_PERSIST: {target_char.key}'s aim remains on {caller.key} after charge.")
                     
                     elif was_aiming_directionally_towards_caller:
-                        # Target was aiming in the direction. Transition to aiming at caller.
                         if hasattr(target_char, "clear_aim_state"):
                             target_char.clear_aim_state(reason_for_clearing=f"as {caller.get_display_name(target_char)} charges in from that direction")
                         
@@ -1053,21 +1088,22 @@ class CmdCharge(Command):
                         caller.msg(f"|y{target_char.get_display_name(caller)} was aiming in your direction of approach and now focuses their aim directly on you as you charge!|n")
                         splattercast.msg(f"CHARGE_AIM_FOLLOW: {target_char.key} (was aiming {target_aiming_direction}) now aiming at {caller.key} after charge.")
                 
-                # General arrival message for the charger
                 caller.msg(f"|gYou charge into {target_char.location.get_display_name(caller)}, the same area as {target_char.get_display_name(caller)}!|n")
 
-                # Message to the room the caller arrived in
                 arrival_message_room = f"{caller.get_display_name(target_char.location)} charges into the area!"
                 if target_char in target_char.location.contents:
-                    if not was_aiming_at_caller_specifically and not was_aiming_directionally_towards_caller:
+                    # Conditional message to avoid spam if aim messages were sent
+                    if not (target_char and target_char.location == caller.location and \
+                            (getattr(target_char.ndb, "aiming_at", None) == caller or \
+                             (getattr(target_char.ndb, "aiming_direction", None) and \
+                              any(ex.destination == original_caller_location and (ex.key.lower() == getattr(target_char.ndb, "aiming_direction", "").lower() or \
+                                   any(alias.lower() == getattr(target_char.ndb, "aiming_direction", "").lower() for alias in (ex.aliases.all() if hasattr(ex.aliases, "all") else []))) for ex in target_char.location.exits)))):
                          target_char.msg(f"|y{caller.get_display_name(target_char)} charges into your area!|n")
                     target_char.location.msg_contents(arrival_message_room, exclude=[caller, target_char])
                 else: 
                     target_char.location.msg_contents(arrival_message_room, exclude=[caller])
                 
                 splattercast.msg(f"CHARGE_SUCCESS (ADJACENT): {caller.key} charged to {target_char.location.key} (target: {target_char.key}).")
-                # Unlike advance, Charge *will* establish proximity even when moving to an adjacent room.
-                # This is handled further down.
 
             else: # --- SUCCESSFUL CHARGE IN SAME ROOM ---
                 caller.msg(f"|gYou charge across the area and slam into {target_char.get_display_name(caller)}!|n")
@@ -1079,13 +1115,13 @@ class CmdCharge(Command):
                     target_char.msg(f"|y{caller.get_display_name(target_char)} charges wildly and slams into you!|n")
                 splattercast.msg(f"CHARGE_SUCCESS (SAME ROOM): {caller.key} charged {target_char.key} in room {caller.location.key}.")
 
-            # Proximity updates (same as CmdAdvance, but applies to both adjacent and same-room charge)
-            # This is a key difference: Charge *always* establishes proximity on success.
+            # Proximity updates (applies to both adjacent and same-room charge)
             caller.ndb.in_proximity_with.add(target_char)
             target_char.ndb.in_proximity_with.add(caller)
             splattercast.msg(f"CHARGE_PROXIMITY: {caller.key} and {target_char.key} are now in proximity.")
 
             # Scrum effect
+            # ... (scrum effect logic remains the same) ...
             for existing_prox_char in list(target_char.ndb.in_proximity_with):
                 if existing_prox_char != caller: 
                     caller.ndb.in_proximity_with.add(existing_prox_char)
@@ -1109,6 +1145,7 @@ class CmdCharge(Command):
                                 targets_new_prox_char.ndb.in_proximity_with.add(callers_original_prox_char)
                             splattercast.msg(f"CHARGE_SCRUM_CALLER_TARGET_GROUP: {callers_original_prox_char.key} also now in proximity with {targets_new_prox_char.key}.")
 
+
             # Set the charger's target in the combat handler
             if handler:
                 charger_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
@@ -1116,15 +1153,13 @@ class CmdCharge(Command):
                     charger_entry["target"] = target_char
                     charger_entry["is_yielding"] = False 
                     splattercast.msg(f"CHARGE_TARGET_SET: {caller.key}'s target in handler set to {target_char.key}.")
-                else:
-                    splattercast.msg(f"CHARGE_WARNING: Could not find {caller.key}'s entry in handler {handler.key} to set target after charge.")
 
-            # Grant charge attack bonus for next turn/action
             caller.ndb.charge_attack_bonus_active = True
             splattercast.msg(f"CHARGE_EFFECT: {caller.key} gains charge_attack_bonus_active.")
 
         else:
             # --- Failure ---
+            # ... (failure logic remains the same) ...
             caller.msg(f"|rYou charge towards {target_char.get_display_name(caller)}, but they deftly avoid your reckless rush!|n")
             if target_in_adjacent_room:
                 caller.location.msg_contents(f"|y{caller.get_display_name(caller.location)} charges towards {target_char.location.get_display_name(caller.location)} but stumbles, failing to reach them.|n", exclude=[caller])
@@ -1135,13 +1170,11 @@ class CmdCharge(Command):
                     target_char.msg(f"|y{caller.get_display_name(target_char)} charges at you but stumbles, failing to connect!|n")
                 splattercast.msg(f"CHARGE_FAIL (SAME ROOM): {caller.key} failed to charge {target_char.key} in room {caller.location.key}.")
             
-            # Penalty for failed charge: skip next turn's offensive action
             caller.ndb.skip_combat_round = True
             caller.msg("|rYour failed charge leaves you off-balance for a moment.|n")
             splattercast.msg(f"CHARGE_PENALTY: {caller.key} set to skip_combat_round due to failed charge.")
-            # Vulnerability flag remains active until their next turn starts (where it's cleared)
 
-        if handler and not handler.db.combat_is_running and len(handler.db.combatants) > 0: # Check your custom flag
+        if handler and not handler.db.combat_is_running and len(handler.db.combatants) > 0:
             handler.start()
 
 
