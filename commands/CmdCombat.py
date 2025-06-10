@@ -938,7 +938,6 @@ class CmdCharge(Command):
             target_char = target
         
         target_in_adjacent_room = False
-        # original_room = caller.location # Not strictly needed for charge logic here
 
         if not target_char or not inherits_from(target_char, "typeclasses.characters.Character"):
             all_combatants_in_handler = [entry["char"] for entry in handler.db.combatants if entry["char"]]
@@ -1000,67 +999,149 @@ class CmdCharge(Command):
         if charge_roll > resist_roll:
             # --- Success ---
             if target_in_adjacent_room:
-                caller.location.msg_contents(f"{caller.get_display_name(caller.location)} charges recklessly out of the area, heading towards {target_char.location.get_display_name(caller.location)}!", exclude=[caller])
+                # --- SUCCESSFUL CHARGE TO ADJACENT ROOM ---
+                original_caller_location = caller.location # Store original location for messages
+                caller.location.msg_contents(f"{caller.get_display_name(original_caller_location)} charges {target_char.location.get_display_name(original_caller_location)}!", exclude=[caller])
+                
+                # Move the caller
                 caller.move_to(target_char.location, quiet=False, move_hooks=False)
-                caller.msg(f"|gYou charge headlong into {target_char.location.get_display_name(caller)}, bearing down on {target_char.get_display_name(caller)}!|n")
-                target_char.location.msg_contents(f"{caller.get_display_name(target_char.location)} charges into the area, making a beeline for {target_char.get_display_name(target_char.location)}!", exclude=[caller, target_char])
-                splattercast.msg(f"CHARGE_SUCCESS: {caller.key} moved to {target_char.location.key} to charge {target_char.key}.")
-            else: # Same room charge
-                caller.msg(f"|gYou charge across the distance, slamming into melee with {target_char.get_display_name(caller)}!|n")
+                
+                # 1. Clear the charger's (caller's) own aim state
+                if hasattr(caller, "clear_aim_state"):
+                    caller.clear_aim_state(reason_for_clearing="as you charge into another area")
+                    splattercast.msg(f"CHARGE_AIM_CLEAR (CALLER): {caller.key}'s aim state cleared after charging to {target_char.location.key}.")
+                else:
+                    splattercast.msg(f"CHARGE_AIM_CLEAR_FAIL (CALLER): {caller.key} lacks clear_aim_state method after charging.")
+
+                # 2. Handle target_char's aim adjustment if they were focused on the caller or caller's direction of approach
+                if target_char and target_char.location == caller.location: # Ensure target is still in the new room with caller
+                    was_aiming_at_caller_specifically = getattr(target_char.ndb, "aiming_at", None) == caller
+                    target_aiming_direction = getattr(target_char.ndb, "aiming_direction", None)
+                    was_aiming_directionally_towards_caller = False
+
+                    if target_aiming_direction and not was_aiming_at_caller_specifically:
+                        exit_towards_caller_original_room = None
+                        for ex in target_char.location.exits:
+                            if ex.destination == original_caller_location: # original_caller_location is where caller came from
+                                if ex.key.lower() == target_aiming_direction.lower() or \
+                                   any(alias.lower() == target_aiming_direction.lower() for alias in (ex.aliases.all() if hasattr(ex.aliases, "all") else [])):
+                                    exit_towards_caller_original_room = ex
+                                    break
+                        if exit_towards_caller_original_room:
+                            was_aiming_directionally_towards_caller = True
+
+                    if was_aiming_at_caller_specifically:
+                        # Target was already aiming at the caller. Aim persists.
+                        target_char.msg(f"|y{caller.get_display_name(target_char)} charges directly into your sights! Your aim remains locked.|n")
+                        caller.msg(f"|y{target_char.get_display_name(caller)} keeps you in their sights as you charge in!|n")
+                        splattercast.msg(f"CHARGE_AIM_PERSIST: {target_char.key}'s aim remains on {caller.key} after charge.")
+                    
+                    elif was_aiming_directionally_towards_caller:
+                        # Target was aiming in the direction. Transition to aiming at caller.
+                        if hasattr(target_char, "clear_aim_state"):
+                            target_char.clear_aim_state(reason_for_clearing=f"as {caller.get_display_name(target_char)} charges in from that direction")
+                        
+                        target_char.ndb.aiming_at = caller
+                        previous_aimer_on_caller = getattr(caller.ndb, "aimed_at_by", None)
+                        if previous_aimer_on_caller and previous_aimer_on_caller != target_char:
+                            if hasattr(previous_aimer_on_caller, "clear_aim_state"):
+                                previous_aimer_on_caller.clear_aim_state(reason_for_clearing=f"as {caller.get_display_name(previous_aimer_on_caller)}'s attention is diverted by the charge")
+                            splattercast.msg(f"AIM_INTERRUPT (CHARGE): {previous_aimer_on_caller.key}'s aim on {caller.key} broken due to {target_char.key} now aiming at {caller.key}.")
+                        caller.ndb.aimed_at_by = target_char 
+
+                        target_char.msg(f"|yYou shift your aim from the {target_aiming_direction} to focus directly on the charging {caller.get_display_name(target_char)}!|n")
+                        caller.msg(f"|y{target_char.get_display_name(caller)} was aiming in your direction of approach and now focuses their aim directly on you as you charge!|n")
+                        splattercast.msg(f"CHARGE_AIM_FOLLOW: {target_char.key} (was aiming {target_aiming_direction}) now aiming at {caller.key} after charge.")
+                
+                # General arrival message for the charger
+                caller.msg(f"|gYou charge into {target_char.location.get_display_name(caller)}, the same area as {target_char.get_display_name(caller)}!|n")
+
+                # Message to the room the caller arrived in
+                arrival_message_room = f"{caller.get_display_name(target_char.location)} charges into the area!"
+                if target_char in target_char.location.contents:
+                    if not was_aiming_at_caller_specifically and not was_aiming_directionally_towards_caller:
+                         target_char.msg(f"|y{caller.get_display_name(target_char)} charges into your area!|n")
+                    target_char.location.msg_contents(arrival_message_room, exclude=[caller, target_char])
+                else: 
+                    target_char.location.msg_contents(arrival_message_room, exclude=[caller])
+                
+                splattercast.msg(f"CHARGE_SUCCESS (ADJACENT): {caller.key} charged to {target_char.location.key} (target: {target_char.key}).")
+                # Unlike advance, Charge *will* establish proximity even when moving to an adjacent room.
+                # This is handled further down.
+
+            else: # --- SUCCESSFUL CHARGE IN SAME ROOM ---
+                caller.msg(f"|gYou charge across the area and slam into {target_char.get_display_name(caller)}!|n")
                 caller.location.msg_contents(
-                    f"|y{caller.get_display_name(caller.location)} charges {target_char.get_display_name(caller.location)}, crashing into melee!|n",
+                    f"|y{caller.get_display_name(caller.location)} charges wildly at {target_char.get_display_name(caller.location)}, slamming into them!|n",
                     exclude=[caller, target_char]
                 )
-                target_char.msg(f"|y{caller.get_display_name(target_char)} charges you, a blur of motion before they are upon you!|n")
-                splattercast.msg(f"CHARGE_SUCCESS: {caller.key} charged {target_char.key} in melee in room {caller.location.key}.")
+                if target_char in caller.location.contents:
+                    target_char.msg(f"|y{caller.get_display_name(target_char)} charges wildly and slams into you!|n")
+                splattercast.msg(f"CHARGE_SUCCESS (SAME ROOM): {caller.key} charged {target_char.key} in room {caller.location.key}.")
 
-            # Proximity updates (same as CmdAdvance)
+            # Proximity updates (same as CmdAdvance, but applies to both adjacent and same-room charge)
+            # This is a key difference: Charge *always* establishes proximity on success.
             caller.ndb.in_proximity_with.add(target_char)
             target_char.ndb.in_proximity_with.add(caller)
             splattercast.msg(f"CHARGE_PROXIMITY: {caller.key} and {target_char.key} are now in proximity.")
 
+            # Scrum effect
             for existing_prox_char in list(target_char.ndb.in_proximity_with):
-                if existing_prox_char != caller:
+                if existing_prox_char != caller: 
                     caller.ndb.in_proximity_with.add(existing_prox_char)
-                    existing_prox_char.ndb.in_proximity_with.add(caller)
+                    if hasattr(existing_prox_char, "ndb") and hasattr(existing_prox_char.ndb, "in_proximity_with") and isinstance(existing_prox_char.ndb.in_proximity_with, set):
+                        existing_prox_char.ndb.in_proximity_with.add(caller)
                     splattercast.msg(f"CHARGE_SCRUM: {caller.key} also now in proximity with {existing_prox_char.key} (via {target_char.key}).")
             
-            for callers_original_prox_char in list(caller.ndb.in_proximity_with):
+            for callers_original_prox_char in list(caller.ndb.in_proximity_with): 
                 if callers_original_prox_char != target_char and callers_original_prox_char != caller:
-                    callers_original_prox_char.ndb.in_proximity_with.add(target_char)
-                    target_char.ndb.in_proximity_with.add(callers_original_prox_char)
-                    splattercast.msg(f"CHARGE_SCRUM_CALLER_GROUP: {callers_original_prox_char.key} now in proximity with {target_char.key}.")
+                    if hasattr(callers_original_prox_char, "ndb") and hasattr(callers_original_prox_char.ndb, "in_proximity_with") and isinstance(callers_original_prox_char.ndb.in_proximity_with, set):
+                        callers_original_prox_char.ndb.in_proximity_with.add(target_char)
+                    if hasattr(target_char, "ndb") and hasattr(target_char.ndb, "in_proximity_with") and isinstance(target_char.ndb.in_proximity_with, set):
+                        target_char.ndb.in_proximity_with.add(callers_original_prox_char)
+                    splattercast.msg(f"CHARGE_SCRUM_CALLER_GROUP: {callers_original_prox_char.key} (from {caller.key}'s group) now in proximity with {target_char.key}.")
+                    
                     for targets_new_prox_char in list(target_char.ndb.in_proximity_with):
                         if targets_new_prox_char != caller and targets_new_prox_char != target_char and targets_new_prox_char != callers_original_prox_char:
-                            callers_original_prox_char.ndb.in_proximity_with.add(targets_new_prox_char)
-                            targets_new_prox_char.ndb.in_proximity_with.add(callers_original_prox_char)
+                            if hasattr(callers_original_prox_char, "ndb") and hasattr(callers_original_prox_char.ndb, "in_proximity_with") and isinstance(callers_original_prox_char.ndb.in_proximity_with, set):
+                                callers_original_prox_char.ndb.in_proximity_with.add(targets_new_prox_char)
+                            if hasattr(targets_new_prox_char, "ndb") and hasattr(targets_new_prox_char.ndb, "in_proximity_with") and isinstance(targets_new_prox_char.ndb.in_proximity_with, set):
+                                targets_new_prox_char.ndb.in_proximity_with.add(callers_original_prox_char)
                             splattercast.msg(f"CHARGE_SCRUM_CALLER_TARGET_GROUP: {callers_original_prox_char.key} also now in proximity with {targets_new_prox_char.key}.")
-            
-            # Potential bonus for successful charge:
-            caller.msg("|gYour reckless charge might give you an opening!|n")
-            caller.ndb.charge_attack_bonus_active = True # Flag for CmdAttack to check
-            # This bonus flag would also need to be cleared after the next attack or end of next turn.
+
+            # Set the charger's target in the combat handler
+            if handler:
+                charger_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+                if charger_entry:
+                    charger_entry["target"] = target_char
+                    charger_entry["is_yielding"] = False 
+                    splattercast.msg(f"CHARGE_TARGET_SET: {caller.key}'s target in handler set to {target_char.key}.")
+                else:
+                    splattercast.msg(f"CHARGE_WARNING: Could not find {caller.key}'s entry in handler {handler.key} to set target after charge.")
+
+            # Grant charge attack bonus for next turn/action
+            caller.ndb.charge_attack_bonus_active = True
+            splattercast.msg(f"CHARGE_EFFECT: {caller.key} gains charge_attack_bonus_active.")
 
         else:
             # --- Failure ---
-            # On failure, the charger might be left exposed.
-            caller.ndb.skip_combat_round = True # Example penalty: lose next offensive action
-            
+            caller.msg(f"|rYou charge towards {target_char.get_display_name(caller)}, but they deftly avoid your reckless rush!|n")
             if target_in_adjacent_room:
-                caller.msg(f"|rYou attempt a reckless charge towards {target_char.get_display_name(caller)} in {target_char.location.get_display_name(caller)}, but stumble or are rebuffed, failing to reach them and leaving yourself open!|n")
-                splattercast.msg(f"CHARGE_FAIL: {caller.key} failed to charge to {target_char.location.key} to engage {target_char.key}. Vulnerable.")
+                caller.location.msg_contents(f"|y{caller.get_display_name(caller.location)} charges towards {target_char.location.get_display_name(caller.location)} but stumbles, failing to reach them.|n", exclude=[caller])
+                splattercast.msg(f"CHARGE_FAIL (ADJACENT): {caller.key} failed to charge to {target_char.location.key} to engage {target_char.key}.")
             else: # Same room
-                caller.msg(f"|rYou charge at {target_char.get_display_name(caller)} but they sidestep your clumsy rush, leaving you off-balance!|n")
-                caller.location.msg_contents(
-                    f"|y{caller.get_display_name(caller.location)} charges wildly at {target_char.get_display_name(caller.location)} but misses, stumbling.|n",
-                    exclude=[caller, target_char]
-                )
-                target_char.msg(f"|y{caller.get_display_name(target_char)} charges at you but you easily avoid their reckless attack.|n")
-                splattercast.msg(f"CHARGE_FAIL: {caller.key} failed to charge {target_char.key} in melee in room {caller.location.key}. Vulnerable.")
+                caller.location.msg_contents(f"|y{caller.get_display_name(caller.location)} charges wildly at {target_char.get_display_name(caller.location)} but misses!|n", exclude=[caller, target_char])
+                if target_char in caller.location.contents:
+                    target_char.msg(f"|y{caller.get_display_name(target_char)} charges at you but stumbles, failing to connect!|n")
+                splattercast.msg(f"CHARGE_FAIL (SAME ROOM): {caller.key} failed to charge {target_char.key} in room {caller.location.key}.")
             
-            # The charging_vulnerability_active flag remains True, making them easier to hit until their next turn.
+            # Penalty for failed charge: skip next turn's offensive action
+            caller.ndb.skip_combat_round = True
+            caller.msg("|rYour failed charge leaves you off-balance for a moment.|n")
+            splattercast.msg(f"CHARGE_PENALTY: {caller.key} set to skip_combat_round due to failed charge.")
+            # Vulnerability flag remains active until their next turn starts (where it's cleared)
 
-        if handler and not handler.is_active:
+        if handler and not handler.db.combat_is_running and len(handler.db.combatants) > 0: # Check your custom flag
             handler.start()
 
 
