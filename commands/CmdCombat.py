@@ -740,17 +740,85 @@ class CmdAdvance(Command):
             # --- Success ---
             if target_in_adjacent_room:
                 # --- SUCCESSFUL ADVANCE TO ADJACENT ROOM ---
-                caller.location.msg_contents(f"{caller.get_display_name(caller.location)} advances out of the area, heading towards {target_char.location.get_display_name(caller.location)}!", exclude=[caller])
-                caller.move_to(target_char.location, quiet=False, move_hooks=False) # quiet=False for default "You arrive at..."
+                original_caller_location = caller.location # Store original location for messages
+                caller.location.msg_contents(f"{caller.get_display_name(original_caller_location)} advances out of the area, heading towards {target_char.location.get_display_name(original_caller_location)}!", exclude=[caller])
+                
+                # Move the caller
+                caller.move_to(target_char.location, quiet=False, move_hooks=False)
+                
+                # 1. Clear the advancer's (caller's) own aim state
+                if hasattr(caller, "clear_aim_state"):
+                    caller.clear_aim_state(reason_for_clearing="as you advance to another area")
+                    splattercast.msg(f"ADVANCE_AIM_CLEAR (CALLER): {caller.key}'s aim state cleared after advancing to {target_char.location.key}.")
+                else:
+                    splattercast.msg(f"ADVANCE_AIM_CLEAR_FAIL (CALLER): {caller.key} lacks clear_aim_state method after advancing.")
+
+                # 2. Handle target_char's aim adjustment if they were focused on the caller or caller's direction of approach
+                if target_char and target_char.location == caller.location: # Ensure target is still in the new room with caller
+                    was_aiming_at_caller_specifically = getattr(target_char.ndb, "aiming_at", None) == caller
+                    target_aiming_direction = getattr(target_char.ndb, "aiming_direction", None)
+                    was_aiming_directionally_towards_caller = False
+
+                    if target_aiming_direction and not was_aiming_at_caller_specifically:
+                        exit_towards_caller_original_room = None
+                        # Check exits from target's current room (which is now also caller's room)
+                        for ex in target_char.location.exits:
+                            if ex.destination == original_caller_location: # original_caller_location is where caller came from
+                                if ex.key.lower() == target_aiming_direction.lower() or \
+                                   any(alias.lower() == target_aiming_direction.lower() for alias in (ex.aliases.all() if hasattr(ex.aliases, "all") else [])):
+                                    exit_towards_caller_original_room = ex
+                                    break
+                        if exit_towards_caller_original_room:
+                            was_aiming_directionally_towards_caller = True
+
+                    if was_aiming_at_caller_specifically:
+                        # Target was already aiming at the caller. Aim persists.
+                        target_char.msg(f"|y{caller.get_display_name(target_char)} advances directly into your sights! Your aim remains locked.|n")
+                        caller.msg(f"|y{target_char.get_display_name(caller)} keeps you in their sights as you arrive!|n")
+                        splattercast.msg(f"ADVANCE_AIM_PERSIST: {target_char.key}'s aim remains on {caller.key} after advance.")
+                    
+                    elif was_aiming_directionally_towards_caller:
+                        # Target was aiming in the direction. Transition to aiming at caller.
+                        # Clear target's previous directional aim (and any other character aim they might have had).
+                        # This will message the target about stopping their old aim.
+                        if hasattr(target_char, "clear_aim_state"):
+                            target_char.clear_aim_state(reason_for_clearing=f"as {caller.get_display_name(target_char)} arrives from that direction")
+                        
+                        # Set new character-specific aim
+                        target_char.ndb.aiming_at = caller
+                        
+                        # If caller was aimed at by someone else, break that old aim
+                        # This ensures caller.ndb.aimed_at_by is exclusively target_char now.
+                        previous_aimer_on_caller = getattr(caller.ndb, "aimed_at_by", None)
+                        if previous_aimer_on_caller and previous_aimer_on_caller != target_char:
+                            if hasattr(previous_aimer_on_caller, "clear_aim_state"):
+                                previous_aimer_on_caller.clear_aim_state(reason_for_clearing=f"as {caller.get_display_name(previous_aimer_on_caller)}'s attention is diverted")
+                            splattercast.msg(f"AIM_INTERRUPT: {previous_aimer_on_caller.key}'s aim on {caller.key} broken due to {target_char.key} now aiming at {caller.key}.")
+                        
+                        caller.ndb.aimed_at_by = target_char 
+
+                        target_char.msg(f"|yYou shift your aim from the {target_aiming_direction} to focus directly on {caller.get_display_name(target_char)}!|n")
+                        caller.msg(f"|y{target_char.get_display_name(caller)} was aiming in your direction of approach and now focuses their aim directly on you!|n")
+                        splattercast.msg(f"ADVANCE_AIM_FOLLOW: {target_char.key} (was aiming {target_aiming_direction}) now aiming at {caller.key} after advance.")
+                    
+                    # else: Target was not aiming at caller or in their direction of approach.
+                    # Their aim is unaffected by this specific "follow" logic.
+                    # If they were aiming at a different character or a different direction, that aim persists.
+                
                 caller.msg(f"|gYou advance into {target_char.location.get_display_name(caller)}, the same area as {target_char.get_display_name(caller)}.|n")
                 
                 # Message to the room the caller arrived in
                 arrival_message_room = f"{caller.get_display_name(target_char.location)} advances into the area!"
-                # Notify target specifically if they are there
-                if target_char in target_char.location.contents: # Check if target is actually in the location
-                    target_char.msg(f"|y{caller.get_display_name(target_char)} advances into your area!|n")
+                # Notify target specifically if they are there (they already got aim-related messages if applicable)
+                if target_char in target_char.location.contents:
+                    # The target might have already received a specific aim-related message.
+                    # This is a general arrival awareness message if not covered by aim.
+                    # We can make this conditional or rephrase if aim messages are sufficient.
+                    # For now, let's assume the aim messages are primary if they occurred.
+                    if not was_aiming_at_caller_specifically and not was_aiming_directionally_towards_caller:
+                         target_char.msg(f"|y{caller.get_display_name(target_char)} advances into your area!|n")
                     target_char.location.msg_contents(arrival_message_room, exclude=[caller, target_char])
-                else: # Target not in location (e.g. moved away just now)
+                else: 
                     target_char.location.msg_contents(arrival_message_room, exclude=[caller])
 
                 splattercast.msg(f"ADVANCE_SUCCESS (ADJACENT): {caller.key} moved to {target_char.location.key} (target: {target_char.key}). Proximity NOT automatically established.")
