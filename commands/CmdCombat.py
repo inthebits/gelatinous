@@ -601,15 +601,16 @@ class CmdAdvance(Command):
     If no target is specified, attempts to advance on your current
     combat target.
     If the target is in the same room but not in melee proximity,
-    you will attempt to close the distance.
-    If the target is in an adjacent room, you will attempt to move
-    to that room and then engage them.
+    you will attempt to close the distance and enter melee.
+    If the target is in an adjacent, managed combat room, you will
+    attempt to move to that room. Engaging in melee proximity
+    will require a subsequent action.
     Success depends on an opposed roll. Failure means you do not
     close the distance or fail to enter the room effectively.
     """
     key = "advance"
     aliases = ["engage", "close"]
-    locks = "cmd:all()" # Potentially "cmd:in_combat()"
+    locks = "cmd:all()"
     help_category = "Combat"
 
     def func(self):
@@ -620,7 +621,6 @@ class CmdAdvance(Command):
 
         if not handler:
             caller.msg("You need to be in combat to advance on a target.")
-            # Or, allow advance to initiate combat if desired, similar to CmdAttack
             return
 
         target_char = None
@@ -631,45 +631,40 @@ class CmdAdvance(Command):
             caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
             if caller_entry and caller_entry.get("target"):
                 target_char = caller_entry.get("target")
-                # Validate this target is still in a managed room by this handler
+                # Validate current target is still valid and reachable for advance
                 if not (target_char.location and target_char.location in handler.db.managed_rooms and \
                         any(e["char"] == target_char for e in handler.db.combatants)):
-                    caller.msg(f"Your current target ({target_char.key if target_char else 'None'}) is no longer valid or reachable.")
+                    caller.msg(f"Your current target ({target_char.key if target_char else 'None'}) is no longer valid or reachable for advance.")
                     splattercast.msg(f"ADVANCE_CMD: {caller.key} tried to advance on default target {target_char.key if target_char else 'None'}, but target invalid/unreachable.")
                     return
                 splattercast.msg(f"ADVANCE_CMD: No target specified. Defaulting to current target: {target_char.key}.")
-                target_search_name = target_char.key # For logging consistency if needed later
+                target_search_name = target_char.key # For error messages if target becomes invalid later
             else:
                 caller.msg("Advance on whom? (You have no current target).")
                 return
         else:
-            # --- ARGUMENTS GIVEN, SEARCH FOR TARGET ---
-            # First, search in the current room
-            target_result = caller.search(args, location=caller.location, quiet=True) # Changed from target to target_result
+            # --- ARGUMENTS GIVEN, SEARCH FOR TARGET (LOCAL FIRST) ---
+            target_result = caller.search(args, location=caller.location, quiet=True)
             if isinstance(target_result, list):
                 if target_result: target_char = target_result[0]
             else:
                 target_char = target_result
         
         target_in_adjacent_room = False
-        # original_room = caller.location # Not needed here
 
+        # If no local target found by name, or if initial target_char is invalid, check for remote targets
         if not target_char or not inherits_from(target_char, "typeclasses.characters.Character"):
-            # This block is now primarily for when args were provided but target not found in current room
-            if args: # Only do remote search if args were initially provided
+            if args: # Only search remote if args were provided
                 all_combatants_in_handler = [entry["char"] for entry in handler.db.combatants if entry["char"]]
                 potential_remote_targets = [
                     char for char in all_combatants_in_handler 
                     if args.lower() in char.key.lower() and char.location != caller.location
                 ]
                 if potential_remote_targets:
-                    target_char = potential_remote_targets[0]
+                    target_char = potential_remote_targets[0] # Simplistic: take first match
                     if target_char.location in handler.db.managed_rooms:
-                        can_reach_adj_room = False 
-                        for ex in caller.location.exits:
-                            if ex.destination == target_char.location:
-                                can_reach_adj_room = True 
-                                break 
+                        # Check if there's a direct path (exit)
+                        can_reach_adj_room = any(ex.destination == target_char.location for ex in caller.location.exits)
                         if can_reach_adj_room:
                             target_in_adjacent_room = True
                             splattercast.msg(f"ADVANCE_TARGET: {caller.key} targeting {target_char.key} in adjacent room {target_char.location.key}.")
@@ -677,39 +672,42 @@ class CmdAdvance(Command):
                             caller.msg(f"You see {target_char.key} in the distance, but there's no direct path to advance on them from here.")
                             return
                     else:
-                        caller.msg(f"You know of {target_char.key}, but they are not in a directly accessible combat area.")
+                        caller.msg(f"You know of {target_char.key}, but they are not in a directly accessible combat area to advance on.")
                         return
-                else:
+                else: # No local or remote target found by this name
                     caller.msg(f"You don't see '{args}' here or in an adjacent combat area to advance on.")
                     return
-            elif not target_char: # This case means no args were given, and default target logic above failed to find one or it was invalid.
-                # The message "Advance on whom? (You have no current target)." should have been sent already.
+            elif not target_char: # No args, and default target was invalid or non-existent
+                # This case should have been caught earlier if no args were given.
+                # If it reaches here, it means default target became invalid after initial check.
+                caller.msg(f"Your target ({target_search_name}) is no longer valid to advance on.")
                 return
 
-
-        if not target_char: # Final check if target_char is still None
-            caller.msg(f"You don't see '{target_search_name}' to advance on.")
+        # Final check on target_char validity
+        if not target_char:
+            caller.msg(f"You don't see '{target_search_name}' to advance on.") # target_search_name holds the original arg or default target's name
             return
 
         if target_char == caller:
             caller.msg("You cannot advance on yourself.")
             return
 
-        # Initialize proximity NDBs if they don't exist (should be handled by handler, but good failsafe)
+        # Initialize NDB proximity sets if they don't exist (failsafe)
         for char_obj in [caller, target_char]:
             if not hasattr(char_obj.ndb, "in_proximity_with") or not isinstance(char_obj.ndb.in_proximity_with, set):
                 char_obj.ndb.in_proximity_with = set()
                 splattercast.msg(f"ADVANCE_FAILSAFE: Initialized in_proximity_with for {char_obj.key}.")
 
-        if target_char in caller.ndb.in_proximity_with:
+        # If already in proximity (and target is in the same room)
+        if not target_in_adjacent_room and target_char in caller.ndb.in_proximity_with:
             caller.msg(f"You are already in melee proximity with {target_char.get_display_name(caller)}.")
             return
 
         # --- Opposed Roll to Advance/Engage ---
-        caller_motorics_val = getattr(caller, "motorics", 1) # Changed from caller.db
+        caller_motorics_val = getattr(caller, "motorics", 1)
         caller_motorics_for_roll = caller_motorics_val if isinstance(caller_motorics_val, (int, float)) else 1
         
-        target_motorics_val = getattr(target_char, "motorics", 1) # Changed from target_char.db
+        target_motorics_val = getattr(target_char, "motorics", 1)
         target_motorics_for_roll = target_motorics_val if isinstance(target_motorics_val, (int, float)) else 1
 
         advance_roll = randint(1, max(1, caller_motorics_for_roll))
@@ -721,54 +719,64 @@ class CmdAdvance(Command):
         if advance_roll > resist_roll:
             # --- Success ---
             if target_in_adjacent_room:
-                # Attempt to move to target's room
-                # This is a simplified move; a proper move should use exit commands/methods
-                # and check locks, etc. For now, direct move for combat.
+                # --- SUCCESSFUL ADVANCE TO ADJACENT ROOM ---
                 caller.location.msg_contents(f"{caller.get_display_name(caller.location)} advances out of the area, heading towards {target_char.location.get_display_name(caller.location)}!", exclude=[caller])
                 caller.move_to(target_char.location, quiet=False, move_hooks=False) # quiet=False for default "You arrive at..."
-                caller.msg(f"|gYou advance into {target_char.location.get_display_name(caller)}, closing in on {target_char.get_display_name(caller)}!|n")
-                target_char.location.msg_contents(f"{caller.get_display_name(target_char.location)} advances into the area, heading for {target_char.get_display_name(target_char.location)}!", exclude=[caller, target_char])
-                splattercast.msg(f"ADVANCE_SUCCESS: {caller.key} moved to {target_char.location.key} to engage {target_char.key}.")
-            else: # Same room advance
+                caller.msg(f"|gYou advance into {target_char.location.get_display_name(caller)}, the same area as {target_char.get_display_name(caller)}.|n")
+                
+                # Message to the room the caller arrived in
+                arrival_message_room = f"{caller.get_display_name(target_char.location)} advances into the area!"
+                # Notify target specifically if they are there
+                if target_char in target_char.location.contents: # Check if target is actually in the location
+                    target_char.msg(f"|y{caller.get_display_name(target_char)} advances into your area!|n")
+                    target_char.location.msg_contents(arrival_message_room, exclude=[caller, target_char])
+                else: # Target not in location (e.g. moved away just now)
+                    target_char.location.msg_contents(arrival_message_room, exclude=[caller])
+
+                splattercast.msg(f"ADVANCE_SUCCESS (ADJACENT): {caller.key} moved to {target_char.location.key} (target: {target_char.key}). Proximity NOT automatically established.")
+                
+                # DO NOT ESTABLISH PROXIMITY HERE FOR ADJACENT ROOM ADVANCE
+
+            else: # --- SUCCESSFUL ADVANCE IN SAME ROOM ---
                 caller.msg(f"|gYou close the distance and engage {target_char.get_display_name(caller)} in melee!|n")
                 caller.location.msg_contents(
                     f"|y{caller.get_display_name(caller.location)} closes in on {target_char.get_display_name(caller.location)}, engaging them in melee!|n",
                     exclude=[caller, target_char]
                 )
-                target_char.msg(f"|y{caller.get_display_name(target_char)} closes in, engaging you in melee!|n")
-                splattercast.msg(f"ADVANCE_SUCCESS: {caller.key} engaged {target_char.key} in melee in room {caller.location.key}.")
+                if target_char in caller.location.contents: # Check if target is still there
+                    target_char.msg(f"|y{caller.get_display_name(target_char)} closes in, engaging you in melee!|n")
+                splattercast.msg(f"ADVANCE_SUCCESS (SAME ROOM): {caller.key} engaged {target_char.key} in melee in room {caller.location.key}.")
 
-            # Update proximity for caller, target, and target's existing group (The Scrum Effect)
-            caller.ndb.in_proximity_with.add(target_char)
-            target_char.ndb.in_proximity_with.add(caller)
-            splattercast.msg(f"ADVANCE_PROXIMITY: {caller.key} and {target_char.key} are now in proximity.")
+                # Update proximity for caller, target, and scrum effect - ONLY for same-room advance
+                caller.ndb.in_proximity_with.add(target_char)
+                target_char.ndb.in_proximity_with.add(caller)
+                splattercast.msg(f"ADVANCE_PROXIMITY: {caller.key} and {target_char.key} are now in proximity.")
 
-            # Scrum effect: Add caller to everyone target_char was in proximity with,
-            # and add those people to caller's proximity.
-            # Iterate over a copy of target_char.ndb.in_proximity_with before modifying it
-            for existing_prox_char in list(target_char.ndb.in_proximity_with):
-                if existing_prox_char != caller: # Don't add caller to their own set again
-                    caller.ndb.in_proximity_with.add(existing_prox_char)
-                    existing_prox_char.ndb.in_proximity_with.add(caller)
-                    splattercast.msg(f"ADVANCE_SCRUM: {caller.key} also now in proximity with {existing_prox_char.key} (via {target_char.key}).")
+                # Scrum effect (ensure NDB attributes exist before adding)
+                for existing_prox_char in list(target_char.ndb.in_proximity_with):
+                    if existing_prox_char != caller: 
+                        caller.ndb.in_proximity_with.add(existing_prox_char)
+                        if hasattr(existing_prox_char, "ndb") and hasattr(existing_prox_char.ndb, "in_proximity_with") and isinstance(existing_prox_char.ndb.in_proximity_with, set):
+                            existing_prox_char.ndb.in_proximity_with.add(caller)
+                        splattercast.msg(f"ADVANCE_SCRUM: {caller.key} also now in proximity with {existing_prox_char.key} (via {target_char.key}).")
+                
+                for callers_original_prox_char in list(caller.ndb.in_proximity_with): 
+                    if callers_original_prox_char != target_char and callers_original_prox_char != caller:
+                        if hasattr(callers_original_prox_char, "ndb") and hasattr(callers_original_prox_char.ndb, "in_proximity_with") and isinstance(callers_original_prox_char.ndb.in_proximity_with, set):
+                            callers_original_prox_char.ndb.in_proximity_with.add(target_char)
+                        if hasattr(target_char, "ndb") and hasattr(target_char.ndb, "in_proximity_with") and isinstance(target_char.ndb.in_proximity_with, set):
+                            target_char.ndb.in_proximity_with.add(callers_original_prox_char)
+                        splattercast.msg(f"ADVANCE_SCRUM_CALLER_GROUP: {callers_original_prox_char.key} (from {caller.key}'s group) now in proximity with {target_char.key}.")
+                        
+                        for targets_new_prox_char in list(target_char.ndb.in_proximity_with):
+                            if targets_new_prox_char != caller and targets_new_prox_char != target_char and targets_new_prox_char != callers_original_prox_char:
+                                if hasattr(callers_original_prox_char, "ndb") and hasattr(callers_original_prox_char.ndb, "in_proximity_with") and isinstance(callers_original_prox_char.ndb.in_proximity_with, set):
+                                    callers_original_prox_char.ndb.in_proximity_with.add(targets_new_prox_char)
+                                if hasattr(targets_new_prox_char, "ndb") and hasattr(targets_new_prox_char.ndb, "in_proximity_with") and isinstance(targets_new_prox_char.ndb.in_proximity_with, set):
+                                    targets_new_prox_char.ndb.in_proximity_with.add(callers_original_prox_char)
+                                splattercast.msg(f"ADVANCE_SCRUM_CALLER_TARGET_GROUP: {callers_original_prox_char.key} also now in proximity with {targets_new_prox_char.key}.")
             
-            # Also, if caller was already in proximity with others, bring them along conceptually.
-            # This means anyone the caller was with is now also with the target_char and their group.
-            for callers_original_prox_char in list(caller.ndb.in_proximity_with): # list() is a copy
-                if callers_original_prox_char != target_char and callers_original_prox_char != caller:
-                    # Add target_char to their proximity
-                    callers_original_prox_char.ndb.in_proximity_with.add(target_char)
-                    target_char.ndb.in_proximity_with.add(callers_original_prox_char)
-                    splattercast.msg(f"ADVANCE_SCRUM_CALLER_GROUP: {callers_original_prox_char.key} (from {caller.key}'s group) now in proximity with {target_char.key}.")
-                    
-                    # And also add them to everyone the target_char is now with (excluding caller and target themselves)
-                    for targets_new_prox_char in list(target_char.ndb.in_proximity_with):
-                        if targets_new_prox_char != caller and targets_new_prox_char != target_char and targets_new_prox_char != callers_original_prox_char:
-                            callers_original_prox_char.ndb.in_proximity_with.add(targets_new_prox_char)
-                            targets_new_prox_char.ndb.in_proximity_with.add(callers_original_prox_char)
-                            splattercast.msg(f"ADVANCE_SCRUM_CALLER_TARGET_GROUP: {callers_original_prox_char.key} also now in proximity with {targets_new_prox_char.key}.")
-            
-            # Set the advancer's target in the combat handler
+            # Set the advancer's target in the combat handler (applies to both adjacent and same-room success)
             if handler:
                 advancer_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
                 if advancer_entry:
@@ -786,20 +794,19 @@ class CmdAdvance(Command):
             # --- Failure ---
             if target_in_adjacent_room:
                 caller.msg(f"|rYou try to advance on {target_char.get_display_name(caller)} in {target_char.location.get_display_name(caller)}, but they (or the situation) prevent your approach!|n")
-                splattercast.msg(f"ADVANCE_FAIL: {caller.key} failed to advance to {target_char.location.key} to engage {target_char.key}.")
+                splattercast.msg(f"ADVANCE_FAIL (ADJACENT): {caller.key} failed to advance to {target_char.location.key} to engage {target_char.key}.")
             else: # Same room
                 caller.msg(f"|rYou try to close with {target_char.get_display_name(caller)}, but they maintain their distance!|n")
                 caller.location.msg_contents(
                     f"|y{caller.get_display_name(caller.location)} attempts to close with {target_char.get_display_name(caller.location)} but fails.|n",
                     exclude=[caller, target_char]
                 )
-                target_char.msg(f"|y{caller.get_display_name(target_char)} tries to close with you but fails to gain ground.|n")
-                splattercast.msg(f"ADVANCE_FAIL: {caller.key} failed to engage {target_char.key} in melee in room {caller.location.key}.")
+                if target_char in caller.location.contents: # Check if target is still there
+                    target_char.msg(f"|y{caller.get_display_name(target_char)} tries to close with you but fails to gain ground.|n")
+                splattercast.msg(f"ADVANCE_FAIL (SAME ROOM): {caller.key} failed to engage {target_char.key} in melee in room {caller.location.key}.")
             
-            # Consider consequences for failure, e.g., skip_combat_round or an attack of opportunity.
-            # caller.ndb.skip_combat_round = True
-
-        if handler and not handler.is_active:
+        # Ensure combat handler is running if it somehow stopped (unlikely here but good practice)
+        if handler and not handler.db.combat_is_running and len(handler.db.combatants) > 0:
             handler.start()
 
 
