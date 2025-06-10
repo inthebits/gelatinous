@@ -257,89 +257,174 @@ class CmdFlee(Command):
         splattercast = ChannelDB.objects.get_channel("Splattercast")
         
         original_handler_at_flee_start = getattr(caller.ndb, "combat_handler", None)
-        aimer_locking_caller = getattr(caller.ndb, "aimed_at_by", None)
+        # This is the specific character who has an NDB-level aim lock on the caller.
+        # This aimer could be in the same room or an adjacent one.
+        ndb_aimer_locking_caller = getattr(caller.ndb, "aimed_at_by", None) 
 
-        splattercast.msg(f"FLEE_CMD_DEBUG ({caller.key}): Initial Handler='{original_handler_at_flee_start.key if original_handler_at_flee_start else None}', Aimer='{aimer_locking_caller.key if aimer_locking_caller else None}'")
+        splattercast.msg(f"FLEE_CMD_DEBUG ({caller.key}): Initial Handler='{original_handler_at_flee_start.key if original_handler_at_flee_start else None}', NDB Aimer='{ndb_aimer_locking_caller.key if ndb_aimer_locking_caller else None}'")
 
-        if not original_handler_at_flee_start and not aimer_locking_caller:
+        # --- PRE-FLEE SAFETY CHECK: PINNED BY RANGED TARGETERS IN ADJACENT ROOMS ---
+        available_exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
+        
+        if not available_exits:
+            # No exits at all.
+            if ndb_aimer_locking_caller:
+                caller.msg(f"|rYou are being aimed at by {ndb_aimer_locking_caller.get_display_name(caller)}, and there are no exits here! You are pinned down.|n")
+            elif original_handler_at_flee_start:
+                caller.msg(f"|rYou are in combat, and there are no exits here! You are trapped.|n")
+            else:
+                # This case (no exits, not aimed at, not in combat) might be caught by the later "nothing to flee from"
+                # but if it reaches here, it means flee was typed with no actual threat and no exits.
+                caller.msg("|rThere are no exits here to flee through.|n")
+            splattercast.msg(f"FLEE_ABORT_NO_EXITS: {caller.key} has no exits. NDB Aimer: {ndb_aimer_locking_caller.key if ndb_aimer_locking_caller else 'None'}, Handler: {original_handler_at_flee_start.key if original_handler_at_flee_start else 'None'}.")
+            return
+        else:
+            # Exits exist, check if they ALL lead to ranged targeters.
+            all_exits_lead_to_ranged_targeters = True 
+            for potential_exit in available_exits:
+                destination_room = potential_exit.destination
+                is_this_exit_safe_from_ranged_targeters = True # Assume safe until proven otherwise
+                if destination_room:
+                    for char_in_dest in destination_room.contents:
+                        if char_in_dest == caller or not hasattr(char_in_dest, "ndb"): continue
+                        
+                        # Check if char_in_dest is in combat, targeting caller, with a ranged weapon
+                        other_h = getattr(char_in_dest.ndb, "combat_handler", None)
+                        if other_h and other_h.db.combat_is_running and other_h.db.combatants:
+                            other_entry = next((e for e in other_h.db.combatants if e["char"] == char_in_dest), None)
+                            if other_entry and other_entry.get("target") == caller:
+                                other_hands = getattr(char_in_dest, "hands", {})
+                                other_weapon_obj = next((item for hand, item in other_hands.items() if item), None)
+                                other_is_ranged = other_weapon_obj and hasattr(other_weapon_obj.db, "is_ranged") and other_weapon_obj.db.is_ranged
+                                if other_is_ranged:
+                                    is_this_exit_safe_from_ranged_targeters = False
+                                    splattercast.msg(f"FLEE_PRE_CHECK_UNSAFE_EXIT: {caller.key} - exit {potential_exit.key} to {destination_room.key} is unsafe. Reason: {char_in_dest.key} is a ranged targeter in combat handler {other_h.key}.")
+                                    break # This destination is unsafe due to this char_in_dest
+                
+                if is_this_exit_safe_from_ranged_targeters:
+                    all_exits_lead_to_ranged_targeters = False # Found at least one safe exit
+                    splattercast.msg(f"FLEE_PRE_CHECK_SAFE_EXIT_FOUND: {caller.key} found safe exit {potential_exit.key}.")
+                    break # No need to check other exits if one safe one is found
+
+            if all_exits_lead_to_ranged_targeters:
+                caller.msg(f"|rYou cannot flee! All escape routes are covered by ranged attackers targeting you from adjacent areas.|n" \
+                           " Consider using 'charge' or 'advance' to engage them, or 'retreat' if you need to create distance from local threats first.")
+                splattercast.msg(f"FLEE_ABORT_ALL_EXITS_TO_RANGED_TARGETERS: {caller.key}. Flee aborted.")
+                return
+        # --- END PRE-FLEE SAFETY CHECK ---
+
+        # If the pre-flee safety check didn't abort, now check if there's anything to flee *from*.
+        if not original_handler_at_flee_start and not ndb_aimer_locking_caller:
             caller.msg("You have nothing to flee from.")
-            splattercast.msg(f"FLEE_CMD_DEBUG ({caller.key}): 'Nothing to flee from' condition met.")
+            splattercast.msg(f"FLEE_CMD_DEBUG ({caller.key}): 'Nothing to flee from' condition met (post-safety-check).")
             return
 
-        # --- Part 1: Attempt to break an aim lock ---
+        # --- Part 1: Attempt to break an NDB-level aim lock ---
+        # `current_aimer_for_break_attempt` is used locally for this part.
+        # It starts as the NDB aimer and can be set to None if the aim is broken.
+        current_aimer_for_break_attempt = ndb_aimer_locking_caller
         aim_successfully_broken = False
-        if aimer_locking_caller:
-            if not aimer_locking_caller.location or \
-               aimer_locking_caller.location != caller.location or \
-               getattr(aimer_locking_caller.ndb, "aiming_at", None) != caller:
-                caller.msg(f"The one aiming at you ({aimer_locking_caller.get_display_name(caller) if aimer_locking_caller else 'someone'}) seems to have stopped or departed; you are no longer locked by their aim.")
+
+        if current_aimer_for_break_attempt:
+            # Stale/Invalid Aim Check
+            if not current_aimer_for_break_attempt.location or \
+               current_aimer_for_break_attempt.location != caller.location or \
+               getattr(current_aimer_for_break_attempt.ndb, "aiming_at", None) != caller:
+                caller.msg(f"The one aiming at you ({current_aimer_for_break_attempt.get_display_name(caller)}) seems to have stopped or departed; you are no longer locked by their aim.")
                 if hasattr(caller.ndb, "aimed_at_by"): del caller.ndb.aimed_at_by
-                if aimer_locking_caller and hasattr(aimer_locking_caller.ndb, "aiming_at") and aimer_locking_caller.ndb.aiming_at == caller:
-                    del aimer_locking_caller.ndb.aiming_at
-                splattercast.msg(f"FLEE_CMD: Aim lock on {caller.key} by {aimer_locking_caller.key if aimer_locking_caller else 'Unknown Aimer'} was stale/invalid. Lock broken.")
-                aimer_locking_caller = None 
+                if hasattr(current_aimer_for_break_attempt.ndb, "aiming_at") and current_aimer_for_break_attempt.ndb.aiming_at == caller:
+                    del current_aimer_for_break_attempt.ndb.aiming_at
+                splattercast.msg(f"FLEE_CMD (AIM_BREAK_PHASE): NDB Aim lock on {caller.key} by {current_aimer_for_break_attempt.key} was stale/invalid. Lock broken.")
+                current_aimer_for_break_attempt = None 
                 aim_successfully_broken = True 
             else:
-                splattercast.msg(f"FLEE_CMD: {caller.key} is attempting to break aim lock by {aimer_locking_caller.key}.")
-                # Use 'motorics' for the aimer's resistance roll
-                aimer_motorics_to_resist = getattr(aimer_locking_caller, "motorics", 1) 
+                # Active Aim Lock - Attempt to Break
+                splattercast.msg(f"FLEE_CMD (AIM_BREAK_PHASE): {caller.key} is attempting to break NDB aim lock by {current_aimer_for_break_attempt.key}.")
+                aimer_motorics_to_resist = getattr(current_aimer_for_break_attempt, "motorics", 1) 
                 caller_motorics = getattr(caller, "motorics", 1)
                 flee_roll = randint(1, max(1, caller_motorics))
-                resist_roll = randint(1, max(1, aimer_motorics_to_resist)) # Aimer also uses motorics
-                splattercast.msg(f"FLEE_AIM_ROLL: {caller.key}(motorics:{flee_roll}) vs {aimer_locking_caller.key}(motorics:{resist_roll})") # Updated log
+                resist_roll = randint(1, max(1, aimer_motorics_to_resist))
+                splattercast.msg(f"FLEE_AIM_ROLL: {caller.key}(motorics:{flee_roll}) vs {current_aimer_for_break_attempt.key}(motorics:{resist_roll})")
 
                 if flee_roll > resist_roll:
-                    caller.msg(f"|gYou deftly break free from {aimer_locking_caller.get_display_name(caller)}'s aim!|n")
-                    if aimer_locking_caller.access(caller, "view"): 
-                        aimer_locking_caller.msg(f"|y{caller.get_display_name(aimer_locking_caller)} breaks free from your aim!|n")
-                    if hasattr(aimer_locking_caller, "clear_aim_state"):
-                        aimer_locking_caller.clear_aim_state(reason_for_clearing=f"as {caller.key} breaks free")
-                    else: 
-                        if hasattr(aimer_locking_caller.ndb, "aiming_at"): del aimer_locking_caller.ndb.aiming_at
-                    if hasattr(caller.ndb, "aimed_at_by"): del caller.ndb.aimed_at_by
-                    splattercast.msg(f"FLEE_AIM_SUCCESS: {caller.key} broke free from {aimer_locking_caller.key}'s aim.")
-                    aimer_locking_caller = None 
+                    caller.msg(f"|gYou deftly break free from {current_aimer_for_break_attempt.get_display_name(caller)}'s aim!|n")
+                    if current_aimer_for_break_attempt.access(caller, "view"): 
+                        current_aimer_for_break_attempt.msg(f"|y{caller.get_display_name(current_aimer_for_break_attempt)} breaks free from your aim!|n")
+                    
+                    if hasattr(current_aimer_for_break_attempt, "clear_aim_state"):
+                        current_aimer_for_break_attempt.clear_aim_state(reason_for_clearing=f"as {caller.key} breaks free")
+                    else: # Fallback if clear_aim_state is missing on aimer
+                        if hasattr(current_aimer_for_break_attempt.ndb, "aiming_at"): del current_aimer_for_break_attempt.ndb.aiming_at
+                    
+                    if hasattr(caller.ndb, "aimed_at_by"): del caller.ndb.aimed_at_by # Clear on caller too
+                    
+                    splattercast.msg(f"FLEE_AIM_SUCCESS: {caller.key} broke free from {current_aimer_for_break_attempt.key}'s NDB aim.")
+                    current_aimer_for_break_attempt = None # Successfully broke this aim
                     aim_successfully_broken = True
-                else: # Failed to break aim - AIMER ATTACKS!
-                    caller_msg_flee_fail = f"|RYou try to break free from {aimer_locking_caller.get_display_name(caller)}'s aim, but they keep you pinned!|n"
+                else: # Failed to break NDB aim - AIMER ATTACKS!
+                    caller_msg_flee_fail = f"|RYou try to break free from {current_aimer_for_break_attempt.get_display_name(caller)}'s aim, but they keep you pinned!|n"
                     aimer_msg_flee_fail = ""
-                    if aimer_locking_caller.access(caller, "view"):
-                        aimer_msg_flee_fail = f"{caller.get_display_name(aimer_locking_caller)} tries to break your aim, but you maintain focus."
-                    splattercast.msg(f"FLEE_AIM_FAIL: {caller.key} failed to break {aimer_locking_caller.key}'s aim. {aimer_locking_caller.key} initiates an attack.")
-                    attacker_char = aimer_locking_caller; target_char = caller 
-                    current_event_handler = get_or_create_combat(attacker_char.location)
-                    current_event_handler.enroll_room(attacker_char.location) 
-                    attacker_entry = next((e for e in current_event_handler.db.combatants if e["char"] == attacker_char), None)
-                    if not attacker_entry: current_event_handler.add_combatant(attacker_char, target=target_char)
+                    if current_aimer_for_break_attempt.access(caller, "view"):
+                        aimer_msg_flee_fail = f"{caller.get_display_name(current_aimer_for_break_attempt)} tries to break your aim, but you maintain focus."
+                    
+                    splattercast.msg(f"FLEE_AIM_FAIL: {caller.key} failed to break {current_aimer_for_break_attempt.key}'s NDB aim. {current_aimer_for_break_attempt.key} initiates an attack.")
+                    attacker_char = current_aimer_for_break_attempt; target_char = caller 
+                    
+                    # --- Aimer Attack Logic (copied and adapted from your existing code) ---
+                    event_handler_for_attack = get_or_create_combat(attacker_char.location) # Use attacker's location for handler
+                    event_handler_for_attack.enroll_room(attacker_char.location) 
+                    # Ensure target's room is also enrolled if different and part of the same logical combat zone
+                    if target_char.location != attacker_char.location:
+                        event_handler_for_attack.enroll_room(target_char.location)
+
+                    attacker_entry = next((e for e in event_handler_for_attack.db.combatants if e["char"] == attacker_char), None)
+                    if not attacker_entry: event_handler_for_attack.add_combatant(attacker_char, target=target_char)
                     else: attacker_entry["target"] = target_char; attacker_entry["is_yielding"] = False 
-                    target_entry = next((e for e in current_event_handler.db.combatants if e["char"] == target_char), None)
-                    if not target_entry: current_event_handler.add_combatant(target_char, target=attacker_char) 
+                    
+                    target_entry = next((e for e in event_handler_for_attack.db.combatants if e["char"] == target_char), None)
+                    if not target_entry: event_handler_for_attack.add_combatant(target_char, target=attacker_char) 
                     else: 
                         if not target_entry.get("target"): target_entry["target"] = attacker_char
                         target_entry["is_yielding"] = False 
+                    
                     hands = getattr(attacker_char, "hands", {}); weapon = next((item for hand, item in hands.items() if item), None)
                     weapon_type = (str(weapon.db.weapon_type).lower() if weapon and hasattr(weapon.db, "weapon_type") and weapon.db.weapon_type else "unarmed")
                     initiate_msg_obj = get_combat_message(weapon_type, "initiate", attacker=attacker_char, target=target_char, item=weapon)
                     atk_msg_attacker = initiate_msg_obj.get("attacker_msg", f"|RYou attack {target_char.get_display_name(attacker_char)}!|n") if isinstance(initiate_msg_obj, dict) else f"|RYou attack {target_char.get_display_name(attacker_char)} with your {weapon_type}!|n"
                     atk_msg_victim = initiate_msg_obj.get("victim_msg", f"|R{attacker_char.get_display_name(target_char)} attacks you!|n") if isinstance(initiate_msg_obj, dict) else f"|R{attacker_char.get_display_name(target_char)} attacks you with their {weapon_type}!|n"
                     atk_msg_observer = initiate_msg_obj.get("observer_msg", f"|R{attacker_char.get_display_name(attacker_char.location)} attacks {target_char.get_display_name(target_char.location)}!|n") if isinstance(initiate_msg_obj, dict) else f"|R{attacker_char.get_display_name(attacker_char.location)} attacks {target_char.get_display_name(target_char.location)} with their {weapon_type}!|n"
+                    
                     opportunity_text_victim = f"|R{attacker_char.get_display_name(target_char)} seizes the opportunity!|n"; opportunity_text_attacker = "|RYou seize the opportunity!|n"
                     caller.msg(caller_msg_flee_fail + " " + opportunity_text_victim + " " + atk_msg_victim)
-                    if aimer_msg_flee_fail: aimer_locking_caller.msg(f"|R{aimer_msg_flee_fail}|n {opportunity_text_attacker} {atk_msg_attacker}")
-                    else: aimer_locking_caller.msg(f"|RYou maintain your aim on {target_char.get_display_name(aimer_locking_caller)} as they falter, and press the attack!|n {opportunity_text_attacker} {atk_msg_attacker}")
-                    observer_flee_fail_prefix = f"{caller.key} tries to break free from {aimer_locking_caller.key}'s aim but is kept pinned."; observer_opportunity_text = f"{aimer_locking_caller.key} seizes the opportunity!"
+                    if aimer_msg_flee_fail: current_aimer_for_break_attempt.msg(f"|R{aimer_msg_flee_fail}|n {opportunity_text_attacker} {atk_msg_attacker}")
+                    else: current_aimer_for_break_attempt.msg(f"|RYou maintain your aim on {target_char.get_display_name(current_aimer_for_break_attempt)} as they falter, and press the attack!|n {opportunity_text_attacker} {atk_msg_attacker}")
+                    
+                    observer_flee_fail_prefix = f"{caller.key} tries to break free from {current_aimer_for_break_attempt.key}'s aim but is kept pinned."; observer_opportunity_text = f"{current_aimer_for_break_attempt.key} seizes the opportunity!"
                     room_observer_msg = f"|R{observer_flee_fail_prefix} {observer_opportunity_text}|n {atk_msg_observer}"
-                    caller.location.msg_contents(room_observer_msg, exclude=[caller, aimer_locking_caller])
-                    if not current_event_handler.is_active: current_event_handler.start()
-                    return # Flee attempt ends here
+                    
+                    # Message observers in attacker's location
+                    attacker_char.location.msg_contents(room_observer_msg, exclude=[caller, current_aimer_for_break_attempt])
+                    # If target is in a different room, message observers there too
+                    if target_char.location != attacker_char.location:
+                        target_char.location.msg_contents(room_observer_msg, exclude=[caller, current_aimer_for_break_attempt])
+
+                    if not event_handler_for_attack.is_active: event_handler_for_attack.start()
+                    return # Flee attempt ends here, aimer gets an attack.
 
         # --- Part 2: Attempt to flee from combat handler engagements ---
         disengagement_roll_succeeded = False 
         if original_handler_at_flee_start: 
-            if aimer_locking_caller: 
-                splattercast.msg(f"FLEE_LOGIC_ERROR: In combat flee section, but aimer_locking_caller ({aimer_locking_caller.key}) is still set.")
+            # If current_aimer_for_break_attempt is still set here, it means an NDB aim was present,
+            # the attempt to break it failed, and the function should have returned.
+            # This check is a safeguard.
+            if current_aimer_for_break_attempt: 
+                splattercast.msg(f"FLEE_LOGIC_ERROR (PART 2): In combat flee section, but current_aimer_for_break_attempt ({current_aimer_for_break_attempt.key}) is still set. This implies NDB aim break failed but didn't return.")
+                caller.msg(f"|rYou are still effectively pinned by {current_aimer_for_break_attempt.get_display_name(caller)}'s attention and cannot attempt to flee combat engagements now.|n")
                 return
-            splattercast.msg(f"FLEE_CMD: {caller.key} in original handler {original_handler_at_flee_start.key}, attempting combat flee.")
+
+            # ... (The rest of Part 2: Attempt to flee from combat - remains the same as your current working version)
+            # This includes grapple checks, roll against attackers, etc.
+            splattercast.msg(f"FLEE_CMD (COMBAT_FLEE_PHASE): {caller.key} in original handler {original_handler_at_flee_start.key}, attempting combat flee.")
             caller_combat_entry = next((e for e in original_handler_at_flee_start.db.combatants if e["char"] == caller), None)
             if not caller_combat_entry: 
                 caller.msg("|rError: Your combat entry is missing. Please report to an admin.|n")
@@ -378,21 +463,37 @@ class CmdFlee(Command):
         
         # --- Part 3: Perform movement if eligible ---
         movement_performed_this_turn = False
-        destination_if_moved = None
         
-        should_attempt_move = (aim_successfully_broken and not original_handler_at_flee_start) or disengagement_roll_succeeded
+        # Determine if caller is eligible to attempt movement
+        # If there was an NDB aimer, aim_successfully_broken must be true.
+        # If there was a combat handler, disengagement_roll_succeeded must be true.
+        can_attempt_move = False
+        if ndb_aimer_locking_caller: # Was originally NDB-aimed
+            if aim_successfully_broken: # And broke that aim
+                if original_handler_at_flee_start: # And was also in combat
+                    if disengagement_roll_succeeded: # And disengaged
+                        can_attempt_move = True
+                else: # Only NDB-aimed, not in combat handler, and broke aim
+                    can_attempt_move = True
+        elif original_handler_at_flee_start: # No NDB aimer, but was in combat
+            if disengagement_roll_succeeded: # And disengaged
+                can_attempt_move = True
         
-        if should_attempt_move:
-            splattercast.msg(f"FLEE_MOVEMENT_PHASE: {caller.key} eligible. AimBroken:{aim_successfully_broken}, DisengageRollSuccess:{disengagement_roll_succeeded}. Original Handler for safety check: {original_handler_at_flee_start.key if original_handler_at_flee_start else 'None'}")
-            available_exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
+        if can_attempt_move:
+            splattercast.msg(f"FLEE_MOVEMENT_PHASE: {caller.key} eligible. NDB AimBroken (if applicable):{aim_successfully_broken}, DisengageRollSuccess (if applicable):{disengagement_roll_succeeded}.")
+            # Re-fetch available exits, as the situation might have changed or for clarity
+            current_available_exits_for_move = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
             
-            if not available_exits:
-                splattercast.msg(f"FLEE_NO_EXITS: {caller.key}. Movement aborted.")
+            if not current_available_exits_for_move:
+                splattercast.msg(f"FLEE_NO_EXITS (MOVEMENT_PHASE): {caller.key}. Movement aborted.")
             else:
-                safe_exits = []
-                for potential_exit in available_exits:
+                # This safe exit check is repeated here, which is fine.
+                # The pre-flee check was to abort early if ALL exits were sniped.
+                # This check is for the actual move attempt, ensuring the chosen exit is safe at this moment.
+                safe_exits_for_move = []
+                for potential_exit in current_available_exits_for_move:
                     destination_room = potential_exit.destination
-                    is_destination_safe = True
+                    is_destination_safe_now = True
                     if destination_room: 
                         for char_in_dest in destination_room.contents:
                             if char_in_dest == caller or not hasattr(char_in_dest, "ndb"): continue
@@ -403,38 +504,47 @@ class CmdFlee(Command):
                                     other_hands = getattr(char_in_dest, "hands", {}); other_weapon_obj = next((item for hand, item in other_hands.items() if item), None)
                                     other_is_ranged = other_weapon_obj and hasattr(other_weapon_obj.db, "is_ranged") and other_weapon_obj.db.is_ranged
                                     if other_is_ranged:
-                                        is_destination_safe = False
-                                        splattercast.msg(f"FLEE_UNSAFE_DESTINATION (Safety Check): {caller.key} cannot flee via {potential_exit.key}. Reason: {char_in_dest.key} in running handler {other_h.key} targeting with ranged.")
+                                        is_destination_safe_now = False
+                                        splattercast.msg(f"FLEE_UNSAFE_DESTINATION (MOVEMENT_PHASE Safety Check): {caller.key} cannot flee via {potential_exit.key}. Reason: {char_in_dest.key} in running handler {other_h.key} targeting with ranged.")
                                         break 
-                    if is_destination_safe: safe_exits.append(potential_exit)
+                    if is_destination_safe_now: safe_exits_for_move.append(potential_exit)
                     else: caller.msg(f"|yYou consider fleeing {potential_exit.key}, but sense {destination_room.get_display_name(caller) if destination_room else 'that direction'} is covered by a ranged attacker targeting you.|n")
 
-                if not safe_exits:
-                    splattercast.msg(f"FLEE_NO_SAFE_EXITS: {caller.key}. Movement aborted.")
+                if not safe_exits_for_move:
+                    splattercast.msg(f"FLEE_NO_SAFE_EXITS (MOVEMENT_PHASE): {caller.key}. Movement aborted.")
                 else:
-                    chosen_exit = choice(safe_exits)
-                    destination_if_moved = chosen_exit.destination
+                    chosen_exit = choice(safe_exits_for_move)
+                    destination_if_moved = chosen_exit.destination 
                     old_location = caller.location
                     
-                    if hasattr(caller, "clear_aim_state"):
+                    if hasattr(caller, "clear_aim_state"): # Clear own aim if moving
                         caller.clear_aim_state(reason_for_clearing="as you flee")
 
                     if caller.move_to(destination_if_moved, quiet=True, move_hooks=False):
                         movement_performed_this_turn = True
-                        if disengagement_roll_succeeded:
-                             caller.msg("|RYou wrench yourself from the confrontation, the metallic tang of fear and blood still sharp as you make your escape.|n" + \
-                                       f" You flee {chosen_exit.key} and arrive in {destination_if_moved.get_display_name(caller)}.")
-                        elif aim_successfully_broken: 
-                            caller.msg(f"You break free and quickly move {chosen_exit.key}, arriving in {destination_if_moved.get_display_name(caller)}.")
+                        # Tailor message based on what they fled from
+                        flee_reason_msg_part = ""
+                        if aim_successfully_broken and disengagement_roll_succeeded:
+                            flee_reason_msg_part = "breaking free from both aim and combat"
+                        elif aim_successfully_broken:
+                            flee_reason_msg_part = "breaking free from their aim"
+                        elif disengagement_roll_succeeded:
+                            flee_reason_msg_part = "wrenching yourself from the confrontation"
+                        else: # Should not happen if can_attempt_move was true
+                            flee_reason_msg_part = "making your escape"
 
+
+                        caller.msg(f"|gYou succeed in {flee_reason_msg_part}!|n You flee {chosen_exit.key} and arrive in {destination_if_moved.get_display_name(caller)}.")
+                        
                         old_location.msg_contents(f"{caller.get_display_name(old_location)} flees {chosen_exit.key}.", exclude=caller)
                         destination_if_moved.msg_contents(f"{caller.get_display_name(destination_if_moved)} arrives, having fled from {old_location.get_display_name(destination_if_moved)}.", exclude=caller)
-                        splattercast.msg(f"FLEE_MOVE_SUCCESS (DIRECT): {caller.key} moved to {destination_if_moved.key}.")
+                        splattercast.msg(f"FLEE_MOVE_SUCCESS: {caller.key} moved to {destination_if_moved.key}.")
                     else:
                         caller.msg(f"|rYou attempt to flee through {chosen_exit.key}, but something prevents your movement!|n")
-                        splattercast.msg(f"FLEE_MOVE_FAIL (DIRECT): {caller.key}'s move_to returned False for {destination_if_moved.key}.")
+                        splattercast.msg(f"FLEE_MOVE_FAIL: {caller.key}'s move_to returned False for {destination_if_moved.key if destination_if_moved else 'chosen_exit.destination'}.")
         
         # --- Part 4: Handler Cleanup ---
+        # (This logic remains largely the same, ensure it uses original_handler_at_flee_start)
         if disengagement_roll_succeeded and movement_performed_this_turn and original_handler_at_flee_start:
             if original_handler_at_flee_start.pk and original_handler_at_flee_start.db: 
                 splattercast.msg(f"FLEE_HANDLER_CLEANUP (SUCCESSFUL MOVE): Removing {caller.key} from original handler {original_handler_at_flee_start.key}.")
@@ -452,18 +562,20 @@ class CmdFlee(Command):
         elif disengagement_roll_succeeded and not movement_performed_this_turn and original_handler_at_flee_start:
             splattercast.msg(f"FLEE_HANDLER_NO_CLEANUP: {caller.key} disengaged (roll_succeeded=True) but did not move. Remains in handler {original_handler_at_flee_start.key}.")
             if not hasattr(caller.ndb, "combat_handler") or caller.ndb.combat_handler != original_handler_at_flee_start:
-                caller.ndb.combat_handler = original_handler_at_flee_start
+                caller.ndb.combat_handler = original_handler_at_flee_start 
                 splattercast.msg(f"FLEE_HANDLER_NO_CLEANUP: Re-affirmed NDB.combat_handler for {caller.key} to {original_handler_at_flee_start.key}.")
         
         # --- Final User Feedback based on outcome ---
-        if not movement_performed_this_turn:
-            if disengagement_roll_succeeded: 
-                caller.msg("|yYou manage to break away from your immediate attackers, but all escape routes are covered! You remain in the area, still in combat.|n")
-            elif aim_successfully_broken and not original_handler_at_flee_start: 
-                caller.msg("You broke free from their aim but found no clear path to move.")
+        if not movement_performed_this_turn and can_attempt_move: # Eligible to move, but didn't (e.g. no safe exits at move time)
+            if disengagement_roll_succeeded: # Disengaged from combat but couldn't find a safe exit to move
+                caller.msg("|yYou manage to break away from your immediate attackers, but all escape routes are covered or inaccessible! You remain in the area, still in combat.|n")
+            elif aim_successfully_broken and not original_handler_at_flee_start: # Broke NDB aim, wasn't in combat, couldn't find safe exit
+                caller.msg("You broke free from their aim but found no clear path to move or all paths were unsafe.")
+            # If both aim_successfully_broken AND disengagement_roll_succeeded but no move, the disengage message takes precedence.
+        
+        # If can_attempt_move was false, earlier return statements would have provided feedback.
 
-        splattercast.msg(f"FLEE_CMD_ENDED for {caller.key}. Moved: {movement_performed_this_turn}, DisengageRollSuccess: {disengagement_roll_succeeded}, AimBroken: {aim_successfully_broken}.")
-
+        splattercast.msg(f"FLEE_CMD_ENDED for {caller.key}. Moved: {movement_performed_this_turn}, NDB Aim Originally Present: {bool(ndb_aimer_locking_caller)}, NDB Aim Broken: {aim_successfully_broken}, Combat Disengage Success: {disengagement_roll_succeeded}.")
 
 class CmdRetreat(Command):
     """
