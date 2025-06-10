@@ -445,29 +445,74 @@ class CmdFlee(Command):
         should_move_room = False
         if aim_successfully_broken and not handler: # Broke aim, was not in combat
             should_move_room = True
+            splattercast.msg(f"FLEE_MOVE_CONDITION: Aim broken, not in combat. {caller.key} can move.") # Added log
         elif fled_combat_successfully: # Fled combat (aim must have been broken or not an issue)
             should_move_room = True
+            splattercast.msg(f"FLEE_MOVE_CONDITION: Fled combat successfully. {caller.key} can move.") # Added log
         
         if should_move_room:
-            exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
-            if exits:
-                chosen_exit = choice(exits)
+            available_exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
+            if not available_exits:
+                caller.msg("There are no exits here to flee through.")
+                splattercast.msg(f"FLEE_NO_EXITS: {caller.key} has no available exits from {caller.location.key}.")
+                return # Stop if no exits at all
+
+            safe_exits = []
+            for potential_exit in available_exits:
+                destination_room = potential_exit.destination
+                is_destination_safe = True
+                if destination_room: # Ensure destination exists
+                    for char_in_dest in destination_room.contents:
+                        if char_in_dest == caller or not hasattr(char_in_dest, "ndb"): # Skip self or objects without NDB
+                            continue
+                        
+                        # Check if char_in_dest is an opponent targeting the caller with a ranged weapon
+                        other_handler = getattr(char_in_dest.ndb, "combat_handler", None)
+                        if other_handler and other_handler.db.combat_is_running: # Check if combat is active
+                            other_entry = next((e for e in other_handler.db.combatants if e["char"] == char_in_dest), None)
+                            if other_entry and other_entry.get("target") == caller:
+                                # Check if char_in_dest has a ranged weapon equipped
+                                other_hands = getattr(char_in_dest, "hands", {})
+                                other_weapon_obj = next((item for hand, item in other_hands.items() if item), None)
+                                other_is_ranged = other_weapon_obj and hasattr(other_weapon_obj.db, "is_ranged") and other_weapon_obj.db.is_ranged
+                                
+                                if other_is_ranged:
+                                    is_destination_safe = False
+                                    splattercast.msg(f"FLEE_UNSAFE_DESTINATION: {caller.key} cannot flee via {potential_exit.key} to {destination_room.key}. Reason: {char_in_dest.key} is targeting them with a ranged weapon ('{other_weapon_obj.key if other_weapon_obj else 'ranged'}').")
+                                    break # This destination is unsafe
                 
-                flee_message_verb = "flees"
-                if aim_successfully_broken and not fled_combat_successfully and not handler: # Only broke aim
-                    flee_message_verb = "breaks free and flees"
-                
-                caller.location.msg_contents(f"{caller.key} {flee_message_verb} {chosen_exit.key}.", exclude=caller)
-                caller.msg(f"You {flee_message_verb} {chosen_exit.key}.")
-                chosen_exit.at_traverse(caller, chosen_exit.destination) # This will also clear aim on the caller if they were aiming
-            else:
-                # Tailor message based on context
-                if fled_combat_successfully:
-                    caller.msg("You flee from combat, but there's nowhere to go!")
-                elif aim_successfully_broken:
-                     caller.msg("You break free from the aim, but there's nowhere to go!")
-                # else: this case should not be hit if logic is correct
-        # If not should_move_room, it means a flee attempt failed and returned, or no flee was needed initially.
+                if is_destination_safe:
+                    safe_exits.append(potential_exit)
+                else:
+                    # Inform the player about this specific unsafe exit
+                    caller.msg(f"|yYou consider fleeing {potential_exit.key}, but sense {destination_room.get_display_name(caller) if destination_room else 'that direction'} is covered by a ranged attacker targeting you.|n")
+
+            if not safe_exits:
+                caller.msg("|rYou try to flee, but all escape routes seem covered by ranged attackers targeting you!|n")
+                splattercast.msg(f"FLEE_MOVE_BLOCKED_ALL_SAFE_EXITS: {caller.key} has no safe exits. All covered by ranged attackers.")
+                # Consider if a penalty should apply here if they were in combat and successfully disengaged but can't move.
+                # For now, just blocks movement.
+                return
+
+            # Proceed with a safe exit
+            chosen_exit = choice(safe_exits)
+            
+            flee_message_verb = "flees"
+            if aim_successfully_broken and not fled_combat_successfully and not handler: # Only broke aim
+                flee_message_verb = "breaks free and flees"
+            
+            caller.location.msg_contents(f"{caller.key} {flee_message_verb} {chosen_exit.key}.", exclude=caller)
+            caller.msg(f"You {flee_message_verb} {chosen_exit.key}.")
+            
+            # Use the exit's at_traverse method, which handles aim clearing for the traverser
+            # and other standard traversal effects.
+            chosen_exit.at_traverse(caller, chosen_exit.destination)
+            splattercast.msg(f"FLEE_MOVE_SUCCESS: {caller.key} fled via {chosen_exit.key} to {chosen_exit.destination.key}.")
+        else:
+            # This 'else' corresponds to 'if should_move_room:'
+            # It means a prior flee step (aim break or combat disengage) failed and returned,
+            # or no flee was needed initially.
+            splattercast.msg(f"FLEE_NO_MOVE: {caller.key} - conditions for movement not met (should_move_room is False). This usually means a prior flee step failed and returned, or no flee was initiated.")
 
 
 class CmdRetreat(Command):
