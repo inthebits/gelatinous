@@ -546,6 +546,26 @@ class CmdFlee(Command):
         # --- Part 4: Handler Cleanup ---
         # (This logic remains largely the same, ensure it uses original_handler_at_flee_start)
         if disengagement_roll_succeeded and movement_performed_this_turn and original_handler_at_flee_start:
+            # --- NEW: If caller was grappling someone, break the grapple ---
+            # Ensure original_handler_at_flee_start is valid and has combatants before proceeding
+            if original_handler_at_flee_start and original_handler_at_flee_start.db and hasattr(original_handler_at_flee_start.db, "combatants"):
+                caller_entry_snapshot = next((e for e in original_handler_at_flee_start.db.combatants if e["char"] == caller), None)
+                if caller_entry_snapshot:
+                    grappled_victim_by_caller = caller_entry_snapshot.get("grappling")
+                    if grappled_victim_by_caller:
+                        # Ensure victim is a character and still in the handler to update their state
+                        victim_entry_in_old_handler = next((e for e in original_handler_at_flee_start.db.combatants if e["char"] == grappled_victim_by_caller), None)
+                        if victim_entry_in_old_handler:
+                            victim_entry_in_old_handler["grappled_by"] = None
+                        
+                        # The caller's "grappling" field will be gone when they are removed from the handler.
+                        # Message the participants.
+                        caller.msg(f"|yAs you flee, your grapple on {grappled_victim_by_caller.get_display_name(caller)} is broken.|n")
+                        if grappled_victim_by_caller.access(caller, "view"): # Check if victim can see caller
+                             grappled_victim_by_caller.msg(f"|y{caller.get_display_name(grappled_victim_by_caller)} flees, breaking their grapple on you!|n")
+                        splattercast.msg(f"FLEE_GRAPPLE_BREAK: {caller.key} fled, breaking grapple with {grappled_victim_by_caller.key}.")
+            # --- END NEW GRAPPLE BREAK ---
+
             if original_handler_at_flee_start.pk and original_handler_at_flee_start.db: 
                 splattercast.msg(f"FLEE_HANDLER_CLEANUP (SUCCESSFUL MOVE): Removing {caller.key} from original handler {original_handler_at_flee_start.key}.")
                 original_handler_at_flee_start.remove_combatant(caller) 
@@ -602,6 +622,20 @@ class CmdRetreat(Command):
         if not handler:
             caller.msg("You are not in combat and thus not in melee proximity with anyone.")
             return
+
+        caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        if not caller_entry:
+            caller.msg("Your combat data is missing. Please report this.")
+            splattercast.msg(f"RETREAT_ERROR: {caller.key} has handler but no combat entry.")
+            return
+
+        # --- NEW: Check if caller is being grappled ---
+        if caller_entry.get("grappled_by"):
+            grappler_obj = caller_entry.get("grappled_by")
+            caller.msg(f"You cannot retreat while {grappler_obj.get_display_name(caller) if grappler_obj else 'someone'} is grappling you! Try 'escape'.")
+            splattercast.msg(f"RETREAT_FAIL: {caller.key} attempted to retreat while grappled by {grappler_obj.key if grappler_obj else 'Unknown'}.")
+            return
+        # --- END NEW CHECK ---
 
         if not hasattr(caller.ndb, "in_proximity_with") or not isinstance(caller.ndb.in_proximity_with, set):
             caller.msg("Your proximity status is unclear. This shouldn't happen. (Error: NDB missing/invalid)")
@@ -677,8 +711,21 @@ class CmdRetreat(Command):
             caller.ndb.in_proximity_with.clear()
             splattercast.msg(f"RETREAT_UPDATE: Cleared {caller.key}'s proximity set.")
             
-            # Potentially, a successful retreat might allow a character to queue a ranged action next turn,
-            # or prevent melee attacks against them until someone advances. This will be handled by CmdAttack checks.
+            # NEW: Check and clear grapple states if retreat broke them
+            # caller_entry was already fetched above
+            # Case 1: Caller was grappling someone they retreated from
+            grappling_victim = caller_entry.get("grappling")
+            # Retreat means breaking proximity with *everyone* they were near.
+            if grappling_victim: 
+                victim_entry = next((e for e in handler.db.combatants if e["char"] == grappling_victim), None)
+                caller_entry["grappling"] = None # Clear on caller's entry
+                if victim_entry:
+                    victim_entry["grappled_by"] = None # Clear on victim's entry
+                caller.msg(f"|yYour retreat also breaks your grapple on {grappling_victim.get_display_name(caller)}.|n")
+                if grappling_victim.access(caller, "view"): 
+                    grappling_victim.msg(f"|y{caller.get_display_name(grappling_victim)} retreats, breaking their grapple on you!|n")
+                splattercast.msg(f"RETREAT_GRAPPLE_BREAK: {caller.key} retreated from and broke grapple with {grappling_victim.key}.")
+            # Case 2: Caller was grappled by someone they retreated from - This is now blocked by the check at the start of func.
 
         else:
             # --- Failure ---
@@ -729,6 +776,22 @@ class CmdAdvance(Command):
         if not handler:
             caller.msg("You need to be in combat to advance on a target.")
             return
+
+        # --- BEGIN INSERTED GRAPPLE PRE-CHECKS ---
+        caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        if not caller_entry: # Should exist if handler is valid, but good check
+            caller.msg("Your combat data is missing. Please report this.")
+            splattercast.msg(f"ADVANCE_ERROR: {caller.key} has handler but no combat entry.")
+            return
+
+        grappled_by_char_obj = caller_entry.get("grappled_by")
+        if grappled_by_char_obj:
+            caller.msg(f"You cannot advance while {grappled_by_char_obj.get_display_name(caller) if grappled_by_char_obj else 'someone'} is grappling you. Try 'escape' first.")
+            splattercast.msg(f"ADVANCE_FAIL: {caller.key} attempted to advance while grappled by {grappled_by_char_obj.key if grappled_by_char_obj else 'Unknown'}.")
+            return
+
+        grappling_victim_obj = caller_entry.get("grappling") # Defined here for use later
+        # --- END INSERTED GRAPPLE PRE-CHECKS ---
 
         target_char = None
         target_search_name = args
@@ -809,6 +872,34 @@ class CmdAdvance(Command):
                         return
                 # No 'elif not target_char:' here because if args were given and no target found, it's handled by the final check.
             # If a local target was found with args, target_in_adjacent_room remains False, which is correct.
+
+        # --- BEGIN INSERTED LOGIC FOR ADVANCING WHILE GRAPPLING ---
+        # grappling_victim_obj and caller_entry were defined in the pre-checks block earlier.
+        if grappling_victim_obj: 
+            if not target_char:
+                # If target finding failed (target_char is None), and caller is grappling someone,
+                # this implies they tried to advance (perhaps with no args) but their default target
+                # became invalid, or they specified an invalid target.
+                # The 'if not target_char:' check immediately following this block will handle
+                # sending the "don't see target" message. So, we can just pass here or let it fall through.
+                pass # Let the subsequent 'if not target_char:' catch this.
+            elif target_char != grappling_victim_obj:
+                # Trying to advance on a NEW target while grappling current victim
+                caller.msg(f"You must release {grappling_victim_obj.get_display_name(caller)} before you can advance on {target_char.get_display_name(caller)}.")
+                splattercast.msg(f"ADVANCE_FAIL: {caller.key} (grappling {grappling_victim_obj.key}) tried to advance on new target {target_char.key}.")
+                return
+            # If target_char IS grappling_victim_obj:
+            elif not target_in_adjacent_room: # Advancing on grappled victim in same room
+                caller.msg(f"You are already grappling and in proximity with {grappling_victim_obj.get_display_name(caller)}.")
+                return # This is not an error, just an informative message.
+            else: # Advancing on grappled victim into an adjacent room - this is a drag attempt
+                if not caller_entry.get("is_yielding"): 
+                    caller.msg(f"You must be yielding (use 'stop attacking') to drag {grappling_victim_obj.get_display_name(caller)} to another area.")
+                    splattercast.msg(f"ADVANCE_FAIL (DRAG): {caller.key} tried to drag {grappling_victim_obj.key} but is not yielding.")
+                    return
+                # If yielding, the actual drag is handled by at_traverse if movement occurs.
+                splattercast.msg(f"ADVANCE_INFO (DRAG ATTEMPT): {caller.key} is yielding and advancing with grappled {grappling_victim_obj.key} towards adjacent room.")
+        # --- END INSERTED LOGIC FOR ADVANCING WHILE GRAPPLING ---
 
         # Final check on target_char validity (could be None if args were given but no target found)
         if not target_char:
@@ -1034,9 +1125,29 @@ class CmdCharge(Command):
         if not handler:
             caller.msg("You need to be in combat to charge a target.")
             return
+        
+        caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        if not caller_entry:
+            caller.msg("Your combat data is missing. Please report this.")
+            splattercast.msg(f"CHARGE_ERROR: {caller.key} has handler but no combat entry.")
+            return
+
+        # --- GRAPPLE CHECKS (INSERT BEFORE TARGET SEARCHING) ---
+        grappled_by_char_obj = caller_entry.get("grappled_by")
+        if grappled_by_char_obj:
+            caller.msg(f"You cannot charge while {grappled_by_char_obj.get_display_name(caller) if grappled_by_char_obj else 'someone'} is grappling you. Try 'escape' first.")
+            splattercast.msg(f"CHARGE_FAIL: {caller.key} attempted to charge while grappled by {grappled_by_char_obj.key if grappled_by_char_obj else 'Unknown'}.")
+            return
+
+        grappling_victim_obj = caller_entry.get("grappling")
+        if grappling_victim_obj:
+            caller.msg(f"You must release {grappling_victim_obj.get_display_name(caller)} before you can charge.")
+            splattercast.msg(f"CHARGE_FAIL: {caller.key} attempted to charge while grappling {grappling_victim_obj.key}.")
+            return 
+        # --- END GRAPPLE CHECKS ---
 
         target_char = None
-        target_search_name = args # Used for error messages if a specific name was given
+        target_search_name = args
         target_in_adjacent_room = False # Initialize here
 
         if not args:
