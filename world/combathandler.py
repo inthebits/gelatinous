@@ -485,12 +485,17 @@ class CombatHandler(DefaultScript):
 
             # --- CHECK FOR YIELDING ---
             if current_char_combat_entry.get("is_yielding"):
-                splattercast.msg(f"{char.key} is yielding and takes no hostile action this turn.")
-                char.location.msg_contents(f"|y{char.key} holds their action, appearing non-hostile.|n", exclude=[char])
-                char.msg("|yYou hold your action, appearing non-hostile.|n")
-                # Save combatants list before ending turn
-                self.db.combatants = combatants_list
-                continue
+                # Exception: Allow release grapple actions even when yielding
+                action_intent = current_char_combat_entry.get("combat_action")
+                if action_intent and isinstance(action_intent, dict) and action_intent.get("type") == "release_grapple":
+                    splattercast.msg(f"{char.key} is yielding but can still release their grapple.")
+                else:
+                    splattercast.msg(f"{char.key} is yielding and takes no hostile action this turn.")
+                    char.location.msg_contents(f"|y{char.key} holds their action, appearing non-hostile.|n", exclude=[char])
+                    char.msg("|yYou hold your action, appearing non-hostile.|n")
+                    # Save combatants list before ending turn
+                    self.db.combatants = combatants_list
+                    continue
             # --- Handle being grappled (auto resist unless yielding) ---
             # Use the helper method to get the grappler
             grappler = self.get_grappled_by_obj(current_char_combat_entry)
