@@ -371,8 +371,13 @@ class CombatHandler(DefaultScript):
              self.db.combat_is_running = False
              return
 
+        # Convert SaverList to regular list to avoid corruption during modifications
+        # All modifications will be done on this list, then saved back at the end
+        combatants_list = list(self.db.combatants) if self.db.combatants else []
+        splattercast.msg(f"AT_REPEAT_DEBUG: Converted SaverList to regular list with {len(combatants_list)} entries")
+
         valid_combatants_entries = []
-        for entry in list(self.db.combatants):
+        for entry in combatants_list:
             char = entry.get("char")
             if not char:
                 splattercast.msg(f"AT_REPEAT: Pruning missing character from handler {self.key}.")
@@ -389,36 +394,40 @@ class CombatHandler(DefaultScript):
                 continue
             valid_combatants_entries.append(entry)
         
-        self.db.combatants = valid_combatants_entries
+        # Update the working list
+        combatants_list = valid_combatants_entries
 
-        if not self.db.combatants:
+        if not combatants_list:
             splattercast.msg(f"AT_REPEAT: No valid combatants remain in managed rooms for handler {self.key}. Stopping.")
             self.stop_combat_logic()
             return
 
         if self.db.round == 0:
-            if len(self.db.combatants) > 0:
+            if len(combatants_list) > 0:
                 splattercast.msg(f"AT_REPEAT: Handler {self.key}. Combatants present. Starting combat in round 1.")
                 self.db.round = 1
             else:
                 splattercast.msg(f"AT_REPEAT: Handler {self.key}. Waiting for combatants to join...")
+                # Save the list back before returning
+                self.db.combatants = combatants_list
                 return
 
         splattercast.msg(f"AT_REPEAT: Handler {self.key} (managing {[r.key for r in self.db.managed_rooms]}). Round {self.db.round} begins.")
         
-        if len(self.db.combatants) <= 1:
-            splattercast.msg(f"AT_REPEAT: Handler {self.key}. Not enough combatants ({len(self.db.combatants)}) to continue. Ending combat.")
+        if len(combatants_list) <= 1:
+            splattercast.msg(f"AT_REPEAT: Handler {self.key}. Not enough combatants ({len(combatants_list)}) to continue. Ending combat.")
             self.stop_combat_logic()
             return
 
-        for combat_entry in list(self.get_initiative_order()): # combat_entry is a snapshot
+        # Sort combatants by initiative for processing
+        initiative_order = sorted(combatants_list, key=lambda e: e["initiative"], reverse=True)
+        
+        for combat_entry in initiative_order:
             char = combat_entry.get("char")
             splattercast.msg(f"DEBUG_LOOP_ITERATION: Starting processing for {char.key}, combat_entry: {combat_entry}")
 
-            # ... (pruning logic for char, location) ...
-
             # Always get a fresh reference to ensure we have current data
-            current_char_combat_entry = next((e for e in self.db.combatants if e["char"] == char), None)
+            current_char_combat_entry = next((e for e in combatants_list if e["char"] == char), None)
             if current_char_combat_entry:
                 grappler = self.get_grappled_by_obj(current_char_combat_entry)
                 if grappler:
@@ -439,14 +448,18 @@ class CombatHandler(DefaultScript):
             if isinstance(action, str):
                 if action == "grapple_initiate":
                     splattercast.msg(f"AT_REPEAT: {char.key} attempting grapple_initiate.")
-                    self._resolve_grapple_initiate(current_char_combat_entry)
+                    self._resolve_grapple_initiate(current_char_combat_entry, combatants_list)
                     current_char_combat_entry["combat_action"] = None
+                    # Save combatants list before ending turn
+                    self.db.combatants = combatants_list
                     continue  # End turn for this combatant
 
                 elif action == "grapple_join":
                     splattercast.msg(f"AT_REPEAT: {char.key} attempting grapple_join.")
-                    self._resolve_grapple_join(current_char_combat_entry)
+                    self._resolve_grapple_join(current_char_combat_entry, combatants_list)
                     current_char_combat_entry["combat_action"] = None
+                    # Save combatants list before ending turn
+                    self.db.combatants = combatants_list
                     continue  # End turn for this combatant
 
             # --- Initialize attack condition flags for this turn ---
@@ -466,6 +479,8 @@ class CombatHandler(DefaultScript):
                 char.msg("|yYou are recovering or off-balance and cannot act this turn.|n")
                 splattercast.msg(f"AT_REPEAT_SKIP_TURN: {char.key} is skipping turn due to ndb.skip_combat_round.")
                 del char.ndb.skip_combat_round # Consume the flag
+                # Save combatants list before ending turn
+                self.db.combatants = combatants_list
                 continue # Skip to next combatant
 
             # --- CHECK FOR YIELDING ---
@@ -473,6 +488,8 @@ class CombatHandler(DefaultScript):
                 splattercast.msg(f"{char.key} is yielding and takes no hostile action this turn.")
                 char.location.msg_contents(f"|y{char.key} holds their action, appearing non-hostile.|n", exclude=[char])
                 char.msg("|yYou hold your action, appearing non-hostile.|n")
+                # Save combatants list before ending turn
+                self.db.combatants = combatants_list
                 continue
             # --- Handle being grappled (auto resist unless yielding) ---
             # Use the helper method to get the grappler
@@ -516,7 +533,7 @@ class CombatHandler(DefaultScript):
                             # Success - update to use dbrefs
                             splattercast.msg(f"GRAPPLE_CLEAR_DEBUG: {char.key} successfully escaped, clearing grapple state")
                             current_char_combat_entry["grappled_by_dbref"] = None
-                            grappler_entry = next((e for e in self.db.combatants if e["char"] == grappler), None)
+                            grappler_entry = next((e for e in combatants_list if e["char"] == grappler), None)
                             if grappler_entry:
                                 grappler_entry["grappling_dbref"] = None
                                 
@@ -543,6 +560,8 @@ class CombatHandler(DefaultScript):
                     
                     # Either way, turn ends after escape attempt or accepting
                     splattercast.msg(f"DEBUG_CONTINUE_ATTEMPT: {char.key} about to continue (end turn) after grapple handling")
+                    # Save combatants list before ending turn
+                    self.db.combatants = combatants_list
                     continue
                     splattercast.msg(f"DEBUG_AFTER_CONTINUE: This should NEVER appear for {char.key}!")
                 except Exception as e:
@@ -550,6 +569,8 @@ class CombatHandler(DefaultScript):
                     # If there was an exception but character is grappled, still end their turn
                     splattercast.msg(f"DEBUG_EXCEPTION_TRACEBACK: {traceback.format_exc()}")
                     splattercast.msg(f"DEBUG_EXCEPTION_BUT_GRAPPLED: {char.key} had exception during grapple handling but is grappled, ending turn")
+                    # Save combatants list before ending turn
+                    self.db.combatants = combatants_list
                     continue
 
             splattercast.msg(f"DEBUG_AFTER_GRAPPLE_CHECK: {char.key} continuing to action intent processing")
@@ -997,6 +1018,9 @@ class CombatHandler(DefaultScript):
                 splattercast.msg(f"MISS_DEBUG: Attack by {char.key} on {target.key} is a MISS.")
 
             splattercast.msg(f"DEBUG_LOOP_END: Completed processing for {char.key}, moving to next combatant")
+            
+            # Save the modified combatants list back to persistent storage
+            self.db.combatants = combatants_list
 
         if not self.db.combatants:
             splattercast.msg(f"AT_REPEAT: Handler {self.key}. No combatants left after round processing. Stopping.")
@@ -1018,7 +1042,7 @@ class CombatHandler(DefaultScript):
         
         return attacker_roll > defender_roll
 
-    def _resolve_grapple_initiate(self, attacker_entry):
+    def _resolve_grapple_initiate(self, attacker_entry, combatants_list):
         """Resolves an all-or-nothing grapple that starts combat."""
         attacker = attacker_entry["char"]
         target = self.get_target_obj(attacker_entry)
@@ -1029,7 +1053,7 @@ class CombatHandler(DefaultScript):
             return False
             
         # Find target's combat entry
-        target_entry = next((e for e in self.db.combatants if e["char"] == target), None)
+        target_entry = next((e for e in combatants_list if e["char"] == target), None)
         if not target_entry:
             splattercast.msg(f"GRAPPLE_INITIATE_ERROR: Target {target.key} has no combat entry.")
             return False
@@ -1072,8 +1096,8 @@ class CombatHandler(DefaultScript):
                 exclude=[attacker, target]
             )
             
-            fresh_attacker_entry = next((e for e in self.db.combatants if e["char"] == attacker), None)
-            fresh_target_entry = next((e for e in self.db.combatants if e["char"] == target), None)
+            fresh_attacker_entry = next((e for e in combatants_list if e["char"] == attacker), None)
+            fresh_target_entry = next((e for e in combatants_list if e["char"] == target), None)
 
             if fresh_attacker_entry:
                 fresh_attacker_entry["grappling_dbref"] = self._get_dbref(target)
@@ -1086,7 +1110,7 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"GRAPPLE_DEBUG_STATE_SET: {attacker.key} grappling_dbref={self._get_dbref(target)}, {target.key} grappled_by_dbref={self._get_dbref(attacker)}")
             
             # Verify the grapple state was correctly set
-            verify_target = next((e for e in self.db.combatants if e["char"] == target), None)
+            verify_target = next((e for e in combatants_list if e["char"] == target), None)
             if verify_target:
                 splattercast.msg(f"GRAPPLE_STATE_VERIFY_IMMEDIATE: {target.key} entry after setting: {verify_target}")
                 grappler_obj = self.get_grappled_by_obj(verify_target)
@@ -1094,7 +1118,7 @@ class CombatHandler(DefaultScript):
 
             # Additional debug: Show all combat entries after grapple is set
             splattercast.msg(f"GRAPPLE_DEBUG_ALL_ENTRIES_AFTER_SET:")
-            for i, entry in enumerate(self.db.combatants):
+            for i, entry in enumerate(combatants_list):
                 splattercast.msg(f"  Entry {i}: {entry['char'].key} - grappled_by_dbref={entry.get('grappled_by_dbref')}, grappling_dbref={entry.get('grappling_dbref')}")
             
             # The initiator should be yielding (defense-oriented)
@@ -1118,7 +1142,7 @@ class CombatHandler(DefaultScript):
             self.remove_combatant(target)
             return False
 
-    def _resolve_grapple_join(self, attacker_entry):
+    def _resolve_grapple_join(self, attacker_entry, combatants_list):
         """Resolves a grapple attempt within an ongoing combat."""
         attacker = attacker_entry["char"]
         target = self.get_target_obj(attacker_entry)
@@ -1129,7 +1153,7 @@ class CombatHandler(DefaultScript):
             return False
             
         # Find target's combat entry
-        target_entry = next((e for e in self.db.combatants if e["char"] == target), None)
+        target_entry = next((e for e in combatants_list if e["char"] == target), None)
         if not target_entry:
             splattercast.msg(f"GRAPPLE_JOIN_ERROR: Target {target.key} has no combat entry.")
             return False
