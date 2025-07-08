@@ -156,7 +156,7 @@ class CmdAttack(Command):
         # --- Messaging and Action ---
         if aiming_direction:
             # --- Attacking into an adjacent room ---
-            splattercast.msg(f"ATTACK_CMD: Aiming direction attack by {caller.key} towards {aiming_direction} into {target_room.key} at {target.key}.")
+            splattercast.msg(f"ATTACK_CMD: Aiming direction attack by {caller.key} towards {aiming_direction} into {target_room.key}.")
 
             # --- ADDITIONAL AIMING DIRECTION LOGIC ---
             initiate_msg_obj = get_combat_message(weapon_type_for_msg, "initiate", attacker=caller, target=target, item=weapon_obj)
@@ -1276,8 +1276,9 @@ class CmdCharge(Command):
 
                     if target_aiming_direction and not was_aiming_at_caller_specifically:
                         exit_towards_caller_original_room = None
+                        # Check exits from target's current room (which is now also caller's room)
                         for ex in target_char.location.exits:
-                            if ex.destination == original_caller_location: 
+                            if ex.destination == original_caller_location: # original_caller_location is where caller came from
                                 if ex.key.lower() == target_aiming_direction.lower() or \
                                    any(alias.lower() == target_aiming_direction.lower() for alias in (ex.aliases.all() if hasattr(ex.aliases, "all") else [])):
                                     exit_towards_caller_original_room = ex
@@ -1286,15 +1287,23 @@ class CmdCharge(Command):
                             was_aiming_directionally_towards_caller = True
 
                     if was_aiming_at_caller_specifically:
+                        # Target was already aiming at the caller. Aim persists.
                         target_char.msg(f"|y{caller.get_display_name(target_char)} charges directly into your sights! Your aim remains locked.|n")
                         caller.msg(f"|y{target_char.get_display_name(caller)} keeps you in their sights as you charge in!|n")
                         splattercast.msg(f"CHARGE_AIM_PERSIST: {target_char.key}'s aim remains on {caller.key} after charge.")
                     
                     elif was_aiming_directionally_towards_caller:
+                        # Target was aiming in the direction. Transition to aiming at caller.
+                        # Clear target's previous directional aim (and any other character aim they might have had).
+                        # This will message the target about stopping their old aim.
                         if hasattr(target_char, "clear_aim_state"):
                             target_char.clear_aim_state(reason_for_clearing=f"as {caller.get_display_name(target_char)} charges in from that direction")
                         
+                        # Set new character-specific aim
                         target_char.ndb.aiming_at = caller
+                        
+                        # If caller was aimed at by someone else, break that old aim
+                        # This ensures caller.ndb.aimed_at_by is exclusively target_char now.
                         previous_aimer_on_caller = getattr(caller.ndb, "aimed_at_by", None)
                         if previous_aimer_on_caller and previous_aimer_on_caller != target_char:
                             if hasattr(previous_aimer_on_caller, "clear_aim_state"):
@@ -1705,6 +1714,13 @@ class CmdStop(Command):
 
     'stop aiming' will cease any current aiming.
     'stop attacking' will cause you to yield in combat.
+    
+    When you are being grappled, 'stop attacking' makes you stop
+    struggling and accept the grapple.
+    
+    To resume struggling against a grapple, use:
+    - 'escape' or 'resist' to attempt to break free
+    - 'attack [grappler]' to attack the one grappling you
     """
 
     key = "stop"
@@ -1749,16 +1765,29 @@ class CmdStop(Command):
             splattercast.msg(f"STOP_ATTACKING_WARNING: {caller.key} has combat_handler but no entry in {handler.key}.")
             return
 
+        is_being_grappled = caller_entry.get("grappled_by") is not None
+        
         if not caller_entry.get("is_yielding"):
             caller_entry["is_yielding"] = True
-            caller_entry["target"] = None # Explicitly clear their offensive target
+            caller_entry["target"] = None  # Explicitly clear their offensive target
             
-            msg_room = f"{caller.key} lowers their guard, appearing to yield."
-            caller.location.msg_contents(f"|y{msg_room}|n", exclude=[caller])
-            caller.msg("|gYou lower your guard and will not actively attack (you are now yielding).|n")
-            splattercast.msg(f"STOP_ATTACKING: {caller.key} is now yielding. Their target has been cleared.")
+            if is_being_grappled:
+                grappler = caller_entry["grappled_by"]
+                msg_room = f"{caller.key} stops struggling against {grappler.key}'s grapple."
+                caller.location.msg_contents(f"|y{msg_room}|n", exclude=[caller])
+                caller.msg(f"|gYou relax and stop struggling against {grappler.get_display_name(caller)}'s grip.|n")
+                grappler.msg(f"|g{caller.get_display_name(grappler)} stops struggling against your grip.|n")
+                splattercast.msg(f"STOP_ATTACKING: {caller.key} is now yielding and accepting {grappler.key}'s grapple.")
+            else:
+                msg_room = f"{caller.key} lowers their guard, appearing to yield."
+                caller.location.msg_contents(f"|y{msg_room}|n", exclude=[caller])
+                caller.msg("|gYou lower your guard and will not actively attack (you are now yielding).|n")
+                splattercast.msg(f"STOP_ATTACKING: {caller.key} is now yielding. Their target has been cleared.")
         else:
-            caller.msg("You are already yielding (not actively attacking).")
+            if is_being_grappled:
+                caller.msg("You are already accepting the grapple. Use 'escape', 'resist', or 'attack [grappler]' to resume struggling.")
+            else:
+                caller.msg("You are already yielding (not actively attacking).")
 
 
 class CmdAim(Command):
@@ -1986,7 +2015,7 @@ class CmdLook(Command):
             possible_exit_obj = None
             for ex in caller.location.exits:
                 exit_aliases_lower = [alias.lower() for alias in ex.aliases.all()] if ex.aliases and hasattr(ex.aliases, 'all') else []
-                if args.lower() == ex.key.lower() or args.lower() in exit_aliases_lower:
+                if ex.key.lower() == args.lower() or args.lower() in exit_aliases_lower:
                     possible_exit_obj = ex
                     break
             
