@@ -3,6 +3,7 @@ from random import randint
 from evennia.utils.utils import delay
 from world.combat_messages import get_combat_message
 from evennia.comms.models import ChannelDB
+import traceback
 
 COMBAT_SCRIPT_KEY = "combat_handler"
 
@@ -527,10 +528,10 @@ class CombatHandler(DefaultScript):
                     # Either way, turn ends after escape attempt or accepting
                     splattercast.msg(f"DEBUG_CONTINUE_ATTEMPT: {char.key} about to continue (end turn) after grapple handling")
                     continue
+                    splattercast.msg(f"DEBUG_AFTER_CONTINUE: This should NEVER appear for {char.key}!")
                 except Exception as e:
                     splattercast.msg(f"DEBUG_EXCEPTION_IN_GRAPPLE_CHECK: {e}")
                     # Continue processing without the grapple check
-                    import traceback
                     splattercast.msg(f"DEBUG_EXCEPTION_TRACEBACK: {traceback.format_exc()}")
 
             splattercast.msg(f"DEBUG_AFTER_GRAPPLE_CHECK: {char.key} continuing to action intent processing")
