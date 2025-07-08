@@ -426,7 +426,8 @@ class CombatHandler(DefaultScript):
                 continue
             
             # Diagnostic Log:
-            splattercast.msg(f"AT_REPEAT_DEBUG_TURN_START: For {char.key}'s turn, handler ID {self.id}, current target in entry: {current_char_combat_entry.get('target').key if current_char_combat_entry.get('target') else 'None'}. Full entry: {current_char_combat_entry}")
+            current_target = self.get_target_obj(current_char_combat_entry)
+            splattercast.msg(f"AT_REPEAT_DEBUG_TURN_START: For {char.key}'s turn, handler ID {self.id}, current target in entry: {current_target.key if current_target else 'None'}. Full entry: {current_char_combat_entry}")
 
             splattercast.msg(f"--- Turn: {char.key} (Loc: {char.location.key}, Init: {current_char_combat_entry['initiative']}) ---")
 

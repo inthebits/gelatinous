@@ -1069,7 +1069,8 @@ class CmdAdvance(Command):
                     advancer_entry["is_yielding"] = False 
                     splattercast.msg(f"ADVANCE_TARGET_SET: {caller.key}'s target in handler set to {target_char.key}.")
                     # Diagnostic Log:
-                    splattercast.msg(f"ADVANCE_DEBUG_POST_SET: In CmdAdvance for {caller.key} (advancer), handler ID {handler.id if handler else 'None'}, entry target is now {advancer_entry.get('target').key if advancer_entry.get('target') else 'None'}. Full entry: {advancer_entry}")
+                    current_target = handler.get_target_obj(advancer_entry)
+                    splattercast.msg(f"ADVANCE_DEBUG_POST_SET: In CmdAdvance for {caller.key} (advancer), handler ID {handler.id if handler else 'None'}, entry target is now {current_target.key if current_target else 'None'}. Full entry: {advancer_entry}")
                 else:
                     splattercast.msg(f"ADVANCE_WARNING: Could not find {caller.key}'s entry in handler {handler.key} to set target after advance.")
             else: 
