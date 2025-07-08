@@ -494,40 +494,40 @@ class CombatHandler(DefaultScript):
                         escaper_roll = randint(1, max(1, getattr(char, "motorics", 1)))
                         grappler_roll = randint(1, max(1, getattr(grappler, "motorics", 1)))
                         splattercast.msg(f"AUTO_ESCAPE_ATTEMPT: {char.key} (roll {escaper_roll}) vs {grappler.key} (roll {grappler_roll}).")
+
+                        if escaper_roll > grappler_roll:
+                            # Success - update to use dbrefs
+                            current_char_combat_entry["grappled_by_dbref"] = None
+                            grappler_entry = next((e for e in self.db.combatants if e["char"] == grappler), None)
+                            if grappler_entry:
+                                grappler_entry["grappling_dbref"] = None
+                                
+                            escape_messages = get_combat_message("grapple", "escape_hit", attacker=char, target=grappler)
+                            char.msg(escape_messages.get("attacker_msg", f"You break free from {grappler.get_display_name(char)}'s grasp!"))
+                            grappler.msg(escape_messages.get("victim_msg", f"{char.get_display_name(grappler)} breaks free from your grasp!"))
+                            obs_msg = escape_messages.get("observer_msg", f"{char.get_display_name(char.location)} breaks free from {grappler.get_display_name(grappler.location)}'s grasp!")
+                            for loc in {char.location, grappler.location}: 
+                                if loc: loc.msg_contents(obs_msg, exclude=[char, grappler])
+                            splattercast.msg(f"AUTO_ESCAPE_SUCCESS: {char.key} escaped from {grappler.key}.")
+                        else:
+                            # Failure
+                            escape_messages = get_combat_message("grapple", "escape_miss", attacker=char, target=grappler)
+                            char.msg(escape_messages.get("attacker_msg", f"You struggle but fail to break free from {grappler.get_display_name(char)}'s grasp!"))
+                            grappler.msg(escape_messages.get("victim_msg", f"{char.get_display_name(grappler)} struggles but fails to break free from your grasp!"))
+                            obs_msg = escape_messages.get("observer_msg", f"{char.get_display_name(char.location)} struggles but fails to break free from {grappler.get_display_name(grappler.location)}'s grasp!")
+                            for loc in {char.location, grappler.location}:
+                                if loc: loc.msg_contents(obs_msg, exclude=[char, grappler])
+                            splattercast.msg(f"AUTO_ESCAPE_FAIL: {char.key} failed to escape {grappler.key}.")
+                    else:
+                        # Character is yielding, which means accepting the grapple
+                        char.msg(f"|cYou remain in {grappler.get_display_name(char)}'s grip without struggling.|n")
+                        splattercast.msg(f"{char.key} is accepting being grappled by {grappler.key} and takes no action.")
+                    
+                    # Either way, turn ends after escape attempt or accepting
+                    continue
                 except Exception as e:
                     splattercast.msg(f"DEBUG_EXCEPTION_IN_GRAPPLE_CHECK: {e}")
                     # Continue processing without the grapple check
-
-                    if escaper_roll > grappler_roll:
-                        # Success - update to use dbrefs
-                        current_char_combat_entry["grappled_by_dbref"] = None
-                        grappler_entry = next((e for e in self.db.combatants if e["char"] == grappler), None)
-                        if grappler_entry:
-                            grappler_entry["grappling_dbref"] = None
-                            
-                        escape_messages = get_combat_message("grapple", "escape_hit", attacker=char, target=grappler)
-                        char.msg(escape_messages.get("attacker_msg", f"You break free from {grappler.get_display_name(char)}'s grasp!"))
-                        grappler.msg(escape_messages.get("victim_msg", f"{char.get_display_name(grappler)} breaks free from your grasp!"))
-                        obs_msg = escape_messages.get("observer_msg", f"{char.get_display_name(char.location)} breaks free from {grappler.get_display_name(grappler.location)}'s grasp!")
-                        for loc in {char.location, grappler.location}: 
-                            if loc: loc.msg_contents(obs_msg, exclude=[char, grappler])
-                        splattercast.msg(f"AUTO_ESCAPE_SUCCESS: {char.key} escaped from {grappler.key}.")
-                    else:
-                        # Failure
-                        escape_messages = get_combat_message("grapple", "escape_miss", attacker=char, target=grappler)
-                        char.msg(escape_messages.get("attacker_msg", f"You struggle but fail to break free from {grappler.get_display_name(char)}'s grasp!"))
-                        grappler.msg(escape_messages.get("victim_msg", f"{char.get_display_name(grappler)} struggles but fails to break free from your grasp!"))
-                        obs_msg = escape_messages.get("observer_msg", f"{char.get_display_name(char.location)} struggles but fails to break free from {grappler.get_display_name(grappler.location)}'s grasp!")
-                        for loc in {char.location, grappler.location}:
-                            if loc: loc.msg_contents(obs_msg, exclude=[char, grappler])
-                        splattercast.msg(f"AUTO_ESCAPE_FAIL: {char.key} failed to escape {grappler.key}.")
-                else:
-                    # Character is yielding, which means accepting the grapple
-                    char.msg(f"|cYou remain in {grappler.get_display_name(char)}'s grip without struggling.|n")
-                    splattercast.msg(f"{char.key} is accepting being grappled by {grappler.key} and takes no action.")
-                
-                # Either way, turn ends after escape attempt or accepting
-                continue
 
             # --- PROCESS COMBAT ACTION INTENT ---
             action_intent_this_turn = current_char_combat_entry.get("combat_action")
