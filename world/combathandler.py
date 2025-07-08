@@ -412,6 +412,7 @@ class CombatHandler(DefaultScript):
 
         for combat_entry in list(self.get_initiative_order()): # combat_entry is a snapshot
             char = combat_entry.get("char")
+            splattercast.msg(f"DEBUG_LOOP_ITERATION: Starting processing for {char.key}, combat_entry: {combat_entry}")
 
             # ... (pruning logic for char, location) ...
 
@@ -975,6 +976,8 @@ class CombatHandler(DefaultScript):
                             exclude_list.append(target)
                     loc.msg_contents(observer_msg, exclude=exclude_list)
                 splattercast.msg(f"MISS_DEBUG: Attack by {char.key} on {target.key} is a MISS.")
+
+            splattercast.msg(f"DEBUG_LOOP_END: Completed processing for {char.key}, moving to next combatant")
 
         if not self.db.combatants:
             splattercast.msg(f"AT_REPEAT: Handler {self.key}. No combatants left after round processing. Stopping.")
