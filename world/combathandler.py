@@ -408,7 +408,10 @@ class CombatHandler(DefaultScript):
 
             # ... (pruning logic for char, location) ...
 
+            # Always get a fresh reference to ensure we have current data
             current_char_combat_entry = next((e for e in self.db.combatants if e["char"] == char), None)
+            if current_char_combat_entry and current_char_combat_entry.get("grappled_by"):
+                splattercast.msg(f"FRESH_GRAPPLED_CHECK: {char.key} is grappled by {current_char_combat_entry['grappled_by'].key}")
             if not current_char_combat_entry:
                 splattercast.msg(f"Error: Could not find combat entry for {char.key} mid-turn (second check).")
                 continue
@@ -461,6 +464,7 @@ class CombatHandler(DefaultScript):
                 continue
             # --- Handle being grappled (auto resist unless yielding) ---
             elif current_char_combat_entry.get("grappled_by"):
+                splattercast.msg(f"DEBUG_GRAPPLED_CHECK: {char.key} has grappled_by={current_char_combat_entry.get('grappled_by').key if current_char_combat_entry.get('grappled_by') else 'None'}")
                 grappler = current_char_combat_entry.get("grappled_by")
                 # Check if character is actively yielding (which now also means accepting the grapple)
                 if not current_char_combat_entry.get("is_yielding"):
@@ -1026,6 +1030,15 @@ class CombatHandler(DefaultScript):
                 fresh_attacker_entry["grappling"] = target
             if fresh_target_entry:  
                 fresh_target_entry["grappled_by"] = attacker
+
+            # Debug the grapple state being set
+            splattercast.msg(f"GRAPPLE_DEBUG_STATE_SET: Setting {target.key}['grappled_by']={attacker.key}")
+
+            # Verify the grapple state was correctly set
+            verify_target = next((e for e in self.db.combatants if e["char"] == target), None)
+            if verify_target:
+                grappler_ref = verify_target.get("grappled_by")
+                splattercast.msg(f"GRAPPLE_DEBUG_STATE_VERIFY: {target.key}['grappled_by']={grappler_ref.key if grappler_ref else 'None'}")
 
             splattercast.msg(f"GRAPPLE_SET_STATE: {attacker.key} grappling={target.key}, {target.key} grappled_by={attacker.key}")
             
