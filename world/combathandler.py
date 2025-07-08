@@ -1183,10 +1183,16 @@ class CombatHandler(DefaultScript):
         # Search by dbref (adding # if not present)
         if not dbref.startswith("#"):
             dbref = f"#{dbref}"
-            
+        
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        splattercast.msg(f"DBREF_LOOKUP_DEBUG: Searching for dbref '{dbref}'")
+        
         results = search_object(dbref)
         if results:
+            splattercast.msg(f"DBREF_LOOKUP_DEBUG: Found {results[0].key} (dbref {results[0].dbref})")
             return results[0]
+        else:
+            splattercast.msg(f"DBREF_LOOKUP_DEBUG: No results found for dbref '{dbref}'")
         return None
     
     def _get_dbref(self, obj):
