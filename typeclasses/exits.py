@@ -84,14 +84,14 @@ class Exit(DefaultExit):
                 return
 
             # Check drag conditions
-            grappled_victim_obj = char_entry_in_handler.get("grappling")
+            grappled_victim_obj = handler.get_grappling_obj(char_entry_in_handler)
             is_yielding = char_entry_in_handler.get("is_yielding")
             
             is_targeted_by_others_not_victim = False
             if handler.db.combatants:
                 for entry in handler.db.combatants:
                     # Check if this entry is targeting the traversing_object
-                    if entry.get("target") == traversing_object:
+                    if handler.get_target_obj(entry) == traversing_object:
                         # And this entry is not the traversing_object itself
                         if entry["char"] != traversing_object:
                             # AND this entry is not the person being grappled by the traversing_object
@@ -126,9 +126,9 @@ class Exit(DefaultExit):
                     grappler_entry = next((e for e in handler.db.combatants if e["char"] == traversing_object), None)
                     victim_entry = next((e for e in handler.db.combatants if e["char"] == grappled_victim_obj), None)
                     if grappler_entry:
-                        grappler_entry["grappling"] = None
+                        grappler_entry["grappling_dbref"] = None
                     if victim_entry:
-                        victim_entry["grappled_by"] = None
+                        victim_entry["grappled_by_dbref"] = None
                     msg = f"{grappled_victim_obj.key} breaks free from {traversing_object.key}'s grapple!"
                     traversing_object.location.msg_contents(f"|g{msg}|n")
                     splattercast.msg(f"GRAPPLE BROKEN: {msg}")
