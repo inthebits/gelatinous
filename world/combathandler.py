@@ -478,15 +478,18 @@ class CombatHandler(DefaultScript):
             # Use the helper method to get the grappler
             grappler = self.get_grappled_by_obj(current_char_combat_entry)
             splattercast.msg(f"GRAPPLE_DEBUG: {char.key} grapple check - grappler={grappler.key if grappler else 'None'}, grappled_by_dbref={current_char_combat_entry.get('grappled_by_dbref')}")
+            splattercast.msg(f"GRAPPLE_DEBUG_CHAR_DBREF: {char.key} has dbref={char.dbref}")
             
             # Safety check: prevent self-grappling and invalid grappler
             if grappler:
                 if grappler == char:
                     splattercast.msg(f"GRAPPLE_ERROR: {char.key} is somehow grappled by themselves! Clearing invalid state.")
+                    splattercast.msg(f"GRAPPLE_CLEAR_DEBUG: Clearing {char.key}'s grappled_by_dbref due to self-grappling")
                     current_char_combat_entry["grappled_by_dbref"] = None
                     grappler = None
                 elif not any(e["char"] == grappler for e in self.db.combatants):
                     splattercast.msg(f"GRAPPLE_ERROR: {char.key} is grappled by {grappler.key} who is not in combat! Clearing invalid state.")
+                    splattercast.msg(f"GRAPPLE_CLEAR_DEBUG: Clearing {char.key}'s grappled_by_dbref due to invalid grappler")
                     current_char_combat_entry["grappled_by_dbref"] = None
                     grappler = None
             
@@ -511,6 +514,7 @@ class CombatHandler(DefaultScript):
 
                         if escaper_roll > grappler_roll:
                             # Success - update to use dbrefs
+                            splattercast.msg(f"GRAPPLE_CLEAR_DEBUG: {char.key} successfully escaped, clearing grapple state")
                             current_char_combat_entry["grappled_by_dbref"] = None
                             grappler_entry = next((e for e in self.db.combatants if e["char"] == grappler), None)
                             if grappler_entry:
@@ -590,7 +594,7 @@ class CombatHandler(DefaultScript):
                         splattercast.msg(f"GRAPPLE ATTEMPT: {char.key} (roll {attacker_roll}) vs {action_target_char.key} (roll {defender_roll}).")
 
                         if attacker_roll > defender_roll:
-                            # Store dbrefs instead of direct references
+                            # Store dbrefs instead of direct references for persistence
                             current_char_combat_entry["grappling_dbref"] = self._get_dbref(action_target_char)
                             target_entry = next((e for e in self.db.combatants if e["char"] == action_target_char), None)
                             if target_entry:
@@ -845,7 +849,7 @@ class CombatHandler(DefaultScript):
                 actual_damage_recipient = target 
 
                 target_combat_entry = next((e for e in self.db.combatants if e["char"] == target), None)
-                shield_char = self.get_grappling_obj(target_combat_entry) if target_combat_entry else None
+                shield_char = self.get_grappled_by_obj(target_combat_entry) if target_combat_entry else None
                 if shield_char:
                     shield_char_entry = next((e for e in self.db.combatants if e["char"] == shield_char), None)
 
@@ -1073,19 +1077,25 @@ class CombatHandler(DefaultScript):
 
             if fresh_attacker_entry:
                 fresh_attacker_entry["grappling_dbref"] = self._get_dbref(target)
+                splattercast.msg(f"GRAPPLE_STATE_DEBUG: Set {attacker.key}['grappling_dbref'] = {self._get_dbref(target)}")
             if fresh_target_entry:  
                 fresh_target_entry["grappled_by_dbref"] = self._get_dbref(attacker)
+                splattercast.msg(f"GRAPPLE_STATE_DEBUG: Set {target.key}['grappled_by_dbref'] = {self._get_dbref(attacker)}")
 
             # Debug the grapple state being set
-            splattercast.msg(f"GRAPPLE_DEBUG_STATE_SET: Setting {target.key}['grappled_by_dbref']={self._get_dbref(attacker)}")
-
+            splattercast.msg(f"GRAPPLE_DEBUG_STATE_SET: {attacker.key} grappling_dbref={self._get_dbref(target)}, {target.key} grappled_by_dbref={self._get_dbref(attacker)}")
+            
             # Verify the grapple state was correctly set
             verify_target = next((e for e in self.db.combatants if e["char"] == target), None)
             if verify_target:
+                splattercast.msg(f"GRAPPLE_STATE_VERIFY_IMMEDIATE: {target.key} entry after setting: {verify_target}")
                 grappler_obj = self.get_grappled_by_obj(verify_target)
                 splattercast.msg(f"GRAPPLE_DEBUG_STATE_VERIFY: {target.key}['grappled_by_dbref'] resolves to {grappler_obj.key if grappler_obj else 'None'}")
 
-            splattercast.msg(f"GRAPPLE_SET_STATE: {attacker.key} grappling_dbref={self._get_dbref(target)}, {target.key} grappled_by_dbref={self._get_dbref(attacker)}")
+            # Additional debug: Show all combat entries after grapple is set
+            splattercast.msg(f"GRAPPLE_DEBUG_ALL_ENTRIES_AFTER_SET:")
+            for i, entry in enumerate(self.db.combatants):
+                splattercast.msg(f"  Entry {i}: {entry['char'].key} - grappled_by_dbref={entry.get('grappled_by_dbref')}, grappling_dbref={entry.get('grappling_dbref')}")
             
             # The initiator should be yielding (defense-oriented)
             attacker_entry["is_yielding"] = True
