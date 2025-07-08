@@ -475,6 +475,7 @@ class CombatHandler(DefaultScript):
             # --- Handle being grappled (auto resist unless yielding) ---
             # Use the helper method to get the grappler
             grappler = self.get_grappled_by_obj(current_char_combat_entry)
+            splattercast.msg(f"GRAPPLE_DEBUG: {char.key} grapple check - grappler={grappler.key if grappler else 'None'}, grappled_by_dbref={current_char_combat_entry.get('grappled_by_dbref')}")
             if grappler:
                 splattercast.msg(f"DEBUG_GRAPPLED_CHECK: {char.key} has grappled_by={grappler.key}")
                 
