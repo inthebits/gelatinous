@@ -509,7 +509,7 @@ class CombatHandler(DefaultScript):
                     splattercast.msg(f"GRAPPLE_CLEAR_DEBUG: Clearing {char.key}'s grappled_by_dbref due to self-grappling")
                     current_char_combat_entry["grappled_by_dbref"] = None
                     grappler = None
-                elif not any(e["char"] == grappler for e in self.db.combatants):
+                elif not any(e["char"] == grappler for e in combatants_list):
                     splattercast.msg(f"GRAPPLE_ERROR: {char.key} is grappled by {grappler.key} who is not in combat! Clearing invalid state.")
                     splattercast.msg(f"GRAPPLE_CLEAR_DEBUG: Clearing {char.key}'s grappled_by_dbref due to invalid grappler")
                     current_char_combat_entry["grappled_by_dbref"] = None
@@ -589,7 +589,7 @@ class CombatHandler(DefaultScript):
                 action_target_char = action_intent_this_turn.get("target") 
 
                 is_action_target_valid = False
-                if action_target_char and any(e["char"] == action_target_char for e in self.db.combatants):
+                if action_target_char and any(e["char"] == action_target_char for e in combatants_list):
                     if action_target_char.location and action_target_char.location in self.db.managed_rooms:
                         is_action_target_valid = True
                 
@@ -622,7 +622,7 @@ class CombatHandler(DefaultScript):
                         if attacker_roll > defender_roll:
                             # Store dbrefs instead of direct references for persistence
                             current_char_combat_entry["grappling_dbref"] = self._get_dbref(action_target_char)
-                            target_entry = next((e for e in self.db.combatants if e["char"] == action_target_char), None)
+                            target_entry = next((e for e in combatants_list if e["char"] == action_target_char), None)
                             if target_entry:
                                 target_entry["grappled_by_dbref"] = self._get_dbref(char)
                             
@@ -651,7 +651,7 @@ class CombatHandler(DefaultScript):
                 elif intent_type == "escape_grapple":
                     grappler = self.get_grappled_by_obj(current_char_combat_entry)
                     is_grappler_valid = False
-                    if grappler and any(e["char"] == grappler for e in self.db.combatants):
+                    if grappler and any(e["char"] == grappler for e in combatants_list):
                         if grappler.location and grappler.location in self.db.managed_rooms:
                              is_grappler_valid = True
                     
@@ -662,7 +662,7 @@ class CombatHandler(DefaultScript):
 
                         if escaper_roll > grappler_roll:
                             current_char_combat_entry["grappled_by_dbref"] = None
-                            grappler_entry = next((e for e in self.db.combatants if e["char"] == grappler), None)
+                            grappler_entry = next((e for e in combatants_list if e["char"] == grappler), None)
                             if grappler_entry:
                                 grappler_entry["grappling_dbref"] = None
                             escape_messages = get_combat_message("grapple", "escape_hit", attacker=char, target=grappler)
@@ -692,13 +692,13 @@ class CombatHandler(DefaultScript):
                 elif intent_type == "release_grapple":
                     victim_char_being_grappled = self.get_grappling_obj(current_char_combat_entry)
                     is_victim_valid = False
-                    if victim_char_being_grappled and any(e["char"] == victim_char_being_grappled for e in self.db.combatants):
+                    if victim_char_being_grappled and any(e["char"] == victim_char_being_grappled for e in combatants_list):
                         if victim_char_being_grappled.location and victim_char_being_grappled.location in self.db.managed_rooms:
                             is_victim_valid = True
                     
                     if is_victim_valid:
                         current_char_combat_entry["grappling_dbref"] = None
-                        victim_entry = next((e for e in self.db.combatants if e["char"] == victim_char_being_grappled), None)
+                        victim_entry = next((e for e in combatants_list if e["char"] == victim_char_being_grappled), None)
                         if victim_entry:
                             victim_entry["grappled_by_dbref"] = None
                         release_messages = get_combat_message("grapple", "release", attacker=char, target=victim_char_being_grappled)
@@ -734,7 +734,7 @@ class CombatHandler(DefaultScript):
             grappling_target = self.get_grappling_obj(current_char_combat_entry)
             if grappling_target:
                 target = grappling_target
-                if not any(e["char"] == target for e in self.db.combatants):
+                if not any(e["char"] == target for e in combatants_list):
                     splattercast.msg(f"{char.key} was grappling {target.key if target else 'Unknown'}, but they are no longer in combat. Clearing grapple.")
                     current_char_combat_entry["grappling_dbref"] = None
                     target = None 
@@ -746,7 +746,7 @@ class CombatHandler(DefaultScript):
 
             if not target:
                 grappler = self.get_grappled_by_obj(current_char_combat_entry)
-                is_in_active_grapple = grappler and any(e["char"] == grappler for e in self.db.combatants)
+                is_in_active_grapple = grappler and any(e["char"] == grappler for e in combatants_list)
                 if not is_in_active_grapple:
                     splattercast.msg(f"{char.key} has no offensive target and is not in an active grapple. Removing from combat.")
                     self.remove_combatant(char)
