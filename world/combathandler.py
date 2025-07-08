@@ -524,11 +524,15 @@ class CombatHandler(DefaultScript):
                         splattercast.msg(f"{char.key} is accepting being grappled by {grappler.key} and takes no action.")
                     
                     # Either way, turn ends after escape attempt or accepting
+                    splattercast.msg(f"DEBUG_CONTINUE_ATTEMPT: {char.key} about to continue (end turn) after grapple handling")
                     continue
                 except Exception as e:
                     splattercast.msg(f"DEBUG_EXCEPTION_IN_GRAPPLE_CHECK: {e}")
                     # Continue processing without the grapple check
+                    import traceback
+                    splattercast.msg(f"DEBUG_EXCEPTION_TRACEBACK: {traceback.format_exc()}")
 
+            splattercast.msg(f"DEBUG_AFTER_GRAPPLE_CHECK: {char.key} continuing to action intent processing")
             # --- PROCESS COMBAT ACTION INTENT ---
             action_intent_this_turn = current_char_combat_entry.get("combat_action")
             if action_intent_this_turn:
