@@ -478,19 +478,25 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"GRAPPLE_DEBUG: {char.key} grapple check - grappler={grappler.key if grappler else 'None'}, grappled_by_dbref={current_char_combat_entry.get('grappled_by_dbref')}")
             if grappler:
                 splattercast.msg(f"DEBUG_GRAPPLED_CHECK: {char.key} has grappled_by={grappler.key}")
-                is_yielding = current_char_combat_entry.get("is_yielding")
-                splattercast.msg(f"DEBUG_YIELDING_CHECK: {char.key} is_yielding={is_yielding}")
-                
-                # Check if character is actively yielding (which now also means accepting the grapple)
-                if not is_yielding:
-                    # Automatically attempt to escape
-                    splattercast.msg(f"{char.key} is being grappled by {grappler.key} and automatically attempts to escape.")
-                    char.msg(f"|yYou struggle against {grappler.get_display_name(char)}'s grip!|n")
+                try:
+                    is_yielding = current_char_combat_entry.get("is_yielding")
+                    splattercast.msg(f"DEBUG_YIELDING_CHECK: {char.key} is_yielding={is_yielding}")
                     
-                    # Setup an escape attempt
-                    escaper_roll = randint(1, max(1, getattr(char, "motorics", 1)))
-                    grappler_roll = randint(1, max(1, getattr(grappler, "motorics", 1)))
-                    splattercast.msg(f"AUTO_ESCAPE_ATTEMPT: {char.key} (roll {escaper_roll}) vs {grappler.key} (roll {grappler_roll}).")
+                    # Check if character is actively yielding (which now also means accepting the grapple)
+                    splattercast.msg(f"DEBUG_ESCAPE_CONDITION: {char.key} not is_yielding = {not is_yielding}")
+                    if not is_yielding:
+                        splattercast.msg(f"DEBUG_ENTERING_ESCAPE_BLOCK: {char.key} entering escape attempt block")
+                        # Automatically attempt to escape
+                        splattercast.msg(f"{char.key} is being grappled by {grappler.key} and automatically attempts to escape.")
+                        char.msg(f"|yYou struggle against {grappler.get_display_name(char)}'s grip!|n")
+                        
+                        # Setup an escape attempt
+                        escaper_roll = randint(1, max(1, getattr(char, "motorics", 1)))
+                        grappler_roll = randint(1, max(1, getattr(grappler, "motorics", 1)))
+                        splattercast.msg(f"AUTO_ESCAPE_ATTEMPT: {char.key} (roll {escaper_roll}) vs {grappler.key} (roll {grappler_roll}).")
+                except Exception as e:
+                    splattercast.msg(f"DEBUG_EXCEPTION_IN_GRAPPLE_CHECK: {e}")
+                    # Continue processing without the grapple check
 
                     if escaper_roll > grappler_roll:
                         # Success - update to use dbrefs

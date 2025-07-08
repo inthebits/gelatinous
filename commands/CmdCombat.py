@@ -1665,9 +1665,9 @@ class CmdEscapeGrapple(Command):
             return
 
         # Set the combat action in the handler's list for the caller
-        caller_combat_entry["combat_action"] = {"type": "escape"}
+        caller_combat_entry["combat_action"] = {"type": "escape_grapple"}
         caller.msg(f"You prepare to escape from {grappler.key}'s grasp...")
-        splattercast.msg(f"{caller.key} sets combat action to escape from {grappler.key} (via handler {handler.key}).")
+        splattercast.msg(f"{caller.key} sets combat action to escape_grapple from {grappler.key} (via handler {handler.key}).")
         # The combat handler will process this on the character's turn
 
 
