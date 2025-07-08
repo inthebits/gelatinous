@@ -561,7 +561,7 @@ class CmdFlee(Command):
                         # The caller's "grappling" field will be gone when they are removed from the handler.
                         # Message the participants.
                         caller.msg(f"|yAs you flee, your grapple on {grappled_victim_by_caller.get_display_name(caller)} is broken.|n")
-                        if grappled_victim_by_caller.access(caller, "view"): # Check if victim can see caller
+                        if grappled_victim_by_caller.access(caller, "view"): 
                              grappled_victim_by_caller.msg(f"|y{caller.get_display_name(grappled_victim_by_caller)} flees, breaking their grapple on you!|n")
                         splattercast.msg(f"FLEE_GRAPPLE_BREAK: {caller.key} fled, breaking grapple with {grappled_victim_by_caller.key}.")
             # --- END NEW GRAPPLE BREAK ---
@@ -910,7 +910,7 @@ class CmdAdvance(Command):
             caller.msg("You cannot advance on yourself.")
             return
 
-        # Initialize NDB proximity sets if they don't exist (failsafe)
+        # Initialize NDB proximity sets if missing (failsafe)
         for char_obj in [caller, target_char]:
             if not hasattr(char_obj.ndb, "in_proximity_with") or not isinstance(char_obj.ndb.in_proximity_with, set):
                 char_obj.ndb.in_proximity_with = set()
@@ -1012,7 +1012,6 @@ class CmdAdvance(Command):
                     # The target might have already received a specific aim-related message.
                     # This is a general arrival awareness message if not covered by aim.
                     # We can make this conditional or rephrase if aim messages are sufficient.
-                    # For now, let's assume the aim messages are primary if they occurred.
                     if not was_aiming_at_caller_specifically and not was_aiming_directionally_towards_caller:
                          target_char.msg(f"|y{caller.get_display_name(target_char)} advances into your area!|n")
                     target_char.location.msg_contents(arrival_message_room, exclude=[caller, target_char])
@@ -1181,6 +1180,7 @@ class CmdCharge(Command):
                     splattercast.msg(f"CHARGE_CMD (NO ARGS): Default target {target_char.key} is in the same room ({caller.location.key}).")
                 
                 splattercast.msg(f"CHARGE_CMD: No target specified. Defaulting to current target: {target_char.key}. Adjacent: {target_in_adjacent_room}.")
+
             else:
                 caller.msg("Charge whom? (You have no current target).")
                 return
@@ -1377,7 +1377,6 @@ class CmdCharge(Command):
 
         else:
             # --- Failure ---
-            # ... (failure logic remains the same) ...
             caller.msg(f"|rYou charge towards {target_char.get_display_name(caller)}, but they deftly avoid your reckless rush!|n")
             if target_in_adjacent_room:
                 caller.location.msg_contents(f"|y{caller.get_display_name(caller.location)} charges towards {target_char.location.get_display_name(caller.location)} but stumbles, failing to reach them.|n", exclude=[caller])
@@ -1591,14 +1590,19 @@ class CmdGrapple(Command):
         if "combat_action" not in caller_combat_entry:
             caller_combat_entry["combat_action"] = {}
             
-        # Store the flag for the handler to check upon successful grapple
-        caller_combat_entry["combat_action"] = {
-            "type": "grapple", 
-            "target": target,
-            "initiated_combat": caller_initiated_combat_this_action 
-        }
+        # --- Set combat action ---
+        if caller_initiated_combat_this_action:
+            # This is a grapple to initiate combat - use all-or-nothing approach
+            caller_combat_entry["combat_action"] = "grapple_initiate"
+            caller_combat_entry["target"] = target
+            splattercast.msg(f"{caller.key} sets combat action to grapple_initiate against {target.key}.")
+        else:
+            # This is a grapple during ongoing combat - use risk-based approach
+            caller_combat_entry["combat_action"] = "grapple_join"  
+            caller_combat_entry["target"] = target
+            splattercast.msg(f"{caller.key} sets combat action to grapple_join against {target.key}.")
+
         caller.msg(f"You prepare to grapple {target.key}...")
-        splattercast.msg(f"{caller.key} sets combat action to grapple {target.key} (initiated_combat: {caller_initiated_combat_this_action}).")
         # The combat handler will process this on the character's turn
 
 

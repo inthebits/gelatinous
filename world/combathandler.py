@@ -418,6 +418,22 @@ class CombatHandler(DefaultScript):
 
             splattercast.msg(f"--- Turn: {char.key} (Loc: {char.location.key}, Init: {current_char_combat_entry['initiative']}) ---")
 
+            # --- Check for string-based grapple actions first ---
+            action = current_char_combat_entry.get("combat_action")
+
+            if isinstance(action, str):
+                if action == "grapple_initiate":
+                    splattercast.msg(f"AT_REPEAT: {char.key} attempting grapple_initiate.")
+                    self._resolve_grapple_initiate(current_char_combat_entry)
+                    current_char_combat_entry["combat_action"] = None
+                    continue  # End turn for this combatant
+
+                elif action == "grapple_join":
+                    splattercast.msg(f"AT_REPEAT: {char.key} attempting grapple_join.")
+                    self._resolve_grapple_join(current_char_combat_entry)
+                    current_char_combat_entry["combat_action"] = None
+                    continue  # End turn for this combatant
+
             # --- Initialize attack condition flags for this turn ---
             attack_has_disadvantage = False # NEW FLAG
 
@@ -885,3 +901,181 @@ class CombatHandler(DefaultScript):
 
         self.db.round += 1
         splattercast.msg(f"AT_REPEAT: Handler {self.key}. Round {self.db.round} scheduled for next interval.")
+
+    def _resolve_grapple_attempt(self, attacker_entry, target_entry):
+        """Performs the opposed roll for a grapple."""
+        attacker = attacker_entry["char"]
+        target = target_entry["char"]
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+
+        attacker_roll = randint(1, max(1, getattr(attacker, "motorics", 1)))
+        defender_roll = randint(1, max(1, getattr(target, "motorics", 1)))
+        splattercast.msg(f"GRAPPLE_ROLL: {attacker.key} (roll {attacker_roll}) vs {target.key} (roll {defender_roll}).")
+        
+        return attacker_roll > defender_roll
+
+    def _resolve_grapple_initiate(self, attacker_entry):
+        """Resolves an all-or-nothing grapple that starts combat."""
+        attacker = attacker_entry["char"]
+        target = attacker_entry["target"]
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        
+        if not target:
+            splattercast.msg(f"GRAPPLE_INITIATE_ERROR: {attacker.key} has no valid target.")
+            return False
+            
+        # Find target's combat entry
+        target_entry = next((e for e in self.db.combatants if e["char"] == target), None)
+        if not target_entry:
+            splattercast.msg(f"GRAPPLE_INITIATE_ERROR: Target {target.key} has no combat entry.")
+            return False
+
+        # Check proximity first, if not in proximity, need to advance
+        in_proximity = target in getattr(attacker.ndb, "in_proximity_with", set())
+        advance_success = False
+        
+        if in_proximity:
+            # Already in proximity, no need to advance
+            advance_success = True
+            splattercast.msg(f"GRAPPLE_INITIATE: {attacker.key} already in proximity with {target.key}.")
+        else:
+            # Not in proximity, attempt to advance
+            caller_roll = randint(1, max(1, getattr(attacker, "motorics", 1)))
+            target_roll = randint(1, max(1, getattr(target, "motorics", 1)))
+            splattercast.msg(f"GRAPPLE_INITIATE (Advance Roll): {attacker.key} (roll {caller_roll}) vs {target.key} (roll {target_roll}).")
+            
+            if caller_roll > target_roll:
+                # Successful advance
+                advance_success = True
+                # Update proximity for both
+                if not hasattr(attacker.ndb, "in_proximity_with"):
+                    attacker.ndb.in_proximity_with = set()
+                if not hasattr(target.ndb, "in_proximity_with"):
+                    target.ndb.in_proximity_with = set()
+                    
+                attacker.ndb.in_proximity_with.add(target)
+                target.ndb.in_proximity_with.add(attacker)
+                splattercast.msg(f"GRAPPLE_INITIATE: {attacker.key} successfully advanced into proximity with {target.key}.")
+            # If advance fails, the entire initiate attempt fails
+
+        # If advance succeeded, attempt the grapple
+        if advance_success and self._resolve_grapple_attempt(attacker_entry, target_entry):
+            # Success - establish grapple
+            attacker.msg(f"|gYou successfully grapple {target.get_display_name(attacker)}!|n")
+            target.msg(f"|r{attacker.get_display_name(target)} suddenly grapples you!|n")
+            attacker.location.msg_contents(
+                f"|r{attacker.get_display_name(attacker.location)} suddenly moves in and grapples {target.get_display_name(attacker.location)}, initiating combat!|n",
+                exclude=[attacker, target]
+            )
+            
+            attacker_entry["grappling"] = target
+            target_entry["grappled_by"] = attacker
+            
+            # The initiator should be yielding (defense-oriented)
+            attacker_entry["is_yielding"] = True
+            
+            splattercast.msg(f"GRAPPLE_RESOLVE (INITIATE): {attacker.key} succeeded against {target.key}.")
+            return True
+        else:
+            # Failure - abort combat
+            attacker.msg(f"|yYou fail to get a hold of {target.get_display_name(attacker)}.|n")
+            target.msg(f"|y{attacker.get_display_name(target)} tries to grapple you, but you evade them.|n")
+            attacker.location.msg_contents(
+                f"|y{attacker.get_display_name(attacker.location)} tries to grapple {target.get_display_name(attacker.location)}, but fails.|n",
+                exclude=[attacker, target]
+            )
+            
+            splattercast.msg(f"GRAPPLE_RESOLVE (INITIATE): {attacker.key} failed against {target.key}. Combat is aborted.")
+            
+            # Remove both from combat - combat is aborted
+            self.remove_combatant(attacker)
+            self.remove_combatant(target)
+            return False
+
+    def _resolve_grapple_join(self, attacker_entry):
+        """Resolves a grapple attempt within an ongoing combat."""
+        attacker = attacker_entry["char"]
+        target = attacker_entry["target"]
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        
+        if not target:
+            splattercast.msg(f"GRAPPLE_JOIN_ERROR: {attacker.key} has no valid target.")
+            return False
+            
+        # Find target's combat entry
+        target_entry = next((e for e in self.db.combatants if e["char"] == target), None)
+        if not target_entry:
+            splattercast.msg(f"GRAPPLE_JOIN_ERROR: Target {target.key} has no combat entry.")
+            return False
+
+        # Check proximity first, if not in proximity, need to advance
+        in_proximity = target in getattr(attacker.ndb, "in_proximity_with", set())
+        advance_success = False
+        
+        if in_proximity:
+            # Already in proximity, no need to advance
+            advance_success = True
+            splattercast.msg(f"GRAPPLE_JOIN: {attacker.key} already in proximity with {target.key}.")
+        else:
+            # Not in proximity, attempt to advance
+            caller_roll = randint(1, max(1, getattr(attacker, "motorics", 1)))
+            target_roll = randint(1, max(1, getattr(target, "motorics", 1)))
+            splattercast.msg(f"GRAPPLE_JOIN (Advance Roll): {attacker.key} (roll {caller_roll}) vs {target.key} (roll {target_roll}).")
+            
+            if caller_roll > target_roll:
+                # Successful advance
+                advance_success = True
+                # Update proximity for both
+                if not hasattr(attacker.ndb, "in_proximity_with"):
+                    attacker.ndb.in_proximity_with = set()
+                if not hasattr(target.ndb, "in_proximity_with"):
+                    target.ndb.in_proximity_with = set()
+                
+                attacker.ndb.in_proximity_with.add(target)
+                target.ndb.in_proximity_with.add(attacker)  # Fixed from add(target)
+                attacker.msg(f"|gYou close the distance to {target.get_display_name(attacker)}.|n")
+                splattercast.msg(f"GRAPPLE_JOIN: {attacker.key} successfully advanced into proximity with {target.key}.")
+            else:
+                # Failed advance - leaves attacker vulnerable
+                attacker.msg(f"|rYou charge in to grapple but can't get close, leaving you exposed!|n")
+                target.msg(f"|g{attacker.get_display_name(target)} tries to rush you but stumbles, leaving a wide opening!|n")
+                attacker.location.msg_contents(
+                    f"|y{attacker.get_display_name(attacker.location)} tries to rush {target.get_display_name(attacker.location)} but stumbles!|n",
+                    exclude=[attacker, target]
+                )
+                
+                # Mark attacker as flat-footed/vulnerable
+                attacker_entry["flat_footed"] = True
+                
+                splattercast.msg(f"GRAPPLE_JOIN (Advance Roll): {attacker.key} failed. Is flat_footed.")
+                
+                # Give target a bonus attack
+                self.resolve_bonus_attack(target, attacker)
+                return False
+
+    # Add this method to resolve a bonus attack when an attacker fails a grapple
+    def resolve_bonus_attack(self, attacker, victim):
+        """Immediately resolves a single bonus attack."""
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        splattercast.msg(f"BONUS_ATTACK: Resolving from {attacker.key} against {victim.key}.")
+        
+        attacker_entry = next((e for e in self.db.combatants if e["char"] == attacker), None)
+        victim_entry = next((e for e in self.db.combatants if e["char"] == victim), None)
+        
+        if not attacker_entry or not victim_entry:
+            splattercast.msg(f"BONUS_ATTACK: Could not find combat entries for attacker or victim.")
+            return
+            
+        # This is a simplified attack resolution - we'll send some messages and deal damage
+        attacker.msg(f"|gYou hit {victim.get_display_name(attacker)} with a swift counter-attack!|n")
+        victim.msg(f"|r{attacker.get_display_name(victim)} counters your failed move, striking you!|n")
+        attacker.location.msg_contents(
+            f"{attacker.get_display_name(attacker.location)} counters {victim.get_display_name(attacker.location)}'s failed move!",
+            exclude=[attacker, victim]
+        )
+        
+        # Apply damage - simple implementation
+        damage = 1
+        if hasattr(victim, "take_damage"):
+            victim.take_damage(damage)
+            splattercast.msg(f"BONUS_ATTACK: {attacker.key} deals {damage} damage to {victim.key}.")
