@@ -478,6 +478,18 @@ class CombatHandler(DefaultScript):
             # Use the helper method to get the grappler
             grappler = self.get_grappled_by_obj(current_char_combat_entry)
             splattercast.msg(f"GRAPPLE_DEBUG: {char.key} grapple check - grappler={grappler.key if grappler else 'None'}, grappled_by_dbref={current_char_combat_entry.get('grappled_by_dbref')}")
+            
+            # Safety check: prevent self-grappling and invalid grappler
+            if grappler:
+                if grappler == char:
+                    splattercast.msg(f"GRAPPLE_ERROR: {char.key} is somehow grappled by themselves! Clearing invalid state.")
+                    current_char_combat_entry["grappled_by_dbref"] = None
+                    grappler = None
+                elif not any(e["char"] == grappler for e in self.db.combatants):
+                    splattercast.msg(f"GRAPPLE_ERROR: {char.key} is grappled by {grappler.key} who is not in combat! Clearing invalid state.")
+                    current_char_combat_entry["grappled_by_dbref"] = None
+                    grappler = None
+            
             if grappler:
                 splattercast.msg(f"DEBUG_GRAPPLED_CHECK: {char.key} has grappled_by={grappler.key}")
                 try:
@@ -531,8 +543,10 @@ class CombatHandler(DefaultScript):
                     splattercast.msg(f"DEBUG_AFTER_CONTINUE: This should NEVER appear for {char.key}!")
                 except Exception as e:
                     splattercast.msg(f"DEBUG_EXCEPTION_IN_GRAPPLE_CHECK: {e}")
-                    # Continue processing without the grapple check
+                    # If there was an exception but character is grappled, still end their turn
                     splattercast.msg(f"DEBUG_EXCEPTION_TRACEBACK: {traceback.format_exc()}")
+                    splattercast.msg(f"DEBUG_EXCEPTION_BUT_GRAPPLED: {char.key} had exception during grapple handling but is grappled, ending turn")
+                    continue
 
             splattercast.msg(f"DEBUG_AFTER_GRAPPLE_CHECK: {char.key} continuing to action intent processing")
             # --- PROCESS COMBAT ACTION INTENT ---
