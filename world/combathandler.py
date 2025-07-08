@@ -453,6 +453,13 @@ class CombatHandler(DefaultScript):
                 del char.ndb.skip_combat_round # Consume the flag
                 continue # Skip to next combatant
 
+            # --- CHECK FOR YIELDING ---
+            if current_char_combat_entry.get("is_yielding"):
+                splattercast.msg(f"{char.key} is yielding and takes no hostile action this turn.")
+                char.location.msg_contents(f"|y{char.key} holds their action, appearing non-hostile.|n", exclude=[char])
+                char.msg("|yYou hold your action, appearing non-hostile.|n")
+                continue
+
             # --- PROCESS COMBAT ACTION INTENT ---
             action_intent_this_turn = current_char_combat_entry.get("combat_action")
             if action_intent_this_turn:
