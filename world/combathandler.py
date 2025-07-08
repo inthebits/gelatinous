@@ -1019,8 +1019,15 @@ class CombatHandler(DefaultScript):
                 exclude=[attacker, target]
             )
             
-            attacker_entry["grappling"] = target
-            target_entry["grappled_by"] = attacker
+            fresh_attacker_entry = next((e for e in self.db.combatants if e["char"] == attacker), None)
+            fresh_target_entry = next((e for e in self.db.combatants if e["char"] == target), None)
+
+            if fresh_attacker_entry:
+                fresh_attacker_entry["grappling"] = target
+            if fresh_target_entry:  
+                fresh_target_entry["grappled_by"] = attacker
+
+            splattercast.msg(f"GRAPPLE_SET_STATE: {attacker.key} grappling={target.key}, {target.key} grappled_by={attacker.key}")
             
             # The initiator should be yielding (defense-oriented)
             attacker_entry["is_yielding"] = True
