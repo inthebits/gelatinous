@@ -64,22 +64,13 @@ class CmdLook(default_cmds.CmdLook):
             for i, ex in enumerate(current_location.exits):
                 splattercast.msg(f"CUSTOM_LOOK: Exit {i}: key='{ex.key}', type={type(ex)}")
                 
-                exit_aliases = getattr(ex, 'aliases', [])
-                splattercast.msg(f"CUSTOM_LOOK: Exit {i} aliases raw: {exit_aliases}, type: {type(exit_aliases)}")
-                
-                # Handle both list and manager cases
-                if hasattr(exit_aliases, 'all'):
-                    exit_aliases = [alias.lower() for alias in exit_aliases.all()]
-                    splattercast.msg(f"CUSTOM_LOOK: Exit {i} aliases after .all(): {exit_aliases}")
-                else:
-                    exit_aliases = [alias.lower() for alias in exit_aliases]
-                    splattercast.msg(f"CUSTOM_LOOK: Exit {i} aliases as list: {exit_aliases}")
-                
-                splattercast.msg(f"CUSTOM_LOOK: Checking exit {ex.key} (aliases: {exit_aliases}) vs direction '{aiming_direction}'")
+                # Use the same approach as core_actions.py for alias handling
+                current_exit_aliases_lower = [alias.lower() for alias in (ex.aliases.all() if hasattr(ex.aliases, "all") else [])]
+                splattercast.msg(f"CUSTOM_LOOK: Exit {i} aliases: {current_exit_aliases_lower}")
                 
                 # Check key match
                 key_matches = ex.key.lower() == aiming_direction.lower()
-                alias_matches = aiming_direction.lower() in exit_aliases
+                alias_matches = aiming_direction.lower() in current_exit_aliases_lower
                 splattercast.msg(f"CUSTOM_LOOK: Key matches: {key_matches}, Alias matches: {alias_matches}")
                 
                 if key_matches or alias_matches:

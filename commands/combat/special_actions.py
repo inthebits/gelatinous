@@ -429,14 +429,10 @@ class CmdAim(Command):
             # Check if the direction matches any exit
             valid_direction = False
             for ex in exits:
-                exit_aliases = getattr(ex, 'aliases', [])
-                # Handle both list and manager cases
-                if hasattr(exit_aliases, 'all'):
-                    exit_aliases = [alias.lower() for alias in exit_aliases.all()]
-                else:
-                    exit_aliases = [alias.lower() for alias in exit_aliases]
+                # Use the same approach as core_actions.py for consistency
+                current_exit_aliases_lower = [alias.lower() for alias in (ex.aliases.all() if hasattr(ex.aliases, "all") else [])]
                     
-                if ex.key.lower() == direction or direction in exit_aliases:
+                if ex.key.lower() == direction or direction in current_exit_aliases_lower:
                     valid_direction = True
                     break
                     
