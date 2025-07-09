@@ -427,17 +427,25 @@ class CmdAim(Command):
             direction = args.strip().lower()
             exits = caller.location.exits
             
+            splattercast.msg(f"AIM_DEBUG: No target found, checking direction '{direction}'")
+            splattercast.msg(f"AIM_DEBUG: Room has {len(exits)} exits")
+            
             # Check if the direction matches any exit
             valid_direction = False
-            for ex in exits:
+            for i, ex in enumerate(exits):
                 # Use the same approach as core_actions.py for consistency
                 current_exit_aliases_lower = [alias.lower() for alias in (ex.aliases.all() if hasattr(ex.aliases, "all") else [])]
+                
+                splattercast.msg(f"AIM_DEBUG: Exit {i}: key='{ex.key}', aliases={current_exit_aliases_lower}")
+                splattercast.msg(f"AIM_DEBUG: Checking '{direction}' vs key='{ex.key.lower()}' or aliases={current_exit_aliases_lower}")
                     
                 if ex.key.lower() == direction or direction in current_exit_aliases_lower:
                     valid_direction = True
+                    splattercast.msg(f"AIM_DEBUG: Found valid direction match!")
                     break
                     
             if valid_direction:
+                splattercast.msg(f"AIM_DEBUG: Direction '{direction}' is valid, proceeding with aiming")
                 # Check if caller has a ranged weapon for direction aiming
                 hands = getattr(caller, "hands", {})
                 weapon = next((item for hand, item in hands.items() if item), None)
@@ -474,4 +482,5 @@ class CmdAim(Command):
                 caller.msg("|gYour next ranged attack in this direction will have improved accuracy.|n")
                 
             else:
+                splattercast.msg(f"AIM_DEBUG: Direction '{direction}' was not found as valid exit")
                 caller.msg(f"|rYou don't see '{args}' here, and it's not a valid direction.|n")
