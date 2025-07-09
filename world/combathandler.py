@@ -425,6 +425,23 @@ class CombatHandler(DefaultScript):
             self.stop_combat_logic()
             return
 
+        # Check if all combatants are yielding - if so, end combat peacefully
+        all_yielding = all(entry.get("is_yielding", False) for entry in combatants_list)
+        if all_yielding:
+            splattercast.msg(f"AT_REPEAT: Handler {self.key}. All combatants are yielding. Ending combat peacefully.")
+            # Send a message to all combatants about peaceful resolution
+            for entry in combatants_list:
+                char = entry["char"]
+                if char and char.location:
+                    char.msg("|gWith all hostilities ceased, the confrontation comes to a peaceful end.|n")
+            # Notify observers in all managed rooms
+            for room in self.db.managed_rooms:
+                if room:
+                    room.msg_contents("|gThe confrontation ends peacefully as all participants stand down.|n", 
+                                    exclude=[entry["char"] for entry in combatants_list if entry["char"]])
+            self.stop_combat_logic()
+            return
+
         # Sort combatants by initiative for processing
         initiative_order = sorted(combatants_list, key=lambda e: e["initiative"], reverse=True)
         
