@@ -81,8 +81,12 @@ def get_or_create_combat(location):
                 script.stop() # Ensure it's fully stopped
                 # Only delete if the handler has been saved to the database
                 if hasattr(script, 'id') and script.id:
-                    script.delete()
-                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_GET: Deleted inactive handler {script.key}.")
+                    try:
+                        script.save()
+                        script.delete()
+                        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_GET: Deleted inactive handler {script.key}.")
+                    except Exception as e:
+                        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_GET: Error deleting inactive handler {script.key}: {e}. Handler stopped but not deleted.")
                 else:
                     splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_GET: Inactive handler {script.key} was not saved to database, skipping delete.")
                 break # Only one handler script per location by key
@@ -201,13 +205,20 @@ class CombatHandler(DefaultScript):
             should_delete_script = True
         
         if should_delete_script:
-            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Deleting handler script {self.key}.")
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Preparing to delete handler script {self.key}.")
             # Only delete if the handler has been saved to the database
             if hasattr(self, 'id') and self.id:
-                self.delete()
-                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Successfully deleted handler {self.key}.")
+                try:
+                    # Ensure we're fully saved before attempting deletion
+                    self.save()
+                    self.delete()
+                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Successfully deleted handler {self.key}.")
+                except Exception as e:
+                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Error deleting handler {self.key}: {e}. Calling stop() instead.")
+                    self.stop()
             else:
-                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} was not saved to database, skipping delete.")
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} was not saved to database, calling stop() instead.")
+                self.stop()
         else:
             # Stop the ticker
             splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} is not being deleted. Calling self.stop() to halt ticker.")
@@ -297,8 +308,13 @@ class CombatHandler(DefaultScript):
         
         # Only delete if the handler has been saved to the database
         if hasattr(other_handler, 'id') and other_handler.id:
-            other_handler.delete()
-            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE: Deleted other handler {other_handler.key}.")
+            try:
+                # Ensure the handler is properly saved before deletion
+                other_handler.save()
+                other_handler.delete()
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE: Deleted other handler {other_handler.key}.")
+            except Exception as e:
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE: Error deleting other handler {other_handler.key}: {e}. Handler stopped but not deleted.")
         else:
             splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE: Other handler {other_handler.key} was not saved to database, skipping delete.")
         
