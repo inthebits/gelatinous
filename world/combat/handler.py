@@ -301,6 +301,9 @@ class CombatHandler(DefaultScript):
         """
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+        # Debug: Show what parameters were passed
+        splattercast.msg(f"ADD_COMBATANT_PARAMS: char={char.key if char else None}, target={target.key if target else None}")
+        
         # Check if already in combat
         combatants = getattr(self.db, DB_COMBATANTS, [])
         for entry in combatants:
@@ -314,15 +317,18 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"ADD_COMB: Initialized char.ndb.{NDB_PROXIMITY} as a new set for {char.key}.")
         
         # Create combat entry
+        target_dbref = self._get_dbref(target)
         entry = {
             DB_CHAR: char,
             "initiative": randint(1, 20) + get_numeric_stat(char, "motorics", 0),
-            DB_TARGET_DBREF: self._get_dbref(target),
+            DB_TARGET_DBREF: target_dbref,
             DB_GRAPPLING_DBREF: self._get_dbref(initial_grappling),
             DB_GRAPPLED_BY_DBREF: self._get_dbref(initial_grappled_by),
             DB_IS_YIELDING: initial_is_yielding,
             "combat_action": None
         }
+        
+        splattercast.msg(f"ADD_COMBATANT_ENTRY: {char.key} -> target_dbref={target_dbref}, initiative={entry['initiative']}")
         
         combatants.append(entry)
         setattr(self.db, DB_COMBATANTS, combatants)
