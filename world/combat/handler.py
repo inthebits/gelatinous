@@ -931,8 +931,6 @@ class CombatHandler(DefaultScript):
         
         # Defense roll
         defense_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
-        # Defense roll
-        defense_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
         
         splattercast.msg(f"ATTACK_ROLL: {attacker.key} (attack {attack_roll_base}) vs {target.key} (defense {defense_roll})")
         
@@ -944,9 +942,9 @@ class CombatHandler(DefaultScript):
             # Hit - calculate damage
             damage = max(1, get_numeric_stat(attacker, "grit", 1))
             
-            # Check for body shield mechanics if target is grappled
+            # Check for body shield mechanics if target is grappling someone
             actual_target = target
-            if grappling_this_target:
+            if target_entry:
                 # Target is grappling someone - they might use them as a shield
                 target_grappling = self.get_grappling_obj(target_entry)
                 if target_grappling and target_grappling != attacker:
