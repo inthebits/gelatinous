@@ -188,21 +188,6 @@ class CombatHandler(DefaultScript):
         # Reset round counter
         self.db.round = 0
         
-        # Determine if we should delete the script
-        combatants = getattr(self.db, DB_COMBATANTS, [])
-        should_delete_script = False
-        if not combatants and self.pk:
-            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} is empty and persistent. Marking for deletion.")
-            should_delete_script = True
-        
-        if should_delete_script:
-            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Deleting handler script {self.key}.")
-            self.delete()
-        else:
-            # Stop the ticker
-            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} is not being deleted. Calling self.stop() to halt ticker.")
-            self.stop()
-        
         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Combat logic stopped for {self.key}. Round reset to 0.")
 
     def _cleanup_all_combatants(self):
@@ -307,11 +292,6 @@ class CombatHandler(DefaultScript):
             if entry.get(DB_CHAR) == char:
                 splattercast.msg(f"ADD_COMB: {char.key} is already in combat.")
                 return
-        
-        # Initialize proximity NDB if it doesn't exist or is not a set
-        if not hasattr(char.ndb, NDB_PROXIMITY) or not isinstance(getattr(char.ndb, NDB_PROXIMITY), set):
-            setattr(char.ndb, NDB_PROXIMITY, set())
-            splattercast.msg(f"ADD_COMB: Initialized char.ndb.{NDB_PROXIMITY} as a new set for {char.key}.")
         
         # Create combat entry
         entry = {
@@ -527,9 +507,15 @@ class CombatHandler(DefaultScript):
         if not str(dbref).startswith("#"):
             dbref = f"#{dbref}"
         
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"DBREF_LOOKUP_DEBUG: Searching for dbref '{dbref}'")
+        
         results = search_object(dbref)
         if results:
+            splattercast.msg(f"DBREF_LOOKUP_DEBUG: Found {results[0].key} (dbref {results[0].dbref})")
             return results[0]
+        else:
+            splattercast.msg(f"DBREF_LOOKUP_DEBUG: No results found for dbref '{dbref}'")
         return None
     
     def _get_dbref(self, obj):
@@ -577,6 +563,8 @@ class CombatHandler(DefaultScript):
              return
 
         # Convert SaverList to regular list to avoid corruption during modifications
+        # All modifications will be done on this list, then saved back at the end
+        # Use deep copy to ensure nested dictionaries are also converted from SaverList
         combatants_list = []
         if getattr(self.db, DB_COMBATANTS, None):
             for entry in getattr(self.db, DB_COMBATANTS):
@@ -699,6 +687,179 @@ class CombatHandler(DefaultScript):
 
         self.db.round += 1
         splattercast.msg(f"AT_REPEAT: Handler {self.key}. Round {self.db.round} scheduled for next interval.")
+            
+            # Diagnostic Log:
+            current_target = self.get_target_obj(current_char_combat_entry)
+            splattercast.msg(f"AT_REPEAT_DEBUG_TURN_START: For {char.key}'s turn, handler ID {self.id}, current target in entry: {current_target.key if current_target else 'None'}. Full entry: {current_char_combat_entry}")
+
+            splattercast.msg(f"--- Turn: {char.key} (Loc: {char.location.key}, Init: {current_char_combat_entry.get('initiative', 0)}) ---")
+
+            # --- Check for string-based grapple actions first ---
+            action = current_char_combat_entry.get("combat_action")
+
+            if isinstance(action, str):
+                if action == "grapple_initiate":
+                    splattercast.msg(f"AT_REPEAT: {char.key} attempting grapple_initiate.")
+                    self._resolve_grapple_initiate(current_char_combat_entry, combatants_list)
+                    current_char_combat_entry["combat_action"] = None
+                    # Save combatants list before ending turn
+                    setattr(self.db, DB_COMBATANTS, combatants_list)
+                    continue  # End turn for this combatant
+
+                elif action == "grapple_join":
+                    splattercast.msg(f"AT_REPEAT: {char.key} attempting grapple_join.")
+                    self._resolve_grapple_join(current_char_combat_entry, combatants_list)
+                    current_char_combat_entry["combat_action"] = None
+                    # Save combatants list before ending turn
+                    setattr(self.db, DB_COMBATANTS, combatants_list)
+                    continue  # End turn for this combatant
+
+                elif action == "release_grapple":
+                    splattercast.msg(f"AT_REPEAT: {char.key} attempting release_grapple.")
+                    self._resolve_release_grapple(current_char_combat_entry, combatants_list)
+                    current_char_combat_entry["combat_action"] = None
+                    # Save combatants list before ending turn
+                    setattr(self.db, DB_COMBATANTS, combatants_list)
+                    continue  # End turn for this combatant
+
+            # --- Initialize attack condition flags for this turn ---
+            attack_has_disadvantage = False # NEW FLAG
+
+            # --- START-OF-TURN NDB CLEANUP for char (Charge Flags) ---
+            if hasattr(char.ndb, "charging_vulnerability_active"):
+                splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing charging_vulnerability_active for {char.key} (was active from their own previous charge).")
+                delattr(char.ndb, "charging_vulnerability_active")
+            
+            if hasattr(char.ndb, "charge_attack_bonus_active"): # Bonus from *previous* turn expired if not used
+                splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing expired/unused charge_attack_bonus_active for {char.key}.")
+                delattr(char.ndb, "charge_attack_bonus_active")
+
+            # --- TURN SKIP CHECK (e.g. from failed charge/flee) ---
+            if hasattr(char.ndb, NDB_SKIP_ROUND) and getattr(char.ndb, NDB_SKIP_ROUND):
+                char.msg("|yYou are recovering or off-balance and cannot act this turn.|n")
+                splattercast.msg(f"AT_REPEAT_SKIP_TURN: {char.key} is skipping turn due to ndb.{NDB_SKIP_ROUND}.")
+                delattr(char.ndb, NDB_SKIP_ROUND) # Consume the flag
+                # Save combatants list before ending turn
+                setattr(self.db, DB_COMBATANTS, combatants_list)
+                continue # Skip to next combatant
+
+            # --- CHECK FOR YIELDING ---
+            if current_char_combat_entry.get(DB_IS_YIELDING):
+                # Exception: Allow release grapple actions even when yielding
+                action_intent = current_char_combat_entry.get("combat_action")
+                if action_intent and isinstance(action_intent, dict) and action_intent.get("type") == "release_grapple":
+                    splattercast.msg(f"{char.key} is yielding but can still release their grapple.")
+                else:
+                    splattercast.msg(f"{char.key} is yielding and takes no hostile action this turn.")
+                    char.location.msg_contents(f"|y{char.key} holds their action, appearing non-hostile.|n", exclude=[char])
+                    char.msg("|yYou hold your action, appearing non-hostile.|n")
+                    # Save combatants list before ending turn
+                    setattr(self.db, DB_COMBATANTS, combatants_list)
+                    continue
+            
+            # --- Handle being grappled (auto resist unless yielding) ---
+            # Use the helper method to get the grappler
+            grappler = self.get_grappled_by_obj(current_char_combat_entry)
+            splattercast.msg(f"GRAPPLE_DEBUG: {char.key} grapple check - grappler={grappler.key if grappler else 'None'}, {DB_GRAPPLED_BY_DBREF}={current_char_combat_entry.get(DB_GRAPPLED_BY_DBREF)}")
+            splattercast.msg(f"GRAPPLE_DEBUG_CHAR_DBREF: {char.key} has dbref={char.dbref}")
+            
+            # Safety check: prevent self-grappling and invalid grappler
+            if grappler:
+                if grappler == char:
+                    splattercast.msg(f"GRAPPLE_ERROR: {char.key} is grappled by themselves! Clearing invalid state.")
+                    splattercast.msg(f"GRAPPLE_CLEAR_DEBUG: Clearing {char.key}'s {DB_GRAPPLED_BY_DBREF} due to self-grappling")
+                    current_char_combat_entry[DB_GRAPPLED_BY_DBREF] = None
+                    grappler = None
+                elif not any(e.get(DB_CHAR) == grappler for e in combatants_list):
+                    splattercast.msg(f"GRAPPLE_ERROR: {char.key} is grappled by {grappler.key} who is not in combat! Clearing invalid state.")
+                    splattercast.msg(f"GRAPPLE_CLEAR_DEBUG: Clearing {char.key}'s {DB_GRAPPLED_BY_DBREF} due to invalid grappler")
+                    current_char_combat_entry[DB_GRAPPLED_BY_DBREF] = None
+                    grappler = None
+            
+            if grappler:
+                splattercast.msg(f"DEBUG_GRAPPLED_CHECK: {char.key} has grappled_by={grappler.key}")
+                try:
+                    is_yielding = current_char_combat_entry.get(DB_IS_YIELDING)
+                    splattercast.msg(f"DEBUG_YIELDING_CHECK: {char.key} {DB_IS_YIELDING}={is_yielding}")
+                    
+                    # Check if character is actively yielding (which now also means accepting the grapple)
+                    splattercast.msg(f"DEBUG_ESCAPE_CONDITION: {char.key} not {DB_IS_YIELDING} = {not is_yielding}")
+                    if not is_yielding:
+                        splattercast.msg(f"DEBUG_ENTERING_ESCAPE_BLOCK: {char.key} entering escape attempt block")
+                        # Automatically attempt to escape
+                        splattercast.msg(f"{char.key} is being grappled by {grappler.key} and automatically attempts to escape.")
+                        char.msg(f"|yYou struggle against {grappler.get_display_name(char)}'s grip!|n")
+                        
+                        # Setup an escape attempt
+                        escaper_roll = randint(1, max(1, get_numeric_stat(char, "motorics", 1)))
+                        grappler_roll = randint(1, max(1, get_numeric_stat(grappler, "motorics", 1)))
+                        splattercast.msg(f"AUTO_ESCAPE_ATTEMPT: {char.key} (roll {escaper_roll}) vs {grappler.key} (roll {grappler_roll}).")
+
+                        if escaper_roll > grappler_roll:
+                            # Success - update to use dbrefs
+                            splattercast.msg(f"GRAPPLE_CLEAR_DEBUG: {char.key} successfully escaped, clearing grapple state")
+                            current_char_combat_entry[DB_GRAPPLED_BY_DBREF] = None
+                            grappler_entry = next((e for e in combatants_list if e.get(DB_CHAR) == grappler), None)
+                            if grappler_entry:
+                                grappler_entry[DB_GRAPPLING_DBREF] = None
+                                
+                            escape_messages = get_combat_message("grapple", "escape_hit", attacker=char, target=grappler)
+                            char.msg(escape_messages.get("attacker_msg", f"You break free from {grappler.get_display_name(char)}'s grasp!"))
+                            grappler.msg(escape_messages.get("victim_msg", f"{char.get_display_name(grappler)} breaks free from your grasp!"))
+                            obs_msg = escape_messages.get("observer_msg", f"{char.get_display_name(char.location)} breaks free from {grappler.get_display_name(grappler.location)}'s grasp!")
+                            for loc in {char.location, grappler.location}: 
+                                if loc: loc.msg_contents(obs_msg, exclude=[char, grappler])
+                            splattercast.msg(f"AUTO_ESCAPE_SUCCESS: {char.key} escaped from {grappler.key}.")
+                        else:
+                            # Failure
+                            escape_messages = get_combat_message("grapple", "escape_miss", attacker=char, target=grappler)
+                            char.msg(escape_messages.get("attacker_msg", f"You struggle but fail to break free from {grappler.get_display_name(char)}'s grasp!"))
+                            grappler.msg(escape_messages.get("victim_msg", f"{char.get_display_name(grappler)} struggles but fails to break free from your grasp!"))
+                            obs_msg = escape_messages.get("observer_msg", f"{char.get_display_name(char.location)} struggles but fails to break free from {grappler.get_display_name(grappler.location)}'s grasp!")
+                            for loc in {char.location, grappler.location}:
+                                if loc: loc.msg_contents(obs_msg, exclude=[char, grappler])
+                            splattercast.msg(f"AUTO_ESCAPE_FAIL: {char.key} failed to escape {grappler.key}.")
+                    else:
+                        # Character is yielding, which means accepting the grapple
+                        char.msg(f"|cYou remain in {grappler.get_display_name(char)}'s grip without struggling.|n")
+                        splattercast.msg(f"{char.key} is accepting being grappled by {grappler.key} and takes no action.")
+                    
+                    # Either way, turn ends after escape attempt or accepting
+                    splattercast.msg(f"DEBUG_CONTINUE_ATTEMPT: {char.key} about to continue (end turn) after grapple handling")
+                    # Save combatants list before ending turn
+                    setattr(self.db, DB_COMBATANTS, combatants_list)
+                    continue
+                    
+                except Exception as e:
+                    splattercast.msg(f"GRAPPLE_HANDLING_ERROR: Exception in grapple handling for {char.key}: {e}")
+                    traceback.print_exc()
+                    # Fall through to normal combat processing
+
+            # Not grappled or escaped successfully, proceed with normal turn
+
+            # --- Determine Target ---
+            target = self.get_target(char)
+            if not target:
+                char.msg("You have no valid target.")
+                splattercast.msg(f"{char.key} has no valid target and takes no action this turn.")
+                # Save combatants list before ending turn
+                setattr(self.db, DB_COMBATANTS, combatants_list)
+                continue
+
+            splattercast.msg(f"{char.key} targets {target.key}.")
+
+            # [REST OF COMBAT LOGIC WOULD GO HERE - attacks, damage, etc.]
+            # For now, just log the action
+            splattercast.msg(f"COMBAT_ACTION: {char.key} would attack {target.key} (full combat logic to be implemented)")
+
+            # Save combatants list at end of turn
+            setattr(self.db, DB_COMBATANTS, combatants_list)
+
+        # Increment round counter
+        self.db.round += 1
+        
+        # Save the final state
+        setattr(self.db, DB_COMBATANTS, combatants_list)
 
     def _process_attack(self, attacker, target, attacker_entry, combatants_list):
         """Process a standard attack between two characters."""

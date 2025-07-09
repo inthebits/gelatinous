@@ -59,7 +59,7 @@ def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None
 
     chosen_template_set = None
     try:
-        module_path = f"world.combat_messages.{weapon_type}"
+        module_path = f"world.combat.messages.{weapon_type}"
         module = importlib.import_module(module_path)
         messages_for_weapon = getattr(module, "MESSAGES", {})
         templates_for_phase = messages_for_weapon.get(phase, [])
