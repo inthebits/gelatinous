@@ -458,6 +458,11 @@ class CmdAim(Command):
                 # Debug: Verify the direction was set
                 splattercast.msg(f"AIM_DEBUG: Set aiming_direction to '{direction}' for {caller.key}")
                 splattercast.msg(f"AIM_DEBUG: Verification - getattr result: '{getattr(caller.ndb, 'aiming_direction', 'NOT_FOUND')}'")
+                splattercast.msg(f"AIM_DEBUG: Direct ndb check: hasattr={hasattr(caller.ndb, 'aiming_direction')}")
+                
+                # Test retrieval immediately
+                test_direction = getattr(caller.ndb, "aiming_direction", None)
+                splattercast.msg(f"AIM_DEBUG: Immediate test retrieval: '{test_direction}'")
                 
                 caller.msg(f"|yYou take careful aim {direction}.|n")
                 caller.location.msg_contents(
