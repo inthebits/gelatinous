@@ -26,7 +26,7 @@ from world.combat.constants import (
     MSG_DISARM_SUCCESS_ATTACKER, MSG_DISARM_SUCCESS_VICTIM, MSG_DISARM_SUCCESS_OBSERVER,
     MSG_AIM_WHO_WHAT, MSG_AIM_SELF_TARGET,
     DEBUG_PREFIX_GRAPPLE, SPLATTERCAST_CHANNEL,
-    NDB_COMBAT_HANDLER, STAT_GRIT
+    NDB_COMBAT_HANDLER
 )
 from world.combat.utils import log_combat_action, get_numeric_stat, roll_stat
 
@@ -256,8 +256,8 @@ class CmdDisarm(Command):
             return
 
         # Grit vs Grit check
-        attacker_grit = get_numeric_stat(caller, STAT_GRIT)
-        defender_grit = get_numeric_stat(target, STAT_GRIT)
+        attacker_grit = get_numeric_stat(caller, "grit")
+        defender_grit = get_numeric_stat(target, "grit")
         disarm_roll = roll_stat(attacker_grit)
         resist_roll = roll_stat(defender_grit)
         
