@@ -514,6 +514,7 @@ class CombatHandler(DefaultScript):
         valid_chars = [e.get(DB_CHAR) for e in combatants]
         if not target or target not in valid_chars:
             splattercast.msg(f"GET_TARGET: {char.key} has no valid target or their target is not in combat. Valid chars: {[c.key for c in valid_chars]}")
+            splattercast.msg(f"GET_TARGET: {char.key} current target: {target.key if target else None}, target in valid_chars: {target in valid_chars if target else 'N/A'}")
             attackers = [
                 e.get(DB_CHAR) for e in combatants 
                 if self.get_target_obj(e) == char and e.get(DB_CHAR) != char
