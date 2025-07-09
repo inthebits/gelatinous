@@ -376,14 +376,23 @@ class CmdAim(Command):
         # Try to find target in current room first
         target = caller.search(args, location=caller.location, quiet=True)
         
+        # Debug: Show what search found
+        splattercast.msg(f"AIM_DEBUG: caller.search('{args}') returned: {target} (type: {type(target)})")
+        
         # Handle search results - caller.search can return None, empty list, or list with objects
         if target:
             # If search returns a list, take the first match
             if isinstance(target, (list, tuple)):
                 if len(target) > 0:
                     target = target[0]
+                    splattercast.msg(f"AIM_DEBUG: Found target from list: {target.key}")
                 else:
                     target = None
+                    splattercast.msg(f"AIM_DEBUG: Empty list returned, no target")
+            else:
+                splattercast.msg(f"AIM_DEBUG: Found single target: {target.key}")
+        else:
+            splattercast.msg(f"AIM_DEBUG: No target found by search")
         
         if target and hasattr(target, 'key'):
             # Target found in room - prevent self-targeting
