@@ -1043,6 +1043,19 @@ class CombatHandler(DefaultScript):
             delattr(attacker.ndb, "aiming_at")
             if hasattr(target.ndb, "aimed_at_by") and getattr(target.ndb, "aimed_at_by") == attacker:
                 delattr(target.ndb, "aimed_at_by")
+        
+        # Check for direction aiming bonus (when attacking into another room)
+        aiming_direction = getattr(attacker.ndb, "aiming_direction", None)
+        if aiming_direction and attacker.location != target.location and is_ranged_weapon:
+            # Grant aiming bonus for ranged attacks into aimed direction
+            direction_bonus = 2  # Same bonus as target aiming
+            attack_roll_base += direction_bonus
+            splattercast.msg(f"DIRECTION_AIMING_BONUS: {attacker.key} gets +{direction_bonus} attack bonus for aiming {aiming_direction}")
+            
+            # Clear the direction aim after use
+            delattr(attacker.ndb, "aiming_direction")
+            
+            attacker.msg(f"|gYour careful aim {aiming_direction} pays off! You attack with improved accuracy.|n")
                 
         # Defense roll
         defense_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))

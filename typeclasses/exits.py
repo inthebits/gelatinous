@@ -68,8 +68,28 @@ class Exit(DefaultExit):
             # This will only send messages if an aim state was actually cleared.
             traversing_object.clear_aim_state(reason_for_clearing="as you move")
         else:
-            # Fallback or error if the method isn't on the object
-            splattercast.msg(f"AIM_CLEAR_ON_MOVE_FAIL: {traversing_object.key} lacks clear_aim_state method during traversal of {self.key}.")
+            # Fallback - manually clear aim state if the method isn't on the object
+            aim_cleared = False
+            
+            # Clear target aiming
+            old_aim_target = getattr(traversing_object.ndb, "aiming_at", None)
+            if old_aim_target:
+                del traversing_object.ndb.aiming_at
+                if hasattr(old_aim_target, "ndb") and getattr(old_aim_target.ndb, "aimed_at_by", None) == traversing_object:
+                    del old_aim_target.ndb.aimed_at_by
+                    old_aim_target.msg(f"{traversing_object.key} stops aiming at you as they move.")
+                traversing_object.msg(f"You stop aiming at {old_aim_target.key} as you move.")
+                aim_cleared = True
+            
+            # Clear direction aiming  
+            old_aim_direction = getattr(traversing_object.ndb, "aiming_direction", None)
+            if old_aim_direction:
+                del traversing_object.ndb.aiming_direction
+                traversing_object.msg(f"You stop aiming {old_aim_direction} as you move.")
+                aim_cleared = True
+            
+            if not aim_cleared:
+                splattercast.msg(f"AIM_CLEAR_ON_MOVE_FAIL: {traversing_object.key} lacks clear_aim_state method during traversal of {self.key}.")
         # --- END CLEAR TRAVERSER'S OWN AIM STATE ---
 
         # --- PROXIMITY CLEANUP ON ROOM CHANGE ---

@@ -44,7 +44,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdAdmin.CmdHeal())
         self.add(CmdAdmin.CmdPeace())
         
-        # Add the entire combat command set
+        # Add the entire combat command set (includes enhanced look command)
         self.add(CombatCmdSet)
         
         # Add inventory commands
