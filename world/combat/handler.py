@@ -891,8 +891,16 @@ class CombatHandler(DefaultScript):
 
             # Standard attack processing - get target and attack
             target = self.get_target(char)
+            splattercast.msg(f"AT_REPEAT: After get_target(), {char.key} target is {target.key if target else None}")
             if target:
-                self._process_attack(char, target, current_char_combat_entry, combatants_list)
+                splattercast.msg(f"AT_REPEAT: About to call _process_attack({char.key}, {target.key}, ...)")
+                try:
+                    self._process_attack(char, target, current_char_combat_entry, combatants_list)
+                    splattercast.msg(f"AT_REPEAT: _process_attack completed for {char.key} -> {target.key}")
+                except Exception as e:
+                    splattercast.msg(f"AT_REPEAT: ERROR in _process_attack for {char.key} -> {target.key}: {e}")
+                    import traceback
+                    splattercast.msg(f"AT_REPEAT: Traceback: {traceback.format_exc()}")
             else:
                 splattercast.msg(f"AT_REPEAT: {char.key} has no valid target for attack.")
 
@@ -915,16 +923,22 @@ class CombatHandler(DefaultScript):
         """Process a standard attack between two characters."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+        splattercast.msg(f"_PROCESS_ATTACK: Starting attack processing for {attacker.key} -> {target.key}")
+        
         # Check if attacker is yielding
         if attacker_entry.get(DB_IS_YIELDING, False):
             splattercast.msg(f"AT_REPEAT: {attacker.key} is yielding, skipping attack.")
             return
+        
+        splattercast.msg(f"_PROCESS_ATTACK: {attacker.key} is not yielding, continuing...")
         
         # Find target's entry
         target_entry = next((e for e in combatants_list if e.get(DB_CHAR) == target), None)
         if not target_entry:
             splattercast.msg(f"AT_REPEAT: Target {target.key} not found in combatants.")
             return
+        
+        splattercast.msg(f"_PROCESS_ATTACK: Found target entry for {target.key}, proceeding to weapon detection...")
         
         # Get weapon and weapon type - using consistent approach with attack command
         hands = getattr(attacker, "hands", {})
@@ -968,6 +982,8 @@ class CombatHandler(DefaultScript):
         
         # Calculate attack rolls (with disadvantage if applicable)
         attacker_grit = get_numeric_stat(attacker, "grit", 1)
+        splattercast.msg(f"_PROCESS_ATTACK: Got attacker grit: {attacker_grit}")
+        
         if attack_has_disadvantage:
             # Roll twice, take the lower
             roll1 = randint(1, max(1, attacker_grit))
@@ -976,6 +992,8 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"ATTACK_DISADVANTAGE_ROLL: {attacker.key} rolls {roll1}, {roll2} -> {attack_roll_base} (disadvantage)")
         else:
             attack_roll_base = randint(1, max(1, attacker_grit))
+        
+        splattercast.msg(f"_PROCESS_ATTACK: Attack roll calculated: {attack_roll_base}")
         
         # Defense roll
         defense_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
@@ -986,7 +1004,10 @@ class CombatHandler(DefaultScript):
         grappling_this_target = self.get_grappling_obj(attacker_entry) == target
         effective_weapon_type = "grapple" if grappling_this_target else weapon_type
         
+        splattercast.msg(f"_PROCESS_ATTACK: About to determine hit/miss. Grappling={grappling_this_target}, effective_weapon_type={effective_weapon_type}")
+        
         if attack_roll_base > defense_roll:
+            splattercast.msg(f"_PROCESS_ATTACK: HIT DETECTED - {attacker.key} hit {target.key}")
             # Hit - calculate damage
             damage = max(1, get_numeric_stat(attacker, "grit", 1))
             
@@ -1026,38 +1047,65 @@ class CombatHandler(DefaultScript):
             
             # Get and send appropriate messages
             if is_dead:
-                hit_messages = get_combat_message(effective_weapon_type, "kill", 
-                                                  attacker=attacker, target=actual_target, item=weapon, damage=damage)
-                self._handle_death(actual_target, attacker, effective_weapon_type, weapon)
+                splattercast.msg(f"_PROCESS_ATTACK: Target is dead, getting kill messages")
+                try:
+                    hit_messages = get_combat_message(effective_weapon_type, "kill", 
+                                                      attacker=attacker, target=actual_target, item=weapon, damage=damage)
+                    self._handle_death(actual_target, attacker, effective_weapon_type, weapon)
+                except Exception as e:
+                    splattercast.msg(f"_PROCESS_ATTACK: ERROR in death handling: {e}")
+                    # Fallback death handling
+                    attacker.msg(f"You kill {actual_target.key}!")
+                    actual_target.msg(f"{attacker.key} kills you!")
+                    self.remove_combatant(actual_target)
             else:
-                hit_messages = get_combat_message(effective_weapon_type, "hit", 
-                                                  attacker=attacker, target=actual_target, item=weapon, damage=damage)
-            
-            attacker.msg(hit_messages.get("attacker_msg", f"You hit {actual_target.key}!"))
-            actual_target.msg(hit_messages.get("victim_msg", f"{attacker.key} hits you!"))
-            
-            # Send observer message to room
-            obs_msg = hit_messages.get("observer_msg", f"{attacker.key} hits {actual_target.key}!")
-            for location in {attacker.location, actual_target.location}:
-                if location:
-                    location.msg_contents(obs_msg, exclude=[attacker, actual_target])
-            
-            splattercast.msg(f"HIT: {attacker.key} hits {actual_target.key} for {damage} damage (dead: {is_dead})")
+                splattercast.msg(f"_PROCESS_ATTACK: Target survived, getting hit messages")
+                try:
+                    hit_messages = get_combat_message(effective_weapon_type, "hit", 
+                                                      attacker=attacker, target=actual_target, item=weapon, damage=damage)
+                    
+                    attacker.msg(hit_messages.get("attacker_msg", f"You hit {actual_target.key}!"))
+                    actual_target.msg(hit_messages.get("victim_msg", f"{attacker.key} hits you!"))
+                    
+                    # Send observer message to room
+                    obs_msg = hit_messages.get("observer_msg", f"{attacker.key} hits {actual_target.key}!")
+                    for location in {attacker.location, actual_target.location}:
+                        if location:
+                            location.msg_contents(obs_msg, exclude=[attacker, actual_target])
+                    
+                    splattercast.msg(f"HIT: {attacker.key} hits {actual_target.key} for {damage} damage (dead: {is_dead})")
+                except Exception as e:
+                    splattercast.msg(f"_PROCESS_ATTACK: ERROR in hit messaging: {e}")
+                    # Fallback hit messages
+                    attacker.msg(f"You hit {actual_target.key}!")
+                    actual_target.msg(f"{attacker.key} hits you!")
+                    splattercast.msg(f"HIT: {attacker.key} hits {actual_target.key} for {damage} damage (fallback)")
                 
         else:
+            splattercast.msg(f"_PROCESS_ATTACK: MISS DETECTED - {attacker.key} missed {target.key}")
             # Miss
             miss_phase = "grapple_damage_miss" if grappling_this_target else "miss"
-            miss_messages = get_combat_message(effective_weapon_type, miss_phase, 
-                                               attacker=attacker, target=target, item=weapon)
-            attacker.msg(miss_messages.get("attacker_msg", f"You miss {target.key}!"))
-            target.msg(miss_messages.get("victim_msg", f"{attacker.key} misses you!"))
+            splattercast.msg(f"_PROCESS_ATTACK: About to get miss message with phase '{miss_phase}'")
             
-            obs_msg = miss_messages.get("observer_msg", f"{attacker.key} misses {target.key}!")
-            for location in {attacker.location, target.location}:
-                if location:
-                    location.msg_contents(obs_msg, exclude=[attacker, target])
-            
-            splattercast.msg(f"MISS: {attacker.key} misses {target.key}")
+            try:
+                miss_messages = get_combat_message(effective_weapon_type, miss_phase, 
+                                                   attacker=attacker, target=target, item=weapon)
+                splattercast.msg(f"_PROCESS_ATTACK: Got miss messages successfully")
+                attacker.msg(miss_messages.get("attacker_msg", f"You miss {target.key}!"))
+                target.msg(miss_messages.get("victim_msg", f"{attacker.key} misses you!"))
+                
+                obs_msg = miss_messages.get("observer_msg", f"{attacker.key} misses {target.key}!")
+                for location in {attacker.location, target.location}:
+                    if location:
+                        location.msg_contents(obs_msg, exclude=[attacker, target])
+                
+                splattercast.msg(f"MISS: {attacker.key} misses {target.key}")
+            except Exception as e:
+                splattercast.msg(f"_PROCESS_ATTACK: ERROR getting miss messages: {e}")
+                # Fallback messages
+                attacker.msg(f"You miss {target.key}!")
+                target.msg(f"{attacker.key} misses you!")
+                splattercast.msg(f"MISS: {attacker.key} misses {target.key} (fallback messages)")
     
     def _handle_death(self, victim, killer, weapon_type, weapon):
         """Handle character death."""
