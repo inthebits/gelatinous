@@ -1,6 +1,6 @@
 from evennia import Command
 from evennia.utils.search import search_object
-from world.combat_messages import get_combat_message
+from world.combat.messages import get_combat_message
 from evennia.comms.models import ChannelDB
 
 class CmdHeal(Command):

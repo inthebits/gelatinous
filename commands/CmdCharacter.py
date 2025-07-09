@@ -1,5 +1,11 @@
 from evennia import Command
 from evennia.utils.search import search_object
+from world.combat.constants import (
+    PERM_BUILDER, PERM_DEVELOPER,
+    BOX_TOP_LEFT, BOX_TOP_RIGHT, BOX_BOTTOM_LEFT, BOX_BOTTOM_RIGHT,
+    BOX_HORIZONTAL, BOX_VERTICAL, BOX_TEE_DOWN, BOX_TEE_UP,
+    COLOR_SUCCESS, COLOR_NORMAL
+)
 
 class CmdStats(Command):
     """
@@ -24,8 +30,8 @@ class CmdStats(Command):
 
         if self.args:
             if (
-                self.account.check_permstring("Builder")
-                or self.account.check_permstring("Developer")
+                self.account.check_permstring(PERM_BUILDER)
+                or self.account.check_permstring(PERM_DEVELOPER)
             ):
                 matches = search_object(self.args.strip(), exact=False)
                 if matches:
@@ -38,30 +44,23 @@ class CmdStats(Command):
         vitals_display = f"{target.hp}/{target.hp_max}"
 
         # Fixed format to exactly 48 visible characters per row
-        string = """|g╔════════════════════════════════════════════════╗|n
-|g║ PSYCHOPHYSICAL EVALUATION REPORT               ║|n
-|g║ Subject: {:<38}║|n
-|g║ File Reference: GEL-MST/PR-221A                ║|n
-|g╠════════════════════════════════════════════════╣|n
-|g║                                                ║|n
-|g║         Grit:       {:>3}                        ║|n
-|g║         Resonance:  {:>3}                        ║|n
-|g║         Intellect:  {:>3}                        ║|n
-|g║         Motorics:   {:>3}                        ║|n
-|g║                                                ║|n
-|g║         Vitals:     {:>7}                    ║|n
-|g║                                                ║|n
-|g╠════════════════════════════════════════════════╣|n
-|g║ Notes:                                         ║|n
-|g║                                                ║|n
-|g║                                                ║|n
-|g╚════════════════════════════════════════════════╝|n""".format(
-            target.key[:38],
-            grit,
-            resonance,
-            intellect,
-            motorics,
-            vitals_display[:7],
-        )
+        string = f"""{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * 48}{BOX_TOP_RIGHT}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL} PSYCHOPHYSICAL EVALUATION REPORT               {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL} Subject: {target.key[:38]:<38}{BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL} File Reference: GEL-MST/PR-221A                {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * 48}{BOX_TEE_UP}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Grit:       {grit:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Resonance:  {resonance:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Intellect:  {intellect:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Motorics:   {motorics:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Vitals:     {vitals_display[:7]:>7}                    {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * 48}{BOX_TEE_UP}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL} Notes:                                         {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_BOTTOM_LEFT}{BOX_HORIZONTAL * 48}{BOX_BOTTOM_RIGHT}{COLOR_NORMAL}"""
 
         caller.msg(string)

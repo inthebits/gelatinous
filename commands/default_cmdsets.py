@@ -16,11 +16,11 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 
 
 from evennia import default_cmds
-from commands import CmdCombat
 from commands import CmdCharacter
 from commands import CmdInventory
 from commands import CmdAdmin
 from commands.CmdSpawnMob import CmdSpawnMob
+from commands.combat.cmdset_combat import CombatCmdSet
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
     The `CharacterCmdSet` contains general in-game commands like `look`,
@@ -38,27 +38,21 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
-        self.add(CmdCombat.CmdAttack)
+        # Add individual character commands
         self.add(CmdCharacter.CmdStats)
         self.add(CmdSpawnMob())
         self.add(CmdAdmin.CmdHeal())
         self.add(CmdAdmin.CmdPeace())
-        self.add(CmdCombat.CmdFlee)
-        self.add(CmdCombat.CmdDisarm)
-        self.add(CmdCombat.CmdGrapple)
-        self.add(CmdCombat.CmdEscapeGrapple)
-        self.add(CmdCombat.CmdReleaseGrapple)
+        
+        # Add the entire combat command set
+        self.add(CombatCmdSet)
+        
+        # Add inventory commands
         self.add(CmdInventory.CmdWield())
         self.add(CmdInventory.CmdUnwield())
         self.add(CmdInventory.CmdInventory())
         self.add(CmdInventory.CmdDrop())
         self.add(CmdInventory.CmdGet())
-        self.add(CmdCombat.CmdAim) 
-        self.add(CmdCombat.CmdStop)
-        self.add(CmdCombat.CmdLook)
-        self.add(CmdCombat.CmdAdvance)
-        self.add(CmdCombat.CmdRetreat)
-        self.add(CmdCombat.CmdCharge)
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
