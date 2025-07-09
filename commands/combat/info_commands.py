@@ -57,6 +57,8 @@ class CmdLook(default_cmds.CmdLook):
             current_location = caller.location
             target_room = None
             
+            splattercast.msg(f"CUSTOM_LOOK: Looking for exit matching '{aiming_direction}' in {current_location.key}")
+            
             # Find the exit that matches the aiming direction
             for ex in current_location.exits:
                 exit_aliases = getattr(ex, 'aliases', [])
@@ -66,9 +68,14 @@ class CmdLook(default_cmds.CmdLook):
                 else:
                     exit_aliases = [alias.lower() for alias in exit_aliases]
                 
+                splattercast.msg(f"CUSTOM_LOOK: Checking exit {ex.key} (aliases: {exit_aliases}) vs direction '{aiming_direction}'")
+                
                 if ex.key.lower() == aiming_direction.lower() or aiming_direction.lower() in exit_aliases:
                     target_room = ex.destination
+                    splattercast.msg(f"CUSTOM_LOOK: Found matching exit! Target room: {target_room.key if target_room else 'None'}")
                     break
+            
+            splattercast.msg(f"CUSTOM_LOOK: Final target_room = {target_room.key if target_room else 'None'}")
             
             if target_room:
                 # Show the target room with a special header
