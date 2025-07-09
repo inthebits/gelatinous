@@ -71,6 +71,27 @@ class Exit(DefaultExit):
             splattercast.msg(f"AIM_CLEAR_ON_MOVE_FAIL: {traversing_object.key} lacks clear_aim_state method during traversal of {self.key}.")
         # --- END CLEAR TRAVERSER'S OWN AIM STATE ---
 
+        # --- PROXIMITY CLEANUP ON ROOM CHANGE ---
+        # Clear proximity relationships when moving between rooms (except during combat dragging)
+        handler = getattr(traversing_object.ndb, "combat_handler", None)
+        is_being_dragged = (handler and 
+                           any(e["char"] == traversing_object and 
+                               handler.get_grappled_by_obj(e) for e in handler.db.combatants))
+        
+        if not is_being_dragged and hasattr(traversing_object.ndb, "in_proximity_with"):
+            if isinstance(traversing_object.ndb.in_proximity_with, set) and traversing_object.ndb.in_proximity_with:
+                splattercast.msg(f"PROXIMITY_CLEANUP_ON_MOVE: {traversing_object.key} moving from {traversing_object.location.key} to {target_location.key}. Clearing proximity with: {[o.key for o in traversing_object.ndb.in_proximity_with]}")
+                
+                # Remove traversing_object from others' proximity sets
+                for other_char in list(traversing_object.ndb.in_proximity_with):
+                    if hasattr(other_char.ndb, "in_proximity_with") and isinstance(other_char.ndb.in_proximity_with, set):
+                        other_char.ndb.in_proximity_with.discard(traversing_object)
+                        splattercast.msg(f"PROXIMITY_CLEANUP_ON_MOVE: Removed {traversing_object.key} from {other_char.key}'s proximity list.")
+                
+                # Clear traversing_object's proximity set
+                traversing_object.ndb.in_proximity_with.clear()
+        # --- END PROXIMITY CLEANUP ---
+
         handler = getattr(traversing_object.ndb, "combat_handler", None)
 
         if handler:
