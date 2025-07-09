@@ -326,6 +326,9 @@ class CmdAim(Command):
         caller = self.caller
         args = self.args.strip()
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Debug: Verify our enhanced aim command is being called
+        splattercast.msg(f"ENHANCED_AIM: {caller.key} called enhanced aim command with args='{args}'")
 
         if not args:
             caller.msg(MSG_AIM_WHO_WHAT)
