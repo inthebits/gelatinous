@@ -331,6 +331,14 @@ class CmdAim(Command):
             caller.msg(MSG_AIM_WHO_WHAT)
             return
 
+        # Handle "aim at <target>" syntax - remove "at" if present
+        if args.lower().startswith("at "):
+            args = args[3:].strip()
+            
+        if not args:
+            caller.msg(MSG_AIM_WHO_WHAT)
+            return
+
         # Handle stopping aim
         if args.lower() in ("stop", "clear", "cancel"):
             current_target = getattr(caller.ndb, "aiming_at", None)
@@ -340,7 +348,7 @@ class CmdAim(Command):
             
             # Clear the aim relationship
             delattr(caller.ndb, "aiming_at")
-            if hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
+            if hasattr(current_target, "ndb") and hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
                 delattr(current_target.ndb, "aimed_at_by")
             
             caller.msg(f"|gYou stop aiming at {current_target.key}.|n")
@@ -353,7 +361,7 @@ class CmdAim(Command):
         current_direction = getattr(caller.ndb, "aiming_direction", None)
         
         if current_target:
-            if hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
+            if hasattr(current_target, "ndb") and hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
                 delattr(current_target.ndb, "aimed_at_by")
             delattr(caller.ndb, "aiming_at")
             current_target.msg(f"|g{caller.key} stops aiming at you.|n")
@@ -364,7 +372,16 @@ class CmdAim(Command):
         # Try to find target in current room first
         target = caller.search(args, location=caller.location, quiet=True)
         
+        # Handle search results - caller.search can return None, empty list, or list with objects
         if target:
+            # If search returns a list, take the first match
+            if isinstance(target, (list, tuple)):
+                if len(target) > 0:
+                    target = target[0]
+                else:
+                    target = None
+        
+        if target and hasattr(target, 'key'):
             # Target found in room - prevent self-targeting
             if target == caller:
                 caller.msg(MSG_AIM_SELF_TARGET)
@@ -412,7 +429,14 @@ class CmdAim(Command):
             # Check if the direction matches any exit
             valid_direction = False
             for ex in exits:
-                if ex.key.lower() == direction or direction in [alias.lower() for alias in ex.aliases.all()]:
+                exit_aliases = getattr(ex, 'aliases', [])
+                # Handle both list and manager cases
+                if hasattr(exit_aliases, 'all'):
+                    exit_aliases = [alias.lower() for alias in exit_aliases.all()]
+                else:
+                    exit_aliases = [alias.lower() for alias in exit_aliases]
+                    
+                if ex.key.lower() == direction or direction in exit_aliases:
                     valid_direction = True
                     break
                     
