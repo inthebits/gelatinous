@@ -69,9 +69,19 @@ class CmdAttack(Command):
         # --- WEAPON IDENTIFICATION (early) ---
         hands = getattr(caller, "hands", {})
         weapon_obj = next((item for hand, item in hands.items() if item), None)
-        is_ranged_weapon = weapon_obj and hasattr(weapon_obj.db, "is_ranged") and weapon_obj.db.is_ranged
+        
+        # Debug weapon detection
+        splattercast.msg(f"WEAPON_DETECT: {caller.key} hands={hands}, weapon_obj={weapon_obj.key if weapon_obj else 'None'}")
+        if weapon_obj:
+            splattercast.msg(f"WEAPON_DETECT: {weapon_obj.key} has db={hasattr(weapon_obj, 'db')}, "
+                           f"db.is_ranged={getattr(weapon_obj.db, 'is_ranged', 'MISSING') if hasattr(weapon_obj, 'db') else 'NO_DB'}, "
+                           f"db.weapon_type={getattr(weapon_obj.db, 'weapon_type', 'MISSING') if hasattr(weapon_obj, 'db') else 'NO_DB'}")
+        
+        is_ranged_weapon = weapon_obj and hasattr(weapon_obj, "db") and getattr(weapon_obj.db, "is_ranged", False)
         weapon_name_for_msg = weapon_obj.key if weapon_obj else "your fists"
-        weapon_type_for_msg = (str(weapon_obj.db.weapon_type).lower() if weapon_obj and hasattr(weapon_obj.db, "weapon_type") and weapon_obj.db.weapon_type else "unarmed")
+        weapon_type_for_msg = (str(weapon_obj.db.weapon_type).lower() if weapon_obj and hasattr(weapon_obj, "db") and hasattr(weapon_obj.db, "weapon_type") and weapon_obj.db.weapon_type else "unarmed")
+        
+        splattercast.msg(f"WEAPON_FINAL: {caller.key} is_ranged={is_ranged_weapon}, weapon_type={weapon_type_for_msg}")
         # --- END WEAPON IDENTIFICATION ---
 
         target_room = caller.location
@@ -184,6 +194,13 @@ class CmdAttack(Command):
                      final_handler.set_target(target, caller)
                 # Do not automatically un-yield target if they were already yielding.
                 # target_entry["is_yielding"] = False
+
+        # --- ESTABLISH PROXIMITY FOR SAME-ROOM COMBAT ---
+        if not aiming_direction and caller.location == target.location:
+            # Same room attack - establish proximity for melee combat
+            if not is_ranged_weapon:  # Only for melee weapons
+                establish_proximity(caller, target)
+                splattercast.msg(f"{DEBUG_PREFIX_ATTACK}: Established proximity between {caller.key} and {target.key} for melee combat.")
 
         # --- Messaging and Action ---
         if aiming_direction:

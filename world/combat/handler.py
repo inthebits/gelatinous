@@ -887,10 +887,18 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"AT_REPEAT: Target {target.key} not found in combatants.")
             return
         
-        # Get weapon and weapon type
-        weapon = get_wielded_weapon(attacker)
+        # Get weapon and weapon type - using consistent approach with attack command
+        hands = getattr(attacker, "hands", {})
+        weapon = next((item for hand, item in hands.items() if item), None)
         weapon_type = getattr(weapon, "db", {}).get("weapon_type", "unarmed") if weapon else "unarmed"
         is_ranged_weapon = weapon and hasattr(weapon, "db") and getattr(weapon.db, "is_ranged", False)
+        
+        # Debug weapon detection
+        splattercast.msg(f"WEAPON_DEBUG: {attacker.key} weapon={weapon.key if weapon else 'None'}, "
+                        f"weapon_type={weapon_type}, is_ranged={is_ranged_weapon}")
+        if weapon:
+            splattercast.msg(f"WEAPON_DEBUG: {weapon.key} db.is_ranged={getattr(weapon.db, 'is_ranged', 'MISSING')}, "
+                            f"db.weapon_type={getattr(weapon.db, 'weapon_type', 'MISSING')}")
         
         # Check proximity and weapon compatibility
         attack_has_disadvantage = False
@@ -909,6 +917,7 @@ class CombatHandler(DefaultScript):
                 attacker.msg(f"|rYou are too far away to hit {target.key} with your {weapon.key if weapon else 'fists'}. Try advancing or charging.|n")
                 splattercast.msg(f"ATTACK_INVALID: {attacker.key} trying melee attack at range vs {target.key}")
                 return
+            # Note: Ranged weapon at range (not in proximity) is valid and continues below
         elif target.location not in getattr(self.db, DB_MANAGED_ROOMS, []):
             # Target not in managed rooms
             attacker.msg(f"|r{target.key} is not in the current combat zone.|n")

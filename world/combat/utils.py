@@ -198,21 +198,10 @@ def get_wielded_weapon(character):
         character: The character to check
         
     Returns:
-        tuple: (weapon_obj, is_ranged, weapon_type, weapon_name)
+        The weapon object, or None if no weapon is wielded
     """
     hands = getattr(character, "hands", {})
-    weapon_obj = next((item for hand, item in hands.items() if item), None)
-    
-    if weapon_obj:
-        is_ranged = hasattr(weapon_obj.db, "is_ranged") and weapon_obj.db.is_ranged
-        weapon_type = str(weapon_obj.db.weapon_type).lower() if hasattr(weapon_obj.db, "weapon_type") and weapon_obj.db.weapon_type else "unarmed"
-        weapon_name = weapon_obj.key
-    else:
-        is_ranged = False
-        weapon_type = "unarmed"
-        weapon_name = "your fists"
-    
-    return weapon_obj, is_ranged, weapon_type, weapon_name
+    return next((item for hand, item in hands.items() if item), None)
 
 
 # ===================================================================
