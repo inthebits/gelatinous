@@ -29,9 +29,9 @@ from .constants import (
 )
 from .utils import (
     get_numeric_stat, log_combat_action, get_display_name_safe,
-    roll_stat, opposed_roll
+    roll_stat, opposed_roll, get_wielded_weapon
 )
-from .proximity import clear_all_proximity, establish_proximity
+from .proximity import clear_all_proximity, establish_proximity, proximity_opposed_roll
 from .grappling import break_grapple, establish_grapple
 
 
@@ -405,53 +405,65 @@ class CombatHandler(DefaultScript):
             if hasattr(char.ndb, attr):
                 delattr(char.ndb, attr)
 
-    def get_target_obj(self, combatant_entry):
+    # Helper methods for object reference handling
+    def _get_char_by_dbref(self, dbref):
         """
-        Get the target object from a combatant entry.
+        Get a character object from its dbref string.
         
         Args:
-            combatant_entry: The combatant's entry dict
+            dbref (str): The dbref of the character to retrieve
             
         Returns:
-            Character object or None
+            Character object or None if not found
         """
+        if not dbref:
+            return None
+        
+        # Search by dbref (adding # if not present)
+        if not str(dbref).startswith("#"):
+            dbref = f"#{dbref}"
+        
+        results = search_object(dbref)
+        if results:
+            return results[0]
+        return None
+    
+    def _get_dbref(self, obj):
+        """
+        Get the dbref string from an object.
+        
+        Args:
+            obj: The object to get dbref from
+            
+        Returns:
+            str: The dbref without leading # or None if obj is None
+        """
+        if not obj:
+            return None
+        
+        # Get the dbref and remove leading #
+        dbref = obj.dbref
+        if dbref and dbref.startswith("#"):
+            dbref = dbref[1:]
+        return dbref
+    
+    def get_target_obj(self, combatant_entry):
+        """Get the target object from a combatant entry."""
         target_dbref = combatant_entry.get(DB_TARGET_DBREF)
         return self._get_char_by_dbref(target_dbref)
     
     def get_grappling_obj(self, combatant_entry):
-        """
-        Get the character being grappled by this combatant.
-        
-        Args:
-            combatant_entry: The combatant's entry dict
-            
-        Returns:
-            Character object or None
-        """
+        """Get the character being grappled by this combatant."""
         grappling_dbref = combatant_entry.get(DB_GRAPPLING_DBREF)
         return self._get_char_by_dbref(grappling_dbref)
     
     def get_grappled_by_obj(self, combatant_entry):
-        """
-        Get the character grappling this combatant.
-        
-        Args:
-            combatant_entry: The combatant's entry dict
-            
-        Returns:
-            Character object or None
-        """
+        """Get the character grappling this combatant."""
         grappled_by_dbref = combatant_entry.get(DB_GRAPPLED_BY_DBREF)
         return self._get_char_by_dbref(grappled_by_dbref)
 
     def set_target(self, char, target):
-        """
-        Set a new target for a combatant.
-        
-        Args:
-            char: The character setting a target
-            target: The target character (or None to clear)
-        """
+        """Set a new target for a combatant using dbref for persistence."""
         combatants = getattr(self.db, DB_COMBATANTS, [])
         for entry in combatants:
             if entry.get(DB_CHAR) == char:
@@ -666,24 +678,184 @@ class CombatHandler(DefaultScript):
                 char.msg("|yYou skip this combat round.|n")
                 continue
 
+            # START-OF-TURN NDB CLEANUP for charge flags
+            if hasattr(char.ndb, "charging_vulnerability_active"):
+                splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing charging_vulnerability_active for {char.key} (was active from their own previous charge).")
+                delattr(char.ndb, "charging_vulnerability_active")
+            
+            if hasattr(char.ndb, "charge_attack_bonus_active"):
+                splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing expired/unused charge_attack_bonus_active for {char.key}.")
+                delattr(char.ndb, "charge_attack_bonus_active")
+
             # Get combat action for this character
             combat_action = current_char_combat_entry.get("combat_action")
             splattercast.msg(f"AT_REPEAT: {char.key} combat_action: {combat_action}")
 
-            # Process the combat action
-            if combat_action == "grapple_initiate":
-                self._resolve_grapple_initiate(current_char_combat_entry, combatants_list)
-            elif combat_action == "grapple_join":
-                self._resolve_grapple_join(current_char_combat_entry, combatants_list)
-            elif combat_action == "release_grapple":
-                self._resolve_release_grapple(current_char_combat_entry, combatants_list)
-            else:
-                # Standard attack processing
-                target = self.get_target(char)
-                if target:
-                    self._process_attack(char, target, current_char_combat_entry, combatants_list)
+            # Check if character is yielding first
+            if current_char_combat_entry.get(DB_IS_YIELDING, False):
+                # Exception: Allow release grapple actions even when yielding
+                if combat_action == "release_grapple":
+                    splattercast.msg(f"{char.key} is yielding but can still release their grapple.")
+                    self._resolve_release_grapple(current_char_combat_entry, combatants_list)
                 else:
-                    splattercast.msg(f"AT_REPEAT: {char.key} has no valid target for attack.")
+                    splattercast.msg(f"{char.key} is yielding and takes no hostile action this turn.")
+                    char.location.msg_contents(f"|y{char.key} holds their action, appearing non-hostile.|n", exclude=[char])
+                    char.msg("|yYou hold your action, appearing non-hostile.|n")
+                continue
+                
+            # Handle being grappled (auto resist unless yielding)
+            grappler = self.get_grappled_by_obj(current_char_combat_entry)
+            if grappler:
+                # Safety check: prevent self-grappling and invalid grappler
+                if grappler == char:
+                    splattercast.msg(f"GRAPPLE_ERROR: {char.key} is grappled by themselves! Clearing invalid state.")
+                    current_char_combat_entry[DB_GRAPPLED_BY_DBREF] = None
+                    grappler = None
+                elif not any(e[DB_CHAR] == grappler for e in combatants_list):
+                    splattercast.msg(f"GRAPPLE_ERROR: {char.key} is grappled by {grappler.key} who is not in combat! Clearing invalid state.")
+                    current_char_combat_entry[DB_GRAPPLED_BY_DBREF] = None
+                    grappler = None
+                    
+            if grappler:
+                # Automatically attempt to escape
+                splattercast.msg(f"{char.key} is being grappled by {grappler.key} and automatically attempts to escape.")
+                char.msg(f"|yYou struggle against {grappler.key}'s grip!|n")
+                
+                # Setup an escape attempt
+                escaper_roll = randint(1, max(1, get_numeric_stat(char, "motorics", 1)))
+                grappler_roll = randint(1, max(1, get_numeric_stat(grappler, "motorics", 1)))
+                splattercast.msg(f"AUTO_ESCAPE_ATTEMPT: {char.key} (roll {escaper_roll}) vs {grappler.key} (roll {grappler_roll}).")
+
+                if escaper_roll > grappler_roll:
+                    # Success - clear grapple
+                    current_char_combat_entry[DB_GRAPPLED_BY_DBREF] = None
+                    grappler_entry = next((e for e in combatants_list if e[DB_CHAR] == grappler), None)
+                    if grappler_entry:
+                        grappler_entry[DB_GRAPPLING_DBREF] = None
+                        
+                    escape_messages = get_combat_message("grapple", "escape_hit", attacker=char, target=grappler)
+                    char.msg(escape_messages.get("attacker_msg", f"You break free from {grappler.key}'s grasp!"))
+                    grappler.msg(escape_messages.get("victim_msg", f"{char.key} breaks free from your grasp!"))
+                    obs_msg = escape_messages.get("observer_msg", f"{char.key} breaks free from {grappler.key}'s grasp!")
+                    char.location.msg_contents(obs_msg, exclude=[char, grappler])
+                    splattercast.msg(f"AUTO_ESCAPE_SUCCESS: {char.key} escaped from {grappler.key}.")
+                else:
+                    # Failure
+                    escape_messages = get_combat_message("grapple", "escape_miss", attacker=char, target=grappler)
+                    char.msg(escape_messages.get("attacker_msg", f"You struggle but fail to break free from {grappler.key}'s grasp!"))
+                    grappler.msg(escape_messages.get("victim_msg", f"{char.key} struggles but fails to break free from your grasp!"))
+                    obs_msg = escape_messages.get("observer_msg", f"{char.key} struggles but fails to break free from {grappler.key}'s grasp!")
+                    char.location.msg_contents(obs_msg, exclude=[char, grappler])
+                    splattercast.msg(f"AUTO_ESCAPE_FAIL: {char.key} failed to escape {grappler.key}.")
+                    
+                # Either way, turn ends after escape attempt
+                continue
+
+            # Process combat action intent
+            if combat_action:
+                splattercast.msg(f"AT_REPEAT: {char.key} has action_intent: {combat_action}")
+                
+                if isinstance(combat_action, str):
+                    if combat_action == "grapple_initiate":
+                        self._resolve_grapple_initiate(current_char_combat_entry, combatants_list)
+                        continue
+                    elif combat_action == "grapple_join":
+                        self._resolve_grapple_join(current_char_combat_entry, combatants_list)
+                        continue
+                    elif combat_action == "release_grapple":
+                        self._resolve_release_grapple(current_char_combat_entry, combatants_list)
+                        continue
+                elif isinstance(combat_action, dict):
+                    intent_type = combat_action.get("type")
+                    action_target_char = combat_action.get("target")
+                    
+                    # Validate target
+                    is_action_target_valid = False
+                    if action_target_char and any(e[DB_CHAR] == action_target_char for e in combatants_list):
+                        if action_target_char.location and action_target_char.location in getattr(self.db, DB_MANAGED_ROOMS, []):
+                            is_action_target_valid = True
+                    
+                    if not is_action_target_valid and action_target_char:
+                        char.msg(f"The target of your planned action ({action_target_char.key}) is no longer valid.")
+                        splattercast.msg(f"{char.key}'s action_intent target {action_target_char.key} is invalid. Intent cleared, falling through.")
+                    elif intent_type == "grapple" and is_action_target_valid:
+                        # Handle grapple intent
+                        can_grapple_target = (char.location == action_target_char.location)
+                        
+                        if can_grapple_target:
+                            # Proximity Check for Grapple
+                            if not hasattr(char.ndb, NDB_PROXIMITY): 
+                                setattr(char.ndb, NDB_PROXIMITY, set())
+                            if action_target_char not in getattr(char.ndb, NDB_PROXIMITY):
+                                char.msg(f"You need to be in melee proximity with {action_target_char.key} to grapple them. Try advancing or charging.")
+                                splattercast.msg(f"GRAPPLE FAIL (PROXIMITY): {char.key} not in proximity with {action_target_char.key}.")
+                                continue
+
+                            attacker_roll = randint(1, max(1, get_numeric_stat(char, "motorics", 1)))
+                            defender_roll = randint(1, max(1, get_numeric_stat(action_target_char, "motorics", 1)))
+                            splattercast.msg(f"GRAPPLE ATTEMPT: {char.key} (roll {attacker_roll}) vs {action_target_char.key} (roll {defender_roll}).")
+
+                            if attacker_roll > defender_roll:
+                                # Store dbrefs for persistence
+                                current_char_combat_entry[DB_GRAPPLING_DBREF] = self._get_dbref(action_target_char)
+                                target_entry = next((e for e in combatants_list if e[DB_CHAR] == action_target_char), None)
+                                if target_entry:
+                                    target_entry[DB_GRAPPLED_BY_DBREF] = self._get_dbref(char)
+                                
+                                grapple_messages = get_combat_message("grapple", "hit", attacker=char, target=action_target_char)
+                                char.msg(grapple_messages.get("attacker_msg"))
+                                action_target_char.msg(grapple_messages.get("victim_msg"))
+                                obs_msg = grapple_messages.get("observer_msg")
+                                if char.location:
+                                    char.location.msg_contents(obs_msg, exclude=[char, action_target_char])
+                                splattercast.msg(f"GRAPPLE SUCCESS: {char.key} grappled {action_target_char.key}.")
+                            else:
+                                # Grapple failed
+                                grapple_messages = get_combat_message("grapple", "miss", attacker=char, target=action_target_char)
+                                char.msg(grapple_messages.get("attacker_msg"))
+                                action_target_char.msg(grapple_messages.get("victim_msg"))
+                                obs_msg = grapple_messages.get("observer_msg")
+                                if char.location:
+                                    char.location.msg_contents(obs_msg, exclude=[char, action_target_char])
+                                splattercast.msg(f"GRAPPLE FAIL: {char.key} failed to grapple {action_target_char.key}.")
+                        else:
+                            char.msg(f"You can't reach {action_target_char.key} to grapple them from here.")
+                            splattercast.msg(f"GRAPPLE FAIL (REACH): {char.key} cannot reach {action_target_char.key}.")
+                        
+                        continue
+                    elif intent_type == "escape_grapple":
+                        grappler = self.get_grappled_by_obj(current_char_combat_entry)
+                        if grappler and any(e[DB_CHAR] == grappler for e in combatants_list):
+                            escaper_roll = randint(1, max(1, get_numeric_stat(char, "motorics", 1)))
+                            grappler_roll = randint(1, max(1, get_numeric_stat(grappler, "motorics", 1)))
+                            splattercast.msg(f"ESCAPE ATTEMPT: {char.key} (roll {escaper_roll}) vs {grappler.key} (roll {grappler_roll}).")
+
+                            if escaper_roll > grappler_roll:
+                                current_char_combat_entry[DB_GRAPPLED_BY_DBREF] = None
+                                grappler_entry = next((e for e in combatants_list if e[DB_CHAR] == grappler), None)
+                                if grappler_entry:
+                                    grappler_entry[DB_GRAPPLING_DBREF] = None
+                                escape_messages = get_combat_message("grapple", "escape_hit", attacker=char, target=grappler)
+                                char.msg(escape_messages.get("attacker_msg"))
+                                grappler.msg(escape_messages.get("victim_msg"))
+                                obs_msg = escape_messages.get("observer_msg")
+                                char.location.msg_contents(obs_msg, exclude=[char, grappler])
+                                splattercast.msg(f"ESCAPE SUCCESS: {char.key} escaped from {grappler.key}.")
+                            else:
+                                escape_messages = get_combat_message("grapple", "escape_miss", attacker=char, target=grappler)
+                                char.msg(escape_messages.get("attacker_msg"))
+                                grappler.msg(escape_messages.get("victim_msg"))
+                                obs_msg = escape_messages.get("observer_msg")
+                                char.location.msg_contents(obs_msg, exclude=[char, grappler])
+                                splattercast.msg(f"ESCAPE FAIL: {char.key} failed to escape {grappler.key}.")
+                        continue
+
+            # Standard attack processing - get target and attack
+            target = self.get_target(char)
+            if target:
+                self._process_attack(char, target, current_char_combat_entry, combatants_list)
+            else:
+                splattercast.msg(f"AT_REPEAT: {char.key} has no valid target for attack.")
 
             # Clear the combat action after processing
             current_char_combat_entry["combat_action"] = None
@@ -716,7 +888,6 @@ class CombatHandler(DefaultScript):
             return
         
         # Get weapon and weapon type
-        from world.combat.utils import get_wielded_weapon
         weapon = get_wielded_weapon(attacker)
         weapon_type = getattr(weapon, "db", {}).get("weapon_type", "unarmed") if weapon else "unarmed"
         
@@ -783,6 +954,13 @@ class CombatHandler(DefaultScript):
         
         # Remove from combat
         self.remove_combatant(victim)
+        
+        # Retarget any combatants who were targeting the deceased
+        combatants = getattr(self.db, DB_COMBATANTS, [])
+        for entry in combatants:
+            if self.get_target_obj(entry) == victim:
+                new_target = self.get_target(entry[DB_CHAR])
+                splattercast.msg(f"{entry[DB_CHAR].key} retargeted from slain {victim.key} to {new_target.key if new_target else 'None'}.")
 
     def _resolve_grapple_attempt(self, attacker_entry, target_entry):
         """Performs the opposed roll for a grapple."""
@@ -821,9 +999,8 @@ class CombatHandler(DefaultScript):
             advance_success = True
             splattercast.msg(f"GRAPPLE_INITIATE: {attacker.key} already in proximity with {target.key}.")
         else:
-            # Try to advance into proximity
-            from world.combat.proximity import proximity_opposed_roll
-            advance_success = proximity_opposed_roll(attacker, target)
+            # Try to advance into proximity using opposed roll
+            advance_success = opposed_roll(attacker, target, "motorics", "motorics")
             if advance_success:
                 establish_proximity(attacker, target)
                 splattercast.msg(f"GRAPPLE_INITIATE: {attacker.key} successfully advanced to {target.key}.")
@@ -881,9 +1058,8 @@ class CombatHandler(DefaultScript):
             advance_success = True
             splattercast.msg(f"GRAPPLE_JOIN: {attacker.key} already in proximity with {target.key}.")
         else:
-            # Try to advance into proximity
-            from world.combat.proximity import proximity_opposed_roll
-            advance_success = proximity_opposed_roll(attacker, target)
+            # Try to advance into proximity using opposed roll
+            advance_success = opposed_roll(attacker, target, "motorics", "motorics")
             if advance_success:
                 establish_proximity(attacker, target)
                 splattercast.msg(f"GRAPPLE_JOIN: {attacker.key} successfully advanced to {target.key}.")
