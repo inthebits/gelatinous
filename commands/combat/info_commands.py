@@ -58,19 +58,31 @@ class CmdLook(default_cmds.CmdLook):
             target_room = None
             
             splattercast.msg(f"CUSTOM_LOOK: Looking for exit matching '{aiming_direction}' in {current_location.key}")
+            splattercast.msg(f"CUSTOM_LOOK: Total exits in room: {len(current_location.exits)}")
             
             # Find the exit that matches the aiming direction
-            for ex in current_location.exits:
+            for i, ex in enumerate(current_location.exits):
+                splattercast.msg(f"CUSTOM_LOOK: Exit {i}: key='{ex.key}', type={type(ex)}")
+                
                 exit_aliases = getattr(ex, 'aliases', [])
+                splattercast.msg(f"CUSTOM_LOOK: Exit {i} aliases raw: {exit_aliases}, type: {type(exit_aliases)}")
+                
                 # Handle both list and manager cases
                 if hasattr(exit_aliases, 'all'):
                     exit_aliases = [alias.lower() for alias in exit_aliases.all()]
+                    splattercast.msg(f"CUSTOM_LOOK: Exit {i} aliases after .all(): {exit_aliases}")
                 else:
                     exit_aliases = [alias.lower() for alias in exit_aliases]
+                    splattercast.msg(f"CUSTOM_LOOK: Exit {i} aliases as list: {exit_aliases}")
                 
                 splattercast.msg(f"CUSTOM_LOOK: Checking exit {ex.key} (aliases: {exit_aliases}) vs direction '{aiming_direction}'")
                 
-                if ex.key.lower() == aiming_direction.lower() or aiming_direction.lower() in exit_aliases:
+                # Check key match
+                key_matches = ex.key.lower() == aiming_direction.lower()
+                alias_matches = aiming_direction.lower() in exit_aliases
+                splattercast.msg(f"CUSTOM_LOOK: Key matches: {key_matches}, Alias matches: {alias_matches}")
+                
+                if key_matches or alias_matches:
                     target_room = ex.destination
                     splattercast.msg(f"CUSTOM_LOOK: Found matching exit! Target room: {target_room.key if target_room else 'None'}")
                     break
