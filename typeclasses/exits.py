@@ -10,6 +10,7 @@ for allowing Characters to traverse the exit to its destination.
 from evennia.objects.objects import DefaultExit
 from evennia.comms.models import ChannelDB
 from world.combat.handler import get_or_create_combat 
+from world.combat.constants import SPLATTERCAST_CHANNEL, DB_CHAR 
 
 
 from .objects import ObjectParent
@@ -43,7 +44,7 @@ class Exit(DefaultExit):
             self.aliases.add(alias)
 
     def at_traverse(self, traversing_object, target_location):
-        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
         # --- AIMING LOCK CHECK ---
         aimer = getattr(traversing_object.ndb, "aimed_at_by", None)
@@ -74,9 +75,17 @@ class Exit(DefaultExit):
         # --- PROXIMITY CLEANUP ON ROOM CHANGE ---
         # Clear proximity relationships when moving between rooms (except during combat dragging)
         handler = getattr(traversing_object.ndb, "combat_handler", None)
-        is_being_dragged = (handler and 
-                           any(e["char"] == traversing_object and 
-                               handler.get_grappled_by_obj(e) for e in handler.db.combatants))
+        is_being_dragged = False
+        if handler:
+            combatants = getattr(handler.db, "combatants", None)
+            if combatants:
+                try:
+                    is_being_dragged = any(e.get(DB_CHAR) == traversing_object and 
+                                         handler.get_grappled_by_obj(e) for e in combatants)
+                except (TypeError, AttributeError) as ex:
+                    # Log the error but don't crash traversal
+                    splattercast.msg(f"TRAVERSE_ERROR: Error checking grapple status for {traversing_object.key}: {ex}")
+                    is_being_dragged = False
         
         if not is_being_dragged and hasattr(traversing_object.ndb, "in_proximity_with"):
             if isinstance(traversing_object.ndb.in_proximity_with, set) and traversing_object.ndb.in_proximity_with:
