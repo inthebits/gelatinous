@@ -367,6 +367,7 @@ class CmdAim(Command):
             current_target.msg(f"|g{caller.key} stops aiming at you.|n")
             
         if current_direction:
+            splattercast.msg(f"AIM_DEBUG: Clearing existing aiming_direction '{current_direction}' for {caller.key}")
             delattr(caller.ndb, "aiming_direction")
 
         # Try to find target in current room first
@@ -453,6 +454,10 @@ class CmdAim(Command):
                 
                 # Set direction aiming
                 setattr(caller.ndb, "aiming_direction", direction)
+                
+                # Debug: Verify the direction was set
+                splattercast.msg(f"AIM_DEBUG: Set aiming_direction to '{direction}' for {caller.key}")
+                splattercast.msg(f"AIM_DEBUG: Verification - getattr result: '{getattr(caller.ndb, 'aiming_direction', 'NOT_FOUND')}'")
                 
                 caller.msg(f"|yYou take careful aim {direction}.|n")
                 caller.location.msg_contents(
