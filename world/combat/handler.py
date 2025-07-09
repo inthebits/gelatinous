@@ -304,6 +304,11 @@ class CombatHandler(DefaultScript):
         # Debug: Show what parameters were passed
         splattercast.msg(f"ADD_COMBATANT_PARAMS: char={char.key if char else None}, target={target.key if target else None}")
         
+        # Prevent self-targeting
+        if target and char == target:
+            splattercast.msg(f"ADD_COMBATANT_ERROR: {char.key} cannot target themselves! Setting target to None.")
+            target = None
+        
         # Check if already in combat
         combatants = getattr(self.db, DB_COMBATANTS, [])
         for entry in combatants:
@@ -474,6 +479,12 @@ class CombatHandler(DefaultScript):
     def set_target(self, char, target):
         """Set a new target for a combatant using dbref for persistence."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Prevent self-targeting
+        if char == target:
+            splattercast.msg(f"SET_TARGET_ERROR: {char.key} cannot target themselves!")
+            return False
+        
         combatants = getattr(self.db, DB_COMBATANTS, [])
         for entry in combatants:
             if entry.get(DB_CHAR) == char:
@@ -481,9 +492,10 @@ class CombatHandler(DefaultScript):
                 entry[DB_TARGET_DBREF] = target_dbref
                 setattr(self.db, DB_COMBATANTS, combatants)
                 splattercast.msg(f"SET_TARGET: {char.key} -> {target.key} (dbref: {target_dbref})")
-                break
+                return True
         else:
             splattercast.msg(f"SET_TARGET_ERROR: Could not find combat entry for {char.key}")
+            return False
 
     def get_target(self, char):
         """
@@ -515,18 +527,18 @@ class CombatHandler(DefaultScript):
         if not target or target not in valid_chars:
             splattercast.msg(f"GET_TARGET: {char.key} has no valid target or their target is not in combat. Valid chars: {[c.key for c in valid_chars]}")
             splattercast.msg(f"GET_TARGET: {char.key} current target: {target.key if target else None}, target in valid_chars: {target in valid_chars if target else 'N/A'}")
-            attackers = [
-                e.get(DB_CHAR) for e in combatants 
-                if self.get_target_obj(e) == char and e.get(DB_CHAR) != char
-            ]
-            splattercast.msg(f"GET_TARGET: Attackers targeting {char.key}: {[a.key for a in attackers]}.")
+            
+            # Find valid targets (all other combatants except self)
+            potential_targets = [c for c in valid_chars if c != char]
+            splattercast.msg(f"GET_TARGET: Potential targets for {char.key}: {[t.key for t in potential_targets]}")
 
-            if not attackers:
-                splattercast.msg(f"GET_TARGET: {char.key} has no offensive target and is not being targeted by anyone for an attack. Potential for disengagement.")
+            if not potential_targets:
+                splattercast.msg(f"GET_TARGET: {char.key} has no valid targets available. Potential for disengagement.")
                 return None
             else:
-                target = attackers[0]
-                splattercast.msg(f"GET_TARGET: {char.key} retargeting to {target.key}.")
+                # Choose the first available target instead of complex retargeting logic
+                target = potential_targets[0]
+                splattercast.msg(f"GET_TARGET: {char.key} retargeting to first available target {target.key}.")
                 self.set_target(char, target)
         else:
             splattercast.msg(f"GET_TARGET: {char.key} keeps current target {target.key}.")
