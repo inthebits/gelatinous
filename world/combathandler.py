@@ -1368,9 +1368,42 @@ class CombatHandler(DefaultScript):
         splattercast.msg(f"RELEASE GRAPPLE DEBUG: Before release - {attacker.key} grappling_dbref: {attacker_entry.get('grappling_dbref')}")
         splattercast.msg(f"RELEASE GRAPPLE DEBUG: Before release - {victim_char_being_grappled.key} grappled_by_dbref: {victim_entry.get('grappled_by_dbref')}")
         
+        # Check if grappler is yielding to determine victim's post-release state
+        grappler_is_yielding = attacker_entry.get("is_yielding", False)
+        
         # Clear the grapple relationship on both sides
         attacker_entry["grappling_dbref"] = None
         victim_entry["grappled_by_dbref"] = None
+        
+        # Post-release victim state logic
+        if grappler_is_yielding:
+            # Peaceful release - look for other attackers
+            victim_attackers = [
+                e for e in combatants_list 
+                if (self.get_target_obj(e) == victim_char_being_grappled and 
+                    e["char"] != attacker and  # Not the grappler
+                    not e.get("is_yielding", False))  # Not yielding
+            ]
+            
+            if victim_attackers:
+                # Victim has other attackers - target the first one
+                new_target = victim_attackers[0]["char"]
+                victim_entry["target_dbref"] = self._get_dbref(new_target)
+                victim_entry["is_yielding"] = False
+                splattercast.msg(f"RELEASE_LOGIC: {victim_char_being_grappled.key} auto-targets attacker {new_target.key} after peaceful release.")
+                victim_char_being_grappled.msg(f"|rAs {attacker.get_display_name(victim_char_being_grappled)} releases you, you immediately focus on {new_target.get_display_name(victim_char_being_grappled)} who is still threatening you!|n")
+            else:
+                # Peaceful release, no other threats
+                victim_entry["target_dbref"] = None
+                victim_entry["is_yielding"] = True
+                splattercast.msg(f"RELEASE_LOGIC: {victim_char_being_grappled.key} yields after peaceful release (no other attackers).")
+                victim_char_being_grappled.msg(f"|gAs {attacker.get_display_name(victim_char_being_grappled)} peacefully releases you, you relax and lower your guard.|n")
+        else:
+            # Non-peaceful release (grappler not yielding) - victim becomes defensive but doesn't yield
+            victim_entry["target_dbref"] = self._get_dbref(attacker)  # Target the grappler
+            victim_entry["is_yielding"] = False
+            splattercast.msg(f"RELEASE_LOGIC: {victim_char_being_grappled.key} targets {attacker.key} after non-peaceful release.")
+            victim_char_being_grappled.msg(f"|rAs {attacker.get_display_name(victim_char_being_grappled)} releases you, you remain ready to defend yourself!|n")
         
         # Debug after release
         splattercast.msg(f"RELEASE GRAPPLE DEBUG: After release - {attacker.key} grappling_dbref: {attacker_entry.get('grappling_dbref')}")
