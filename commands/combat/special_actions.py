@@ -395,7 +395,63 @@ class CmdAim(Command):
             splattercast.msg(f"AIM_DEBUG: No target found by search")
         
         if target and hasattr(target, 'key'):
-            # Target found in room - prevent self-targeting
+            # Check if the "target" is actually an exit - if so, treat as direction aiming
+            if hasattr(target, 'destination') and target.destination:
+                splattercast.msg(f"AIM_DEBUG: Found object is an exit, treating as direction aiming")
+                # This is an exit, treat as direction aiming instead of target aiming
+                direction = args.strip().lower()
+                
+                # Clear any existing aim first
+                current_target = getattr(caller.ndb, "aiming_at", None)
+                current_direction = getattr(caller.ndb, "aiming_direction", None)
+                
+                if current_target:
+                    if hasattr(current_target, "ndb") and hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
+                        delattr(current_target.ndb, "aimed_at_by")
+                    delattr(caller.ndb, "aiming_at")
+                    current_target.msg(f"|g{caller.key} stops aiming at you.|n")
+                    
+                if current_direction:
+                    splattercast.msg(f"AIM_DEBUG: Clearing existing aiming_direction '{current_direction}' for {caller.key}")
+                    delattr(caller.ndb, "aiming_direction")
+                
+                # Check if caller has a ranged weapon for direction aiming
+                hands = getattr(caller, "hands", {})
+                weapon = next((item for hand, item in hands.items() if item), None)
+                
+                is_ranged_weapon = False
+                if weapon:
+                    weapon_db = getattr(weapon, "db", None)
+                    if weapon_db:
+                        is_ranged_weapon = getattr(weapon_db, "is_ranged", False)
+                
+                if not is_ranged_weapon:
+                    caller.msg("|rYou need a ranged weapon to aim in a direction.|n")
+                    return
+                
+                # Set direction aiming
+                setattr(caller.ndb, "aiming_direction", direction)
+                
+                # Debug: Verify the direction was set
+                splattercast.msg(f"AIM_DEBUG: Set aiming_direction to '{direction}' for {caller.key}")
+                splattercast.msg(f"AIM_DEBUG: Verification - getattr result: '{getattr(caller.ndb, 'aiming_direction', 'NOT_FOUND')}'")
+                splattercast.msg(f"AIM_DEBUG: Direct ndb check: hasattr={hasattr(caller.ndb, 'aiming_direction')}")
+                
+                # Test retrieval immediately
+                test_direction = getattr(caller.ndb, "aiming_direction", None)
+                splattercast.msg(f"AIM_DEBUG: Immediate test retrieval: '{test_direction}'")
+                
+                caller.msg(f"|yYou take careful aim {direction}.|n")
+                caller.location.msg_contents(
+                    f"|y{caller.key} takes careful aim {direction}.|n",
+                    exclude=[caller]
+                )
+                
+                splattercast.msg(f"AIM_DIRECTION: {caller.key} is now aiming {direction}.")
+                caller.msg("|gYour next ranged attack in this direction will have improved accuracy.|n")
+                return
+            
+            # Target found in room and it's not an exit - prevent self-targeting
             if target == caller:
                 caller.msg(MSG_AIM_SELF_TARGET)
                 return
