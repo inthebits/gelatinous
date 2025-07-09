@@ -19,6 +19,12 @@ DEFAULT_RESONANCE = 1
 DEFAULT_INTELLECT = 1
 DEFAULT_MOTORICS = 1
 
+# G.R.I.M. stat names (for attribute access)
+STAT_GRIT = "grit"
+STAT_RESONANCE = "resonance" 
+STAT_INTELLECT = "intellect"
+STAT_MOTORICS = "motorics"
+
 # Health system
 DEFAULT_HP = 10
 HP_GRIT_MULTIPLIER = 2
