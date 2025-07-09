@@ -20,7 +20,7 @@ DEFAULT_INTELLECT = 1
 DEFAULT_MOTORICS = 1
 
 # G.R.I.M. stat names (for attribute access)
-STAT_GRIT = "grit"
+STAT_GRIT = "grit"  # Force cache refresh
 STAT_RESONANCE = "resonance" 
 STAT_INTELLECT = "intellect"
 STAT_MOTORICS = "motorics"
