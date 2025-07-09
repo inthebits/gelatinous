@@ -449,8 +449,11 @@ class CombatHandler(DefaultScript):
     
     def get_target_obj(self, combatant_entry):
         """Get the target object from a combatant entry."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         target_dbref = combatant_entry.get(DB_TARGET_DBREF)
-        return self._get_char_by_dbref(target_dbref)
+        target = self._get_char_by_dbref(target_dbref)
+        splattercast.msg(f"GET_TARGET_OBJ: dbref={target_dbref} -> target={target.key if target else None}")
+        return target
     
     def get_grappling_obj(self, combatant_entry):
         """Get the character being grappled by this combatant."""
@@ -464,12 +467,17 @@ class CombatHandler(DefaultScript):
 
     def set_target(self, char, target):
         """Set a new target for a combatant using dbref for persistence."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         combatants = getattr(self.db, DB_COMBATANTS, [])
         for entry in combatants:
             if entry.get(DB_CHAR) == char:
-                entry[DB_TARGET_DBREF] = self._get_dbref(target)
+                target_dbref = self._get_dbref(target)
+                entry[DB_TARGET_DBREF] = target_dbref
                 setattr(self.db, DB_COMBATANTS, combatants)
+                splattercast.msg(f"SET_TARGET: {char.key} -> {target.key} (dbref: {target_dbref})")
                 break
+        else:
+            splattercast.msg(f"SET_TARGET_ERROR: Could not find combat entry for {char.key}")
 
     def get_target(self, char):
         """
@@ -486,30 +494,35 @@ class CombatHandler(DefaultScript):
         entry = next((e for e in combatants if e.get(DB_CHAR) == char), None)
         
         if not entry:
-            splattercast.msg(f"No combat entry found for {char.key}.")
+            splattercast.msg(f"GET_TARGET: No combat entry found for {char.key}.")
             return None
+        
+        # Debug: Show the entry details
+        target_dbref = entry.get(DB_TARGET_DBREF)
+        splattercast.msg(f"GET_TARGET: {char.key} entry has target_dbref={target_dbref}")
             
         # Get target using dbref
         target = self.get_target_obj(entry)
+        splattercast.msg(f"GET_TARGET: {char.key} resolved target_dbref to target={target.key if target else None}")
         
         valid_chars = [e.get(DB_CHAR) for e in combatants]
         if not target or target not in valid_chars:
-            splattercast.msg(f"{char.key} has no valid target or their target is not in combat.")
+            splattercast.msg(f"GET_TARGET: {char.key} has no valid target or their target is not in combat. Valid chars: {[c.key for c in valid_chars]}")
             attackers = [
                 e.get(DB_CHAR) for e in combatants 
                 if self.get_target_obj(e) == char and e.get(DB_CHAR) != char
             ]
-            splattercast.msg(f"Attackers targeting {char.key}: {[a.key for a in attackers]}.")
+            splattercast.msg(f"GET_TARGET: Attackers targeting {char.key}: {[a.key for a in attackers]}.")
 
             if not attackers:
-                splattercast.msg(f"{char.key} has no offensive target and is not being targeted by anyone for an attack. Potential for disengagement.")
+                splattercast.msg(f"GET_TARGET: {char.key} has no offensive target and is not being targeted by anyone for an attack. Potential for disengagement.")
                 return None
             else:
                 target = attackers[0]
-                splattercast.msg(f"{char.key} retargeting to {target.key}.")
+                splattercast.msg(f"GET_TARGET: {char.key} retargeting to {target.key}.")
                 self.set_target(char, target)
         else:
-            splattercast.msg(f"{char.key} keeps current target {target.key}.")
+            splattercast.msg(f"GET_TARGET: {char.key} keeps current target {target.key}.")
         return target
 
     def get_initiative_order(self):
