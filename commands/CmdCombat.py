@@ -718,9 +718,18 @@ class CmdRetreat(Command):
             # Retreat means breaking proximity with *everyone* they were near.
             if grappling_victim: 
                 victim_entry = next((e for e in handler.db.combatants if e["char"] == grappling_victim), None)
-                caller_entry["grappling_dbref"] = None # Clear on caller's entry
-                if victim_entry:
-                    victim_entry["grappled_by_dbref"] = None # Clear on victim's entry
+                
+                # Use proper SaverList updating pattern
+                combatants_list = list(handler.db.combatants)
+                for i, entry in enumerate(combatants_list):
+                    if entry["char"] == caller:
+                        combatants_list[i] = dict(entry)  # Deep copy
+                        combatants_list[i]["grappling_dbref"] = None
+                    elif entry["char"] == grappling_victim:
+                        combatants_list[i] = dict(entry)  # Deep copy
+                        combatants_list[i]["grappled_by_dbref"] = None
+                handler.db.combatants = combatants_list
+                
                 caller.msg(f"|yYour retreat also breaks your grapple on {grappling_victim.get_display_name(caller)}.|n")
                 if grappling_victim.access(caller, "view"): 
                     grappling_victim.msg(f"|y{caller.get_display_name(grappling_victim)} retreats, breaking their grapple on you!|n")
