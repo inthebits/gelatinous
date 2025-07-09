@@ -890,47 +890,126 @@ class CombatHandler(DefaultScript):
         # Get weapon and weapon type
         weapon = get_wielded_weapon(attacker)
         weapon_type = getattr(weapon, "db", {}).get("weapon_type", "unarmed") if weapon else "unarmed"
+        is_ranged_weapon = weapon and hasattr(weapon, "db") and getattr(weapon.db, "is_ranged", False)
         
-        # Calculate attack and defense rolls
-        attack_roll = randint(1, 20) + get_numeric_stat(attacker, "motorics", 0)
-        defense_roll = randint(1, 20) + get_numeric_stat(target, "motorics", 0)
+        # Check proximity and weapon compatibility
+        attack_has_disadvantage = False
+        if attacker.location == target.location:
+            # Same room - check proximity
+            attacker_proximity = getattr(attacker.ndb, NDB_PROXIMITY, set())
+            is_in_melee_proximity = target in attacker_proximity
+            
+            if is_in_melee_proximity and is_ranged_weapon:
+                # Ranged weapon in melee - apply disadvantage
+                attacker.msg(f"|yYou struggle to aim your {weapon.key if weapon else 'weapon'} effectively while locked in melee with {target.key}. You attack at disadvantage.|n")
+                attack_has_disadvantage = True
+                splattercast.msg(f"ATTACK_DISADVANTAGE: {attacker.key} using ranged weapon in melee vs {target.key}")
+            elif not is_in_melee_proximity and not is_ranged_weapon:
+                # Melee weapon at range - invalid
+                attacker.msg(f"|rYou are too far away to hit {target.key} with your {weapon.key if weapon else 'fists'}. Try advancing or charging.|n")
+                splattercast.msg(f"ATTACK_INVALID: {attacker.key} trying melee attack at range vs {target.key}")
+                return
+        elif target.location not in getattr(self.db, DB_MANAGED_ROOMS, []):
+            # Target not in managed rooms
+            attacker.msg(f"|r{target.key} is not in the current combat zone.|n")
+            return
+        elif not is_ranged_weapon:
+            # Different rooms but no ranged weapon
+            attacker.msg(f"|rYou need a ranged weapon to attack {target.key} in {target.location.key}.|n")
+            return
         
-        splattercast.msg(f"ATTACK_ROLL: {attacker.key} rolls {attack_roll} vs {target.key} defense {defense_roll}")
+        # Calculate attack rolls (with disadvantage if applicable)
+        attacker_grit = get_numeric_stat(attacker, "grit", 1)
+        if attack_has_disadvantage:
+            # Roll twice, take the lower
+            roll1 = randint(1, max(1, attacker_grit))
+            roll2 = randint(1, max(1, attacker_grit))
+            attack_roll_base = min(roll1, roll2)
+            splattercast.msg(f"ATTACK_DISADVANTAGE_ROLL: {attacker.key} rolls {roll1}, {roll2} -> {attack_roll_base} (disadvantage)")
+        else:
+            attack_roll_base = randint(1, max(1, attacker_grit))
         
-        if attack_roll > defense_roll:
+        # Defense roll
+        defense_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
+        # Defense roll
+        defense_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
+        
+        splattercast.msg(f"ATTACK_ROLL: {attacker.key} (attack {attack_roll_base}) vs {target.key} (defense {defense_roll})")
+        
+        # Determine if grappling this target
+        grappling_this_target = self.get_grappling_obj(attacker_entry) == target
+        effective_weapon_type = "grapple" if grappling_this_target else weapon_type
+        
+        if attack_roll_base > defense_roll:
             # Hit - calculate damage
-            damage = 1 + max(0, get_numeric_stat(attacker, "grit", 1) - 1)
-            if weapon:
-                damage += getattr(weapon.db, "damage", 0)
+            damage = max(1, get_numeric_stat(attacker, "grit", 1))
+            
+            # Check for body shield mechanics if target is grappled
+            actual_target = target
+            if grappling_this_target:
+                # Target is grappling someone - they might use them as a shield
+                target_grappling = self.get_grappling_obj(target_entry)
+                if target_grappling and target_grappling != attacker:
+                    # Body shield check
+                    target_positioning_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
+                    shield_evasion_roll = randint(1, max(1, get_numeric_stat(target_grappling, "motorics", 1)))
+                    
+                    if target_positioning_roll > shield_evasion_roll:
+                        actual_target = target_grappling
+                        shield_msg = f"|c{target.key} yanks {target_grappling.key} in the way! {target_grappling.key} takes the hit!|n"
+                        attacker.location.msg_contents(shield_msg, exclude=[target, target_grappling])
+                        splattercast.msg(f"BODY_SHIELD: {target.key} used {target_grappling.key} as shield successfully")
+                    else:
+                        shield_fail_msg = f"|y{target.key} tries to use {target_grappling.key} as a shield but fails!|n"
+                        attacker.location.msg_contents(shield_fail_msg, exclude=[target, target_grappling])
             
             # Apply damage
-            target_hp = getattr(target, "hp", 10)
-            new_hp = max(0, target_hp - damage)
-            target.hp = new_hp
+            if hasattr(actual_target, "take_damage"):
+                actual_target.take_damage(damage)
+            else:
+                # Fallback HP system
+                current_hp = getattr(actual_target, "hp", 10)
+                actual_target.hp = max(0, current_hp - damage)
             
-            # Get and send hit messages
-            hit_messages = get_combat_message(weapon_type, "hit", attacker=attacker, target=target, item=weapon, damage=damage)
-            attacker.msg(hit_messages.get("attacker_msg", f"You hit {target.key}!"))
-            target.msg(hit_messages.get("victim_msg", f"{attacker.key} hits you!"))
+            # Check if target died
+            is_dead = False
+            if hasattr(actual_target, "is_dead"):
+                is_dead = actual_target.is_dead()
+            else:
+                is_dead = getattr(actual_target, "hp", 10) <= 0
+            
+            # Get and send appropriate messages
+            if is_dead:
+                hit_messages = get_combat_message(effective_weapon_type, "kill", 
+                                                  attacker=attacker, target=actual_target, item=weapon, damage=damage)
+                self._handle_death(actual_target, attacker, effective_weapon_type, weapon)
+            else:
+                hit_messages = get_combat_message(effective_weapon_type, "hit", 
+                                                  attacker=attacker, target=actual_target, item=weapon, damage=damage)
+            
+            attacker.msg(hit_messages.get("attacker_msg", f"You hit {actual_target.key}!"))
+            actual_target.msg(hit_messages.get("victim_msg", f"{attacker.key} hits you!"))
             
             # Send observer message to room
-            obs_msg = hit_messages.get("observer_msg", f"{attacker.key} hits {target.key}!")
-            attacker.location.msg_contents(obs_msg, exclude=[attacker, target])
+            obs_msg = hit_messages.get("observer_msg", f"{attacker.key} hits {actual_target.key}!")
+            for location in {attacker.location, actual_target.location}:
+                if location:
+                    location.msg_contents(obs_msg, exclude=[attacker, actual_target])
             
-            splattercast.msg(f"HIT: {attacker.key} hits {target.key} for {damage} damage. {target.key} HP: {new_hp}")
-            
-            # Check for death
-            if new_hp <= 0:
-                self._handle_death(target, attacker, weapon_type, weapon)
+            splattercast.msg(f"HIT: {attacker.key} hits {actual_target.key} for {damage} damage (dead: {is_dead})")
                 
         else:
             # Miss
-            miss_messages = get_combat_message(weapon_type, "miss", attacker=attacker, target=target, item=weapon)
+            miss_phase = "grapple_damage_miss" if grappling_this_target else "miss"
+            miss_messages = get_combat_message(effective_weapon_type, miss_phase, 
+                                               attacker=attacker, target=target, item=weapon)
             attacker.msg(miss_messages.get("attacker_msg", f"You miss {target.key}!"))
             target.msg(miss_messages.get("victim_msg", f"{attacker.key} misses you!"))
             
             obs_msg = miss_messages.get("observer_msg", f"{attacker.key} misses {target.key}!")
-            attacker.location.msg_contents(obs_msg, exclude=[attacker, target])
+            for location in {attacker.location, target.location}:
+                if location:
+                    location.msg_contents(obs_msg, exclude=[attacker, target])
             
             splattercast.msg(f"MISS: {attacker.key} misses {target.key}")
     
