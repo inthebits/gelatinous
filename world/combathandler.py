@@ -373,7 +373,13 @@ class CombatHandler(DefaultScript):
 
         # Convert SaverList to regular list to avoid corruption during modifications
         # All modifications will be done on this list, then saved back at the end
-        combatants_list = list(self.db.combatants) if self.db.combatants else []
+        # Use deep copy to ensure nested dictionaries are also converted from SaverList
+        combatants_list = []
+        if self.db.combatants:
+            for entry in self.db.combatants:
+                # Convert each entry to a regular dict to avoid SaverList issues
+                regular_entry = dict(entry)
+                combatants_list.append(regular_entry)
         splattercast.msg(f"AT_REPEAT_DEBUG: Converted SaverList to regular list with {len(combatants_list)} entries")
 
         valid_combatants_entries = []
@@ -1184,6 +1190,10 @@ class CombatHandler(DefaultScript):
             # The initiator should be yielding (defense-oriented)
             attacker_entry["is_yielding"] = True
             
+            # Save the grapple state changes to the database
+            self.db.combatants = combatants_list
+            splattercast.msg(f"GRAPPLE_SET_STATE: {attacker.key} grappling_dbref={self._get_dbref(target)}, {target.key} grappled_by_dbref={self._get_dbref(attacker)}")
+            
             splattercast.msg(f"GRAPPLE_RESOLVE (INITIATE): {attacker.key} succeeded against {target.key}.")
             return True
         else:
@@ -1262,6 +1272,37 @@ class CombatHandler(DefaultScript):
                 # Give target a bonus attack
                 self.resolve_bonus_attack(target, attacker)
                 return False
+
+        # If advance succeeded, attempt the grapple
+        if advance_success and self._resolve_grapple_attempt(attacker_entry, target_entry):
+            # Success - establish grapple
+            attacker.msg(f"|gYou successfully grapple {target.get_display_name(attacker)}!|n")
+            target.msg(f"|r{attacker.get_display_name(target)} grapples you!|n")
+            attacker.location.msg_contents(
+                f"|r{attacker.get_display_name(attacker.location)} grapples {target.get_display_name(attacker.location)}!|n",
+                exclude=[attacker, target]
+            )
+            
+            # Set grapple state using dbrefs
+            attacker_entry["grappling_dbref"] = self._get_dbref(target)
+            target_entry["grappled_by_dbref"] = self._get_dbref(attacker)
+            
+            # Save the grapple state changes to the database
+            self.db.combatants = combatants_list
+            
+            splattercast.msg(f"GRAPPLE_RESOLVE (JOIN): {attacker.key} succeeded against {target.key}.")
+            return True
+        else:
+            # Grapple failed
+            attacker.msg(f"|yYou fail to grapple {target.get_display_name(attacker)}.|n")
+            target.msg(f"|y{attacker.get_display_name(target)} tries to grapple you but fails.|n")
+            attacker.location.msg_contents(
+                f"|y{attacker.get_display_name(attacker.location)} tries to grapple {target.get_display_name(attacker.location)} but fails.|n",
+                exclude=[attacker, target]
+            )
+            
+            splattercast.msg(f"GRAPPLE_RESOLVE (JOIN): {attacker.key} failed against {target.key}.")
+            return False
 
     # Add this method to resolve a bonus attack when an attacker fails a grapple
     def resolve_bonus_attack(self, attacker, victim):
