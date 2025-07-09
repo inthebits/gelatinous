@@ -197,7 +197,12 @@ class CombatHandler(DefaultScript):
         
         if should_delete_script:
             splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Deleting handler script {self.key}.")
-            self.delete()
+            # Only delete if the handler has been saved to the database
+            if hasattr(self, 'id') and self.id:
+                self.delete()
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Successfully deleted handler {self.key}.")
+            else:
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} was not saved to database, skipping delete.")
         else:
             # Stop the ticker
             splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} is not being deleted. Calling self.stop() to halt ticker.")
@@ -284,7 +289,13 @@ class CombatHandler(DefaultScript):
         # Stop and clean up the other handler
         other_handler.stop_combat_logic(cleanup_combatants=False)
         other_handler.stop()
-        other_handler.delete()
+        
+        # Only delete if the handler has been saved to the database
+        if hasattr(other_handler, 'id') and other_handler.id:
+            other_handler.delete()
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE: Deleted other handler {other_handler.key}.")
+        else:
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE: Other handler {other_handler.key} was not saved to database, skipping delete.")
         
         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE: Merged {other_handler.key} into {self.key}. Now managing {len(our_rooms)} rooms with {len(our_combatants)} combatants.")
 
