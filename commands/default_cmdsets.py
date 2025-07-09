@@ -22,6 +22,7 @@ from commands import CmdAdmin
 from commands.CmdSpawnMob import CmdSpawnMob
 from commands.combat.cmdset_combat import CombatCmdSet
 from commands.combat.info_commands import CmdLook
+from commands.combat.special_actions import CmdAim
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
     The `CharacterCmdSet` contains general in-game commands like `look`,
@@ -47,6 +48,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         
         # Override default look command with enhanced one that supports aiming
         self.add(CmdLook)
+        
+        # Add aim command for ranged combat preparation
+        self.add(CmdAim)
         
         # Add the entire combat command set
         self.add(CombatCmdSet)
