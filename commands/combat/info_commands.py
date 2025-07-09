@@ -32,6 +32,7 @@ class CmdLook(default_cmds.CmdLook):
     key = "look"
     aliases = ["l"]
     locks = "cmd:all()"
+    priority = 101  # Higher than default commands to ensure this overrides Evennia's look
 
     def func(self):
         """
@@ -43,8 +44,13 @@ class CmdLook(default_cmds.CmdLook):
         caller = self.caller
         args = self.args.strip()
         
+        # Debug: Log that our custom look command is being called
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"CUSTOM_LOOK: {caller.key} using enhanced look command with args='{args}'")
+        
         # Check if caller is aiming in a direction and no specific target was given
         aiming_direction = getattr(caller.ndb, "aiming_direction", None)
+        splattercast.msg(f"CUSTOM_LOOK: {caller.key} aiming_direction={aiming_direction}")
         
         if not args and aiming_direction:
             # Player typed 'look' while aiming in a direction - show the aimed room
