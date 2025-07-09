@@ -1702,7 +1702,7 @@ class CmdReleaseGrapple(Command):
             splattercast.msg(f"{caller.key} tried to release grapple but is not grappling anyone.")
             return
             
-        caller_entry["combat_action"] = {"type": "release_grapple"} 
+        caller_entry["combat_action"] = "release_grapple"
         caller.msg(f"You prepare to release {grappled_victim.key}...")
         splattercast.msg(f"{caller.key} sets combat action to release grapple on {grappled_victim.key}.")
         # The combat handler will process this

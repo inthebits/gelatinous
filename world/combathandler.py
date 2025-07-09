@@ -462,6 +462,14 @@ class CombatHandler(DefaultScript):
                     self.db.combatants = combatants_list
                     continue  # End turn for this combatant
 
+                elif action == "release_grapple":
+                    splattercast.msg(f"AT_REPEAT: {char.key} attempting release_grapple.")
+                    self._resolve_release_grapple(current_char_combat_entry, combatants_list)
+                    current_char_combat_entry["combat_action"] = None
+                    # Save combatants list before ending turn
+                    self.db.combatants = combatants_list
+                    continue  # End turn for this combatant
+
             # --- Initialize attack condition flags for this turn ---
             attack_has_disadvantage = False # NEW FLAG
 
@@ -505,7 +513,7 @@ class CombatHandler(DefaultScript):
             # Safety check: prevent self-grappling and invalid grappler
             if grappler:
                 if grappler == char:
-                    splattercast.msg(f"GRAPPLE_ERROR: {char.key} is somehow grappled by themselves! Clearing invalid state.")
+                    splattercast.msg(f"GRAPPLE_ERROR: {char.key} is grappled by themselves! Clearing invalid state.")
                     splattercast.msg(f"GRAPPLE_CLEAR_DEBUG: Clearing {char.key}'s grappled_by_dbref due to self-grappling")
                     current_char_combat_entry["grappled_by_dbref"] = None
                     grappler = None
@@ -697,21 +705,34 @@ class CombatHandler(DefaultScript):
                             is_victim_valid = True
                     
                     if is_victim_valid:
-                        current_char_combat_entry["grappling_dbref"] = None
+                        splattercast.msg(f"RELEASE GRAPPLE DEBUG: Before release - {char.key} grappling_dbref: {current_char_combat_entry.get('grappling_dbref')}")
                         victim_entry = next((e for e in combatants_list if e["char"] == victim_char_being_grappled), None)
                         if victim_entry:
+                            splattercast.msg(f"RELEASE GRAPPLE DEBUG: Before release - {victim_char_being_grappled.key} grappled_by_dbref: {victim_entry.get('grappled_by_dbref')}")
+                        
+                        current_char_combat_entry["grappling_dbref"] = None
+                        if victim_entry:
                             victim_entry["grappled_by_dbref"] = None
+                        # Save the changes immediately
+                        self.db.combatants = combatants_list
+                        
+                        splattercast.msg(f"RELEASE GRAPPLE DEBUG: After release - {char.key} grappling_dbref: {current_char_combat_entry.get('grappling_dbref')}")
+                        if victim_entry:
+                            splattercast.msg(f"RELEASE GRAPPLE DEBUG: After release - {victim_char_being_grappled.key} grappled_by_dbref: {victim_entry.get('grappled_by_dbref')}")
+                        
                         release_messages = get_combat_message("grapple", "release", attacker=char, target=victim_char_being_grappled)
                         char.msg(release_messages.get("attacker_msg"))
                         victim_char_being_grappled.msg(release_messages.get("victim_msg"))
                         obs_msg = release_messages.get("observer_msg")
                         for loc in {char.location, victim_char_being_grappled.location}:
                              if loc: loc.msg_contents(obs_msg, exclude=[char, victim_char_being_grappled])
-                        splattercast.msg(f"RELEASE GRAPPLE: {char.key} released {victim_char_being_grappled.key}.")
+                        splattercast.msg(f"RELEASE GRAPPLE: {char.key} released {victim_char_being_grappled.key}. Grapple state cleared for both.")
                     else: 
                         char.msg("You are not grappling a valid opponent to release.")
                         if current_char_combat_entry.get("grappling_dbref"): 
                             current_char_combat_entry["grappling_dbref"] = None
+                            # Save the cleanup change
+                            self.db.combatants = combatants_list
                             splattercast.msg(f"CLEANUP: {char.key} was grappling an invalid char. Cleared.")
 
                     splattercast.msg(f"AT_REPEAT: {char.key}'s turn concluded by 'release_grapple' intent processing.")
@@ -1234,6 +1255,63 @@ class CombatHandler(DefaultScript):
         if hasattr(victim, "take_damage"):
             victim.take_damage(damage)
             splattercast.msg(f"BONUS_ATTACK: {attacker.key} deals {damage} damage to {victim.key}.")
+    
+    def _resolve_release_grapple(self, attacker_entry, combatants_list):
+        """Resolves a release grapple action."""
+        attacker = attacker_entry["char"]
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        
+        # Get the victim being grappled
+        victim_char_being_grappled = self.get_grappling_obj(attacker_entry)
+        
+        if not victim_char_being_grappled:
+            attacker.msg("You are not grappling anyone.")
+            splattercast.msg(f"RELEASE_GRAPPLE_ERROR: {attacker.key} is not grappling anyone.")
+            return False
+        
+        # Find victim's combat entry
+        victim_entry = next((e for e in combatants_list if e["char"] == victim_char_being_grappled), None)
+        
+        if not victim_entry:
+            attacker.msg("Cannot release - target is not in combat.")
+            splattercast.msg(f"RELEASE_GRAPPLE_ERROR: {victim_char_being_grappled.key} is not in combat.")
+            # Clean up the invalid reference
+            attacker_entry["grappling_dbref"] = None
+            return False
+        
+        # Validate the victim is actually in the same location
+        if not victim_char_being_grappled.location or victim_char_being_grappled.location not in self.db.managed_rooms:
+            attacker.msg("Cannot release - target is not in a valid location.")
+            splattercast.msg(f"RELEASE_GRAPPLE_ERROR: {victim_char_being_grappled.key} is not in a valid location.")
+            # Clean up the invalid reference
+            attacker_entry["grappling_dbref"] = None
+            if victim_entry:
+                victim_entry["grappled_by_dbref"] = None
+            return False
+        
+        # Debug before release
+        splattercast.msg(f"RELEASE GRAPPLE DEBUG: Before release - {attacker.key} grappling_dbref: {attacker_entry.get('grappling_dbref')}")
+        splattercast.msg(f"RELEASE GRAPPLE DEBUG: Before release - {victim_char_being_grappled.key} grappled_by_dbref: {victim_entry.get('grappled_by_dbref')}")
+        
+        # Clear the grapple relationship on both sides
+        attacker_entry["grappling_dbref"] = None
+        victim_entry["grappled_by_dbref"] = None
+        
+        # Debug after release
+        splattercast.msg(f"RELEASE GRAPPLE DEBUG: After release - {attacker.key} grappling_dbref: {attacker_entry.get('grappling_dbref')}")
+        splattercast.msg(f"RELEASE GRAPPLE DEBUG: After release - {victim_char_being_grappled.key} grappled_by_dbref: {victim_entry.get('grappled_by_dbref')}")
+        
+        # Get and send messages
+        release_messages = get_combat_message("grapple", "release", attacker=attacker, target=victim_char_being_grappled)
+        attacker.msg(release_messages.get("attacker_msg"))
+        victim_char_being_grappled.msg(release_messages.get("victim_msg"))
+        obs_msg = release_messages.get("observer_msg")
+        for loc in {attacker.location, victim_char_being_grappled.location}:
+            if loc: 
+                loc.msg_contents(obs_msg, exclude=[attacker, victim_char_being_grappled])
+        
+        splattercast.msg(f"RELEASE GRAPPLE: {attacker.key} released {victim_char_being_grappled.key}. Grapple state cleared for both.")
+        return True
     
     # Helper methods for object reference handling
     def _get_char_by_dbref(self, dbref):
