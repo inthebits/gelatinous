@@ -545,6 +545,7 @@ class CombatHandler(DefaultScript):
         Returns:
             Character object or None if not found
         """
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         if not dbref:
             return None
         
@@ -554,7 +555,11 @@ class CombatHandler(DefaultScript):
         
         results = search_object(dbref)
         if results:
-            return results[0]
+            char = results[0]
+            splattercast.msg(f"_GET_CHAR_BY_DBREF: {dbref} -> {char.key}")
+            return char
+        else:
+            splattercast.msg(f"_GET_CHAR_BY_DBREF: {dbref} -> None (not found)")
         return None
     
     def _get_dbref(self, obj):
@@ -567,6 +572,7 @@ class CombatHandler(DefaultScript):
         Returns:
             str: The dbref without leading # or None if obj is None
         """
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         if not obj:
             return None
         
@@ -574,6 +580,7 @@ class CombatHandler(DefaultScript):
         dbref = obj.dbref
         if dbref and dbref.startswith("#"):
             dbref = dbref[1:]
+        splattercast.msg(f"_GET_DBREF: {obj.key} -> {dbref}")
         return dbref
 
     @property
