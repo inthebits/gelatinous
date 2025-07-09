@@ -79,7 +79,12 @@ def get_or_create_combat(location):
             else:
                 splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_GET: Found inactive handler {script.key} on {location.key}. Stopping and deleting it.")
                 script.stop() # Ensure it's fully stopped
-                script.delete()
+                # Only delete if the handler has been saved to the database
+                if hasattr(script, 'id') and script.id:
+                    script.delete()
+                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_GET: Deleted inactive handler {script.key}.")
+                else:
+                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_GET: Inactive handler {script.key} was not saved to database, skipping delete.")
                 break # Only one handler script per location by key
 
     # If no suitable handler found, create a new one on this location
