@@ -911,8 +911,13 @@ class CombatHandler(DefaultScript):
         setattr(self.db, DB_COMBATANTS, combatants_list)
 
         # Check if combat should continue
-        if not getattr(self.db, DB_COMBATANTS, []):
+        remaining_combatants = getattr(self.db, DB_COMBATANTS, [])
+        if not remaining_combatants:
             splattercast.msg(f"AT_REPEAT: No combatants remain in handler {self.key}. Stopping.")
+            self.stop_combat_logic()
+            return
+        elif len(remaining_combatants) <= 1:
+            splattercast.msg(f"AT_REPEAT: Only {len(remaining_combatants)} combatant(s) remain in handler {self.key}. Ending combat.")
             self.stop_combat_logic()
             return
 
@@ -1070,12 +1075,20 @@ class CombatHandler(DefaultScript):
                     hit_messages = get_combat_message(effective_weapon_type, "kill", 
                                                       attacker=attacker, target=actual_target, item=weapon, damage=damage)
                     self._handle_death(actual_target, attacker, effective_weapon_type, weapon)
+                    
+                    # CRITICAL: Remove the dead character from the local combatants_list
+                    # to prevent them from being re-added when the list is saved back to database
+                    combatants_list[:] = [e for e in combatants_list if e.get(DB_CHAR) != actual_target]
+                    splattercast.msg(f"DEATH_CLEANUP: Removed {actual_target.key} from local combatants_list to prevent resurrection")
+                    
                 except Exception as e:
                     splattercast.msg(f"_PROCESS_ATTACK: ERROR in death handling: {e}")
                     # Fallback death handling
                     attacker.msg(f"You kill {actual_target.key}!")
                     actual_target.msg(f"{attacker.key} kills you!")
                     self.remove_combatant(actual_target)
+                    # Also remove from local list in fallback case
+                    combatants_list[:] = [e for e in combatants_list if e.get(DB_CHAR) != actual_target]
             else:
                 splattercast.msg(f"_PROCESS_ATTACK: Target survived, getting hit messages")
                 try:
