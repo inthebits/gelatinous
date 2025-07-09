@@ -311,9 +311,11 @@ class CmdAim(Command):
     Usage:
       aim <target>
       aim <direction>
+      aim stop
 
     Establishes an aim lock on a target or direction, potentially
-    granting bonuses to subsequent ranged attacks.
+    granting bonuses to subsequent ranged attacks. While aiming at
+    a target, they cannot move. Use 'aim stop' to cease aiming.
     """
 
     key = "aim"
@@ -323,10 +325,123 @@ class CmdAim(Command):
     def func(self):
         caller = self.caller
         args = self.args.strip()
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
 
         if not args:
             caller.msg(MSG_AIM_WHO_WHAT)
             return
 
-        # Aim logic would continue here...
-        # Truncated for demonstration
+        # Handle stopping aim
+        if args.lower() in ("stop", "clear", "cancel"):
+            current_target = getattr(caller.ndb, "aiming_at", None)
+            if not current_target:
+                caller.msg("|yYou are not currently aiming at anything.|n")
+                return
+            
+            # Clear the aim relationship
+            delattr(caller.ndb, "aiming_at")
+            if hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
+                delattr(current_target.ndb, "aimed_at_by")
+            
+            caller.msg(f"|gYou stop aiming at {current_target.key}.|n")
+            current_target.msg(f"|g{caller.key} stops aiming at you.|n")
+            splattercast.msg(f"AIM_STOP: {caller.key} stopped aiming at {current_target.key}.")
+            return
+
+        # Clear any existing aim first
+        current_target = getattr(caller.ndb, "aiming_at", None)
+        current_direction = getattr(caller.ndb, "aiming_direction", None)
+        
+        if current_target:
+            if hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
+                delattr(current_target.ndb, "aimed_at_by")
+            delattr(caller.ndb, "aiming_at")
+            current_target.msg(f"|g{caller.key} stops aiming at you.|n")
+            
+        if current_direction:
+            delattr(caller.ndb, "aiming_direction")
+
+        # Try to find target in current room first
+        target = caller.search(args, location=caller.location, quiet=True)
+        
+        if target:
+            # Target found in room - prevent self-targeting
+            if target == caller:
+                caller.msg(MSG_AIM_SELF_TARGET)
+                return
+
+            # Check if caller has a ranged weapon
+            hands = getattr(caller, "hands", {})
+            weapon = next((item for hand, item in hands.items() if item), None)
+            
+            is_ranged_weapon = False
+            if weapon:
+                weapon_db = getattr(weapon, "db", None)
+                if weapon_db:
+                    is_ranged_weapon = getattr(weapon_db, "is_ranged", False)
+            
+            if not is_ranged_weapon:
+                caller.msg("|yYou need a ranged weapon to aim effectively.|n")
+                # Allow aiming without ranged weapon but with warning
+
+            # Set target aim relationship
+            setattr(caller.ndb, "aiming_at", target)
+            setattr(target.ndb, "aimed_at_by", caller)
+
+            # Send messages
+            caller.msg(f"|yYou carefully aim at {target.key}.|n")
+            target.msg(f"|r{caller.key} is aiming at you! You feel locked in place.|n")
+            caller.location.msg_contents(
+                f"|y{caller.key} takes careful aim at {target.key}.|n",
+                exclude=[caller, target]
+            )
+
+            splattercast.msg(f"AIM_SET: {caller.key} is now aiming at {target.key}.")
+            
+            # Provide feedback about the aiming bonus
+            if is_ranged_weapon:
+                caller.msg("|gYour next ranged attack will have improved accuracy.|n")
+            else:
+                caller.msg("|yWithout a ranged weapon, this aim provides limited benefit.|n")
+                
+        else:
+            # No target found in room - check if it's a direction
+            direction = args.strip().lower()
+            exits = caller.location.exits
+            
+            # Check if the direction matches any exit
+            valid_direction = False
+            for ex in exits:
+                if ex.key.lower() == direction or direction in [alias.lower() for alias in ex.aliases.all()]:
+                    valid_direction = True
+                    break
+                    
+            if valid_direction:
+                # Check if caller has a ranged weapon for direction aiming
+                hands = getattr(caller, "hands", {})
+                weapon = next((item for hand, item in hands.items() if item), None)
+                
+                is_ranged_weapon = False
+                if weapon:
+                    weapon_db = getattr(weapon, "db", None)
+                    if weapon_db:
+                        is_ranged_weapon = getattr(weapon_db, "is_ranged", False)
+                
+                if not is_ranged_weapon:
+                    caller.msg("|rYou need a ranged weapon to aim in a direction.|n")
+                    return
+                
+                # Set direction aiming
+                setattr(caller.ndb, "aiming_direction", direction)
+                
+                caller.msg(f"|yYou take careful aim {direction}.|n")
+                caller.location.msg_contents(
+                    f"|y{caller.key} takes careful aim {direction}.|n",
+                    exclude=[caller]
+                )
+                
+                splattercast.msg(f"AIM_DIRECTION: {caller.key} is now aiming {direction}.")
+                caller.msg("|gYour next ranged attack in this direction will have improved accuracy.|n")
+                
+            else:
+                caller.msg(f"|rYou don't see '{args}' here, and it's not a valid direction.|n")

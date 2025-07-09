@@ -1018,6 +1018,32 @@ class CombatHandler(DefaultScript):
         
         splattercast.msg(f"_PROCESS_ATTACK: Attack roll calculated: {attack_roll_base}")
         
+        # Check for aiming bonus
+        aiming_target = getattr(attacker.ndb, "aiming_at", None)
+        if aiming_target == target and is_ranged_weapon:
+            # Grant aiming bonus for ranged attacks against aimed target
+            aiming_bonus = 2  # Flat bonus for aimed shots
+            attack_roll_base += aiming_bonus
+            splattercast.msg(f"AIMING_BONUS: {attacker.key} gets +{aiming_bonus} attack bonus for aiming at {target.key}")
+            
+            # Clear the aim after use
+            delattr(attacker.ndb, "aiming_at")
+            if hasattr(target.ndb, "aimed_at_by") and getattr(target.ndb, "aimed_at_by") == attacker:
+                delattr(target.ndb, "aimed_at_by")
+            
+            attacker.msg("|gYour careful aim pays off! You attack with improved accuracy.|n")
+            target.msg(f"|r{attacker.key}'s careful aim makes their attack more precise!|n")
+        elif aiming_target == target and not is_ranged_weapon:
+            # Small bonus even for melee attacks when aimed
+            aiming_bonus = 1
+            attack_roll_base += aiming_bonus
+            splattercast.msg(f"AIMING_BONUS_MELEE: {attacker.key} gets +{aiming_bonus} small bonus for focusing on {target.key}")
+            
+            # Clear the aim after use
+            delattr(attacker.ndb, "aiming_at")
+            if hasattr(target.ndb, "aimed_at_by") and getattr(target.ndb, "aimed_at_by") == attacker:
+                delattr(target.ndb, "aimed_at_by")
+                
         # Defense roll
         defense_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
         

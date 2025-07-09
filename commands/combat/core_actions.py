@@ -307,13 +307,26 @@ class CmdStop(Command):
             return
 
         if args == "aiming" or args == "aim":
-            # Check if currently aiming
-            if not hasattr(caller.ndb, "aiming_at") and not hasattr(caller.ndb, "aiming_direction"):
+            # Check if currently aiming at a target
+            aiming_target = getattr(caller.ndb, "aiming_at", None)
+            aiming_direction = getattr(caller.ndb, "aiming_direction", None)
+            
+            if not aiming_target and not aiming_direction:
                 caller.msg(MSG_STOP_NOT_AIMING)
-            elif hasattr(caller, "clear_aim_state"):
-                caller.clear_aim_state()
-            else:
-                caller.msg(MSG_STOP_AIM_ERROR)
+                return
+                
+            # Clear target aiming
+            if aiming_target:
+                delattr(caller.ndb, "aiming_at")
+                if hasattr(aiming_target.ndb, "aimed_at_by") and getattr(aiming_target.ndb, "aimed_at_by") == caller:
+                    delattr(aiming_target.ndb, "aimed_at_by")
+                caller.msg(f"|gYou stop aiming at {aiming_target.key}.|n")
+                aiming_target.msg(f"|g{caller.key} stops aiming at you.|n")
+                
+            # Clear direction aiming
+            if aiming_direction:
+                delattr(caller.ndb, "aiming_direction")
+                caller.msg(f"|gYou stop aiming {aiming_direction}.|n")
                 
         elif args == "attacking" or args == "attack":
             handler = getattr(caller.ndb, "combat_handler", None)
