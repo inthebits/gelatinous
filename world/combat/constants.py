@@ -54,6 +54,7 @@ DEBUG_ERROR = "ERROR"
 DEBUG_FAILSAFE = "FAILSAFE"
 DEBUG_ABORT = "ABORT"
 DEBUG_CLEANUP = "CLEANUP"
+DEBUG_TEMPLATE = "DEBUG"  # Generic debug prefix for utility functions
 
 # ===================================================================
 # NDB FIELD NAMES (Critical for State Management)
