@@ -655,17 +655,10 @@ class CombatHandler(DefaultScript):
             self.stop_combat_logic()
             return
 
-        # Check if all combatants are yielding - but only end combat if no active grapples exist
+        # Check if all combatants are yielding - if so, end combat peacefully
         all_yielding = all(entry.get(DB_IS_YIELDING, False) for entry in combatants_list)
-        
-        # Check for any active grapples (anyone grappling or being grappled)
-        active_grapples = any(
-            entry.get(DB_GRAPPLING_DBREF) is not None or entry.get(DB_GRAPPLED_BY_DBREF) is not None
-            for entry in combatants_list
-        )
-        
-        if all_yielding and not active_grapples:
-            splattercast.msg(f"AT_REPEAT: Handler {self.key}. All combatants are yielding and no active grapples. Ending combat peacefully.")
+        if all_yielding:
+            splattercast.msg(f"AT_REPEAT: Handler {self.key}. All combatants are yielding. Ending combat peacefully.")
             # Send a message to all combatants about peaceful resolution
             for entry in combatants_list:
                 char = entry.get(DB_CHAR)
@@ -678,17 +671,6 @@ class CombatHandler(DefaultScript):
                                     exclude=[entry.get(DB_CHAR) for entry in combatants_list if entry.get(DB_CHAR)])
             self.stop_combat_logic()
             return
-        elif all_yielding and active_grapples:
-            splattercast.msg(f"AT_REPEAT: Handler {self.key}. All combatants are yielding but active grapples exist. Combat continues.")
-        elif active_grapples:
-            grapple_pairs = []
-            for entry in combatants_list:
-                if entry.get(DB_GRAPPLING_DBREF):
-                    grappler = entry.get(DB_CHAR)
-                    victim = self._get_char_by_dbref(entry.get(DB_GRAPPLING_DBREF))
-                    if grappler and victim:
-                        grapple_pairs.append(f"{grappler.key}->{victim.key}")
-            splattercast.msg(f"AT_REPEAT: Handler {self.key}. Active grapples detected: {', '.join(grapple_pairs)}. Combat continues.")
 
         # Sort combatants by initiative for processing
         initiative_order = sorted(combatants_list, key=lambda e: e.get("initiative", 0), reverse=True)
