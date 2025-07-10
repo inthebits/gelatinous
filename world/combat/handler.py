@@ -1135,13 +1135,14 @@ class CombatHandler(DefaultScript):
             char_entry[DB_GRAPPLING_DBREF] = self._get_dbref(target)
             target_entry[DB_GRAPPLED_BY_DBREF] = self._get_dbref(char)
             
-            # Auto-yield both parties
+            # Auto-yield only the grappler (restraint intent)
+            # The victim remains non-yielding so they auto-resist each turn
             char_entry[DB_IS_YIELDING] = True
-            target_entry[DB_IS_YIELDING] = True
+            # target_entry[DB_IS_YIELDING] = False  # Keep victim non-yielding for auto-resistance
             
             char.msg(f"|gYou successfully grapple {target.key}!|n")
             target.msg(f"|g{char.key} grapples you!|n")
-            target.msg(MSG_GRAPPLE_AUTO_YIELD)
+            # Note: No auto-yield message for victim since they remain non-yielding to auto-resist
             
             if char.location:
                 char.location.msg_contents(
@@ -1161,6 +1162,11 @@ class CombatHandler(DefaultScript):
                 char_entry[DB_IS_YIELDING] = True
                 char.msg("|gYour failed grapple attempt leaves you non-aggressive.|n")
                 splattercast.msg(f"GRAPPLE_FAIL_YIELD: {char.key} initiated combat with grapple but failed, setting to yielding.")
+                
+                # Also set the target to yielding since the grapple was a non-violent initiation
+                target_entry[DB_IS_YIELDING] = True
+                target.msg("|gAfter the failed grapple attempt, you also stand down from aggression.|n")
+                splattercast.msg(f"GRAPPLE_FAIL_YIELD: {target.key} also set to yielding after failed grapple initiation.")
             
             if char.location:
                 char.location.msg_contents(
