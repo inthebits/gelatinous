@@ -30,7 +30,7 @@ from .constants import (
 )
 from .utils import (
     get_numeric_stat, log_combat_action, get_display_name_safe,
-    roll_stat, opposed_roll, get_wielded_weapon
+    roll_stat, opposed_roll, get_wielded_weapon, is_wielding_ranged_weapon
 )
 from .proximity import clear_all_proximity, establish_proximity, proximity_opposed_roll
 from .grappling import break_grapple, establish_grapple
@@ -1000,19 +1000,27 @@ class CombatHandler(DefaultScript):
         """
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
-        # Check if attacker can reach target
-        if attacker.location != target.location:
-            attacker.msg(f"You can't reach {target.key} from here.")
-            splattercast.msg(f"ATTACK_FAIL (REACH): {attacker.key} cannot reach {target.key}.")
-            return
+        # Check if attacker is wielding a ranged weapon
+        is_ranged_attack = is_wielding_ranged_weapon(attacker)
         
-        # Check proximity for melee attacks
-        if not hasattr(attacker.ndb, NDB_PROXIMITY):
-            setattr(attacker.ndb, NDB_PROXIMITY, set())
-        if target not in getattr(attacker.ndb, NDB_PROXIMITY):
-            attacker.msg(f"You need to be in melee proximity with {target.key} to attack them. Try advancing or charging.")
-            splattercast.msg(f"ATTACK_FAIL (PROXIMITY): {attacker.key} not in proximity with {target.key}.")
-            return
+        # For melee attacks, check same-room and proximity requirements
+        if not is_ranged_attack:
+            # Check if attacker can reach target (same room for melee)
+            if attacker.location != target.location:
+                attacker.msg(f"You can't reach {target.key} from here.")
+                splattercast.msg(f"ATTACK_FAIL (REACH): {attacker.key} cannot reach {target.key}.")
+                return
+            
+            # Check proximity for melee attacks
+            if not hasattr(attacker.ndb, NDB_PROXIMITY):
+                setattr(attacker.ndb, NDB_PROXIMITY, set())
+            if target not in getattr(attacker.ndb, NDB_PROXIMITY):
+                attacker.msg(f"You need to be in melee proximity with {target.key} to attack them. Try advancing or charging.")
+                splattercast.msg(f"ATTACK_FAIL (PROXIMITY): {attacker.key} not in proximity with {target.key}.")
+                return
+        else:
+            # For ranged attacks, just log that we're allowing cross-room attack
+            splattercast.msg(f"ATTACK_RANGED: {attacker.key} making ranged attack on {target.key} from {attacker.location.key} to {target.location.key}.")
         
         # Get weapon and stats
         weapon = get_wielded_weapon(attacker)
