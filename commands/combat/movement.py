@@ -190,8 +190,126 @@ class CmdFlee(Command):
                     
                     return # Flee attempt ends here, aimer gets an attack.
 
-        # Part 2 and beyond would continue with combat disengagement logic...
-        # Truncated for demonstration purposes
+        # --- Part 2: Combat Disengagement and Movement ---
+        # If we reach here, any aim locks have been handled. Now attempt to flee from combat.
+        splattercast.msg(f"{DEBUG_PREFIX_FLEE}_COMBAT_PHASE: {caller.key} attempting to disengage from combat.")
+        
+        if original_handler_at_flee_start:
+            # Character is in combat - attempt to disengage
+            caller_entry = next((e for e in original_handler_at_flee_start.db.combatants if e["char"] == caller), None)
+            if not caller_entry:
+                # This shouldn't happen if ndb.combat_handler is properly managed
+                caller.msg("Your combat state seems confused. Moving freely.")
+                splattercast.msg(f"{DEBUG_PREFIX_FLEE}_ERROR: {caller.key} has combat handler but no entry.")
+                super().at_traverse(caller, choice(available_exits).destination)
+                return
+                
+            # Check if grappled - can't flee while grappled
+            grappled_by_char = original_handler_at_flee_start.get_grappled_by_obj(caller_entry)
+            if grappled_by_char:
+                caller.msg(f"|rYou cannot flee while {grappled_by_char.get_display_name(caller)} is grappling you! Try to escape the grapple first.|n")
+                splattercast.msg(f"{DEBUG_PREFIX_FLEE}_BLOCKED: {caller.key} cannot flee while grappled by {grappled_by_char.key}.")
+                return
+                
+            # Attempt to disengage from combat
+            # Get all opponents targeting the caller
+            opponents_targeting_caller = []
+            combatants_list = getattr(original_handler_at_flee_start.db, "combatants", [])
+            if combatants_list:
+                for entry in combatants_list:
+                    if entry["char"] != caller:
+                        target_obj = original_handler_at_flee_start.get_target_obj(entry)
+                        if target_obj == caller:
+                            opponents_targeting_caller.append(entry["char"])
+            
+            # Opposed roll to disengage
+            if opponents_targeting_caller:
+                valid_opponents = filter_valid_opponents(opponents_targeting_caller)
+                highest_opponent_motorics, blocking_opponent = get_highest_opponent_stat(valid_opponents, "motorics")
+                caller_motorics = get_numeric_stat(caller, "motorics")
+                
+                flee_roll = randint(1, max(1, caller_motorics))
+                block_roll = randint(1, max(1, highest_opponent_motorics))
+                
+                splattercast.msg(f"{DEBUG_PREFIX_FLEE}_DISENGAGE_ROLL: {caller.key} (motorics:{caller_motorics}, roll:{flee_roll}) vs opponents (highest:{highest_opponent_motorics}, blocker:{blocking_opponent.key if blocking_opponent else 'None'}, roll:{block_roll})")
+                
+                if flee_roll <= block_roll:
+                    # Failed to disengage
+                    caller.msg(f"|rYou try to flee but {blocking_opponent.get_display_name(caller) if blocking_opponent else 'your opponents'} block your escape!|n")
+                    if blocking_opponent:
+                        blocking_opponent.msg(f"|gYou successfully block {caller.get_display_name(blocking_opponent)}'s attempt to flee!|n")
+                    caller.location.msg_contents(
+                        f"|y{caller.get_display_name(caller.location)} tries to flee but is blocked by their opponents!|n",
+                        exclude=[caller] + opponents_targeting_caller
+                    )
+                    splattercast.msg(f"{DEBUG_PREFIX_FLEE}_DISENGAGE_FAIL: {caller.key} failed to disengage from combat.")
+                    
+                    # Apply flee failure penalty (skip next turn)
+                    caller.ndb.skip_next_turn = True
+                    caller.msg("|rYour failed escape attempt leaves you vulnerable!|n")
+                    return
+            
+            # Successfully disengaged (or no opponents targeting) - choose exit and move
+            safe_exits = []
+            for exit_obj in available_exits:
+                destination = exit_obj.destination
+                if destination:
+                    # Check if this exit leads away from ranged targeters (already done in pre-check, but double-check)
+                    is_safe = True
+                    for char_in_dest in destination.contents:
+                        if char_in_dest == caller or not hasattr(char_in_dest, "ndb"):
+                            continue
+                        other_handler = getattr(char_in_dest.ndb, "combat_handler", None)
+                        if other_handler and getattr(other_handler.db, "combat_is_running", False):
+                            other_entry = next((e for e in getattr(other_handler.db, "combatants", []) if e["char"] == char_in_dest), None)
+                            if other_entry and original_handler_at_flee_start.get_target_obj(other_entry) == caller:
+                                other_hands = getattr(char_in_dest, "hands", {})
+                                other_weapon = next((item for hand, item in other_hands.items() if item), None)
+                                if other_weapon and getattr(other_weapon.db, "is_ranged", False):
+                                    is_safe = False
+                                    break
+                    if is_safe:
+                        safe_exits.append(exit_obj)
+            
+            if not safe_exits:
+                safe_exits = available_exits  # Fallback to any exit if none are "safe"
+                
+            chosen_exit = choice(safe_exits)
+            destination = chosen_exit.destination
+            
+            # Remove from combat before moving
+            original_handler_at_flee_start.remove_combatant(caller)
+            
+            # Clear proximity
+            if hasattr(caller.ndb, "in_proximity_with"):
+                for other_char in list(caller.ndb.in_proximity_with):
+                    if hasattr(other_char.ndb, "in_proximity_with"):
+                        other_char.ndb.in_proximity_with.discard(caller)
+                caller.ndb.in_proximity_with.clear()
+            
+            # Move to the chosen exit
+            caller.move_to(destination, quiet=True)
+            
+            # Messages
+            caller.msg(f"|gYou successfully flee {chosen_exit.key} to {destination.key}!|n")
+            caller.location.msg_contents(f"|y{caller.get_display_name(caller.location)} has arrived, fleeing from combat.|n", exclude=[caller])
+            
+            # Message the room they left
+            if caller.location != destination:  # Safety check
+                old_location = caller.location
+                old_location.msg_contents(f"|y{caller.get_display_name(old_location)} flees {chosen_exit.key}!|n")
+            
+            splattercast.msg(f"{DEBUG_PREFIX_FLEE}_SUCCESS: {caller.key} successfully fled via {chosen_exit.key} to {destination.key}.")
+            
+        else:
+            # No combat handler but passed earlier checks - this shouldn't happen
+            caller.msg("You have nothing to flee from.")
+            splattercast.msg(f"{DEBUG_PREFIX_FLEE}_ERROR: {caller.key} reached flee movement phase with no combat handler.")
+
+        # Ensure combat handler is updated if it still exists
+        if original_handler_at_flee_start and hasattr(original_handler_at_flee_start, 'is_active'):
+            if not original_handler_at_flee_start.is_active:
+                original_handler_at_flee_start.start()
 
 
 class CmdRetreat(Command):
