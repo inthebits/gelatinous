@@ -260,15 +260,11 @@ def is_wielding_ranged_weapon(character):
     Returns:
         bool: True if wielding a ranged weapon, False otherwise
     """
-    # Check right hand first
-    right_hand_weapon = getattr(character.db, 'right_hand', None)
-    if right_hand_weapon and hasattr(right_hand_weapon, 'db') and getattr(right_hand_weapon.db, 'is_ranged', False):
-        return True
-    
-    # Check left hand
-    left_hand_weapon = getattr(character.db, 'left_hand', None)
-    if left_hand_weapon and hasattr(left_hand_weapon, 'db') and getattr(left_hand_weapon.db, 'is_ranged', False):
-        return True
+    # Use the same hands detection logic as core_actions.py
+    hands = getattr(character, "hands", {})
+    for hand, weapon in hands.items():
+        if weapon and hasattr(weapon, 'db') and getattr(weapon.db, 'is_ranged', False):
+            return True
     
     return False
 
@@ -284,14 +280,13 @@ def get_wielded_weapons(character):
         list: List of wielded weapon objects
     """
     weapons = []
+    hands = getattr(character, "hands", {})
     
-    right_hand_weapon = getattr(character.db, 'right_hand', None)
-    if right_hand_weapon:
-        weapons.append(right_hand_weapon)
+    for hand, weapon in hands.items():
+        if weapon:
+            weapons.append(weapon)
     
-    left_hand_weapon = getattr(character.db, 'left_hand', None)
-    if left_hand_weapon:
-        weapons.append(left_hand_weapon)
+    return weapons
     
     return weapons
 

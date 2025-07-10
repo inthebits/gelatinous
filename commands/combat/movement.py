@@ -566,6 +566,11 @@ class CmdAdvance(Command):
             # Check if target is wielding a ranged weapon
             target_has_ranged = is_wielding_ranged_weapon(target)
             
+            # Debug weapon detection for target
+            target_hands = getattr(target, "hands", {})
+            target_weapon = next((item for hand, item in target_hands.items() if item), None)
+            splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_WEAPON_DEBUG: {target.key} hands={target_hands}, weapon={target_weapon.key if target_weapon else 'None'}, is_ranged={target_has_ranged}")
+            
             splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_CROSS_ROOM_DEBUG: {caller.key} advancing on {target.key}. Target has ranged weapon: {target_has_ranged}")
             
             if target_has_ranged:
@@ -810,6 +815,11 @@ class CmdCharge(Command):
             
             # Check if target is wielding a ranged weapon
             target_has_ranged = is_wielding_ranged_weapon(target)
+            
+            # Debug weapon detection for target
+            target_hands = getattr(target, "hands", {})
+            target_weapon = next((item for hand, item in target_hands.items() if item), None)
+            splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_WEAPON_DEBUG: {target.key} hands={target_hands}, weapon={target_weapon.key if target_weapon else 'None'}, is_ranged={target_has_ranged}")
             
             splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_CROSS_ROOM_DEBUG: {caller.key} charging {target.key}. Target has ranged weapon: {target_has_ranged}")
             
