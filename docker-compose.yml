@@ -1,0 +1,16 @@
+services:
+  evennia:
+    image: evennia/evennia
+    user: 1000:1000
+    stdin_open: true
+    tty: true
+    ports:
+      - "23:23"
+      - "80:4001"
+      - "4002:4002"
+    volumes:
+      - /home/ubuntu/gel.monster/gelatinous:/usr/src/game
+      - evennia_db:/usr/src/evennia/game/server
+    command: evennia start -l
+volumes:
+      evennia_db:
