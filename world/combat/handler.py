@@ -463,6 +463,10 @@ class CombatHandler(DefaultScript):
         for attr in ndb_attrs:
             if hasattr(char.ndb, attr):
                 delattr(char.ndb, attr)
+        
+        # Force clear charge bonus flag with explicit setting to False as fallback
+        char.ndb.charge_attack_bonus_active = False
+        char.ndb.charging_vulnerability_active = False
 
     def validate_and_cleanup_grapple_state(self):
         """
@@ -709,6 +713,17 @@ class CombatHandler(DefaultScript):
             if hasattr(char.ndb, "charge_attack_bonus_active"):
                 splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing expired/unused charge_attack_bonus_active for {char.key}.")
                 delattr(char.ndb, "charge_attack_bonus_active")
+                # Double-check that it's really gone
+                if hasattr(char.ndb, "charge_attack_bonus_active"):
+                    splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: WARNING - charge_attack_bonus_active still present after deletion for {char.key}! Force clearing.")
+                    try:
+                        delattr(char.ndb, "charge_attack_bonus_active")
+                    except AttributeError:
+                        pass
+                    # Also try setting it to False as a fallback
+                    char.ndb.charge_attack_bonus_active = False
+                else:
+                    splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Confirmed charge_attack_bonus_active successfully cleared for {char.key}.")
 
             # Get combat action for this character
             combat_action = current_char_combat_entry.get("combat_action")
@@ -1050,10 +1065,13 @@ class CombatHandler(DefaultScript):
         target_roll = randint(1, 20) + target_skill
         
         # Check for charge bonus
-        if hasattr(attacker.ndb, "charge_attack_bonus_active"):
+        if hasattr(attacker.ndb, "charge_attack_bonus_active") and getattr(attacker.ndb, "charge_attack_bonus_active", False):
             attacker_roll += 2
             splattercast.msg(f"ATTACK_BONUS: {attacker.key} gets +2 charge attack bonus.")
+            splattercast.msg(f"ATTACK_BONUS_DEBUG: {attacker.key} had charge_attack_bonus_active set - this should only happen after using the 'charge' command.")
             delattr(attacker.ndb, "charge_attack_bonus_active")
+        else:
+            splattercast.msg(f"ATTACK_BONUS_DEBUG: {attacker.key} does not have charge_attack_bonus_active - no bonus applied.")
         
         splattercast.msg(f"ATTACK: {attacker.key} (roll {attacker_roll}) vs {target.key} (roll {target_roll}) with {weapon_name}")
         
