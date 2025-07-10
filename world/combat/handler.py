@@ -1054,34 +1054,44 @@ class CombatHandler(DefaultScript):
             target_hp = get_numeric_stat(target, "health", 10)
             new_hp = max(0, target_hp - damage)
             
+            # Determine weapon type for messages
+            weapon_type = "unarmed"
+            if weapon and hasattr(weapon, 'db') and hasattr(weapon.db, 'weapon_type'):
+                weapon_type = weapon.db.weapon_type
+            
+            # Get hit messages from the message system
+            hit_messages = get_combat_message(weapon_type, "hit", attacker=attacker, target=target, item=weapon, damage=damage)
+            
             # Send messages
-            attacker.msg(f"|rYou hit {target.key} with your {weapon_name} for {damage} damage!|n")
-            target.msg(f"|r{attacker.key} hits you with their {weapon_name} for {damage} damage!|n")
-            attacker.location.msg_contents(
-                f"|r{attacker.key} hits {target.key} with their {weapon_name}!|n",
-                exclude=[attacker, target]
-            )
+            attacker.msg(hit_messages["attacker_msg"])
+            target.msg(hit_messages["victim_msg"]) 
+            attacker.location.msg_contents(hit_messages["observer_msg"], exclude=[attacker, target])
             
             splattercast.msg(f"ATTACK_HIT: {attacker.key} hit {target.key} for {damage} damage.")
             
             # Check for death/unconsciousness
             if new_hp <= 0:
-                target.msg("|RYou fall unconscious!|n")
-                attacker.location.msg_contents(
-                    f"|R{target.key} falls unconscious!|n",
-                    exclude=[target]
-                )
+                # Get kill messages from the message system
+                kill_messages = get_combat_message(weapon_type, "kill", attacker=attacker, target=target, item=weapon, damage=damage)
+                
+                target.msg(kill_messages["victim_msg"])
+                attacker.location.msg_contents(kill_messages["observer_msg"], exclude=[target])
+                
                 # Remove from combat
                 self.remove_combatant(target)
                 
         else:
-            # Miss
-            attacker.msg(f"|yYou miss {target.key} with your {weapon_name}.|n")
-            target.msg(f"|y{attacker.key} misses you with their {weapon_name}.|n")
-            attacker.location.msg_contents(
-                f"|y{attacker.key} misses {target.key} with their {weapon_name}.|n",
-                exclude=[attacker, target]
-            )
+            # Miss - get miss messages from the message system
+            weapon_type = "unarmed"
+            if weapon and hasattr(weapon, 'db') and hasattr(weapon.db, 'weapon_type'):
+                weapon_type = weapon.db.weapon_type
+                
+            miss_messages = get_combat_message(weapon_type, "miss", attacker=attacker, target=target, item=weapon)
+            
+            attacker.msg(miss_messages["attacker_msg"])
+            target.msg(miss_messages["victim_msg"])
+            attacker.location.msg_contents(miss_messages["observer_msg"], exclude=[attacker, target])
+            
             splattercast.msg(f"ATTACK_MISS: {attacker.key} missed {target.key}.")
     
     def _resolve_grapple_initiate(self, char_entry, combatants_list):
