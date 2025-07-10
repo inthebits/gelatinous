@@ -146,17 +146,19 @@ class CmdGrapple(Command):
         if "combat_action" not in caller_combat_entry:
             caller_combat_entry["combat_action"] = {}
             
-        # --- Set combat action ---
-        if caller_initiated_combat_this_action:
-            # This is a grapple to initiate combat - use all-or-nothing approach
-            caller_combat_entry["combat_action"] = "grapple_initiate"
-            handler.set_target(caller, target)
-            log_combat_action(caller, "grapple_action", target, details="combat action set to grapple_initiate")
-        else:
-            # This is a grapple during ongoing combat - use risk-based approach
+        # --- Determine grapple type based on target's current grapple state ---
+        target_is_currently_grappled = handler.get_grappled_by_obj(target_combat_entry) is not None
+        
+        if target_is_currently_grappled:
+            # Target is already being grappled by someone - this is a join attempt
             caller_combat_entry["combat_action"] = "grapple_join"  
             handler.set_target(caller, target)
             log_combat_action(caller, "grapple_action", target, details="combat action set to grapple_join")
+        else:
+            # Target is not currently grappled - this is a grapple initiation
+            caller_combat_entry["combat_action"] = "grapple_initiate"
+            handler.set_target(caller, target)
+            log_combat_action(caller, "grapple_action", target, details="combat action set to grapple_initiate")
 
         caller.msg(MSG_GRAPPLE_PREPARE.format(target=target.key))
         # The combat handler will process this on the character's turn
