@@ -47,13 +47,13 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdAdmin.CmdPeace())
         
         # Override default look command with enhanced one that supports aiming
-        self.add(CmdLook)
+        self.add(CmdLook())
         
         # Add aim command for ranged combat preparation
-        self.add(CmdAim)
+        self.add(CmdAim())
         
         # Add grapple command for initiating grappling combat
-        self.add(CmdGrapple)
+        self.add(CmdGrapple())
         
         # Add the entire combat command set
         self.add(CombatCmdSet)

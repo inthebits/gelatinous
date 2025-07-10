@@ -42,7 +42,7 @@ class CmdGrapple(Command):
     If successful, you will be grappling the target, and they will be grappled by you.
     """
     key = "grapple"
-    aliases = ["grab", "wrestle"]
+    aliases = ["wrestle"]
     locks = "cmd:all()"
     help_category = "Combat"
 
