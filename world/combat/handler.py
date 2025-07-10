@@ -778,6 +778,11 @@ class CombatHandler(DefaultScript):
                     was_yielding = current_char_combat_entry.get(DB_IS_YIELDING, False)
                     current_char_combat_entry[DB_IS_YIELDING] = False
                     
+                    # Ensure the victim has the grappler as their target for retaliation
+                    if not current_char_combat_entry.get(DB_TARGET_DBREF):
+                        current_char_combat_entry[DB_TARGET_DBREF] = self._get_dbref(grappler)
+                        splattercast.msg(f"AUTO_ESCAPE_TARGET: {char.key} targets {grappler.key} after escaping.")
+                    
                     escape_messages = get_combat_message("grapple", "escape_hit", attacker=char, target=grappler)
                     char.msg(escape_messages.get("attacker_msg", f"You break free from {grappler.key}'s grasp!"))
                     grappler.msg(escape_messages.get("victim_msg", f"{char.key} breaks free from your grasp!"))
@@ -1134,6 +1139,9 @@ class CombatHandler(DefaultScript):
             # Success
             char_entry[DB_GRAPPLING_DBREF] = self._get_dbref(target)
             target_entry[DB_GRAPPLED_BY_DBREF] = self._get_dbref(char)
+            
+            # Set victim's target to the grappler for potential retaliation after escape/release
+            target_entry[DB_TARGET_DBREF] = self._get_dbref(char)
             
             # Auto-yield only the grappler (restraint intent)
             # The victim remains non-yielding so they auto-resist each turn
