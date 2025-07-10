@@ -357,8 +357,86 @@ class CmdAdvance(Command):
             splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_{DEBUG_FAIL}: {caller.key} attempted to advance while grappled by {grappled_by_char_obj.key if grappled_by_char_obj else 'Unknown'}.")
             return
 
-        # Rest of advance logic would continue here...
-        # Truncated for demonstration
+        # Determine target
+        target = None
+        if args:
+            target = caller.search(args, location=caller.location, quiet=True)
+            if not target:
+                # Try searching in adjacent combat rooms
+                managed_rooms = getattr(handler.db, "managed_rooms", [])
+                for room in managed_rooms:
+                    if room != caller.location:
+                        potential_target = caller.search(args, location=room, quiet=True)
+                        if potential_target:
+                            target = potential_target
+                            break
+                            
+            if not target:
+                caller.msg(f"You cannot find '{args}' to advance on.")
+                return
+                
+            if target == caller:
+                caller.msg(MSG_ADVANCE_SELF_TARGET)
+                return
+        else:
+            # Use current combat target
+            target = handler.get_target_obj(caller_entry)
+            if not target:
+                caller.msg(MSG_ADVANCE_NO_TARGET)
+                return
+
+        # Check if target is valid
+        target_entry = next((e for e in handler.db.combatants if e["char"] == target), None)
+        if not target_entry:
+            caller.msg(f"{target.get_display_name(caller)} is not in combat.")
+            return
+
+        # Check if already in proximity
+        if hasattr(caller.ndb, "in_proximity_with") and target in caller.ndb.in_proximity_with:
+            caller.msg(f"You are already in melee proximity with {target.get_display_name(caller)}.")
+            return
+
+        # Determine if same room or different room advance
+        if target.location == caller.location:
+            # Same room - establish proximity
+            caller_motorics = get_numeric_stat(caller, "motorics")
+            target_motorics = get_numeric_stat(target, "motorics")
+            
+            advance_roll = randint(1, max(1, caller_motorics))
+            resist_roll = randint(1, max(1, target_motorics))
+            
+            splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_ROLL: {caller.key} (motorics:{caller_motorics}, roll:{advance_roll}) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
+            
+            if advance_roll > resist_roll:
+                # Success - establish proximity
+                initialize_proximity_ndb(caller)
+                initialize_proximity_ndb(target)
+                establish_proximity(caller, target)
+                
+                caller.msg(f"|gYou successfully advance and engage {target.get_display_name(caller)} in melee!|n")
+                target.msg(f"|y{caller.get_display_name(target)} advances and engages you in melee!|n")
+                caller.location.msg_contents(
+                    f"|y{caller.get_display_name(caller.location)} advances on {target.get_display_name(caller.location)}!|n",
+                    exclude=[caller, target]
+                )
+                splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_{DEBUG_SUCCESS}: {caller.key} successfully advanced on {target.key}.")
+            else:
+                # Failure
+                caller.msg(f"|rYou fail to close the distance with {target.get_display_name(caller)}!|n")
+                target.msg(f"|y{caller.get_display_name(target)} tries to advance on you but you keep them at bay!|n")
+                caller.location.msg_contents(
+                    f"|y{caller.get_display_name(caller.location)} tries to advance on {target.get_display_name(caller.location)} but fails to close the distance!|n",
+                    exclude=[caller, target]
+                )
+                splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_{DEBUG_FAIL}: {caller.key} failed to advance on {target.key}.")
+        else:
+            # Different room - attempt to move (similar to charge)
+            caller.msg(f"Cross-room advance not yet implemented. Use 'charge' for aggressive movement or move normally.")
+            splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_TODO: {caller.key} attempted cross-room advance on {target.key}.")
+
+        # Ensure combat handler is active
+        if handler and not handler.is_active:
+            handler.start()
 
 
 class CmdCharge(Command):
@@ -397,5 +475,93 @@ class CmdCharge(Command):
             splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_{DEBUG_ERROR}: {caller.key} has handler but no combat entry.")
             return
 
-        # Rest of charge logic would continue here...
-        # Truncated for demonstration
+        # Check if being grappled
+        grappled_by_char_obj = handler.get_grappled_by_obj(caller_entry)
+        if grappled_by_char_obj:
+            caller.msg(f"You cannot charge while {grappled_by_char_obj.get_display_name(caller) if grappled_by_char_obj else 'someone'} is grappling you. Try 'escape' first.")
+            splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_{DEBUG_FAIL}: {caller.key} attempted to charge while grappled by {grappled_by_char_obj.key if grappled_by_char_obj else 'Unknown'}.")
+            return
+
+        # Determine target
+        target = None
+        if args:
+            target = caller.search(args, location=caller.location, quiet=True)
+            if not target:
+                # Try searching in adjacent combat rooms
+                managed_rooms = getattr(handler.db, "managed_rooms", [])
+                for room in managed_rooms:
+                    if room != caller.location:
+                        potential_target = caller.search(args, location=room, quiet=True)
+                        if potential_target:
+                            target = potential_target
+                            break
+                            
+            if not target:
+                caller.msg(f"You cannot find '{args}' to charge at.")
+                return
+                
+            if target == caller:
+                caller.msg(MSG_CHARGE_SELF_TARGET)
+                return
+        else:
+            # Use current combat target
+            target = handler.get_target_obj(caller_entry)
+            if not target:
+                caller.msg(MSG_CHARGE_NO_TARGET)
+                return
+
+        # Check if target is valid
+        target_entry = next((e for e in handler.db.combatants if e["char"] == target), None)
+        if not target_entry:
+            caller.msg(f"{target.get_display_name(caller)} is not in combat.")
+            return
+
+        # Check if already in proximity
+        if hasattr(caller.ndb, "in_proximity_with") and target in caller.ndb.in_proximity_with:
+            caller.msg(f"You are already in melee proximity with {target.get_display_name(caller)}. No need to charge.")
+            return
+
+        # Charge is more reckless than advance - bonus to success but penalty on failure
+        caller_motorics = get_numeric_stat(caller, "motorics")
+        target_motorics = get_numeric_stat(target, "motorics")
+        
+        # Charge gets a +2 bonus to the roll but has consequences on failure
+        charge_roll = randint(1, max(1, caller_motorics)) + 2
+        resist_roll = randint(1, max(1, target_motorics))
+        
+        splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_ROLL: {caller.key} (motorics:{caller_motorics}, roll:{charge_roll-2}+2 charge bonus) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
+        
+        if charge_roll > resist_roll:
+            # Success - establish proximity and charge bonus
+            initialize_proximity_ndb(caller)
+            initialize_proximity_ndb(target)
+            establish_proximity(caller, target)
+            
+            # Set a charge bonus for next attack
+            caller.ndb.charge_bonus = True
+            
+            caller.msg(f"|gYou charge {target.get_display_name(caller)} and slam into melee range! Your next attack will have a bonus.|n")
+            target.msg(f"|r{caller.get_display_name(target)} charges at you and crashes into melee range!|n")
+            caller.location.msg_contents(
+                f"|y{caller.get_display_name(caller.location)} charges at {target.get_display_name(caller.location)} with reckless abandon!|n",
+                exclude=[caller, target]
+            )
+            splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_{DEBUG_SUCCESS}: {caller.key} successfully charged {target.key}.")
+        else:
+            # Failure - charge penalty
+            caller.msg(f"|rYour reckless charge at {target.get_display_name(caller)} fails spectacularly!|n")
+            target.msg(f"|y{caller.get_display_name(target)} charges at you but you dodge, leaving them off-balance!|n")
+            caller.location.msg_contents(
+                f"|y{caller.get_display_name(caller.location)} charges recklessly at {target.get_display_name(caller.location)} but misses and stumbles!|n",
+                exclude=[caller, target]
+            )
+            
+            # Apply charge failure penalty
+            caller.ndb.charge_penalty = True
+            caller.msg(MSG_CHARGE_FAILED_PENALTY)
+            
+            splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_{DEBUG_FAIL}: {caller.key} failed charge on {target.key}, penalty applied.")
+
+        # Ensure combat handler is active
+        if handler and not handler.is_active:
+            handler.start()
