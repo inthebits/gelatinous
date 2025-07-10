@@ -126,12 +126,14 @@ class CmdAttack(Command):
         # Check if caller is grappled and trying to attack their grappler
         caller_handler = getattr(caller.ndb, "combat_handler", None)
         if caller_handler:
-            caller_entry = next((e for e in caller_handler.db.combatants if e["char"] == caller), None)
-            if caller_entry:
-                grappler_obj = caller_handler.get_grappled_by_obj(caller_entry)
-                if grappler_obj and grappler_obj == target:
-                    caller.msg(f"You cannot attack {target.key} while they are grappling you! Use 'escape' to resist violently.")
-                    return
+            combatants_list = getattr(caller_handler.db, "combatants", None)
+            if combatants_list:  # Add None check to prevent iteration errors
+                caller_entry = next((e for e in combatants_list if e["char"] == caller), None)
+                if caller_entry:
+                    grappler_obj = caller_handler.get_grappled_by_obj(caller_entry)
+                    if grappler_obj and grappler_obj == target:
+                        caller.msg(f"You cannot attack {target.key} while they are grappling you! Use 'escape' to resist violently.")
+                        return
 
         # --- PROXIMITY AND WEAPON VALIDATION ---
         # Initialize caller's proximity NDB if missing (failsafe)
