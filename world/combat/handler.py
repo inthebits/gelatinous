@@ -720,6 +720,8 @@ class CombatHandler(DefaultScript):
                 if combat_action == "release_grapple":
                     splattercast.msg(f"{char.key} is yielding but can still release their grapple.")
                     self._resolve_release_grapple(current_char_combat_entry, combatants_list)
+                    # Clear the action after processing to prevent persistence
+                    current_char_combat_entry["combat_action"] = None
                 else:
                     # Check if this character is grappling someone (restraint mode)
                     grappling_target = self.get_grappling_obj(current_char_combat_entry)
