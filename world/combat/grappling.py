@@ -282,3 +282,359 @@ def cleanup_invalid_grapples(combat_handler):
     
     if cleaned:
         combat_handler.db.combatants = combatants_list
+
+
+# ===================================================================
+# GRAPPLE ACTION RESOLVERS (moved from handler.py)
+# ===================================================================
+
+def resolve_grapple_initiate(char_entry, combatants_list, handler):
+    """
+    Resolve a grapple initiate action.
+    
+    Args:
+        char_entry: The character's combat entry
+        combatants_list: List of all combatants
+        handler: The combat handler instance
+    """
+    from evennia.comms.models import ChannelDB
+    from .constants import (
+        SPLATTERCAST_CHANNEL, NDB_PROXIMITY, DB_CHAR, DB_TARGET_DBREF,
+        DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF, DB_IS_YIELDING
+    )
+    from .utils import get_numeric_stat
+    from random import randint
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    char = char_entry.get(DB_CHAR)
+    
+    # Find who they're trying to grapple
+    target = handler.get_target_obj(char_entry)
+    if not target:
+        char.msg("You have no target to grapple.")
+        return
+    
+    # Check if target is in combat
+    target_entry = next((e for e in combatants_list if e.get(DB_CHAR) == target), None)
+    if not target_entry:
+        char.msg(f"{target.key} is not in combat.")
+        return
+    
+    # Check proximity
+    if not hasattr(char.ndb, NDB_PROXIMITY):
+        setattr(char.ndb, NDB_PROXIMITY, set())
+    if target not in getattr(char.ndb, NDB_PROXIMITY):
+        char.msg(f"You need to be in melee proximity with {target.key} to grapple them.")
+        return
+    
+    # Roll for grapple
+    attacker_roll = randint(1, max(1, get_numeric_stat(char, "motorics", 1)))
+    defender_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
+    
+    if attacker_roll > defender_roll:
+        # Success
+        char_entry[DB_GRAPPLING_DBREF] = get_character_dbref(target)
+        target_entry[DB_GRAPPLED_BY_DBREF] = get_character_dbref(char)
+        
+        # Set victim's target to the grappler for potential retaliation after escape/release
+        target_entry[DB_TARGET_DBREF] = get_character_dbref(char)
+        
+        # Auto-yield only the grappler (restraint intent)
+        # The victim remains non-yielding so they auto-resist each turn
+        char_entry[DB_IS_YIELDING] = True
+        # target_entry[DB_IS_YIELDING] = False  # Keep victim non-yielding for auto-resistance
+        
+        char.msg(f"|gYou successfully grapple {target.key}!|n")
+        target.msg(f"|g{char.key} grapples you!|n")
+        # Note: No auto-yield message for victim since they remain non-yielding to auto-resist
+        
+        if char.location:
+            char.location.msg_contents(
+                f"|g{char.key} grapples {target.key}!|n",
+                exclude=[char, target]
+            )
+        
+        splattercast.msg(f"GRAPPLE_SUCCESS: {char.key} grappled {target.key}.")
+    else:
+        # Failure
+        char.msg(f"|yYou fail to grapple {target.key}.|n")
+        target.msg(f"|y{char.key} fails to grapple you.|n")
+        
+        # Check if grappler initiated combat - if so, they should become yielding on failure
+        initiated_combat = char_entry.get("initiated_combat_this_action", False)
+        if initiated_combat:
+            char_entry[DB_IS_YIELDING] = True
+            char.msg("|gYour failed grapple attempt leaves you non-aggressive.|n")
+            splattercast.msg(f"GRAPPLE_FAIL_YIELD: {char.key} initiated combat with grapple but failed, setting to yielding.")
+            
+            # Also set the target to yielding since the grapple was a non-violent initiation
+            target_entry[DB_IS_YIELDING] = True
+            target.msg("|gAfter the failed grapple attempt, you also stand down from aggression.|n")
+            splattercast.msg(f"GRAPPLE_FAIL_YIELD: {target.key} also set to yielding after failed grapple initiation.")
+        
+        if char.location:
+            char.location.msg_contents(
+                f"|y{char.key} fails to grapple {target.key}.|n",
+                exclude=[char, target]
+            )
+        
+        splattercast.msg(f"GRAPPLE_FAIL: {char.key} failed to grapple {target.key}.")
+
+
+def resolve_grapple_join(char_entry, combatants_list, handler):
+    """
+    Resolve a grapple join action.
+    
+    Args:
+        char_entry: The character's combat entry
+        combatants_list: List of all combatants
+        handler: The combat handler instance
+    """
+    from evennia.comms.models import ChannelDB
+    from .constants import (
+        SPLATTERCAST_CHANNEL, NDB_PROXIMITY, DB_CHAR,
+        DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF, DB_IS_YIELDING
+    )
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    char = char_entry.get(DB_CHAR)
+    
+    # Find existing grapple to join
+    target = handler.get_target_obj(char_entry)
+    if not target:
+        char.msg("You have no target to join in grappling.")
+        return
+    
+    # Check if target is already grappled
+    target_entry = next((e for e in combatants_list if e.get(DB_CHAR) == target), None)
+    if not target_entry or not target_entry.get(DB_GRAPPLED_BY_DBREF):
+        char.msg(f"{target.key} is not currently being grappled.")
+        return
+    
+    # Find the original grappler
+    grappler = handler.get_grappled_by_obj(target_entry)
+    if not grappler:
+        char.msg("Unable to find the original grappler.")
+        return
+    
+    # Check proximity
+    if not hasattr(char.ndb, NDB_PROXIMITY):
+        setattr(char.ndb, NDB_PROXIMITY, set())
+    if target not in getattr(char.ndb, NDB_PROXIMITY):
+        char.msg(f"You need to be in melee proximity with {target.key} to join the grapple.")
+        return
+    
+    # Automatically succeed in joining
+    char_entry[DB_GRAPPLING_DBREF] = get_character_dbref(target)
+    char_entry[DB_IS_YIELDING] = True
+    
+    char.msg(f"|gYou join {grappler.key} in grappling {target.key}!|n")
+    target.msg(f"|g{char.key} joins in grappling you!|n")
+    grappler.msg(f"|g{char.key} joins you in grappling {target.key}!|n")
+    
+    if char.location:
+        char.location.msg_contents(
+            f"|g{char.key} joins {grappler.key} in grappling {target.key}!|n",
+            exclude=[char, target, grappler]
+        )
+    
+    splattercast.msg(f"GRAPPLE_JOIN: {char.key} joined {grappler.key} in grappling {target.key}.")
+
+
+def resolve_release_grapple(char_entry, combatants_list, handler):
+    """
+    Resolve a release grapple action.
+    
+    Args:
+        char_entry: The character's combat entry
+        combatants_list: List of all combatants
+        handler: The combat handler instance
+    """
+    from evennia.comms.models import ChannelDB
+    from .constants import (
+        SPLATTERCAST_CHANNEL, DB_CHAR, DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF
+    )
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    char = char_entry.get(DB_CHAR)
+    
+    # Find who they're grappling
+    grappling_target = handler.get_grappling_obj(char_entry)
+    if not grappling_target:
+        char.msg("You are not grappling anyone.")
+        return
+    
+    # Find the target's entry
+    target_entry = next((e for e in combatants_list if e.get(DB_CHAR) == grappling_target), None)
+    if not target_entry:
+        char.msg(f"{grappling_target.key} is not in combat.")
+        return
+    
+    # Clear the grapple
+    char_entry[DB_GRAPPLING_DBREF] = None
+    target_entry[DB_GRAPPLED_BY_DBREF] = None
+    
+    # Preserve existing yielding states - don't force any changes
+    # The yielding state reflects the original intent when combat/grapple was initiated
+    # If they want to become violent again, they need to explicitly take a hostile action
+    
+    # Check if target is still grappled by someone else for validation
+    still_grappled = any(
+        e.get(DB_GRAPPLING_DBREF) == get_character_dbref(grappling_target)
+        for e in combatants_list
+        if e.get(DB_CHAR) != char
+    )
+    
+    char.msg(f"|gYou release your grapple on {grappling_target.key}.|n")
+    grappling_target.msg(f"|g{char.key} releases their grapple on you.|n")
+    
+    if char.location:
+        char.location.msg_contents(
+            f"|g{char.key} releases their grapple on {grappling_target.key}.|n",
+            exclude=[char, grappling_target]
+        )
+    
+    splattercast.msg(f"GRAPPLE_RELEASE: {char.key} released {grappling_target.key}.")
+
+
+def validate_and_cleanup_grapple_state(handler):
+    """
+    Validate and clean up stale grapple references in the combat handler.
+    
+    This function checks for and fixes:
+    - Stale DBREFs to characters no longer in the database
+    - Invalid cross-references (A grappling B but B not grappled by A)
+    - Self-grappling references
+    - References to characters no longer in combat
+    - Orphaned grapple states
+    
+    Called periodically during combat to maintain data integrity.
+    
+    Args:
+        handler: The combat handler instance
+    """
+    from evennia.comms.models import ChannelDB
+    from .constants import (
+        SPLATTERCAST_CHANNEL, DB_CHAR, DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF
+    )
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    combatants_list = list(getattr(handler.db, "combatants", []))
+    cleanup_needed = False
+    
+    splattercast.msg(f"GRAPPLE_VALIDATE: Starting grapple state validation for handler {handler.key}")
+    
+    # Get list of all valid character DBREFs in combat for reference checking
+    valid_combat_dbrefs = set()
+    valid_combat_chars = set()
+    for entry in combatants_list:
+        char = entry.get(DB_CHAR)
+        if char:
+            valid_combat_dbrefs.add(get_character_dbref(char))
+            valid_combat_chars.add(char)
+    
+    for i, entry in enumerate(combatants_list):
+        char = entry.get(DB_CHAR)
+        if not char:
+            continue
+            
+        grappling_dbref = entry.get(DB_GRAPPLING_DBREF)
+        grappled_by_dbref = entry.get(DB_GRAPPLED_BY_DBREF)
+        
+        # Check grappling_dbref (who this character is grappling)
+        if grappling_dbref is not None:
+            # Try to resolve the grappling target
+            grappling_target = get_character_by_dbref(grappling_dbref)
+            
+            if not grappling_target:
+                # Stale DBREF - character no longer exists
+                splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} has stale grappling_dbref {grappling_dbref} (character doesn't exist). Clearing.")
+                combatants_list[i] = dict(entry)
+                combatants_list[i][DB_GRAPPLING_DBREF] = None
+                cleanup_needed = True
+            elif grappling_target == char:
+                # Self-grappling
+                splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} is grappling themselves! Clearing self-grapple.")
+                combatants_list[i] = dict(entry)
+                combatants_list[i][DB_GRAPPLING_DBREF] = None
+                cleanup_needed = True
+            elif grappling_target not in valid_combat_chars:
+                # Target not in combat
+                splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} is grappling {grappling_target.key} who is not in combat. Clearing.")
+                combatants_list[i] = dict(entry)
+                combatants_list[i][DB_GRAPPLING_DBREF] = None
+                cleanup_needed = True
+            else:
+                # Valid target - check cross-reference
+                target_entry = next((e for e in combatants_list if e.get(DB_CHAR) == grappling_target), None)
+                if target_entry:
+                    target_grappled_by_dbref = target_entry.get(DB_GRAPPLED_BY_DBREF)
+                    expected_dbref = get_character_dbref(char)
+                    
+                    if target_grappled_by_dbref != expected_dbref:
+                        # Broken cross-reference
+                        splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} claims to grapple {grappling_target.key}, but {grappling_target.key} doesn't have matching grappled_by reference. Fixing cross-reference.")
+                        # Fix the target's grappled_by reference
+                        target_index = next(j for j, e in enumerate(combatants_list) if e.get(DB_CHAR) == grappling_target)
+                        combatants_list[target_index] = dict(combatants_list[target_index])
+                        combatants_list[target_index][DB_GRAPPLED_BY_DBREF] = expected_dbref
+                        cleanup_needed = True
+        
+        # Check grappled_by_dbref (who is grappling this character)
+        if grappled_by_dbref is not None:
+            # Try to resolve the grappler
+            grappler = get_character_by_dbref(grappled_by_dbref)
+            
+            if not grappler:
+                # Stale DBREF - grappler no longer exists
+                splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} has stale grappled_by_dbref {grappled_by_dbref} (character doesn't exist). Clearing.")
+                combatants_list[i] = dict(entry)
+                combatants_list[i][DB_GRAPPLED_BY_DBREF] = None
+                cleanup_needed = True
+            elif grappler == char:
+                # Self-grappling
+                splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} is grappled by themselves! Clearing self-grapple.")
+                combatants_list[i] = dict(entry)
+                combatants_list[i][DB_GRAPPLED_BY_DBREF] = None
+                cleanup_needed = True
+            elif grappler not in valid_combat_chars:
+                # Grappler not in combat
+                splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} is grappled by {grappler.key} who is not in combat. Clearing.")
+                combatants_list[i] = dict(entry)
+                combatants_list[i][DB_GRAPPLED_BY_DBREF] = None
+                cleanup_needed = True
+            else:
+                # Valid grappler - check cross-reference
+                grappler_entry = next((e for e in combatants_list if e.get(DB_CHAR) == grappler), None)
+                if grappler_entry:
+                    grappler_grappling_dbref = grappler_entry.get(DB_GRAPPLING_DBREF)
+                    expected_dbref = get_character_dbref(char)
+                    
+                    if grappler_grappling_dbref != expected_dbref:
+                        # Broken cross-reference
+                        splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} claims to be grappled by {grappler.key}, but {grappler.key} doesn't have matching grappling reference. Fixing cross-reference.")
+                        # Fix the grappler's grappling reference
+                        grappler_index = next(j for j, e in enumerate(combatants_list) if e.get(DB_CHAR) == grappler)
+                        combatants_list[grappler_index] = dict(combatants_list[grappler_index])
+                        combatants_list[grappler_index][DB_GRAPPLING_DBREF] = expected_dbref
+                        cleanup_needed = True
+    
+    # Save changes if any cleanup was needed
+    if cleanup_needed:
+        setattr(handler.db, "combatants", combatants_list)
+        splattercast.msg(f"GRAPPLE_CLEANUP: Grapple state cleanup completed for handler {handler.key}. Changes saved.")
+    else:
+        splattercast.msg(f"GRAPPLE_VALIDATE: All grapple states valid for handler {handler.key}.")
+
+
+def get_character_dbref(char):
+    """
+    Get DBREF for a character object.
+    
+    Args:
+        char: The character object
+        
+    Returns:
+        int or None: The character's DBREF
+    """
+    return char.id if char else None

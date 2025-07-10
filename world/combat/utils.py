@@ -529,3 +529,250 @@ def clear_mutual_aim(char1, char2):
     
     if hasattr(char2.ndb, "aimed_at_by") and char2.ndb.aimed_at_by == char1:
         del char2.ndb.aimed_at_by
+
+
+# ===================================================================
+# COMBATANT MANAGEMENT (moved from handler.py)
+# ===================================================================
+
+def add_combatant(handler, char, target=None, initial_grappling=None, initial_grappled_by=None, initial_is_yielding=False):
+    """
+    Add a character to combat.
+    
+    Args:
+        handler: The combat handler instance
+        char: The character to add
+        target: Optional initial target
+        initial_grappling: Optional character being grappled initially
+        initial_grappled_by: Optional character grappling this char initially
+        initial_is_yielding: Whether the character starts yielding
+    """
+    from evennia.comms.models import ChannelDB
+    from .constants import (
+        SPLATTERCAST_CHANNEL, DB_COMBATANTS, DB_CHAR, DB_TARGET_DBREF,
+        DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF, DB_IS_YIELDING, 
+        NDB_PROXIMITY, NDB_COMBAT_HANDLER, DB_COMBAT_RUNNING
+    )
+    from random import randint
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    
+    # Debug: Show what parameters were passed
+    splattercast.msg(f"ADD_COMBATANT_PARAMS: char={char.key if char else None}, target={target.key if target else None}")
+    
+    # Prevent self-targeting
+    if target and char == target:
+        splattercast.msg(f"ADD_COMBATANT_ERROR: {char.key} cannot target themselves! Setting target to None.")
+        target = None
+    
+    # Check if already in combat
+    combatants = getattr(handler.db, DB_COMBATANTS, [])
+    for entry in combatants:
+        if entry.get(DB_CHAR) == char:
+            splattercast.msg(f"ADD_COMB: {char.key} is already in combat.")
+            return
+    
+    # Initialize proximity NDB if it doesn't exist or is not a set
+    if not hasattr(char.ndb, NDB_PROXIMITY) or not isinstance(getattr(char.ndb, NDB_PROXIMITY), set):
+        setattr(char.ndb, NDB_PROXIMITY, set())
+        splattercast.msg(f"ADD_COMB: Initialized char.ndb.{NDB_PROXIMITY} as a new set for {char.key}.")
+    
+    # Create combat entry
+    target_dbref = get_character_dbref(target)
+    entry = {
+        DB_CHAR: char,
+        "initiative": randint(1, 20) + get_numeric_stat(char, "motorics", 0),
+        DB_TARGET_DBREF: target_dbref,
+        DB_GRAPPLING_DBREF: get_character_dbref(initial_grappling),
+        DB_GRAPPLED_BY_DBREF: get_character_dbref(initial_grappled_by),
+        DB_IS_YIELDING: initial_is_yielding,
+        "combat_action": None
+    }
+    
+    splattercast.msg(f"ADD_COMBATANT_ENTRY: {char.key} -> target_dbref={target_dbref}, initiative={entry['initiative']}")
+    
+    combatants.append(entry)
+    setattr(handler.db, DB_COMBATANTS, combatants)
+    
+    # Set the character's handler reference
+    setattr(char.ndb, NDB_COMBAT_HANDLER, handler)
+    
+    splattercast.msg(f"ADD_COMB: {char.key} added to combat in {handler.key} with initiative {entry['initiative']}.")
+    char.msg("|rYou enter combat!|n")
+    
+    # Start combat if not already running
+    if not getattr(handler.db, DB_COMBAT_RUNNING, False):
+        handler.start()
+    
+    # Validate grapple state after adding new combatant
+    from .grappling import validate_and_cleanup_grapple_state
+    validate_and_cleanup_grapple_state(handler)
+
+
+def remove_combatant(handler, char):
+    """
+    Remove a character from combat and clean up their state.
+    
+    Args:
+        handler: The combat handler instance
+        char: The character to remove from combat
+    """
+    from evennia.comms.models import ChannelDB
+    from .constants import (
+        SPLATTERCAST_CHANNEL, DB_COMBATANTS, DB_CHAR, DB_TARGET_DBREF, 
+        NDB_COMBAT_HANDLER
+    )
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    
+    combatants = getattr(handler.db, DB_COMBATANTS, [])
+    entry = next((e for e in combatants if e.get(DB_CHAR) == char), None)
+    
+    if not entry:
+        splattercast.msg(f"RMV_COMB: {char.key} not found in combat.")
+        return
+    
+    # Clean up the character's state
+    cleanup_combatant_state(char, entry, handler)
+    
+    # Remove references to this character from other combatants
+    for other_entry in combatants:
+        if other_entry.get(DB_TARGET_DBREF) == get_character_dbref(char):
+            other_entry[DB_TARGET_DBREF] = None
+            splattercast.msg(f"RMV_COMB: Cleared {other_entry[DB_CHAR].key}'s target_dbref (was {char.key})")
+            # Inform the character that their target is gone
+            if hasattr(other_entry[DB_CHAR], 'msg'):
+                other_entry[DB_CHAR].msg(f"|yYour target {char.get_display_name(other_entry[DB_CHAR]) if hasattr(char, 'get_display_name') else char.key} has left combat. Choose a new target if you wish to continue fighting.|n")
+    
+    # Remove from combatants list
+    combatants = [e for e in combatants if e.get(DB_CHAR) != char]
+    setattr(handler.db, DB_COMBATANTS, combatants)
+    
+    # Remove handler reference
+    if hasattr(char.ndb, NDB_COMBAT_HANDLER) and getattr(char.ndb, NDB_COMBAT_HANDLER) == handler:
+        delattr(char.ndb, NDB_COMBAT_HANDLER)
+    
+    splattercast.msg(f"{char.key} removed from combat.")
+    char.msg("|gYou are no longer in combat.|n")
+    
+    # Stop combat if no combatants remain
+    if len(combatants) == 0:
+        splattercast.msg(f"RMV_COMB: No combatants remain in handler {handler.key}. Stopping.")
+        handler.stop_combat_logic()
+
+
+def cleanup_combatant_state(char, entry, handler):
+    """
+    Clean up all combat-related state for a character.
+    
+    Args:
+        char: The character to clean up
+        entry: The character's combat entry
+        handler: The combat handler instance
+    """
+    from .proximity import clear_all_proximity
+    from .grappling import break_grapple
+    from .constants import NDB_PROXIMITY, NDB_SKIP_ROUND
+    
+    # Clear proximity relationships
+    clear_all_proximity(char)
+    
+    # Break grapples
+    grappling = get_combatant_grappling_target(entry, handler)
+    grappled_by = get_combatant_grappled_by(entry, handler)
+    
+    if grappling:
+        break_grapple(handler, grappler=char, victim=grappling)
+    if grappled_by:
+        break_grapple(handler, grappler=grappled_by, victim=char)
+    
+    # Clear NDB attributes
+    ndb_attrs = [NDB_PROXIMITY, NDB_SKIP_ROUND, "charging_vulnerability_active", 
+                "charge_attack_bonus_active", "skip_combat_round"]
+    for attr in ndb_attrs:
+        if hasattr(char.ndb, attr):
+            delattr(char.ndb, attr)
+    
+    # Force clear charge bonus flag with explicit setting to False as fallback
+    char.ndb.charge_attack_bonus_active = False
+    char.ndb.charging_vulnerability_active = False
+
+
+def cleanup_all_combatants(handler):
+    """
+    Clean up all combatant state and remove them from the handler.
+    
+    This function clears all proximity relationships, breaks grapples,
+    and removes combat-related NDB attributes from all combatants.
+    
+    Args:
+        handler: The combat handler instance
+    """
+    from evennia.comms.models import ChannelDB
+    from .constants import SPLATTERCAST_CHANNEL, DB_COMBATANTS, DB_CHAR, DEBUG_PREFIX_HANDLER, DEBUG_CLEANUP
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    combatants = getattr(handler.db, DB_COMBATANTS, [])
+    
+    for entry in combatants:
+        char = entry.get(DB_CHAR)
+        if char:
+            cleanup_combatant_state(char, entry, handler)
+    
+    # Clear the combatants list
+    setattr(handler.db, DB_COMBATANTS, [])
+    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: All combatants cleaned up for {handler.key}.")
+
+
+# ===================================================================
+# COMBATANT UTILITY FUNCTIONS
+# ===================================================================
+
+def get_combatant_target(entry, handler):
+    """Get the target object for a combatant entry."""
+    target_dbref = entry.get("target_dbref")
+    return get_character_by_dbref(target_dbref)
+
+
+def get_combatant_grappling_target(entry, handler):
+    """Get the character that this combatant is grappling."""
+    grappling_dbref = entry.get("grappling_dbref")
+    return get_character_by_dbref(grappling_dbref)
+
+
+def get_combatant_grappled_by(entry, handler):
+    """Get the character that is grappling this combatant."""
+    grappled_by_dbref = entry.get("grappled_by_dbref")
+    return get_character_by_dbref(grappled_by_dbref)
+
+
+def get_character_dbref(char):
+    """
+    Get DBREF for a character object.
+    
+    Args:
+        char: The character object
+        
+    Returns:
+        int or None: The character's DBREF
+    """
+    return char.id if char else None
+
+
+def get_character_by_dbref(dbref):
+    """
+    Get character object by DBREF.
+    
+    Args:
+        dbref: The database reference number
+        
+    Returns:
+        Character object or None
+    """
+    if dbref is None:
+        return None
+    try:
+        from evennia import search_object
+        return search_object(f"#{dbref}")[0]
+    except (IndexError, ValueError):
+        return None
