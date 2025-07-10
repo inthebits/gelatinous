@@ -244,8 +244,15 @@ MSG_STOP_AIM_ERROR = "|rError: Cannot process 'stop aiming'. Character is missin
 MSG_STOP_NOT_IN_COMBAT = "You are not in combat to stop attacking."
 MSG_STOP_NOT_REGISTERED = "You are not properly registered in the current combat."
 MSG_STOP_YIELDING = "|gYou lower your guard and will not actively attack (you are now yielding).|n"
-MSG_STOP_ALREADY_ACCEPTING_GRAPPLE = "You are already accepting the grapple. Use 'escape', 'resist', or 'attack [grappler]' to resume struggling."
+MSG_STOP_ALREADY_ACCEPTING_GRAPPLE = "You are already accepting the grapple. Use 'escape' to resist violently."
 MSG_STOP_ALREADY_YIELDING = "You are already yielding (not actively attacking)."
+MSG_RESUME_ATTACKING = "|rYou steel yourself and resume actively attacking (no longer yielding).|n"
+MSG_GRAPPLE_AUTO_YIELD = "|yYou are being grappled and automatically yield (restraint mode). Use 'escape' to resist violently.|n"
+MSG_GRAPPLE_VIOLENT_SWITCH = "|rYou switch to violent resistance against {grappler}!|n"
+MSG_GRAPPLE_ESCAPE_VIOLENT_SWITCH = "|rYou fight desperately for your life against {grappler}'s hold!|n"
+MSG_GRAPPLE_AUTO_ESCAPE_VIOLENT = "|rYour successful escape fills you with fighting spirit - you're now actively resisting!|n"
+MSG_GRAPPLE_RESTRAINT_HOLD = "|gYou maintain a restraining hold on {victim} (non-violent).|n"
+MSG_GRAPPLE_VIOLENT_HOLD = "|rYou tighten your grip on {victim} violently!|n"
 
 # Aim command messages
 MSG_AIM_NOT_AIMING = "You are not aiming at anything or in any direction. To aim, use 'aim <target/direction>'."

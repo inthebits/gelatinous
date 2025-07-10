@@ -24,7 +24,7 @@ from world.combat.constants import (
     MSG_NOT_IN_COMBAT, MSG_DISARM_NO_TARGET, MSG_DISARM_TARGET_EMPTY_HANDS,
     MSG_DISARM_FAILED, MSG_DISARM_RESISTED, MSG_DISARM_NOTHING_TO_DISARM,
     MSG_DISARM_SUCCESS_ATTACKER, MSG_DISARM_SUCCESS_VICTIM, MSG_DISARM_SUCCESS_OBSERVER,
-    MSG_AIM_WHO_WHAT, MSG_AIM_SELF_TARGET,
+    MSG_AIM_WHO_WHAT, MSG_AIM_SELF_TARGET, MSG_GRAPPLE_VIOLENT_SWITCH, MSG_GRAPPLE_ESCAPE_VIOLENT_SWITCH,
     DEBUG_PREFIX_GRAPPLE, SPLATTERCAST_CHANNEL,
     NDB_COMBAT_HANDLER
 )
@@ -186,8 +186,29 @@ class CmdEscapeGrapple(Command):
             caller.msg(MSG_ESCAPE_NOT_IN_COMBAT)
             return
 
-        # Escape logic would continue here...
-        # Truncated for demonstration
+        # Get caller's combat entry
+        caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        if not caller_entry:
+            caller.msg("You are not properly registered in combat.")
+            return
+
+        # Check if being grappled
+        grappler_obj = handler.get_grappled_by_obj(caller_entry)
+        if not grappler_obj:
+            caller.msg("You are not being grappled.")
+            return
+
+        # When someone actively escapes, they are no longer yielding
+        was_yielding = caller_entry.get("is_yielding", False)
+        caller_entry["is_yielding"] = False
+        
+        if was_yielding:
+            caller.msg(MSG_GRAPPLE_ESCAPE_VIOLENT_SWITCH.format(grappler=grappler_obj.key))
+
+        # Set escape action for the combat handler to process
+        caller_entry["combat_action"] = "escape_grapple"
+        caller.msg(f"You prepare to struggle violently against {grappler_obj.key}'s hold!")
+        log_combat_action(caller, "escape_action", grappler_obj, details="combat action set to escape_grapple")
 
 
 class CmdReleaseGrapple(Command):
@@ -213,8 +234,22 @@ class CmdReleaseGrapple(Command):
             caller.msg(MSG_RELEASE_NOT_IN_COMBAT)
             return
 
-        # Release logic would continue here...
-        # Truncated for demonstration
+        # Get caller's combat entry
+        caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        if not caller_entry:
+            caller.msg("You are not properly registered in combat.")
+            return
+
+        # Check if grappling someone
+        victim_obj = handler.get_grappling_obj(caller_entry)
+        if not victim_obj:
+            caller.msg("You are not grappling anyone.")
+            return
+
+        # Set release action for the combat handler to process
+        caller_entry["combat_action"] = "release_grapple"
+        caller.msg(f"You prepare to release your hold on {victim_obj.key}.")
+        log_combat_action(caller, "release_action", victim_obj, details="combat action set to release_grapple")
 
 
 class CmdDisarm(Command):

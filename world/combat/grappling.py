@@ -14,7 +14,8 @@ Functions:
 
 from .constants import (
     DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF, 
-    MSG_CANNOT_WHILE_GRAPPLED, MSG_CANNOT_GRAPPLE_SELF, MSG_ALREADY_GRAPPLING
+    MSG_CANNOT_WHILE_GRAPPLED, MSG_CANNOT_GRAPPLE_SELF, MSG_ALREADY_GRAPPLING,
+    MSG_GRAPPLE_AUTO_YIELD
 )
 from .utils import log_debug, get_display_name_safe
 from .proximity import establish_proximity, is_in_proximity
@@ -116,14 +117,21 @@ def establish_grapple(combat_handler, grappler, victim):
     for i, entry in enumerate(combatants_list):
         if entry.get("char") == grappler:
             combatants_list[i][DB_GRAPPLING_DBREF] = victim.id
+            # Grappler starts in restraint mode (yielding)
+            combatants_list[i]["is_yielding"] = True
         elif entry.get("char") == victim:
             combatants_list[i][DB_GRAPPLED_BY_DBREF] = grappler.id
+            # Victim automatically yields when grappled (restraint mode)
+            combatants_list[i]["is_yielding"] = True
     
     # Save the updated list
     combat_handler.db.combatants = combatants_list
     
     # Ensure proximity (grappling requires proximity)
     establish_proximity(grappler, victim)
+    
+    # Notify victim they're auto-yielding
+    victim.msg(MSG_GRAPPLE_AUTO_YIELD)
     
     log_debug("GRAPPLE", "ESTABLISH", f"{grappler.key} grapples {victim.key}")
     

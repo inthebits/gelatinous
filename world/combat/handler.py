@@ -25,7 +25,8 @@ from .constants import (
     DB_COMBATANTS, DB_COMBAT_RUNNING, DB_MANAGED_ROOMS,
     DB_CHAR, DB_TARGET_DBREF, DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF, DB_IS_YIELDING,
     NDB_COMBAT_HANDLER, NDB_PROXIMITY, NDB_SKIP_ROUND,
-    DEBUG_PREFIX_HANDLER, DEBUG_SUCCESS, DEBUG_FAIL, DEBUG_ERROR, DEBUG_CLEANUP
+    DEBUG_PREFIX_HANDLER, DEBUG_SUCCESS, DEBUG_FAIL, DEBUG_ERROR, DEBUG_CLEANUP,
+    MSG_GRAPPLE_AUTO_ESCAPE_VIOLENT
 )
 from .utils import (
     get_numeric_stat, log_combat_action, get_display_name_safe,
@@ -777,9 +778,19 @@ class CombatHandler(DefaultScript):
                     splattercast.msg(f"{char.key} is yielding but can still release their grapple.")
                     self._resolve_release_grapple(current_char_combat_entry, combatants_list)
                 else:
-                    splattercast.msg(f"{char.key} is yielding and takes no hostile action this turn.")
-                    char.location.msg_contents(f"|y{char.key} holds their action, appearing non-hostile.|n", exclude=[char])
-                    char.msg("|yYou hold your action, appearing non-hostile.|n")
+                    # Check if this character is grappling someone (restraint mode)
+                    grappling_target = self.get_grappling_obj(current_char_combat_entry)
+                    if grappling_target:
+                        # Grappler in restraint mode - maintain hold without violence
+                        splattercast.msg(f"{char.key} is yielding but maintains restraining hold on {grappling_target.key}.")
+                        char.msg(f"|gYou maintain a restraining hold on {grappling_target.key} without violence.|n")
+                        grappling_target.msg(f"|g{char.key} maintains a gentle but firm restraining hold on you.|n")
+                        char.location.msg_contents(f"|g{char.key} maintains a restraining hold on {grappling_target.key}.|n", exclude=[char, grappling_target])
+                    else:
+                        # Regular yielding behavior
+                        splattercast.msg(f"{char.key} is yielding and takes no hostile action this turn.")
+                        char.location.msg_contents(f"|y{char.key} holds their action, appearing non-hostile.|n", exclude=[char])
+                        char.msg("|yYou hold your action, appearing non-hostile.|n")
                 continue
                 
             # Handle being grappled (auto resist unless yielding)
@@ -796,7 +807,15 @@ class CombatHandler(DefaultScript):
                     grappler = None
                     
             if grappler:
-                # Automatically attempt to escape
+                # Check if the victim is yielding (restraint mode acceptance)
+                if current_char_combat_entry.get(DB_IS_YIELDING, False):
+                    # Victim is yielding/accepting restraint - no automatic escape attempt
+                    splattercast.msg(f"{char.key} is being grappled by {grappler.key} but is yielding (accepting restraint).")
+                    char.msg(f"|gYou remain still in {grappler.key}'s hold, not resisting.|n")
+                    char.location.msg_contents(f"|g{char.key} does not resist {grappler.key}'s hold.|n", exclude=[char])
+                    continue
+                    
+                # Victim is not yielding - automatically attempt to escape
                 splattercast.msg(f"{char.key} is being grappled by {grappler.key} and automatically attempts to escape.")
                 char.msg(f"|yYou struggle against {grappler.key}'s grip!|n")
                 
@@ -811,12 +830,21 @@ class CombatHandler(DefaultScript):
                     grappler_entry = next((e for e in combatants_list if e[DB_CHAR] == grappler), None)
                     if grappler_entry:
                         grappler_entry[DB_GRAPPLING_DBREF] = None
-                        
+                    
+                    # Successful auto-escape switches victim to violent mode (fighting for their life)
+                    was_yielding = current_char_combat_entry.get(DB_IS_YIELDING, False)
+                    current_char_combat_entry[DB_IS_YIELDING] = False
+                    
                     escape_messages = get_combat_message("grapple", "escape_hit", attacker=char, target=grappler)
                     char.msg(escape_messages.get("attacker_msg", f"You break free from {grappler.key}'s grasp!"))
                     grappler.msg(escape_messages.get("victim_msg", f"{char.key} breaks free from your grasp!"))
                     obs_msg = escape_messages.get("observer_msg", f"{char.key} breaks free from {grappler.key}'s grasp!")
                     char.location.msg_contents(obs_msg, exclude=[char, grappler])
+                    
+                    # Additional message if they switched from yielding to violent
+                    if was_yielding:
+                        char.msg(MSG_GRAPPLE_AUTO_ESCAPE_VIOLENT)
+                    
                     splattercast.msg(f"AUTO_ESCAPE_SUCCESS: {char.key} escaped from {grappler.key}.")
                 else:
                     # Failure

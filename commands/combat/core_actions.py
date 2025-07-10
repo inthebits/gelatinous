@@ -23,7 +23,7 @@ from world.combat.constants import (
     MSG_ATTACK_WHO, MSG_SELF_TARGET, MSG_NOT_IN_COMBAT, MSG_NO_COMBAT_DATA,
     MSG_STOP_WHAT, MSG_STOP_NOT_AIMING, MSG_STOP_AIM_ERROR, MSG_STOP_NOT_IN_COMBAT,
     MSG_STOP_NOT_REGISTERED, MSG_STOP_YIELDING, MSG_STOP_ALREADY_ACCEPTING_GRAPPLE,
-    MSG_STOP_ALREADY_YIELDING,
+    MSG_STOP_ALREADY_YIELDING, MSG_RESUME_ATTACKING, MSG_GRAPPLE_VIOLENT_SWITCH,
     DEBUG_PREFIX_ATTACK, DEBUG_FAILSAFE, DEBUG_SUCCESS, DEBUG_FAIL, DEBUG_ERROR,
     NDB_PROXIMITY, DEFAULT_WEAPON_TYPE, COLOR_SUCCESS, COLOR_FAILURE, COLOR_WARNING
 )
@@ -122,6 +122,17 @@ class CmdAttack(Command):
             caller.msg(MSG_SELF_TARGET)
             return
 
+        # --- GRAPPLE RESTRICTION CHECK ---
+        # Check if caller is grappled and trying to attack their grappler
+        caller_handler = getattr(caller.ndb, "combat_handler", None)
+        if caller_handler:
+            caller_entry = next((e for e in caller_handler.db.combatants if e["char"] == caller), None)
+            if caller_entry:
+                grappler_obj = caller_handler.get_grappled_by_obj(caller_entry)
+                if grappler_obj and grappler_obj == target:
+                    caller.msg(f"You cannot attack {target.key} while they are grappling you! Use 'escape' to resist violently.")
+                    return
+
         # --- PROXIMITY AND WEAPON VALIDATION ---
         # Initialize caller's proximity NDB if missing (failsafe)
         if initialize_proximity_ndb(caller):
@@ -183,7 +194,20 @@ class CmdAttack(Command):
             caller_entry = next((e for e in final_handler.db.combatants if e["char"] == caller), None)
             if caller_entry: # Ensure entry exists
                 final_handler.set_target(caller, target) # This command updates the target
+                
+                # Check if caller was yielding and provide appropriate messaging
+                was_yielding = caller_entry.get("is_yielding", False)
                 caller_entry["is_yielding"] = False
+                
+                if was_yielding:
+                    # Check if caller is grappled (being grappled by someone)
+                    grappler_obj = final_handler.get_grappled_by_obj(caller_entry)
+                    if grappler_obj:
+                        # Special message for switching to violent resistance while grappled
+                        caller.msg(MSG_GRAPPLE_VIOLENT_SWITCH.format(grappler=grappler_obj.key))
+                    else:
+                        # General message for resuming attacking
+                        caller.msg(MSG_RESUME_ATTACKING)
 
         if not target_was_in_final_handler:
             final_handler.add_combatant(target, target=caller) 
