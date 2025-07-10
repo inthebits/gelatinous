@@ -146,6 +146,14 @@ class CmdGrapple(Command):
         if "combat_action" not in caller_combat_entry:
             caller_combat_entry["combat_action"] = {}
             
+        # --- Establish proximity for grapple combat ---
+        if caller.location == target.location:
+            # Same room grapple - establish proximity for melee combat
+            from world.combat.proximity import establish_proximity
+            establish_proximity(caller, target)
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_GRAPPLE}: Established proximity between {caller.key} and {target.key} for grapple combat.")
+
         # --- Determine grapple type based on target's current grapple state ---
         target_is_currently_grappled = handler.get_grappled_by_obj(target_combat_entry) is not None
         

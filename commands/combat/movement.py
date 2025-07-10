@@ -829,7 +829,7 @@ class CmdCharge(Command):
                 clear_mutual_aim(caller, target)
                 
                 # Set a charge bonus for next attack
-                caller.ndb.charge_bonus = True
+                caller.ndb.charge_attack_bonus_active = True
                 
                 caller.msg(f"|gYou charge {target.get_display_name(caller)} and slam into melee range! Your next attack will have a bonus.|n")
                 target.msg(f"|r{caller.get_display_name(target)} charges at you and crashes into melee range!|n")
@@ -901,7 +901,7 @@ class CmdCharge(Command):
                 establish_proximity(caller, target)
                 
                 # Set charge bonus
-                caller.ndb.charge_bonus = True
+                caller.ndb.charge_attack_bonus_active = True
                 
                 caller.msg(f"|gYou charge recklessly through the {exit_to_use.key} and crash into melee with {target.get_display_name(caller)}! Your next attack will have a bonus.|n")
                 target.msg(f"|r{caller.get_display_name(target)} charges recklessly through the {exit_to_use.key} and crashes into melee with you!|n")
