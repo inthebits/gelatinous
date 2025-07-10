@@ -584,8 +584,6 @@ class CombatHandler(DefaultScript):
         else:
             splattercast.msg(f"GRAPPLE_VALIDATE: All grapple states valid for handler {self.key}.")
 
-    # ...existing code...
-
     def at_repeat(self):
         """
         Main combat loop, processes each combatant's turn in initiative order.
@@ -957,542 +955,29 @@ class CombatHandler(DefaultScript):
         self.db.round += 1
         splattercast.msg(f"AT_REPEAT: Handler {self.key}. Round {self.db.round} scheduled for next interval.")
 
-    def _process_attack(self, attacker, target, attacker_entry, combatants_list):
-        """Process a standard attack between two characters."""
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        
-        splattercast.msg(f"_PROCESS_ATTACK: Starting attack processing for {attacker.key} -> {target.key}")
-        
-        # Check if attacker is yielding
-        if attacker_entry.get(DB_IS_YIELDING, False):
-            splattercast.msg(f"AT_REPEAT: {attacker.key} is yielding, skipping attack.")
-            return
-        
-        splattercast.msg(f"_PROCESS_ATTACK: {attacker.key} is not yielding, continuing...")
-        
-        # Find target's entry
-        target_entry = next((e for e in combatants_list if e.get(DB_CHAR) == target), None)
-        if not target_entry:
-            splattercast.msg(f"AT_REPEAT: Target {target.key} not found in combatants.")
-            return
-        
-        splattercast.msg(f"_PROCESS_ATTACK: Found target entry for {target.key}, proceeding to weapon detection...")
-        
-        # Get weapon and weapon type - using consistent approach with attack command
-        hands = getattr(attacker, "hands", {})
-        weapon = next((item for hand, item in hands.items() if item), None)
-        
-        # Safe weapon type detection
-        weapon_type = "unarmed"
-        is_ranged_weapon = False
-        
-        if weapon:
-            # Check if weapon has db attribute and it's not None
-            weapon_db = getattr(weapon, "db", None)
-            if weapon_db:
-                weapon_type = getattr(weapon_db, "weapon_type", "unarmed")
-                is_ranged_weapon = getattr(weapon_db, "is_ranged", False)
-            else:
-                # Fallback if weapon.db is None
-                splattercast.msg(f"WEAPON_WARNING: {weapon.key} has no db attribute or db is None, using unarmed")
-                weapon_type = "unarmed"
-                is_ranged_weapon = False
-        
-        # Debug weapon detection
-        splattercast.msg(f"WEAPON_DEBUG: {attacker.key} weapon={weapon.key if weapon else 'None'}, "
-                        f"weapon_type={weapon_type}, is_ranged={is_ranged_weapon}")
-        if weapon:
-            weapon_db = getattr(weapon, "db", None)
-            if weapon_db:
-                splattercast.msg(f"WEAPON_DEBUG: {weapon.key} db.is_ranged={getattr(weapon_db, 'is_ranged', 'MISSING')}, "
-                                f"db.weapon_type={getattr(weapon_db, 'weapon_type', 'MISSING')}")
-            else:
-                splattercast.msg(f"WEAPON_DEBUG: {weapon.key} has no db or db is None")
-        
-        # Check proximity and weapon compatibility
-        attack_has_disadvantage = False
-        if attacker.location == target.location:
-            # Same room - check proximity
-            attacker_proximity = getattr(attacker.ndb, NDB_PROXIMITY, set())
-            is_in_melee_proximity = target in attacker_proximity
-            
-            if is_in_melee_proximity and is_ranged_weapon:
-                # Ranged weapon in melee - apply disadvantage
-                attacker.msg(f"|yYou struggle to aim your {weapon.key if weapon else 'weapon'} effectively while locked in melee with {target.key}. You attack at disadvantage.|n")
-                attack_has_disadvantage = True
-                splattercast.msg(f"ATTACK_DISADVANTAGE: {attacker.key} using ranged weapon in melee vs {target.key}")
-            elif not is_in_melee_proximity and not is_ranged_weapon:
-                # Melee weapon at range - invalid
-                attacker.msg(f"|rYou are too far away to hit {target.key} with your {weapon.key if weapon else 'fists'}. Try advancing or charging.|n")
-                splattercast.msg(f"ATTACK_INVALID: {attacker.key} trying melee attack at range vs {target.key}")
-                return
-            # Note: Ranged weapon at range (not in proximity) is valid and continues below
-        elif target.location not in getattr(self.db, DB_MANAGED_ROOMS, []):
-            # Target not in managed rooms
-            attacker.msg(f"|r{target.key} is not in the current combat zone.|n")
-            return
-        elif not is_ranged_weapon:
-            # Different rooms but no ranged weapon
-            attacker.msg(f"|rYou need a ranged weapon to attack {target.key} in {target.location.key}.|n")
-            return
-        
-        # Calculate attack rolls (with disadvantage if applicable)
-        attacker_grit = get_numeric_stat(attacker, "grit", 1)
-        splattercast.msg(f"_PROCESS_ATTACK: Got attacker grit: {attacker_grit}")
-        
-        if attack_has_disadvantage:
-            # Roll twice, take the lower
-            roll1 = randint(1, max(1, attacker_grit))
-            roll2 = randint(1, max(1, attacker_grit))
-            attack_roll_base = min(roll1, roll2)
-            splattercast.msg(f"ATTACK_DISADVANTAGE_ROLL: {attacker.key} rolls {roll1}, {roll2} -> {attack_roll_base} (disadvantage)")
-        else:
-            attack_roll_base = randint(1, max(1, attacker_grit))
-        
-        splattercast.msg(f"_PROCESS_ATTACK: Attack roll calculated: {attack_roll_base}")
-        
-        # Check for aiming bonus
-        aiming_target = getattr(attacker.ndb, "aiming_at", None)
-        if aiming_target == target and is_ranged_weapon:
-            # Grant aiming bonus for ranged attacks against aimed target
-            aiming_bonus = 2  # Flat bonus for aimed shots
-            attack_roll_base += aiming_bonus
-            splattercast.msg(f"AIMING_BONUS: {attacker.key} gets +{aiming_bonus} attack bonus for aiming at {target.key}")
-            
-            # Clear the aim after use
-            delattr(attacker.ndb, "aiming_at")
-            if hasattr(target.ndb, "aimed_at_by") and getattr(target.ndb, "aimed_at_by") == attacker:
-                delattr(target.ndb, "aimed_at_by")
-            
-            attacker.msg("|gYour careful aim pays off! You attack with improved accuracy.|n")
-            target.msg(f"|r{attacker.key}'s careful aim makes their attack more precise!|n")
-        elif aiming_target == target and not is_ranged_weapon:
-            # Small bonus even for melee attacks when aimed
-            aiming_bonus = 1
-            attack_roll_base += aiming_bonus
-            splattercast.msg(f"AIMING_BONUS_MELEE: {attacker.key} gets +{aiming_bonus} small bonus for focusing on {target.key}")
-            
-            # Clear the aim after use
-            delattr(attacker.ndb, "aiming_at")
-            if hasattr(target.ndb, "aimed_at_by") and getattr(target.ndb, "aimed_at_by") == attacker:
-                delattr(target.ndb, "aimed_at_by")
-        
-        # Check for direction aiming bonus (when attacking into another room)
-        aiming_direction = getattr(attacker.ndb, "aiming_direction", None)
-        if aiming_direction and attacker.location != target.location and is_ranged_weapon:
-            # Grant aiming bonus for ranged attacks into aimed direction
-            direction_bonus = 2  # Same bonus as target aiming
-            attack_roll_base += direction_bonus
-            splattercast.msg(f"DIRECTION_AIMING_BONUS: {attacker.key} gets +{direction_bonus} attack bonus for aiming {aiming_direction}")
-            
-            # Clear the direction aim after use
-            delattr(attacker.ndb, "aiming_direction")
-            
-            attacker.msg(f"|gYour careful aim {aiming_direction} pays off! You attack with improved accuracy.|n")
-                
-        # Defense roll
-        defense_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
-        
-        splattercast.msg(f"ATTACK_ROLL: {attacker.key} (attack {attack_roll_base}) vs {target.key} (defense {defense_roll})")
-        
-        # Determine if grappling this target
-        grappling_this_target = self.get_grappling_obj(attacker_entry) == target
-        effective_weapon_type = "grapple" if grappling_this_target else weapon_type
-        
-        splattercast.msg(f"_PROCESS_ATTACK: About to determine hit/miss. Grappling={grappling_this_target}, effective_weapon_type={effective_weapon_type}")
-        
-        if attack_roll_base > defense_roll:
-            splattercast.msg(f"_PROCESS_ATTACK: HIT DETECTED - {attacker.key} hit {target.key}")
-            # Hit - calculate damage
-            damage = max(1, get_numeric_stat(attacker, "grit", 1))
-            
-            # Check for body shield mechanics if target is grappling someone
-            actual_target = target
-            if target_entry:
-                # Target is grappling someone - they might use them as a shield
-                target_grappling = self.get_grappling_obj(target_entry)
-                if target_grappling and target_grappling != attacker:
-                    # Body shield check
-                    target_positioning_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
-                    shield_evasion_roll = randint(1, max(1, get_numeric_stat(target_grappling, "motorics", 1)))
-                    
-                    if target_positioning_roll > shield_evasion_roll:
-                        actual_target = target_grappling
-                        shield_msg = f"|c{target.key} yanks {target_grappling.key} in the way! {target_grappling.key} takes the hit!|n"
-                        attacker.location.msg_contents(shield_msg, exclude=[target, target_grappling])
-                        splattercast.msg(f"BODY_SHIELD: {target.key} used {target_grappling.key} as shield successfully")
-                    else:
-                        shield_fail_msg = f"|y{target.key} tries to use {target_grappling.key} as a shield but fails!|n"
-                        attacker.location.msg_contents(shield_fail_msg, exclude=[target, target_grappling])
-            
-            # Apply damage
-            if hasattr(actual_target, "take_damage"):
-                actual_target.take_damage(damage)
-            else:
-                # Fallback HP system
-                current_hp = getattr(actual_target, "hp", 10)
-                actual_target.hp = max(0, current_hp - damage)
-            
-            # Check if target died
-            is_dead = False
-            if hasattr(actual_target, "is_dead"):
-                is_dead = actual_target.is_dead()
-            else:
-                is_dead = getattr(actual_target, "hp", 10) <= 0
-            
-            # Get and send appropriate messages
-            if is_dead:
-                splattercast.msg(f"_PROCESS_ATTACK: Target is dead, getting kill messages")
-                try:
-                    hit_messages = get_combat_message(effective_weapon_type, "kill", 
-                                                      attacker=attacker, target=actual_target, item=weapon, damage=damage)
-                    self._handle_death(actual_target, attacker, effective_weapon_type, weapon)
-                    
-                    # CRITICAL: Remove the dead character from the local combatants_list
-                    # to prevent them from being re-added when the list is saved back to database
-                    combatants_list[:] = [e for e in combatants_list if e.get(DB_CHAR) != actual_target]
-                    splattercast.msg(f"DEATH_CLEANUP: Removed {actual_target.key} from local combatants_list to prevent resurrection")
-                    
-                except Exception as e:
-                    splattercast.msg(f"_PROCESS_ATTACK: ERROR in death handling: {e}")
-                    # Fallback death handling
-                    attacker.msg(f"You kill {actual_target.key}!")
-                    actual_target.msg(f"{attacker.key} kills you!")
-                    self.remove_combatant(actual_target)
-                    # Also remove from local list in fallback case
-                    combatants_list[:] = [e for e in combatants_list if e.get(DB_CHAR) != actual_target]
-            else:
-                splattercast.msg(f"_PROCESS_ATTACK: Target survived, getting hit messages")
-                try:
-                    hit_messages = get_combat_message(effective_weapon_type, "hit", 
-                                                      attacker=attacker, target=actual_target, item=weapon, damage=damage)
-                    
-                    attacker.msg(hit_messages.get("attacker_msg", f"You hit {actual_target.key}!"))
-                    actual_target.msg(hit_messages.get("victim_msg", f"{attacker.key} hits you!"))
-                    
-                    # Send observer message to room
-                    obs_msg = hit_messages.get("observer_msg", f"{attacker.key} hits {actual_target.key}!")
-                    for location in {attacker.location, actual_target.location}:
-                        if location:
-                            location.msg_contents(obs_msg, exclude=[attacker, actual_target])
-                    
-                    splattercast.msg(f"HIT: {attacker.key} hits {actual_target.key} for {damage} damage (dead: {is_dead})")
-                except Exception as e:
-                    splattercast.msg(f"_PROCESS_ATTACK: ERROR in hit messaging: {e}")
-                    # Fallback hit messages
-                    attacker.msg(f"You hit {actual_target.key}!")
-                    actual_target.msg(f"{attacker.key} hits you!")
-                    splattercast.msg(f"HIT: {attacker.key} hits {actual_target.key} for {damage} damage (fallback)")
-                
-        else:
-            splattercast.msg(f"_PROCESS_ATTACK: MISS DETECTED - {attacker.key} missed {target.key}")
-            # Miss
-            miss_phase = "grapple_damage_miss" if grappling_this_target else "miss"
-            splattercast.msg(f"_PROCESS_ATTACK: About to get miss message with phase '{miss_phase}'")
-            
-            try:
-                miss_messages = get_combat_message(effective_weapon_type, miss_phase, 
-                                                   attacker=attacker, target=target, item=weapon)
-                splattercast.msg(f"_PROCESS_ATTACK: Got miss messages successfully")
-                attacker.msg(miss_messages.get("attacker_msg", f"You miss {target.key}!"))
-                target.msg(miss_messages.get("victim_msg", f"{attacker.key} misses you!"))
-                
-                obs_msg = miss_messages.get("observer_msg", f"{attacker.key} misses {target.key}!")
-                for location in {attacker.location, target.location}:
-                    if location:
-                        location.msg_contents(obs_msg, exclude=[attacker, target])
-                
-                splattercast.msg(f"MISS: {attacker.key} misses {target.key}")
-            except Exception as e:
-                splattercast.msg(f"_PROCESS_ATTACK: ERROR getting miss messages: {e}")
-                # Fallback messages
-                attacker.msg(f"You miss {target.key}!")
-                target.msg(f"{attacker.key} misses you!")
-                splattercast.msg(f"MISS: {attacker.key} misses {target.key} (fallback messages)")
-    
-    def _handle_death(self, victim, killer, weapon_type, weapon):
-        """Handle character death."""
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        
-        # Get and send death messages
-        death_messages = get_combat_message(weapon_type, "kill", attacker=killer, target=victim, item=weapon)
-        killer.msg(death_messages.get("attacker_msg", f"You kill {victim.key}!"))
-        victim.msg(death_messages.get("victim_msg", f"{killer.key} kills you!"))
-        
-        obs_msg = death_messages.get("observer_msg", f"{killer.key} kills {victim.key}!")
-        victim.location.msg_contents(obs_msg, exclude=[killer, victim])
-        
-        splattercast.msg(f"DEATH: {victim.key} killed by {killer.key}")
-        
-        # Handle death - call character's death method if it exists
-        if hasattr(victim, "at_death"):
-            victim.at_death(killer)
-        
-        # Remove from combat
-        self.remove_combatant(victim)
-        
-        # Clear targeting references to the deceased (don't auto-retarget)
-        combatants = getattr(self.db, DB_COMBATANTS, [])
-        for entry in combatants:
-            if self.get_target_obj(entry) == victim:
-                # Clear the target instead of auto-retargeting to prevent unwanted hostility
-                entry[DB_TARGET_DBREF] = None
-                splattercast.msg(f"{entry[DB_CHAR].key} no longer targets slain {victim.key}. Must choose new target manually.")
-                # Inform the character that their target is gone
-                if hasattr(entry[DB_CHAR], 'msg'):
-                    entry[DB_CHAR].msg(f"|yYour target {victim.get_display_name(entry[DB_CHAR]) if hasattr(victim, 'get_display_name') else victim.key} has been slain. Choose a new target if you wish to continue fighting.|n")
-
-    def _resolve_grapple_attempt(self, attacker_entry, target_entry):
-        """Performs the opposed roll for a grapple."""
-        attacker = attacker_entry[DB_CHAR]
-        target = target_entry[DB_CHAR]
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-
-        attacker_roll = randint(1, max(1, get_numeric_stat(attacker, "motorics", 1)))
-        defender_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
-        splattercast.msg(f"GRAPPLE_ROLL: {attacker.key} (roll {attacker_roll}) vs {target.key} (roll {defender_roll}).")
-        
-        return attacker_roll > defender_roll
-
-    def _resolve_grapple_initiate(self, attacker_entry, combatants_list):
-        """Resolves an all-or-nothing grapple that starts combat."""
-        attacker = attacker_entry[DB_CHAR]
-        target = self.get_target_obj(attacker_entry)
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        
-        if not target:
-            splattercast.msg(f"GRAPPLE_INITIATE: {attacker.key} has no target for grapple initiate.")
-            attacker.msg("|rYou have no target to grapple!|n")
-            return
-            
-        # Find target's combat entry
-        target_entry = next((e for e in combatants_list if e[DB_CHAR] == target), None)
-        if not target_entry:
-            splattercast.msg(f"GRAPPLE_INITIATE: Target {target.key} not in combat.")
-            return
-
-        # Check proximity first, if not in proximity, need to advance
-        in_proximity = target in getattr(attacker.ndb, NDB_PROXIMITY, set())
-        advance_success = False
-        
-        if in_proximity:
-            advance_success = True
-            splattercast.msg(f"GRAPPLE_INITIATE: {attacker.key} already in proximity with {target.key}.")
-        else:
-            # Try to advance into proximity using opposed roll
-            advance_success = opposed_roll(attacker, target, "motorics", "motorics")
-            if advance_success:
-                establish_proximity(attacker, target)
-                splattercast.msg(f"GRAPPLE_INITIATE: {attacker.key} successfully advanced to {target.key}.")
-            else:
-                splattercast.msg(f"GRAPPLE_INITIATE: {attacker.key} failed to advance to {target.key}.")
-
-        # If advance succeeded, attempt the grapple
-        if advance_success and self._resolve_grapple_attempt(attacker_entry, target_entry):
-            # Successful grapple
-            attacker_entry[DB_GRAPPLING_DBREF] = self._get_dbref(target)
-            target_entry[DB_GRAPPLED_BY_DBREF] = self._get_dbref(attacker)
-            
-            # Set both parties to yielding (peaceful restraint mode) by default
-            # This is for grapple_initiate which starts new combat - always start peaceful
-            attacker_entry[DB_IS_YIELDING] = True
-            target_entry[DB_IS_YIELDING] = True
-            
-            grapple_messages = get_combat_message("grapple", "hit", attacker=attacker, target=target)
-            attacker.msg(grapple_messages.get("attacker_msg", f"You grapple {target.key}!"))
-            target.msg(grapple_messages.get("victim_msg", f"{attacker.key} grapples you!"))
-            
-            obs_msg = grapple_messages.get("observer_msg", f"{attacker.key} grapples {target.key}!")
-            attacker.location.msg_contents(obs_msg, exclude=[attacker, target])
-            
-            splattercast.msg(f"GRAPPLE_SUCCESS: {attacker.key} grapples {target.key}")
-        else:
-            # Failed grapple - target gets bonus attack
-            fail_messages = get_combat_message("grapple", "miss", attacker=attacker, target=target)
-            attacker.msg(fail_messages.get("attacker_msg", f"You fail to grapple {target.key}!"))
-            target.msg(fail_messages.get("victim_msg", f"{attacker.key} fails to grapple you!"))
-            
-            obs_msg = fail_messages.get("observer_msg", f"{attacker.key} fails to grapple {target.key}!")
-            attacker.location.msg_contents(obs_msg, exclude=[attacker, target])
-            
-            splattercast.msg(f"GRAPPLE_FAIL: {attacker.key} fails to grapple {target.key}")
-            self.resolve_bonus_attack(target, attacker)
-
-    def _resolve_grapple_join(self, attacker_entry, combatants_list):
-        """Resolves a grapple attempt within an ongoing combat."""
-        attacker = attacker_entry[DB_CHAR]
-        target = self.get_target_obj(attacker_entry)
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        
-        if not target:
-            splattercast.msg(f"GRAPPLE_JOIN: {attacker.key} has no target for grapple join.")
-            attacker.msg("|rYou have no target to grapple!|n")
-            return
-            
-        # Find target's combat entry
-        target_entry = next((e for e in combatants_list if e[DB_CHAR] == target), None)
-        if not target_entry:
-            splattercast.msg(f"GRAPPLE_JOIN: Target {target.key} not in combat.")
-            return
-
-        # Check proximity first, if not in proximity, need to advance
-        in_proximity = target in getattr(attacker.ndb, NDB_PROXIMITY, set())
-        advance_success = False
-        
-        if in_proximity:
-            advance_success = True
-            splattercast.msg(f"GRAPPLE_JOIN: {attacker.key} already in proximity with {target.key}.")
-        else:
-            # Try to advance into proximity using opposed roll
-            advance_success = opposed_roll(attacker, target, "motorics", "motorics")
-            if advance_success:
-                establish_proximity(attacker, target)
-                splattercast.msg(f"GRAPPLE_JOIN: {attacker.key} successfully advanced to {target.key}.")
-            else:
-                splattercast.msg(f"GRAPPLE_JOIN: {attacker.key} failed to advance to {target.key}.")
-
-        # If advance succeeded, attempt the grapple
-        if advance_success and self._resolve_grapple_attempt(attacker_entry, target_entry):
-            # Successful grapple
-            attacker_entry[DB_GRAPPLING_DBREF] = self._get_dbref(target)
-            target_entry[DB_GRAPPLED_BY_DBREF] = self._get_dbref(attacker)
-            
-            # For grapple_join (during ongoing combat), preserve existing violence state
-            # Don't modify is_yielding - if they were fighting violently, keep it violent
-            # If they were yielding, keep them yielding
-            
-            grapple_messages = get_combat_message("grapple", "hit", attacker=attacker, target=target)
-            attacker.msg(grapple_messages.get("attacker_msg", f"You grapple {target.key}!"))
-            target.msg(grapple_messages.get("victim_msg", f"{attacker.key} grapples you!"))
-            
-            obs_msg = grapple_messages.get("observer_msg", f"{attacker.key} grapples {target.key}!")
-            attacker.location.msg_contents(obs_msg, exclude=[attacker, target])
-            
-            splattercast.msg(f"GRAPPLE_SUCCESS: {attacker.key} grapples {target.key}")
-        else:
-            # Failed grapple - target gets bonus attack
-            fail_messages = get_combat_message("grapple", "miss", attacker=attacker, target=target)
-            attacker.msg(fail_messages.get("attacker_msg", f"You fail to grapple {target.key}!"))
-            target.msg(fail_messages.get("victim_msg", f"{attacker.key} fails to grapple you!"))
-            
-            obs_msg = fail_messages.get("observer_msg", f"{attacker.key} fails to grapple {target.key}!")
-            attacker.location.msg_contents(obs_msg, exclude=[attacker, target])
-            
-            splattercast.msg(f"GRAPPLE_FAIL: {attacker.key} fails to grapple {target.key}")
-            self.resolve_bonus_attack(target, attacker)
-
-    def resolve_bonus_attack(self, attacker, victim):
-        """Immediately resolves a single bonus attack."""
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        splattercast.msg(f"BONUS_ATTACK: Resolving from {attacker.key} against {victim.key}.")
-        
-        combatants = getattr(self.db, DB_COMBATANTS, [])
-        attacker_entry = next((e for e in combatants if e[DB_CHAR] == attacker), None)
-        victim_entry = next((e for e in combatants if e[DB_CHAR] == victim), None)
-        
-        if not attacker_entry or not victim_entry:
-            splattercast.msg(f"BONUS_ATTACK: Could not find combat entries for {attacker.key} or {victim.key}.")
-            return
-            
-        # This is a simplified attack resolution - we'll send some messages and deal damage
-        attacker.msg(f"|gYou hit {victim.key} with a swift counter-attack!|n")
-        victim.msg(f"|r{attacker.key} counters your failed move, striking you!|n")
-        attacker.location.msg_contents(
-            f"{attacker.key} counters {victim.key}'s failed move!",
-            exclude=[attacker, victim]
-        )
-        
-        # Apply damage - simple implementation
-        damage = 1
-        if hasattr(victim, "hp"):
-            old_hp = victim.hp
-            victim.hp = max(0, old_hp - damage)
-            splattercast.msg(f"BONUS_ATTACK: {victim.key} takes {damage} damage. HP: {old_hp} -> {victim.hp}")
-            
-            if victim.hp <= 0:
-                self._handle_death(victim, attacker, "unarmed", None)
-    
-    def _resolve_release_grapple(self, attacker_entry, combatants_list):
-        """Resolves a release grapple action."""
-        attacker = attacker_entry[DB_CHAR]
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        
-        # Get the victim being grappled
-        victim_char_being_grappled = self.get_grappling_obj(attacker_entry)
-        
-        if not victim_char_being_grappled:
-            splattercast.msg(f"RELEASE_GRAPPLE: {attacker.key} is not grappling anyone.")
-            attacker.msg("|rYou are not grappling anyone to release!|n")
-            return False
-        
-        # Find victim's combat entry
-        victim_entry = next((e for e in combatants_list if e[DB_CHAR] == victim_char_being_grappled), None)
-        
-        if not victim_entry:
-            splattercast.msg(f"RELEASE_GRAPPLE: Victim {victim_char_being_grappled.key} not found in combat.")
-            return False
-        
-        # Validate the victim is actually in the same location
-        managed_rooms = getattr(self.db, DB_MANAGED_ROOMS, [])
-        if not victim_char_being_grappled.location or victim_char_being_grappled.location not in managed_rooms:
-            splattercast.msg(f"RELEASE_GRAPPLE: Victim {victim_char_being_grappled.key} not in managed rooms.")
-            return False
-        
-        # Debug before release
-        splattercast.msg(f"RELEASE GRAPPLE DEBUG: Before release - {attacker.key} grappling_dbref: {attacker_entry.get(DB_GRAPPLING_DBREF)}")
-        splattercast.msg(f"RELEASE GRAPPLE DEBUG: Before release - {victim_char_being_grappled.key} grappled_by_dbref: {victim_entry.get(DB_GRAPPLED_BY_DBREF)}")
-        
-        # Check if grappler is yielding to determine victim's post-release state
-        grappler_is_yielding = attacker_entry.get(DB_IS_YIELDING, False)
-        
-        # Clear the grapple relationship on both sides
-        attacker_entry[DB_GRAPPLING_DBREF] = None
-        victim_entry[DB_GRAPPLED_BY_DBREF] = None
-        
-        # Post-release victim state logic
-        if grappler_is_yielding:
-            victim_entry[DB_IS_YIELDING] = True
-            splattercast.msg(f"RELEASE_GRAPPLE: Grappler {attacker.key} was yielding. Setting victim {victim_char_being_grappled.key} to yielding.")
-        else:
-            victim_entry[DB_IS_YIELDING] = False
-            splattercast.msg(f"RELEASE_GRAPPLE: Grappler {attacker.key} was not yielding. Setting victim {victim_char_being_grappled.key} to not yielding.")
-        
-        # Debug after release
-        splattercast.msg(f"RELEASE GRAPPLE DEBUG: After release - {attacker.key} grappling_dbref: {attacker_entry.get(DB_GRAPPLING_DBREF)}")
-        splattercast.msg(f"RELEASE GRAPPLE DEBUG: After release - {victim_char_being_grappled.key} grappled_by_dbref: {victim_entry.get(DB_GRAPPLED_BY_DBREF)}")
-        
-        # Get and send messages
-        release_messages = get_combat_message("grapple", "release", attacker=attacker, target=victim_char_being_grappled)
-        attacker.msg(release_messages.get("attacker_msg", f"You release {victim_char_being_grappled.key}."))
-        victim_char_being_grappled.msg(release_messages.get("victim_msg", f"{attacker.key} releases you."))
-        obs_msg = release_messages.get("observer_msg", f"{attacker.key} releases {victim_char_being_grappled.key}.")
-        for loc in {attacker.location, victim_char_being_grappled.location}:
-            if loc:
-                loc.msg_contents(obs_msg, exclude=[attacker, victim_char_being_grappled])
-        
-        splattercast.msg(f"RELEASE GRAPPLE: {attacker.key} released {victim_char_being_grappled.key}. Grapple state cleared for both.")
-        return True
-
-    # --- Utility Methods ---
-    
-    def _get_dbref(self, char):
-        """Get DBREF from a character object."""
-        if not char:
-            return None
-        return getattr(char, 'id', None) or getattr(char, 'dbref', None)
-    
-    def _get_char_by_dbref(self, dbref):
-        """Resolve a DBREF to a character object."""
-        if not dbref:
-            return None
-        try:
-            results = search_object(f"#{dbref}")
-            if results and len(results) == 1:
-                return results[0]
-        except Exception:
-            pass
+    def get_target(self, char):
+        """Get the target character for a given character."""
+        combatants_list = getattr(self.db, DB_COMBATANTS, [])
+        entry = next((e for e in combatants_list if e.get(DB_CHAR) == char), None)
+        if entry:
+            return self.get_target_obj(entry)
         return None
     
+    def set_target(self, char, target):
+        """Set the target for a given character."""
+        combatants_list = getattr(self.db, DB_COMBATANTS, [])
+        entry = next((e for e in combatants_list if e.get(DB_CHAR) == char), None)
+        if entry:
+            if target:
+                entry[DB_TARGET_DBREF] = self._get_dbref(target)
+            else:
+                entry[DB_TARGET_DBREF] = None
+            # Update the persistent storage
+            setattr(self.db, DB_COMBATANTS, combatants_list)
+            return True
+        return False
+    
+    # ...existing utility methods...
     def get_target_obj(self, combatant_entry):
         """Get the target object for a combatant entry."""
         target_dbref = combatant_entry.get(DB_TARGET_DBREF)
@@ -1507,3 +992,255 @@ class CombatHandler(DefaultScript):
         """Get the character that is grappling this combatant."""
         grappled_by_dbref = combatant_entry.get(DB_GRAPPLED_BY_DBREF)
         return self._get_char_by_dbref(grappled_by_dbref)
+    
+    def _get_dbref(self, char):
+        """Get DBREF for a character object."""
+        return char.id if char else None
+    
+    def _get_char_by_dbref(self, dbref):
+        """Get character object by DBREF."""
+        if dbref is None:
+            return None
+        try:
+            return search_object(f"#{dbref}")[0]
+        except (IndexError, ValueError):
+            return None
+    
+    def _process_attack(self, attacker, target, attacker_entry, combatants_list):
+        """
+        Process an attack between two characters.
+        
+        Args:
+            attacker: The attacking character
+            target: The target character
+            attacker_entry: The attacker's combat entry
+            combatants_list: List of all combat entries
+        """
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Check if attacker can reach target
+        if attacker.location != target.location:
+            attacker.msg(f"You can't reach {target.key} from here.")
+            splattercast.msg(f"ATTACK_FAIL (REACH): {attacker.key} cannot reach {target.key}.")
+            return
+        
+        # Check proximity for melee attacks
+        if not hasattr(attacker.ndb, NDB_PROXIMITY):
+            setattr(attacker.ndb, NDB_PROXIMITY, set())
+        if target not in getattr(attacker.ndb, NDB_PROXIMITY):
+            attacker.msg(f"You need to be in melee proximity with {target.key} to attack them. Try advancing or charging.")
+            splattercast.msg(f"ATTACK_FAIL (PROXIMITY): {attacker.key} not in proximity with {target.key}.")
+            return
+        
+        # Get weapon and stats
+        weapon = get_wielded_weapon(attacker)
+        weapon_name = weapon.key if weapon else "unarmed"
+        
+        attacker_skill = get_numeric_stat(attacker, "motorics", 1)
+        target_skill = get_numeric_stat(target, "motorics", 1)
+        
+        # Roll for attack
+        attacker_roll = randint(1, 20) + attacker_skill
+        target_roll = randint(1, 20) + target_skill
+        
+        # Check for charge bonus
+        if hasattr(attacker.ndb, "charge_attack_bonus_active"):
+            attacker_roll += 2
+            splattercast.msg(f"ATTACK_BONUS: {attacker.key} gets +2 charge attack bonus.")
+            delattr(attacker.ndb, "charge_attack_bonus_active")
+        
+        splattercast.msg(f"ATTACK: {attacker.key} (roll {attacker_roll}) vs {target.key} (roll {target_roll}) with {weapon_name}")
+        
+        if attacker_roll > target_roll:
+            # Hit - calculate damage
+            damage = randint(1, 6)  # Base damage
+            if weapon:
+                # Add weapon damage if applicable
+                weapon_damage = getattr(weapon.db, "damage", 0)
+                damage += weapon_damage
+            
+            # Apply damage (simplified for now)
+            target_hp = get_numeric_stat(target, "health", 10)
+            new_hp = max(0, target_hp - damage)
+            
+            # Send messages
+            attacker.msg(f"|rYou hit {target.key} with your {weapon_name} for {damage} damage!|n")
+            target.msg(f"|r{attacker.key} hits you with their {weapon_name} for {damage} damage!|n")
+            attacker.location.msg_contents(
+                f"|r{attacker.key} hits {target.key} with their {weapon_name}!|n",
+                exclude=[attacker, target]
+            )
+            
+            splattercast.msg(f"ATTACK_HIT: {attacker.key} hit {target.key} for {damage} damage.")
+            
+            # Check for death/unconsciousness
+            if new_hp <= 0:
+                target.msg("|RYou fall unconscious!|n")
+                attacker.location.msg_contents(
+                    f"|R{target.key} falls unconscious!|n",
+                    exclude=[target]
+                )
+                # Remove from combat
+                self.remove_combatant(target)
+                
+        else:
+            # Miss
+            attacker.msg(f"|yYou miss {target.key} with your {weapon_name}.|n")
+            target.msg(f"|y{attacker.key} misses you with their {weapon_name}.|n")
+            attacker.location.msg_contents(
+                f"|y{attacker.key} misses {target.key} with their {weapon_name}.|n",
+                exclude=[attacker, target]
+            )
+            splattercast.msg(f"ATTACK_MISS: {attacker.key} missed {target.key}.")
+    
+    def _resolve_grapple_initiate(self, char_entry, combatants_list):
+        """Resolve a grapple initiate action."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        char = char_entry.get(DB_CHAR)
+        
+        # Find who they're trying to grapple
+        target = self.get_target_obj(char_entry)
+        if not target:
+            char.msg("You have no target to grapple.")
+            return
+        
+        # Check if target is in combat
+        target_entry = next((e for e in combatants_list if e.get(DB_CHAR) == target), None)
+        if not target_entry:
+            char.msg(f"{target.key} is not in combat.")
+            return
+        
+        # Check proximity
+        if not hasattr(char.ndb, NDB_PROXIMITY):
+            setattr(char.ndb, NDB_PROXIMITY, set())
+        if target not in getattr(char.ndb, NDB_PROXIMITY):
+            char.msg(f"You need to be in melee proximity with {target.key} to grapple them.")
+            return
+        
+        # Roll for grapple
+        attacker_roll = randint(1, max(1, get_numeric_stat(char, "motorics", 1)))
+        defender_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
+        
+        if attacker_roll > defender_roll:
+            # Success
+            char_entry[DB_GRAPPLING_DBREF] = self._get_dbref(target)
+            target_entry[DB_GRAPPLED_BY_DBREF] = self._get_dbref(char)
+            
+            # Auto-yield both parties
+            char_entry[DB_IS_YIELDING] = True
+            target_entry[DB_IS_YIELDING] = True
+            
+            char.msg(f"|gYou successfully grapple {target.key}!|n")
+            target.msg(f"|g{char.key} grapples you!|n")
+            target.msg(MSG_GRAPPLE_AUTO_YIELD)
+            
+            if char.location:
+                char.location.msg_contents(
+                    f"|g{char.key} grapples {target.key}!|n",
+                    exclude=[char, target]
+                )
+            
+            splattercast.msg(f"GRAPPLE_SUCCESS: {char.key} grappled {target.key}.")
+        else:
+            # Failure
+            char.msg(f"|yYou fail to grapple {target.key}.|n")
+            target.msg(f"|y{char.key} fails to grapple you.|n")
+            
+            if char.location:
+                char.location.msg_contents(
+                    f"|y{char.key} fails to grapple {target.key}.|n",
+                    exclude=[char, target]
+                )
+            
+            splattercast.msg(f"GRAPPLE_FAIL: {char.key} failed to grapple {target.key}.")
+    
+    def _resolve_grapple_join(self, char_entry, combatants_list):
+        """Resolve a grapple join action."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        char = char_entry.get(DB_CHAR)
+        
+        # Find existing grapple to join
+        target = self.get_target_obj(char_entry)
+        if not target:
+            char.msg("You have no target to join in grappling.")
+            return
+        
+        # Check if target is already grappled
+        target_entry = next((e for e in combatants_list if e.get(DB_CHAR) == target), None)
+        if not target_entry or not target_entry.get(DB_GRAPPLED_BY_DBREF):
+            char.msg(f"{target.key} is not currently being grappled.")
+            return
+        
+        # Find the original grappler
+        grappler = self.get_grappled_by_obj(target_entry)
+        if not grappler:
+            char.msg("Unable to find the original grappler.")
+            return
+        
+        # Check proximity
+        if not hasattr(char.ndb, NDB_PROXIMITY):
+            setattr(char.ndb, NDB_PROXIMITY, set())
+        if target not in getattr(char.ndb, NDB_PROXIMITY):
+            char.msg(f"You need to be in melee proximity with {target.key} to join the grapple.")
+            return
+        
+        # Automatically succeed in joining
+        char_entry[DB_GRAPPLING_DBREF] = self._get_dbref(target)
+        char_entry[DB_IS_YIELDING] = True
+        
+        char.msg(f"|gYou join {grappler.key} in grappling {target.key}!|n")
+        target.msg(f"|g{char.key} joins in grappling you!|n")
+        grappler.msg(f"|g{char.key} joins you in grappling {target.key}!|n")
+        
+        if char.location:
+            char.location.msg_contents(
+                f"|g{char.key} joins {grappler.key} in grappling {target.key}!|n",
+                exclude=[char, target, grappler]
+            )
+        
+        splattercast.msg(f"GRAPPLE_JOIN: {char.key} joined {grappler.key} in grappling {target.key}.")
+    
+    def _resolve_release_grapple(self, char_entry, combatants_list):
+        """Resolve a release grapple action."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        char = char_entry.get(DB_CHAR)
+        
+        # Find who they're grappling
+        grappling_target = self.get_grappling_obj(char_entry)
+        if not grappling_target:
+            char.msg("You are not grappling anyone.")
+            return
+        
+        # Find the target's entry
+        target_entry = next((e for e in combatants_list if e.get(DB_CHAR) == grappling_target), None)
+        if not target_entry:
+            char.msg(f"{grappling_target.key} is not in combat.")
+            return
+        
+        # Clear the grapple
+        char_entry[DB_GRAPPLING_DBREF] = None
+        target_entry[DB_GRAPPLED_BY_DBREF] = None
+        
+        # Switch both to non-yielding (unless target is still grappled by someone else)
+        char_entry[DB_IS_YIELDING] = False
+        
+        # Check if target is still grappled by someone else
+        still_grappled = any(
+            e.get(DB_GRAPPLING_DBREF) == self._get_dbref(grappling_target)
+            for e in combatants_list
+            if e.get(DB_CHAR) != char
+        )
+        
+        if not still_grappled:
+            target_entry[DB_IS_YIELDING] = False
+        
+        char.msg(f"|gYou release your grapple on {grappling_target.key}.|n")
+        grappling_target.msg(f"|g{char.key} releases their grapple on you.|n")
+        
+        if char.location:
+            char.location.msg_contents(
+                f"|g{char.key} releases their grapple on {grappling_target.key}.|n",
+                exclude=[char, grappling_target]
+            )
+        
+        splattercast.msg(f"GRAPPLE_RELEASE: {char.key} released {grappling_target.key}.")

@@ -505,7 +505,7 @@ class CmdAdvance(Command):
             return
 
         # Check if already in proximity
-        if hasattr(caller.ndb, "in_proximity_with") and target in caller.ndb.in_proximity_with:
+        if hasattr(caller.ndb, "in_proximity_with") and caller.ndb.in_proximity_with and target in caller.ndb.in_proximity_with:
             caller.msg(f"You are already in melee proximity with {target.get_display_name(caller)}.")
             return
 
