@@ -124,8 +124,16 @@ class Exit(DefaultExit):
         handler = getattr(traversing_object.ndb, "combat_handler", None)
 
         if handler:
-            # Character is in combat
-            char_entry_in_handler = next((e for e in handler.db.combatants if e["char"] == traversing_object), None)
+            # Character is in combat - check if handler is still valid
+            combatants_list = getattr(handler.db, "combatants", None)
+            if combatants_list is None:
+                # Handler has been cleaned up but character still has reference
+                splattercast.msg(f"TRAVERSAL: {traversing_object.key} has stale combat_handler reference. Clearing and allowing move.")
+                setattr(traversing_object.ndb, "combat_handler", None)
+                super().at_traverse(traversing_object, target_location)
+                return
+                
+            char_entry_in_handler = next((e for e in combatants_list if e["char"] == traversing_object), None)
 
             if not char_entry_in_handler:
                 # This case should ideally not be reached if ndb.combat_handler is properly managed.
@@ -138,8 +146,8 @@ class Exit(DefaultExit):
             is_yielding = char_entry_in_handler.get("is_yielding")
             
             is_targeted_by_others_not_victim = False
-            if handler.db.combatants:
-                for entry in handler.db.combatants:
+            if combatants_list:
+                for entry in combatants_list:
                     # Check if this entry is targeting the traversing_object
                     if handler.get_target_obj(entry) == traversing_object:
                         # And this entry is not the traversing_object itself
@@ -152,7 +160,7 @@ class Exit(DefaultExit):
             # Drag conditions: grappling someone, yielding, and not targeted by anyone *else* (other than the victim)
             if grappled_victim_obj and is_yielding and not is_targeted_by_others_not_victim:
                 # Conditions for dragging are met
-                victim_entry_in_handler = next((e for e in handler.db.combatants if e["char"] == grappled_victim_obj), None)
+                victim_entry_in_handler = next((e for e in combatants_list if e["char"] == grappled_victim_obj), None)
                 if not victim_entry_in_handler:
                     splattercast.msg(f"ERROR: {traversing_object.key} is grappling {grappled_victim_obj.key if grappled_victim_obj else 'Unknown'}, but victim not in handler. Blocking drag.")
                     traversing_object.msg("|rYour grapple target seems to have vanished from combat. You can't drag them.|n")
@@ -173,8 +181,8 @@ class Exit(DefaultExit):
 
                     # --- Break the grapple on successful resistance ---
                     # Find both entries in the handler
-                    grappler_entry = next((e for e in handler.db.combatants if e["char"] == traversing_object), None)
-                    victim_entry = next((e for e in handler.db.combatants if e["char"] == grappled_victim_obj), None)
+                    grappler_entry = next((e for e in combatants_list if e["char"] == traversing_object), None)
+                    victim_entry = next((e for e in combatants_list if e["char"] == grappled_victim_obj), None)
                     if grappler_entry:
                         grappler_entry["grappling_dbref"] = None
                     if victim_entry:
@@ -213,7 +221,7 @@ class Exit(DefaultExit):
 
                 # --- Transfer combat state to the new location ---
                 # 1. Before removing, determine if victim is yielding
-                victim_entry_in_handler = next((e for e in handler.db.combatants if e["char"] == grappled_victim_obj), None)
+                victim_entry_in_handler = next((e for e in combatants_list if e["char"] == grappled_victim_obj), None)
                 victim_is_yielding = victim_entry_in_handler.get("is_yielding", False) if victim_entry_in_handler else False
 
                 # 2. Remove combatants from the old handler.
@@ -243,8 +251,9 @@ class Exit(DefaultExit):
 
                 # No longer need to manually find and update entries here, as add_combatant handles it.
                 
-                if len(new_handler.db.combatants) > 1 and not new_handler.is_active:
-                    splattercast.msg(f"DRAG: New handler {new_handler.key} has {len(new_handler.db.combatants)} combatants, ensuring it starts if not already active.")
+                new_handler_combatants = getattr(new_handler.db, "combatants", None)
+                if new_handler_combatants and len(new_handler_combatants) > 1 and not new_handler.is_active:
+                    splattercast.msg(f"DRAG: New handler {new_handler.key} has {len(new_handler_combatants)} combatants, ensuring it starts if not already active.")
                     new_handler.start()
 
                 return  # Movement and combat transfer handled successfully
