@@ -445,9 +445,9 @@ class CombatHandler(DefaultScript):
         grappled_by = self.get_grappled_by_obj(entry)
         
         if grappling:
-            break_grapple(char, grappling, handler=self)
+            break_grapple(self, grappler=char, victim=grappling)
         if grappled_by:
-            break_grapple(grappled_by, char, handler=self)
+            break_grapple(self, grappler=grappled_by, victim=char)
         
         # Clear NDB attributes
         ndb_attrs = [NDB_PROXIMITY, NDB_SKIP_ROUND, "charging_vulnerability_active", 
@@ -837,12 +837,15 @@ class CombatHandler(DefaultScript):
                 if isinstance(combat_action, str):
                     if combat_action == "grapple_initiate":
                         self._resolve_grapple_initiate(current_char_combat_entry, combatants_list)
+                        current_char_combat_entry["combat_action"] = None
                         continue
                     elif combat_action == "grapple_join":
                         self._resolve_grapple_join(current_char_combat_entry, combatants_list)
+                        current_char_combat_entry["combat_action"] = None
                         continue
                     elif combat_action == "release_grapple":
                         self._resolve_release_grapple(current_char_combat_entry, combatants_list)
+                        current_char_combat_entry["combat_action"] = None
                         continue
                 elif isinstance(combat_action, dict):
                     intent_type = combat_action.get("type")
@@ -1296,7 +1299,7 @@ class CombatHandler(DefaultScript):
             attacker_entry[DB_GRAPPLING_DBREF] = self._get_dbref(target)
             target_entry[DB_GRAPPLED_BY_DBREF] = self._get_dbref(attacker)
             
-            grapple_messages = get_combat_message("grapple", "initiate", attacker=attacker, target=target)
+            grapple_messages = get_combat_message("grapple", "hit", attacker=attacker, target=target)
             attacker.msg(grapple_messages.get("attacker_msg", f"You grapple {target.key}!"))
             target.msg(grapple_messages.get("victim_msg", f"{attacker.key} grapples you!"))
             
@@ -1306,7 +1309,7 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"GRAPPLE_SUCCESS: {attacker.key} grapples {target.key}")
         else:
             # Failed grapple - target gets bonus attack
-            fail_messages = get_combat_message("grapple", "fail", attacker=attacker, target=target)
+            fail_messages = get_combat_message("grapple", "miss", attacker=attacker, target=target)
             attacker.msg(fail_messages.get("attacker_msg", f"You fail to grapple {target.key}!"))
             target.msg(fail_messages.get("victim_msg", f"{attacker.key} fails to grapple you!"))
             
@@ -1355,7 +1358,7 @@ class CombatHandler(DefaultScript):
             attacker_entry[DB_GRAPPLING_DBREF] = self._get_dbref(target)
             target_entry[DB_GRAPPLED_BY_DBREF] = self._get_dbref(attacker)
             
-            grapple_messages = get_combat_message("grapple", "join", attacker=attacker, target=target)
+            grapple_messages = get_combat_message("grapple", "hit", attacker=attacker, target=target)
             attacker.msg(grapple_messages.get("attacker_msg", f"You grapple {target.key}!"))
             target.msg(grapple_messages.get("victim_msg", f"{attacker.key} grapples you!"))
             
@@ -1365,7 +1368,7 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"GRAPPLE_SUCCESS: {attacker.key} grapples {target.key}")
         else:
             # Failed grapple - target gets bonus attack
-            fail_messages = get_combat_message("grapple", "fail", attacker=attacker, target=target)
+            fail_messages = get_combat_message("grapple", "miss", attacker=attacker, target=target)
             attacker.msg(fail_messages.get("attacker_msg", f"You fail to grapple {target.key}!"))
             target.msg(fail_messages.get("victim_msg", f"{attacker.key} fails to grapple you!"))
             
