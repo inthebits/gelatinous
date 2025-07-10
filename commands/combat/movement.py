@@ -277,15 +277,8 @@ class CmdFlee(Command):
             chosen_exit = choice(safe_exits)
             destination = chosen_exit.destination
             
-            # Remove from combat before moving
+            # Remove from combat before moving (this also clears proximity)
             original_handler_at_flee_start.remove_combatant(caller)
-            
-            # Clear proximity
-            if hasattr(caller.ndb, "in_proximity_with"):
-                for other_char in list(caller.ndb.in_proximity_with):
-                    if hasattr(other_char.ndb, "in_proximity_with"):
-                        other_char.ndb.in_proximity_with.discard(caller)
-                caller.ndb.in_proximity_with.clear()
             
             # Move to the chosen exit
             caller.move_to(destination, quiet=True)
