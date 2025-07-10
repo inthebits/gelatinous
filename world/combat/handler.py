@@ -388,6 +388,9 @@ class CombatHandler(DefaultScript):
         # Start combat if not already running
         if not getattr(self.db, DB_COMBAT_RUNNING, False):
             self.start()
+        
+        # Validate grapple state after adding new combatant
+        self.validate_and_cleanup_grapple_state()
 
     def remove_combatant(self, char):
         """
@@ -413,6 +416,9 @@ class CombatHandler(DefaultScript):
             if other_entry.get(DB_TARGET_DBREF) == self._get_dbref(char):
                 other_entry[DB_TARGET_DBREF] = None
                 splattercast.msg(f"RMV_COMB: Cleared {other_entry[DB_CHAR].key}'s target_dbref (was {char.key})")
+                # Inform the character that their target is gone
+                if hasattr(other_entry[DB_CHAR], 'msg'):
+                    other_entry[DB_CHAR].msg(f"|yYour target {char.get_display_name(other_entry[DB_CHAR]) if hasattr(char, 'get_display_name') else char.key} has left combat. Choose a new target if you wish to continue fighting.|n")
         
         # Remove from combatants list
         combatants = [e for e in combatants if e.get(DB_CHAR) != char]
@@ -457,201 +463,128 @@ class CombatHandler(DefaultScript):
             if hasattr(char.ndb, attr):
                 delattr(char.ndb, attr)
 
-    # Helper methods for object reference handling
-    def _get_char_by_dbref(self, dbref):
+    def validate_and_cleanup_grapple_state(self):
         """
-        Get a character object from its dbref string.
+        Validate and clean up stale grapple references in the combat handler.
         
-        Args:
-            dbref (str): The dbref of the character to retrieve
-            
-        Returns:
-            Character object or None if not found
+        This method checks for and fixes:
+        - Stale DBREFs to characters no longer in the database
+        - Invalid cross-references (A grappling B but B not grappled by A)
+        - Self-grappling references
+        - References to characters no longer in combat
+        - Orphaned grapple states
+        
+        Called periodically during combat to maintain data integrity.
         """
-        if not dbref:
-            return None
-        
-        # Search by dbref (adding # if not present)
-        if not str(dbref).startswith("#"):
-            dbref = f"#{dbref}"
-        
-        results = search_object(dbref)
-        if results:
-            return results[0]
-        return None
-    
-    def _get_dbref(self, obj):
-        """
-        Get the dbref string from an object.
-        
-        Args:
-            obj: The object to get dbref from
-            
-        Returns:
-            str: The dbref without leading # or None if obj is None
-        """
-        if not obj:
-            return None
-        
-        # Get the dbref and remove leading #
-        dbref = obj.dbref
-        if dbref and dbref.startswith("#"):
-            dbref = dbref[1:]
-        return dbref
-    
-    def get_target_obj(self, combatant_entry):
-        """Get the target object from a combatant entry."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        target_dbref = combatant_entry.get(DB_TARGET_DBREF)
-        target = self._get_char_by_dbref(target_dbref)
-        splattercast.msg(f"GET_TARGET_OBJ: dbref={target_dbref} -> target={target.key if target else None}")
-        return target
-    
-    def get_grappling_obj(self, combatant_entry):
-        """Get the character being grappled by this combatant."""
-        grappling_dbref = combatant_entry.get(DB_GRAPPLING_DBREF)
-        return self._get_char_by_dbref(grappling_dbref)
-    
-    def get_grappled_by_obj(self, combatant_entry):
-        """Get the character grappling this combatant."""
-        grappled_by_dbref = combatant_entry.get(DB_GRAPPLED_BY_DBREF)
-        return self._get_char_by_dbref(grappled_by_dbref)
-
-    def set_target(self, char, target):
-        """Set a new target for a combatant using dbref for persistence."""
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        combatants_list = list(getattr(self.db, DB_COMBATANTS, []))
+        cleanup_needed = False
         
-        # Prevent self-targeting
-        if char == target:
-            splattercast.msg(f"SET_TARGET_ERROR: {char.key} cannot target themselves!")
-            return False
+        splattercast.msg(f"GRAPPLE_VALIDATE: Starting grapple state validation for handler {self.key}")
         
-        combatants = getattr(self.db, DB_COMBATANTS, [])
-        for entry in combatants:
-            if entry.get(DB_CHAR) == char:
-                target_dbref = self._get_dbref(target)
-                entry[DB_TARGET_DBREF] = target_dbref
-                setattr(self.db, DB_COMBATANTS, combatants)
-                splattercast.msg(f"SET_TARGET: {char.key} -> {target.key} (dbref: {target_dbref})")
-                return True
+        # Get list of all valid character DBREFs in combat for reference checking
+        valid_combat_dbrefs = set()
+        valid_combat_chars = set()
+        for entry in combatants_list:
+            char = entry.get(DB_CHAR)
+            if char:
+                valid_combat_dbrefs.add(self._get_dbref(char))
+                valid_combat_chars.add(char)
+        
+        for i, entry in enumerate(combatants_list):
+            char = entry.get(DB_CHAR)
+            if not char:
+                continue
+                
+            grappling_dbref = entry.get(DB_GRAPPLING_DBREF)
+            grappled_by_dbref = entry.get(DB_GRAPPLED_BY_DBREF)
+            
+            # Check grappling_dbref (who this character is grappling)
+            if grappling_dbref is not None:
+                # Try to resolve the grappling target
+                grappling_target = self._get_char_by_dbref(grappling_dbref)
+                
+                if not grappling_target:
+                    # Stale DBREF - character no longer exists
+                    splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} has stale grappling_dbref {grappling_dbref} (character doesn't exist). Clearing.")
+                    combatants_list[i] = dict(entry)
+                    combatants_list[i][DB_GRAPPLING_DBREF] = None
+                    cleanup_needed = True
+                elif grappling_target == char:
+                    # Self-grappling
+                    splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} is grappling themselves! Clearing self-grapple.")
+                    combatants_list[i] = dict(entry)
+                    combatants_list[i][DB_GRAPPLING_DBREF] = None
+                    cleanup_needed = True
+                elif grappling_target not in valid_combat_chars:
+                    # Target not in combat
+                    splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} is grappling {grappling_target.key} who is not in combat. Clearing.")
+                    combatants_list[i] = dict(entry)
+                    combatants_list[i][DB_GRAPPLING_DBREF] = None
+                    cleanup_needed = True
+                else:
+                    # Valid target - check cross-reference
+                    target_entry = next((e for e in combatants_list if e.get(DB_CHAR) == grappling_target), None)
+                    if target_entry:
+                        target_grappled_by_dbref = target_entry.get(DB_GRAPPLED_BY_DBREF)
+                        expected_dbref = self._get_dbref(char)
+                        
+                        if target_grappled_by_dbref != expected_dbref:
+                            # Broken cross-reference
+                            splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} claims to grapple {grappling_target.key}, but {grappling_target.key} doesn't have matching grappled_by reference. Fixing cross-reference.")
+                            # Fix the target's grappled_by reference
+                            target_index = next(j for j, e in enumerate(combatants_list) if e.get(DB_CHAR) == grappling_target)
+                            combatants_list[target_index] = dict(combatants_list[target_index])
+                            combatants_list[target_index][DB_GRAPPLED_BY_DBREF] = expected_dbref
+                            cleanup_needed = True
+            
+            # Check grappled_by_dbref (who is grappling this character)
+            if grappled_by_dbref is not None:
+                # Try to resolve the grappler
+                grappler = self._get_char_by_dbref(grappled_by_dbref)
+                
+                if not grappler:
+                    # Stale DBREF - grappler no longer exists
+                    splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} has stale grappled_by_dbref {grappled_by_dbref} (character doesn't exist). Clearing.")
+                    combatants_list[i] = dict(entry)
+                    combatants_list[i][DB_GRAPPLED_BY_DBREF] = None
+                    cleanup_needed = True
+                elif grappler == char:
+                    # Self-grappling
+                    splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} is grappled by themselves! Clearing self-grapple.")
+                    combatants_list[i] = dict(entry)
+                    combatants_list[i][DB_GRAPPLED_BY_DBREF] = None
+                    cleanup_needed = True
+                elif grappler not in valid_combat_chars:
+                    # Grappler not in combat
+                    splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} is grappled by {grappler.key} who is not in combat. Clearing.")
+                    combatants_list[i] = dict(entry)
+                    combatants_list[i][DB_GRAPPLED_BY_DBREF] = None
+                    cleanup_needed = True
+                else:
+                    # Valid grappler - check cross-reference
+                    grappler_entry = next((e for e in combatants_list if e.get(DB_CHAR) == grappler), None)
+                    if grappler_entry:
+                        grappler_grappling_dbref = grappler_entry.get(DB_GRAPPLING_DBREF)
+                        expected_dbref = self._get_dbref(char)
+                        
+                        if grappler_grappling_dbref != expected_dbref:
+                            # Broken cross-reference
+                            splattercast.msg(f"GRAPPLE_CLEANUP: {char.key} claims to be grappled by {grappler.key}, but {grappler.key} doesn't have matching grappling reference. Fixing cross-reference.")
+                            # Fix the grappler's grappling reference
+                            grappler_index = next(j for j, e in enumerate(combatants_list) if e.get(DB_CHAR) == grappler)
+                            combatants_list[grappler_index] = dict(combatants_list[grappler_index])
+                            combatants_list[grappler_index][DB_GRAPPLING_DBREF] = expected_dbref
+                            cleanup_needed = True
+        
+        # Save changes if any cleanup was needed
+        if cleanup_needed:
+            setattr(self.db, DB_COMBATANTS, combatants_list)
+            splattercast.msg(f"GRAPPLE_CLEANUP: Grapple state cleanup completed for handler {self.key}. Changes saved.")
         else:
-            splattercast.msg(f"SET_TARGET_ERROR: Could not find combat entry for {char.key}")
-            return False
+            splattercast.msg(f"GRAPPLE_VALIDATE: All grapple states valid for handler {self.key}.")
 
-    def get_target(self, char):
-        """
-        Determine the current valid target for a combatant.
-        
-        Args:
-            char: The character to get target for
-            
-        Returns:
-            Character object or None
-        """
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        combatants = getattr(self.db, DB_COMBATANTS, [])
-        entry = next((e for e in combatants if e.get(DB_CHAR) == char), None)
-        
-        if not entry:
-            splattercast.msg(f"GET_TARGET: No combat entry found for {char.key}.")
-            return None
-        
-        # Debug: Show the entry details
-        target_dbref = entry.get(DB_TARGET_DBREF)
-        splattercast.msg(f"GET_TARGET: {char.key} entry has target_dbref={target_dbref}")
-            
-        # Get target using dbref
-        target = self.get_target_obj(entry)
-        splattercast.msg(f"GET_TARGET: {char.key} resolved target_dbref to target={target.key if target else None}")
-        
-        valid_chars = [e.get(DB_CHAR) for e in combatants]
-        if not target or target not in valid_chars:
-            splattercast.msg(f"GET_TARGET: {char.key} has no valid target or their target is not in combat. Valid chars: {[c.key for c in valid_chars]}")
-            splattercast.msg(f"GET_TARGET: {char.key} current target: {target.key if target else None}, target in valid_chars: {target in valid_chars if target else 'N/A'}")
-            
-            # Find valid targets (all other combatants except self)
-            potential_targets = [c for c in valid_chars if c != char]
-            splattercast.msg(f"GET_TARGET: Potential targets for {char.key}: {[t.key for t in potential_targets]}")
-
-            if not potential_targets:
-                splattercast.msg(f"GET_TARGET: {char.key} has no valid targets available. Potential for disengagement.")
-                return None
-            else:
-                # Choose the first available target instead of complex retargeting logic
-                target = potential_targets[0]
-                splattercast.msg(f"GET_TARGET: {char.key} retargeting to first available target {target.key}.")
-                self.set_target(char, target)
-        else:
-            splattercast.msg(f"GET_TARGET: {char.key} keeps current target {target.key}.")
-        return target
-
-    def get_initiative_order(self):
-        """
-        Return combatants sorted by initiative, highest first.
-        
-        Returns:
-            List of combat entries sorted by initiative
-        """
-        combatants = getattr(self.db, DB_COMBATANTS, [])
-        return sorted(combatants, key=lambda e: e.get("initiative", 0), reverse=True)
-
-    def _get_char_by_dbref(self, dbref):
-        """
-        Get a character object by dbref.
-        
-        Args:
-            dbref: The dbref string to search for
-            
-        Returns:
-            Character object or None if not found
-        """
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        if not dbref:
-            return None
-        
-        # Search by dbref (adding # if not present)
-        if not str(dbref).startswith("#"):
-            dbref = f"#{dbref}"
-        
-        results = search_object(dbref)
-        if results:
-            char = results[0]
-            splattercast.msg(f"_GET_CHAR_BY_DBREF: {dbref} -> {char.key}")
-            return char
-        else:
-            splattercast.msg(f"_GET_CHAR_BY_DBREF: {dbref} -> None (not found)")
-        return None
-    
-    def _get_dbref(self, obj):
-        """
-        Get the dbref string from an object.
-        
-        Args:
-            obj: The object to get dbref from
-            
-        Returns:
-            str: The dbref without leading # or None if obj is None
-        """
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        if not obj:
-            return None
-        
-        # Get the dbref and remove leading #
-        dbref = obj.dbref
-        if dbref and dbref.startswith("#"):
-            dbref = dbref[1:]
-        splattercast.msg(f"_GET_DBREF: {obj.key} -> {dbref}")
-        return dbref
-
-    @property
-    def is_active(self):
-        """
-        Check if combat is currently active.
-        
-        Returns:
-            bool: True if combat logic is running
-        """
-        return getattr(self.db, DB_COMBAT_RUNNING, False) and super().is_active
+    # ...existing code...
 
     def at_repeat(self):
         """
@@ -676,6 +609,9 @@ class CombatHandler(DefaultScript):
                 regular_entry = dict(entry)
                 combatants_list.append(regular_entry)
         splattercast.msg(f"AT_REPEAT_DEBUG: Converted SaverList to regular list with {len(combatants_list)} entries")
+
+        # Validate and clean up stale grapple references
+        self.validate_and_cleanup_grapple_state()
 
         valid_combatants_entries = []
         managed_rooms = getattr(self.db, DB_MANAGED_ROOMS, [])
@@ -944,7 +880,7 @@ class CombatHandler(DefaultScript):
                                 obs_msg = grapple_messages.get("observer_msg")
                                 if char.location:
                                     char.location.msg_contents(obs_msg, exclude=[char, action_target_char])
-                                splattercast.msg(f"GRAPPLE SUCCESS: {char.key} grappled {action_target_char.key}.")
+                                splattercast.msg(f"GRAPPLE_SUCCESS: {char.key} grappled {action_target_char.key}.")
                             else:
                                 # Grapple failed
                                 grapple_messages = get_combat_message("grapple", "miss", attacker=char, target=action_target_char)
@@ -953,7 +889,7 @@ class CombatHandler(DefaultScript):
                                 obs_msg = grapple_messages.get("observer_msg")
                                 if char.location:
                                     char.location.msg_contents(obs_msg, exclude=[char, action_target_char])
-                                splattercast.msg(f"GRAPPLE FAIL: {char.key} failed to grapple {action_target_char.key}.")
+                                splattercast.msg(f"GRAPPLE_FAIL: {char.key} failed to grapple {action_target_char.key}.")
                         else:
                             char.msg(f"You can't reach {action_target_char.key} to grapple them from here.")
                             splattercast.msg(f"GRAPPLE FAIL (REACH): {char.key} cannot reach {action_target_char.key}.")
@@ -1295,12 +1231,16 @@ class CombatHandler(DefaultScript):
         # Remove from combat
         self.remove_combatant(victim)
         
-        # Retarget any combatants who were targeting the deceased
+        # Clear targeting references to the deceased (don't auto-retarget)
         combatants = getattr(self.db, DB_COMBATANTS, [])
         for entry in combatants:
             if self.get_target_obj(entry) == victim:
-                new_target = self.get_target(entry[DB_CHAR])
-                splattercast.msg(f"{entry[DB_CHAR].key} retargeted from slain {victim.key} to {new_target.key if new_target else 'None'}.")
+                # Clear the target instead of auto-retargeting to prevent unwanted hostility
+                entry[DB_TARGET_DBREF] = None
+                splattercast.msg(f"{entry[DB_CHAR].key} no longer targets slain {victim.key}. Must choose new target manually.")
+                # Inform the character that their target is gone
+                if hasattr(entry[DB_CHAR], 'msg'):
+                    entry[DB_CHAR].msg(f"|yYour target {victim.get_display_name(entry[DB_CHAR]) if hasattr(victim, 'get_display_name') else victim.key} has been slain. Choose a new target if you wish to continue fighting.|n")
 
     def _resolve_grapple_attempt(self, attacker_entry, target_entry):
         """Performs the opposed roll for a grapple."""
@@ -1532,3 +1472,38 @@ class CombatHandler(DefaultScript):
         
         splattercast.msg(f"RELEASE GRAPPLE: {attacker.key} released {victim_char_being_grappled.key}. Grapple state cleared for both.")
         return True
+
+    # --- Utility Methods ---
+    
+    def _get_dbref(self, char):
+        """Get DBREF from a character object."""
+        if not char:
+            return None
+        return getattr(char, 'id', None) or getattr(char, 'dbref', None)
+    
+    def _get_char_by_dbref(self, dbref):
+        """Resolve a DBREF to a character object."""
+        if not dbref:
+            return None
+        try:
+            results = search_object(f"#{dbref}")
+            if results and len(results) == 1:
+                return results[0]
+        except Exception:
+            pass
+        return None
+    
+    def get_target_obj(self, combatant_entry):
+        """Get the target object for a combatant entry."""
+        target_dbref = combatant_entry.get(DB_TARGET_DBREF)
+        return self._get_char_by_dbref(target_dbref)
+    
+    def get_grappling_obj(self, combatant_entry):
+        """Get the character that this combatant is grappling."""
+        grappling_dbref = combatant_entry.get(DB_GRAPPLING_DBREF)
+        return self._get_char_by_dbref(grappling_dbref)
+    
+    def get_grappled_by_obj(self, combatant_entry):
+        """Get the character that is grappling this combatant."""
+        grappled_by_dbref = combatant_entry.get(DB_GRAPPLED_BY_DBREF)
+        return self._get_char_by_dbref(grappled_by_dbref)

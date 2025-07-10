@@ -715,27 +715,80 @@ class CmdCharge(Command):
             splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_{DEBUG_FAIL}: {caller.key} attempted to charge while grappled by {grappled_by_char_obj.key if grappled_by_char_obj else 'Unknown'}.")
             return
 
+        # Check if caller is grappling someone
+        grappling_victim_obj = handler.get_grappling_obj(caller_entry)
+        if grappling_victim_obj:
+            if args:
+                # Caller specified a target while grappling
+                target_search = caller.search(args, location=caller.location, quiet=True)
+                if not target_search:
+                    # Try searching in adjacent combat rooms
+                    managed_rooms = getattr(handler.db, "managed_rooms", [])
+                    for room in managed_rooms:
+                        if room != caller.location:
+                            potential_target = caller.search(args, location=room, quiet=True)
+                            if potential_target:
+                                target_search = potential_target
+                                break
+                
+                if target_search == grappling_victim_obj:
+                    # Trying to charge the person they're grappling
+                    caller.msg(f"You cannot charge {grappling_victim_obj.get_display_name(caller)} while you are grappling them! Release the grapple first or choose a different target.")
+                    splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_{DEBUG_FAIL}: {caller.key} attempted to charge their grapple victim {grappling_victim_obj.key}.")
+                    return
+                elif target_search:
+                    # Charging someone else - release the grapple first
+                    # Use proper SaverList updating pattern
+                    combatants_list = list(handler.db.combatants)
+                    for i, entry in enumerate(combatants_list):
+                        if entry["char"] == caller:
+                            combatants_list[i] = dict(entry)  # Deep copy
+                            combatants_list[i]["grappling_dbref"] = None
+                        elif entry["char"] == grappling_victim_obj:
+                            combatants_list[i] = dict(entry)  # Deep copy
+                            combatants_list[i]["grappled_by_dbref"] = None
+                    handler.db.combatants = combatants_list
+                    
+                    caller.msg(f"|yYou release your grapple on {grappling_victim_obj.get_display_name(caller)} to charge {target_search.get_display_name(caller)}!|n")
+                    if grappling_victim_obj.access(caller, "view"):
+                        grappling_victim_obj.msg(f"|y{caller.get_display_name(grappling_victim_obj)} releases their grapple on you to charge {target_search.get_display_name(grappling_victim_obj)}!|n")
+                    
+                    splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_GRAPPLE_RELEASE: {caller.key} released grapple on {grappling_victim_obj.key} to charge {target_search.key}.")
+                    # Continue with normal charge logic using target_search
+                else:
+                    caller.msg(f"You cannot find '{args}' to charge at.")
+                    return
+            else:
+                # No target specified while grappling - require explicit target
+                caller.msg(f"You are currently grappling {grappling_victim_obj.get_display_name(caller)}. You must specify a target to charge, or use 'escape' to release the grapple first.")
+                splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_{DEBUG_FAIL}: {caller.key} attempted to charge with no target while grappling {grappling_victim_obj.key}.")
+                return
+
         # Determine target
         target = None
         if args:
-            target = caller.search(args, location=caller.location, quiet=True)
-            if not target:
-                # Try searching in adjacent combat rooms
-                managed_rooms = getattr(handler.db, "managed_rooms", [])
-                for room in managed_rooms:
-                    if room != caller.location:
-                        potential_target = caller.search(args, location=room, quiet=True)
-                        if potential_target:
-                            target = potential_target
-                            break
-                            
-            if not target:
-                caller.msg(f"You cannot find '{args}' to charge at.")
-                return
-                
-            if target == caller:
-                caller.msg(MSG_CHARGE_SELF_TARGET)
-                return
+            # Check if target was already determined during grapple check
+            if 'target_search' in locals():
+                target = target_search
+            else:
+                target = caller.search(args, location=caller.location, quiet=True)
+                if not target:
+                    # Try searching in adjacent combat rooms
+                    managed_rooms = getattr(handler.db, "managed_rooms", [])
+                    for room in managed_rooms:
+                        if room != caller.location:
+                            potential_target = caller.search(args, location=room, quiet=True)
+                            if potential_target:
+                                target = potential_target
+                                break
+                                
+                if not target:
+                    caller.msg(f"You cannot find '{args}' to charge at.")
+                    return
+                    
+                if target == caller:
+                    caller.msg(MSG_CHARGE_SELF_TARGET)
+                    return
         else:
             # Use current combat target
             target = handler.get_target_obj(caller_entry)
@@ -749,8 +802,8 @@ class CmdCharge(Command):
             caller.msg(f"{target.get_display_name(caller)} is not in combat.")
             return
 
-        # Check if already in proximity
-        if hasattr(caller.ndb, "in_proximity_with") and target in caller.ndb.in_proximity_with:
+        # Check if already in proximity (defensive check for TypeError)
+        if hasattr(caller.ndb, "in_proximity_with") and caller.ndb.in_proximity_with and target in caller.ndb.in_proximity_with:
             caller.msg(f"You are already in melee proximity with {target.get_display_name(caller)}. No need to charge.")
             return
 
