@@ -67,7 +67,7 @@ class CmdGrapple(Command):
 
         if not matches:
             caller.msg(MSG_GRAPPLE_NO_TARGET)
-            log_combat_action(f"{caller.key} tried to grapple '{search_name}' but found no valid target in the room.")
+            log_combat_action(caller, "grapple_fail", details=f"tried to grapple '{search_name}' but found no valid target in the room")
             return
 
         target = matches[0]
@@ -78,7 +78,7 @@ class CmdGrapple(Command):
 
         if not inherits_from(target, "typeclasses.characters.Character"):
             caller.msg(MSG_CANNOT_GRAPPLE_TARGET)
-            log_combat_action(f"{caller.key} tried to grapple {target.key}, but it's not a valid character.")
+            log_combat_action(caller, "grapple_fail", target, details="tried to grapple non-character object")
             return
 
         # --- Get or create combat handler ---
@@ -95,11 +95,11 @@ class CmdGrapple(Command):
         target_is_in_combat = any(e["char"] == target for e in handler.db.combatants)
 
         if not caller_is_in_combat:
-            log_combat_action(f"{caller.key} is initiating grapple combat with {target.key}.")
+            log_combat_action(caller, "grapple_initiate", target, details="initiating grapple combat")
             handler.add_combatant(caller) 
             handler.add_combatant(target) 
         elif not target_is_in_combat: 
-            log_combat_action(f"{caller.key} (in combat) is attempting to grapple {target.key} (adding to combat).")
+            log_combat_action(caller, "grapple_join", target, details="attempting to grapple (adding target to combat)")
             handler.add_combatant(target)
         
         # --- Now retrieve combat entries; they should exist ---
@@ -108,11 +108,11 @@ class CmdGrapple(Command):
 
         if not caller_combat_entry: 
             caller.msg(MSG_GRAPPLE_COMBAT_ADD_ERROR)
-            log_combat_action(f"CRITICAL: {caller.key} failed to be added to combat by CmdGrapple.")
+            log_combat_action(caller, "grapple_error", details="CRITICAL: failed to be added to combat")
             return
         if not target_combat_entry: 
             caller.msg(f"There was an issue adding {target.key} to combat. Please try again.")
-            log_combat_action(f"CRITICAL: {target.key} failed to be added to combat by CmdGrapple.")
+            log_combat_action(caller, "grapple_error", target, details="CRITICAL: target failed to be added to combat")
             return
 
         # Default to not yielding if already in combat or grapple fails.
@@ -123,13 +123,13 @@ class CmdGrapple(Command):
         if handler.get_grappling_obj(caller_combat_entry):
             currently_grappling = handler.get_grappling_obj(caller_combat_entry)
             caller.msg(MSG_ALREADY_GRAPPLING.format(target=currently_grappling.key))
-            log_combat_action(f"{caller.key} tried to grapple {target.key} while already grappling {currently_grappling.key}.")
+            log_combat_action(caller, "grapple_fail", target, details=f"already grappling {currently_grappling.key}")
             return
         
         if handler.get_grappled_by_obj(caller_combat_entry):
             grappler = handler.get_grappled_by_obj(caller_combat_entry)
             caller.msg(MSG_CANNOT_GRAPPLE_WHILE_GRAPPLED.format(grappler=grappler.key))
-            log_combat_action(f"{caller.key} tried to grapple {target.key} while being grappled by {grappler.key}.")
+            log_combat_action(caller, "grapple_fail", target, details=f"being grappled by {grappler.key}")
             return
 
         if handler.get_grappled_by_obj(target_combat_entry):
@@ -138,7 +138,7 @@ class CmdGrapple(Command):
             target_grappler = handler.get_grappled_by_obj(target_combat_entry)
             if target_grappler != caller:
                  caller.msg(MSG_TARGET_ALREADY_GRAPPLED.format(target=target.key, grappler=target_grappler.key))
-                 log_combat_action(f"{caller.key} tried to grapple {target.key}, but they are already grappled by {target_grappler.key}.")
+                 log_combat_action(caller, "grapple_fail", target, details=f"target already grappled by {target_grappler.key}")
                  return
         
         # --- Set combat action ---
@@ -151,12 +151,12 @@ class CmdGrapple(Command):
             # This is a grapple to initiate combat - use all-or-nothing approach
             caller_combat_entry["combat_action"] = "grapple_initiate"
             handler.set_target(caller, target)
-            log_combat_action(f"{caller.key} sets combat action to grapple_initiate against {target.key}.")
+            log_combat_action(caller, "grapple_action", target, details="combat action set to grapple_initiate")
         else:
             # This is a grapple during ongoing combat - use risk-based approach
             caller_combat_entry["combat_action"] = "grapple_join"  
             handler.set_target(caller, target)
-            log_combat_action(f"{caller.key} sets combat action to grapple_join against {target.key}.")
+            log_combat_action(caller, "grapple_action", target, details="combat action set to grapple_join")
 
         caller.msg(MSG_GRAPPLE_PREPARE.format(target=target.key))
         # The combat handler will process this on the character's turn
@@ -240,19 +240,19 @@ class CmdDisarm(Command):
         handler = getattr(caller.ndb, NDB_COMBAT_HANDLER, None)
         if not handler:
             caller.msg(MSG_NOT_IN_COMBAT)
-            log_combat_action(f"{caller.key} tried to disarm but is not in combat.")
+            log_combat_action(caller, "disarm_fail", details="not in combat")
             return
 
         target = handler.get_target(caller)
         if not target:
             caller.msg(MSG_DISARM_NO_TARGET)
-            log_combat_action(f"{caller.key} tried to disarm but has no valid target.")
+            log_combat_action(caller, "disarm_fail", details="has no valid target")
             return
 
         hands = getattr(target, "hands", {})
         if not hands:
             caller.msg(MSG_DISARM_TARGET_EMPTY_HANDS.format(target=target.key))
-            log_combat_action(f"{caller.key} tried to disarm {target.key}, but they have nothing in their hands.")
+            log_combat_action(caller, "disarm_fail", target, details="target has nothing in their hands")
             return
 
         # Grit vs Grit check
@@ -262,13 +262,13 @@ class CmdDisarm(Command):
         resist_roll = roll_stat(defender_grit)
         
         log_combat_action(
-            f"{caller.key} attempts to disarm {target.key}: {disarm_roll} (grit) vs {resist_roll} (grit)"
+            caller, "disarm_attempt", target, details=f"rolls {disarm_roll} (grit) vs {resist_roll} (grit)"
         )
 
         if disarm_roll <= resist_roll:
             caller.msg(MSG_DISARM_FAILED.format(target=target.key))
             target.msg(MSG_DISARM_RESISTED.format(attacker=caller.key))
-            log_combat_action(f"{caller.key} failed to disarm {target.key}.")
+            log_combat_action(caller, "disarm_fail", target, success=False)
             return
 
         # Prioritize weapon-type items
@@ -287,7 +287,7 @@ class CmdDisarm(Command):
 
         if not weapon_hand:
             caller.msg(MSG_DISARM_NOTHING_TO_DISARM.format(target=target.key))
-            log_combat_action(f"{caller.key} tried to disarm {target.key}, but nothing was found.")
+            log_combat_action(caller, "disarm_fail", target, details="nothing found to disarm")
             return
 
         item = hands[weapon_hand]
@@ -301,7 +301,7 @@ class CmdDisarm(Command):
             MSG_DISARM_SUCCESS_OBSERVER.format(attacker=caller.key, target=target.key, item=item.key),
             exclude=[caller, target]
         )
-        log_combat_action(f"{caller.key} disarmed {target.key} ({item.key}) in {target.location.key}.")
+        log_combat_action(caller, "disarm_success", target, details=f"disarmed {item.key}")
 
 
 class CmdAim(Command):
