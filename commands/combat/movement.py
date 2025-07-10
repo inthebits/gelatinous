@@ -573,6 +573,9 @@ class CmdAdvance(Command):
             
             splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_CROSS_ROOM_DEBUG: {caller.key} advancing on {target.key}. Target has ranged weapon: {target_has_ranged}")
             
+            # Get the exit to use for both success and failure messaging
+            exit_to_use = exits_to_target[0]
+            
             if target_has_ranged:
                 # Target has ranged weapon - they can contest the advance
                 caller_motorics = get_numeric_stat(caller, "motorics")
@@ -585,7 +588,6 @@ class CmdAdvance(Command):
                 
                 if advance_roll > resist_roll:
                     # Success - move to target's room
-                    exit_to_use = exits_to_target[0]
                     caller.move_to(target_room)
                     
                     # Clear any aim states between the characters
@@ -621,7 +623,7 @@ class CmdAdvance(Command):
                     
                     if target.location != caller.location:
                         target.location.msg_contents(
-                            f"|y{target.get_display_name(target.location)} covers the {exit_to_use.key if exits_to_target else 'entrance'} with their weapon!|n",
+                            f"|y{target.get_display_name(target.location)} covers the {exit_to_use.key} with their weapon!|n",
                             exclude=[target]
                         )
                     
