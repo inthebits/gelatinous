@@ -293,8 +293,8 @@ class CmdDisarm(Command):
         # Grit vs Grit check
         attacker_grit = get_numeric_stat(caller, "grit")
         defender_grit = get_numeric_stat(target, "grit")
-        disarm_roll = roll_stat(attacker_grit)
-        resist_roll = roll_stat(defender_grit)
+        disarm_roll = roll_stat(caller, "grit")
+        resist_roll = roll_stat(target, "grit")
         
         log_combat_action(
             caller, "disarm_attempt", target, details=f"rolls {disarm_roll} (grit) vs {resist_roll} (grit)"
