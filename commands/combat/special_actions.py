@@ -146,6 +146,9 @@ class CmdGrapple(Command):
         if "combat_action" not in caller_combat_entry:
             caller_combat_entry["combat_action"] = {}
             
+        # Store whether caller initiated combat for use in handler
+        caller_combat_entry["initiated_combat_this_action"] = caller_initiated_combat_this_action
+        
         # --- Establish proximity for grapple combat ---
         if caller.location == target.location:
             # Same room grapple - establish proximity for melee combat

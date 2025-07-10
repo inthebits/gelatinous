@@ -657,9 +657,15 @@ class CombatHandler(DefaultScript):
             return
 
         # Check if all combatants are yielding - if so, end combat peacefully
+        # BUT ONLY if there are no active grapples happening
         all_yielding = all(entry.get(DB_IS_YIELDING, False) for entry in combatants_list)
-        if all_yielding:
-            splattercast.msg(f"AT_REPEAT: Handler {self.key}. All combatants are yielding. Ending combat peacefully.")
+        any_active_grapples = any(
+            entry.get(DB_GRAPPLING_DBREF) is not None or entry.get(DB_GRAPPLED_BY_DBREF) is not None
+            for entry in combatants_list
+        )
+        
+        if all_yielding and not any_active_grapples:
+            splattercast.msg(f"AT_REPEAT: Handler {self.key}. All combatants are yielding with no active grapples. Ending combat peacefully.")
             # Send a message to all combatants about peaceful resolution
             for entry in combatants_list:
                 char = entry.get(DB_CHAR)
@@ -672,6 +678,8 @@ class CombatHandler(DefaultScript):
                                     exclude=[entry.get(DB_CHAR) for entry in combatants_list if entry.get(DB_CHAR)])
             self.stop_combat_logic()
             return
+        elif all_yielding and any_active_grapples:
+            splattercast.msg(f"AT_REPEAT: Handler {self.key}. All combatants yielding but active grapples present. Combat continues in restraint mode.")
 
         # Sort combatants by initiative for processing
         initiative_order = sorted(combatants_list, key=lambda e: e.get("initiative", 0), reverse=True)
@@ -1146,6 +1154,13 @@ class CombatHandler(DefaultScript):
             # Failure
             char.msg(f"|yYou fail to grapple {target.key}.|n")
             target.msg(f"|y{char.key} fails to grapple you.|n")
+            
+            # Check if grappler initiated combat - if so, they should become yielding on failure
+            initiated_combat = char_entry.get("initiated_combat_this_action", False)
+            if initiated_combat:
+                char_entry[DB_IS_YIELDING] = True
+                char.msg("|gYour failed grapple attempt leaves you non-aggressive.|n")
+                splattercast.msg(f"GRAPPLE_FAIL_YIELD: {char.key} initiated combat with grapple but failed, setting to yielding.")
             
             if char.location:
                 char.location.msg_contents(
