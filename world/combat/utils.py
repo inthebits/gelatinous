@@ -287,8 +287,33 @@ def get_wielded_weapons(character):
             weapons.append(weapon)
     
     return weapons
+
+
+def get_weapon_damage(weapon, default=0):
+    """
+    Safely get weapon damage with fallback to default.
     
-    return weapons
+    Args:
+        weapon: The weapon object
+        default (int): Default damage if weapon has no damage or damage is None
+        
+    Returns:
+        int: Weapon damage value, guaranteed to be a non-negative integer
+    """
+    if not weapon or not hasattr(weapon, 'db'):
+        return default
+    
+    damage = getattr(weapon.db, "damage", default)
+    
+    # Handle None explicitly since some weapons might have damage=None
+    if damage is None:
+        return default
+    
+    # Ensure it's numeric and non-negative
+    if not isinstance(damage, (int, float)) or damage < 0:
+        return default
+    
+    return int(damage)
 
 
 # ===================================================================

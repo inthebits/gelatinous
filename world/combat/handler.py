@@ -30,7 +30,8 @@ from .constants import (
 )
 from .utils import (
     get_numeric_stat, log_combat_action, get_display_name_safe,
-    roll_stat, opposed_roll, get_wielded_weapon, is_wielding_ranged_weapon
+    roll_stat, opposed_roll, get_wielded_weapon, is_wielding_ranged_weapon,
+    get_weapon_damage
 )
 from .proximity import clear_all_proximity, establish_proximity, proximity_opposed_roll
 from .grappling import break_grapple, establish_grapple
@@ -1046,7 +1047,7 @@ class CombatHandler(DefaultScript):
             damage = randint(1, 6)  # Base damage
             if weapon:
                 # Add weapon damage if applicable
-                weapon_damage = getattr(weapon.db, "damage", 0)
+                weapon_damage = get_weapon_damage(weapon, 0)
                 damage += weapon_damage
             
             # Apply damage (simplified for now)
