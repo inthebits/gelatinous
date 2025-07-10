@@ -26,7 +26,7 @@ from .constants import (
     DB_CHAR, DB_TARGET_DBREF, DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF, DB_IS_YIELDING,
     NDB_COMBAT_HANDLER, NDB_PROXIMITY, NDB_SKIP_ROUND,
     DEBUG_PREFIX_HANDLER, DEBUG_SUCCESS, DEBUG_FAIL, DEBUG_ERROR, DEBUG_CLEANUP,
-    MSG_GRAPPLE_AUTO_ESCAPE_VIOLENT
+    MSG_GRAPPLE_AUTO_ESCAPE_VIOLENT, MSG_GRAPPLE_AUTO_YIELD
 )
 from .utils import (
     get_numeric_stat, log_combat_action, get_display_name_safe,
@@ -912,6 +912,14 @@ class CombatHandler(DefaultScript):
                                 if target_entry:
                                     target_entry[DB_GRAPPLED_BY_DBREF] = self._get_dbref(char)
                                 
+                                # Auto-yield both parties on successful grapple (restraint mode)
+                                current_char_combat_entry[DB_IS_YIELDING] = True
+                                if target_entry:
+                                    target_entry[DB_IS_YIELDING] = True
+                                
+                                # Notify victim they're auto-yielding
+                                action_target_char.msg(MSG_GRAPPLE_AUTO_YIELD)
+                                
                                 grapple_messages = get_combat_message("grapple", "hit", attacker=char, target=action_target_char)
                                 char.msg(grapple_messages.get("attacker_msg"))
                                 action_target_char.msg(grapple_messages.get("victim_msg"))
@@ -1327,6 +1335,11 @@ class CombatHandler(DefaultScript):
             attacker_entry[DB_GRAPPLING_DBREF] = self._get_dbref(target)
             target_entry[DB_GRAPPLED_BY_DBREF] = self._get_dbref(attacker)
             
+            # Set both parties to yielding (peaceful restraint mode) by default
+            # This is for grapple_initiate which starts new combat - always start peaceful
+            attacker_entry[DB_IS_YIELDING] = True
+            target_entry[DB_IS_YIELDING] = True
+            
             grapple_messages = get_combat_message("grapple", "hit", attacker=attacker, target=target)
             attacker.msg(grapple_messages.get("attacker_msg", f"You grapple {target.key}!"))
             target.msg(grapple_messages.get("victim_msg", f"{attacker.key} grapples you!"))
@@ -1385,6 +1398,10 @@ class CombatHandler(DefaultScript):
             # Successful grapple
             attacker_entry[DB_GRAPPLING_DBREF] = self._get_dbref(target)
             target_entry[DB_GRAPPLED_BY_DBREF] = self._get_dbref(attacker)
+            
+            # For grapple_join (during ongoing combat), preserve existing violence state
+            # Don't modify is_yielding - if they were fighting violently, keep it violent
+            # If they were yielding, keep them yielding
             
             grapple_messages = get_combat_message("grapple", "hit", attacker=attacker, target=target)
             attacker.msg(grapple_messages.get("attacker_msg", f"You grapple {target.key}!"))
