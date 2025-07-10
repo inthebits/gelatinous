@@ -81,6 +81,52 @@ def opposed_roll(char1, char2, stat1="motorics", stat2="motorics"):
     return roll1, roll2, roll1 > roll2
 
 
+def roll_with_advantage(stat_value):
+    """
+    Roll with advantage: roll twice, take the higher result.
+    
+    Args:
+        stat_value (int): The stat value to roll against
+        
+    Returns:
+        tuple: (final_roll, roll1, roll2) for debugging
+    """
+    roll1 = randint(1, max(1, stat_value))
+    roll2 = randint(1, max(1, stat_value))
+    final_roll = max(roll1, roll2)
+    return final_roll, roll1, roll2
+
+
+def roll_with_disadvantage(stat_value):
+    """
+    Roll with disadvantage: roll twice, take the lower result.
+    
+    Args:
+        stat_value (int): The stat value to roll against
+        
+    Returns:
+        tuple: (final_roll, roll1, roll2) for debugging
+    """
+    roll1 = randint(1, max(1, stat_value))
+    roll2 = randint(1, max(1, stat_value))
+    final_roll = min(roll1, roll2)
+    return final_roll, roll1, roll2
+
+
+def standard_roll(stat_value):
+    """
+    Standard single roll.
+    
+    Args:
+        stat_value (int): The stat value to roll against
+        
+    Returns:
+        tuple: (final_roll, roll, roll) for consistent interface
+    """
+    roll = randint(1, max(1, stat_value))
+    return roll, roll, roll
+
+
 # ===================================================================
 # DEBUG LOGGING
 # ===================================================================
@@ -202,6 +248,52 @@ def get_wielded_weapon(character):
     """
     hands = getattr(character, "hands", {})
     return next((item for hand, item in hands.items() if item), None)
+
+
+def is_wielding_ranged_weapon(character):
+    """
+    Check if a character is wielding a ranged weapon.
+    
+    Args:
+        character: The character to check
+        
+    Returns:
+        bool: True if wielding a ranged weapon, False otherwise
+    """
+    # Check right hand first
+    right_hand_weapon = getattr(character.db, 'right_hand', None)
+    if right_hand_weapon and hasattr(right_hand_weapon, 'db') and getattr(right_hand_weapon.db, 'is_ranged', False):
+        return True
+    
+    # Check left hand
+    left_hand_weapon = getattr(character.db, 'left_hand', None)
+    if left_hand_weapon and hasattr(left_hand_weapon, 'db') and getattr(left_hand_weapon.db, 'is_ranged', False):
+        return True
+    
+    return False
+
+
+def get_wielded_weapons(character):
+    """
+    Get all weapons a character is currently wielding.
+    
+    Args:
+        character: The character to check
+        
+    Returns:
+        list: List of wielded weapon objects
+    """
+    weapons = []
+    
+    right_hand_weapon = getattr(character.db, 'right_hand', None)
+    if right_hand_weapon:
+        weapons.append(right_hand_weapon)
+    
+    left_hand_weapon = getattr(character.db, 'left_hand', None)
+    if left_hand_weapon:
+        weapons.append(left_hand_weapon)
+    
+    return weapons
 
 
 # ===================================================================

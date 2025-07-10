@@ -13,7 +13,7 @@ allowing players to control distance and positioning strategically.
 
 from evennia import Command
 from evennia.utils.utils import inherits_from
-from random import randint, choice
+from random import choice
 from world.combat.handler import get_or_create_combat
 from world.combat.constants import COMBAT_SCRIPT_KEY
 from world.combat.messages import get_combat_message
@@ -36,7 +36,9 @@ from world.combat.constants import (
 from world.combat.utils import (
     initialize_proximity_ndb, get_wielded_weapon, roll_stat, opposed_roll,
     log_combat_action, get_display_name_safe, validate_combat_target,
-    get_highest_opponent_stat, get_numeric_stat, filter_valid_opponents
+    get_highest_opponent_stat, get_numeric_stat, filter_valid_opponents,
+    roll_with_advantage, roll_with_disadvantage, standard_roll,
+    is_wielding_ranged_weapon
 )
 from world.combat.proximity import (
     establish_proximity, break_proximity, clear_all_proximity,
@@ -157,8 +159,8 @@ class CmdFlee(Command):
                 splattercast.msg(f"{DEBUG_PREFIX_FLEE}_CMD (AIM_BREAK_PHASE): {caller.key} is attempting to break NDB aim lock by {current_aimer_for_break_attempt.key}.")
                 aimer_motorics_to_resist = get_numeric_stat(current_aimer_for_break_attempt, "motorics")
                 caller_motorics = get_numeric_stat(caller, "motorics")
-                flee_roll = randint(1, max(1, caller_motorics))
-                resist_roll = randint(1, max(1, aimer_motorics_to_resist))
+                flee_roll, _, _ = standard_roll(caller_motorics)
+                resist_roll, _, _ = standard_roll(aimer_motorics_to_resist)
                 splattercast.msg(f"{DEBUG_PREFIX_FLEE}_AIM_ROLL: {caller.key}(motorics:{flee_roll}) vs {current_aimer_for_break_attempt.key}(motorics:{resist_roll})")
 
                 if flee_roll > resist_roll:
@@ -228,8 +230,8 @@ class CmdFlee(Command):
                 highest_opponent_motorics, blocking_opponent = get_highest_opponent_stat(valid_opponents, "motorics")
                 caller_motorics = get_numeric_stat(caller, "motorics")
                 
-                flee_roll = randint(1, max(1, caller_motorics))
-                block_roll = randint(1, max(1, highest_opponent_motorics))
+                flee_roll, _, _ = standard_roll(caller_motorics)
+                block_roll, _, _ = standard_roll(highest_opponent_motorics)
                 
                 splattercast.msg(f"{DEBUG_PREFIX_FLEE}_DISENGAGE_ROLL: {caller.key} (motorics:{caller_motorics}, roll:{flee_roll}) vs opponents (highest:{highest_opponent_motorics}, blocker:{blocking_opponent.key if blocking_opponent else 'None'}, roll:{block_roll})")
                 
@@ -364,8 +366,8 @@ class CmdRetreat(Command):
         highest_opponent_motorics_val, resisting_opponent_for_log = get_highest_opponent_stat(valid_opponents, "motorics")
         caller_motorics_for_roll = get_numeric_stat(caller, "motorics")
         
-        retreat_roll = randint(1, max(1, caller_motorics_for_roll))
-        resist_roll = randint(1, max(1, highest_opponent_motorics_val))
+        retreat_roll, _, _ = standard_roll(caller_motorics_for_roll)
+        resist_roll, _, _ = standard_roll(highest_opponent_motorics_val)
 
         splattercast.msg(f"{DEBUG_PREFIX_RETREAT}_ROLL: {caller.key} (motorics:{caller_motorics_for_roll}, roll:{retreat_roll}) vs "
                          f"Proximity (highest motorics:{highest_opponent_motorics_val}, opponent for log: {resisting_opponent_for_log.key if resisting_opponent_for_log else 'N/A'}, roll:{resist_roll})")
@@ -513,8 +515,8 @@ class CmdAdvance(Command):
             caller_motorics = get_numeric_stat(caller, "motorics")
             target_motorics = get_numeric_stat(target, "motorics")
             
-            advance_roll = randint(1, max(1, caller_motorics))
-            resist_roll = randint(1, max(1, target_motorics))
+            advance_roll, _, _ = standard_roll(caller_motorics)
+            resist_roll, _, _ = standard_roll(target_motorics)
             
             splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_ROLL: {caller.key} (motorics:{caller_motorics}, roll:{advance_roll}) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
             
@@ -541,9 +543,107 @@ class CmdAdvance(Command):
                 )
                 splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_{DEBUG_FAIL}: {caller.key} failed to advance on {target.key}.")
         else:
-            # Different room - attempt to move (similar to charge)
-            caller.msg(f"Cross-room advance not yet implemented. Use 'charge' for aggressive movement or move normally.")
-            splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_TODO: {caller.key} attempted cross-room advance on {target.key}.")
+            # Different room - attempt to move to target's room
+            # Logic depends on target's weapon type
+            
+            # Verify target is in a managed combat room
+            managed_rooms = getattr(handler.db, "managed_rooms", [])
+            if target.location not in managed_rooms:
+                caller.msg(f"{target.get_display_name(caller)} is not in a room you can advance to.")
+                return
+            
+            # Check if there's a valid path to the target room
+            target_room = target.location
+            exits_to_target = [ex for ex in caller.location.exits if ex.destination == target_room]
+            
+            if not exits_to_target:
+                caller.msg(f"There is no clear path to advance on {target.get_display_name(caller)}.")
+                return
+            
+            # Check if target is wielding a ranged weapon
+            target_has_ranged = is_wielding_ranged_weapon(target)
+            
+            if target_has_ranged:
+                # Target has ranged weapon - they can contest the advance
+                caller_motorics = get_numeric_stat(caller, "motorics")
+                target_motorics = get_numeric_stat(target, "motorics")
+                
+                advance_roll, roll1, roll2 = standard_roll(caller_motorics)
+                resist_roll, r_roll1, r_roll2 = standard_roll(target_motorics)
+                
+                splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_CROSS_ROOM_RANGED_ROLL: {caller.key} (motorics:{caller_motorics}, roll:{advance_roll}) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
+                
+                if advance_roll > resist_roll:
+                    # Success - move to target's room
+                    exit_to_use = exits_to_target[0]
+                    caller.move_to(target_room)
+                    
+                    caller.msg(f"|gYou successfully advance through the {exit_to_use.key} despite {target.get_display_name(caller)}'s ranged weapons!|n")
+                    target.msg(f"|y{caller.get_display_name(target)} advances through the {exit_to_use.key} toward you, evading your ranged attack!|n")
+                    
+                    # Notify both rooms
+                    caller.location.msg_contents(
+                        f"|y{caller.get_display_name(caller.location)} advances from {exit_to_use.get_return_exit().key if exit_to_use.get_return_exit() else 'elsewhere'} despite covering fire!|n",
+                        exclude=[caller, target]
+                    )
+                    
+                    splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_{DEBUG_SUCCESS}: {caller.key} successfully advanced cross-room against ranged weapon user {target.key}.")
+                    
+                    # Note: They're now in the same room but not in melee proximity
+                    caller.msg(f"|yYou are now in the same room as {target.get_display_name(caller)}. Use 'advance' again to close to melee range.|n")
+                    
+                else:
+                    # Failure - target's ranged weapon prevents advance and gets bonus attack
+                    caller.msg(f"|r{target.get_display_name(caller)} covers the entrance with their ranged weapon, preventing your advance!|n")
+                    target.msg(f"|gYou successfully cover the entrance, preventing {caller.get_display_name(target)}'s advance!|n")
+                    
+                    # Notify rooms
+                    caller.location.msg_contents(
+                        f"|y{caller.get_display_name(caller.location)} attempts to advance but is forced back by covering fire!|n",
+                        exclude=[caller, target]
+                    )
+                    
+                    if target.location != caller.location:
+                        target.location.msg_contents(
+                            f"|y{target.get_display_name(target.location)} covers the {exit_to_use.key if exits_to_target else 'entrance'} with their weapon!|n",
+                            exclude=[target]
+                        )
+                    
+                    # Trigger immediate bonus attack from target
+                    if hasattr(handler, 'resolve_bonus_attack'):
+                        handler.resolve_bonus_attack(target, caller)
+                    
+                    splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_{DEBUG_FAIL}: {caller.key} failed cross-room advance against ranged weapon user {target.key}, bonus attack triggered.")
+                    
+                    # Caller does NOT move in this case
+                    return
+            else:
+                # Target has melee weapon - they cannot prevent cross-room advance
+                exit_to_use = exits_to_target[0]
+                caller.move_to(target_room)
+                
+                caller.msg(f"|gYou successfully advance through the {exit_to_use.key} to pursue {target.get_display_name(caller)}!|n")
+                target.msg(f"|y{caller.get_display_name(target)} advances through the {exit_to_use.key} to pursue you!|n")
+                
+                # Notify both rooms
+                caller.location.msg_contents(
+                    f"|y{caller.get_display_name(caller.location)} advances from {exit_to_use.get_return_exit().key if exit_to_use.get_return_exit() else 'elsewhere'} in pursuit of {target.get_display_name(caller.location)}!|n",
+                    exclude=[caller, target]
+                )
+                
+                # Notify the room caller came from
+                if hasattr(exit_to_use, 'get_return_exit') and exit_to_use.get_return_exit():
+                    return_exit = exit_to_use.get_return_exit()
+                    if return_exit.location:
+                        return_exit.location.msg_contents(
+                            f"|y{caller.get_display_name(return_exit.location)} advances through the {exit_to_use.key} in pursuit of combat!|n",
+                            exclude=[caller]
+                        )
+                
+                splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_{DEBUG_SUCCESS}: {caller.key} successfully advanced cross-room against melee weapon user {target.key}.")
+                
+                # Note: They're now in the same room but not in melee proximity
+                caller.msg(f"|yYou are now in the same room as {target.get_display_name(caller)}. Use 'advance' again to close to melee range.|n")
 
         # Ensure combat handler is active
         if handler and not handler.is_active:
@@ -632,15 +732,15 @@ class CmdCharge(Command):
             caller.msg(f"You are already in melee proximity with {target.get_display_name(caller)}. No need to charge.")
             return
 
-        # Charge is more reckless than advance - bonus to success but penalty on failure
+        # Charge is more reckless than advance - uses disadvantage (roll twice, take lower)
         caller_motorics = get_numeric_stat(caller, "motorics")
         target_motorics = get_numeric_stat(target, "motorics")
         
-        # Charge gets a +2 bonus to the roll but has consequences on failure
-        charge_roll = randint(1, max(1, caller_motorics)) + 2
-        resist_roll = randint(1, max(1, target_motorics))
+        # Charge uses disadvantage but has immediate melee proximity + bonus attack on success
+        charge_roll, roll1, roll2 = roll_with_disadvantage(caller_motorics)
+        resist_roll, r_roll1, r_roll2 = standard_roll(target_motorics)
         
-        splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_ROLL: {caller.key} (motorics:{caller_motorics}, roll:{charge_roll-2}+2 charge bonus) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
+        splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_ROLL: {caller.key} (motorics:{caller_motorics}, disadvantage:{roll1},{roll2}->>{charge_roll}) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
         
         if charge_roll > resist_roll:
             # Success - establish proximity and charge bonus

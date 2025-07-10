@@ -93,11 +93,5 @@ class CmdLook(default_cmds.CmdLook):
                 caller.msg(f"|rError: You are aiming {aiming_direction} but can't see in that direction.|n")
                 # Fall through to normal look behavior
         
-        # Default look behavior for all other cases, with potential combat enhancements
+        # Default look behavior for all other cases
         super().func()
-        
-        # TODO: Add combat-specific information here:
-        # - Who is in proximity with whom
-        # - Who is grappling/being grappled  
-        # - Who is aiming at what/where
-        # - Combat handler status
