@@ -38,7 +38,7 @@ from world.combat.utils import (
     log_combat_action, get_display_name_safe, validate_combat_target,
     get_highest_opponent_stat, get_numeric_stat, filter_valid_opponents,
     roll_with_advantage, roll_with_disadvantage, standard_roll,
-    is_wielding_ranged_weapon
+    is_wielding_ranged_weapon, clear_aim_state, clear_mutual_aim
 )
 from world.combat.proximity import (
     establish_proximity, break_proximity, clear_all_proximity,
@@ -518,7 +518,7 @@ class CmdAdvance(Command):
             advance_roll, _, _ = standard_roll(caller_motorics)
             resist_roll, _, _ = standard_roll(target_motorics)
             
-            splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_ROLL: {caller.key} (motorics:{caller_motorics}, roll:{advance_roll}) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
+            splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_SAME_ROOM_ROLL: {caller.key} (motorics:{caller_motorics}, roll:{advance_roll}) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
             
             if advance_roll > resist_roll:
                 # Success - establish proximity
@@ -526,13 +526,16 @@ class CmdAdvance(Command):
                 initialize_proximity_ndb(target)
                 establish_proximity(caller, target)
                 
+                # Clear any aim states since they're now in melee
+                clear_mutual_aim(caller, target)
+                
                 caller.msg(f"|gYou successfully advance and engage {target.get_display_name(caller)} in melee!|n")
                 target.msg(f"|y{caller.get_display_name(target)} advances and engages you in melee!|n")
                 caller.location.msg_contents(
                     f"|y{caller.get_display_name(caller.location)} advances on {target.get_display_name(caller.location)}!|n",
                     exclude=[caller, target]
                 )
-                splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_{DEBUG_SUCCESS}: {caller.key} successfully advanced on {target.key}.")
+                splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_SAME_ROOM_{DEBUG_SUCCESS}: {caller.key} successfully advanced on {target.key}.")
             else:
                 # Failure
                 caller.msg(f"|rYou fail to close the distance with {target.get_display_name(caller)}!|n")
@@ -541,7 +544,7 @@ class CmdAdvance(Command):
                     f"|y{caller.get_display_name(caller.location)} tries to advance on {target.get_display_name(caller.location)} but fails to close the distance!|n",
                     exclude=[caller, target]
                 )
-                splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_{DEBUG_FAIL}: {caller.key} failed to advance on {target.key}.")
+                splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_SAME_ROOM_{DEBUG_FAIL}: {caller.key} failed to advance on {target.key}.")
         else:
             # Different room - attempt to move to target's room
             # Logic depends on target's weapon type
@@ -563,6 +566,8 @@ class CmdAdvance(Command):
             # Check if target is wielding a ranged weapon
             target_has_ranged = is_wielding_ranged_weapon(target)
             
+            splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_CROSS_ROOM_DEBUG: {caller.key} advancing on {target.key}. Target has ranged weapon: {target_has_ranged}")
+            
             if target_has_ranged:
                 # Target has ranged weapon - they can contest the advance
                 caller_motorics = get_numeric_stat(caller, "motorics")
@@ -578,6 +583,9 @@ class CmdAdvance(Command):
                     exit_to_use = exits_to_target[0]
                     caller.move_to(target_room)
                     
+                    # Clear any aim states between the characters
+                    clear_mutual_aim(caller, target)
+                    
                     caller.msg(f"|gYou successfully advance through the {exit_to_use.key} despite {target.get_display_name(caller)}'s ranged weapons!|n")
                     target.msg(f"|y{caller.get_display_name(target)} advances through the {exit_to_use.key} toward you, evading your ranged attack!|n")
                     
@@ -587,13 +595,16 @@ class CmdAdvance(Command):
                         exclude=[caller, target]
                     )
                     
-                    splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_{DEBUG_SUCCESS}: {caller.key} successfully advanced cross-room against ranged weapon user {target.key}.")
+                    splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_CROSS_ROOM_RANGED_{DEBUG_SUCCESS}: {caller.key} successfully advanced cross-room against ranged weapon user {target.key}.")
                     
                     # Note: They're now in the same room but not in melee proximity
                     caller.msg(f"|yYou are now in the same room as {target.get_display_name(caller)}. Use 'advance' again to close to melee range.|n")
                     
                 else:
                     # Failure - target's ranged weapon prevents advance and gets bonus attack
+                    # Clear aim states since the advance attempt disrupts aiming
+                    clear_mutual_aim(caller, target)
+                    
                     caller.msg(f"|r{target.get_display_name(caller)} covers the entrance with their ranged weapon, preventing your advance!|n")
                     target.msg(f"|gYou successfully cover the entrance, preventing {caller.get_display_name(target)}'s advance!|n")
                     
@@ -612,8 +623,9 @@ class CmdAdvance(Command):
                     # Trigger immediate bonus attack from target
                     if hasattr(handler, 'resolve_bonus_attack'):
                         handler.resolve_bonus_attack(target, caller)
-                    
-                    splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_{DEBUG_FAIL}: {caller.key} failed cross-room advance against ranged weapon user {target.key}, bonus attack triggered.")
+                        splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_CROSS_ROOM_RANGED_{DEBUG_FAIL}: {caller.key} failed cross-room advance against ranged weapon user {target.key}, bonus attack triggered.")
+                    else:
+                        splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_CROSS_ROOM_RANGED_{DEBUG_FAIL}: {caller.key} failed cross-room advance against ranged weapon user {target.key}, bonus attack method not available.")
                     
                     # Caller does NOT move in this case
                     return
@@ -621,6 +633,9 @@ class CmdAdvance(Command):
                 # Target has melee weapon - they cannot prevent cross-room advance
                 exit_to_use = exits_to_target[0]
                 caller.move_to(target_room)
+                
+                # Clear any aim states between the characters
+                clear_mutual_aim(caller, target)
                 
                 caller.msg(f"|gYou successfully advance through the {exit_to_use.key} to pursue {target.get_display_name(caller)}!|n")
                 target.msg(f"|y{caller.get_display_name(target)} advances through the {exit_to_use.key} to pursue you!|n")
@@ -732,46 +747,135 @@ class CmdCharge(Command):
             caller.msg(f"You are already in melee proximity with {target.get_display_name(caller)}. No need to charge.")
             return
 
-        # Charge is more reckless than advance - uses disadvantage (roll twice, take lower)
-        caller_motorics = get_numeric_stat(caller, "motorics")
-        target_motorics = get_numeric_stat(target, "motorics")
-        
-        # Charge uses disadvantage but has immediate melee proximity + bonus attack on success
-        charge_roll, roll1, roll2 = roll_with_disadvantage(caller_motorics)
-        resist_roll, r_roll1, r_roll2 = standard_roll(target_motorics)
-        
-        splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_ROLL: {caller.key} (motorics:{caller_motorics}, disadvantage:{roll1},{roll2}->>{charge_roll}) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
-        
-        if charge_roll > resist_roll:
-            # Success - establish proximity and charge bonus
-            initialize_proximity_ndb(caller)
-            initialize_proximity_ndb(target)
-            establish_proximity(caller, target)
+        # Determine if same room or different room charge
+        if target.location == caller.location:
+            # Same room charge - uses disadvantage but establishes proximity immediately
+            caller_motorics = get_numeric_stat(caller, "motorics")
+            target_motorics = get_numeric_stat(target, "motorics")
             
-            # Set a charge bonus for next attack
-            caller.ndb.charge_bonus = True
+            # Charge uses disadvantage but has immediate melee proximity + bonus attack on success
+            charge_roll, roll1, roll2 = roll_with_disadvantage(caller_motorics)
+            resist_roll, r_roll1, r_roll2 = standard_roll(target_motorics)
             
-            caller.msg(f"|gYou charge {target.get_display_name(caller)} and slam into melee range! Your next attack will have a bonus.|n")
-            target.msg(f"|r{caller.get_display_name(target)} charges at you and crashes into melee range!|n")
-            caller.location.msg_contents(
-                f"|y{caller.get_display_name(caller.location)} charges at {target.get_display_name(caller.location)} with reckless abandon!|n",
-                exclude=[caller, target]
-            )
-            splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_{DEBUG_SUCCESS}: {caller.key} successfully charged {target.key}.")
+            splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_SAME_ROOM_ROLL: {caller.key} (motorics:{caller_motorics}, disadvantage:{roll1},{roll2}->>{charge_roll}) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
+            
+            if charge_roll > resist_roll:
+                # Success - establish proximity and charge bonus
+                initialize_proximity_ndb(caller)
+                initialize_proximity_ndb(target)
+                establish_proximity(caller, target)
+                
+                # Clear any aim states since they're now in melee
+                clear_mutual_aim(caller, target)
+                
+                # Set a charge bonus for next attack
+                caller.ndb.charge_bonus = True
+                
+                caller.msg(f"|gYou charge {target.get_display_name(caller)} and slam into melee range! Your next attack will have a bonus.|n")
+                target.msg(f"|r{caller.get_display_name(target)} charges at you and crashes into melee range!|n")
+                caller.location.msg_contents(
+                    f"|y{caller.get_display_name(caller.location)} charges at {target.get_display_name(caller.location)} with reckless abandon!|n",
+                    exclude=[caller, target]
+                )
+                splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_SAME_ROOM_{DEBUG_SUCCESS}: {caller.key} successfully charged {target.key}.")
+            else:
+                # Failure - charge penalty
+                caller.msg(f"|rYour reckless charge at {target.get_display_name(caller)} fails spectacularly!|n")
+                target.msg(f"|y{caller.get_display_name(target)} charges at you but you dodge, leaving them off-balance!|n")
+                caller.location.msg_contents(
+                    f"|y{caller.get_display_name(caller.location)} charges recklessly at {target.get_display_name(caller.location)} but misses and stumbles!|n",
+                    exclude=[caller, target]
+                )
+                
+                # Apply charge failure penalty
+                caller.ndb.charge_penalty = True
+                caller.msg(MSG_CHARGE_FAILED_PENALTY)
+                
+                splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_SAME_ROOM_{DEBUG_FAIL}: {caller.key} failed charge on {target.key}, penalty applied.")
         else:
-            # Failure - charge penalty
-            caller.msg(f"|rYour reckless charge at {target.get_display_name(caller)} fails spectacularly!|n")
-            target.msg(f"|y{caller.get_display_name(target)} charges at you but you dodge, leaving them off-balance!|n")
-            caller.location.msg_contents(
-                f"|y{caller.get_display_name(caller.location)} charges recklessly at {target.get_display_name(caller.location)} but misses and stumbles!|n",
-                exclude=[caller, target]
-            )
+            # Different room charge - reckless cross-room movement
+            # Verify target is in a managed combat room
+            managed_rooms = getattr(handler.db, "managed_rooms", [])
+            if target.location not in managed_rooms:
+                caller.msg(f"{target.get_display_name(caller)} is not in a room you can charge to.")
+                return
             
-            # Apply charge failure penalty
-            caller.ndb.charge_penalty = True
-            caller.msg(MSG_CHARGE_FAILED_PENALTY)
+            # Check if there's a valid path to the target room
+            target_room = target.location
+            exits_to_target = [ex for ex in caller.location.exits if ex.destination == target_room]
             
-            splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_{DEBUG_FAIL}: {caller.key} failed charge on {target.key}, penalty applied.")
+            if not exits_to_target:
+                caller.msg(f"There is no clear path to charge at {target.get_display_name(caller)}.")
+                return
+            
+            # Check if target is wielding a ranged weapon
+            target_has_ranged = is_wielding_ranged_weapon(target)
+            
+            splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_CROSS_ROOM_DEBUG: {caller.key} charging {target.key}. Target has ranged weapon: {target_has_ranged}")
+            
+            # For charge, we use disadvantage regardless of target weapon type
+            caller_motorics = get_numeric_stat(caller, "motorics")
+            target_motorics = get_numeric_stat(target, "motorics")
+            
+            charge_roll, roll1, roll2 = roll_with_disadvantage(caller_motorics)
+            resist_roll, r_roll1, r_roll2 = standard_roll(target_motorics)
+            
+            splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_CROSS_ROOM_ROLL: {caller.key} (motorics:{caller_motorics}, disadvantage:{roll1},{roll2}->>{charge_roll}) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
+            
+            if charge_roll > resist_roll:
+                # Success - move to target's room and establish proximity immediately
+                exit_to_use = exits_to_target[0]
+                caller.move_to(target_room)
+                
+                # Clear any aim states between the characters
+                clear_mutual_aim(caller, target)
+                
+                # Establish immediate proximity (charge goes straight to melee)
+                initialize_proximity_ndb(caller)
+                initialize_proximity_ndb(target)
+                establish_proximity(caller, target)
+                
+                # Set charge bonus
+                caller.ndb.charge_bonus = True
+                
+                caller.msg(f"|gYou charge recklessly through the {exit_to_use.key} and crash into melee with {target.get_display_name(caller)}! Your next attack will have a bonus.|n")
+                target.msg(f"|r{caller.get_display_name(target)} charges recklessly through the {exit_to_use.key} and crashes into melee with you!|n")
+                
+                # Notify both rooms
+                caller.location.msg_contents(
+                    f"|y{caller.get_display_name(caller.location)} charges recklessly from {exit_to_use.get_return_exit().key if exit_to_use.get_return_exit() else 'elsewhere'} and crashes into melee!|n",
+                    exclude=[caller, target]
+                )
+                
+                splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_CROSS_ROOM_{DEBUG_SUCCESS}: {caller.key} successfully charged cross-room and engaged {target.key} in melee.")
+                
+            else:
+                # Failure - charge penalty and potential bonus attack from ranged weapons
+                # Clear aim states since the charge attempt disrupts aiming
+                clear_mutual_aim(caller, target)
+                
+                if target_has_ranged:
+                    caller.msg(f"|r{target.get_display_name(caller)} stops your reckless charge with covering fire!|n")
+                    target.msg(f"|gYou stop {caller.get_display_name(target)}'s reckless charge with your ranged weapon!|n")
+                    
+                    # Trigger immediate bonus attack from target
+                    if hasattr(handler, 'resolve_bonus_attack'):
+                        handler.resolve_bonus_attack(target, caller)
+                        splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_CROSS_ROOM_RANGED_{DEBUG_FAIL}: {caller.key} failed cross-room charge against ranged weapon user {target.key}, bonus attack triggered.")
+                    else:
+                        splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_CROSS_ROOM_RANGED_{DEBUG_FAIL}: {caller.key} failed cross-room charge against ranged weapon user {target.key}, bonus attack method not available.")
+                else:
+                    caller.msg(f"|rYour reckless charge at {target.get_display_name(caller)} fails as you stumble at the entrance!|n")
+                    target.msg(f"|y{caller.get_display_name(target)} attempts to charge at you but stumbles at the entrance!|n")
+                    
+                    splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_CROSS_ROOM_{DEBUG_FAIL}: {caller.key} failed cross-room charge on {target.key}.")
+                
+                # Apply charge failure penalty
+                caller.ndb.charge_penalty = True
+                caller.msg(MSG_CHARGE_FAILED_PENALTY)
+                
+                # Caller does NOT move in this case
+                return
 
         # Ensure combat handler is active
         if handler and not handler.is_active:

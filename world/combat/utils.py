@@ -455,3 +455,57 @@ def filter_valid_opponents(opponents):
         opp for opp in opponents 
         if opp and hasattr(opp, "motorics")  # Basic character validation
     ]
+
+
+# ===================================================================
+# AIM STATE MANAGEMENT HELPERS
+# ===================================================================
+
+def clear_aim_state(character):
+    """
+    Clear all aim-related state from a character.
+    
+    Args:
+        character: The character to clear aim state from
+    """
+    # Clear aiming target
+    if hasattr(character.ndb, "aiming_at"):
+        del character.ndb.aiming_at
+    
+    # Clear aiming direction  
+    if hasattr(character.ndb, "aiming_direction"):
+        del character.ndb.aiming_direction
+    
+    # Clear being aimed at by others
+    if hasattr(character.ndb, "aimed_at_by"):
+        del character.ndb.aimed_at_by
+    
+    log_debug("AIM", "CLEAR", f"Cleared aim state", character)
+
+
+def clear_mutual_aim(char1, char2):
+    """
+    Clear any mutual aiming relationships between two characters.
+    
+    Args:
+        char1: First character
+        char2: Second character
+    """
+    # Clear char1 aiming at char2
+    if hasattr(char1.ndb, "aiming_at") and char1.ndb.aiming_at == char2:
+        del char1.ndb.aiming_at
+        if hasattr(char1.ndb, "aiming_direction"):
+            del char1.ndb.aiming_direction
+    
+    # Clear char2 aiming at char1
+    if hasattr(char2.ndb, "aiming_at") and char2.ndb.aiming_at == char1:
+        del char2.ndb.aiming_at
+        if hasattr(char2.ndb, "aiming_direction"):
+            del char2.ndb.aiming_direction
+    
+    # Clear being aimed at relationships
+    if hasattr(char1.ndb, "aimed_at_by") and char1.ndb.aimed_at_by == char2:
+        del char1.ndb.aimed_at_by
+    
+    if hasattr(char2.ndb, "aimed_at_by") and char2.ndb.aimed_at_by == char1:
+        del char2.ndb.aimed_at_by
