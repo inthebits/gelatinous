@@ -145,11 +145,12 @@ class CmdAttack(Command):
             is_in_melee_proximity = target in caller.ndb.in_proximity_with
 
             if is_in_melee_proximity: # Caller is in melee with target
+                # Allow both ranged and melee attacks at melee range
+                # Future: Could add penalties for ranged weapons at melee range here
                 if is_ranged_weapon:
-                    caller.msg(f"You can't effectively use your {weapon_name_for_msg} while locked in melee with {target.get_display_name(caller)}!")
-                    splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_{DEBUG_FAIL}: {caller.key} tried to use ranged weapon '{weapon_name_for_msg}' on {target.key} while in melee proximity. Attack aborted.")
-                    return
-                splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_{DEBUG_SUCCESS}: {caller.key} attacking {target.key} with non-ranged '{weapon_name_for_msg}' while in melee proximity.")
+                    splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_{DEBUG_SUCCESS}: {caller.key} attacking {target.key} with ranged weapon '{weapon_name_for_msg}' at melee range.")
+                else:
+                    splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_{DEBUG_SUCCESS}: {caller.key} attacking {target.key} with non-ranged '{weapon_name_for_msg}' while in melee proximity.")
             else: # Caller is NOT in melee with target (at range in same room)
                 if not is_ranged_weapon:
                     caller.msg(f"You are too far away to hit {target.get_display_name(caller)} with your {weapon_name_for_msg}. Try advancing or charging.")
