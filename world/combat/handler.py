@@ -857,9 +857,8 @@ class CombatHandler(DefaultScript):
                 weapon_damage = get_weapon_damage(weapon, 0)
                 damage += weapon_damage
             
-            # Apply damage (simplified for now)
-            target_hp = get_numeric_stat(target, "health", 10)
-            new_hp = max(0, target_hp - damage)
+            # Apply damage using character's take_damage method
+            target.take_damage(damage)
             
             # Determine weapon type for messages
             weapon_type = "unarmed"
@@ -877,7 +876,7 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"ATTACK_HIT: {attacker.key} hit {target.key} for {damage} damage.")
             
             # Check for death/unconsciousness
-            if new_hp <= 0:
+            if target.is_dead():
                 # Get kill messages from the message system
                 kill_messages = get_combat_message(weapon_type, "kill", attacker=attacker, target=target, item=weapon, damage=damage)
                 
