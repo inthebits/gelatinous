@@ -6,7 +6,7 @@
 
 **Live Game**: [https://gel.monster](https://gel.monster) Port 23
 
-Connect with any MUD client or play directly in your browser.
+Connect with any MUD client.
 
 ## ⚔️ The G.R.I.M. System
 
