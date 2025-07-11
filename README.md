@@ -1,6 +1,6 @@
 # Gelatinous Monster
 
-**Gelatinous Monster** is a text-based multiplayer game in development, built on the Evennia platform. It features tactical combat, roleplay mechanics, and atmospheric storytelling.
+**Gelatinous Monster** is a text-based multiplayer game in development, built on the Evennia platform. It aspires to feature tactical combat, roleplay mechanics, and atmospheric storytelling.
 
 ## 🌃 Play Now
 
