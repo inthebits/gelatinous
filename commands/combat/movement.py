@@ -282,6 +282,12 @@ class CmdFlee(Command):
             # Remove from combat before moving (this also clears proximity)
             original_handler_at_flee_start.remove_combatant(caller)
             
+            # Clear aim states before moving (consistent with traversal)
+            if hasattr(caller, "clear_aim_state"):
+                caller.clear_aim_state(reason_for_clearing="as you flee")
+            else:
+                clear_aim_state(caller)
+            
             # Move to the chosen exit
             caller.move_to(destination, quiet=True)
             
@@ -527,7 +533,10 @@ class CmdAdvance(Command):
                 establish_proximity(caller, target)
                 
                 # Clear any aim states since they're now in melee
-                clear_mutual_aim(caller, target)
+                if hasattr(caller, "clear_aim_state"):
+                    caller.clear_aim_state(reason_for_clearing="as you advance")
+                else:
+                    clear_aim_state(caller)
                 
                 caller.msg(f"|gYou successfully advance and engage {target.get_display_name(caller)} in melee!|n")
                 target.msg(f"|y{caller.get_display_name(target)} advances and engages you in melee!|n")
@@ -591,7 +600,10 @@ class CmdAdvance(Command):
                     caller.move_to(target_room)
                     
                     # Clear any aim states between the characters
-                    clear_mutual_aim(caller, target)
+                    if hasattr(caller, "clear_aim_state"):
+                        caller.clear_aim_state(reason_for_clearing="as you advance")
+                    else:
+                        clear_aim_state(caller)
                     
                     caller.msg(f"|gYou successfully advance through the {exit_to_use.key} despite {target.get_display_name(caller)}'s ranged weapons!|n")
                     target.msg(f"|y{caller.get_display_name(target)} advances through the {exit_to_use.key} toward you, evading your ranged attack!|n")
@@ -610,7 +622,10 @@ class CmdAdvance(Command):
                 else:
                     # Failure - target's ranged weapon prevents advance and gets bonus attack
                     # Clear aim states since the advance attempt disrupts aiming
-                    clear_mutual_aim(caller, target)
+                    if hasattr(caller, "clear_aim_state"):
+                        caller.clear_aim_state(reason_for_clearing="as you attempt to advance")
+                    else:
+                        clear_aim_state(caller)
                     
                     caller.msg(f"|r{target.get_display_name(caller)} covers the entrance with their ranged weapon, preventing your advance!|n")
                     target.msg(f"|gYou successfully cover the entrance, preventing {caller.get_display_name(target)}'s advance!|n")
@@ -642,7 +657,10 @@ class CmdAdvance(Command):
                 caller.move_to(target_room)
                 
                 # Clear any aim states between the characters
-                clear_mutual_aim(caller, target)
+                if hasattr(caller, "clear_aim_state"):
+                    caller.clear_aim_state(reason_for_clearing="as you advance")
+                else:
+                    clear_aim_state(caller)
                 
                 caller.msg(f"|gYou successfully advance through the {exit_to_use.key} to pursue {target.get_display_name(caller)}!|n")
                 target.msg(f"|y{caller.get_display_name(target)} advances through the {exit_to_use.key} to pursue you!|n")
@@ -826,7 +844,10 @@ class CmdCharge(Command):
                 establish_proximity(caller, target)
                 
                 # Clear any aim states since they're now in melee
-                clear_mutual_aim(caller, target)
+                if hasattr(caller, "clear_aim_state"):
+                    caller.clear_aim_state(reason_for_clearing="as you charge")
+                else:
+                    clear_aim_state(caller)
                 
                 # Set a charge bonus for next attack
                 caller.ndb.charge_attack_bonus_active = True
@@ -894,7 +915,10 @@ class CmdCharge(Command):
                 caller.move_to(target_room)
                 
                 # Clear any aim states between the characters
-                clear_mutual_aim(caller, target)
+                if hasattr(caller, "clear_aim_state"):
+                    caller.clear_aim_state(reason_for_clearing="as you charge")
+                else:
+                    clear_aim_state(caller)
                 
                 # Establish immediate proximity (charge goes straight to melee)
                 initialize_proximity_ndb(caller)
@@ -919,7 +943,10 @@ class CmdCharge(Command):
             else:
                 # Failure - charge penalty and potential bonus attack from ranged weapons
                 # Clear aim states since the charge attempt disrupts aiming
-                clear_mutual_aim(caller, target)
+                if hasattr(caller, "clear_aim_state"):
+                    caller.clear_aim_state(reason_for_clearing="as you attempt to charge")
+                else:
+                    clear_aim_state(caller)
                 
                 if target_has_ranged:
                     caller.msg(f"|r{target.get_display_name(caller)} stops your reckless charge with covering fire!|n")

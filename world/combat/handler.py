@@ -33,7 +33,8 @@ from .utils import (
     roll_stat, opposed_roll, get_wielded_weapon, is_wielding_ranged_weapon,
     get_weapon_damage, add_combatant, remove_combatant, cleanup_combatant_state,
     cleanup_all_combatants, get_combatant_target, get_combatant_grappling_target,
-    get_combatant_grappled_by, get_character_dbref, get_character_by_dbref
+    get_combatant_grappled_by, get_character_dbref, get_character_by_dbref,
+    resolve_bonus_attack
 )
 from .grappling import (
     break_grapple, establish_grapple, resolve_grapple_initiate,
@@ -911,3 +912,13 @@ class CombatHandler(DefaultScript):
     def _resolve_release_grapple(self, char_entry, combatants_list):
         """Resolve a release grapple action."""
         resolve_release_grapple(char_entry, combatants_list, self)
+    
+    def resolve_bonus_attack(self, attacker, target):
+        """
+        Resolve a bonus attack triggered by specific combat events.
+        
+        Args:
+            attacker: The character making the bonus attack
+            target: The target of the bonus attack
+        """
+        resolve_bonus_attack(self, attacker, target)

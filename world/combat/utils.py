@@ -776,3 +776,35 @@ def get_character_by_dbref(dbref):
         return search_object(f"#{dbref}")[0]
     except (IndexError, ValueError):
         return None
+
+
+def resolve_bonus_attack(handler, attacker, target):
+    """
+    Resolve a bonus attack triggered by specific combat events.
+    
+    This is used when a character with a ranged weapon gets a bonus attack
+    opportunity from failed advance or charge attempts.
+    
+    Args:
+        handler: The combat handler instance
+        attacker: The character making the bonus attack
+        target: The target of the bonus attack
+    """
+    from evennia.comms.models import ChannelDB
+    from .constants import SPLATTERCAST_CHANNEL, DB_COMBATANTS, DB_CHAR
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    
+    # Find the attacker's combat entry
+    combatants_list = getattr(handler.db, DB_COMBATANTS, [])
+    attacker_entry = next((e for e in combatants_list if e.get(DB_CHAR) == attacker), None)
+    
+    if not attacker_entry:
+        splattercast.msg(f"BONUS_ATTACK_ERROR: {attacker.key} not found in combat for bonus attack.")
+        return
+        
+    # Process the bonus attack using the same logic as regular attacks
+    handler._process_attack(attacker, target, attacker_entry, combatants_list)
+    
+    # Log the bonus attack
+    splattercast.msg(f"BONUS_ATTACK: {attacker.key} made bonus attack against {target.key}.")
