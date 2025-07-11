@@ -737,6 +737,20 @@ class CombatHandler(DefaultScript):
         # Save the modified combatants list back to the database
         setattr(self.db, DB_COMBATANTS, combatants_list)
 
+        # Check for dead combatants after all attacks are processed
+        remaining_combatants = getattr(self.db, DB_COMBATANTS, [])
+        dead_combatants = []
+        
+        for entry in remaining_combatants:
+            char = entry.get(DB_CHAR)
+            if char and hasattr(char, 'is_dead') and char.is_dead():
+                dead_combatants.append(char)
+                splattercast.msg(f"POST_ROUND_DEATH_CHECK: {char.key} is dead, removing from combat.")
+                
+        # Remove dead combatants
+        for dead_char in dead_combatants:
+            self.remove_combatant(dead_char)
+
         # Check if combat should continue
         remaining_combatants = getattr(self.db, DB_COMBATANTS, [])
         if not remaining_combatants:
