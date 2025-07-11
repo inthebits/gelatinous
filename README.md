@@ -4,13 +4,13 @@
 
 ## 🌃 Play Now
 
-**Live Game**: [https://gel.monster](https://gel.monster)
+**Live Game**: [https://gel.monster](https://gel.monster) Port 23
 
 Connect with any MUD client or play directly in your browser.
 
 ## ⚔️ The G.R.I.M. System
 
-Combat system based on four core stats:
+System based on four core stats:
 
 - **Grit**: Physical toughness and endurance
 - **Resonance**: Social awareness and empathy  
