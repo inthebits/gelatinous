@@ -481,6 +481,11 @@ class CombatHandler(DefaultScript):
                 splattercast.msg(f"AT_REPEAT: {char.key} no longer in combatants list. Skipping.")
                 continue
 
+            # Skip if character is dead (prevents redundant processing after immediate death removal)
+            if char.is_dead():
+                splattercast.msg(f"AT_REPEAT: {char.key} is dead, skipping turn.")
+                continue
+
             # Skip if character has skip_combat_round flag
             if hasattr(char.ndb, NDB_SKIP_ROUND) and getattr(char.ndb, NDB_SKIP_ROUND):
                 delattr(char.ndb, NDB_SKIP_ROUND)
