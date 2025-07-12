@@ -693,6 +693,11 @@ def cleanup_combatant_state(char, entry, handler):
         if hasattr(char.ndb, attr):
             delattr(char.ndb, attr)
     
+    # Clear combat handler reference to prevent stale references
+    from .constants import NDB_COMBAT_HANDLER
+    if hasattr(char.ndb, NDB_COMBAT_HANDLER):
+        delattr(char.ndb, NDB_COMBAT_HANDLER)
+    
     # Force clear charge bonus flag with explicit setting to False as fallback
     char.ndb.charge_attack_bonus_active = False
     char.ndb.charging_vulnerability_active = False
