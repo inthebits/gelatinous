@@ -63,16 +63,19 @@ class Character(ObjectParent, DefaultCharacter):
         """
         Reduces current HP by `amount`.
         Triggers death if HP falls to zero or below.
+        
+        Returns True if the character died from this damage.
         """
         if not isinstance(amount, int) or amount <= 0:
-            return  # Ignore bad inputs
+            return False  # Ignore bad inputs
 
         self.hp = max(self.hp - amount, 0)
         # This is where descriptive indicator of how damaged you are would go.
         # self.msg(f"|rYou take {amount} damage!|n")
 
-        if self.is_dead():
-            self.at_death()
+        # Return death status but don't trigger death processing yet
+        # This allows the caller to handle death at the appropriate time
+        return self.is_dead()
 
     def heal(self, amount):
         """

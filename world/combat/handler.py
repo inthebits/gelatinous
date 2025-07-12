@@ -877,8 +877,8 @@ class CombatHandler(DefaultScript):
                 weapon_damage = get_weapon_damage(weapon, 0)
                 damage += weapon_damage
             
-            # Apply damage using character's take_damage method
-            target.take_damage(damage)
+            # Apply damage and check if target died
+            target_died = target.take_damage(damage)
             
             # Determine weapon type for messages
             weapon_type = "unarmed"
@@ -895,12 +895,16 @@ class CombatHandler(DefaultScript):
             
             splattercast.msg(f"ATTACK_HIT: {attacker.key} hit {target.key} for {damage} damage.")
             
-            # Check for death/unconsciousness
-            if target.is_dead():
+            # Handle death after all attack messages are sent
+            if target_died:
+                # Trigger death processing now that attack messages are complete
+                target.at_death()
+                
                 # Get kill messages from the message system
                 kill_messages = get_combat_message(weapon_type, "kill", attacker=attacker, target=target, item=weapon, damage=damage)
                 
-                target.msg(kill_messages["victim_msg"])
+                # Note: target.at_death() already sent death messages, so we only send kill messages if needed
+                # target.msg(kill_messages["victim_msg"])  # Skip - death already handled
                 attacker.location.msg_contents(kill_messages["observer_msg"], exclude=[target])
                 
                 # Remove from combat
