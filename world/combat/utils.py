@@ -687,8 +687,9 @@ def cleanup_combatant_state(char, entry, handler):
         break_grapple(handler, grappler=grappled_by, victim=char)
     
     # Clear NDB attributes
-    ndb_attrs = [NDB_PROXIMITY, NDB_SKIP_ROUND, "charging_vulnerability_active", 
-                "charge_attack_bonus_active", "skip_combat_round"]
+    from .constants import NDB_CHARGE_BONUS, NDB_CHARGE_VULNERABILITY
+    ndb_attrs = [NDB_PROXIMITY, NDB_SKIP_ROUND, NDB_CHARGE_VULNERABILITY, 
+                NDB_CHARGE_BONUS, "skip_combat_round"]
     for attr in ndb_attrs:
         if hasattr(char.ndb, attr):
             delattr(char.ndb, attr)
@@ -698,9 +699,8 @@ def cleanup_combatant_state(char, entry, handler):
     if hasattr(char.ndb, NDB_COMBAT_HANDLER):
         delattr(char.ndb, NDB_COMBAT_HANDLER)
     
-    # Force clear charge bonus flag with explicit setting to False as fallback
-    char.ndb.charge_attack_bonus_active = False
-    char.ndb.charging_vulnerability_active = False
+    # No need to set charge flags to False after deletion - this was causing race conditions
+    # The delattr above already removed them, setting them to False recreates them
 
 
 def cleanup_all_combatants(handler):

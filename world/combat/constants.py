@@ -71,6 +71,10 @@ NDB_COMBAT_HANDLER = "combat_handler"
 NDB_PROXIMITY = "in_proximity_with"
 NDB_SKIP_ROUND = "skip_combat_round"
 
+# Charge system fields (temporary states)
+NDB_CHARGE_BONUS = "charge_attack_bonus_active"
+NDB_CHARGE_VULNERABILITY = "charging_vulnerability_active"
+
 # Aiming state fields
 NDB_AIMING_AT = "aiming_at"
 NDB_AIMED_AT_BY = "aimed_at_by"
