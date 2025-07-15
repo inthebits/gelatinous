@@ -621,11 +621,7 @@ class CmdAdvance(Command):
                     
                 else:
                     # Failure - target's ranged weapon prevents advance and gets bonus attack
-                    # Clear aim states since the advance attempt disrupts aiming
-                    if hasattr(caller, "clear_aim_state"):
-                        caller.clear_aim_state(reason_for_clearing="as you attempt to advance")
-                    else:
-                        clear_aim_state(caller)
+                    # Do NOT clear aim state since the character doesn't actually move
                     
                     caller.msg(f"|r{target.get_display_name(caller)} covers the entrance with their ranged weapon, preventing your advance!|n")
                     target.msg(f"|gYou successfully cover the entrance, preventing {caller.get_display_name(target)}'s advance!|n")
