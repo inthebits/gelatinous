@@ -212,6 +212,8 @@ MSG_CHARGE_FAILED_PENALTY = "|rYour failed charge leaves you off-balance for a m
 # Disarm messages
 MSG_DISARM_NOT_IN_COMBAT = "You are not in combat."
 MSG_DISARM_NO_TARGET = "You have no valid target to disarm."
+MSG_DISARM_NOT_IN_PROXIMITY = "You must be in melee proximity with {target} to disarm them."
+MSG_GRAPPLE_NOT_IN_PROXIMITY = "You must be in melee proximity with {target} to grapple them."
 MSG_DISARM_TARGET_EMPTY_HANDS = "{target} has nothing in their hands to disarm."
 MSG_DISARM_FAILED = "You try to disarm {target}, but they resist!"
 MSG_DISARM_RESISTED = "{attacker} tried to disarm you, but you resisted!"

@@ -383,7 +383,7 @@ def resolve_grapple_initiate(char_entry, combatants_list, handler):
 
 def resolve_grapple_join(char_entry, combatants_list, handler):
     """
-    Resolve a grapple join action.
+    Resolve a grapple join action - contest between new grappler and current grappler.
     
     Args:
         char_entry: The character's combat entry
@@ -395,14 +395,16 @@ def resolve_grapple_join(char_entry, combatants_list, handler):
         SPLATTERCAST_CHANNEL, NDB_PROXIMITY, DB_CHAR,
         DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF, DB_IS_YIELDING
     )
+    from .utils import get_numeric_stat
+    from random import randint
     
     splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
     char = char_entry.get(DB_CHAR)
     
-    # Find existing grapple to join
+    # Find existing grapple to contest
     target = handler.get_target_obj(char_entry)
     if not target:
-        char.msg("You have no target to join in grappling.")
+        char.msg("You have no target to contest for grappling.")
         return
     
     # Check if target is already grappled
@@ -412,33 +414,74 @@ def resolve_grapple_join(char_entry, combatants_list, handler):
         return
     
     # Find the original grappler
-    grappler = handler.get_grappled_by_obj(target_entry)
-    if not grappler:
+    current_grappler = handler.get_grappled_by_obj(target_entry)
+    if not current_grappler:
         char.msg("Unable to find the original grappler.")
+        return
+    
+    # Get the current grappler's combat entry
+    current_grappler_entry = next((e for e in combatants_list if e.get(DB_CHAR) == current_grappler), None)
+    if not current_grappler_entry:
+        char.msg(f"{current_grappler.key} is not properly registered in combat.")
         return
     
     # Check proximity
     if not hasattr(char.ndb, NDB_PROXIMITY):
         setattr(char.ndb, NDB_PROXIMITY, set())
     if target not in getattr(char.ndb, NDB_PROXIMITY):
-        char.msg(f"You need to be in melee proximity with {target.key} to join the grapple.")
+        char.msg(f"You need to be in melee proximity with {target.key} to contest the grapple.")
         return
     
-    # Automatically succeed in joining
-    char_entry[DB_GRAPPLING_DBREF] = get_character_dbref(target)
-    char_entry[DB_IS_YIELDING] = True
+    # Contest: new grappler vs current grappler (both using motorics)
+    new_grappler_roll = randint(1, max(1, get_numeric_stat(char, "motorics", 1)))
+    current_grappler_roll = randint(1, max(1, get_numeric_stat(current_grappler, "motorics", 1)))
     
-    char.msg(f"|gYou join {grappler.key} in grappling {target.key}!|n")
-    target.msg(f"|g{char.key} joins in grappling you!|n")
-    grappler.msg(f"|g{char.key} joins you in grappling {target.key}!|n")
+    splattercast.msg(f"GRAPPLE_CONTEST: {char.key} ({new_grappler_roll}) vs {current_grappler.key} ({current_grappler_roll}) for {target.key}")
     
-    if char.location:
-        char.location.msg_contents(
-            f"|g{char.key} joins {grappler.key} in grappling {target.key}!|n",
-            exclude=[char, target, grappler]
-        )
-    
-    splattercast.msg(f"GRAPPLE_JOIN: {char.key} joined {grappler.key} in grappling {target.key}.")
+    if new_grappler_roll > current_grappler_roll:
+        # New grappler wins - they take over the grapple
+        char_entry[DB_GRAPPLING_DBREF] = get_character_dbref(target)
+        char_entry[DB_IS_YIELDING] = True
+        
+        # Clear the old grappler's hold
+        current_grappler_entry[DB_GRAPPLING_DBREF] = None
+        
+        # Target is now grappled by the new grappler
+        target_entry[DB_GRAPPLED_BY_DBREF] = get_character_dbref(char)
+        
+        # Success messages
+        char.msg(f"|gYou successfully wrestle {target.key} away from {current_grappler.key}!|n")
+        current_grappler.msg(f"|r{char.key} wrestles {target.key} away from your grasp!|n")
+        target.msg(f"|y{char.key} takes over grappling you from {current_grappler.key}!|n")
+        
+        if char.location:
+            char.location.msg_contents(
+                f"|g{char.key} wrestles {target.key} away from {current_grappler.key}!|n",
+                exclude=[char, target, current_grappler]
+            )
+        
+        splattercast.msg(f"GRAPPLE_TAKEOVER: {char.key} took {target.key} from {current_grappler.key}.")
+        
+    else:
+        # Current grappler maintains control
+        char.msg(f"|yYou fail to wrestle {target.key} away from {current_grappler.key}!|n")
+        current_grappler.msg(f"|gYou maintain your grip on {target.key} despite {char.key}'s attempt!|n")
+        target.msg(f"|y{char.key} tries to take you from {current_grappler.key} but fails!|n")
+        
+        if char.location:
+            char.location.msg_contents(
+                f"|y{char.key} fails to wrestle {target.key} away from {current_grappler.key}!|n",
+                exclude=[char, target, current_grappler]
+            )
+        
+        splattercast.msg(f"GRAPPLE_CONTEST_FAIL: {char.key} failed to take {target.key} from {current_grappler.key}.")
+        
+        # Check if the failed grappler initiated combat - if so, they should become yielding
+        initiated_combat = char_entry.get("initiated_combat_this_action", False)
+        if initiated_combat:
+            char_entry[DB_IS_YIELDING] = True
+            char.msg("|gYour failed grapple attempt leaves you non-aggressive.|n")
+            splattercast.msg(f"GRAPPLE_CONTEST_FAIL_YIELD: {char.key} initiated combat but failed contest, setting to yielding.")
 
 
 def resolve_release_grapple(char_entry, combatants_list, handler):

@@ -21,14 +21,14 @@ from world.combat.constants import (
     MSG_CANNOT_GRAPPLE_WHILE_GRAPPLED, MSG_TARGET_ALREADY_GRAPPLED, MSG_GRAPPLE_PREPARE,
     MSG_ESCAPE_NOT_IN_COMBAT, MSG_ESCAPE_NOT_REGISTERED, MSG_ESCAPE_NOT_GRAPPLED,
     MSG_RELEASE_NOT_IN_COMBAT, MSG_RELEASE_NOT_GRAPPLING,
-    MSG_NOT_IN_COMBAT, MSG_DISARM_NO_TARGET, MSG_DISARM_TARGET_EMPTY_HANDS,
-    MSG_DISARM_FAILED, MSG_DISARM_RESISTED, MSG_DISARM_NOTHING_TO_DISARM,
+    MSG_NOT_IN_COMBAT, MSG_DISARM_NO_TARGET, MSG_DISARM_NOT_IN_PROXIMITY, MSG_GRAPPLE_NOT_IN_PROXIMITY,
+    MSG_DISARM_TARGET_EMPTY_HANDS, MSG_DISARM_FAILED, MSG_DISARM_RESISTED, MSG_DISARM_NOTHING_TO_DISARM,
     MSG_DISARM_SUCCESS_ATTACKER, MSG_DISARM_SUCCESS_VICTIM, MSG_DISARM_SUCCESS_OBSERVER,
     MSG_AIM_WHO_WHAT, MSG_AIM_SELF_TARGET, MSG_GRAPPLE_VIOLENT_SWITCH, MSG_GRAPPLE_ESCAPE_VIOLENT_SWITCH,
-    DEBUG_PREFIX_GRAPPLE, SPLATTERCAST_CHANNEL,
+    DEBUG_PREFIX_GRAPPLE, SPLATTERCAST_CHANNEL, NDB_PROXIMITY,
     NDB_COMBAT_HANDLER
 )
-from world.combat.utils import log_combat_action, get_numeric_stat, roll_stat
+from world.combat.utils import log_combat_action, get_numeric_stat, roll_stat, initialize_proximity_ndb
 
 
 class CmdGrapple(Command):
@@ -38,7 +38,11 @@ class CmdGrapple(Command):
     Usage:
         grapple <target>
 
-    If you are not in combat, this will initiate combat.
+    If you are not in combat, this will initiate combat and allow you to rush in.
+    If you are in combat, you must be in melee proximity with the target.
+    If the target is already grappled by someone else, you will contest against
+    the current grappler to take control of the grapple.
+    
     If successful, you will be grappling the target, and they will be grappled by you.
     """
     key = "grapple"
@@ -140,6 +144,16 @@ class CmdGrapple(Command):
                  caller.msg(MSG_TARGET_ALREADY_GRAPPLED.format(target=target.key, grappler=target_grappler.key))
                  log_combat_action(caller, "grapple_fail", target, details=f"target already grappled by {target_grappler.key}")
                  return
+
+        # --- Proximity check (unless initiating combat) ---
+        # If caller initiated combat this action, they can rush in without proximity
+        # Otherwise, they must be in melee proximity to grapple
+        if not caller_initiated_combat_this_action:
+            initialize_proximity_ndb(caller)
+            if not hasattr(caller.ndb, NDB_PROXIMITY) or target not in caller.ndb.in_proximity_with:
+                caller.msg(MSG_GRAPPLE_NOT_IN_PROXIMITY.format(target=target.key))
+                log_combat_action(caller, "grapple_fail", target, details="not in melee proximity")
+                return
         
         # --- Set combat action ---
         # Ensure combat_action key exists for the entry
@@ -295,6 +309,13 @@ class CmdDisarm(Command):
         if not target:
             caller.msg(MSG_DISARM_NO_TARGET)
             log_combat_action(caller, "disarm_fail", details="has no valid target")
+            return
+
+        # Check if in melee proximity with target
+        initialize_proximity_ndb(caller)
+        if not hasattr(caller.ndb, NDB_PROXIMITY) or target not in caller.ndb.in_proximity_with:
+            caller.msg(MSG_DISARM_NOT_IN_PROXIMITY.format(target=target.key))
+            log_combat_action(caller, "disarm_fail", target, details="not in melee proximity")
             return
 
         hands = getattr(target, "hands", {})
