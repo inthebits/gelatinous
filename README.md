@@ -24,9 +24,14 @@ Combat features:
 - Multi-room tactical movement
 - Yielding mechanics for non-violent resolution
 
-## 🛠️ For Developers
+## 🤖 For AI Agents & Developers
 
-This codebase showcases a modular approach to MUD development on Evennia.
+**IMPORTANT**: Before working on the combat system, read [`AGENTS.md`](AGENTS.md) - it contains critical architecture information and common patterns.
+
+### Quick Links
+- [Combat System Architecture](AGENTS.md#system-architecture)
+- [Common Patterns](AGENTS.md#common-patterns)
+- [Troubleshooting](AGENTS.md#troubleshooting)
 
 ### Key Features
 - Clean separation of concerns across combat, commands, and world systems
