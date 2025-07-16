@@ -26,7 +26,8 @@ from .constants import (
     DB_CHAR, DB_TARGET_DBREF, DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF, DB_IS_YIELDING,
     NDB_COMBAT_HANDLER, NDB_PROXIMITY, NDB_SKIP_ROUND,
     DEBUG_PREFIX_HANDLER, DEBUG_SUCCESS, DEBUG_FAIL, DEBUG_ERROR, DEBUG_CLEANUP,
-    MSG_GRAPPLE_AUTO_ESCAPE_VIOLENT, MSG_GRAPPLE_AUTO_YIELD
+    MSG_GRAPPLE_AUTO_ESCAPE_VIOLENT, MSG_GRAPPLE_AUTO_YIELD,
+    COMBAT_ACTION_RETREAT, COMBAT_ACTION_ADVANCE, COMBAT_ACTION_CHARGE, COMBAT_ACTION_DISARM
 )
 from .utils import (
     get_numeric_stat, log_combat_action, get_display_name_safe,
@@ -628,6 +629,26 @@ class CombatHandler(DefaultScript):
                         self._resolve_release_grapple(current_char_combat_entry, combatants_list)
                         current_char_combat_entry["combat_action"] = None
                         continue
+                    elif combat_action == COMBAT_ACTION_RETREAT:
+                        self._resolve_retreat(char, current_char_combat_entry)
+                        current_char_combat_entry["combat_action"] = None
+                        current_char_combat_entry["combat_action_target"] = None
+                        continue
+                    elif combat_action == COMBAT_ACTION_ADVANCE:
+                        self._resolve_advance(char, current_char_combat_entry)
+                        current_char_combat_entry["combat_action"] = None
+                        current_char_combat_entry["combat_action_target"] = None
+                        continue
+                    elif combat_action == COMBAT_ACTION_CHARGE:
+                        self._resolve_charge(char, current_char_combat_entry)
+                        current_char_combat_entry["combat_action"] = None
+                        current_char_combat_entry["combat_action_target"] = None
+                        continue
+                    elif combat_action == COMBAT_ACTION_DISARM:
+                        self._resolve_disarm(char, current_char_combat_entry)
+                        current_char_combat_entry["combat_action"] = None
+                        current_char_combat_entry["combat_action_target"] = None
+                        continue
                 elif isinstance(combat_action, dict):
                     intent_type = combat_action.get("type")
                     action_target_char = combat_action.get("target")
@@ -945,3 +966,335 @@ class CombatHandler(DefaultScript):
             target: The target of the bonus attack
         """
         resolve_bonus_attack(self, attacker, target)
+
+    def _resolve_retreat(self, char, entry):
+        """Resolve a retreat action."""
+        from random import randint
+        from .utils import get_numeric_stat, initialize_proximity_ndb
+        from .proximity import break_proximity, is_in_proximity
+        from .constants import SPLATTERCAST_CHANNEL, DEBUG_PREFIX_HANDLER
+        
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_RETREAT: {char.key} executing retreat action.")
+        
+        # Check if in proximity with anyone
+        initialize_proximity_ndb(char)
+        proximity_list = getattr(char.ndb, "in_proximity_with", set())
+        
+        if not proximity_list:
+            char.msg("|yYou are not in melee with anyone to retreat from.|n")
+            return
+        
+        # Find the highest opponent stat for retreat difficulty
+        highest_opponent_stat = 0
+        opponents = []
+        for opponent in proximity_list:
+            if opponent != char and opponent.location == char.location:
+                opponents.append(opponent)
+                opponent_stat = get_numeric_stat(opponent, "motorics")
+                if opponent_stat > highest_opponent_stat:
+                    highest_opponent_stat = opponent_stat
+        
+        if not opponents:
+            char.msg("|yYou are not in melee with anyone to retreat from.|n")
+            return
+        
+        # Make opposed roll
+        char_motorics = get_numeric_stat(char, "motorics")
+        char_roll = randint(1, max(1, char_motorics))
+        opponent_roll = randint(1, max(1, highest_opponent_stat))
+        
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_RETREAT: {char.key} (motorics:{char_motorics}, roll:{char_roll}) vs highest opponent (motorics:{highest_opponent_stat}, roll:{opponent_roll})")
+        
+        if char_roll > opponent_roll:
+            # Success - break proximity with all opponents
+            for opponent in opponents:
+                if is_in_proximity(char, opponent):
+                    break_proximity(char, opponent)
+            
+            char.msg("|gYou successfully retreat from melee combat.|n")
+            char.location.msg_contents(f"|y{char.key} retreats from melee combat.|n", exclude=[char])
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_RETREAT: {char.key} successfully retreated from melee.")
+        else:
+            # Failure - remain in proximity
+            char.msg("|rYour retreat fails! You remain locked in melee.|n")
+            char.location.msg_contents(f"|y{char.key} tries to retreat but remains engaged.|n", exclude=[char])
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_RETREAT: {char.key} failed to retreat from melee.")
+
+    def _resolve_advance(self, char, entry):
+        """Resolve an advance action."""
+        from random import randint
+        from .utils import get_numeric_stat, initialize_proximity_ndb
+        from .proximity import establish_proximity, is_in_proximity
+        from .constants import SPLATTERCAST_CHANNEL, DEBUG_PREFIX_HANDLER
+        
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        target = entry.get("combat_action_target")
+        
+        if not target:
+            char.msg("|rNo target specified for advance action.|n")
+            return
+        
+        # Validate target is still in combat and same room
+        if target.location != char.location:
+            char.msg(f"|r{target.key} is no longer in the same room.|n")
+            return
+        
+        combatants_list = getattr(self.db, "combatants", [])
+        if not any(e["char"] == target for e in combatants_list):
+            char.msg(f"|r{target.key} is no longer in combat.|n")
+            return
+        
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE: {char.key} executing advance action on {target.key}.")
+        
+        # Check if already in proximity
+        initialize_proximity_ndb(char)
+        initialize_proximity_ndb(target)
+        
+        if is_in_proximity(char, target):
+            char.msg(f"|yYou are already in melee proximity with {target.key}.|n")
+            return
+        
+        # Make opposed roll
+        char_motorics = get_numeric_stat(char, "motorics")
+        target_motorics = get_numeric_stat(target, "motorics")
+        char_roll = randint(1, max(1, char_motorics))
+        target_roll = randint(1, max(1, target_motorics))
+        
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE: {char.key} (motorics:{char_motorics}, roll:{char_roll}) vs {target.key} (motorics:{target_motorics}, roll:{target_roll})")
+        
+        if char_roll > target_roll:
+            # Success - establish proximity
+            establish_proximity(char, target)
+            
+            char.msg(f"|gYou successfully advance to melee range with {target.key}.|n")
+            target.msg(f"|y{char.key} advances to melee range with you.|n")
+            char.location.msg_contents(f"|y{char.key} advances to melee range with {target.key}.|n", exclude=[char, target])
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE: {char.key} successfully advanced to melee with {target.key}.")
+        else:
+            # Failure - no proximity established
+            char.msg(f"|rYour advance on {target.key} fails! They keep their distance.|n")
+            target.msg(f"|g{char.key} tries to advance on you but you keep your distance.|n")
+            char.location.msg_contents(f"|y{char.key} tries to advance on {target.key} but fails to close the distance.|n", exclude=[char, target])
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE: {char.key} failed to advance on {target.key}.")
+
+    def _resolve_charge(self, char, entry):
+        """Resolve a charge action."""
+        from random import randint
+        from .utils import get_numeric_stat, initialize_proximity_ndb, roll_with_disadvantage, standard_roll, clear_aim_state, is_wielding_ranged_weapon
+        from .proximity import establish_proximity, is_in_proximity
+        from .constants import SPLATTERCAST_CHANNEL, DEBUG_PREFIX_HANDLER
+        
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        target = entry.get("combat_action_target")
+        
+        if not target:
+            char.msg("|rNo target specified for charge action.|n")
+            return
+        
+        # Validate target is still in combat
+        combatants_list = getattr(self.db, "combatants", [])
+        if not any(e["char"] == target for e in combatants_list):
+            char.msg(f"|r{target.key} is no longer in combat.|n")
+            return
+        
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} executing charge action on {target.key}.")
+        
+        # Initialize proximity for both characters
+        initialize_proximity_ndb(char)
+        initialize_proximity_ndb(target)
+        
+        # Check if already in proximity
+        if is_in_proximity(char, target):
+            char.msg(f"|yYou are already in melee proximity with {target.key}. No need to charge.|n")
+            return
+        
+        # Handle same room vs different room charge
+        if target.location == char.location:
+            # Same room charge - use disadvantage
+            char_motorics = get_numeric_stat(char, "motorics")
+            target_motorics = get_numeric_stat(target, "motorics")
+            
+            charge_roll, roll1, roll2 = roll_with_disadvantage(char_motorics)
+            resist_roll, r_roll1, r_roll2 = standard_roll(target_motorics)
+            
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE_SAME_ROOM: {char.key} (motorics:{char_motorics}, disadvantage:{roll1},{roll2}>>{charge_roll}) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
+            
+            if charge_roll > resist_roll:
+                # Success - establish proximity and charge bonus
+                establish_proximity(char, target)
+                
+                # Clear aim states
+                clear_aim_state(char)
+                
+                # Set charge bonus
+                char.ndb.charge_attack_bonus_active = True
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} charge_attack_bonus_active set to True by successful charge.")
+                
+                char.msg(f"|gYou charge {target.key} and slam into melee range! Your next attack will have a bonus.|n")
+                target.msg(f"|r{char.key} charges at you and crashes into melee range!|n")
+                char.location.msg_contents(f"|y{char.key} charges at {target.key} with reckless abandon!|n", exclude=[char, target])
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} successfully charged {target.key}.")
+            else:
+                # Failure - charge penalty
+                char.msg(f"|rYour reckless charge at {target.key} fails spectacularly!|n")
+                target.msg(f"|y{char.key} charges at you but you dodge, leaving them off-balance!|n")
+                char.location.msg_contents(f"|y{char.key} charges recklessly at {target.key} but misses and stumbles!|n", exclude=[char, target])
+                
+                # Apply charge failure penalty
+                char.ndb.charge_penalty = True
+                char.msg("|rYour failed charge leaves you off-balance!|n")
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} failed charge on {target.key}, penalty applied.")
+        else:
+            # Different room charge - move to target's room
+            managed_rooms = getattr(self.db, "managed_rooms", [])
+            if target.location not in managed_rooms:
+                char.msg(f"|r{target.key} is not in a room you can charge to.|n")
+                return
+            
+            # Check for valid path
+            target_room = target.location
+            exits_to_target = [ex for ex in char.location.exits if ex.destination == target_room]
+            
+            if not exits_to_target:
+                char.msg(f"|rThere is no clear path to charge at {target.key}.|n")
+                return
+            
+            # Check if target has ranged weapon
+            target_has_ranged = is_wielding_ranged_weapon(target)
+            
+            # Charge uses disadvantage for cross-room
+            char_motorics = get_numeric_stat(char, "motorics")
+            target_motorics = get_numeric_stat(target, "motorics")
+            
+            charge_roll, roll1, roll2 = roll_with_disadvantage(char_motorics)
+            resist_roll, r_roll1, r_roll2 = standard_roll(target_motorics)
+            
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE_CROSS_ROOM: {char.key} (motorics:{char_motorics}, disadvantage:{roll1},{roll2}>>{charge_roll}) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
+            
+            if charge_roll > resist_roll:
+                # Success - move and establish proximity
+                exit_to_use = exits_to_target[0]
+                char.move_to(target_room)
+                
+                clear_aim_state(char)
+                establish_proximity(char, target)
+                
+                # Set charge bonus
+                char.ndb.charge_attack_bonus_active = True
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} charge_attack_bonus_active set to True by successful cross-room charge.")
+                
+                char.msg(f"|gYou charge recklessly through the {exit_to_use.key} and crash into melee with {target.key}! Your next attack will have a bonus.|n")
+                target.msg(f"|r{char.key} charges recklessly through the {exit_to_use.key} and crashes into melee with you!|n")
+                char.location.msg_contents(f"|y{char.key} charges recklessly from {exit_to_use.get_return_exit().key if exit_to_use.get_return_exit() else 'elsewhere'} and crashes into melee!|n", exclude=[char, target])
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} successfully charged cross-room and engaged {target.key} in melee.")
+            else:
+                # Failure - charge penalty and potential ranged attack
+                clear_aim_state(char)
+                
+                if target_has_ranged:
+                    char.msg(f"|r{target.key} stops your reckless charge with covering fire!|n")
+                    target.msg(f"|gYou stop {char.key}'s reckless charge with your ranged weapon!|n")
+                    
+                    # Trigger bonus attack if available
+                    if hasattr(self, 'resolve_bonus_attack'):
+                        self.resolve_bonus_attack(target, char)
+                        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} failed cross-room charge against ranged weapon user {target.key}, bonus attack triggered.")
+                else:
+                    char.msg(f"|rYour reckless charge at {target.key} fails as you stumble at the entrance!|n")
+                    target.msg(f"|y{char.key} attempts to charge at you but stumbles at the entrance!|n")
+                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} failed cross-room charge on {target.key}.")
+                
+                # Apply charge failure penalty
+                char.ndb.charge_penalty = True
+                char.msg("|rYour failed charge leaves you off-balance!|n")
+
+    def _resolve_disarm(self, char, entry):
+        """Resolve a disarm action."""
+        from random import randint
+        from .utils import get_numeric_stat, initialize_proximity_ndb, roll_stat, log_combat_action
+        from .proximity import is_in_proximity
+        from .constants import (
+            SPLATTERCAST_CHANNEL, DEBUG_PREFIX_HANDLER, MSG_DISARM_FAILED, MSG_DISARM_RESISTED,
+            MSG_DISARM_TARGET_EMPTY_HANDS, MSG_DISARM_NOTHING_TO_DISARM, MSG_DISARM_SUCCESS_ATTACKER,
+            MSG_DISARM_SUCCESS_VICTIM, MSG_DISARM_SUCCESS_OBSERVER
+        )
+        
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        target = entry.get("combat_action_target")
+        
+        if not target:
+            char.msg("|rNo target specified for disarm action.|n")
+            return
+        
+        # Validate target is still in combat and same room
+        if target.location != char.location:
+            char.msg(f"|r{target.key} is no longer in the same room.|n")
+            return
+        
+        combatants_list = getattr(self.db, "combatants", [])
+        if not any(e["char"] == target for e in combatants_list):
+            char.msg(f"|r{target.key} is no longer in combat.|n")
+            return
+        
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_DISARM: {char.key} executing disarm action on {target.key}.")
+        
+        # Check proximity
+        initialize_proximity_ndb(char)
+        if not is_in_proximity(char, target):
+            char.msg(f"|rYou must be in melee proximity with {target.key} to disarm them.|n")
+            return
+        
+        # Check target's hands
+        hands = getattr(target, "hands", {})
+        if not hands:
+            char.msg(MSG_DISARM_TARGET_EMPTY_HANDS.format(target=target.key))
+            log_combat_action(char, "disarm_fail", target, details="target has nothing in their hands")
+            return
+        
+        # Find weapon to disarm (prioritize weapons, then any held item)
+        weapon_hand = None
+        for hand, item in hands.items():
+            if item and hasattr(item.db, "weapon_type") and item.db.weapon_type:
+                weapon_hand = hand
+                break
+        
+        if not weapon_hand:
+            for hand, item in hands.items():
+                if item:
+                    weapon_hand = hand
+                    break
+        
+        if not weapon_hand:
+            char.msg(MSG_DISARM_NOTHING_TO_DISARM.format(target=target.key))
+            log_combat_action(char, "disarm_fail", target, details="nothing found to disarm")
+            return
+        
+        # Grit vs Grit opposed roll
+        disarm_roll = roll_stat(char, "grit")
+        resist_roll = roll_stat(target, "grit")
+        
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_DISARM: {char.key} (grit roll:{disarm_roll}) vs {target.key} (grit roll:{resist_roll})")
+        log_combat_action(char, "disarm_attempt", target, details=f"rolls {disarm_roll} (grit) vs {resist_roll} (grit)")
+        
+        if disarm_roll <= resist_roll:
+            char.msg(MSG_DISARM_FAILED.format(target=target.key))
+            target.msg(MSG_DISARM_RESISTED.format(attacker=char.key))
+            log_combat_action(char, "disarm_fail", target, success=False)
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_DISARM: {char.key} failed to disarm {target.key}.")
+            return
+        
+        # Success - disarm the item
+        item = hands[weapon_hand]
+        hands[weapon_hand] = None
+        item.move_to(target.location, quiet=True)
+        
+        char.msg(MSG_DISARM_SUCCESS_ATTACKER.format(target=target.key, item=item.key))
+        target.msg(MSG_DISARM_SUCCESS_VICTIM.format(attacker=char.key, item=item.key))
+        target.location.msg_contents(
+            MSG_DISARM_SUCCESS_OBSERVER.format(attacker=char.key, target=target.key, item=item.key),
+            exclude=[char, target]
+        )
+        log_combat_action(char, "disarm_success", target, details=f"disarmed {item.key}")
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_DISARM: {char.key} successfully disarmed {item.key} from {target.key}.")

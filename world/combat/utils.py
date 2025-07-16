@@ -213,25 +213,6 @@ def clear_character_proximity(character):
         log_debug("PROXIMITY", "CLEAR", f"Cleared all proximity", character)
 
 
-def establish_proximity(char1, char2):
-    """
-    Establish bidirectional proximity between two characters.
-    
-    Args:
-        char1: First character
-        char2: Second character
-    """
-    # Initialize if needed
-    initialize_proximity_ndb(char1)
-    initialize_proximity_ndb(char2)
-    
-    # Establish bidirectional proximity
-    char1.ndb.in_proximity_with.add(char2)
-    char2.ndb.in_proximity_with.add(char1)
-    
-    log_debug("PROXIMITY", "ESTABLISH", f"{char1.key} <-> {char2.key}")
-
-
 # ===================================================================
 # WEAPON & ITEM HELPERS
 # ===================================================================

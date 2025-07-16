@@ -163,6 +163,22 @@ ACTION_AIM = "aim"
 ACTION_STOP = "stop"
 
 # ===================================================================
+# COMBAT ACTION CONSTANTS
+# ===================================================================
+
+# Turn-based combat actions
+COMBAT_ACTION_RETREAT = "retreat"
+COMBAT_ACTION_ADVANCE = "advance"
+COMBAT_ACTION_CHARGE = "charge"
+COMBAT_ACTION_DISARM = "disarm"
+
+# Existing combat actions (for reference)
+COMBAT_ACTION_GRAPPLE_INITIATE = "grapple_initiate"
+COMBAT_ACTION_GRAPPLE_JOIN = "grapple_join"
+COMBAT_ACTION_RELEASE_GRAPPLE = "release_grapple"
+COMBAT_ACTION_ESCAPE_GRAPPLE = "escape_grapple"
+
+# ===================================================================
 # MESSAGE TEMPLATES
 # ===================================================================
 
@@ -195,12 +211,16 @@ MSG_RETREAT_PROXIMITY_UNCLEAR = "Your proximity status is unclear. This shouldn'
 MSG_RETREAT_NO_PROXIMITY = "You are not in direct melee proximity with anyone to retreat from."
 MSG_RETREAT_SUCCESS = "|gYou manage to break away from the immediate melee!|n"
 MSG_RETREAT_FAILED = "|rYou try to break away, but you're held fast in the melee!|n"
+MSG_RETREAT_PREPARE = "|yYou prepare to retreat from combat.|n"
+MSG_RETREAT_QUEUE_SUCCESS = "|yYou will attempt to retreat on your next turn.|n"
 
 # Advance messages
 MSG_ADVANCE_NOT_IN_COMBAT = "You need to be in combat to advance on a target."
 MSG_ADVANCE_COMBAT_DATA_MISSING = "Your combat data is missing. Please report this."
 MSG_ADVANCE_NO_TARGET = "Advance on whom? (You have no current target)."
 MSG_ADVANCE_SELF_TARGET = "You cannot advance on yourself."
+MSG_ADVANCE_PREPARE = "|yYou prepare to advance on {target}.|n"
+MSG_ADVANCE_QUEUE_SUCCESS = "|yYou will attempt to advance on {target} on your next turn.|n"
 
 # Charge messages
 MSG_CHARGE_NOT_IN_COMBAT = "You need to be in combat to charge a target."
@@ -208,6 +228,8 @@ MSG_CHARGE_COMBAT_DATA_MISSING = "Your combat data is missing. Please report thi
 MSG_CHARGE_NO_TARGET = "Charge whom? (You have no current target)."
 MSG_CHARGE_SELF_TARGET = "You cannot charge yourself. That would be silly."
 MSG_CHARGE_FAILED_PENALTY = "|rYour failed charge leaves you off-balance for a moment.|n"
+MSG_CHARGE_PREPARE = "|yYou prepare to charge recklessly at {target}.|n"
+MSG_CHARGE_QUEUE_SUCCESS = "|yYou will attempt to charge at {target} on your next turn.|n"
 
 # Disarm messages
 MSG_DISARM_NOT_IN_COMBAT = "You are not in combat."
@@ -221,6 +243,8 @@ MSG_DISARM_NOTHING_TO_DISARM = "{target} has nothing to disarm."
 MSG_DISARM_SUCCESS_ATTACKER = "You disarm {target}, sending {item} to the ground!"
 MSG_DISARM_SUCCESS_VICTIM = "{attacker} disarms you! {item} falls to the ground."
 MSG_DISARM_SUCCESS_OBSERVER = "{attacker} disarms {target}, and {item} falls to the ground."
+MSG_DISARM_PREPARE = "|yYou prepare to disarm {target}.|n"
+MSG_DISARM_QUEUE_SUCCESS = "|yYou will attempt to disarm {target} on your next turn.|n"
 
 # Grapple messages
 MSG_GRAPPLE_WHO = "Grapple whom?"

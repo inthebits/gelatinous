@@ -26,7 +26,7 @@ from world.combat.constants import (
     MSG_DISARM_SUCCESS_ATTACKER, MSG_DISARM_SUCCESS_VICTIM, MSG_DISARM_SUCCESS_OBSERVER,
     MSG_AIM_WHO_WHAT, MSG_AIM_SELF_TARGET, MSG_GRAPPLE_VIOLENT_SWITCH, MSG_GRAPPLE_ESCAPE_VIOLENT_SWITCH,
     DEBUG_PREFIX_GRAPPLE, SPLATTERCAST_CHANNEL, NDB_PROXIMITY,
-    NDB_COMBAT_HANDLER
+    NDB_COMBAT_HANDLER, COMBAT_ACTION_DISARM, MSG_DISARM_PREPARE
 )
 from world.combat.utils import log_combat_action, get_numeric_stat, roll_stat, initialize_proximity_ndb
 
@@ -295,8 +295,6 @@ class CmdDisarm(Command):
     help_category = "Combat"
 
     def func(self):
-        from random import randint
-        
         caller = self.caller
         
         handler = getattr(caller.ndb, NDB_COMBAT_HANDLER, None)
@@ -318,59 +316,25 @@ class CmdDisarm(Command):
             log_combat_action(caller, "disarm_fail", target, details="not in melee proximity")
             return
 
-        hands = getattr(target, "hands", {})
-        if not hands:
-            caller.msg(MSG_DISARM_TARGET_EMPTY_HANDS.format(target=target.key))
-            log_combat_action(caller, "disarm_fail", target, details="target has nothing in their hands")
+        # Get combatant entry and set disarm action
+        caller_entry = next((e for e in handler.db.combatants if e["char"] == caller), None)
+        if not caller_entry:
+            caller.msg("You are not registered in combat.")
             return
 
-        # Grit vs Grit check
-        attacker_grit = get_numeric_stat(caller, "grit")
-        defender_grit = get_numeric_stat(target, "grit")
-        disarm_roll = roll_stat(caller, "grit")
-        resist_roll = roll_stat(target, "grit")
+        # Set disarm action to be processed on caller's next turn
+        caller_entry["combat_action"] = COMBAT_ACTION_DISARM
+        caller_entry["combat_action_target"] = target  # Store target for handler processing
+        caller.msg(MSG_DISARM_PREPARE.format(target=target.get_display_name(caller)))
         
-        log_combat_action(
-            caller, "disarm_attempt", target, details=f"rolls {disarm_roll} (grit) vs {resist_roll} (grit)"
-        )
+        # Debug message
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        if splattercast:
+            splattercast.msg(f"DISARM: {caller.key} queued disarm action on {target.key} for next turn.")
 
-        if disarm_roll <= resist_roll:
-            caller.msg(MSG_DISARM_FAILED.format(target=target.key))
-            target.msg(MSG_DISARM_RESISTED.format(attacker=caller.key))
-            log_combat_action(caller, "disarm_fail", target, success=False)
-            return
-
-        # Prioritize weapon-type items
-        weapon_hand = None
-        for hand, item in hands.items():
-            if item and hasattr(item.db, "weapon_type") and item.db.weapon_type:
-                weapon_hand = hand
-                break
-
-        # If no weapon, disarm any held item
-        if not weapon_hand:
-            for hand, item in hands.items():
-                if item:
-                    weapon_hand = hand
-                    break
-
-        if not weapon_hand:
-            caller.msg(MSG_DISARM_NOTHING_TO_DISARM.format(target=target.key))
-            log_combat_action(caller, "disarm_fail", target, details="nothing found to disarm")
-            return
-
-        item = hands[weapon_hand]
-        # Remove from hand and move to ground
-        hands[weapon_hand] = None
-        item.move_to(target.location, quiet=True)
-        
-        caller.msg(MSG_DISARM_SUCCESS_ATTACKER.format(target=target.key, item=item.key))
-        target.msg(MSG_DISARM_SUCCESS_VICTIM.format(attacker=caller.key, item=item.key))
-        target.location.msg_contents(
-            MSG_DISARM_SUCCESS_OBSERVER.format(attacker=caller.key, target=target.key, item=item.key),
-            exclude=[caller, target]
-        )
-        log_combat_action(caller, "disarm_success", target, details=f"disarmed {item.key}")
+        # Ensure combat handler is active
+        if handler and not handler.is_active:
+            handler.start()
 
 
 class CmdAim(Command):

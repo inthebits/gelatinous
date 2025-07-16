@@ -17,29 +17,8 @@ from .constants import (
     MSG_CANNOT_WHILE_GRAPPLED, MSG_CANNOT_GRAPPLE_SELF, MSG_ALREADY_GRAPPLING,
     MSG_GRAPPLE_AUTO_YIELD
 )
-from .utils import log_debug, get_display_name_safe
+from .utils import log_debug, get_display_name_safe, get_character_by_dbref, get_character_dbref
 from .proximity import establish_proximity, is_in_proximity
-
-
-def get_character_by_dbref(dbref):
-    """
-    Helper to get character by dbref with error handling.
-    
-    Args:
-        dbref: Database reference number
-        
-    Returns:
-        Character or None
-    """
-    if not dbref:
-        return None
-    
-    try:
-        from evennia import search_object
-        results = search_object(f"#{dbref}")
-        return results[0] if results else None
-    except (ValueError, TypeError, ImportError):
-        return None
 
 
 def get_grappling_target(combat_handler, combatant_entry):
@@ -668,16 +647,3 @@ def validate_and_cleanup_grapple_state(handler):
         splattercast.msg(f"GRAPPLE_CLEANUP: Grapple state cleanup completed for handler {handler.key}. Changes saved.")
     else:
         splattercast.msg(f"GRAPPLE_VALIDATE: All grapple states valid for handler {handler.key}.")
-
-
-def get_character_dbref(char):
-    """
-    Get DBREF for a character object.
-    
-    Args:
-        char: The character object
-        
-    Returns:
-        int or None: The character's DBREF
-    """
-    return char.id if char else None
