@@ -1036,48 +1036,91 @@ class CombatHandler(DefaultScript):
             char.msg("|rNo target specified for advance action.|n")
             return
         
-        # Validate target is still in combat and same room
-        if target.location != char.location:
-            char.msg(f"|r{target.key} is no longer in the same room.|n")
-            return
-        
-        combatants_list = getattr(self.db, "combatants", [])
-        if not any(e["char"] == target for e in combatants_list):
+        # Check if target is still in combat
+        combatants_list = getattr(self.db, DB_COMBATANTS, [])
+        if not any(e[DB_CHAR] == target for e in combatants_list):
             char.msg(f"|r{target.key} is no longer in combat.|n")
             return
         
         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE: {char.key} executing advance action on {target.key}.")
         
-        # Check if already in proximity
-        initialize_proximity_ndb(char)
-        initialize_proximity_ndb(target)
-        
-        if is_in_proximity(char, target):
-            char.msg(f"|yYou are already in melee proximity with {target.key}.|n")
-            return
-        
-        # Make opposed roll
-        char_motorics = get_numeric_stat(char, "motorics")
-        target_motorics = get_numeric_stat(target, "motorics")
-        char_roll = randint(1, max(1, char_motorics))
-        target_roll = randint(1, max(1, target_motorics))
-        
-        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE: {char.key} (motorics:{char_motorics}, roll:{char_roll}) vs {target.key} (motorics:{target_motorics}, roll:{target_roll})")
-        
-        if char_roll > target_roll:
-            # Success - establish proximity
-            establish_proximity(char, target)
+        # Check if target is in the same room
+        if target.location == char.location:
+            # Same room - try to establish proximity
+            initialize_proximity_ndb(char)
+            initialize_proximity_ndb(target)
             
-            char.msg(f"|gYou successfully advance to melee range with {target.key}.|n")
-            target.msg(f"|y{char.key} advances to melee range with you.|n")
-            char.location.msg_contents(f"|y{char.key} advances to melee range with {target.key}.|n", exclude=[char, target])
-            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE: {char.key} successfully advanced to melee with {target.key}.")
+            if is_in_proximity(char, target):
+                char.msg(f"|yYou are already in melee proximity with {target.key}.|n")
+                return
+            
+            # Make opposed roll for proximity
+            char_motorics = get_numeric_stat(char, "motorics")
+            target_motorics = get_numeric_stat(target, "motorics")
+            char_roll = randint(1, max(1, char_motorics))
+            target_roll = randint(1, max(1, target_motorics))
+            
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE: {char.key} (motorics:{char_motorics}, roll:{char_roll}) vs {target.key} (motorics:{target_motorics}, roll:{target_roll})")
+            
+            if char_roll > target_roll:
+                # Success - establish proximity
+                establish_proximity(char, target)
+                
+                char.msg(f"|gYou successfully advance to melee range with {target.key}.|n")
+                target.msg(f"|y{char.key} advances to melee range with you.|n")
+                char.location.msg_contents(f"|y{char.key} advances to melee range with {target.key}.|n", exclude=[char, target])
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE: {char.key} successfully advanced to melee with {target.key}.")
+            else:
+                # Failure - no proximity established
+                char.msg(f"|rYour advance on {target.key} fails! They keep their distance.|n")
+                target.msg(f"|g{char.key} tries to advance on you but you keep your distance.|n")
+                char.location.msg_contents(f"|y{char.key} tries to advance on {target.key} but fails to close the distance.|n", exclude=[char, target])
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE: {char.key} failed to advance on {target.key}.")
         else:
-            # Failure - no proximity established
-            char.msg(f"|rYour advance on {target.key} fails! They keep their distance.|n")
-            target.msg(f"|g{char.key} tries to advance on you but you keep your distance.|n")
-            char.location.msg_contents(f"|y{char.key} tries to advance on {target.key} but fails to close the distance.|n", exclude=[char, target])
-            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE: {char.key} failed to advance on {target.key}.")
+            # Different room - check if it's a managed room and try to move there
+            managed_rooms = getattr(self.db, DB_MANAGED_ROOMS, [])
+            target_room = target.location
+            
+            if target_room not in managed_rooms:
+                char.msg(f"|r{target.key} is no longer in a combat area you can reach.|n")
+                return
+            
+            # Try to move to the target's room
+            # Find the exit from current room to target room
+            exit_to_target = None
+            for exit_obj in char.location.exits:
+                if exit_obj.destination == target_room:
+                    exit_to_target = exit_obj
+                    break
+            
+            if not exit_to_target:
+                char.msg(f"|rYou cannot find a way to {target.key}'s location.|n")
+                return
+            
+            # Make opposed roll for movement
+            char_motorics = get_numeric_stat(char, "motorics")
+            target_motorics = get_numeric_stat(target, "motorics")
+            char_roll = randint(1, max(1, char_motorics))
+            target_roll = randint(1, max(1, target_motorics))
+            
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_MOVE: {char.key} (motorics:{char_motorics}, roll:{char_roll}) vs {target.key} (motorics:{target_motorics}, roll:{target_roll})")
+            
+            if char_roll > target_roll:
+                # Success - move to target's room
+                old_location = char.location
+                char.move_to(target_room)
+                
+                char.msg(f"|gYou successfully advance to {target_room.key} to engage {target.key}.|n")
+                target.msg(f"|y{char.key} advances into the room to engage you!|n")
+                old_location.msg_contents(f"|y{char.key} advances toward {target_room.key} to engage {target.key}.|n", exclude=[char])
+                target_room.msg_contents(f"|y{char.key} advances into the room to engage {target.key}!|n", exclude=[char, target])
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_MOVE: {char.key} successfully moved to {target_room.key} to engage {target.key}.")
+            else:
+                # Failure - no movement
+                char.msg(f"|rYour advance toward {target.key} fails! You cannot reach their position.|n")
+                target.msg(f"|g{char.key} tries to advance toward your position but fails to reach you.|n")
+                char.location.msg_contents(f"|y{char.key} attempts to advance toward {target.key} but fails to reach them.|n", exclude=[char])
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_MOVE: {char.key} failed to move to {target.key}.")
 
     def _resolve_charge(self, char, entry):
         """Resolve a charge action."""
@@ -1148,7 +1191,7 @@ class CombatHandler(DefaultScript):
                 splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} failed charge on {target.key}, penalty applied.")
         else:
             # Different room charge - move to target's room
-            managed_rooms = getattr(self.db, "managed_rooms", [])
+            managed_rooms = getattr(self.db, DB_MANAGED_ROOMS, [])
             if target.location not in managed_rooms:
                 char.msg(f"|r{target.key} is not in a room you can charge to.|n")
                 return
