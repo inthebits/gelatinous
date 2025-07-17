@@ -85,8 +85,12 @@ def curtain_of_death(text, width=None, session=None):
         frame = "".join(chars).center(width, "█")  # Replace the sea with different char
         frames.append(_colorize_evennia(frame))
     
-    # Final frame: completely empty or just the original message
-    frames.append(_colorize_evennia(padded))
+    # Final frame: only preserve first and last 'brick' characters for dripping effect
+    final_frame = [" "] * width
+    if width > 2:
+        final_frame[0] = "▓"  # First brick
+        final_frame[-1] = "▓"  # Last brick
+    frames.append(_colorize_evennia("".join(final_frame)))
     
     return frames
 
