@@ -77,7 +77,8 @@ def curtain_of_death(text, width=None, session=None):
     frames = [_colorize_evennia("".join(chars))]  # First frame (untouched)
     
     # Create dripping effect by removing characters in planned sequence
-    for idx, _ in plan:
+    # Only process every 3rd character to reduce vertical scroll
+    for idx, _ in plan[::3]:  # Skip every 3rd character to reduce frame count
         if chars[idx] == " ":  # Skip spaces
             continue
         chars[idx] = " "  # 'Erase' the character
