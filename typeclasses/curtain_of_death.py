@@ -1,18 +1,5 @@
 """
-Curtain of Death - Death Animatiodef _colorize_evennia(text):
-    """Apply Evennia color codes to text for a blood-red effect."""
-    # Use Evennia's color system - just basic red variations for subtle effect
-    colors = ["|r", "|R"]  # Just standard red variations
-    
-    colored = []
-    for char in text:
-        if char != " ":  # Don't colorize spaces
-            colored.append(f"{random.choice(colors)}{char}")
-        else:
-            colored.append(char)
-    
-    colored.append("|n")  # Always reset color at the end
-    return "".join(colored)vennia
+Curtain of Death - Death Animation System for Evennia
 
 This module provides a "dripping blood" death animation that creates
 a curtain effect by progressively removing characters from a message.
@@ -50,8 +37,8 @@ def _get_terminal_width(session=None):
 
 def _colorize_evennia(text):
     """Apply Evennia color codes to text for a blood-red effect."""
-    # Use Evennia's color system - just basic red variations for subtle effect
-    colors = ["|r", "|R"]  # Just standard red variations
+    # Use Evennia's color system - all red variations for pure blood effect
+    colors = ["|r", "|R"]  # Just red variations for blood effect
     
     colored = []
     for char in text:
@@ -98,14 +85,11 @@ def curtain_of_death(text, width=None, session=None):
         frame = "".join(chars).center(width, "█")  # Replace the sea with different char
         frames.append(_colorize_evennia(frame))
     
-    # Final frame: just a few remaining drops
+    # Final frame: only preserve first and last 'brick' characters for dripping effect
     final_frame = [" "] * width
-    if width > 10:
-        # Just 2-3 random remnants, more subtle
-        num_remnants = 2
-        positions = random.sample(range(width), min(num_remnants, width))
-        for pos in positions:
-            final_frame[pos] = "▓"
+    if width > 2:
+        final_frame[0] = "▓"  # First brick
+        final_frame[-1] = "▓"  # Last brick
     frames.append(_colorize_evennia("".join(final_frame)))
     
     return frames
