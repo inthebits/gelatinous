@@ -12,13 +12,18 @@ from evennia.utils.utils import delay
 
 
 # ---------------------------------------------------------------------------
-#  Core death curtain effect
+#  ANSI helpers adapted for Evennia
 # ---------------------------------------------------------------------------
+def ansi_rgb(c: int) -> str:
+    """Return the xterm-256 color sequence for an RGB triplet."""
+    return f"|[{c}"
+
+# Death-themed color palette
 DEATH_PALETTE = [
-    "|r",   # Red
-    "|R",   # Bright red
-    "|m",   # Magenta
-    "|M",   # Bright magenta
+    ansi_rgb(125),  # Dark red
+    ansi_rgb(161),  # Medium red  
+    ansi_rgb(197),  # Bright red
+    ansi_rgb(89),   # Dark purple
 ]
 
 def colorize_death(text: str) -> str:
