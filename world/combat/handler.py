@@ -1,7 +1,7 @@
 """
 Combat Handler Module
 
-Refactored combat handler that manages turn-based combat for all combatants
+The combat handler that manages turn-based combat for all combatants
 in one or more locations. This module contains the core CombatHandler script
 and utility functions for combat management.
 
