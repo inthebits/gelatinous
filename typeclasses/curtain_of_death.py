@@ -77,21 +77,20 @@ def curtain_of_death(text, width=None, session=None):
     frames = [_colorize_evennia("".join(chars))]  # First frame (untouched)
     
     # Create dripping effect by removing characters in planned sequence
-    # Process every 4th character to reduce vertical scroll but keep good dripping
-    for idx, _ in plan[::4]:  # Skip every 4th character for fewer frames
+    # Only process every 3rd character to reduce vertical scroll
+    for idx, _ in plan[::3]:  # Skip every 3rd character to reduce frame count
         if chars[idx] == " ":  # Skip spaces
             continue
         chars[idx] = " "  # 'Erase' the character
-        frame = "".join(chars)
+        frame = "".join(chars).center(width, "█")  # Replace the sea with different char
         frames.append(_colorize_evennia(frame))
     
-    # Final frame: mostly empty with some scattered remnants
-    final_chars = [" "] * width
-    # Keep some random remnants for realistic dripping effect
-    for i in range(0, width, 8):  # Every 8th position
-        if random.random() < 0.3:  # 30% chance to keep a remnant
-            final_chars[i] = "▓"
-    frames.append(_colorize_evennia("".join(final_chars)))
+    # Final frame: only preserve first and last 'brick' characters for dripping effect
+    final_frame = [" "] * width
+    if width > 2:
+        final_frame[0] = "▓"  # First brick
+        final_frame[-1] = "▓"  # Last brick
+    frames.append(_colorize_evennia("".join(final_frame)))
     
     return frames
 
