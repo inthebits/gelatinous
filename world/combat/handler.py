@@ -1108,6 +1108,14 @@ class CombatHandler(DefaultScript):
             if char_roll > target_roll:
                 # Success - move to target's room
                 old_location = char.location
+                
+                # Clear aim states before moving (consistent with traversal)
+                from .utils import clear_aim_state
+                if hasattr(char, "clear_aim_state"):
+                    char.clear_aim_state(reason_for_clearing="as you advance")
+                else:
+                    clear_aim_state(char)
+                
                 char.move_to(target_room)
                 
                 char.msg(f"|gYou successfully advance to {target_room.key} to engage {target.key}.|n")
