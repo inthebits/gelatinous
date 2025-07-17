@@ -123,7 +123,7 @@ class DeathCurtain:
         self.frames = curtain_of_death(message, session=self.session)
         self.current_frame = 0
         self.frame_delay = 0.05  # Start slower than before (was 0.015)
-        self.delay_multiplier = 1.005  # Slower acceleration (was 1.01)
+        self.delay_multiplier = 1.02  # More significant slowdown (was 1.005)
         
     def start_animation(self):
         """Start the death curtain animation."""
