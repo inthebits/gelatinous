@@ -14,28 +14,6 @@ from evennia.utils.utils import delay
 # ---------------------------------------------------------------------------
 #  Core death curtain effect
 # ---------------------------------------------------------------------------
-DEATH_PALETTE = [
-    "|r",   # Red
-    "|R",   # Bright red
-    "|m",   # Magenta
-    "|M",   # Bright magenta
-]
-
-def colorize_death(text: str) -> str:
-    """Apply the death palette randomly to each character."""
-    colored = []
-    for ch in text:
-        if ch != ' ':  # Don't colorize spaces
-            colored.append(f"{random.choice(DEATH_PALETTE)}{ch}")
-        else:
-            colored.append(ch)
-    colored.append("|n")  # Evennia reset
-    return "".join(colored)
-
-
-# ---------------------------------------------------------------------------
-#  Core death curtain effect
-# ---------------------------------------------------------------------------
 def generate_death_curtain(message: str, width: int = 80) -> List[str]:
     """
     Generate frames for the death curtain effect.
@@ -55,8 +33,8 @@ def generate_death_curtain(message: str, width: int = 80) -> List[str]:
     plan = [(i, random.randint(1, i + 1)) for i in range(len(chars))]
     random.shuffle(plan)
     
-    # First frame: complete message
-    frames = [colorize_death("".join(chars))]
+    # First frame: complete message with simple red coloring
+    frames = [f"|r{''.join(chars)}|n"]
     
     # Progressive dissolution
     for idx, _ in plan:
@@ -64,16 +42,16 @@ def generate_death_curtain(message: str, width: int = 80) -> List[str]:
             continue
         chars[idx] = " "  # 'erase' the character
         frame = "".join(chars).center(width, "#")  # replace the sea
-        frames.append(colorize_death(frame))
+        frames.append(f"|r{frame}|n")
     
     # Final frame: restore original message
-    frames.append(colorize_death(padded))
+    frames.append(f"|r{padded}|n")
     
     return frames
 
 
 def send_death_curtain(character, message: str = None, width: int = 80, 
-                      frame_delay: float = 0.05, speed_increase: float = 1.01):
+                      frame_delay: float = 0.2, speed_increase: float = 1.01):
     """
     Send the death curtain effect to a character with proper timing.
     
@@ -81,7 +59,7 @@ def send_death_curtain(character, message: str = None, width: int = 80,
         character: The character object to send the effect to
         message: Death message (defaults to standard message)
         width: Display width
-        frame_delay: Initial delay between frames
+        frame_delay: Initial delay between frames (increased for readability)
         speed_increase: Multiplier for increasing speed
     """
     if message is None:
