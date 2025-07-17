@@ -37,8 +37,8 @@ def _get_terminal_width(session=None):
 
 def _colorize_evennia(text):
     """Apply Evennia color codes to text for a blood-red effect."""
-    # Use Evennia's color system - all red variations for pure blood effect
-    colors = ["|r", "|R"]  # Just red variations for blood effect
+    # Use Evennia's color system - more red variations for depth
+    colors = ["|r", "|R", "|[500", "|[400"]  # Regular red, bright red, dark red, darker red
     
     colored = []
     for char in text:
@@ -85,11 +85,14 @@ def curtain_of_death(text, width=None, session=None):
         frame = "".join(chars).center(width, "█")  # Replace the sea with different char
         frames.append(_colorize_evennia(frame))
     
-    # Final frame: only preserve first and last 'brick' characters for dripping effect
+    # Final frame: more organic remnant pattern
     final_frame = [" "] * width
     if width > 2:
-        final_frame[0] = "▓"  # First brick
-        final_frame[-1] = "▓"  # Last brick
+        # Add a few scattered remnants at random positions for more realistic dripping
+        num_remnants = min(5, width // 15)  # 1 remnant per ~15 characters
+        for _ in range(num_remnants):
+            pos = random.randint(0, width - 1)
+            final_frame[pos] = "▓"
     frames.append(_colorize_evennia("".join(final_frame)))
     
     return frames
