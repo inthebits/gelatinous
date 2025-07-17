@@ -498,6 +498,21 @@ class CombatHandler(DefaultScript):
             if hasattr(char.ndb, "charging_vulnerability_active"):
                 splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing charging_vulnerability_active for {char.key} (was active from their own previous charge).")
                 delattr(char.ndb, "charging_vulnerability_active")
+            
+            if hasattr(char.ndb, "charge_attack_bonus_active"):
+                splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing expired/unused charge_attack_bonus_active for {char.key}.")
+                delattr(char.ndb, "charge_attack_bonus_active")
+                # Double-check that it's really gone
+                if hasattr(char.ndb, "charge_attack_bonus_active"):
+                    splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: WARNING - charge_attack_bonus_active still present after deletion for {char.key}! Force clearing.")
+                    try:
+                        delattr(char.ndb, "charge_attack_bonus_active")
+                    except AttributeError:
+                        pass
+                    # Also try setting it to False as a fallback
+                    char.ndb.charge_attack_bonus_active = False
+                else:
+                    splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Confirmed charge_attack_bonus_active successfully cleared for {char.key}.")
 
             # Get combat action for this character
             combat_action = current_char_combat_entry.get("combat_action")
@@ -864,6 +879,15 @@ class CombatHandler(DefaultScript):
         attacker_roll = randint(1, 20) + attacker_skill
         target_roll = randint(1, 20) + target_skill
         
+        # Check for charge bonus
+        if hasattr(attacker.ndb, "charge_attack_bonus_active") and getattr(attacker.ndb, "charge_attack_bonus_active", False):
+            attacker_roll += 2
+            splattercast.msg(f"ATTACK_BONUS: {attacker.key} gets +2 charge attack bonus.")
+            splattercast.msg(f"ATTACK_BONUS_DEBUG: {attacker.key} had charge_attack_bonus_active set - this should only happen after using the 'charge' command.")
+            delattr(attacker.ndb, "charge_attack_bonus_active")
+        else:
+            splattercast.msg(f"ATTACK_BONUS_DEBUG: {attacker.key} does not have charge_attack_bonus_active - no bonus applied.")
+        
         splattercast.msg(f"ATTACK: {attacker.key} (roll {attacker_roll}) vs {target.key} (roll {target_roll}) with {weapon_name}")
         
         if attacker_roll > target_roll:
@@ -1156,13 +1180,17 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE_SAME_ROOM: {char.key} (motorics:{char_motorics}, disadvantage:{roll1},{roll2}>>{charge_roll}) vs {target.key} (motorics:{target_motorics}, roll:{resist_roll})")
             
             if charge_roll > resist_roll:
-                # Success - establish proximity
+                # Success - establish proximity and charge bonus
                 establish_proximity(char, target)
                 
                 # Clear aim states
                 clear_aim_state(char)
                 
-                char.msg(f"|gYou charge {target.key} and slam into melee range!|n")
+                # Set charge bonus
+                char.ndb.charge_attack_bonus_active = True
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} charge_attack_bonus_active set to True by successful charge.")
+                
+                char.msg(f"|gYou charge {target.key} and slam into melee range! Your next attack will have a bonus.|n")
                 target.msg(f"|r{char.key} charges at you and crashes into melee range!|n")
                 char.location.msg_contents(f"|y{char.key} charges at {target.key} with reckless abandon!|n", exclude=[char, target])
                 splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} successfully charged {target.key}.")
@@ -1178,8 +1206,10 @@ class CombatHandler(DefaultScript):
                         self.resolve_bonus_attack(target, char)
                         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} failed charge against ranged weapon user {target.key}, bonus attack triggered.")
                 
+                # Apply charge failure penalty
+                char.ndb.charge_penalty = True
                 char.msg("|rYour failed charge leaves you off-balance!|n")
-                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} failed charge on {target.key}.")
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} failed charge on {target.key}, penalty applied.")
         else:
             # Different room charge - move to target's room
             managed_rooms = getattr(self.db, DB_MANAGED_ROOMS, [])
@@ -1215,7 +1245,11 @@ class CombatHandler(DefaultScript):
                 clear_aim_state(char)
                 establish_proximity(char, target)
                 
-                char.msg(f"|gYou charge recklessly through the {exit_to_use.key} and crash into melee with {target.key}!|n")
+                # Set charge bonus
+                char.ndb.charge_attack_bonus_active = True
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} charge_attack_bonus_active set to True by successful cross-room charge.")
+                
+                char.msg(f"|gYou charge recklessly through the {exit_to_use.key} and crash into melee with {target.key}! Your next attack will have a bonus.|n")
                 target.msg(f"|r{char.key} charges recklessly through the {exit_to_use.key} and crashes into melee with you!|n")
                 char.location.msg_contents(f"|y{char.key} charges recklessly from {exit_to_use.get_return_exit().key if exit_to_use.get_return_exit() else 'elsewhere'} and crashes into melee!|n", exclude=[char, target])
                 splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} successfully charged cross-room and engaged {target.key} in melee.")
@@ -1236,6 +1270,8 @@ class CombatHandler(DefaultScript):
                     target.msg(f"|y{char.key} attempts to charge at you but stumbles at the entrance!|n")
                     splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} failed cross-room charge on {target.key}.")
                 
+                # Apply charge failure penalty
+                char.ndb.charge_penalty = True
                 char.msg("|rYour failed charge leaves you off-balance!|n")
 
     def _resolve_disarm(self, char, entry):
