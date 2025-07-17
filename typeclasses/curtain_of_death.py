@@ -85,6 +85,19 @@ def curtain_of_death(text, width=None, session=None):
         frame = "".join(chars).center(width, "█")  # Replace the sea with different char
         frames.append(_colorize_evennia(frame))
     
+    # Add several more frames of continued dripping
+    for i in range(5):  # Add 5 more frames of dripping
+        frame = " " * width  # Empty line
+        frames.append(_colorize_evennia(frame))
+    
+    # Add the DEATH message in the middle of continued dripping
+    death_frame = "|r" + "DEATH".center(width) + "|n"
+    frames.append(death_frame)
+    
+    # Add one more frame after DEATH
+    final_frame = " " * width
+    frames.append(_colorize_evennia(final_frame))
+    
     return frames
 
 
@@ -151,15 +164,7 @@ class DeathCurtain:
             
     def _on_animation_complete(self):
         """Called when the animation completes."""
-        # Simple death message - drips descend to one line below
-        final_msg = (
-            "|r" + "DEATH".center(self.width) + "|n\n"
-        )
-        
-        if self.character:
-            self.character.msg(final_msg)
-            
-        # Notify observers
+        # Animation already includes the DEATH message, so just notify observers
         if self.location:
             death_msg = f"|r{self.character.key} has died.|n"
             self.location.msg_contents(death_msg, exclude=[self.character])
