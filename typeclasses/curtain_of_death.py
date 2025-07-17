@@ -15,7 +15,7 @@ from evennia.utils import delay
 def _get_terminal_width(session=None):
     """
     Get terminal width from session, defaulting to 78 for MUD compatibility.
-    Subtracts 10 characters for safety margin to prevent wrapping.
+    Subtracts 5 characters for safety margin to prevent wrapping.
     
     Args:
         session: Evennia session object to get width from
@@ -27,8 +27,8 @@ def _get_terminal_width(session=None):
         # Use Evennia's built-in screen width detection
         try:
             detected_width = session.protocol_flags.get("SCREENWIDTH", [78])[0]
-            # Subtract 10 for safety margin to prevent wrapping
-            return max(68, detected_width - 10)  # Minimum 68 to ensure readability
+            # Subtract 5 for safety margin to prevent wrapping
+            return max(68, detected_width - 5)  # Minimum 68 to ensure readability
         except (IndexError, KeyError, TypeError):
             # Fallback if protocol flags aren't available or malformed
             pass
@@ -122,8 +122,8 @@ class DeathCurtain:
         self.message = message
         self.frames = curtain_of_death(message, session=self.session)
         self.current_frame = 0
-        self.frame_delay = 0.015  # Start fast
-        self.delay_multiplier = 1.01  # Slow down over time like original
+        self.frame_delay = 0.05  # Start slower than before (was 0.015)
+        self.delay_multiplier = 1.005  # Slower acceleration (was 1.01)
         
     def start_animation(self):
         """Start the death curtain animation."""
