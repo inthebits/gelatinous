@@ -70,43 +70,27 @@ def curtain_of_death(text, width=None, session=None):
     padded = text.center(width, "▓")
     chars = list(padded)
     
-    # Create drip starting positions - focus on creating fewer but more dramatic drips
-    num_drips = min(12, width // 6)  # Limit to ~12 drips max, spaced out
-    drip_positions = []
-    for i in range(num_drips):
-        pos = int((i + 1) * width / (num_drips + 1))  # Evenly space drips
-        drip_length = random.randint(3, 8)  # Each drip affects 3-8 characters
-        drip_positions.append((pos, drip_length))
+    # Build the "plan": a shuffled list of (index, drop-distance) pairs
+    plan = [(i, random.randint(1, i + 1)) for i in range(len(chars))]
+    random.shuffle(plan)
     
     frames = [_colorize_evennia("".join(chars))]  # First frame (untouched)
     
-    # Create dripping effect - each drip progresses downward
-    for drip_step in range(8):  # Each drip takes 8 steps to complete
-        current_chars = chars[:]  # Copy current state
-        
-        for drip_pos, drip_len in drip_positions:
-            # Create a drip pattern that grows longer each step
-            drip_progress = min(drip_step + 1, drip_len)
-            
-            # Remove characters in a drip pattern from the center outward
-            for offset in range(drip_progress):
-                left_pos = drip_pos - offset
-                right_pos = drip_pos + offset
-                
-                if 0 <= left_pos < len(current_chars) and current_chars[left_pos] != " ":
-                    current_chars[left_pos] = " "
-                if 0 <= right_pos < len(current_chars) and current_chars[right_pos] != " ":
-                    current_chars[right_pos] = " "
-        
-        # Create frame with remaining characters
-        frame = "".join(current_chars)
+    # Create dripping effect by removing characters in planned sequence
+    # Process every 4th character to reduce vertical scroll but keep good dripping
+    for idx, _ in plan[::4]:  # Skip every 4th character for fewer frames
+        if chars[idx] == " ":  # Skip spaces
+            continue
+        chars[idx] = " "  # 'Erase' the character
+        frame = "".join(chars)
         frames.append(_colorize_evennia(frame))
     
-    # Final frame: mostly empty with just a few remaining drops
+    # Final frame: mostly empty with some scattered remnants
     final_chars = [" "] * width
-    for drip_pos, _ in drip_positions[::3]:  # Keep every 3rd drip position
-        if random.random() < 0.4:  # 40% chance to keep a remnant
-            final_chars[drip_pos] = "▓"
+    # Keep some random remnants for realistic dripping effect
+    for i in range(0, width, 8):  # Every 8th position
+        if random.random() < 0.3:  # 30% chance to keep a remnant
+            final_chars[i] = "▓"
     frames.append(_colorize_evennia("".join(final_chars)))
     
     return frames
