@@ -19,8 +19,8 @@ def _get_terminal_width():
 
 def _colorize_evennia(text):
     """Apply Evennia color codes to text for a blood-red effect."""
-    # Use Evennia's color system instead of ANSI
-    colors = ["|r", "|R", "|y", "|Y"]  # Red variations and yellow for variety
+    # Use Evennia's color system - all red variations for pure blood effect
+    colors = ["|r", "|R"]  # Just red variations for blood effect
     
     colored = []
     for char in text:
