@@ -12,8 +12,23 @@ import random
 from evennia.utils import delay
 
 
-def _get_terminal_width():
-    """Get terminal width, defaulting to 78 for MUD compatibility."""
+def _get_terminal_width(session=None):
+    """
+    Get terminal width from session, defaulting to 78 for MUD compatibility.
+    
+    Args:
+        session: Evennia session object to get width from
+        
+    Returns:
+        int: Terminal width in characters
+    """
+    if session:
+        # Use Evennia's built-in screen width detection
+        try:
+            return session.protocol_flags.get("SCREENWIDTH", [78])[0]
+        except (IndexError, KeyError, TypeError):
+            # Fallback if protocol flags aren't available or malformed
+            pass
     return 78
 
 
@@ -33,19 +48,20 @@ def _colorize_evennia(text):
     return "".join(colored)
 
 
-def curtain_of_death(text, width=None):
+def curtain_of_death(text, width=None, session=None):
     """
     Create a "dripping blood" death curtain animation.
     
     Args:
         text (str): The message to animate
         width (int, optional): Width of the display area
+        session: Evennia session object for width detection
         
     Returns:
         List[str]: Animation frames
     """
     if width is None:
-        width = _get_terminal_width()
+        width = _get_terminal_width(session)
     
     # Center the message on a sea of '▓' characters (avoiding | for Evennia colors)
     padded = text.center(width, "▓")
@@ -88,12 +104,20 @@ class DeathCurtain:
         self.character = character
         self.location = character.location
         
+        # Get session for width detection
+        self.session = None
+        if character and hasattr(character, 'sessions') and character.sessions.get():
+            self.session = character.sessions.get()[0]
+        
+        # Get terminal width for this character's session
+        self.width = _get_terminal_width(self.session)
+        
         # Default death message if none provided
         if message is None:
             message = "A red haze blurs your vision as the world slips away..."
         
         self.message = message
-        self.frames = curtain_of_death(message)
+        self.frames = curtain_of_death(message, session=self.session)
         self.current_frame = 0
         self.frame_delay = 0.015  # Start fast
         self.delay_multiplier = 1.01  # Slow down over time like original
@@ -126,11 +150,11 @@ class DeathCurtain:
             
     def _on_animation_complete(self):
         """Called when the animation completes."""
-        # Final death message
+        # Final death message using detected width
         final_msg = (
-            "\n|r" + "=" * 78 + "|n\n"
-            "|r" + "DEATH".center(78) + "|n\n"
-            "|r" + "=" * 78 + "|n"
+            "\n|r" + "=" * self.width + "|n\n"
+            "|r" + "DEATH".center(self.width) + "|n\n"
+            "|r" + "=" * self.width + "|n"
         )
         
         if self.character:
