@@ -13,7 +13,6 @@ from evennia.typeclasses.attributes import AttributeProperty
 from evennia.comms.models import ChannelDB  # Ensure this is imported
 
 from .objects import ObjectParent
-from .curtain_of_death import send_death_curtain, send_death_curtain_instant
 
 
 class Character(ObjectParent, DefaultCharacter):
@@ -101,16 +100,17 @@ class Character(ObjectParent, DefaultCharacter):
         Handles what happens when this character dies.
         Override this for player-specific or mob-specific death logic.
         """
+        from .deathscroll import DEATH_SCROLL
+        from evennia.utils.utils import delay
+        
         location = self.location
         if location:
             location.msg_contents(f"|r{self.key} collapses into inert flesh.|n")
         self.msg("|rYou feel your consciousness unravel...|n")
         
-        # Check if player has instant death preference (could be an attribute)
-        if hasattr(self, 'db') and getattr(self.db, 'instant_death', False):
-            send_death_curtain_instant(self)
-        else:
-            send_death_curtain(self)
+        # Send death scroll animation
+        for i, line in enumerate(DEATH_SCROLL):
+            delay(i * 0.1, self.msg, line)
         
         # You can override this to handle possession, corpse creation, etc.
         # PERMANENT-DEATH. DO NOT ENABLE YET. self.delete()

@@ -2,7 +2,6 @@
 Test command for the curtain of death effect
 """
 from evennia import Command
-from ..typeclasses.curtain_of_death import send_death_curtain, send_death_curtain_instant
 
 
 class CmdTestDeathCurtain(Command):
