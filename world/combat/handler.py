@@ -1129,6 +1129,13 @@ class CombatHandler(DefaultScript):
                 target.msg(f"|g{char.key} tries to advance toward your position but fails to reach you.|n")
                 char.location.msg_contents(f"|y{char.key} attempts to advance toward {target.key} but fails to reach them.|n", exclude=[char])
                 splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_MOVE: {char.key} failed to move to {target.key}.")
+                
+                # Check if target has ranged weapon for bonus attack
+                if is_wielding_ranged_weapon(target):
+                    target.msg(f"|gYour ranged weapon gives you a clear shot as {char.key} fails to reach you!|n")
+                    char.msg(f"|r{target.key} takes advantage of your failed advance to attack from range!|n")
+                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_MOVE_BONUS: {target.key} gets bonus attack vs {char.key} for failed cross-room advance.")
+                    self.resolve_bonus_attack(target, char)
 
     def _resolve_charge(self, char, entry):
         """Resolve a charge action."""
@@ -1192,6 +1199,12 @@ class CombatHandler(DefaultScript):
                 char.msg(f"|rYour reckless charge at {target.key} fails spectacularly!|n")
                 target.msg(f"|y{char.key} charges at you but you dodge, leaving them off-balance!|n")
                 char.location.msg_contents(f"|y{char.key} charges recklessly at {target.key} but misses and stumbles!|n", exclude=[char, target])
+                
+                # Check if target has ranged weapon for bonus attack
+                if is_wielding_ranged_weapon(target):
+                    if hasattr(self, 'resolve_bonus_attack'):
+                        self.resolve_bonus_attack(target, char)
+                        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} failed charge against ranged weapon user {target.key}, bonus attack triggered.")
                 
                 # Apply charge failure penalty
                 char.ndb.charge_penalty = True
