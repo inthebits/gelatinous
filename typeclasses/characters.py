@@ -100,17 +100,10 @@ class Character(ObjectParent, DefaultCharacter):
         Handles what happens when this character dies.
         Override this for player-specific or mob-specific death logic.
         """
-        from .deathscroll import DEATH_SCROLL
-        from evennia.utils.utils import delay
+        from .curtain_of_death import show_death_curtain
         
-        location = self.location
-        if location:
-            location.msg_contents(f"|r{self.key} collapses into inert flesh.|n")
-        self.msg("|rYou feel your consciousness unravel...|n")
-        
-        # Send death scroll animation
-        for i, line in enumerate(DEATH_SCROLL):
-            delay(i * 0.1, self.msg, line)
+        # Start the death curtain animation
+        show_death_curtain(self)
         
         # You can override this to handle possession, corpse creation, etc.
         # PERMANENT-DEATH. DO NOT ENABLE YET. self.delete()

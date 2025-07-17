@@ -1,0 +1,154 @@
+"""
+Curtain of Death - Death Animation System for Evennia
+
+This module provides a "dripping blood" death animation that creates
+a curtain effect by progressively removing characters from a message.
+Based on the elegant design that centers text in a "sea" of characters
+and creates a dripping effect by removing characters in sequence.
+Compatible with Evennia's messaging and delay systems.
+"""
+
+import random
+from evennia.utils import delay
+
+
+def _get_terminal_width():
+    """Get terminal width, defaulting to 78 for MUD compatibility."""
+    return 78
+
+
+def _colorize_evennia(text):
+    """Apply Evennia color codes to text for a blood-red effect."""
+    # Use Evennia's color system instead of ANSI
+    colors = ["|r", "|R", "|y", "|Y"]  # Red variations and yellow for variety
+    
+    colored = []
+    for char in text:
+        if char != " ":  # Don't colorize spaces
+            colored.append(f"{random.choice(colors)}{char}")
+        else:
+            colored.append(char)
+    
+    colored.append("|n")  # Always reset color at the end
+    return "".join(colored)
+
+
+def curtain_of_death(text, width=None):
+    """
+    Create a "dripping blood" death curtain animation.
+    
+    Args:
+        text (str): The message to animate
+        width (int, optional): Width of the display area
+        
+    Returns:
+        List[str]: Animation frames
+    """
+    if width is None:
+        width = _get_terminal_width()
+    
+    # Center the message on a sea of '▓' characters (avoiding | for Evennia colors)
+    padded = text.center(width, "▓")
+    chars = list(padded)
+    
+    # Build the "plan": a shuffled list of (index, drop-distance) pairs
+    plan = [(i, random.randint(1, i + 1)) for i in range(len(chars))]
+    random.shuffle(plan)
+    
+    frames = [_colorize_evennia("".join(chars))]  # First frame (untouched)
+    
+    # Create dripping effect by removing characters in planned sequence
+    for idx, _ in plan:
+        if chars[idx] == " ":  # Skip spaces
+            continue
+        chars[idx] = " "  # 'Erase' the character
+        frame = "".join(chars).center(width, "█")  # Replace the sea with different char
+        frames.append(_colorize_evennia(frame))
+    
+    # Final frame: completely empty or just the original message
+    frames.append(_colorize_evennia(padded))
+    
+    return frames
+
+
+class DeathCurtain:
+    """
+    Creates a "dripping blood" death animation by progressively removing
+    characters from a death message to create a curtain effect.
+    """
+    
+    def __init__(self, character, message=None):
+        """
+        Initialize the death curtain animation.
+        
+        Args:
+            character: The character object to send the animation to
+            message (str, optional): Custom death message
+        """
+        self.character = character
+        self.location = character.location
+        
+        # Default death message if none provided
+        if message is None:
+            message = "A red haze blurs your vision as the world slips away..."
+        
+        self.message = message
+        self.frames = curtain_of_death(message)
+        self.current_frame = 0
+        self.frame_delay = 0.015  # Start fast
+        self.delay_multiplier = 1.01  # Slow down over time like original
+        
+    def start_animation(self):
+        """Start the death curtain animation."""
+        self.current_frame = 0
+        self._show_next_frame()
+        
+    def _show_next_frame(self):
+        """Show the next frame of the animation."""
+        if self.current_frame < len(self.frames):
+            # Send current frame to the dying character
+            if self.character:
+                self.character.msg(self.frames[self.current_frame])
+            
+            # Optionally send to room observers (less frequently)
+            if self.location and self.current_frame % 15 == 0:
+                observer_msg = f"|r{self.character.key} is dying...|n"
+                self.location.msg_contents(observer_msg, exclude=[self.character])
+            
+            self.current_frame += 1
+            
+            # Schedule next frame with increasing delay (like original)
+            delay(self.frame_delay, self._show_next_frame)
+            self.frame_delay *= self.delay_multiplier
+        else:
+            # Animation complete, trigger death
+            self._on_animation_complete()
+            
+    def _on_animation_complete(self):
+        """Called when the animation completes."""
+        # Final death message
+        final_msg = (
+            "\n|r" + "=" * 78 + "|n\n"
+            "|r" + "DEATH".center(78) + "|n\n"
+            "|r" + "=" * 78 + "|n"
+        )
+        
+        if self.character:
+            self.character.msg(final_msg)
+            
+        # Notify observers
+        if self.location:
+            death_msg = f"|r{self.character.key} has died.|n"
+            self.location.msg_contents(death_msg, exclude=[self.character])
+
+
+def show_death_curtain(character, message=None):
+    """
+    Convenience function to show the death curtain animation.
+    
+    Args:
+        character: The character object to show the animation to
+        message (str, optional): Custom death message
+    """
+    curtain = DeathCurtain(character, message)
+    curtain.start_animation()
