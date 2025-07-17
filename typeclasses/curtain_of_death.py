@@ -85,11 +85,20 @@ def curtain_of_death(text, width=None, session=None):
         frame = "".join(chars).center(width, "█")  # Replace the sea with different char
         frames.append(_colorize_evennia(frame))
     
-    # Final frame: only preserve first and last 'brick' characters for dripping effect
+    # Final frame: scattered remnants that align with the original message positions
     final_frame = [" "] * width
-    if width > 2:
-        final_frame[0] = "▓"  # First brick
-        final_frame[-1] = "▓"  # Last brick
+    if width > 10:
+        # Get positions from the original message area (not completely random)
+        message_start = (width - len(text)) // 2
+        message_end = message_start + len(text)
+        message_positions = list(range(max(0, message_start), min(width, message_end)))
+        
+        # Create a few scattered drops from the message area
+        num_drops = random.randint(3, min(6, len(message_positions) // 4))
+        if message_positions and num_drops > 0:
+            drop_positions = random.sample(message_positions, min(num_drops, len(message_positions)))
+            for pos in drop_positions:
+                final_frame[pos] = "▓"
     frames.append(_colorize_evennia("".join(final_frame)))
     
     return frames
