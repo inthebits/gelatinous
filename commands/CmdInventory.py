@@ -257,6 +257,7 @@ class CmdGive(Command):
 
     Usage:
         give <item> to <target>
+        give <item> <target>
 
     This command works with the Mr. Hand system. Items can be given from
     your hands or inventory. The recipient will receive the item in their
@@ -266,7 +267,7 @@ class CmdGive(Command):
     key = "give"
 
     def parse(self):
-        """Parse 'give <item> to <target>' syntax."""
+        """Parse 'give <item> to <target>' or 'give <item> <target>' syntax."""
         self.item_name = ""
         self.target_name = ""
         
@@ -274,19 +275,31 @@ class CmdGive(Command):
         if not args:
             return
             
-        # Look for "to" keyword
+        # Look for "to" keyword first
         if " to " in args:
             parts = args.split(" to ", 1)
             if len(parts) == 2:
                 self.item_name = parts[0].strip()
                 self.target_name = parts[1].strip()
+        else:
+            # Try "give <item> <target>" syntax (no "to")
+            parts = args.split(None, 1)  # Split on whitespace, max 2 parts
+            if len(parts) == 2:
+                words = args.split()
+                if len(words) >= 2:
+                    # Take first word as item, last word as target
+                    self.item_name = words[0]
+                    self.target_name = words[-1]
+                    # If there are more words, they're part of the item name
+                    if len(words) > 2:
+                        self.item_name = " ".join(words[:-1])
 
     def func(self):
         caller = self.caller
         
         # Basic syntax validation
         if not self.item_name or not self.target_name:
-            caller.msg("Usage: give <item> to <target>")
+            caller.msg("Usage: give <item> to <target> or give <item> <target>")
             return
 
         # Find target in the same room
@@ -366,6 +379,14 @@ class CmdGive(Command):
             if "wield" not in wield_result.lower():
                 caller.msg(f"Failed to prepare {item.key} for giving: {wield_result}")
                 return
+            
+            # Announce the wield action to match standard wield messages
+            caller.msg(f"You wield {item.key} in your {caller_free_hand} hand.")
+            caller.location.msg_contents(
+                f"{caller.key} wields {item.key} in their {caller_free_hand} hand.",
+                exclude=caller
+            )
+            
             from_hand = caller_free_hand
 
         # Now transfer from caller's hand to target's hand
