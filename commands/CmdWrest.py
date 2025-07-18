@@ -6,25 +6,31 @@ It serves as the non-combat counterpart to the disarm command, allowing quick
 opportunistic grabbing of objects without entering combat mechanics.
 
 Design Philosophy:
-- Instant success (no resistance rolls)
+- Grit vs Grit contest with grapple disadvantage mechanics
 - Non-combat only (caller cannot be in combat)
 - Target can be in combat (allows grabbing from distracted targets)
 - Works with any hand configuration (Mr. Hand system flexibility)
 """
 
-from evennia import Command
+from evennia import Command, CHANNEL_HANDLER
 from world.combat.constants import (
     MSG_WREST_SUCCESS_CALLER,
     MSG_WREST_SUCCESS_TARGET,
     MSG_WREST_SUCCESS_ROOM,
+    MSG_WREST_FAILED_CALLER,
+    MSG_WREST_FAILED_TARGET,
+    MSG_WREST_FAILED_ROOM,
     MSG_WREST_IN_COMBAT,
     MSG_WREST_NO_FREE_HANDS,
     MSG_WREST_TARGET_NOT_FOUND,
     MSG_WREST_OBJECT_NOT_IN_HANDS,
     MSG_WREST_OBJECT_NOT_FOUND,
     MSG_WREST_SAME_ROOM_REQUIRED,
-    DB_CHAR
+    DB_CHAR,
+    DB_GRAPPLED_BY_DBREF,
+    STAT_GRIT
 )
+from world.combat.utils import roll_stat, roll_with_disadvantage
 
 
 class CmdWrest(Command):
@@ -39,15 +45,20 @@ class CmdWrest(Command):
         wrest phone from alice
         wrest keys from guard
 
-    This command allows opportunistic item grabbing outside of combat.
-    It works instantly with no resistance rolls, making it ideal for
-    quick snatch-and-run tactics or disarming distracted opponents.
+    This command allows opportunistic item grabbing outside of combat
+    using a Grit vs Grit contest. Grappled targets roll with disadvantage,
+    making them vulnerable to item theft.
 
     Requirements:
     - You must NOT be in combat (use 'disarm' during combat instead)
     - You must have at least one free hand
     - Target must be in the same room
     - Object must be wielded in target's hands
+
+    Mechanics:
+    - Grit vs Grit contest determines success
+    - Grappled targets roll with disadvantage
+    - Instant success only against unconscious/dead targets
     """
 
     key = "wrest"
@@ -104,8 +115,23 @@ class CmdWrest(Command):
             ))
             return
 
-        # 5. Execute transfer
-        self._execute_wrest(caller, target, target_object, free_hand, target_hand)
+        # 5. Check if target is grappled (for disadvantage)
+        is_grappled = self._is_target_grappled(target)
+
+        # 6. Execute Grit vs Grit contest (unless target is unconscious/dead)
+        if self._is_target_unconscious_or_dead(target):
+            # Instant success against unconscious/dead targets
+            success = True
+        else:
+            # Grit vs Grit contest
+            success = self._execute_grit_contest(caller, target, is_grappled)
+
+        # 7. Handle result
+        if success:
+            self._execute_transfer(caller, target, target_object, free_hand, target_hand)
+            self._announce_success(caller, target, target_object)
+        else:
+            self._announce_failure(caller, target, target_object)
 
     def _is_caller_in_combat(self):
         """Check if caller is currently in combat."""
@@ -145,9 +171,52 @@ class CmdWrest(Command):
                 return hand_name, held_item
         return None, None
 
-    def _execute_wrest(self, caller, target, target_object, caller_hand, target_hand):
-        """Execute the actual wrest transfer."""
-        # Use the existing Mr. Hand system methods for proper state management
+    def _is_target_grappled(self, target):
+        """Check if target is currently grappled."""
+        # Check if target has a combat handler with grapple status
+        combat_handler = getattr(target.ndb, "combat_handler", None)
+        if combat_handler:
+            combatants = getattr(combat_handler.db, "combatants", None)
+            if combatants:
+                # Find target's entry in combatants list
+                target_entry = next((entry for entry in combatants if entry.get(DB_CHAR) == target), None)
+                if target_entry:
+                    grappled_by = target_entry.get(DB_GRAPPLED_BY_DBREF)
+                    return grappled_by is not None
+        return False
+
+    def _is_target_unconscious_or_dead(self, target):
+        """Check if target is unconscious or dead (instant success condition)."""
+        # TODO: Implement when unconscious/dead states are added to the system
+        # For now, always return False (no instant success)
+        return False
+
+    def _execute_grit_contest(self, caller, target, target_is_grappled):
+        """Execute Grit vs Grit contest, with disadvantage for grappled targets."""
+        # Caller rolls normally
+        caller_roll = roll_stat(caller, STAT_GRIT)
+        
+        # Target rolls with disadvantage if grappled
+        if target_is_grappled:
+            target_grit = getattr(target, STAT_GRIT, 1)
+            target_roll, _, _ = roll_with_disadvantage(target_grit)
+        else:
+            target_roll = roll_stat(target, STAT_GRIT)
+        
+        # Caller wins ties (advantage to active player)
+        success = caller_roll >= target_roll
+        
+        # Debug output for testing
+        splattercast = CHANNEL_HANDLER.channel_search("splattercast")
+        if splattercast:
+            grapple_status = " (grappled)" if target_is_grappled else ""
+            splattercast[0].msg(f"WREST CONTEST: {caller.key} {caller_roll} vs {target.key} {target_roll}{grapple_status} - {'SUCCESS' if success else 'FAILURE'}")
+        
+        return success
+
+    def _execute_transfer(self, caller, target, target_object, caller_hand, target_hand):
+        """Execute the actual object transfer using Mr. Hand system methods."""
+        # Use Mr. Hand system methods for proper state management
         
         # Remove object from target's hand
         target_unwield_result = target.unwield_item(target_hand)
@@ -159,13 +228,12 @@ class CmdWrest(Command):
         if "wield" not in caller_wield_result.lower():
             # Something went wrong, try to restore target's state
             target.wield_item(target_object, target_hand)
-            caller.msg("Something went wrong with the wrest attempt.")
-            return
+            caller.msg(f"Transfer failed: {caller_wield_result}")
+            return False
+        
+        return True
 
-        # Announce the successful wrest
-        self._announce_wrest_success(caller, target, target_object)
-
-    def _announce_wrest_success(self, caller, target, obj):
+    def _announce_success(self, caller, target, obj):
         """Announce successful wrest to all relevant parties."""
         object_name = obj.get_display_name(caller)
         
@@ -184,6 +252,32 @@ class CmdWrest(Command):
         # Message to room (exclude caller and target)
         caller.location.msg_contents(
             MSG_WREST_SUCCESS_ROOM.format(
+                caller=caller.get_display_name(None),
+                target=target.get_display_name(None),
+                object=object_name
+            ),
+            exclude=[caller, target]
+        )
+
+    def _announce_failure(self, caller, target, obj):
+        """Announce failed wrest attempt to all relevant parties."""
+        object_name = obj.get_display_name(caller)
+        
+        # Message to caller
+        caller.msg(MSG_WREST_FAILED_CALLER.format(
+            object=object_name,
+            target=target.get_display_name(caller)
+        ))
+        
+        # Message to target
+        target.msg(MSG_WREST_FAILED_TARGET.format(
+            caller=caller.get_display_name(target),
+            object=object_name
+        ))
+        
+        # Message to room (exclude caller and target)
+        caller.location.msg_contents(
+            MSG_WREST_FAILED_ROOM.format(
                 caller=caller.get_display_name(None),
                 target=target.get_display_name(None),
                 object=object_name

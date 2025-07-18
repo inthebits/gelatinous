@@ -26,14 +26,16 @@ wrest <object> from <target>
 ## Design Philosophy
 
 ### Simplicity Over Complexity
-- **Instant success**: No resistance rolls or stat contests
+- **Grit vs Grit contest**: Simple opposed roll using G.R.I.M. system
+- **Grapple disadvantage**: Grappled targets roll with disadvantage (roll twice, take lower)
+- **Instant success only against unconscious/dead**: No contest for incapacitated targets
 - **Automatic hand selection**: System chooses hands automatically
 - **First-match object selection**: Multiple objects with same name default to first found
 - **No proximity requirements**: Works anywhere in same room (proximity is combat-only)
 
 ### Combat/Non-Combat Complementarity
 - **In combat**: Use `disarm` (contested, turn-based, stat-based)
-- **Out of combat**: Use `wrest` (instant, opportunistic, guaranteed)
+- **Out of combat**: Use `wrest` (Grit vs Grit, immediate resolution)
 
 ## Technical Implementation
 
@@ -50,9 +52,11 @@ wrest <object> from <target>
 2. Check caller has free hand
 3. Validate target exists in same room
 4. Validate object exists in target's hands
-5. Execute transfer
-6. Announce action
-7. Apply 6-second cooldown (optional)
+5. Check if target is grappled (for disadvantage)
+6. Execute Grit vs Grit contest (with disadvantage if target grappled, or instant success if target unconscious/dead)
+7. If successful: Execute transfer
+8. Announce action and result
+9. Apply 6-second cooldown (optional)
 ```
 
 ### Mr. Hand Integration
@@ -85,12 +89,32 @@ def find_free_hand(caller):
     return None
 ```
 
+### Grapple Disadvantage Mechanics
+```python
+# Pseudo-code for grapple disadvantage
+def roll_grit_with_disadvantage(character):
+    grit_value = max(1, character.grit)
+    roll1 = randint(1, grit_value)
+    roll2 = randint(1, grit_value)
+    return min(roll1, roll2)  # Take the lower roll
+
+def is_target_grappled(target):
+    # Check if target has grappled status in combat system
+    # Implementation depends on grapple status tracking
+    return hasattr(target.ndb, 'grappled') and target.ndb.grappled
+```
+
 ## Room Announcements
 
 ### Success Messages
 - **To caller**: "You quickly snatch the knife from Bob's hand!"
 - **To target**: "Alice quickly snatches the knife from your hand!"
 - **To room**: "Alice quickly snatches a knife from Bob's hand!"
+
+### Failure Messages
+- **To caller**: "You try to grab the knife from Bob's hand, but he holds on tight!"
+- **To target**: "Alice tries to grab the knife from your hand, but you maintain your grip!"
+- **To room**: "Alice tries to grab a knife from Bob's hand, but he resists!"
 
 ### Message Variations by Context
 - **Combat target**: "You quickly grab the phone from Bob while he's grappled!"
@@ -136,15 +160,19 @@ def find_free_hand(caller):
 3. Validate caller has free hand
 4. Find and validate target in room
 5. Find object in target's hands
-6. Execute instant transfer
-7. Update both hand dictionaries
-8. Announce to room
+6. Check target grapple status
+7. Execute Grit vs Grit contest (with disadvantage if target grappled, unless target unconscious/dead)
+8. If successful: Update both hand dictionaries
+9. Announce result to room
 ```
 
 ### Constants Required
 - `MSG_WREST_SUCCESS_CALLER`
 - `MSG_WREST_SUCCESS_TARGET` 
 - `MSG_WREST_SUCCESS_ROOM`
+- `MSG_WREST_FAILED_CALLER`
+- `MSG_WREST_FAILED_TARGET`
+- `MSG_WREST_FAILED_ROOM`
 - `MSG_WREST_IN_COMBAT`
 - `MSG_WREST_NO_FREE_HANDS`
 - `MSG_WREST_TARGET_NOT_FOUND`
@@ -203,11 +231,12 @@ Player A: release bob
 
 ## Design Rationale
 
-### Why No Resistance?
-- **Speed focus**: Command emphasizes quick opportunistic action
-- **Roleplay first**: Encourages pre-emptive positioning and coordination
-- **Combat distinction**: Clear separation from combat mechanics
-- **Simplicity**: Reduces complex edge cases and stat dependencies
+### Why Grit vs Grit Contest?
+- **G.R.I.M. system integration**: Uses established attribute system
+- **Balanced competition**: Both characters have chance to succeed
+- **Instant resolution**: Single roll determines outcome immediately
+- **Physical nature**: Grit represents physical strength and determination
+- **Roleplay enhancement**: Creates dramatic tension and meaningful stakes
 
 ### Why Allow Combat Targets?
 - **Tactical depth**: Creates opportunities during combat situations
