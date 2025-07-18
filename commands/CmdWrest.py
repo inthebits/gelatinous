@@ -13,6 +13,7 @@ Design Philosophy:
 """
 
 from evennia import Command
+from evennia.comms.models import ChannelDB
 from world.combat.constants import (
     MSG_WREST_SUCCESS_CALLER,
     MSG_WREST_SUCCESS_TARGET,
@@ -28,7 +29,8 @@ from world.combat.constants import (
     MSG_WREST_SAME_ROOM_REQUIRED,
     DB_CHAR,
     DB_GRAPPLED_BY_DBREF,
-    STAT_GRIT
+    STAT_GRIT,
+    SPLATTERCAST_CHANNEL
 )
 from world.combat.utils import roll_stat, roll_with_disadvantage
 
@@ -207,7 +209,7 @@ class CmdWrest(Command):
         success = caller_roll >= target_roll
         
         # Debug output for testing
-        splattercast = caller.search("splattercast", global_search=True)
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         if splattercast:
             grapple_status = " (grappled)" if target_is_grappled else ""
             splattercast.msg(f"WREST CONTEST: {caller.key} {caller_roll} vs {target.key} {target_roll}{grapple_status} - {'SUCCESS' if success else 'FAILURE'}")
@@ -215,19 +217,24 @@ class CmdWrest(Command):
         return success
 
     def _execute_transfer(self, caller, target, target_object, caller_hand, target_hand):
-        """Execute the actual object transfer using Mr. Hand system methods."""
-        # Use Mr. Hand system methods for proper state management
+        """Execute the actual object transfer using the same method as disarm."""
+        # Get target's hands dictionary
+        target_hands = getattr(target, 'hands', {})
         
-        # Remove object from target's hand
-        target_unwield_result = target.unwield_item(target_hand)
+        # Remove object from target's hand (like disarm does)
+        target_hands[target_hand] = None
         
-        # Add object to caller's hand
+        # Move object to caller's inventory first (like disarm does with move_to location)
+        target_object.move_to(caller, quiet=True)
+        
+        # Then wield the object in caller's hand
         caller_wield_result = caller.wield_item(target_object, caller_hand)
         
         # Verify the transfer worked
         if "wield" not in caller_wield_result.lower():
             # Something went wrong, try to restore target's state
-            target.wield_item(target_object, target_hand)
+            target_hands[target_hand] = target_object
+            target_object.move_to(target, quiet=True)
             caller.msg(f"Transfer failed: {caller_wield_result}")
             return False
         
