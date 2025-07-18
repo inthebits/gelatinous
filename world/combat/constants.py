@@ -298,6 +298,17 @@ MSG_CANNOT_WHILE_GRAPPLED_RETREAT = "You cannot retreat while {grappler} is grap
 MSG_FLEE_SUCCESS = "You succeed in {reason}! You flee {exit} and arrive in {destination}."
 MSG_RETREAT_SUCCESS = "|gYou manage to break away from the immediate melee!|n"
 
+# Wrest command messages
+MSG_WREST_SUCCESS_CALLER = "You quickly snatch the {object} from {target}'s hand!"
+MSG_WREST_SUCCESS_TARGET = "{caller} quickly snatches the {object} from your hand!"
+MSG_WREST_SUCCESS_ROOM = "{caller} quickly snatches a {object} from {target}'s hand!"
+MSG_WREST_IN_COMBAT = "You cannot wrest items while in combat. Use 'disarm' instead."
+MSG_WREST_NO_FREE_HANDS = "You need at least one free hand to grab something."
+MSG_WREST_TARGET_NOT_FOUND = "You cannot find '{target}' here."
+MSG_WREST_OBJECT_NOT_IN_HANDS = "'{target}' is not holding '{object}' in their hands."
+MSG_WREST_OBJECT_NOT_FOUND = "You cannot find '{object}' to wrest."
+MSG_WREST_SAME_ROOM_REQUIRED = "You must be in the same room as '{target}' to wrest from them."
+
 # ===================================================================
 # SCRIPT & HANDLER CONSTANTS
 # ===================================================================

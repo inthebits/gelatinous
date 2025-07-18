@@ -20,6 +20,7 @@ from commands import CmdCharacter
 from commands import CmdInventory
 from commands import CmdAdmin
 from commands.CmdSpawnMob import CmdSpawnMob
+from commands.CmdWrest import CmdWrest
 from commands.combat.cmdset_combat import CombatCmdSet
 from commands.combat.info_commands import CmdLook
 from commands.combat.special_actions import CmdAim, CmdGrapple
@@ -65,6 +66,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdInventory.CmdInventory())
         self.add(CmdInventory.CmdDrop())
         self.add(CmdInventory.CmdGet())
+        
+        # Add wrest command (non-combat item snatching)
+        self.add(CmdWrest())
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
