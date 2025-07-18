@@ -20,6 +20,14 @@ throw <object> to here            # Throw randomly in current room (same as firs
 4. **Direction validation** (if specified) must be a valid, traversable exit
 5. **"here" handling** for explicit current-room throwing
 
+### Technical Infrastructure Notes
+- **Mr. Hand System**: Fully implemented in `typeclasses/characters.py` with `hands` AttributeProperty
+- **Hand Structure**: Dictionary-based (`{"left": None, "right": None}`) supporting dynamic anatomy
+- **Hand Management**: Complete `wield_item()`, `unwield_item()`, `list_held_items()` methods available
+- **Combat Integration**: Enhanced `CmdLook` proves room description customization capability
+- **Timer System**: Evennia timer infrastructure available for countdown mechanics
+- **Combat Constants**: 6-second combat rounds established for timing standardization
+
 ### Combat vs. Utility Logic
 - **Throwing weapons**: Objects with `db.is_throwing_weapon = True` trigger combat mechanics
 - **Utility objects**: All other objects bounce harmlessly off targets, transfer between rooms
@@ -194,12 +202,15 @@ throw keys to here   # Throw randomly in current room
 - **Hand selection**: Throw from any hand containing the specified object
 - **Post-throw state**: Remove object from hand, clear wielding state
 - **System explanation**: Mr. Hand is the wielding system that tracks what objects are held in each hand via `caller.hands = {"left": object, "right": object}` dictionary structure
+- **Technical Status**: Fully implemented in `typeclasses/characters.py` with complete method set
+- **Dynamic Anatomy Support**: Dictionary-based design naturally supports additional appendages
 
 #### Mr. Hand System Requirements
-- **Hands dictionary structure**: `caller.hands` contains hand positions and wielded objects
+- **Hands dictionary structure**: `caller.hands` AttributeProperty with default `{"left": None, "right": None}`
 - **Wielding validation**: Object must exist in `caller.hands.values()` to be throwable  
-- **Post-throw cleanup**: Remove thrown object from appropriate hand position
-- **State consistency**: Ensure hand state remains valid after object removal
+- **Post-throw cleanup**: Set `caller.hands[hand_name] = None` after successful throw
+- **State consistency**: Use `caller.wield_item()` and `caller.unwield_item()` methods
+- **Multi-Hand Flexibility**: System supports any hand names in dictionary (third_hand, tail, etc.)
 
 ### Flight State Management
 - **Timer implementation**: Use Evennia's `utils.delay()` for 2-second flight

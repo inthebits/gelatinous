@@ -1,0 +1,329 @@
+# Jump Command Implementation Specification
+
+## Overview
+The `jump` command serves two distinct heroic and tactical functions: **explosive sacrifice** to protect others from blast damage, and **tactical descent** from elevated positions via edge exits. It integrates with existing explosive mechanics and introduces new vertical combat positioning.
+
+## Core Mechanics
+
+### Command Syntax
+```
+jump on <explosive>     # Heroic sacrifice - absorb explosive damage
+jump off <edge>         # Tactical descent from elevated position
+```
+
+### Function 1: Explosive Sacrifice
+
+#### Purpose
+**Ultimate heroic action** - absorb ALL explosive damage to completely protect others in proximity.
+
+#### Validation Requirements
+1. **Explosive must exist** in current room
+2. **Explosive must be armed** (`db.pin_pulled = True`)
+3. **Explosive must be counting down** (active timer)
+4. **Caller can be in or out of combat** (heroic actions transcend combat state)
+5. **No proximity requirement** (can jump on explosive from anywhere in room)
+
+#### Timing Mechanics
+- **Timer-based window**: Can only jump on explosive while countdown is active
+- **Instant execution**: No delay once command is entered
+- **Timer inheritance**: Takes over explosive's remaining countdown
+- **Damage amplification**: Hero takes ALL explosive damage (100% absorption)
+- **Complete protection**: Everyone else in proximity takes zero damage
+
+#### Damage Calculation
+```
+Hero damage = explosive.db.blast_damage + positional_bonus
+Others damage = 0 (complete protection)
+```
+
+#### Integration with Grenade System
+- **Works with all explosive types**: Standard grenades, flashbangs, smoke grenades, etc.
+- **Property-driven**: Uses existing `db.blast_damage`, `db.fuse_time` properties
+- **Chain reaction prevention**: Hero absorbs damage, preventing chain triggers
+- **Timer system**: Integrates with existing countdown mechanics from throw command
+
+### Function 2: Tactical Descent
+
+#### Purpose
+**Vertical repositioning** from elevated sniper positions to ground level.
+
+#### Edge Exit System
+- **New exit property**: `db.is_edge = True` flag on exits
+- **Elevated positioning**: Edge exits represent rooftops, ledges, balconies
+- **One-way descent**: Jump down only (climbing back up requires different mechanics)
+- **Safe landing**: No fall damage (tactical descent, not accidental fall)
+
+#### Validation Requirements
+1. **Edge exit must exist** in current room
+2. **Edge must be valid**: `db.is_edge = True` on exit object
+3. **Destination must exist**: Exit leads to valid room below
+4. **Caller movement allowed**: Standard movement restrictions apply
+
+#### Tactical Advantages of Edge Positions
+- **Elevated combat**: Height advantage for ranged attacks
+- **Protected position**: Harder for ground-level opponents to advance
+- **Sniper mechanics**: Enhanced aim and attack capabilities
+- **Observation**: Can look down on ground level (enhanced reconnaissance)
+
+## Technical Implementation
+
+### Technical Infrastructure Notes
+- **Timer System**: Evennia timer infrastructure available for countdown/cooldown mechanics
+- **Combat Integration**: Existing 6-second combat round timing for standardization
+- **Room Customization**: Enhanced `CmdLook` proves room description modification capability
+- **Object Properties**: Property-based system (`db.is_edge`, `db.blast_damage`) validated working
+- **Exit System**: Standard Evennia exit objects ready for property enhancement
+
+### Explosive Sacrifice Implementation
+
+#### Validation Flow
+```
+1. Parse "jump on <explosive>" syntax
+2. Find explosive object in room
+3. Validate explosive is armed and counting down
+4. Calculate heroic damage (full blast + bonus)
+5. Cancel explosive's normal detonation
+6. Apply damage to hero only
+7. Announce heroic sacrifice
+8. Clean up explosive and timer state
+```
+
+#### Timer System Integration
+```python
+# Pseudo-code for explosive timing
+def jump_on_explosive(caller, explosive):
+    if not explosive.db.pin_pulled:
+        return "The explosive is not armed!"
+    
+    current_timer = explosive.ndb.countdown_remaining
+    if current_timer <= 0:
+        return "Too late! The explosive has already detonated!"
+    
+    # Hero takes all damage
+    hero_damage = explosive.db.blast_damage + 10  # heroic bonus damage
+    apply_damage(caller, hero_damage)
+    
+    # Cancel normal explosion
+    cancel_explosive_timer(explosive)
+    
+    # Clean up proximity effects
+    clear_explosive_proximity(explosive)
+    
+    # Heroic announcement
+    announce_heroic_sacrifice(caller, explosive)
+```
+
+### Edge Exit Implementation
+
+#### Exit Property System
+```python
+# Exit object properties for edge designation
+exit.db.is_edge = True
+exit.db.edge_type = "rooftop"  # Optional categorization
+exit.db.height_advantage = 2  # Combat bonus (future use)
+```
+
+#### Jump Descent Flow
+```
+1. Parse "jump off <edge>" syntax
+2. Find edge exit in room
+3. Validate edge properties
+4. Move character to destination room
+5. Announce dramatic descent
+6. Update character position
+```
+
+#### Room Integration
+- **Elevated rooms**: Rooms with edge exits have tactical advantage
+- **Ground rooms**: Normal rooms accessible via edge descent
+- **Vertical connectivity**: Edge exits connect elevated and ground levels
+- **Bidirectional awareness**: People below can potentially see elevated positions
+
+## Combat Integration
+
+### Explosive Sacrifice Combat Effects
+- **Instant resolution**: Not turn-based, immediate heroic action
+- **Combat bypass**: Works regardless of combat state
+- **Proximity clearing**: Removes explosive threat from all characters
+- **Chain reaction prevention**: Stops multiple explosive chains
+
+### Edge Position Combat Advantages
+- **Aim bonus**: Enhanced accuracy from elevated position
+- **Range advantage**: Extended effective range for attacks
+- **Advance difficulty**: Ground opponents cannot easily advance to edge
+- **Retreat limitation**: Limited escape routes from elevated position
+
+### Turn-Based Considerations
+- **Jump on explosive**: Immediate action, bypasses turn system
+- **Jump off edge**: Counts as movement action if in combat
+- **Position bonuses**: Elevated positions provide combat modifiers
+
+## Room Announcements
+
+### Explosive Sacrifice Messages
+- **Hero message**: "You leap onto the grenade, shielding everyone with your body!"
+- **Room message**: "Alice heroically leaps onto the grenade, absorbing the blast!"
+- **Outcome message**: "The explosion is muffled beneath Alice's sacrifice - everyone else is safe!"
+
+### Edge Descent Messages
+- **Caller message**: "You leap off the rooftop edge, dropping to the street below!"
+- **Origin room**: "Alice leaps off the edge, disappearing toward the street below!"
+- **Destination room**: "Alice drops down from above, landing dramatically!"
+
+### Message Variations by Context
+- **Different explosives**: "Alice dives onto the flashbang!" vs "Alice covers the pipe bomb!"
+- **Edge types**: "Alice leaps from the fire escape!" vs "Alice jumps down from the balcony!"
+
+## Error Handling
+
+### Explosive Sacrifice Errors
+- **Explosive not found**: "You cannot find '<explosive>' to jump on."
+- **Explosive not armed**: "The <explosive> is not armed - there's no danger to absorb."
+- **Timer expired**: "Too late! The <explosive> has already detonated."
+- **No explosive timer**: "The <explosive> is not counting down."
+
+### Edge Descent Errors
+- **No edge exit**: "There is no edge to jump off here."
+- **Invalid exit**: "That is not an edge you can jump from."
+- **Blocked exit**: "The edge is blocked - you cannot jump off."
+- **No destination**: "The edge leads nowhere - jumping would be suicide."
+
+### Safety Validations
+- **Explosive state checking**: Ensure explosive object is in valid state
+- **Timer state validation**: Confirm countdown is active and accessible
+- **Exit state verification**: Validate edge exit is traversable
+- **Character state checks**: Ensure character can perform action
+
+## Architecture Integration Points
+
+### Existing Systems Used
+- **Explosive system**: Uses grenade properties and timer mechanics from throw command
+- **Room system**: Standard room connectivity and movement
+- **Combat handler**: For position-based combat modifiers
+- **Damage system**: For heroic damage application
+
+### New Systems Required
+- **Edge exit flagging**: Property system for marking edge exits
+- **Vertical combat**: Height-based combat advantages
+- **Heroic sacrifice**: Damage absorption mechanics
+- **Timer cancellation**: Ability to interrupt explosive countdowns
+
+### Integration with Throw Command
+- **Shared explosive properties**: Uses same `db.blast_damage`, `db.fuse_time` system
+- **Timer compatibility**: Works with existing countdown mechanics
+- **Proximity system**: Interacts with grenade proximity from throw command
+- **Chain reaction handling**: Prevents chain explosions through sacrifice
+
+## Implementation Priority
+
+### Phase 1: Explosive Sacrifice
+- Command parsing for "jump on" syntax
+- Explosive object validation and timer checking
+- Heroic damage calculation and application
+- Timer cancellation and cleanup mechanics
+
+### Phase 2: Edge Exit System
+- Exit property system for edge designation
+- Command parsing for "jump off" syntax
+- Vertical movement mechanics
+- Room transition and announcements
+
+### Phase 3: Combat Integration
+- Elevated position combat bonuses
+- Enhanced aim system for edge positions
+- Turn-based integration for edge jumping
+- Advanced tactical positioning mechanics
+
+## Tactical Scenarios
+
+### Heroic Sacrifice
+```
+# Live grenade in room, multiple people in proximity
+jump on grenade
+# Hero takes all blast damage, everyone else unharmed
+# Ultimate team protection at personal cost
+```
+
+### Sniper Positioning
+```
+# On rooftop with edge exit
+look down        # Observe street below
+aim street       # Target ground level
+attack bob       # Snipe from elevated position
+jump off edge    # Tactical descent when position compromised
+```
+
+### Coordinated Tactics
+```
+# Team sniper support
+Player A: aim street, attack target (from rooftop)
+Player B: advance target (ground level)
+Player A: jump off edge (when needed for repositioning)
+```
+
+## Design Rationale
+
+### Why Timer-Based Explosive Sacrifice?
+- **Tension creation**: Creates dramatic timing pressure
+- **Skill requirement**: Must recognize and react to explosive threats
+- **Integration consistency**: Uses existing grenade timer system
+- **Heroic opportunity**: Limited window makes action more meaningful
+
+### Why One-Way Edge Descent?
+- **Tactical asymmetry**: Creates interesting positional advantages
+- **Simple mechanics**: Avoids complex climbing systems
+- **Dramatic effect**: Jumping down is more dramatic than climbing up
+- **Balance consideration**: Prevents easy position abuse
+
+### Why Complete Damage Absorption?
+- **Ultimate heroism**: Makes sacrifice truly meaningful
+- **Clear mechanics**: Binary outcome (hero hurt, others safe)
+- **Tactical value**: Completely removes explosive threat
+- **Roleplay emphasis**: Encourages heroic character moments
+
+## Future Considerations
+
+### Potential Enhancements
+- **Climbing system**: Ways to get back to elevated positions
+- **Fall damage**: Variable damage based on edge height
+- **Multiple edge types**: Different tactical advantages per edge
+- **Explosive shielding**: Partial protection mechanics
+
+### Integration Opportunities
+- **Skill system**: Future skills could modify jump effectiveness
+- **Equipment system**: Special gear for edge traversal
+- **Advanced explosives**: More complex explosive types and interactions
+- **Environmental effects**: Weather/conditions affecting jumps
+
+## Open Implementation Questions
+
+### Explosive Sacrifice Details
+1. **Damage bonus**: How much extra damage should hero take for jumping on explosive?
+2. **Death mechanics**: Should heroic sacrifice have special death/injury rules?
+3. **Multiple explosives**: Can you jump on multiple explosives simultaneously?
+4. **Combat state**: Should explosive sacrifice consume combat turn if in combat?
+
+### Edge Exit Mechanics
+1. **Height categories**: Should different edge heights have different effects?
+2. **Landing positioning**: Do you land in specific proximity to anyone below?
+3. **Equipment effects**: Should gear affect jumping ability or safety?
+4. **Observation range**: How far can you see/aim from elevated positions?
+
+### System Integration
+1. **Aim system**: Should elevated positions enhance existing aim mechanics?
+2. **Retreat mechanics**: Can you retreat "up" to edges, or only down from them?
+3. **Grappling**: Can you grapple someone off an edge?
+4. **Throwing**: Do elevated positions affect throw range/accuracy?
+
+## Recommended Design Decisions
+
+Based on the philosophy of heroic action and tactical depth:
+
+1. **Damage bonus**: +10 damage for heroic sacrifice (meaningful cost)
+2. **Death mechanics**: Standard death rules (heroism doesn't change lethality)
+3. **Multiple explosives**: One at a time (keeps action focused)
+4. **Combat turn**: Bypasses turn system (emergency heroic action)
+5. **Height effects**: Binary advantage (simple elevated vs ground)
+6. **Landing position**: Random proximity if room occupied
+7. **Observation**: Enhanced look/aim range from elevated positions
+8. **Retreat direction**: Can retreat to edges, one-way descent only
