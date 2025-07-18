@@ -327,21 +327,22 @@ class CmdGive(Command):
             caller.msg(f"{target.key}'s hands are full and cannot receive {self.item_name}.")
             return
 
-        # Find the item - first check inventory, then hands
-        items = caller.search(self.item_name, location=caller, quiet=True)
+        # Find the item - first check hands, then inventory
         item = None
         from_hand = None
         
-        # If found in inventory, take the first match
-        if items:
-            item = items[0]
-        else:
-            # If not found in inventory, check hands
-            for hand, held_item in caller.hands.items():
-                if held_item and self.item_name.lower() in held_item.key.lower():
-                    item = held_item
-                    from_hand = hand
-                    break
+        # First check if it's in hands
+        for hand, held_item in caller.hands.items():
+            if held_item and self.item_name.lower() in held_item.key.lower():
+                item = held_item
+                from_hand = hand
+                break
+        
+        # If not found in hands, check inventory
+        if not item:
+            items = caller.search(self.item_name, location=caller, quiet=True)
+            if items:
+                item = items[0]
 
         if not item:
             caller.msg(f"You aren't carrying or holding '{self.item_name}'.")
