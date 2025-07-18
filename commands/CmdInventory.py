@@ -328,11 +328,15 @@ class CmdGive(Command):
             return
 
         # Find the item - first check inventory, then hands
-        item = caller.search(self.item_name, location=caller, quiet=True)
+        items = caller.search(self.item_name, location=caller, quiet=True)
+        item = None
         from_hand = None
         
-        # If not found in inventory, check hands
-        if not item:
+        # If found in inventory, take the first match
+        if items:
+            item = items[0]
+        else:
+            # If not found in inventory, check hands
             for hand, held_item in caller.hands.items():
                 if held_item and self.item_name.lower() in held_item.key.lower():
                     item = held_item
