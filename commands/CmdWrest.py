@@ -13,7 +13,6 @@ Design Philosophy:
 """
 
 from evennia import Command
-from evennia.utils.search import search_object
 from world.combat.constants import (
     MSG_WREST_SUCCESS_CALLER,
     MSG_WREST_SUCCESS_TARGET,
@@ -130,13 +129,12 @@ class CmdWrest(Command):
 
     def _find_target_in_room(self):
         """Find target character in the same room."""
-        # Search for target in current room
-        targets = search_object(self.target_name, location=self.caller.location)
+        # Search for target in current room using caller's search method
+        target = self.caller.search(self.target_name, location=self.caller.location)
         
-        # Filter to only characters
-        for target in targets:
-            if hasattr(target, 'hands'):  # Basic character check
-                return target
+        # Check if target is a character with hands
+        if target and hasattr(target, 'hands'):
+            return target
         return None
 
     def _find_object_in_target_hands(self, target):
