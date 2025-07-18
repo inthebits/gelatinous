@@ -12,7 +12,7 @@ Design Philosophy:
 - Works with any hand configuration (Mr. Hand system flexibility)
 """
 
-from evennia import Command, CHANNEL_HANDLER
+from evennia import Command
 from world.combat.constants import (
     MSG_WREST_SUCCESS_CALLER,
     MSG_WREST_SUCCESS_TARGET,
@@ -207,10 +207,10 @@ class CmdWrest(Command):
         success = caller_roll >= target_roll
         
         # Debug output for testing
-        splattercast = CHANNEL_HANDLER.channel_search("splattercast")
+        splattercast = caller.search("splattercast", global_search=True)
         if splattercast:
             grapple_status = " (grappled)" if target_is_grappled else ""
-            splattercast[0].msg(f"WREST CONTEST: {caller.key} {caller_roll} vs {target.key} {target_roll}{grapple_status} - {'SUCCESS' if success else 'FAILURE'}")
+            splattercast.msg(f"WREST CONTEST: {caller.key} {caller_roll} vs {target.key} {target_roll}{grapple_status} - {'SUCCESS' if success else 'FAILURE'}")
         
         return success
 
