@@ -184,10 +184,13 @@ class CmdDrop(Command):
         obj = obj[0]
 
         # If it's wielded, remove it from the hand
+        was_wielded = False
+        hand_name = None
         for hand, item in caller.hands.items():
             if item == obj:
                 caller.hands[hand] = None
-                caller.msg(f"You release {obj.key} from your {hand} hand.")
+                was_wielded = True
+                hand_name = hand
                 break
 
         # Move the item to the room
@@ -203,8 +206,13 @@ class CmdDrop(Command):
         if caller not in proximity_list:
             proximity_list.append(caller)
         
-        caller.msg(f"You drop {obj.key}.")
-        caller.location.msg_contents(f"{caller.key} drops {obj.key}.", exclude=caller)
+        # Send appropriate message based on whether it was wielded
+        if was_wielded:
+            caller.msg(f"You release {obj.key} from your {hand_name} hand and drop it.")
+            caller.location.msg_contents(f"{caller.key} drops {obj.key}.", exclude=caller)
+        else:
+            caller.msg(f"You drop {obj.key}.")
+            caller.location.msg_contents(f"{caller.key} drops {obj.key}.", exclude=caller)
 
 
 class CmdGet(Command):
