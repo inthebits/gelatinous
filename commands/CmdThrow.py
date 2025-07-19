@@ -16,10 +16,10 @@ from evennia import Command, utils
 from evennia.utils import search
 from world.combat.constants import *
 from world.combat.utils import (
-    get_combat_handler, 
     debug_broadcast,
     apply_damage
 )
+from world.combat.handler import get_or_create_combat
 
 
 class CmdThrow(Command):
@@ -295,7 +295,7 @@ class CmdThrow(Command):
     def handle_weapon_throw(self, obj, target, destination):
         """Handle throwing weapon combat mechanics."""
         # Enter combat if not already in combat
-        handler = get_combat_handler(self.caller.location)
+        handler = get_or_create_combat(self.caller.location)
         if not handler:
             debug_broadcast(f"Failed to get combat handler for weapon throw", DEBUG_PREFIX_THROW, DEBUG_ERROR)
             return False
