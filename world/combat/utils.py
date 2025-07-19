@@ -22,6 +22,30 @@ from .constants import (
 
 
 # ===================================================================
+# DEBUG & LOGGING
+# ===================================================================
+
+def debug_broadcast(message, prefix="DEBUG", status="INFO"):
+    """
+    Broadcast debug message to Splattercast channel.
+    
+    Args:
+        message (str): Debug message to broadcast
+        prefix (str): Prefix for the debug message
+        status (str): Status level (INFO, SUCCESS, ERROR, etc.)
+    """
+    try:
+        from evennia.comms.models import ChannelDB
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        if splattercast:
+            formatted_msg = f"{prefix}_{status}: {message}"
+            splattercast.msg(formatted_msg)
+    except Exception:
+        # Fail silently if channel not available
+        pass
+
+
+# ===================================================================
 # DICE & STATS
 # ===================================================================
 
@@ -794,3 +818,51 @@ def resolve_bonus_attack(handler, attacker, target):
     
     # Log the bonus attack
     splattercast.msg(f"BONUS_ATTACK: {attacker.key} made bonus attack against {target.key}.")
+
+
+# ===================================================================
+# DAMAGE SYSTEM
+# ===================================================================
+
+def apply_damage(character, damage_amount):
+    """
+    Apply damage to a character, handling health reduction and death.
+    
+    Args:
+        character: The character object to damage
+        damage_amount (int): Amount of damage to apply
+    """
+    if not hasattr(character, 'hp'):
+        # Character has no HP system, skip damage
+        return
+    
+    current_hp = getattr(character, 'hp', 10)
+    new_hp = max(0, current_hp - damage_amount)
+    
+    character.hp = new_hp
+    
+    debug_broadcast(f"Applied {damage_amount} damage to {character.key}: {current_hp} -> {new_hp} HP", 
+                   "DAMAGE", "SUCCESS")
+    
+    # Handle death/unconsciousness
+    if new_hp <= 0:
+        handle_character_death(character)
+
+
+def handle_character_death(character):
+    """
+    Handle character death/unconsciousness.
+    
+    Args:
+        character: The character who has reached 0 HP
+    """
+    # For now, simple unconsciousness message
+    character.msg("|rYou collapse, unconscious!|n")
+    if character.location:
+        character.location.msg_contents(
+            f"|r{character.key} collapses, unconscious!|n",
+            exclude=character
+        )
+    
+    debug_broadcast(f"{character.key} reached 0 HP and collapsed", 
+                   "DAMAGE", "SUCCESS")

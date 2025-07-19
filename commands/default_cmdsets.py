@@ -23,6 +23,7 @@ from commands.CmdSpawnMob import CmdSpawnMob
 from commands.combat.cmdset_combat import CombatCmdSet
 from commands.combat.info_commands import CmdLook
 from commands.combat.special_actions import CmdAim, CmdGrapple
+from commands.CmdThrow import CmdThrow, CmdPull, CmdCatch, CmdRig
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
     The `CharacterCmdSet` contains general in-game commands like `look`,
@@ -69,6 +70,12 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         
         # Add wrest command (non-combat item snatching)
         self.add(CmdInventory.CmdWrest())
+        
+        # Add throw command system
+        self.add(CmdThrow())
+        self.add(CmdPull())
+        self.add(CmdCatch())
+        self.add(CmdRig())
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """

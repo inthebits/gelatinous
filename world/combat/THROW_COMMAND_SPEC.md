@@ -179,8 +179,92 @@ throw keys to here   # Throw randomly in current room
 
 ## Architecture Integration Points
 
+### Universal Proximity System Enhancement
+
+#### Core Architecture Change
+The throw command implementation leverages a **universal proximity system** where characters and objects share the same proximity mechanics. This architectural decision enables seamless grenade mechanics and object interaction systems.
+
+##### Universal Proximity Principles
+- **Characters ARE objects**: In Evennia's architecture, characters inherit from objects, allowing uniform proximity handling
+- **Shared proximity space**: Characters and objects can exist in the same proximity relationships
+- **Bidirectional relationships**: Characters can be in proximity to objects, and objects can be in proximity to characters
+- **Inheritance patterns**: Objects landing near characters inherit all existing proximity relationships from that character
+
+#### Enhanced Drop Command Integration
+The universal proximity system requires enhancing the existing `drop` command to assign proximity relationships:
+
+##### Drop Command Enhancement Requirements
+- **Universal proximity assignment**: When any object is dropped, assign `object.ndb.proximity = [dropper]`
+- **Applies to all objects**: Not just grenades - all dropped objects get proximity to their dropper
+- **Existing pattern**: Builds on established proximity mechanics from combat system
+- **Seamless integration**: No special case handling needed for different object types
+
+##### Technical Implementation
+```python
+# Enhanced drop command pseudo-code
+def drop_object(caller, obj):
+    # Existing drop logic...
+    obj.move_to(caller.location)
+    
+    # NEW: Universal proximity assignment
+    if not hasattr(obj, 'ndb'):
+        obj.ndb._create()
+    if not obj.ndb.proximity:
+        obj.ndb.proximity = []
+    if caller not in obj.ndb.proximity:
+        obj.ndb.proximity.append(caller)
+    
+    # Message handling...
+```
+
+#### Grenade System Integration
+The universal proximity system enables sophisticated grenade mechanics without special case handling:
+
+##### Grenade Landing Mechanics
+- **Direct proximity**: Grenade lands in proximity to selected character
+- **Inherited proximity**: Grenade automatically inherits ALL characters in selected character's proximity
+- **Cascade effect**: Everyone fighting the selected character is now in grenade proximity
+- **Retreat compatibility**: Standard retreat command works to escape grenade proximity
+
+##### Example Scenario
+```
+Initial state: Alice fighting Bob and Charlie (all in mutual proximity)
+Throw: Dave throws grenade, lands near Bob
+Result: Grenade proximity = [Alice, Bob, Charlie] (inherited from Bob's proximity)
+Escape: Any character can "retreat" to leave grenade proximity
+```
+
+#### Object-to-Object Proximity
+The universal system also enables object-to-object proximity relationships:
+
+##### Chain Reaction Mechanics
+- **Grenade chains**: Exploding grenades can add other nearby grenades to their proximity
+- **Proximity inheritance**: Grenades landing near other grenades inherit their proximity lists
+- **Complex scenarios**: Multiple overlapping proximity relationships create tactical puzzles
+
+##### Proximity Web Example
+```
+Grenade A: proximity = [Alice, Bob]
+Grenade B: lands near Grenade A
+Grenade B: proximity = [Alice, Bob, Grenade A]
+Grenade A explodes: triggers Grenade B (in proximity)
+Grenade B explodes: affects [Alice, Bob] (inherited proximity)
+```
+
+#### Architectural Benefits
+- **Consistency**: Same proximity rules for all entities (characters, objects, grenades)
+- **Simplicity**: No special case handling for different object types
+- **Extensibility**: System naturally supports future proximity-based mechanics
+- **Performance**: Reuses existing proximity infrastructure without duplication
+
+#### Implementation Requirements
+1. **Enhanced drop command**: Assign `object.ndb.proximity = [dropper]` for all dropped objects
+2. **Proximity inheritance**: Objects landing near characters inherit their proximity lists
+3. **Universal retreat**: Retreat command works for escaping any proximity (character or object)
+4. **Chain handling**: Objects can be in proximity to other objects for chain reactions
+
 ### Existing Systems Used
-- **Proximity system**: For landing assignment and grenade mechanics
+- **Proximity system**: Enhanced for universal character/object proximity handling
 - **Aim system**: For cross-room targeting and direction
 - **Combat handler**: For turn-based processing and damage
 - **Mr. Hand system**: For wielding validation
@@ -194,6 +278,7 @@ throw keys to here   # Throw randomly in current room
 - **Explosive property system**: Property-driven explosive behavior (`db.fuse_time`, `db.blast_damage`, etc.)
 - **Timer management**: Multi-object countdown tracking with property-based durations
 - **Chain reaction logic**: Property-based explosive triggering system
+- **Universal proximity enhancement**: Enhanced drop command for proximity assignment
 
 ## Technical Implementation Details
 
@@ -460,13 +545,14 @@ All explosive behavior should be driven by object properties:
 
 ### Grenade Command Dependencies
 The grenade system requires implementing additional commands alongside throw:
-- **`pull pin on <grenade>`**: Activates 8-second timer, required before throwing
+- **`pull pin on <grenade>`**: Activates fuse timer (duration from `object.db.fuse_time`), required before throwing
 - **`catch <object>`**: Defensive mechanism for thrown objects (including live grenades!)
-- **`drop <grenade>`**: Tactical area denial with live grenades
+- **`drop <object>` (enhanced)**: Universal proximity assignment for all dropped objects, enables tactical area denial with live grenades
 - **`rig <grenade> to <exit>`**: Trap exits with grenades (triggered on traverse)
 - **Timer management**: System to track multiple active grenade timers simultaneously
 - **State validation**: Prevent throwing unpinned grenades, handle pin-pulled but not thrown scenarios
 - **Exit trap system**: Track rigged grenades and trigger on movement through exits
+- **Universal proximity system**: Enhanced drop command assigns proximity to all dropped objects
 
 ### Integration Points
 - **Identity system**: Better target resolution when implemented

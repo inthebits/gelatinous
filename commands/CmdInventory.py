@@ -191,6 +191,14 @@ class CmdDrop(Command):
 
         # Move the item to the room
         obj.move_to(caller.location, quiet=True)
+        
+        # Universal proximity assignment for all dropped objects
+        if not hasattr(obj.ndb, 'proximity'):
+            obj.ndb.proximity = []
+        proximity_list = obj.ndb.proximity
+        if caller not in proximity_list:
+            proximity_list.append(caller)
+        
         caller.msg(f"You drop {obj.key}.")
         caller.location.msg_contents(f"{caller.key} drops {obj.key}.", exclude=caller)
 

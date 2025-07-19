@@ -50,6 +50,7 @@ DEBUG_PREFIX_ADVANCE = "ADVANCE"
 DEBUG_PREFIX_GRAPPLE = "GRAPPLE"
 DEBUG_PREFIX_CHARGE = "CHARGE"
 DEBUG_PREFIX_AIM = "AIM"
+DEBUG_PREFIX_THROW = "THROW"
 
 # Debug action types
 DEBUG_VALID = "VALID"
@@ -80,6 +81,12 @@ NDB_AIMING_AT = "aiming_at"
 NDB_AIMED_AT_BY = "aimed_at_by"
 NDB_AIMING_DIRECTION = "aiming_direction"
 
+# Throw/grenade system fields
+NDB_FLYING_OBJECTS = "flying_objects"
+NDB_PROXIMITY = "proximity"
+NDB_GRENADE_TIMER = "grenade_timer"
+NDB_COUNTDOWN_REMAINING = "countdown_remaining"
+
 # ===================================================================
 # DATABASE FIELD NAMES
 # ===================================================================
@@ -95,6 +102,22 @@ DB_TARGET_DBREF = "target_dbref"
 DB_GRAPPLING_DBREF = "grappling_dbref"
 DB_GRAPPLED_BY_DBREF = "grappled_by_dbref"
 DB_IS_YIELDING = "is_yielding"
+
+# Explosive/throwing weapon properties
+DB_IS_THROWING_WEAPON = "is_throwing_weapon"
+DB_IS_EXPLOSIVE = "is_explosive"
+DB_FUSE_TIME = "fuse_time"
+DB_BLAST_DAMAGE = "blast_damage"
+DB_CHAIN_TRIGGER = "chain_trigger"
+DB_REQUIRES_PIN = "requires_pin"
+DB_DUD_CHANCE = "dud_chance"
+DB_BLAST_RADIUS = "blast_radius"
+DB_PIN_PULLED = "pin_pulled"
+
+# Exit properties
+DB_IS_EDGE = "is_edge"
+DB_EDGE_TYPE = "edge_type"
+DB_HEIGHT_ADVANTAGE = "height_advantage"
 
 # ===================================================================
 # PERMISSIONS & ACCESS
@@ -161,6 +184,10 @@ ACTION_GRAPPLE = "grapple"
 ACTION_DISARM = "disarm"
 ACTION_AIM = "aim"
 ACTION_STOP = "stop"
+ACTION_THROW = "throw"
+ACTION_CATCH = "catch"
+ACTION_PULL = "pull"
+ACTION_RIG = "rig"
 
 # ===================================================================
 # COMBAT ACTION CONSTANTS
@@ -311,6 +338,79 @@ MSG_WREST_TARGET_NOT_FOUND = "You cannot find '{target}' here."
 MSG_WREST_OBJECT_NOT_IN_HANDS = "'{target}' is not holding '{object}' in their hands."
 MSG_WREST_OBJECT_NOT_FOUND = "You cannot find '{object}' to wrest."
 MSG_WREST_SAME_ROOM_REQUIRED = "You must be in the same room as '{target}' to wrest from them."
+
+# Throw command messages
+MSG_THROW_NOTHING_WIELDED = "You must be holding something to throw it."
+MSG_THROW_OBJECT_NOT_FOUND = "You don't have '{object}' to throw."
+MSG_THROW_OBJECT_NOT_WIELDED = "You must be wielding '{object}' to throw it."
+MSG_THROW_TARGET_NOT_FOUND = "You cannot find '{target}' to throw at."
+MSG_THROW_NO_AIM_CROSS_ROOM = "You must aim in a direction first to throw at targets in other rooms."
+MSG_THROW_INVALID_DIRECTION = "There is no exit '{direction}' to throw through."
+MSG_THROW_SUGGEST_AT_SYNTAX = "Did you mean 'throw {object} at {target}' instead?"
+MSG_THROW_SUGGEST_TO_SYNTAX = "Did you mean 'throw {object} to {direction}' instead?"
+MSG_THROW_UNPINNED_GRENADE = "You must pull the pin first before throwing the grenade."
+MSG_THROW_TIMER_EXPIRED = "The grenade explodes in your hands!"
+MSG_THROW_GRAPPLED = "You cannot throw while grappled."
+
+# Flight announcement messages
+MSG_THROW_ORIGIN_DIRECTIONAL = "{thrower} throws {object} {direction}"
+MSG_THROW_ORIGIN_TARGETED_SAME = "{thrower} throws {object} at {target}"
+MSG_THROW_ORIGIN_TARGETED_CROSS = "{thrower} throws {object} {direction} at someone"
+MSG_THROW_ORIGIN_HERE = "{thrower} tosses {object} nearby"
+MSG_THROW_ORIGIN_FALLBACK = "{thrower} throws {object} {direction}"
+MSG_THROW_ARRIVAL = "{object} flies in from {direction}"
+MSG_THROW_LANDING_PROXIMITY = "{object} lands near {target}"
+MSG_THROW_LANDING_ROOM = "{object} lands on the ground"
+MSG_THROW_WEAPON_HIT = "Your {weapon} strikes {target}!"
+MSG_THROW_WEAPON_MISS = "Your {weapon} misses {target} and clatters to the ground."
+MSG_THROW_UTILITY_BOUNCE = "The {object} bounces harmlessly off {target}."
+
+# Pull command messages
+MSG_PULL_WHAT = "Pull what? Use 'pull pin on <grenade>'."
+MSG_PULL_INVALID_SYNTAX = "Use 'pull pin on <grenade>' to arm an explosive."
+MSG_PULL_OBJECT_NOT_FOUND = "You don't have '{object}' to pull the pin on."
+MSG_PULL_OBJECT_NOT_WIELDED = "You must be wielding '{object}' to pull its pin."
+MSG_PULL_NOT_EXPLOSIVE = "'{object}' is not an explosive device."
+MSG_PULL_NO_PIN_REQUIRED = "'{object}' does not require pin pulling to activate."
+MSG_PULL_ALREADY_PULLED = "The pin on '{object}' has already been pulled."
+MSG_PULL_SUCCESS = "You pull the pin on {object}. It starts counting down!"
+MSG_PULL_SUCCESS_ROOM = "{puller} pulls the pin on {object}!"
+MSG_PULL_TIMER_WARNING = "The {object} will explode in {time} seconds!"
+
+# Catch command messages
+MSG_CATCH_WHAT = "Catch what? There's nothing flying to catch."
+MSG_CATCH_OBJECT_NOT_FOUND = "You don't see '{object}' flying through the air to catch."
+MSG_CATCH_NO_FREE_HANDS = "You need at least one free hand to catch something."
+MSG_CATCH_SUCCESS = "You catch {object} out of the air!"
+MSG_CATCH_SUCCESS_ROOM = "{catcher} catches {object} out of the air!"
+MSG_CATCH_FAILED = "You try to catch {object} but miss!"
+MSG_CATCH_FAILED_ROOM = "{catcher} tries to catch {object} but misses!"
+MSG_CATCH_TOO_LATE = "You're too late - {object} has already landed."
+
+# Rig command messages
+MSG_RIG_WHAT = "Rig what? Use 'rig <grenade> to <exit>'."
+MSG_RIG_INVALID_SYNTAX = "Use 'rig <grenade> to <exit>' to trap an exit."
+MSG_RIG_OBJECT_NOT_FOUND = "You don't have '{object}' to rig."
+MSG_RIG_OBJECT_NOT_WIELDED = "You must be wielding '{object}' to rig it."
+MSG_RIG_NOT_EXPLOSIVE = "'{object}' cannot be rigged as a trap."
+MSG_RIG_NOT_PINNED = "You must pull the pin before rigging the grenade."
+MSG_RIG_INVALID_EXIT = "There is no exit '{exit}' to rig a trap to."
+MSG_RIG_EXIT_ALREADY_RIGGED = "There is already a grenade rigged to that exit."
+MSG_RIG_SUCCESS = "You rig {object} to the {exit} exit as a trap!"
+MSG_RIG_SUCCESS_ROOM = "{rigger} rigs {object} to the {exit} exit!"
+MSG_RIG_TRIGGERED = "The rigged {object} explodes as you try to leave!"
+MSG_RIG_TRIGGERED_ROOM = "The rigged {object} explodes as {victim} tries to leave!"
+
+# Grenade explosion messages
+MSG_GRENADE_EXPLODE_ROOM = "The {grenade} explodes with a deafening blast!"
+MSG_GRENADE_DAMAGE = "You are caught in the blast from {grenade}!"
+MSG_GRENADE_DAMAGE_ROOM = "{victim} is caught in the blast from {grenade}!"
+MSG_GRENADE_DUD = "The {grenade} makes a small 'pop' sound but fails to explode."
+MSG_GRENADE_DUD_ROOM = "The {grenade} makes a small 'pop' sound but fails to explode."
+MSG_GRENADE_CHAIN_TRIGGER = "The explosion triggers another nearby {grenade}!"
+
+# Flight timing constants
+THROW_FLIGHT_TIME = 2  # seconds
 
 # ===================================================================
 # SCRIPT & HANDLER CONSTANTS
