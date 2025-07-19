@@ -83,7 +83,7 @@ NDB_AIMING_DIRECTION = "aiming_direction"
 
 # Throw/grenade system fields
 NDB_FLYING_OBJECTS = "flying_objects"
-NDB_PROXIMITY = "proximity"
+NDB_PROXIMITY_UNIVERSAL = "proximity"  # Universal proximity system for grenades
 NDB_GRENADE_TIMER = "grenade_timer"
 NDB_COUNTDOWN_REMAINING = "countdown_remaining"
 

@@ -484,9 +484,9 @@ class CmdThrow(Command):
             thrower.msg(f"Your {weapon.key} strikes {target.key}!")
             
             # Establish proximity if hit
-            if not hasattr(target.ndb, NDB_PROXIMITY):
-                setattr(target.ndb, NDB_PROXIMITY, [])
-            proximity_list = getattr(target.ndb, NDB_PROXIMITY)
+            if not hasattr(target.ndb, NDB_PROXIMITY_UNIVERSAL):
+                setattr(target.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+            proximity_list = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL)
             if thrower not in proximity_list:
                 proximity_list.append(thrower)
         
@@ -497,10 +497,10 @@ class CmdThrow(Command):
     
     def assign_landing_proximity(self, obj, target):
         """Assign proximity for universal proximity system."""
-        if not hasattr(obj.ndb, NDB_PROXIMITY):
-            setattr(obj.ndb, NDB_PROXIMITY, [])
+        if not hasattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL):
+            setattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, [])
         
-        proximity_list = getattr(obj.ndb, NDB_PROXIMITY)
+        proximity_list = getattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL)
         
         if target:
             # Add target to object proximity
@@ -508,8 +508,8 @@ class CmdThrow(Command):
                 proximity_list.append(target)
             
             # Inherit target's existing proximity relationships
-            if hasattr(target.ndb, NDB_PROXIMITY):
-                target_proximity = getattr(target.ndb, NDB_PROXIMITY)
+            if hasattr(target.ndb, NDB_PROXIMITY_UNIVERSAL):
+                target_proximity = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL)
                 for character in target_proximity:
                     if character not in proximity_list:
                         proximity_list.append(character)
@@ -517,17 +517,17 @@ class CmdThrow(Command):
     def handle_grenade_landing(self, grenade, target):
         """Handle grenade-specific landing mechanics."""
         # If grenade lands near someone, everyone in their proximity gets added
-        if target and hasattr(target.ndb, NDB_PROXIMITY):
-            target_proximity = getattr(target.ndb, NDB_PROXIMITY)
-            grenade_proximity = getattr(grenade.ndb, NDB_PROXIMITY, [])
+        if target and hasattr(target.ndb, NDB_PROXIMITY_UNIVERSAL):
+            target_proximity = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL)
+            grenade_proximity = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
             
             for character in target_proximity:
                 if character not in grenade_proximity:
                     grenade_proximity.append(character)
             
-            setattr(grenade.ndb, NDB_PROXIMITY, grenade_proximity)
+            setattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, grenade_proximity)
         
-        debug_broadcast(f"Grenade {grenade} landed with proximity: {getattr(grenade.ndb, NDB_PROXIMITY, [])}", 
+        debug_broadcast(f"Grenade {grenade} landed with proximity: {getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])}", 
                        DEBUG_PREFIX_THROW, DEBUG_SUCCESS)
 
 
@@ -643,7 +643,7 @@ class CmdPull(Command):
             blast_damage = getattr(grenade.db, DB_BLAST_DAMAGE, 10)
             
             # Get proximity list
-            proximity_list = getattr(grenade.ndb, NDB_PROXIMITY, [])
+            proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
             
             # Announce explosion
             if grenade.location:
@@ -685,7 +685,7 @@ class CmdPull(Command):
             return
         
         # Find other explosives in proximity
-        proximity_list = getattr(exploding_grenade.ndb, NDB_PROXIMITY, [])
+        proximity_list = getattr(exploding_grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
         
         for obj in proximity_list:
             if (hasattr(obj, 'db') and 
@@ -936,7 +936,7 @@ def check_rigged_grenade(character, exit_obj):
     )
     
     # Set proximity to triggerer and explode
-    setattr(grenade.ndb, NDB_PROXIMITY, [character])
+    setattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [character])
     
     # Explode immediately
     pull_cmd = CmdPull()

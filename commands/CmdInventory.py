@@ -9,6 +9,7 @@
 #
 from evennia import Command
 from evennia.utils.search import search_object
+from world.combat.constants import NDB_PROXIMITY_UNIVERSAL
 
 class CmdWield(Command):
     """
@@ -193,9 +194,12 @@ class CmdDrop(Command):
         obj.move_to(caller.location, quiet=True)
         
         # Universal proximity assignment for all dropped objects
-        if not hasattr(obj.ndb, 'proximity'):
-            obj.ndb.proximity = []
-        proximity_list = obj.ndb.proximity
+        if not hasattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL):
+            setattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        proximity_list = getattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        if proximity_list is None:
+            proximity_list = []
+            setattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, proximity_list)
         if caller not in proximity_list:
             proximity_list.append(caller)
         
