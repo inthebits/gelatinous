@@ -284,28 +284,34 @@ class CmdThrow(Command):
         
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: Looking for exit '{direction}' in {self.caller.location}")
         
-        # Find exit in current room
+        # Find exit in current room using standard Evennia patterns
         exit_obj = self.caller.search(direction, location=self.caller.location, quiet=True)
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: search result = {exit_obj}, has_destination = {hasattr(exit_obj, 'destination') if exit_obj else 'N/A'}, is_exit = {hasattr(exit_obj, 'is_typeclass') and exit_obj.is_typeclass('typeclasses.exits.Exit') if exit_obj else 'N/A'}")
         
-        if not exit_obj or not hasattr(exit_obj, 'destination'):
-            # Check if it might be a character name mistaken for direction
-            char_search = self.caller.search(direction, location=self.caller.location, quiet=True)
-            char_hands = getattr(char_search, 'hands', None) if char_search else None
-            splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: char_search result = {char_search}, has_hands = {char_hands is not None}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: search result = {exit_obj}")
+        
+        # Check if we got a valid exit with destination (standard Evennia way)
+        if exit_obj and exit_obj.destination:
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: get_destination_room: Found valid exit {exit_obj} -> {exit_obj.destination}")
+            return exit_obj.destination
+        
+        # Debug: log what we found if the exit is invalid
+        if exit_obj:
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: Found object type: {type(exit_obj)}, destination: {getattr(exit_obj, 'destination', 'NONE')}")
+        
+        # If not found or invalid, check if it might be a character name mistaken for direction
+        if exit_obj:
+            char_hands = getattr(exit_obj, 'hands', None)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: Found object but no destination, has_hands = {char_hands is not None}")
             
-            if char_search and char_hands is not None:
+            if char_hands is not None:
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: '{direction}' is a character, suggesting 'at' syntax")
                 self.caller.msg(MSG_THROW_SUGGEST_AT_SYNTAX.format(
                     object=self.object_name, target=direction))
                 return None
-            
-            splattercast.msg(f"{DEBUG_PREFIX_THROW}_FAIL: get_destination_room: Invalid direction '{direction}'")
-            self.caller.msg(MSG_THROW_INVALID_DIRECTION.format(direction=direction))
-            return None
         
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: get_destination_room: Found valid exit {exit_obj} -> {exit_obj.destination}")
-        return exit_obj.destination
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_FAIL: get_destination_room: Invalid direction '{direction}'")
+        self.caller.msg(MSG_THROW_INVALID_DIRECTION.format(direction=direction))
+        return None
     
     def select_random_target_in_room(self, room):
         """Select random character in room for proximity assignment."""
@@ -370,11 +376,15 @@ class CmdThrow(Command):
         # Announce throw in origin room
         self.announce_throw_origin(obj, destination, target)
         
-        # Add to room's flying objects
+        # Add to room's flying objects - ensure we have a proper list
         if not hasattr(self.caller.location.ndb, NDB_FLYING_OBJECTS):
             setattr(self.caller.location.ndb, NDB_FLYING_OBJECTS, [])
         
         flying_objects = getattr(self.caller.location.ndb, NDB_FLYING_OBJECTS)
+        if flying_objects is None:
+            flying_objects = []
+            setattr(self.caller.location.ndb, NDB_FLYING_OBJECTS, flying_objects)
+        
         flying_objects.append(obj)
         
         # Store flight data on object
@@ -931,7 +941,7 @@ class CmdRig(Command):
         
         # Find exit
         exit_obj = self.caller.search(self.exit_name, location=self.caller.location, quiet=True)
-        if not exit_obj or not hasattr(exit_obj, 'destination'):
+        if not exit_obj or not exit_obj.destination:
             self.caller.msg(MSG_RIG_INVALID_EXIT.format(exit=self.exit_name))
             return
         
