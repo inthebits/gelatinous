@@ -14,9 +14,9 @@ Part of the G.R.I.M. Combat System.
 import random
 from evennia import Command, utils
 from evennia.utils import search
+from evennia.comms.models import ChannelDB
 from world.combat.constants import *
 from world.combat.utils import (
-    debug_broadcast,
     apply_damage
 )
 from world.combat.handler import get_or_create_combat
@@ -229,20 +229,31 @@ class CmdThrow(Command):
     
     def find_target(self):
         """Find target for 'at' syntax throwing."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
         if not self.target_name:
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: find_target: No target_name provided")
             return None
+        
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: Looking for target '{self.target_name}' in {self.caller.location}")
         
         # First check current room
         target = self.caller.search(self.target_name, location=self.caller.location, quiet=True)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: search result = {target}, has_hands = {hasattr(target, 'hands') if target else 'N/A'}")
+        
         if target and hasattr(target, 'hands'):  # Is a character
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: find_target: Found valid character target: {target}")
             return target
         
         # Check aimed room for cross-room targeting
         aim_direction = getattr(self.caller.ndb, NDB_AIMING_DIRECTION, None)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: aim_direction = {aim_direction}")
+        
         if aim_direction:
             destination = self.get_destination_room(aim_direction)
             if destination:
                 target = self.caller.search(self.target_name, location=destination, quiet=True)
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: cross-room search result = {target}")
                 if target and hasattr(target, 'hands'):
                     return target
         else:
@@ -251,27 +262,40 @@ class CmdThrow(Command):
                 self.caller.msg(MSG_THROW_NO_AIM_CROSS_ROOM)
                 return None
         
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_FAIL: find_target: No valid target found for '{self.target_name}'")
         self.caller.msg(MSG_THROW_TARGET_NOT_FOUND.format(target=self.target_name))
         return None
     
     def get_destination_room(self, direction):
         """Get destination room for directional throwing."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
         if not direction:
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: get_destination_room: No direction provided")
             return None
+        
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: Looking for exit '{direction}' in {self.caller.location}")
         
         # Find exit in current room
         exit_obj = self.caller.search(direction, location=self.caller.location, quiet=True)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: search result = {exit_obj}, has_destination = {hasattr(exit_obj, 'destination') if exit_obj else 'N/A'}")
+        
         if not exit_obj or not hasattr(exit_obj, 'destination'):
             # Check if it might be a character name mistaken for direction
             char_search = self.caller.search(direction, location=self.caller.location, quiet=True)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: char_search result = {char_search}, has_hands = {hasattr(char_search, 'hands') if char_search else 'N/A'}")
+            
             if char_search and hasattr(char_search, 'hands'):
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: '{direction}' is a character, suggesting 'at' syntax")
                 self.caller.msg(MSG_THROW_SUGGEST_AT_SYNTAX.format(
                     object=self.object_name, target=direction))
                 return None
             
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_FAIL: get_destination_room: Invalid direction '{direction}'")
             self.caller.msg(MSG_THROW_INVALID_DIRECTION.format(direction=direction))
             return None
         
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: get_destination_room: Found valid exit {exit_obj} -> {exit_obj.destination}")
         return exit_obj.destination
     
     def select_random_target_in_room(self, room):
@@ -297,7 +321,8 @@ class CmdThrow(Command):
         # Enter combat if not already in combat
         handler = get_or_create_combat(self.caller.location)
         if not handler:
-            debug_broadcast(f"Failed to get combat handler for weapon throw", DEBUG_PREFIX_THROW, DEBUG_ERROR)
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Failed to get combat handler for weapon throw")
             return False
         
         # Add combatants to handler
@@ -352,8 +377,8 @@ class CmdThrow(Command):
         # Start flight timer
         utils.delay(THROW_FLIGHT_TIME, self.complete_flight, obj)
         
-        debug_broadcast(f"{self.caller} started flight for {obj} to {destination}", 
-                       DEBUG_PREFIX_THROW, DEBUG_SUCCESS)
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: {self.caller} started flight for {obj} to {destination}")
     
     def announce_throw_origin(self, obj, destination, target):
         """Announce throw in origin room."""
@@ -432,7 +457,8 @@ class CmdThrow(Command):
             del obj.ndb.flight_thrower
             
         except Exception as e:
-            debug_broadcast(f"Error in complete_flight: {e}", DEBUG_PREFIX_THROW, DEBUG_ERROR)
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in complete_flight: {e}")
             # Failsafe: move object to origin if destination fails
             if hasattr(obj.ndb, 'flight_origin') and obj.ndb.flight_origin:
                 obj.move_to(obj.ndb.flight_origin)
@@ -527,8 +553,8 @@ class CmdThrow(Command):
             
             setattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, grenade_proximity)
         
-        debug_broadcast(f"Grenade {grenade} landed with proximity: {getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])}", 
-                       DEBUG_PREFIX_THROW, DEBUG_SUCCESS)
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: Grenade {grenade} landed with proximity: {getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])}")
 
 
 class CmdPull(Command):
@@ -627,8 +653,8 @@ class CmdPull(Command):
         # Timer warning
         self.caller.msg(MSG_PULL_TIMER_WARNING.format(object=grenade.key, time=fuse_time))
         
-        debug_broadcast(f"{self.caller} pulled pin on {grenade}, timer: {fuse_time}s", 
-                       DEBUG_PREFIX_THROW, DEBUG_SUCCESS)
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: {self.caller} pulled pin on {grenade}, timer: {fuse_time}s")
     
     def explode_grenade(self, grenade):
         """Handle grenade explosion."""
@@ -667,7 +693,8 @@ class CmdPull(Command):
             grenade.delete()
             
         except Exception as e:
-            debug_broadcast(f"Error in explode_grenade: {e}", DEBUG_PREFIX_THROW, DEBUG_ERROR)
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in explode_grenade: {e}")
     
     def handle_dud(self, grenade):
         """Handle grenade dud (failure to explode)."""
@@ -797,8 +824,8 @@ class CmdCatch(Command):
         if hasattr(obj.ndb, 'flight_thrower'):
             del obj.ndb.flight_thrower
         
-        debug_broadcast(f"{self.caller} caught {obj} mid-flight", 
-                       DEBUG_PREFIX_THROW, DEBUG_SUCCESS)
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: {self.caller} caught {obj} mid-flight")
 
 
 class CmdRig(Command):
@@ -914,8 +941,8 @@ class CmdRig(Command):
             exclude=self.caller
         )
         
-        debug_broadcast(f"{self.caller} rigged {grenade} to {exit_obj}", 
-                       DEBUG_PREFIX_THROW, DEBUG_SUCCESS)
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: {self.caller} rigged {grenade} to {exit_obj}")
 
 
 # Helper function to check for rigged grenades (called from movement)
