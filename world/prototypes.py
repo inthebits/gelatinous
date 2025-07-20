@@ -48,43 +48,161 @@ See the `spawn` command and `evennia.prototypes.spawner.spawn` for more info.
 
 """
 
-## example of module-based prototypes using
-## the variable name as `prototype_key` and
-## simple Attributes
+# =============================================================================
+# EXPLOSIVE PROTOTYPES FOR THROW COMMAND TESTING
+# =============================================================================
 
-# from random import randint
-#
-# GOBLIN = {
-# "key": "goblin grunt",
-# "health": lambda: randint(20,30),
-# "resists": ["cold", "poison"],
-# "attacks": ["fists"],
-# "weaknesses": ["fire", "light"],
-# "tags": = [("greenskin", "monster"), ("humanoid", "monster")]
-# }
-#
-# GOBLIN_WIZARD = {
-# "prototype_parent": "GOBLIN",
-# "key": "goblin wizard",
-# "spells": ["fire ball", "lighting bolt"]
-# }
-#
-# GOBLIN_ARCHER = {
-# "prototype_parent": "GOBLIN",
-# "key": "goblin archer",
-# "attacks": ["short bow"]
-# }
-#
-# This is an example of a prototype without a prototype
-# (nor key) of its own, so it should normally only be
-# used as a mix-in, as in the example of the goblin
-# archwizard below.
-# ARCHWIZARD_MIXIN = {
-# "attacks": ["archwizard staff"],
-# "spells": ["greater fire ball", "greater lighting"]
-# }
-#
-# GOBLIN_ARCHWIZARD = {
-# "key": "goblin archwizard",
-# "prototype_parent" : ("GOBLIN_WIZARD", "ARCHWIZARD_MIXIN")
-# }
+# Base explosive prototype with common properties
+EXPLOSIVE_BASE = {
+    "typeclass": "typeclasses.objects.Object",
+    "desc": "A military-grade explosive device with a pin-pull mechanism.",
+    "is_explosive": True,
+    "requires_pin": True,
+    "pin_pulled": False,
+    "chain_trigger": True,
+    "dud_chance": 0.05,  # 5% chance to fail
+}
+
+# Standard fragmentation grenade
+FRAG_GRENADE = {
+    "prototype_parent": "EXPLOSIVE_BASE",
+    "key": "frag grenade",
+    "aliases": ["grenade", "frag"],
+    "desc": "A standard military fragmentation grenade. Pull the pin and throw within 8 seconds or take cover!",
+    "fuse_time": 8,
+    "blast_damage": 25,
+    "blast_radius": 3,
+}
+
+# Shorter fuse tactical grenade
+TACTICAL_GRENADE = {
+    "prototype_parent": "EXPLOSIVE_BASE", 
+    "key": "tactical grenade",
+    "aliases": ["tac grenade", "tactical"],
+    "desc": "A tactical grenade with a shorter 5-second fuse for close-quarters combat.",
+    "fuse_time": 5,
+    "blast_damage": 20,
+    "blast_radius": 2,
+    "dud_chance": 0.02,  # More reliable
+}
+
+# High-damage demo charge
+DEMO_CHARGE = {
+    "prototype_parent": "EXPLOSIVE_BASE",
+    "key": "demo charge", 
+    "aliases": ["charge", "demo", "c4"],
+    "desc": "A powerful demolition charge. Devastating blast with a 10-second timer.",
+    "fuse_time": 10,
+    "blast_damage": 40,
+    "blast_radius": 4,
+    "dud_chance": 0.01,  # Very reliable
+}
+
+# Flashbang (non-lethal)
+FLASHBANG = {
+    "prototype_parent": "EXPLOSIVE_BASE",
+    "key": "flashbang",
+    "aliases": ["flash", "stun grenade"],
+    "desc": "A non-lethal stun grenade that produces a blinding flash and deafening bang.",
+    "fuse_time": 6,
+    "blast_damage": 5,  # Minimal damage, mainly stunning
+    "blast_radius": 3,
+    "dud_chance": 0.10,  # 10% dud chance
+}
+
+# Smoke grenade (minimal damage)
+SMOKE_GRENADE = {
+    "prototype_parent": "EXPLOSIVE_BASE",
+    "key": "smoke grenade",
+    "aliases": ["smoke"],
+    "desc": "A smoke grenade that creates a thick concealing cloud. Minimal explosive force.",
+    "fuse_time": 4,
+    "blast_damage": 2,  # Very low damage
+    "blast_radius": 4,  # Large area coverage
+    "dud_chance": 0.15,  # Higher dud chance
+}
+
+# =============================================================================
+# THROWING WEAPON PROTOTYPES
+# =============================================================================
+
+# Base throwing weapon
+THROWING_WEAPON_BASE = {
+    "prototype_key": "throwing_weapon_base",
+    "key": "throwing weapon",
+    "typeclass": "typeclasses.items.ThrowableItem",
+    "desc": "A weapon designed for throwing.",
+    "tags": [
+        ("weapon", "type"),
+        ("throwing", "category"),
+        ("item", "general")
+    ],
+    "attrs": [
+        ("is_throwing_weapon", True),
+        ("is_explosive", False),
+    ]
+}
+
+# Throwing knife
+THROWING_KNIFE = {
+    "prototype_parent": "THROWING_WEAPON_BASE",
+    "key": "throwing knife",
+    "aliases": ["knife", "blade"],
+    "desc": "A balanced knife designed for throwing. Sharp and deadly.",
+    "damage": 8,
+    "attrs": [
+        ("weapon_type", "throwing_knife"),
+    ]
+}
+
+# Throwing axe
+THROWING_AXE = {
+    "prototype_parent": "THROWING_WEAPON_BASE", 
+    "key": "throwing axe",
+    "aliases": ["axe", "hatchet"],
+    "desc": "A heavy axe perfect for throwing. Deals significant damage on impact.",
+    "damage": 12,
+    "attrs": [
+        ("weapon_type", "throwing_axe"),
+    ]
+}
+
+# Shuriken
+SHURIKEN = {
+    "prototype_parent": "THROWING_WEAPON_BASE",
+    "key": "shuriken",
+    "aliases": ["star", "ninja star"],
+    "desc": "A traditional throwing star. Light and precise.",
+    "damage": 6,
+    "attrs": [
+        ("weapon_type", "shuriken"),
+    ]
+}
+
+# =============================================================================
+# UTILITY OBJECT PROTOTYPES (for non-combat throwing)
+# =============================================================================
+
+# Keys for testing utility throws
+KEYRING = {
+    "key": "keyring",
+    "aliases": ["keys", "ring"],
+    "desc": "A ring of various keys. Useful for testing throwing mechanics.",
+    "typeclass": "typeclasses.objects.Object",
+}
+
+# Rock for testing
+ROCK = {
+    "key": "rock",
+    "aliases": ["stone"],
+    "desc": "A smooth throwing rock. Perfect for testing directional throws.",
+    "typeclass": "typeclasses.objects.Object",
+}
+
+# Bottle for testing
+BOTTLE = {
+    "key": "bottle",
+    "aliases": ["glass bottle"],
+    "desc": "An empty glass bottle. Makes a satisfying crash when thrown.",
+    "typeclass": "typeclasses.objects.Object",
+}
