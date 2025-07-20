@@ -241,7 +241,7 @@ class CmdThrow(Command):
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: find_target: No target_name provided")
             return None
         
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: Looking for target '{self.target_name}' in {self.caller.location}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: Looking for target '{self.target_name}' in {self.caller.location}(#{self.caller.location.id})")
         
         # First check current room
         target_search = self.caller.search(self.target_name, location=self.caller.location, quiet=True)
@@ -284,7 +284,7 @@ class CmdThrow(Command):
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: get_destination_room: No direction provided")
             return None
         
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: Looking for exit '{direction}' in {self.caller.location}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: Looking for exit '{direction}' in {self.caller.location}(#{self.caller.location.id})")
         
         # Find exit in current room using standard Evennia patterns
         exit_search = self.caller.search(direction, location=self.caller.location, quiet=True)
@@ -298,7 +298,18 @@ class CmdThrow(Command):
         
         # Check if we got a valid exit with destination (standard Evennia way)
         if exit_obj and hasattr(exit_obj, 'destination') and exit_obj.destination:
-            splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: get_destination_room: Found valid exit {exit_obj} -> {exit_obj.destination}")
+            # Additional debug: check if destination is the same as current room
+            current_room = self.caller.location
+            destination_room = exit_obj.destination
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: current_room = {current_room}(#{current_room.id}), destination_room = {destination_room}(#{destination_room.id})")
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: rooms_are_same = {current_room == destination_room}")
+            
+            if current_room == destination_room:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: get_destination_room: Exit {exit_obj} destination points back to same room!")
+                self.caller.msg(f"The exit '{direction}' seems to loop back to this room. Cannot throw that way.")
+                return None
+            
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: get_destination_room: Found valid exit {exit_obj} -> {exit_obj.destination}(#{exit_obj.destination.id})")
             return exit_obj.destination
         
         # Debug: log what we found if the exit is invalid
@@ -405,7 +416,7 @@ class CmdThrow(Command):
         utils.delay(THROW_FLIGHT_TIME, self.complete_flight, obj)
         
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: {self.caller} started flight for {obj} to {destination}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: {self.caller} started flight for {obj} to {destination}(#{destination.id})")
     
     def announce_throw_origin(self, obj, destination, target):
         """Announce throw in origin room."""
@@ -459,7 +470,7 @@ class CmdThrow(Command):
             # Clean up origin room flying objects
             if origin and hasattr(origin.ndb, NDB_FLYING_OBJECTS):
                 flying_objects = getattr(origin.ndb, NDB_FLYING_OBJECTS)
-                if obj in flying_objects:
+                if flying_objects and obj in flying_objects:
                     flying_objects.remove(obj)
             
             # Move object to destination
