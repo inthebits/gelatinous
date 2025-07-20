@@ -135,6 +135,11 @@ class CmdThrow(Command):
             self.caller.msg(MSG_THROW_NOTHING_WIELDED)
             return None
         
+        # Check for empty hands dict (no hands at all)
+        if not self.caller.hands:
+            self.caller.msg(MSG_THROW_NO_HANDS)
+            return None
+        
         # Find object in hands
         obj = None
         hand_name = None
@@ -278,7 +283,7 @@ class CmdThrow(Command):
         
         # Find exit in current room
         exit_obj = self.caller.search(direction, location=self.caller.location, quiet=True)
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: search result = {exit_obj}, has_destination = {hasattr(exit_obj, 'destination') if exit_obj else 'N/A'}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: search result = {exit_obj}, has_destination = {hasattr(exit_obj, 'destination') if exit_obj else 'N/A'}, is_exit = {hasattr(exit_obj, 'is_typeclass') and exit_obj.is_typeclass('typeclasses.exits.Exit') if exit_obj else 'N/A'}")
         
         if not exit_obj or not hasattr(exit_obj, 'destination'):
             # Check if it might be a character name mistaken for direction
@@ -596,9 +601,14 @@ class CmdPull(Command):
             self.caller.msg(MSG_PULL_INVALID_SYNTAX)
             return
         
+        # Check for hands at all
+        if not hasattr(self.caller, 'hands') or not self.caller.hands:
+            self.caller.msg(MSG_PULL_NO_HANDS)
+            return
+        
         # Find grenade in hands
         grenade = None
-        for hand, wielded_obj in getattr(self.caller, 'hands', {}).items():
+        for hand, wielded_obj in self.caller.hands.items():
             if wielded_obj and self.grenade_name.lower() in wielded_obj.key.lower():
                 grenade = wielded_obj
                 break
@@ -756,9 +766,14 @@ class CmdCatch(Command):
         
         object_name = self.args.strip()
         
+        # Check for hands at all
+        if not hasattr(self.caller, 'hands') or not self.caller.hands:
+            self.caller.msg(MSG_CATCH_NO_HANDS_AT_ALL)
+            return
+        
         # Check for free hands
         free_hand = None
-        for hand_name, wielded_obj in getattr(self.caller, 'hands', {}).items():
+        for hand_name, wielded_obj in self.caller.hands.items():
             if wielded_obj is None:
                 free_hand = hand_name
                 break
@@ -873,9 +888,14 @@ class CmdRig(Command):
             self.caller.msg(MSG_RIG_INVALID_SYNTAX)
             return
         
+        # Check for hands at all
+        if not hasattr(self.caller, 'hands') or not self.caller.hands:
+            self.caller.msg(MSG_RIG_NO_HANDS)
+            return
+        
         # Find grenade in hands
         grenade = None
-        for hand, wielded_obj in getattr(self.caller, 'hands', {}).items():
+        for hand, wielded_obj in self.caller.hands.items():
             if wielded_obj and self.grenade_name.lower() in wielded_obj.key.lower():
                 grenade = wielded_obj
                 break
