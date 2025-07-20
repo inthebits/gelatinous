@@ -244,9 +244,10 @@ class CmdThrow(Command):
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: Looking for target '{self.target_name}' in {self.caller.location}")
         
         # First check current room
-        target = self.caller.search(self.target_name, location=self.caller.location, quiet=True)
+        target_search = self.caller.search(self.target_name, location=self.caller.location, quiet=True)
+        target = target_search[0] if target_search else None
         target_hands = getattr(target, 'hands', None) if target else None
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: search result = {target}, has_hands = {target_hands is not None}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: search result = {target_search}, target = {target}, has_hands = {target_hands is not None}")
         
         if target and target_hands is not None:  # Is a character with hands attribute
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: find_target: Found valid character target: {target}")
@@ -259,9 +260,10 @@ class CmdThrow(Command):
         if aim_direction:
             destination = self.get_destination_room(aim_direction)
             if destination:
-                target = self.caller.search(self.target_name, location=destination, quiet=True)
+                target_search = self.caller.search(self.target_name, location=destination, quiet=True)
+                target = target_search[0] if target_search else None
                 target_hands = getattr(target, 'hands', None) if target else None
-                splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: cross-room search result = {target}, has_hands = {target_hands is not None}")
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: cross-room search result = {target_search}, target = {target}, has_hands = {target_hands is not None}")
                 if target and target_hands is not None:
                     return target
         else:
@@ -285,12 +287,17 @@ class CmdThrow(Command):
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: Looking for exit '{direction}' in {self.caller.location}")
         
         # Find exit in current room using standard Evennia patterns
-        exit_obj = self.caller.search(direction, location=self.caller.location, quiet=True)
+        exit_search = self.caller.search(direction, location=self.caller.location, quiet=True)
         
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: search result = {exit_obj}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: search result = {exit_search}")
+        
+        # Handle search result - could be list or single object
+        exit_obj = exit_search[0] if exit_search else None
+        
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: exit_obj = {exit_obj}")
         
         # Check if we got a valid exit with destination (standard Evennia way)
-        if exit_obj and exit_obj.destination:
+        if exit_obj and hasattr(exit_obj, 'destination') and exit_obj.destination:
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: get_destination_room: Found valid exit {exit_obj} -> {exit_obj.destination}")
             return exit_obj.destination
         
@@ -940,8 +947,9 @@ class CmdRig(Command):
             return
         
         # Find exit
-        exit_obj = self.caller.search(self.exit_name, location=self.caller.location, quiet=True)
-        if not exit_obj or not exit_obj.destination:
+        exit_search = self.caller.search(self.exit_name, location=self.caller.location, quiet=True)
+        exit_obj = exit_search[0] if exit_search else None
+        if not exit_obj or not hasattr(exit_obj, 'destination') or not exit_obj.destination:
             self.caller.msg(MSG_RIG_INVALID_EXIT.format(exit=self.exit_name))
             return
         
