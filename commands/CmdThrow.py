@@ -1104,11 +1104,34 @@ class CmdRig(Command):
             self.caller.msg(MSG_RIG_EXIT_ALREADY_RIGGED)
             return
         
+        # Check if return exit is already rigged too
+        return_exit = self.find_return_exit_for_check(exit_obj)
+        if return_exit and getattr(return_exit.db, 'rigged_grenade', None):
+            self.caller.msg(MSG_RIG_EXIT_ALREADY_RIGGED)
+            return
+        
         # Rig the grenade
         self.rig_grenade(grenade, exit_obj)
     
+    def find_return_exit_for_check(self, exit_obj):
+        """Find the return exit for pre-rigging checks."""
+        if not exit_obj.destination:
+            return None
+        
+        destination_room = exit_obj.destination
+        current_room = self.caller.location
+        
+        # Look for an exit in the destination room that leads back to current room
+        for obj in destination_room.contents:
+            if (hasattr(obj, 'destination') and 
+                obj.destination == current_room and
+                obj != exit_obj):  # Don't check the same exit twice
+                return obj
+        
+        return None
+    
     def rig_grenade(self, grenade, exit_obj):
-        """Rig the grenade to the exit."""
+        """Rig the grenade to the exit and its return exit."""
         # Remove from hand
         caller_hands = getattr(self.caller, 'hands', {})
         for hand_name, wielded_obj in caller_hands.items():
@@ -1119,9 +1142,16 @@ class CmdRig(Command):
         # Move grenade to exit (conceptually attached)
         grenade.move_to(exit_obj)
         
-        # Set up rigging
+        # Set up rigging on the main exit
         setattr(exit_obj.db, 'rigged_grenade', grenade)
         setattr(grenade.db, 'rigged_to_exit', exit_obj)
+        
+        # Find and rig the return exit too
+        return_exit = self.find_return_exit(exit_obj)
+        if return_exit:
+            setattr(return_exit.db, 'rigged_grenade', grenade)
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: Also rigged return exit {return_exit} in {return_exit.location}")
         
         # Cancel normal countdown and set up trigger
         if hasattr(grenade.ndb, NDB_GRENADE_TIMER):
@@ -1137,6 +1167,23 @@ class CmdRig(Command):
         
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: {self.caller} rigged {grenade} to {exit_obj}")
+    
+    def find_return_exit(self, exit_obj):
+        """Find the return exit that leads back to the current room."""
+        if not exit_obj.destination:
+            return None
+        
+        destination_room = exit_obj.destination
+        current_room = self.caller.location
+        
+        # Look for an exit in the destination room that leads back to current room
+        for obj in destination_room.contents:
+            if (hasattr(obj, 'destination') and 
+                obj.destination == current_room and
+                obj != exit_obj):  # Don't rig the same exit twice
+                return obj
+        
+        return None
 
 
 def check_rigged_grenade(character, exit_obj):
@@ -1229,8 +1276,25 @@ def check_rigged_grenade(character, exit_obj):
     # Start the timer
     utils.delay(fuse_time, explode_rigged_grenade)
     
-    # Clean up rigging
+    # Clean up rigging from both exits
     delattr(exit_obj.db, 'rigged_grenade')
+    
+    # Find and clean up return exit too
+    original_exit = getattr(rigged_grenade.db, 'rigged_to_exit', None)
+    if original_exit and original_exit.destination:
+        destination_room = original_exit.destination
+        character_room = character.location
+        
+        # Look for return exit that might also be rigged
+        for obj in destination_room.contents:
+            if (hasattr(obj, 'destination') and 
+                obj.destination == character_room and
+                hasattr(obj.db, 'rigged_grenade') and
+                getattr(obj.db, 'rigged_grenade') == rigged_grenade):
+                delattr(obj.db, 'rigged_grenade')
+                splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: Cleaned up return exit rigging on {obj}")
+                break
     
     # Announce timer start
     character.location.msg_contents(f"The {rigged_grenade.key} starts counting down! {fuse_time} seconds!")
