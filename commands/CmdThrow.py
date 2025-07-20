@@ -1205,8 +1205,8 @@ def check_rigged_grenade(character, exit_obj):
     fuse_time = 1  # Rigged grenades explode almost immediately
     setattr(rigged_grenade.ndb, NDB_COUNTDOWN_REMAINING, fuse_time)
     
-    # Move grenade to the character's location (now triggered and active)
-    rigged_grenade.move_to(character.location)
+    # Move grenade to the character's location quietly (no movement announcements)
+    rigged_grenade.move_to(character.location, quiet=True)
     
     # Start countdown timer
     # Create a closure to handle explosion
