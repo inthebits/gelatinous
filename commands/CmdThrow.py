@@ -130,20 +130,21 @@ class CmdThrow(Command):
             self.caller.msg(MSG_THROW_NOTHING_WIELDED)
             return None
         
-        # Check if object exists in hands (wielded)
-        if not hasattr(self.caller, 'hands'):
+        # Check if caller has hands (AttributeProperty compatible)
+        caller_hands = getattr(self.caller, 'hands', None)
+        if caller_hands is None:
             self.caller.msg(MSG_THROW_NOTHING_WIELDED)
             return None
         
         # Check for empty hands dict (no hands at all)
-        if not self.caller.hands:
+        if not caller_hands:
             self.caller.msg(MSG_THROW_NO_HANDS)
             return None
         
         # Find object in hands
         obj = None
         hand_name = None
-        for hand, wielded_obj in self.caller.hands.items():
+        for hand, wielded_obj in caller_hands.items():
             if wielded_obj and self.object_name.lower() in wielded_obj.key.lower():
                 obj = wielded_obj
                 hand_name = hand
@@ -244,9 +245,10 @@ class CmdThrow(Command):
         
         # First check current room
         target = self.caller.search(self.target_name, location=self.caller.location, quiet=True)
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: search result = {target}, has_hands = {hasattr(target, 'hands') if target else 'N/A'}")
+        target_hands = getattr(target, 'hands', None) if target else None
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: search result = {target}, has_hands = {target_hands is not None}")
         
-        if target and hasattr(target, 'hands'):  # Is a character
+        if target and target_hands is not None:  # Is a character with hands attribute
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: find_target: Found valid character target: {target}")
             return target
         
@@ -258,8 +260,9 @@ class CmdThrow(Command):
             destination = self.get_destination_room(aim_direction)
             if destination:
                 target = self.caller.search(self.target_name, location=destination, quiet=True)
-                splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: cross-room search result = {target}")
-                if target and hasattr(target, 'hands'):
+                target_hands = getattr(target, 'hands', None) if target else None
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: cross-room search result = {target}, has_hands = {target_hands is not None}")
+                if target and target_hands is not None:
                     return target
         else:
             # No aim for cross-room targeting
@@ -288,9 +291,10 @@ class CmdThrow(Command):
         if not exit_obj or not hasattr(exit_obj, 'destination'):
             # Check if it might be a character name mistaken for direction
             char_search = self.caller.search(direction, location=self.caller.location, quiet=True)
-            splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: char_search result = {char_search}, has_hands = {hasattr(char_search, 'hands') if char_search else 'N/A'}")
+            char_hands = getattr(char_search, 'hands', None) if char_search else None
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: char_search result = {char_search}, has_hands = {char_hands is not None}")
             
-            if char_search and hasattr(char_search, 'hands'):
+            if char_search and char_hands is not None:
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: '{direction}' is a character, suggesting 'at' syntax")
                 self.caller.msg(MSG_THROW_SUGGEST_AT_SYNTAX.format(
                     object=self.object_name, target=direction))
@@ -308,7 +312,7 @@ class CmdThrow(Command):
         if not room:
             return None
         
-        characters = [obj for obj in room.contents if hasattr(obj, 'hands') and obj != self.caller]
+        characters = [obj for obj in room.contents if getattr(obj, 'hands', None) is not None and obj != self.caller]
         if characters:
             return random.choice(characters)
         return None
@@ -355,9 +359,10 @@ class CmdThrow(Command):
     
     def remove_from_hand(self, obj):
         """Remove object from caller's hand."""
-        for hand_name, wielded_obj in self.caller.hands.items():
+        caller_hands = getattr(self.caller, 'hands', {})
+        for hand_name, wielded_obj in caller_hands.items():
             if wielded_obj == obj:
-                self.caller.hands[hand_name] = None
+                caller_hands[hand_name] = None
                 break
     
     def start_flight(self, obj, destination, target, is_weapon=False):
@@ -602,13 +607,14 @@ class CmdPull(Command):
             return
         
         # Check for hands at all
-        if not hasattr(self.caller, 'hands') or not self.caller.hands:
+        caller_hands = getattr(self.caller, 'hands', None)
+        if caller_hands is None or not caller_hands:
             self.caller.msg(MSG_PULL_NO_HANDS)
             return
         
         # Find grenade in hands
         grenade = None
-        for hand, wielded_obj in self.caller.hands.items():
+        for hand, wielded_obj in caller_hands.items():
             if wielded_obj and self.grenade_name.lower() in wielded_obj.key.lower():
                 grenade = wielded_obj
                 break
@@ -767,13 +773,14 @@ class CmdCatch(Command):
         object_name = self.args.strip()
         
         # Check for hands at all
-        if not hasattr(self.caller, 'hands') or not self.caller.hands:
+        caller_hands = getattr(self.caller, 'hands', None)
+        if caller_hands is None or not caller_hands:
             self.caller.msg(MSG_CATCH_NO_HANDS_AT_ALL)
             return
         
         # Check for free hands
         free_hand = None
-        for hand_name, wielded_obj in self.caller.hands.items():
+        for hand_name, wielded_obj in caller_hands.items():
             if wielded_obj is None:
                 free_hand = hand_name
                 break
@@ -818,7 +825,8 @@ class CmdCatch(Command):
         
         # Cancel flight timer by moving to caller and wielding
         obj.move_to(self.caller)
-        self.caller.hands[hand_name] = obj
+        caller_hands = getattr(self.caller, 'hands', {})
+        caller_hands[hand_name] = obj
         
         # Announce success
         self.caller.msg(MSG_CATCH_SUCCESS.format(object=obj.key))
@@ -889,13 +897,14 @@ class CmdRig(Command):
             return
         
         # Check for hands at all
-        if not hasattr(self.caller, 'hands') or not self.caller.hands:
+        caller_hands = getattr(self.caller, 'hands', None)
+        if caller_hands is None or not caller_hands:
             self.caller.msg(MSG_RIG_NO_HANDS)
             return
         
         # Find grenade in hands
         grenade = None
-        for hand, wielded_obj in self.caller.hands.items():
+        for hand, wielded_obj in caller_hands.items():
             if wielded_obj and self.grenade_name.lower() in wielded_obj.key.lower():
                 grenade = wielded_obj
                 break
@@ -937,9 +946,10 @@ class CmdRig(Command):
     def rig_grenade(self, grenade, exit_obj):
         """Rig the grenade to the exit."""
         # Remove from hand
-        for hand_name, wielded_obj in self.caller.hands.items():
+        caller_hands = getattr(self.caller, 'hands', {})
+        for hand_name, wielded_obj in caller_hands.items():
             if wielded_obj == grenade:
-                self.caller.hands[hand_name] = None
+                caller_hands[hand_name] = None
                 break
         
         # Move grenade to exit (conceptually attached)
