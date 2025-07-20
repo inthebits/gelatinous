@@ -1025,8 +1025,8 @@ class CmdRig(Command):
         rig flashbang to door
     
     Set up a grenade as a trap on an exit. The grenade will explode when
-    someone tries to pass through that exit. The grenade must have its
-    pin pulled before rigging.
+    someone tries to pass through that exit. The grenade must NOT have its
+    pin pulled - the pin will be pulled automatically when triggered.
     """
     
     key = "rig"
@@ -1086,9 +1086,9 @@ class CmdRig(Command):
             self.caller.msg(MSG_RIG_NOT_EXPLOSIVE.format(object=grenade.key))
             return
         
-        # Check if pin is pulled
-        if not getattr(grenade.db, DB_PIN_PULLED, False):
-            self.caller.msg(MSG_RIG_NOT_PINNED)
+        # Check if pin is NOT pulled (should be unpinned for rigging)
+        if getattr(grenade.db, DB_PIN_PULLED, False):
+            self.caller.msg(MSG_RIG_ALREADY_PINNED)
             return
         
         # Find exit
@@ -1139,16 +1139,12 @@ class CmdRig(Command):
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: {self.caller} rigged {grenade} to {exit_obj}")
 
 
-# Helper function to check for rigged grenades (called from movement)
 def check_rigged_grenade(character, exit_obj):
     """Check if character triggers a rigged grenade. Character should already be at destination."""
     # Safe check - only proceed if rigged_grenade actually exists and has a value
     rigged_grenade = getattr(exit_obj.db, 'rigged_grenade', None)
     if not rigged_grenade:
         return False
-    
-    # Get blast damage
-    blast_damage = getattr(rigged_grenade.db, DB_BLAST_DAMAGE, 10)
     
     # Trigger explosion messages (character is now at destination)
     character.msg(MSG_RIG_TRIGGERED.format(object=rigged_grenade.key))
@@ -1157,23 +1153,90 @@ def check_rigged_grenade(character, exit_obj):
         exclude=character
     )
     
-    # Apply damage to the character who triggered it
-    apply_damage(character, blast_damage)
-    character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
-    if character.location:
-        character.location.msg_contents(
-            MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=rigged_grenade.key),
-            exclude=character
-        )
+    # Pull the pin and start countdown timer when triggered
+    setattr(rigged_grenade.db, DB_PIN_PULLED, True)
+    fuse_time = 1  # Rigged grenades explode almost immediately
+    setattr(rigged_grenade.ndb, NDB_COUNTDOWN_REMAINING, fuse_time)
+    
+    # Move grenade to the character's location (now triggered and active)
+    rigged_grenade.move_to(character.location)
+    
+    # Start countdown timer
+    # Create a closure to handle explosion
+    def explode_rigged_grenade():
+        """Handle rigged grenade explosion after timer."""
+        try:
+            # Check dud chance
+            dud_chance = getattr(rigged_grenade.db, DB_DUD_CHANCE, 0.0)
+            if random.random() < dud_chance:
+                if rigged_grenade.location:
+                    rigged_grenade.location.msg_contents(MSG_GRENADE_DUD_ROOM.format(grenade=rigged_grenade.key))
+                return
+            
+            # Get blast damage
+            blast_damage = getattr(rigged_grenade.db, DB_BLAST_DAMAGE, 10)
+            
+            # Room explosion
+            if rigged_grenade.location:
+                rigged_grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=rigged_grenade.key))
+            
+            # Apply damage to trigger character
+            apply_damage(character, blast_damage)
+            character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
+            if character.location:
+                character.location.msg_contents(
+                    MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=rigged_grenade.key),
+                    exclude=character
+                )
+            
+            # Apply damage to others in proximity
+            proximity_list = getattr(rigged_grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+            if proximity_list is None:
+                proximity_list = []
+            
+            for other_character in proximity_list:
+                if other_character != character and hasattr(other_character, 'msg'):
+                    apply_damage(other_character, blast_damage)
+                    other_character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
+                    if other_character.location:
+                        other_character.location.msg_contents(
+                            MSG_GRENADE_DAMAGE_ROOM.format(victim=other_character.key, grenade=rigged_grenade.key),
+                            exclude=other_character
+                        )
+            
+            # Handle chain reactions if enabled
+            if getattr(rigged_grenade.db, DB_CHAIN_TRIGGER, False):
+                for obj in proximity_list:
+                    if (hasattr(obj, 'db') and 
+                        getattr(obj.db, DB_IS_EXPLOSIVE, False) and 
+                        obj != rigged_grenade):
+                        
+                        # Trigger chain explosion
+                        if rigged_grenade.location:
+                            rigged_grenade.location.msg_contents(
+                                MSG_GRENADE_CHAIN_TRIGGER.format(grenade=obj.key))
+                        
+                        # Start immediate explosion timer (reuse this function's pattern)
+                        utils.delay(0.5, lambda: check_rigged_grenade(character, obj))
+            
+            # Delete the rigged grenade
+            rigged_grenade.delete()
+            
+        except Exception as e:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in explode_rigged_grenade: {e}")
+    
+    # Start the timer
+    utils.delay(fuse_time, explode_rigged_grenade)
     
     # Clean up rigging
     delattr(exit_obj.db, 'rigged_grenade')
     
-    # Delete the rigged grenade
-    rigged_grenade.delete()
+    # Announce timer start
+    character.location.msg_contents(f"The {rigged_grenade.key} starts counting down! {fuse_time} seconds!")
     
     splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-    splattercast.msg(f"{DEBUG_PREFIX_THROW}_RIGGED: {character.key} triggered rigged {rigged_grenade.key} on {exit_obj.key}")
+    splattercast.msg(f"{DEBUG_PREFIX_THROW}_RIGGED: {character.key} triggered rigged {rigged_grenade.key} on {exit_obj.key}, timer: {fuse_time}s")
     
-    # Return True to indicate explosion happened
+    # Return True to indicate explosion timer started
     return True
