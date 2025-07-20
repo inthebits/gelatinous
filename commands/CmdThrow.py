@@ -395,7 +395,8 @@ class CmdThrow(Command):
         self.announce_throw_origin(obj, destination, target)
         
         # Add to room's flying objects - ensure we have a proper list
-        if not hasattr(self.caller.location.ndb, NDB_FLYING_OBJECTS):
+        flying_objects = getattr(self.caller.location.ndb, NDB_FLYING_OBJECTS, None)
+        if not flying_objects:
             setattr(self.caller.location.ndb, NDB_FLYING_OBJECTS, [])
         
         flying_objects = getattr(self.caller.location.ndb, NDB_FLYING_OBJECTS)
@@ -460,6 +461,9 @@ class CmdThrow(Command):
     def complete_flight(self, obj):
         """Complete the flight and handle landing."""
         try:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Starting complete_flight for {obj}")
+            
             # Get flight data
             destination = obj.ndb.flight_destination
             target = obj.ndb.flight_target
@@ -467,14 +471,19 @@ class CmdThrow(Command):
             is_weapon = getattr(obj.ndb, 'flight_is_weapon', False)
             thrower = getattr(obj.ndb, 'flight_thrower', None)
             
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Flight data - destination: {destination}, target: {target}, origin: {origin}")
+            
             # Clean up origin room flying objects
-            if origin and hasattr(origin.ndb, NDB_FLYING_OBJECTS):
+            origin_flying_objects = getattr(origin.ndb, NDB_FLYING_OBJECTS, None)
+            if origin and origin_flying_objects:
                 flying_objects = getattr(origin.ndb, NDB_FLYING_OBJECTS)
                 if flying_objects and obj in flying_objects:
                     flying_objects.remove(obj)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Removed {obj} from origin flying objects")
             
             # Move object to destination
             if destination:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Moving {obj} to destination {destination}")
                 obj.move_to(destination)
                 
                 # Announce arrival
@@ -484,8 +493,10 @@ class CmdThrow(Command):
                     message = MSG_THROW_ARRIVAL.format(object=obj.key, direction=arrival_dir)
                     destination.msg_contents(message)
                 
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: About to call handle_landing")
                 # Handle landing and proximity
                 self.handle_landing(obj, destination, target, is_weapon, thrower)
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Completed handle_landing")
             
             # Clean up flight data
             del obj.ndb.flight_destination
@@ -493,13 +504,17 @@ class CmdThrow(Command):
             del obj.ndb.flight_origin
             del obj.ndb.flight_is_weapon
             del obj.ndb.flight_thrower
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Cleaned up flight data for {obj}")
             
         except Exception as e:
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in complete_flight: {e}")
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error details - destination: {destination}, target: {target}, origin: {origin}")
             # Failsafe: move object to origin if destination fails
-            if hasattr(obj.ndb, 'flight_origin') and obj.ndb.flight_origin:
-                obj.move_to(obj.ndb.flight_origin)
+            flight_origin = getattr(obj.ndb, 'flight_origin', None)
+            if flight_origin:
+                obj.move_to(flight_origin)
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Moved {obj} back to origin {flight_origin} due to error")
     
     def get_arrival_direction(self, origin, destination):
         """Determine arrival direction for announcement."""
@@ -508,91 +523,180 @@ class CmdThrow(Command):
     
     def handle_landing(self, obj, destination, target, is_weapon, thrower):
         """Handle object landing and proximity assignment."""
-        # Weapon combat resolution
-        if is_weapon and target:
-            self.resolve_weapon_hit(obj, target, thrower)
-        
-        # Utility object bounce
-        elif target and not is_weapon:
-            target.location.msg_contents(MSG_THROW_UTILITY_BOUNCE.format(
-                object=obj.key, target=target.key))
-        
-        # Assign proximity for universal proximity system
-        self.assign_landing_proximity(obj, target)
-        
-        # Handle grenade-specific landing
-        if self.is_explosive(obj):
-            self.handle_grenade_landing(obj, target)
-        
-        # General landing announcement
-        if target:
-            message = MSG_THROW_LANDING_PROXIMITY.format(object=obj.key, target=target.key)
-        else:
-            message = MSG_THROW_LANDING_ROOM.format(object=obj.key)
-        
-        destination.msg_contents(message)
+        try:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: handle_landing called - obj: {obj}, destination: {destination}, target: {target}, is_weapon: {is_weapon}")
+            
+            # Weapon combat resolution
+            if is_weapon and target:
+                try:
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Resolving weapon hit")
+                    self.resolve_weapon_hit(obj, target, thrower)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: resolve_weapon_hit completed")
+                except Exception as e:
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in resolve_weapon_hit: {e}")
+                    # Continue with landing even if weapon hit fails
+            
+            # Utility object bounce
+            elif target and not is_weapon:
+                try:
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Utility object bounce")
+                    target.location.msg_contents(MSG_THROW_UTILITY_BOUNCE.format(
+                        object=obj.key, target=target.key))
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Utility bounce message sent")
+                except Exception as e:
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in utility bounce: {e}")
+                    # Continue with landing even if bounce message fails
+            
+            # Assign proximity for universal proximity system
+            try:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Assigning landing proximity")
+                self.assign_landing_proximity(obj, target)
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: assign_landing_proximity completed")
+            except Exception as e:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in assign_landing_proximity: {e}")
+                # Continue with landing even if proximity assignment fails
+            
+            # Handle grenade-specific landing
+            if self.is_explosive(obj):
+                try:
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Handling grenade landing")
+                    self.handle_grenade_landing(obj, target)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: handle_grenade_landing completed")
+                except Exception as e:
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in handle_grenade_landing: {e}")
+                    # Continue with landing even if grenade landing fails
+            
+            # General landing announcement
+            try:
+                if target:
+                    message = MSG_THROW_LANDING_PROXIMITY.format(object=obj.key, target=target.key)
+                else:
+                    message = MSG_THROW_LANDING_ROOM.format(object=obj.key)
+                
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Sending landing message: {message}")
+                destination.msg_contents(message)
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Landing message sent successfully")
+            except Exception as e:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in landing message: {e}")
+                # Continue even if landing message fails
+            
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: handle_landing completed successfully")
+            
+        except Exception as e:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Unexpected error in handle_landing: {e}")
+            # Don't re-raise - let the object land even if there are issues
     
     def resolve_weapon_hit(self, weapon, target, thrower):
         """Resolve weapon throw hit/miss and damage."""
-        # Simple hit resolution - could be enhanced with accuracy system
-        hit_chance = 0.7  # 70% base hit chance
-        
-        if random.random() <= hit_chance:
-            # Hit - apply damage
-            base_damage = getattr(weapon.db, 'damage', 1)
-            total_damage = random.randint(1, 6) + base_damage
+        try:
+            # Simple hit resolution - could be enhanced with accuracy system
+            hit_chance = 0.7  # 70% base hit chance
             
-            apply_damage(target, total_damage)
+            if random.random() <= hit_chance:
+                # Hit - apply damage
+                base_damage = getattr(weapon.db, 'damage', 1)
+                total_damage = random.randint(1, 6) + base_damage
+                
+                apply_damage(target, total_damage)
+                
+                target.msg(MSG_THROW_WEAPON_HIT.format(weapon=weapon.key, target=target.key))
+                thrower.msg(f"Your {weapon.key} strikes {target.key}!")
+                
+                # Establish proximity if hit (safe pattern)
+                proximity_list = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL, None)
+                if not proximity_list:
+                    setattr(target.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+                    proximity_list = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+                
+                # Validate proximity_list is a list
+                if not isinstance(proximity_list, list):
+                    proximity_list = []
+                    setattr(target.ndb, NDB_PROXIMITY_UNIVERSAL, proximity_list)
+                
+                if thrower and thrower not in proximity_list:
+                    proximity_list.append(thrower)
             
-            target.msg(MSG_THROW_WEAPON_HIT.format(weapon=weapon.key, target=target.key))
-            thrower.msg(f"Your {weapon.key} strikes {target.key}!")
-            
-            # Establish proximity if hit
-            if not hasattr(target.ndb, NDB_PROXIMITY_UNIVERSAL):
-                setattr(target.ndb, NDB_PROXIMITY_UNIVERSAL, [])
-            proximity_list = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL)
-            if thrower not in proximity_list:
-                proximity_list.append(thrower)
-        
-        else:
-            # Miss
-            target.msg(MSG_THROW_WEAPON_MISS.format(weapon=weapon.key, target=target.key))
-            thrower.msg(f"Your {weapon.key} misses {target.key}!")
+            else:
+                # Miss
+                target.msg(MSG_THROW_WEAPON_MISS.format(weapon=weapon.key, target=target.key))
+                thrower.msg(f"Your {weapon.key} misses {target.key}!")
+                
+        except Exception as e:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in resolve_weapon_hit: {e}")
+            # Don't re-raise - weapon hit failure shouldn't fail entire throw
     
     def assign_landing_proximity(self, obj, target):
         """Assign proximity for universal proximity system."""
-        if not hasattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL):
-            setattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, [])
-        
-        proximity_list = getattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL)
-        
-        if target:
-            # Add target to object proximity
-            if target not in proximity_list:
-                proximity_list.append(target)
+        try:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: assign_landing_proximity called - obj: {obj}, target: {target}")
             
-            # Inherit target's existing proximity relationships
-            if hasattr(target.ndb, NDB_PROXIMITY_UNIVERSAL):
-                target_proximity = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL)
-                for character in target_proximity:
-                    if character not in proximity_list:
-                        proximity_list.append(character)
+            # Ensure object has proximity list (use same pattern as drop command)
+            proximity_list = getattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, None)
+            if not proximity_list:
+                setattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+                proximity_list = getattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+            
+            # Validate proximity_list is actually a list
+            if not isinstance(proximity_list, list):
+                proximity_list = []
+                setattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, proximity_list)
+            
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: obj proximity_list: {proximity_list}")
+            
+            if target:
+                # Add target to object proximity
+                if target not in proximity_list:
+                    proximity_list.append(target)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Added target {target} to obj proximity")
+                
+                # Inherit target's existing proximity relationships
+                target_proximity = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL, None)
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: target_proximity: {target_proximity}")
+                if target_proximity and isinstance(target_proximity, list):
+                    for character in target_proximity:
+                        if character and character not in proximity_list:
+                            proximity_list.append(character)
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Added {character} from target proximity")
+            
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: assign_landing_proximity completed successfully")
+            
+        except Exception as e:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in assign_landing_proximity: {e}")
+            raise  # Re-raise to let handle_landing handle it
     
     def handle_grenade_landing(self, grenade, target):
         """Handle grenade-specific landing mechanics."""
-        # If grenade lands near someone, everyone in their proximity gets added
-        if target and hasattr(target.ndb, NDB_PROXIMITY_UNIVERSAL):
-            target_proximity = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL)
-            grenade_proximity = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        try:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: handle_grenade_landing called - grenade: {grenade}, target: {target}")
             
-            for character in target_proximity:
-                if character not in grenade_proximity:
-                    grenade_proximity.append(character)
+            # If grenade lands near someone, everyone in their proximity gets added
+            target_proximity = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL, None) if target else None
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: target_proximity: {target_proximity}")
             
-            setattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, grenade_proximity)
-        
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: Grenade {grenade} landed with proximity: {getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])}")
+            if target_proximity and isinstance(target_proximity, list):
+                grenade_proximity = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+                if not isinstance(grenade_proximity, list):
+                    grenade_proximity = []
+                
+                for character in target_proximity:
+                    if character and character not in grenade_proximity:
+                        grenade_proximity.append(character)
+                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Added {character} to grenade proximity")
+                
+                setattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, grenade_proximity)
+            
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: Grenade {grenade} landed with proximity: {getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])}")
+            
+        except Exception as e:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in handle_grenade_landing: {e}")
+            # Don't re-raise here - grenade landing failure shouldn't fail entire throw
 
 
 class CmdPull(Command):
