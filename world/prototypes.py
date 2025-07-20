@@ -71,7 +71,6 @@ FRAG_GRENADE = {
     "desc": "A standard military fragmentation grenade. Pull the pin and throw within 8 seconds or take cover!",
     "fuse_time": 8,
     "blast_damage": 25,
-    "blast_radius": 3,
 }
 
 # Shorter fuse tactical grenade
@@ -82,7 +81,6 @@ TACTICAL_GRENADE = {
     "desc": "A tactical grenade with a shorter 5-second fuse for close-quarters combat.",
     "fuse_time": 5,
     "blast_damage": 20,
-    "blast_radius": 2,
     "dud_chance": 0.02,  # More reliable
 }
 
@@ -94,7 +92,6 @@ DEMO_CHARGE = {
     "desc": "A powerful demolition charge. Devastating blast with a 10-second timer.",
     "fuse_time": 10,
     "blast_damage": 40,
-    "blast_radius": 4,
     "dud_chance": 0.01,  # Very reliable
 }
 
@@ -106,7 +103,6 @@ FLASHBANG = {
     "desc": "A non-lethal stun grenade that produces a blinding flash and deafening bang.",
     "fuse_time": 6,
     "blast_damage": 5,  # Minimal damage, mainly stunning
-    "blast_radius": 3,
     "dud_chance": 0.10,  # 10% dud chance
 }
 
@@ -118,7 +114,6 @@ SMOKE_GRENADE = {
     "desc": "A smoke grenade that creates a thick concealing cloud. Minimal explosive force.",
     "fuse_time": 4,
     "blast_damage": 2,  # Very low damage
-    "blast_radius": 4,  # Large area coverage
     "dud_chance": 0.15,  # Higher dud chance
 }
 
@@ -130,7 +125,7 @@ SMOKE_GRENADE = {
 THROWING_WEAPON_BASE = {
     "prototype_key": "throwing_weapon_base",
     "key": "throwing weapon",
-    "typeclass": "typeclasses.items.ThrowableItem",
+    "typeclass": "typeclasses.items.Item",
     "desc": "A weapon designed for throwing.",
     "tags": [
         ("weapon", "type"),
