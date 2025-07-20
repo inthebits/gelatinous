@@ -816,23 +816,51 @@ class CmdPull(Command):
             # Get blast damage
             blast_damage = getattr(grenade.db, DB_BLAST_DAMAGE, 10)
             
+            # Check if grenade is in someone's inventory when it explodes
+            holder = None
+            if grenade.location and hasattr(grenade.location, 'has_account'):
+                # Grenade is in a character's inventory - they're holding it!
+                holder = grenade.location
+            
             # Get proximity list
             proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
             
-            # Announce explosion
-            if grenade.location:
-                grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
-            
-            # Apply damage to all in proximity
-            for character in proximity_list:
-                if hasattr(character, 'msg'):  # Is a character
-                    apply_damage(character, blast_damage)
-                    character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
-                    if character.location:
-                        character.location.msg_contents(
-                            MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
-                            exclude=character
-                        )
+            # Handle explosion in someone's hands (much more dangerous!)
+            if holder:
+                # Explosion in hands - double damage and guaranteed hit
+                holder_damage = blast_damage * 2
+                apply_damage(holder, holder_damage)
+                holder.msg(f"|rThe {grenade.key} EXPLODES IN YOUR HANDS!|n You take {holder_damage} damage!")
+                
+                # Announce to the room
+                if holder.location:
+                    holder.location.msg_contents(
+                        f"|r{holder.key}'s {grenade.key} explodes in their hands!|n",
+                        exclude=holder
+                    )
+                    
+                # Still damage others in proximity, but less (shielded by holder's body)
+                for character in proximity_list:
+                    if character != holder and hasattr(character, 'msg'):
+                        reduced_damage = blast_damage // 2  # Half damage due to body shielding
+                        apply_damage(character, reduced_damage)
+                        character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                        
+            else:
+                # Normal room explosion
+                if grenade.location:
+                    grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
+                
+                # Apply damage to all in proximity
+                for character in proximity_list:
+                    if hasattr(character, 'msg'):  # Is a character
+                        apply_damage(character, blast_damage)
+                        character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                        if character.location:
+                            character.location.msg_contents(
+                                MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                                exclude=character
+                            )
             
             # Handle chain reactions
             self.handle_chain_reactions(grenade)
