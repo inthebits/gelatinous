@@ -266,3 +266,7 @@ class Exit(DefaultExit):
 
         # Not in combat, standard traversal
         super().at_traverse(traversing_object, target_location)
+        
+        # Check for rigged grenades after successful movement
+        from commands.CmdThrow import check_rigged_grenade
+        check_rigged_grenade(traversing_object, self)

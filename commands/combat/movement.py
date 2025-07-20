@@ -295,6 +295,10 @@ class CmdFlee(Command):
             # Move to the chosen exit
             caller.move_to(destination, quiet=True)
             
+            # Check for rigged grenades after successful movement
+            from commands.CmdThrow import check_rigged_grenade
+            check_rigged_grenade(caller, chosen_exit)
+            
             # Messages
             caller.msg(f"|gYou successfully flee {chosen_exit.key} to {destination.key}!|n")
             caller.location.msg_contents(f"|y{caller.get_display_name(caller.location)} has arrived, fleeing from combat.|n", exclude=[caller])

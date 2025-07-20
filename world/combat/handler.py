@@ -1118,6 +1118,10 @@ class CombatHandler(DefaultScript):
                 
                 char.move_to(target_room)
                 
+                # Check for rigged grenades after successful movement
+                from commands.CmdThrow import check_rigged_grenade
+                check_rigged_grenade(char, exit_to_target)
+                
                 char.msg(f"|gYou successfully advance to {target_room.key} to engage {target.key}.|n")
                 target.msg(f"|y{char.key} advances into the room to engage you!|n")
                 old_location.msg_contents(f"|y{char.key} advances toward {target_room.key} to engage {target.key}.|n", exclude=[char])
@@ -1241,6 +1245,10 @@ class CombatHandler(DefaultScript):
                 # Success - move and establish proximity
                 exit_to_use = exits_to_target[0]
                 char.move_to(target_room)
+                
+                # Check for rigged grenades after successful movement
+                from commands.CmdThrow import check_rigged_grenade
+                check_rigged_grenade(char, exit_to_use)
                 
                 clear_aim_state(char)
                 establish_proximity(char, target)

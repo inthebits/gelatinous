@@ -889,6 +889,8 @@ class CmdPull(Command):
         
         # Find other explosives in proximity
         proximity_list = getattr(exploding_grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        if proximity_list is None:
+            proximity_list = []
         
         for obj in proximity_list:
             if (hasattr(obj, 'db') and 
@@ -1097,7 +1099,8 @@ class CmdRig(Command):
             return
         
         # Check if exit already rigged
-        if hasattr(exit_obj.db, 'rigged_grenade'):
+        existing_rigged = getattr(exit_obj.db, 'rigged_grenade', None)
+        if existing_rigged:
             self.caller.msg(MSG_RIG_EXIT_ALREADY_RIGGED)
             return
         
@@ -1138,29 +1141,39 @@ class CmdRig(Command):
 
 # Helper function to check for rigged grenades (called from movement)
 def check_rigged_grenade(character, exit_obj):
-    """Check if character triggers a rigged grenade."""
-    if not hasattr(exit_obj.db, 'rigged_grenade'):
+    """Check if character triggers a rigged grenade. Character should already be at destination."""
+    # Safe check - only proceed if rigged_grenade actually exists and has a value
+    rigged_grenade = getattr(exit_obj.db, 'rigged_grenade', None)
+    if not rigged_grenade:
         return False
     
-    grenade = getattr(exit_obj.db, 'rigged_grenade')
-    if not grenade:
-        return False
+    # Get blast damage
+    blast_damage = getattr(rigged_grenade.db, DB_BLAST_DAMAGE, 10)
     
-    # Trigger explosion
-    character.msg(MSG_RIG_TRIGGERED.format(object=grenade.key))
+    # Trigger explosion messages (character is now at destination)
+    character.msg(MSG_RIG_TRIGGERED.format(object=rigged_grenade.key))
     character.location.msg_contents(
-        MSG_RIG_TRIGGERED_ROOM.format(object=grenade.key, victim=character.key),
+        MSG_RIG_TRIGGERED_ROOM.format(object=rigged_grenade.key, victim=character.key),
         exclude=character
     )
     
-    # Set proximity to triggerer and explode
-    setattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [character])
-    
-    # Explode immediately
-    pull_cmd = CmdPull()
-    pull_cmd.explode_grenade(grenade)
+    # Apply damage to the character who triggered it
+    apply_damage(character, blast_damage)
+    character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
+    if character.location:
+        character.location.msg_contents(
+            MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=rigged_grenade.key),
+            exclude=character
+        )
     
     # Clean up rigging
     delattr(exit_obj.db, 'rigged_grenade')
     
+    # Delete the rigged grenade
+    rigged_grenade.delete()
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    splattercast.msg(f"{DEBUG_PREFIX_THROW}_RIGGED: {character.key} triggered rigged {rigged_grenade.key} on {exit_obj.key}")
+    
+    # Return True to indicate explosion happened
     return True
