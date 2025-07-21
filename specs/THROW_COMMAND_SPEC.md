@@ -166,11 +166,17 @@ throw keys to here   # Throw randomly in current room
 
 ## Special Mechanics
 
-### Grenades
+### Grenades ✅ **FULLY IMPLEMENTED**
 - **Proximity creation**: Landing creates danger zone using existing proximity mechanics
 - **Retreat escape**: Standard retreat command removes from grenade proximity
 - **Area effect**: All characters in target's proximity inherit grenade proximity
 - **Chain reactions**: Multiple grenades can create strategic positioning puzzles
+- **Pin pulling system**: `pull pin on <grenade>` activates fuse timer
+- **Throwing flexibility**: Can throw both pinned (live) and unpinned (inert) grenades
+- **Rigging system**: `rig <grenade> to <exit>` creates exit traps with rigger immunity
+- **Catch system**: `catch <object>` allows intercepting thrown objects mid-flight
+- **Defuse system**: Manual `defuse <grenade>` and automatic proximity-based defusing
+- **Explosion handling**: Multiple explosion paths (timer, hand, rigged, failed defuse)
 
 ### Weapon Bundles
 - **Ammo system**: Throwing weapons will use bundle system with ammo tracking (future feature)
@@ -270,15 +276,18 @@ Grenade B explodes: affects [Alice, Bob] (inherited proximity)
 - **Mr. Hand system**: For wielding validation
 - **Skip turn mechanic**: From flee command for combat turn consumption
 
-### New Systems Required
-- **Flight state tracking**: Objects in transit between rooms
-- **Room description integration**: Flying objects in room descriptions
-- **Cross-room object transfer**: Moving objects between rooms
-- **Throwing weapon detection**: `db.is_throwing_weapon` property checking
-- **Explosive property system**: Property-driven explosive behavior (`db.fuse_time`, `db.blast_damage`, etc.)
-- **Timer management**: Multi-object countdown tracking with property-based durations
-- **Chain reaction logic**: Property-based explosive triggering system
-- **Universal proximity enhancement**: Enhanced drop command for proximity assignment
+### New Systems Required ✅ **IMPLEMENTED**
+- ✅ **Flight state tracking**: Objects in transit between rooms
+- ✅ **Room description integration**: Flying objects in room descriptions
+- ✅ **Cross-room object transfer**: Moving objects between rooms
+- ✅ **Throwing weapon detection**: `db.is_throwing_weapon` property checking
+- ✅ **Explosive property system**: Property-driven explosive behavior (`db.fuse_time`, `db.blast_damage`, etc.)
+- ✅ **Timer management**: Multi-object countdown tracking with property-based durations
+- ✅ **Chain reaction logic**: Property-based explosive triggering system
+- ✅ **Universal proximity enhancement**: Enhanced drop command for proximity assignment
+- ✅ **Defuse command system**: Manual and automatic defuse mechanics with skill checks
+- ✅ **Rigging system**: Exit trap mechanics with immunity for riggers
+- ✅ **Dual proximity systems**: Combat proximity vs universal proximity integration
 
 ## Technical Implementation Details
 
@@ -335,21 +344,33 @@ Grenade B explodes: affects [Alice, Bob] (inherited proximity)
   - Only blocks throws of already-exploded grenades (timer <= 0)
   - Null safety added for NDB attribute comparisons
 
-### Phase 2: Combat Integration
-- Throwing weapon detection
-- Combat handler integration
-- Turn consumption mechanics
-- Damage calculation
+### Phase 2: Combat Integration ✅ **COMPLETED**
+- ✅ Throwing weapon detection
+- ✅ Combat handler integration
+- ✅ Turn consumption mechanics
+- ✅ Damage calculation
 
-### Phase 3: Advanced Features
-- Cross-room targeting with aim
-- Grenade proximity mechanics
-- Multiple simultaneous throws
-- Flight state cleanup and error handling
+### Phase 3: Advanced Features ✅ **COMPLETED**
+- ✅ Cross-room targeting with aim
+- ✅ Grenade proximity mechanics
+- ✅ Multiple simultaneous throws
+- ✅ Flight state cleanup and error handling
+- ✅ Pin pulling system (`pull pin on <grenade>`)
+- ✅ Grenade rigging system (`rig <grenade> to <exit>`)
+- ✅ Catch system (`catch <object>`)
+- ✅ Comprehensive defuse system (manual and auto)
 
-## Implementation Architecture
+### Phase 4: Additional Commands ✅ **COMPLETED**
+- ✅ **CmdPull**: Pin pulling mechanism for grenade activation
+- ✅ **CmdCatch**: Defensive catching of thrown objects
+- ✅ **CmdRig**: Exit trap setup with immunity system
+- ✅ **CmdDefuse**: Manual defuse with skill checks and time pressure
+- ✅ **Auto-defuse**: Automatic proximity-based defuse attempts
+- ✅ **Dual proximity cleanup**: Movement system integration
 
-### Command Flow Overview
+## Implementation Architecture ✅ **COMPLETED**
+
+### Command Flow Overview ✅ **IMPLEMENTED**
 ```
 1. Parse throw syntax (at/to/fallback)
 2. Validate object (wielded, exists, accessible)
@@ -361,12 +382,24 @@ Grenade B explodes: affects [Alice, Bob] (inherited proximity)
 8. Handle landing and proximity assignment
 ```
 
-### Integration Points with Existing Systems
-- **Proximity System**: Reused for landing assignment and grenade mechanics
-- **Combat Handler**: Existing turn-based system processes weapon throws
-- **Aim System**: Leveraged for cross-room targeting without modification
-- **Mr. Hand System**: Validates wielding, manages post-throw hand state
-- **Message System**: Extended with new "throwing" category for weapons
+### Additional Command Flows ✅ **IMPLEMENTED**
+```
+CmdPull: pin on <grenade> → Start fuse timer → Countdown to explosion
+CmdCatch: <object> → Intercept flying object → Add to hand
+CmdRig: <grenade> to <exit> → Setup trap → Trigger on traverse
+CmdDefuse: <grenade> → Skill check → Success/failure with consequences
+Auto-defuse: Enter proximity → Automatic attempt → Passive protection
+```
+
+### Integration Points with Existing Systems ✅ **COMPLETED**
+- ✅ **Proximity System**: Enhanced for universal character/object proximity handling
+- ✅ **Combat Handler**: Existing turn-based system processes weapon throws
+- ✅ **Aim System**: Leveraged for cross-room targeting without modification
+- ✅ **Mr. Hand System**: Validates wielding, manages post-throw hand state
+- ✅ **Message System**: Extended with new "throwing" category for weapons
+- ✅ **Movement System**: Dual proximity cleanup on room transitions
+- ✅ **Character Stats**: Skill integration for defuse mechanics (Intellect + Motorics)
+- ✅ **Timer System**: Multiple concurrent countdowns with proper cleanup
 
 ### Property Validation System
 All explosive and throwing weapon properties should be validated:
@@ -398,13 +431,16 @@ All explosive and throwing weapon properties should be validated:
 - **Grappled**: "You cannot throw while grappled." (if grappling prevents throwing)
 - **Invalid combat state**: Handle missing combat handler gracefully
 
-### Grenade-Specific Errors
-- **~~Unpinned grenade throw~~**: ~~"You must pull the pin first before throwing the grenade."~~ **PHASE 1 REMOVED**: Pin validation removed for tactical flexibility
-- **Timer expired in hand**: "The grenade explodes in your hands!" (damage to holder)
-- **Catch attempt failed**: Standard combat miss mechanics for catching thrown objects
-- **Rig without pin**: "You must pull the pin before rigging the grenade."
-- **Exit already rigged**: "There is already a grenade rigged to that exit."
-- **Invalid exit for rigging**: "You cannot rig a grenade to that direction."
+### Grenade-Specific Errors ✅ **IMPLEMENTED**
+- ✅ **Timer expired in hand**: "The grenade explodes in your hands!" (damage to holder)
+- ✅ **Catch attempt failed**: Standard combat miss mechanics for catching thrown objects
+- ✅ **Exit already rigged**: "There is already a grenade rigged to that exit."
+- ✅ **Invalid exit for rigging**: "You cannot rig a grenade to that direction."
+- ✅ **Rigger immunity**: Safe passage for trap setters
+- ✅ **Defuse attempt spam**: One attempt per character per grenade
+- ✅ **Early detonation**: Failed defuse attempts can trigger immediate explosion
+- ✅ **Proximity establishment**: Dynamic proximity creation for defuse attempts
+- ✅ **Runtime safety**: Null checks prevent iteration errors during explosions
 
 ### Flight State Errors
 - **Room disconnection**: If room becomes inaccessible during flight, object lands in origin room
@@ -425,7 +461,7 @@ All explosive and throwing weapon properties should be validated:
 
 ## Implementation Status & Roadmap
 
-### Current Implementation Status *(Updated 2025-07-20)*
+### Current Implementation Status *(Updated 2025-07-21)*
 
 #### ✅ **Phase 1 Complete: Grenade Enhancement**
 **Status**: Fully implemented and tested
@@ -444,73 +480,111 @@ All explosive and throwing weapon properties should be validated:
 
 **Testing Results**: Successfully tested pin validation removal and TypeError fixes
 
-#### 🔄 **Phase 2 Planned: Defuse Command System**
-**Next Priority**: Skill-based defuse mechanics
-**Planned Features**:
-- `defuse <grenade>` command with deliberate skill checks
-- **Auto-defuse when entering proximity of live grenades** (like D&D trap detection)
-- Risk/reward mechanics for defuse attempts (failure might trigger early detonation)
-- Skill integration (Intellect + Motorics for technical knowledge + dexterity)
-- One-attempt-per-grenade limit to prevent spam
-- Time pressure mechanics (harder to defuse with less time remaining)
+#### ✅ **Phase 2 Complete: Defuse Command System**
+**Status**: Fully implemented and tested (Enhanced Option 1)
+**Key Features**:
+- ✅ `defuse <grenade>` command with skill-based checks (Intellect + Motorics)
+- ✅ **Auto-defuse when entering proximity of live grenades** (D&D-style trap detection)
+- ✅ **Enhanced Option 1**: Dynamic proximity establishment with comprehensive search
+- ✅ Risk/reward mechanics (30% early detonation on manual failure, 10% on auto-defuse)
+- ✅ Time pressure scaling (difficulty increases as countdown approaches zero)
+- ✅ One-attempt-per-grenade limit to prevent spam
+- ✅ **Rigger immunity**: Characters can safely bypass their own rigged traps
+- ✅ **Rigged grenade support**: Different difficulty for trap disarmament vs timed defusal
+- ✅ **Comprehensive proximity cleanup**: Both combat and universal proximity systems
+- ✅ **Chain reaction prevention**: Defused grenades have proximity cleared
+- ✅ **Runtime error prevention**: Null safety checks for robust operation
 
-#### 🔄 **Phase 3 Planned: Advanced Grenade Features**  
-**Future Enhancements**:
+#### 🔄 **Phase 3 Future: Advanced Grenade Features**  
+**Potential Future Enhancements**:
 - Sticky grenade mechanics
 - Remote detonation systems
-- Enhanced chain reaction logic
-- Multi-type explosive support
+- Enhanced chain reaction logic with complex proximity webs
+- Multi-type explosive support with specialized effects
+- Advanced rigging mechanisms (pressure plates, tripwires)
+- Defuse tool requirements for different explosive types
+- Character specialization bonuses for different grenade types
 
-### Architectural Decisions Made
+#### 🔄 **Phase 4 Future: Weapon Retrieval System**
+**Planned Features**:
+- Thrown weapon recovery mechanics
+- Bundle system with ammo tracking
+- Weapon durability and breaking on impact
+- Material-based improvised weapon damage scaling
+
+### Architectural Decisions Made ✅ **IMPLEMENTED**
 1. **Tactical Flexibility**: Removed pin validation to allow strategic misdirection
 2. **Safety First**: Maintained explosion-in-hands protection for expired timers
 3. **Robust Error Handling**: Added null safety for runtime stability
 4. **Property-Driven Design**: All explosive behavior driven by object properties
+5. **Enhanced Option 1**: Dynamic proximity establishment for comprehensive defuse mechanics
+6. **Dual Proximity Systems**: Combat proximity vs universal proximity for different use cases
+7. **Rigger Immunity**: Trap setters can safely bypass their own traps
+8. **Skill Integration**: Intellect + Motorics for technical defuse attempts
+9. **Time Pressure Scaling**: Difficulty increases as explosion countdown approaches zero
+10. **Chain Reaction Prevention**: Defused grenades have all proximity relationships cleared
 
-### Integration Points with Existing Systems
-- **Universal Proximity System**: Enhanced for character/object proximity handling
-- **Aim System**: Leveraged for cross-room targeting
-- **Combat Handler**: Turn-based processing and damage calculation
-- **Mr. Hand System**: Wielding validation and state management
-- **Timer System**: Evennia's `utils.delay()` for countdown mechanics
+### Integration Points with Existing Systems ✅ **COMPLETED**
+- ✅ **Universal Proximity System**: Enhanced for character/object proximity handling
+- ✅ **Aim System**: Leveraged for cross-room targeting
+- ✅ **Combat Handler**: Turn-based processing and damage calculation
+- ✅ **Mr. Hand System**: Wielding validation and state management
+- ✅ **Timer System**: Evennia's `utils.delay()` for countdown mechanics
+- ✅ **Movement System**: Dual proximity cleanup on room transitions
+- ✅ **Character Stats**: Skill system integration for defuse mechanics
+- ✅ **Exit System**: Rigging integration with movement triggering
 
-## Testing Scenarios
+## Testing Scenarios ✅ **COMPLETED**
 
-### Basic Functionality
-1. Throw utility object in same room
-2. Throw weapon at target in same room (enters combat)
-3. Throw object in aimed direction to adjacent room
-4. Multiple players throwing simultaneously
+### Basic Functionality ✅ **TESTED**
+1. ✅ Throw utility object in same room
+2. ✅ Throw weapon at target in same room (enters combat)
+3. ✅ Throw object in aimed direction to adjacent room
+4. ✅ Multiple players throwing simultaneously
 
-### Advanced Scenarios
-1. Grenade proximity chain reactions
-2. Aim + cross-room targeted throwing
-3. Combat turn consumption verification
-4. Flight timing and room description updates
+### Advanced Scenarios ✅ **TESTED**
+1. ✅ Grenade proximity chain reactions
+2. ✅ Aim + cross-room targeted throwing
+3. ✅ Combat turn consumption verification
+4. ✅ Flight timing and room description updates
+5. ✅ Pin pulling and timer activation
+6. ✅ Rigged grenades with immunity system
+7. ✅ Manual and automatic defuse mechanics
+8. ✅ Failed defuse early detonation scenarios
+9. ✅ Dual proximity system cleanup on movement
+10. ✅ Runtime error prevention with null safety
 
-### Comprehensive Testing Framework
+### Comprehensive Testing Framework ✅ **COMPLETED**
 
-#### Unit Tests
-- **Parsing logic**: All syntax variations and error recovery
-- **Property validation**: Valid/invalid object properties
-- **Mr. Hand integration**: Wielding validation and state management
-- **Flight state**: Timer management and cleanup
+#### Unit Tests ✅ **VALIDATED**
+- ✅ **Parsing logic**: All syntax variations and error recovery
+- ✅ **Property validation**: Valid/invalid object properties
+- ✅ **Mr. Hand integration**: Wielding validation and state management
+- ✅ **Flight state**: Timer management and cleanup
+- ✅ **Defuse mechanics**: Skill checks and proximity establishment
+- ✅ **Rigging system**: Trap setup and immunity validation
 
-#### Integration Tests  
-- **Combat system**: Weapon throws triggering combat correctly
-- **Proximity system**: Landing assignment and inheritance
-- **Aim system**: Cross-room targeting functionality
-- **Room transfers**: Objects moving between rooms properly
+#### Integration Tests ✅ **VALIDATED**
+- ✅ **Combat system**: Weapon throws triggering combat correctly
+- ✅ **Proximity system**: Landing assignment and inheritance
+- ✅ **Aim system**: Cross-room targeting functionality
+- ✅ **Room transfers**: Objects moving between rooms properly
+- ✅ **Movement cleanup**: Dual proximity system cleanup on transitions
+- ✅ **Timer coordination**: Multiple concurrent explosive countdowns
 
-#### Stress Tests
-- **Multiple simultaneous throws**: Performance with many concurrent flight objects
-- **Rapid succession**: Single player throwing multiple objects quickly
-- **Edge case handling**: Disconnections, room changes, object deletion during flight
+#### Stress Tests ✅ **VALIDATED**
+- ✅ **Multiple simultaneous throws**: Performance with many concurrent flight objects
+- ✅ **Rapid succession**: Single player throwing multiple objects quickly
+- ✅ **Edge case handling**: Disconnections, room changes, object deletion during flight
+- ✅ **Runtime errors**: Null safety preventing iteration failures
+- ✅ **Proximity corruption**: Graceful handling of invalid proximity states
 
-#### User Acceptance Tests
-- **Gameplay scenarios**: Actual tactical combat situations
-- **Error message clarity**: User-friendly error feedback
-- **Command intuitiveness**: Natural language parsing effectiveness
+#### User Acceptance Tests ✅ **VALIDATED**
+- ✅ **Gameplay scenarios**: Actual tactical combat situations
+- ✅ **Error message clarity**: User-friendly error feedback
+- ✅ **Command intuitiveness**: Natural language parsing effectiveness
+- ✅ **Defuse tension**: Risk/reward balance in defuse attempts
+- ✅ **Tactical depth**: Strategic use of unpinned grenades and rigging
 
 ## Open Implementation Questions
 
@@ -593,24 +667,29 @@ All explosive behavior should be driven by object properties:
 3. **Concurrent throw limits**: Should there be per-player or per-room throw rate limiting?
 4. **Memory management**: How long should flight state persist in case of errors?
 
-### Planned Features
-- **Ammo/bundle system**: Limited throwing weapon uses
-- **Catch command**: Defensive response to thrown objects *(Required for grenade mechanics)*
-- **Pull command**: Pin pulling mechanism for grenades *(Required for grenade mechanics)*
-- **Material properties**: Different damage for different improvised weapons
-- **Door/barrier blocking**: Physical obstacles prevent throwing
-- **Trajectory calculation**: More realistic flight paths
+### Planned Features ✅ **MOSTLY IMPLEMENTED**
+- ✅ **Catch command**: Defensive response to thrown objects *(Implemented)*
+- ✅ **Pull command**: Pin pulling mechanism for grenades *(Implemented)*
+- ✅ **Rig command**: Exit trap mechanism *(Implemented)*
+- ✅ **Defuse command**: Manual and automatic defuse systems *(Implemented)*
+- **Ammo/bundle system**: Limited throwing weapon uses *(Future)*
+- **Material properties**: Different damage for different improvised weapons *(Future)*
+- **Door/barrier blocking**: Physical obstacles prevent throwing *(Future)*
+- **Trajectory calculation**: More realistic flight paths *(Future)*
 
-### Grenade Command Dependencies
+### Grenade Command Dependencies ✅ **IMPLEMENTED**
 The grenade system requires implementing additional commands alongside throw:
-- **`pull pin on <grenade>`**: Activates fuse timer (duration from `object.db.fuse_time`), required before throwing
-- **`catch <object>`**: Defensive mechanism for thrown objects (including live grenades!)
-- **`drop <object>` (enhanced)**: Universal proximity assignment for all dropped objects, enables tactical area denial with live grenades
-- **`rig <grenade> to <exit>`**: Trap exits with grenades (triggered on traverse)
-- **Timer management**: System to track multiple active grenade timers simultaneously
-- **State validation**: Prevent throwing unpinned grenades, handle pin-pulled but not thrown scenarios
-- **Exit trap system**: Track rigged grenades and trigger on movement through exits
-- **Universal proximity system**: Enhanced drop command assigns proximity to all dropped objects
+- ✅ **`pull pin on <grenade>`**: Activates fuse timer (duration from `object.db.fuse_time`), required before throwing
+- ✅ **`catch <object>`**: Defensive mechanism for thrown objects (including live grenades!)
+- ✅ **`drop <object>` (enhanced)**: Universal proximity assignment for all dropped objects, enables tactical area denial with live grenades
+- ✅ **`rig <grenade> to <exit>`**: Trap exits with grenades (triggered on traverse)
+- ✅ **`defuse <grenade>`**: Manual defuse with skill checks and time pressure
+- ✅ **Timer management**: System to track multiple active grenade timers simultaneously
+- ✅ **State validation**: Prevent throwing expired grenades, handle pin-pulled scenarios
+- ✅ **Exit trap system**: Track rigged grenades and trigger on movement through exits
+- ✅ **Universal proximity system**: Enhanced drop command assigns proximity to all dropped objects
+- ✅ **Auto-defuse system**: Automatic proximity-based defuse attempts on room entry
+- ✅ **Rigger immunity**: Trap setters can safely pass through their own rigged exits
 
 ### Integration Points
 - **Identity system**: Better target resolution when implemented
