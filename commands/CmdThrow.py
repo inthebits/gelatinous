@@ -1622,28 +1622,92 @@ class CmdDefuse(Command):
         self.attempt_defuse(grenade)
     
     def find_grenade_in_proximity(self, grenade_name):
-        """Find grenade in proximity to the character."""
-        # Check objects in current room that have proximity to caller
-        candidates = []
+        """Find grenade in proximity or establish proximity for nearby grenades."""
+        # First check existing proximity relationships
+        proximity_candidates = []
         
         for obj in self.caller.location.contents:
             if (grenade_name.lower() in obj.key.lower() and 
                 getattr(obj.db, DB_IS_EXPLOSIVE, False)):
                 
-                # Check if caller is in this object's proximity
+                # Check if caller is already in this object's proximity
                 obj_proximity = getattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, [])
                 if obj_proximity and self.caller in obj_proximity:
-                    candidates.append(obj)
+                    proximity_candidates.append(obj)
         
-        if not candidates:
+        # If found in existing proximity, return it
+        if proximity_candidates:
+            if len(proximity_candidates) > 1:
+                self.caller.msg(f"Multiple {grenade_name}s are within reach. Be more specific.")
+                return None
+            return proximity_candidates[0]
+        
+        # If not in proximity, check for physical presence and establish mutual proximity
+        physical_candidates = []
+        
+        for obj in self.caller.location.contents:
+            if (grenade_name.lower() in obj.key.lower() and 
+                getattr(obj.db, DB_IS_EXPLOSIVE, False) and
+                getattr(obj.db, DB_PIN_PULLED, False)):  # Only live grenades
+                
+                physical_candidates.append(obj)
+        
+        if not physical_candidates:
             self.caller.msg(f"You don't see any live '{grenade_name}' within reach to defuse.")
             return None
         
-        if len(candidates) > 1:
-            self.caller.msg(f"Multiple {grenade_name}s are within reach. Be more specific.")
+        if len(physical_candidates) > 1:
+            self.caller.msg(f"Multiple {grenade_name}s are nearby. Be more specific.")
             return None
         
-        return candidates[0]
+        # Establish mutual proximity and return the grenade
+        grenade = physical_candidates[0]
+        self.caller.msg(f"You move closer to the {grenade.key}, entering its blast radius...")
+        self.establish_mutual_proximity(grenade)
+        return grenade
+    
+    def establish_mutual_proximity(self, grenade):
+        """Establish mutual proximity between character and grenade."""
+        # Add character to grenade's proximity (enters blast radius)
+        grenade_proximity = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        if not isinstance(grenade_proximity, list):
+            grenade_proximity = []
+        
+        if self.caller not in grenade_proximity:
+            grenade_proximity.append(self.caller)
+            
+            # Also establish proximity with other characters already in the grenade's proximity
+            for other_char in list(grenade_proximity):  # Use list() to avoid modification during iteration
+                if (hasattr(other_char, 'ndb') and other_char != self.caller):
+                    other_proximity = getattr(other_char.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+                    if not isinstance(other_proximity, list):
+                        other_proximity = []
+                        setattr(other_char.ndb, NDB_PROXIMITY_UNIVERSAL, other_proximity)
+                    
+                    if self.caller not in other_proximity:
+                        other_proximity.append(self.caller)
+        
+        setattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, grenade_proximity)
+        
+        # Add grenade to character's proximity
+        char_proximity = getattr(self.caller.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        if not isinstance(char_proximity, list):
+            char_proximity = []
+            setattr(self.caller.ndb, NDB_PROXIMITY_UNIVERSAL, char_proximity)
+        
+        if grenade not in char_proximity:
+            char_proximity.append(grenade)
+            
+            # Also add other characters in the grenade's proximity to this character's proximity
+            for other_char in grenade_proximity:
+                if (hasattr(other_char, 'ndb') and other_char != self.caller and 
+                    other_char not in char_proximity):
+                    char_proximity.append(other_char)
+        
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        if splattercast:
+            splattercast.msg(f"DEFUSE_PROXIMITY: {self.caller.key} established mutual proximity with {grenade.key} "
+                           f"(grenade proximity: {[c.key if hasattr(c, 'key') else str(c) for c in grenade_proximity]})")
     
     def validate_grenade_for_defuse(self, grenade):
         """Validate that grenade can be defused."""
