@@ -1299,3 +1299,504 @@ def check_rigged_grenade(character, exit_obj):
     
     # Return True to indicate explosion timer started
     return True
+
+
+def check_auto_defuse(character):
+    """Check for auto-defuse opportunities when character enters a room with live grenades."""
+    try:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"AUTO_DEFUSE: Checking for auto-defuse opportunities for {character.key} in {character.location}")
+        
+        # Find live grenades in the room that have the character in proximity
+        live_grenades = []
+        
+        for obj in character.location.contents:
+            # Check if object is an explosive
+            if not getattr(obj.db, DB_IS_EXPLOSIVE, False):
+                continue
+                
+            # Check if grenade is live (pin pulled and timer active)
+            if not getattr(obj.db, DB_PIN_PULLED, False):
+                continue
+                
+            # Check if grenade has time remaining
+            remaining_time = getattr(obj.ndb, NDB_COUNTDOWN_REMAINING, 0)
+            if remaining_time is None or remaining_time <= 0:
+                continue
+            
+            # Check if character is in this grenade's proximity
+            obj_proximity = getattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+            if obj_proximity and character in obj_proximity:
+                # Check if character has already attempted to defuse this grenade
+                attempted_by = getattr(obj.ndb, 'defuse_attempted_by', [])
+                if attempted_by is None:
+                    attempted_by = []
+                    
+                if character not in attempted_by:
+                    live_grenades.append(obj)
+                    splattercast.msg(f"AUTO_DEFUSE: Found auto-defuse candidate: {obj.key} (time remaining: {remaining_time}s)")
+        
+        if not live_grenades:
+            splattercast.msg(f"AUTO_DEFUSE: No auto-defuse opportunities found for {character.key}")
+            return
+        
+        # Auto-defuse attempt for each grenade (like D&D trap detection)
+        for grenade in live_grenades:
+            attempt_auto_defuse(character, grenade)
+            
+    except Exception as e:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"AUTO_DEFUSE_ERROR: Error in check_auto_defuse for {character.key}: {e}")
+
+
+def attempt_auto_defuse(character, grenade):
+    """Attempt automatic defuse when entering proximity of live grenade."""
+    try:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Mark attempt to prevent spam (same as manual defuse)
+        attempted_by = getattr(grenade.ndb, 'defuse_attempted_by', [])
+        if attempted_by is None:
+            attempted_by = []
+        attempted_by.append(character)
+        setattr(grenade.ndb, 'defuse_attempted_by', attempted_by)
+        
+        # Get remaining time for pressure calculation
+        remaining_time = getattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 0)
+        
+        # Calculate difficulty (same as manual defuse)
+        base_difficulty = 15  # Base difficulty
+        time_pressure = max(0, 10 - remaining_time)  # Gets harder as time runs out
+        total_difficulty = base_difficulty + time_pressure
+        
+        # Auto-defuse uses same skill system as manual defuse
+        from world.combat.utils import roll_stat
+        
+        # Simulate combined stat roll (Intellect + Motorics)
+        intellect_roll = roll_stat(character, 'intellect')
+        motorics_roll = roll_stat(character, 'motorics')
+        combined_roll = intellect_roll + motorics_roll
+        
+        # Determine success
+        success = combined_roll >= total_difficulty
+        
+        # Announce auto-defuse attempt (more subtle than manual)
+        character.msg(f"You notice the live {grenade.key} and instinctively attempt to defuse it...")
+        character.location.msg_contents(
+            f"{character.key} quickly works on defusing the {grenade.key}.",
+            exclude=character
+        )
+        
+        # Debug output
+        splattercast.msg(f"AUTO_DEFUSE: {character.key} rolled {combined_roll} vs difficulty {total_difficulty} "
+                       f"(base {base_difficulty} + pressure {time_pressure}, {remaining_time}s left) - "
+                       f"{'SUCCESS' if success else 'FAILURE'}")
+        
+        if success:
+            handle_auto_defuse_success(character, grenade)
+        else:
+            handle_auto_defuse_failure(character, grenade)
+            
+    except Exception as e:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"AUTO_DEFUSE_ERROR: Error in attempt_auto_defuse for {character.key} and {grenade.key}: {e}")
+
+
+def handle_auto_defuse_success(character, grenade):
+    """Handle successful auto-defuse attempt."""
+    try:
+        # Cancel countdown timer
+        timer = getattr(grenade.ndb, NDB_GRENADE_TIMER, None)
+        if timer:
+            timer.cancel()
+            delattr(grenade.ndb, NDB_GRENADE_TIMER)
+        
+        # Clear countdown state
+        setattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 0)
+        setattr(grenade.db, DB_PIN_PULLED, False)  # Grenade is now safe
+        
+        # Success messages (more dramatic than manual defuse)
+        character.msg(f"SUCCESS! You instinctively defuse the {grenade.key} just in time!")
+        character.location.msg_contents(
+            f"{character.key} quickly defuses the {grenade.key}!",
+            exclude=character
+        )
+        
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"AUTO_DEFUSE_SUCCESS: {character.key} auto-defused {grenade.key}")
+        
+    except Exception as e:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"AUTO_DEFUSE_ERROR: Error in handle_auto_defuse_success: {e}")
+
+
+def handle_auto_defuse_failure(character, grenade):
+    """Handle failed auto-defuse attempt (less severe than manual defuse failure)."""
+    try:
+        # Auto-defuse failures have lower chance of early detonation (10% vs 30%)
+        early_detonation_chance = 0.1
+        
+        if random.random() < early_detonation_chance:
+            # Early detonation triggered
+            character.msg(f"Your hasty defuse attempt accidentally triggers the {grenade.key}!")
+            character.location.msg_contents(
+                f"{character.key}'s defuse attempt accidentally triggers the {grenade.key}!",
+                exclude=character
+            )
+            
+            # Trigger immediate explosion (same as manual defuse)
+            timer = getattr(grenade.ndb, NDB_GRENADE_TIMER, None)
+            if timer:
+                timer.cancel()
+            
+            # Set very short timer for dramatic effect
+            setattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 1)
+            utils.delay(1, trigger_auto_defuse_explosion, grenade)
+            
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"AUTO_DEFUSE_FAILURE: {character.key} triggered early detonation of {grenade.key}")
+        
+        else:
+            # Failed but no early detonation (more subtle failure message)
+            character.msg(f"You notice the {grenade.key} but can't defuse it in time.")
+            character.location.msg_contents(
+                f"{character.key} notices the {grenade.key} but can't defuse it.",
+                exclude=character
+            )
+            
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"AUTO_DEFUSE_FAILURE: {character.key} failed to auto-defuse {grenade.key} (no early detonation)")
+            
+    except Exception as e:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"AUTO_DEFUSE_ERROR: Error in handle_auto_defuse_failure: {e}")
+
+
+def trigger_auto_defuse_explosion(grenade):
+    """Trigger early explosion from failed auto-defuse attempt (reuses manual defuse logic)."""
+    # Reuse the explosion logic from manual defuse
+    from world.combat.utils import apply_damage
+    
+    try:
+        # Check dud chance
+        dud_chance = getattr(grenade.db, DB_DUD_CHANCE, 0.0)
+        if random.random() < dud_chance:
+            if grenade.location:
+                grenade.location.msg_contents(MSG_GRENADE_DUD_ROOM.format(grenade=grenade.key))
+            return
+        
+        # Get blast damage
+        blast_damage = getattr(grenade.db, DB_BLAST_DAMAGE, 10)
+        
+        # Room explosion
+        if grenade.location:
+            grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
+        
+        # Apply damage to all in proximity
+        proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        if proximity_list is None:
+            proximity_list = []
+        
+        for character in proximity_list:
+            if hasattr(character, 'msg'):  # Is a character
+                apply_damage(character, blast_damage)
+                character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                if character.location:
+                    character.location.msg_contents(
+                        MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                        exclude=character
+                    )
+        
+        # Handle chain reactions if enabled
+        if getattr(grenade.db, DB_CHAIN_TRIGGER, False):
+            for obj in proximity_list:
+                if (hasattr(obj, 'db') and 
+                    getattr(obj.db, DB_IS_EXPLOSIVE, False) and 
+                    obj != grenade):
+                    
+                    # Trigger chain explosion
+                    if grenade.location:
+                        grenade.location.msg_contents(
+                            MSG_GRENADE_CHAIN_TRIGGER.format(grenade=obj.key))
+                    
+                    # Start immediate explosion timer
+                    utils.delay(0.5, trigger_auto_defuse_explosion, obj)
+        
+        # Clean up
+        grenade.delete()
+        
+    except Exception as e:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"AUTO_DEFUSE_ERROR: Error in trigger_auto_defuse_explosion: {e}")
+
+
+class CmdDefuse(Command):
+    """
+    Defuse live grenades and explosives.
+    
+    Usage:
+        defuse <grenade>
+    
+    Examples:
+        defuse grenade
+        defuse flashbang
+    
+    Attempt to defuse a live grenade using technical skill and dexterity.
+    Requires the grenade to be in proximity (within reach). Uses Intellect + 
+    Motorics skill check with time pressure - the less time remaining, the 
+    harder the defuse attempt becomes.
+    
+    WARNING: Failed defuse attempts may trigger early detonation!
+    Each grenade can only be defused once per character to prevent spam.
+    """
+    
+    key = "defuse"
+    locks = "cmd:all()"
+    help_category = "Combat"
+    
+    def func(self):
+        """Execute defuse command."""
+        if not self.args:
+            self.caller.msg("Defuse what?")
+            return
+        
+        grenade_name = self.args.strip()
+        
+        # Find grenade in proximity
+        grenade = self.find_grenade_in_proximity(grenade_name)
+        if not grenade:
+            return
+        
+        # Validate grenade state
+        if not self.validate_grenade_for_defuse(grenade):
+            return
+        
+        # Check one-attempt-per-grenade limit
+        if self.already_attempted_defuse(grenade):
+            self.caller.msg(f"You have already attempted to defuse the {grenade.key}.")
+            return
+        
+        # Execute defuse attempt
+        self.attempt_defuse(grenade)
+    
+    def find_grenade_in_proximity(self, grenade_name):
+        """Find grenade in proximity to the character."""
+        # Check objects in current room that have proximity to caller
+        candidates = []
+        
+        for obj in self.caller.location.contents:
+            if (grenade_name.lower() in obj.key.lower() and 
+                getattr(obj.db, DB_IS_EXPLOSIVE, False)):
+                
+                # Check if caller is in this object's proximity
+                obj_proximity = getattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+                if obj_proximity and self.caller in obj_proximity:
+                    candidates.append(obj)
+        
+        if not candidates:
+            self.caller.msg(f"You don't see any live '{grenade_name}' within reach to defuse.")
+            return None
+        
+        if len(candidates) > 1:
+            self.caller.msg(f"Multiple {grenade_name}s are within reach. Be more specific.")
+            return None
+        
+        return candidates[0]
+    
+    def validate_grenade_for_defuse(self, grenade):
+        """Validate that grenade can be defused."""
+        # Must be explosive
+        if not getattr(grenade.db, DB_IS_EXPLOSIVE, False):
+            self.caller.msg(f"The {grenade.key} is not an explosive device.")
+            return False
+        
+        # Must have pin pulled (be live)
+        if not getattr(grenade.db, DB_PIN_PULLED, False):
+            self.caller.msg(f"The {grenade.key} is not armed - no need to defuse it.")
+            return False
+        
+        # Must have time remaining
+        remaining_time = getattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 0)
+        if remaining_time is None or remaining_time <= 0:
+            self.caller.msg(f"The {grenade.key} has already exploded or is about to explode!")
+            return False
+        
+        return True
+    
+    def already_attempted_defuse(self, grenade):
+        """Check if caller has already attempted to defuse this grenade."""
+        attempted_by = getattr(grenade.ndb, 'defuse_attempted_by', [])
+        if attempted_by is None:
+            attempted_by = []
+            setattr(grenade.ndb, 'defuse_attempted_by', attempted_by)
+        
+        return self.caller in attempted_by
+    
+    def attempt_defuse(self, grenade):
+        """Execute the defuse attempt with skill checks."""
+        # Mark attempt to prevent spam
+        attempted_by = getattr(grenade.ndb, 'defuse_attempted_by', [])
+        if attempted_by is None:
+            attempted_by = []
+        attempted_by.append(self.caller)
+        setattr(grenade.ndb, 'defuse_attempted_by', attempted_by)
+        
+        # Get remaining time for pressure calculation
+        remaining_time = getattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 0)
+        
+        # Calculate difficulty based on time pressure
+        base_difficulty = 15  # Base difficulty
+        time_pressure = max(0, 10 - remaining_time)  # Gets harder as time runs out
+        total_difficulty = base_difficulty + time_pressure
+        
+        # Get character stats (fallback to 1 if not found)
+        intellect = getattr(self.caller, 'intellect', 1)
+        motorics = getattr(self.caller, 'motorics', 1)
+        
+        # Roll Intellect + Motorics (using existing roll pattern)
+        from world.combat.utils import roll_stat
+        
+        # Simulate combined stat roll (would need proper implementation)
+        intellect_roll = roll_stat(self.caller, 'intellect')
+        motorics_roll = roll_stat(self.caller, 'motorics')
+        combined_roll = intellect_roll + motorics_roll
+        
+        # Determine success
+        success = combined_roll >= total_difficulty
+        
+        # Announce attempt
+        self.caller.msg(f"You carefully examine the {grenade.key} and attempt to defuse it...")
+        self.caller.location.msg_contents(
+            f"{self.caller.key} carefully works on defusing the {grenade.key}.",
+            exclude=self.caller
+        )
+        
+        # Debug output
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        if splattercast:
+            splattercast.msg(f"DEFUSE: {self.caller.key} rolled {combined_roll} vs difficulty {total_difficulty} "
+                           f"(base {base_difficulty} + pressure {time_pressure}, {remaining_time}s left) - "
+                           f"{'SUCCESS' if success else 'FAILURE'}")
+        
+        if success:
+            self.handle_defuse_success(grenade)
+        else:
+            self.handle_defuse_failure(grenade)
+    
+    def handle_defuse_success(self, grenade):
+        """Handle successful defuse attempt."""
+        # Cancel countdown timer
+        timer = getattr(grenade.ndb, NDB_GRENADE_TIMER, None)
+        if timer:
+            timer.cancel()
+            delattr(grenade.ndb, NDB_GRENADE_TIMER)
+        
+        # Clear countdown state
+        setattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 0)
+        setattr(grenade.db, DB_PIN_PULLED, False)  # Grenade is now safe
+        
+        # Success messages
+        self.caller.msg(f"SUCCESS! You successfully defuse the {grenade.key}. It is now safe.")
+        self.caller.location.msg_contents(
+            f"{self.caller.key} successfully defuses the {grenade.key}!",
+            exclude=self.caller
+        )
+        
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        if splattercast:
+            splattercast.msg(f"DEFUSE_SUCCESS: {self.caller.key} defused {grenade.key}")
+    
+    def handle_defuse_failure(self, grenade):
+        """Handle failed defuse attempt with potential early detonation."""
+        # 30% chance of early detonation on failure
+        early_detonation_chance = 0.3
+        
+        if random.random() < early_detonation_chance:
+            # Early detonation triggered
+            self.caller.msg(f"FAILURE! Your clumsy attempt triggers the {grenade.key} early!")
+            self.caller.location.msg_contents(
+                f"{self.caller.key}'s failed defuse attempt triggers the {grenade.key}!",
+                exclude=self.caller
+            )
+            
+            # Trigger immediate explosion (reuse existing explosion logic)
+            timer = getattr(grenade.ndb, NDB_GRENADE_TIMER, None)
+            if timer:
+                timer.cancel()
+            
+            # Set very short timer for dramatic effect
+            setattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 1)
+            utils.delay(1, self.trigger_early_explosion, grenade)
+            
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            if splattercast:
+                splattercast.msg(f"DEFUSE_FAILURE: {self.caller.key} triggered early detonation of {grenade.key}")
+        
+        else:
+            # Failed but no early detonation
+            self.caller.msg(f"FAILURE! You fail to defuse the {grenade.key}, but it continues ticking...")
+            self.caller.location.msg_contents(
+                f"{self.caller.key} fails to defuse the {grenade.key}.",
+                exclude=self.caller
+            )
+            
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            if splattercast:
+                splattercast.msg(f"DEFUSE_FAILURE: {self.caller.key} failed to defuse {grenade.key} (no early detonation)")
+    
+    def trigger_early_explosion(self, grenade):
+        """Trigger early explosion from failed defuse attempt."""
+        # Reuse the explosion logic from CmdPull
+        from world.combat.utils import apply_damage
+        
+        try:
+            # Check dud chance
+            dud_chance = getattr(grenade.db, DB_DUD_CHANCE, 0.0)
+            if random.random() < dud_chance:
+                if grenade.location:
+                    grenade.location.msg_contents(MSG_GRENADE_DUD_ROOM.format(grenade=grenade.key))
+                return
+            
+            # Get blast damage
+            blast_damage = getattr(grenade.db, DB_BLAST_DAMAGE, 10)
+            
+            # Room explosion
+            if grenade.location:
+                grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
+            
+            # Apply damage to all in proximity
+            proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+            if proximity_list is None:
+                proximity_list = []
+            
+            for character in proximity_list:
+                if hasattr(character, 'msg'):  # Is a character
+                    apply_damage(character, blast_damage)
+                    character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                    if character.location:
+                        character.location.msg_contents(
+                            MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                            exclude=character
+                        )
+            
+            # Handle chain reactions if enabled
+            if getattr(grenade.db, DB_CHAIN_TRIGGER, False):
+                for obj in proximity_list:
+                    if (hasattr(obj, 'db') and 
+                        getattr(obj.db, DB_IS_EXPLOSIVE, False) and 
+                        obj != grenade):
+                        
+                        # Trigger chain explosion
+                        if grenade.location:
+                            grenade.location.msg_contents(
+                                MSG_GRENADE_CHAIN_TRIGGER.format(grenade=obj.key))
+                        
+                        # Start immediate explosion timer
+                        utils.delay(0.5, self.trigger_early_explosion, obj)
+            
+            # Clean up
+            grenade.delete()
+            
+        except Exception as e:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in trigger_early_explosion: {e}")

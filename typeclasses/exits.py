@@ -268,5 +268,8 @@ class Exit(DefaultExit):
         super().at_traverse(traversing_object, target_location)
         
         # Check for rigged grenades after successful movement
-        from commands.CmdThrow import check_rigged_grenade
+        from commands.CmdThrow import check_rigged_grenade, check_auto_defuse
         check_rigged_grenade(traversing_object, self)
+        
+        # Check for auto-defuse opportunities after entering new room
+        check_auto_defuse(traversing_object)

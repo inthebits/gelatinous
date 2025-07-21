@@ -296,8 +296,11 @@ class CmdFlee(Command):
             caller.move_to(destination, quiet=True)
             
             # Check for rigged grenades after successful movement
-            from commands.CmdThrow import check_rigged_grenade
+            from commands.CmdThrow import check_rigged_grenade, check_auto_defuse
             check_rigged_grenade(caller, chosen_exit)
+            
+            # Check for auto-defuse opportunities after fleeing to new room
+            check_auto_defuse(caller)
             
             # Messages
             caller.msg(f"|gYou successfully flee {chosen_exit.key} to {destination.key}!|n")

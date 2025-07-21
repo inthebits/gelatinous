@@ -1119,8 +1119,11 @@ class CombatHandler(DefaultScript):
                 char.move_to(target_room)
                 
                 # Check for rigged grenades after successful movement
-                from commands.CmdThrow import check_rigged_grenade
+                from commands.CmdThrow import check_rigged_grenade, check_auto_defuse
                 check_rigged_grenade(char, exit_to_target)
+                
+                # Check for auto-defuse opportunities after advancing to new room
+                check_auto_defuse(char)
                 
                 char.msg(f"|gYou successfully advance to {target_room.key} to engage {target.key}.|n")
                 target.msg(f"|y{char.key} advances into the room to engage you!|n")
@@ -1247,8 +1250,11 @@ class CombatHandler(DefaultScript):
                 char.move_to(target_room)
                 
                 # Check for rigged grenades after successful movement
-                from commands.CmdThrow import check_rigged_grenade
+                from commands.CmdThrow import check_rigged_grenade, check_auto_defuse
                 check_rigged_grenade(char, exit_to_use)
+                
+                # Check for auto-defuse opportunities after charging to new room
+                check_auto_defuse(char)
                 
                 clear_aim_state(char)
                 establish_proximity(char, target)
