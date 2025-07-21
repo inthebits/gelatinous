@@ -16,7 +16,7 @@ from evennia.comms.comms import DefaultChannel
 
 
 class Channel(DefaultChannel):
-    r"""
+    """
     This is the base class for all Channel Comms. Inherit from this to
     create different types of communication channels.
 
