@@ -1626,7 +1626,10 @@ class CmdDefuse(Command):
         # First check existing proximity relationships
         proximity_candidates = []
         
-        for obj in self.caller.location.contents:
+        # Check both room contents AND character inventory for proximity candidates
+        all_candidates = list(self.caller.location.contents) + list(self.caller.contents)
+        
+        for obj in all_candidates:
             if (grenade_name.lower() in obj.key.lower() and 
                 getattr(obj.db, DB_IS_EXPLOSIVE, False)):
                 
@@ -1645,7 +1648,8 @@ class CmdDefuse(Command):
         # If not in proximity, check for physical presence and establish mutual proximity
         physical_candidates = []
         
-        for obj in self.caller.location.contents:
+        # Check both room contents AND character inventory for physical candidates
+        for obj in all_candidates:
             if (grenade_name.lower() in obj.key.lower() and 
                 getattr(obj.db, DB_IS_EXPLOSIVE, False)):
                 
@@ -1666,8 +1670,14 @@ class CmdDefuse(Command):
         
         # Establish mutual proximity and return the grenade
         grenade = physical_candidates[0]
-        self.caller.msg(f"You move closer to the {grenade.key}, entering its blast radius...")
-        self.establish_mutual_proximity(grenade)
+        
+        # Different message for held vs room grenades
+        if grenade.location == self.caller:
+            self.caller.msg(f"You examine the {grenade.key} in your hands, preparing to defuse it...")
+        else:
+            self.caller.msg(f"You move closer to the {grenade.key}, entering its blast radius...")
+            self.establish_mutual_proximity(grenade)
+        
         return grenade
     
     def establish_mutual_proximity(self, grenade):
@@ -1831,6 +1841,9 @@ class CmdDefuse(Command):
         # Clean up rigging if this was a rigged grenade
         self.cleanup_rigging(grenade)
         
+        # Clear proximity relationships (grenade is now safe)
+        self.clear_grenade_proximity(grenade)
+        
         # Success messages
         self.caller.msg(f"SUCCESS! You successfully defuse the {grenade.key}. It is now safe.")
         self.caller.location.msg_contents(
@@ -1841,6 +1854,30 @@ class CmdDefuse(Command):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         if splattercast:
             splattercast.msg(f"DEFUSE_SUCCESS: {self.caller.key} defused {grenade.key}")
+    
+    def clear_grenade_proximity(self, grenade):
+        """Clear all proximity relationships for a defused grenade."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Get grenade's proximity list
+        grenade_proximity = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        if not isinstance(grenade_proximity, list):
+            return
+        
+        # Remove grenade from all characters' proximity lists
+        for character in list(grenade_proximity):
+            if hasattr(character, 'ndb'):
+                char_proximity = getattr(character.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+                if isinstance(char_proximity, list) and grenade in char_proximity:
+                    char_proximity.remove(grenade)
+                    if splattercast:
+                        splattercast.msg(f"DEFUSE_PROXIMITY_CLEAR: Removed {grenade.key} from {character.key}'s proximity")
+        
+        # Clear grenade's proximity list
+        setattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        
+        if splattercast:
+            splattercast.msg(f"DEFUSE_PROXIMITY_CLEAR: Cleared all proximity for defused {grenade.key}")
     
     def cleanup_rigging(self, grenade):
         """Clean up rigging references when grenade is defused."""

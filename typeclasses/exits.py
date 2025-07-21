@@ -10,7 +10,7 @@ for allowing Characters to traverse the exit to its destination.
 from evennia.objects.objects import DefaultExit
 from evennia.comms.models import ChannelDB
 from world.combat.handler import get_or_create_combat 
-from world.combat.constants import SPLATTERCAST_CHANNEL, DB_CHAR 
+from world.combat.constants import SPLATTERCAST_CHANNEL, DB_CHAR, NDB_PROXIMITY_UNIVERSAL 
 
 
 from .objects import ObjectParent
@@ -119,7 +119,25 @@ class Exit(DefaultExit):
                 
                 # Clear traversing_object's proximity set
                 traversing_object.ndb.in_proximity_with.clear()
-        # --- END PROXIMITY CLEANUP ---
+        
+        # --- UNIVERSAL PROXIMITY CLEANUP ON ROOM CHANGE ---
+        # Clear universal proximity relationships (grenades, etc.) when moving between rooms
+        if not is_being_dragged and hasattr(traversing_object.ndb, NDB_PROXIMITY_UNIVERSAL):
+            universal_proximity = getattr(traversing_object.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+            if isinstance(universal_proximity, list) and universal_proximity:
+                splattercast.msg(f"UNIVERSAL_PROXIMITY_CLEANUP_ON_MOVE: {traversing_object.key} moving rooms. Clearing universal proximity with: {[o.key if hasattr(o, 'key') else str(o) for o in universal_proximity]}")
+                
+                # Remove traversing_object from others' universal proximity lists
+                for obj in list(universal_proximity):
+                    if hasattr(obj, 'ndb'):
+                        obj_proximity = getattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+                        if isinstance(obj_proximity, list) and traversing_object in obj_proximity:
+                            obj_proximity.remove(traversing_object)
+                            splattercast.msg(f"UNIVERSAL_PROXIMITY_CLEANUP_ON_MOVE: Removed {traversing_object.key} from {obj.key if hasattr(obj, 'key') else str(obj)}'s universal proximity list.")
+                
+                # Clear traversing_object's universal proximity list
+                setattr(traversing_object.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        # --- END UNIVERSAL PROXIMITY CLEANUP ---
 
         handler = getattr(traversing_object.ndb, "combat_handler", None)
 
