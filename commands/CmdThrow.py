@@ -819,6 +819,8 @@ class CmdPull(Command):
             
             # Get proximity list
             proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+            if proximity_list is None:
+                proximity_list = []
             
             # Handle explosion in someone's hands (much more dangerous!)
             if holder:
