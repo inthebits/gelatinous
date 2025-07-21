@@ -1647,13 +1647,17 @@ class CmdDefuse(Command):
         
         for obj in self.caller.location.contents:
             if (grenade_name.lower() in obj.key.lower() and 
-                getattr(obj.db, DB_IS_EXPLOSIVE, False) and
-                getattr(obj.db, DB_PIN_PULLED, False)):  # Only live grenades
+                getattr(obj.db, DB_IS_EXPLOSIVE, False)):
                 
-                physical_candidates.append(obj)
+                # Check if grenade is live (either pin pulled OR rigged to exit)
+                pin_pulled = getattr(obj.db, DB_PIN_PULLED, False)
+                is_rigged = getattr(obj.db, 'rigged_to_exit', None) is not None
+                
+                if pin_pulled or is_rigged:
+                    physical_candidates.append(obj)
         
         if not physical_candidates:
-            self.caller.msg(f"You don't see any live '{grenade_name}' within reach to defuse.")
+            self.caller.msg(f"You don't see any armed '{grenade_name}' within reach to defuse.")
             return None
         
         if len(physical_candidates) > 1:
@@ -1716,12 +1720,19 @@ class CmdDefuse(Command):
             self.caller.msg(f"The {grenade.key} is not an explosive device.")
             return False
         
-        # Must have pin pulled (be live)
-        if not getattr(grenade.db, DB_PIN_PULLED, False):
+        # Must be live (pin pulled OR rigged)
+        pin_pulled = getattr(grenade.db, DB_PIN_PULLED, False)
+        is_rigged = getattr(grenade.db, 'rigged_to_exit', None) is not None
+        
+        if not (pin_pulled or is_rigged):
             self.caller.msg(f"The {grenade.key} is not armed - no need to defuse it.")
             return False
         
-        # Must have time remaining
+        # For rigged grenades, no timer check needed (they're not counting down)
+        if is_rigged:
+            return True
+        
+        # For pin-pulled grenades, check timer
         remaining_time = getattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 0)
         if remaining_time is None or remaining_time <= 0:
             self.caller.msg(f"The {grenade.key} has already exploded or is about to explode!")
@@ -1747,13 +1758,21 @@ class CmdDefuse(Command):
         attempted_by.append(self.caller)
         setattr(grenade.ndb, 'defuse_attempted_by', attempted_by)
         
-        # Get remaining time for pressure calculation
-        remaining_time = getattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 0)
+        # Check if this is a rigged grenade (different difficulty calculation)
+        is_rigged = getattr(grenade.db, 'rigged_to_exit', None) is not None
         
-        # Calculate difficulty based on time pressure
-        base_difficulty = 15  # Base difficulty
-        time_pressure = max(0, 10 - remaining_time)  # Gets harder as time runs out
-        total_difficulty = base_difficulty + time_pressure
+        if is_rigged:
+            # Rigged grenades: base difficulty only (no time pressure)
+            base_difficulty = 18  # Slightly harder base (trap disarmament)
+            time_pressure = 0
+            total_difficulty = base_difficulty
+            remaining_time = "N/A"
+        else:
+            # Live grenades: time pressure difficulty
+            remaining_time = getattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 0)
+            base_difficulty = 15  # Base difficulty
+            time_pressure = max(0, 10 - remaining_time)  # Gets harder as time runs out
+            total_difficulty = base_difficulty + time_pressure
         
         # Get character stats (fallback to 1 if not found)
         intellect = getattr(self.caller, 'intellect', 1)
@@ -1770,18 +1789,26 @@ class CmdDefuse(Command):
         # Determine success
         success = combined_roll >= total_difficulty
         
-        # Announce attempt
-        self.caller.msg(f"You carefully examine the {grenade.key} and attempt to defuse it...")
-        self.caller.location.msg_contents(
-            f"{self.caller.key} carefully works on defusing the {grenade.key}.",
-            exclude=self.caller
-        )
+        # Announce attempt (different message for rigged vs live)
+        if is_rigged:
+            self.caller.msg(f"You carefully examine the rigged {grenade.key} and attempt to disarm the trap...")
+            self.caller.location.msg_contents(
+                f"{self.caller.key} carefully works on disarming the rigged {grenade.key}.",
+                exclude=self.caller
+            )
+        else:
+            self.caller.msg(f"You carefully examine the live {grenade.key} and attempt to defuse it...")
+            self.caller.location.msg_contents(
+                f"{self.caller.key} carefully works on defusing the {grenade.key}.",
+                exclude=self.caller
+            )
         
         # Debug output
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         if splattercast:
+            grenade_type = "rigged" if is_rigged else "live"
             splattercast.msg(f"DEFUSE: {self.caller.key} rolled {combined_roll} vs difficulty {total_difficulty} "
-                           f"(base {base_difficulty} + pressure {time_pressure}, {remaining_time}s left) - "
+                           f"(base {base_difficulty} + pressure {time_pressure}, {remaining_time}s left, {grenade_type}) - "
                            f"{'SUCCESS' if success else 'FAILURE'}")
         
         if success:
@@ -1791,7 +1818,7 @@ class CmdDefuse(Command):
     
     def handle_defuse_success(self, grenade):
         """Handle successful defuse attempt."""
-        # Cancel countdown timer
+        # Cancel countdown timer if active
         timer = getattr(grenade.ndb, NDB_GRENADE_TIMER, None)
         if timer:
             timer.cancel()
@@ -1800,6 +1827,9 @@ class CmdDefuse(Command):
         # Clear countdown state
         setattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 0)
         setattr(grenade.db, DB_PIN_PULLED, False)  # Grenade is now safe
+        
+        # Clean up rigging if this was a rigged grenade
+        self.cleanup_rigging(grenade)
         
         # Success messages
         self.caller.msg(f"SUCCESS! You successfully defuse the {grenade.key}. It is now safe.")
@@ -1811,6 +1841,48 @@ class CmdDefuse(Command):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         if splattercast:
             splattercast.msg(f"DEFUSE_SUCCESS: {self.caller.key} defused {grenade.key}")
+    
+    def cleanup_rigging(self, grenade):
+        """Clean up rigging references when grenade is defused."""
+        rigged_to_exit = getattr(grenade.db, 'rigged_to_exit', None)
+        if rigged_to_exit:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            
+            # Clean up main exit
+            if hasattr(rigged_to_exit.db, 'rigged_grenade'):
+                delattr(rigged_to_exit.db, 'rigged_grenade')
+                if splattercast:
+                    splattercast.msg(f"DEFUSE_CLEANUP: Removed rigging from {rigged_to_exit}")
+            
+            # Find and clean up return exit
+            if rigged_to_exit.destination:
+                destination_room = rigged_to_exit.destination
+                grenade_room = grenade.location if hasattr(grenade, 'location') else self.caller.location
+                
+                for obj in destination_room.contents:
+                    if (hasattr(obj, 'destination') and 
+                        obj.destination == grenade_room and
+                        hasattr(obj.db, 'rigged_grenade') and
+                        getattr(obj.db, 'rigged_grenade') == grenade):
+                        delattr(obj.db, 'rigged_grenade')
+                        if splattercast:
+                            splattercast.msg(f"DEFUSE_CLEANUP: Removed rigging from return exit {obj}")
+                        break
+            
+            # Clean up grenade's rigging reference
+            delattr(grenade.db, 'rigged_to_exit')
+            if hasattr(grenade.db, 'rigged_by'):
+                delattr(grenade.db, 'rigged_by')
+            
+            # Announce trap disarmament
+            self.caller.msg("You also disarm the trap rigging mechanism.")
+            self.caller.location.msg_contents(
+                f"{self.caller.key} disarms the trap rigging on the {grenade.key}.",
+                exclude=self.caller
+            )
+            
+            if splattercast:
+                splattercast.msg(f"DEFUSE_CLEANUP: Fully cleaned up rigging for {grenade.key}")
     
     def handle_defuse_failure(self, grenade):
         """Handle failed defuse attempt with potential early detonation."""
