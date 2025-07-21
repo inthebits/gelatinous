@@ -447,10 +447,12 @@ All explosive and throwing weapon properties should be validated:
 #### 🔄 **Phase 2 Planned: Defuse Command System**
 **Next Priority**: Skill-based defuse mechanics
 **Planned Features**:
-- `defuse <grenade>` command with skill checks
-- Auto-defuse when leaving proximity of live grenades
-- Risk/reward mechanics for defuse attempts
-- Integration with existing proximity system
+- `defuse <grenade>` command with deliberate skill checks
+- **Auto-defuse when entering proximity of live grenades** (like D&D trap detection)
+- Risk/reward mechanics for defuse attempts (failure might trigger early detonation)
+- Skill integration (Intellect + Motorics for technical knowledge + dexterity)
+- One-attempt-per-grenade limit to prevent spam
+- Time pressure mechanics (harder to defuse with less time remaining)
 
 #### 🔄 **Phase 3 Planned: Advanced Grenade Features**  
 **Future Enhancements**:
