@@ -324,11 +324,16 @@ Grenade B explodes: affects [Alice, Bob] (inherited proximity)
 
 ## Implementation Priority
 
-### Phase 1: Basic Utility Throwing
-- Command parsing and validation
-- Same-room object transfer
-- Flight timing and announcements
-- Landing logic and proximity assignment
+### Phase 1: Basic Utility Throwing ✅ **COMPLETED**
+- ✅ Command parsing and validation
+- ✅ Same-room object transfer
+- ✅ Flight timing and announcements
+- ✅ Landing logic and proximity assignment
+- ✅ **Grenade Enhancement**: Pin validation removal for tactical flexibility
+  - Players can throw unpinned grenades as inert objects
+  - Tactical mistakes and intentional choices supported
+  - Only blocks throws of already-exploded grenades (timer <= 0)
+  - Null safety added for NDB attribute comparisons
 
 ### Phase 2: Combat Integration
 - Throwing weapon detection
@@ -369,6 +374,7 @@ All explosive and throwing weapon properties should be validated:
 - **Optional properties**: `db.fuse_time`, `db.blast_damage`, `db.dud_chance`
 - **Default values**: Missing properties default to safe values (no damage, no explosion)
 - **Validation timing**: Check properties during command execution, not object creation
+- **Null safety**: NDB attribute comparisons must check for None values before integer operations
 
 ## Error Handling
 
@@ -393,7 +399,7 @@ All explosive and throwing weapon properties should be validated:
 - **Invalid combat state**: Handle missing combat handler gracefully
 
 ### Grenade-Specific Errors
-- **Unpinned grenade throw**: "You must pull the pin first before throwing the grenade."
+- **~~Unpinned grenade throw~~**: ~~"You must pull the pin first before throwing the grenade."~~ **PHASE 1 REMOVED**: Pin validation removed for tactical flexibility
 - **Timer expired in hand**: "The grenade explodes in your hands!" (damage to holder)
 - **Catch attempt failed**: Standard combat miss mechanics for catching thrown objects
 - **Rig without pin**: "You must pull the pin before rigging the grenade."
@@ -416,6 +422,55 @@ All explosive and throwing weapon properties should be validated:
 - **Target leaves room during flight**: Object lands where target was
 - **Multiple objects same target**: Each handled independently
 - **Invalid room connections**: Blocked by doors/barriers (future)
+
+## Implementation Status & Roadmap
+
+### Current Implementation Status *(Updated 2025-07-20)*
+
+#### ✅ **Phase 1 Complete: Grenade Enhancement**
+**Status**: Fully implemented and tested
+**Key Features**:
+- Pin validation removal for tactical flexibility
+- Players can throw unpinned grenades as inert objects
+- Only blocks throws of expired grenades (timer <= 0)
+- Null safety for NDB attribute comparisons
+- TypeError fixes for robust operation
+
+**Technical Implementation**:
+- Modified `validate_grenade_throw()` method in `commands/CmdThrow.py`
+- Removed pin requirement validation 
+- Added null safety check: `if remaining is not None and remaining <= 0:`
+- Maintains explosion-in-hands protection for safety
+
+**Testing Results**: Successfully tested pin validation removal and TypeError fixes
+
+#### 🔄 **Phase 2 Planned: Defuse Command System**
+**Next Priority**: Skill-based defuse mechanics
+**Planned Features**:
+- `defuse <grenade>` command with skill checks
+- Auto-defuse when leaving proximity of live grenades
+- Risk/reward mechanics for defuse attempts
+- Integration with existing proximity system
+
+#### 🔄 **Phase 3 Planned: Advanced Grenade Features**  
+**Future Enhancements**:
+- Sticky grenade mechanics
+- Remote detonation systems
+- Enhanced chain reaction logic
+- Multi-type explosive support
+
+### Architectural Decisions Made
+1. **Tactical Flexibility**: Removed pin validation to allow strategic misdirection
+2. **Safety First**: Maintained explosion-in-hands protection for expired timers
+3. **Robust Error Handling**: Added null safety for runtime stability
+4. **Property-Driven Design**: All explosive behavior driven by object properties
+
+### Integration Points with Existing Systems
+- **Universal Proximity System**: Enhanced for character/object proximity handling
+- **Aim System**: Leveraged for cross-room targeting
+- **Combat Handler**: Turn-based processing and damage calculation
+- **Mr. Hand System**: Wielding validation and state management
+- **Timer System**: Evennia's `utils.delay()` for countdown mechanics
 
 ## Testing Scenarios
 
@@ -504,7 +559,7 @@ Property-based system enables diverse explosive types:
 - **Cluster Bomb**: `chain_trigger=True, blast_radius=2` (affects wider area)
 
 #### Grenade Activation System
-- **Pin pulling required**: `pull pin on grenade` command must be used before throwing
+- **Pin pulling required**: `pull pin on grenade` command must be used before throwing *(Phase 1: Requirement removed for tactical flexibility)*
 - **Timer starts on pin pull**: Countdown begins immediately when pin is pulled (duration from `object.db.fuse_time`)
 - **Throw window**: Player has fuse time to throw after pulling pin, or grenade explodes in hand
 - **Hot potato mechanics**: Players can catch live grenades and throw them back within timer window
@@ -512,6 +567,7 @@ Property-based system enables diverse explosive types:
 - **Drop mechanics**: Players can drop live grenades as area denial tactic
 - **Additional commands needed**: Implementation requires both `pull` and `catch` commands
 - **State tracking**: Grenades need `db.pin_pulled` and timer state management
+- **Tactical flexibility**: Unpinned grenades can be thrown as inert objects for tactical misdirection
 
 #### Explosive Object Properties
 All explosive behavior should be driven by object properties:
