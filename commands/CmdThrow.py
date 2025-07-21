@@ -1203,6 +1203,30 @@ def check_rigged_grenade(character, exit_obj):
     # Move grenade to the character's location quietly (no movement announcements)
     rigged_grenade.move_to(character.location, quiet=True)
     
+    # Establish proximity for auto-defuse system (rigged grenades need this!)
+    proximity_list = getattr(rigged_grenade.ndb, NDB_PROXIMITY_UNIVERSAL, None)
+    if not proximity_list:
+        setattr(rigged_grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        proximity_list = getattr(rigged_grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+    
+    # Validate proximity_list is actually a list
+    if not isinstance(proximity_list, list):
+        proximity_list = []
+        setattr(rigged_grenade.ndb, NDB_PROXIMITY_UNIVERSAL, proximity_list)
+    
+    # Add the triggering character to proximity
+    if character not in proximity_list:
+        proximity_list.append(character)
+    
+    # Add other characters in the room to proximity (rigged grenades affect everyone in room)
+    for obj in character.location.contents:
+        if (hasattr(obj, 'has_account') and obj.has_account and 
+            obj != character and obj not in proximity_list):
+            proximity_list.append(obj)
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    splattercast.msg(f"{DEBUG_PREFIX_THROW}_RIGGED: Established proximity for {rigged_grenade.key}: {[char.key for char in proximity_list]}")
+    
     # Start countdown timer
     # Create a closure to handle explosion
     def explode_rigged_grenade():
@@ -1311,21 +1335,27 @@ def check_auto_defuse(character):
         live_grenades = []
         
         for obj in character.location.contents:
+            splattercast.msg(f"AUTO_DEFUSE: Checking object {obj.key} - is_explosive: {getattr(obj.db, DB_IS_EXPLOSIVE, False)}")
+            
             # Check if object is an explosive
             if not getattr(obj.db, DB_IS_EXPLOSIVE, False):
                 continue
                 
             # Check if grenade is live (pin pulled and timer active)
-            if not getattr(obj.db, DB_PIN_PULLED, False):
+            pin_pulled = getattr(obj.db, DB_PIN_PULLED, False)
+            splattercast.msg(f"AUTO_DEFUSE: {obj.key} pin_pulled: {pin_pulled}")
+            if not pin_pulled:
                 continue
                 
             # Check if grenade has time remaining
             remaining_time = getattr(obj.ndb, NDB_COUNTDOWN_REMAINING, 0)
+            splattercast.msg(f"AUTO_DEFUSE: {obj.key} remaining_time: {remaining_time}")
             if remaining_time is None or remaining_time <= 0:
                 continue
             
             # Check if character is in this grenade's proximity
             obj_proximity = getattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+            splattercast.msg(f"AUTO_DEFUSE: {obj.key} proximity: {[char.key if hasattr(char, 'key') else str(char) for char in obj_proximity]}")
             if obj_proximity and character in obj_proximity:
                 # Check if character has already attempted to defuse this grenade
                 attempted_by = getattr(obj.ndb, 'defuse_attempted_by', [])
@@ -1335,6 +1365,10 @@ def check_auto_defuse(character):
                 if character not in attempted_by:
                     live_grenades.append(obj)
                     splattercast.msg(f"AUTO_DEFUSE: Found auto-defuse candidate: {obj.key} (time remaining: {remaining_time}s)")
+                else:
+                    splattercast.msg(f"AUTO_DEFUSE: {obj.key} already attempted by {character.key}")
+            else:
+                splattercast.msg(f"AUTO_DEFUSE: {character.key} not in {obj.key} proximity or proximity empty")
         
         if not live_grenades:
             splattercast.msg(f"AUTO_DEFUSE: No auto-defuse opportunities found for {character.key}")
