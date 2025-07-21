@@ -1140,6 +1140,7 @@ class CmdRig(Command):
         # Set up rigging on the main exit
         setattr(exit_obj.db, 'rigged_grenade', grenade)
         setattr(grenade.db, 'rigged_to_exit', exit_obj)
+        setattr(grenade.db, 'rigged_by', self.caller)  # Store who rigged it for immunity
         
         # Find and rig the return exit too
         return_exit = self.find_return_exit(exit_obj)
@@ -1186,6 +1187,13 @@ def check_rigged_grenade(character, exit_obj):
     # Safe check - only proceed if rigged_grenade actually exists and has a value
     rigged_grenade = getattr(exit_obj.db, 'rigged_grenade', None)
     if not rigged_grenade:
+        return False
+    
+    # Check if character is the rigger - they have immunity to their own traps
+    rigger = getattr(rigged_grenade.db, 'rigged_by', None)
+    if rigger and character == rigger:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_RIGGED: {character.key} safely bypassed their own rigged {rigged_grenade.key}")
         return False
     
     # Trigger explosion messages (character is now at destination)
