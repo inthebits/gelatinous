@@ -184,7 +184,7 @@ class CmdThrow(Command):
         # Only check if grenade timer has expired (explosion in hands)
         if hasattr(obj.ndb, NDB_COUNTDOWN_REMAINING):
             remaining = getattr(obj.ndb, NDB_COUNTDOWN_REMAINING, 0)
-            if remaining <= 0:
+            if remaining is not None and remaining <= 0:
                 self.caller.msg(MSG_THROW_TIMER_EXPIRED)
                 # Apply damage to caller
                 blast_damage = getattr(obj.db, DB_BLAST_DAMAGE, 10)
