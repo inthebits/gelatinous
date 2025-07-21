@@ -178,15 +178,10 @@ class CmdThrow(Command):
     
     def validate_grenade_throw(self, obj):
         """Validate grenade-specific throwing requirements."""
-        # Check if grenade requires pin and if pin is pulled
-        requires_pin = getattr(obj.db, DB_REQUIRES_PIN, True)
-        if requires_pin:
-            pin_pulled = getattr(obj.db, DB_PIN_PULLED, False)
-            if not pin_pulled:
-                self.caller.msg(MSG_THROW_UNPINNED_GRENADE)
-                return False
+        # Allow unpinned grenades to be thrown as inert objects
+        # Players should be able to make tactical mistakes or intentional choices
         
-        # Check if grenade timer has expired
+        # Only check if grenade timer has expired (explosion in hands)
         if hasattr(obj.ndb, NDB_COUNTDOWN_REMAINING):
             remaining = getattr(obj.ndb, NDB_COUNTDOWN_REMAINING, 0)
             if remaining <= 0:
