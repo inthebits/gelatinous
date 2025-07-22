@@ -481,12 +481,16 @@ class CmdThrow(Command):
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Moving {obj} to destination {destination}")
                 obj.move_to(destination)
                 
-                # Announce arrival
+                # Announce arrival only for cross-room throws
                 if destination != origin:
-                    # Determine arrival direction
+                    # Cross-room throw - announce arrival
                     arrival_dir = self.get_arrival_direction(origin, destination)
                     message = MSG_THROW_ARRIVAL.format(object=obj.key, direction=arrival_dir)
                     destination.msg_contents(message)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Cross-room arrival message sent")
+                else:
+                    # Same-room throw - no arrival message needed (already had throw announcement)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Same-room throw - skipping arrival message")
                 
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: About to call handle_landing")
                 # Handle landing and proximity
@@ -954,10 +958,12 @@ class CmdCatch(Command):
             self.caller.msg(MSG_CATCH_NO_FREE_HANDS)
             return
         
-        # Find flying object in current room
-        flying_objects = getattr(self.caller.location.ndb, NDB_FLYING_OBJECTS, [])
-        target_obj = None
+        # Find flying object in current room with robust null safety
+        flying_objects = getattr(self.caller.location.ndb, NDB_FLYING_OBJECTS, None)
+        if not flying_objects or not isinstance(flying_objects, list):
+            flying_objects = []
         
+        target_obj = None
         for obj in flying_objects:
             if object_name.lower() in obj.key.lower():
                 target_obj = obj
