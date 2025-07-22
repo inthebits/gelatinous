@@ -196,7 +196,7 @@ THROWING_WEAPON_BASE = {
         ("item", "general")
     ],
     "attrs": [
-        ("is_throwing_weapon", True),
+        ("is_ranged", True),  # Throwing weapons are ranged weapons
         ("is_explosive", False),
     ]
 }

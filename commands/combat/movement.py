@@ -200,6 +200,32 @@ class CmdFlee(Command):
         # If we reach here, any aim locks have been handled. Now attempt to flee from combat.
         splattercast.msg(f"{DEBUG_PREFIX_FLEE}_COMBAT_PHASE: {caller.key} attempting to disengage from combat.")
         
+        # If we successfully broke an aim but have no combat handler, just move to safety
+        if aim_successfully_broken and not original_handler_at_flee_start:
+            chosen_exit = choice(available_exits)
+            destination = chosen_exit.destination
+            
+            # Move to the chosen exit
+            caller.move_to(destination, quiet=True)
+            
+            # Check for rigged grenades after successful movement
+            from commands.CmdThrow import check_rigged_grenade, check_auto_defuse
+            check_rigged_grenade(caller, chosen_exit)
+            
+            # Check for auto-defuse opportunities after fleeing to new room
+            check_auto_defuse(caller)
+            
+            # Messages
+            caller.msg(f"|gYou successfully flee {chosen_exit.key} to {destination.key}!|n")
+            caller.location.msg_contents(f"|y{caller.get_display_name(caller.location)} has arrived, fleeing from an aimer.|n", exclude=[caller])
+            
+            # Message the room they left
+            if hasattr(caller, 'previous_location') and caller.previous_location:
+                caller.previous_location.msg_contents(f"|y{caller.get_display_name(caller.previous_location)} flees {chosen_exit.key}!|n")
+            
+            splattercast.msg(f"{DEBUG_PREFIX_FLEE}_SUCCESS: {caller.key} successfully fled after breaking aim via {chosen_exit.key} to {destination.key}.")
+            return
+        
         if original_handler_at_flee_start:
             # Character is in combat - attempt to disengage
             caller_entry = next((e for e in original_handler_at_flee_start.db.combatants if e["char"] == caller), None)
@@ -314,9 +340,9 @@ class CmdFlee(Command):
             splattercast.msg(f"{DEBUG_PREFIX_FLEE}_SUCCESS: {caller.key} successfully fled via {chosen_exit.key} to {destination.key}.")
             
         else:
-            # No combat handler but passed earlier checks - this shouldn't happen
+            # No combat handler and no aim was broken - this means nothing to flee from
             caller.msg("You have nothing to flee from.")
-            splattercast.msg(f"{DEBUG_PREFIX_FLEE}_ERROR: {caller.key} reached flee movement phase with no combat handler.")
+            splattercast.msg(f"{DEBUG_PREFIX_FLEE}_ERROR: {caller.key} reached flee movement phase with no combat handler and no aim broken.")
 
         # Ensure combat handler is updated if it still exists
         if original_handler_at_flee_start and hasattr(original_handler_at_flee_start, 'is_active'):
