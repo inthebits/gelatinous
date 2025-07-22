@@ -7,6 +7,7 @@ Comprehensive throwing system supporting:
 - Grenade mechanics with proximity and timers
 - Flight state management and room announcements
 - Universal proximity system integration
+- Grenade deflection with melee weapons
 
 Part of the G.R.I.M. Combat System.
 """
@@ -45,6 +46,12 @@ class CmdThrow(Command):
     Thrown objects have a 2-second flight time and appear in room descriptions during
     flight. Landing creates proximity relationships for grenade mechanics and chain
     reactions.
+    
+    Special mechanics:
+    - Grenades can be deflected by the TARGET if they're wielding a melee weapon (Motorics skill check)
+    - Deflected grenades may bounce back to the thrower or ricochet in random directions  
+    - Melee weapons with 'deflection_bonus' property modify the deflection difficulty threshold
+    - Impact grenades (future feature) cannot be deflected
     """
     
     key = "throw"
@@ -512,6 +519,13 @@ class CmdThrow(Command):
                         # Same-room throw - no arrival message needed (already had throw announcement)
                         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Same-room throw - skipping arrival message")
                     
+                    # Check for grenade deflection before landing
+                    if self.is_explosive(obj) and destination:
+                        deflection_result = self.check_grenade_deflection(obj, destination, thrower)
+                        if deflection_result:
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Grenade was deflected, skipping normal landing")
+                            return  # Deflection handled everything, don't continue with normal landing
+                    
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: About to call handle_landing")
                     # Handle landing and proximity
                     self.handle_landing(obj, destination, target, is_weapon, thrower)
@@ -750,6 +764,188 @@ class CmdThrow(Command):
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in handle_grenade_landing: {e}")
             # Don't re-raise here - grenade landing failure shouldn't fail entire throw
+    
+    def check_grenade_deflection(self, grenade, destination, thrower):
+        """Check if the specific target can deflect the incoming grenade with a melee weapon."""
+        try:
+            import random
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: check_grenade_deflection called for {grenade} in {destination}")
+            
+            # Future-proofing: Skip deflection for impact grenades (explode on contact)
+            if getattr(grenade.db, 'impact_detonation', False):
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Impact grenade {grenade} cannot be deflected")
+                return False
+            
+            # Get the specific target from flight data
+            target = getattr(grenade.ndb, 'flight_target', None)
+            if not target:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: No specific target for deflection check")
+                return False
+            
+            # Check if target is in the destination room
+            if target.location != destination:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Target {target} not in destination {destination}")
+                return False
+            
+            # Check if target has hands and a melee weapon
+            target_hands = getattr(target, 'hands', None)
+            if not target_hands:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Target {target} has no hands")
+                return False
+            
+            # Find melee weapon in target's hands
+            melee_weapon = None
+            for hand, wielded_obj in target_hands.items():
+                if wielded_obj and self.is_melee_weapon(wielded_obj):
+                    melee_weapon = wielded_obj
+                    break
+            
+            if not melee_weapon:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Target {target} has no melee weapon")
+                return False
+            
+            # Perform Motorics skill check for deflection
+            from world.combat.utils import roll_stat
+            
+            # Roll Motorics skill
+            motorics_roll = roll_stat(target, 'motorics')
+            
+            # Base difficulty threshold (higher = easier)
+            base_threshold = 10  # Moderate difficulty
+            weapon_bonus = getattr(melee_weapon.db, 'deflection_bonus', 0.0)  # Optional weapon property
+            
+            # Convert weapon bonus to threshold modifier (0.30 bonus = +6 to threshold)
+            threshold_modifier = int(weapon_bonus * 20)
+            final_threshold = base_threshold + threshold_modifier
+            
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: {target} Motorics deflection: rolled {motorics_roll} vs threshold {final_threshold}")
+            
+            if motorics_roll >= final_threshold:
+                # Successful deflection!
+                return self.perform_grenade_deflection(grenade, target, melee_weapon, thrower, destination)
+            else:
+                # Failed deflection attempt
+                target.msg(f"You attempt to deflect the {grenade.key} with your {melee_weapon.key}, but your reflexes aren't quick enough!")
+                destination.msg_contents(
+                    f"{target.key} swings their {melee_weapon.key} at the incoming {grenade.key} but fails to connect!",
+                    exclude=target
+                )
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: {target} failed deflection attempt")
+                return False
+                
+        except Exception as e:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in check_grenade_deflection: {e}")
+            return False
+    
+    def is_melee_weapon(self, obj):
+        """Check if object is a melee weapon suitable for deflection."""
+        # Melee weapons are those that are NOT ranged (default is melee)
+        is_ranged = getattr(obj.db, 'is_ranged', False)
+        return not is_ranged
+    
+    def perform_grenade_deflection(self, grenade, deflector, weapon, original_thrower, current_location):
+        """Perform the actual grenade deflection."""
+        try:
+            import random
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: perform_grenade_deflection called")
+            
+            # Announce successful deflection
+            deflector.msg(f"|yYou successfully bat the {grenade.key} away with your {weapon.key}!|n")
+            current_location.msg_contents(
+                f"|y{deflector.key} deflects the incoming {grenade.key} with their {weapon.key}!|n",
+                exclude=deflector
+            )
+            
+            # Determine deflection target and destination
+            deflection_success = self.determine_deflection_target(grenade, deflector, original_thrower, current_location)
+            
+            if deflection_success:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Grenade deflection successful, new flight initiated")
+                return True
+            else:
+                # Deflection hit but grenade lands in same room
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Deflection hit but grenade stays in same room")
+                self.handle_landing(grenade, current_location, None, False, original_thrower)
+                return True
+                
+        except Exception as e:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in perform_grenade_deflection: {e}")
+            return False
+    
+    def determine_deflection_target(self, grenade, deflector, original_thrower, current_location):
+        """Determine where the deflected grenade goes."""
+        try:
+            import random
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            
+            # Get grenade's original flight data
+            origin = getattr(grenade.ndb, 'flight_origin', None)
+            
+            # 60% chance to deflect back toward origin/thrower if possible
+            # 40% chance to deflect in random direction
+            deflect_back_chance = 0.6
+            
+            if random.random() <= deflect_back_chance and origin and origin != current_location:
+                # Try to deflect back to origin room
+                new_destination = origin
+                new_target = original_thrower if original_thrower and original_thrower.location == origin else None
+                deflection_type = "back toward origin"
+                
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Deflecting back to origin {origin}")
+                
+            else:
+                # Deflect in random direction
+                available_exits = [obj for obj in current_location.contents 
+                                 if hasattr(obj, 'destination') and obj.destination 
+                                 and obj.destination != current_location]
+                
+                if available_exits:
+                    random_exit = random.choice(available_exits)
+                    new_destination = random_exit.destination
+                    new_target = self.select_random_target_in_room(new_destination)
+                    deflection_type = f"toward {random_exit.key}"
+                    
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Deflecting to random direction {random_exit.key}")
+                else:
+                    # No exits available, grenade lands in current room
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: No exits available for deflection")
+                    return False
+            
+            # Announce deflection direction
+            current_location.msg_contents(
+                f"The {grenade.key} ricochets {deflection_type}!"
+            )
+            
+            # Update flight data and restart flight
+            grenade.ndb.flight_destination = new_destination
+            grenade.ndb.flight_target = new_target
+            grenade.ndb.flight_origin = current_location
+            grenade.ndb.flight_thrower = deflector  # Deflector becomes new "thrower"
+            
+            # Start new flight with shorter timer (already partially through flight)
+            reduced_flight_time = max(1, THROW_FLIGHT_TIME - 1)  # At least 1 second
+            grenade.ndb.flight_timer = utils.delay(reduced_flight_time, self.complete_flight, grenade)
+            
+            # Add to current room's flying objects temporarily
+            flying_objects = getattr(current_location.ndb, NDB_FLYING_OBJECTS, None)
+            if not flying_objects:
+                setattr(current_location.ndb, NDB_FLYING_OBJECTS, [])
+                flying_objects = getattr(current_location.ndb, NDB_FLYING_OBJECTS)
+            
+            if grenade not in flying_objects:
+                flying_objects.append(grenade)
+            
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: Deflected {grenade} from {deflector} to {new_destination}")
+            return True
+            
+        except Exception as e:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in determine_deflection_target: {e}")
+            return False
 
 
 class CmdPull(Command):

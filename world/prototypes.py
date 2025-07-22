@@ -118,6 +118,69 @@ SMOKE_GRENADE = {
 }
 
 # =============================================================================
+# MELEE WEAPON PROTOTYPES (for grenade deflection testing)
+# =============================================================================
+
+# Base melee weapon
+MELEE_WEAPON_BASE = {
+    "prototype_key": "melee_weapon_base",
+    "key": "melee weapon",
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A weapon designed for close combat.",
+    "tags": [
+        ("weapon", "type"),
+        ("melee", "category"),
+        ("item", "general")
+    ],
+    "attrs": [
+        ("is_ranged", False),  # Explicitly melee (though this is the default)
+    ]
+}
+
+# Sword (standard deflection)
+SWORD = {
+    "prototype_parent": "MELEE_WEAPON_BASE",
+    "key": "sword",
+    "aliases": ["blade"],
+    "desc": "A well-balanced sword. Good for both combat and deflecting projectiles.",
+    "damage": 10,
+    "weapon_type": "long_sword",  # Using existing message type
+}
+
+# Baseball bat (enhanced deflection)
+BASEBALL_BAT = {
+    "prototype_parent": "MELEE_WEAPON_BASE",
+    "key": "baseball bat",
+    "aliases": ["bat"],
+    "desc": "A wooden baseball bat. Perfect for batting away incoming objects!",
+    "damage": 8,
+    "deflection_bonus": 0.30,  # +6 to deflection threshold (0.30 * 20)
+    "weapon_type": "baseball_bat",  # Using existing message type
+}
+
+# Staff (good deflection)
+STAFF = {
+    "prototype_parent": "MELEE_WEAPON_BASE",
+    "key": "staff",
+    "aliases": ["quarterstaff", "bo"],
+    "desc": "A long wooden staff. Its reach makes it excellent for deflecting projectiles.",
+    "damage": 7,
+    "deflection_bonus": 0.10,  # +2 to deflection threshold (0.10 * 20)
+    "weapon_type": "staff",  # Using existing message type
+}
+
+# Dagger (poor deflection)
+DAGGER = {
+    "prototype_parent": "MELEE_WEAPON_BASE",
+    "key": "dagger",
+    "aliases": ["knife"],
+    "desc": "A small, sharp dagger. Not ideal for deflecting larger objects.",
+    "damage": 6,
+    "deflection_bonus": -0.05,  # -1 to deflection threshold (penalty)
+    "weapon_type": "knife",  # Using existing message type
+}
+
+# =============================================================================
 # THROWING WEAPON PROTOTYPES
 # =============================================================================
 
