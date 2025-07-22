@@ -455,6 +455,7 @@ class CmdThrow(Command):
     
     def complete_flight(self, obj):
         """Complete the flight and handle landing."""
+        splattercast = None
         try:
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Starting complete_flight for {obj}")
@@ -469,63 +470,98 @@ class CmdThrow(Command):
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Object {obj} was caught, skipping complete_flight")
                 return
             
-            # Get flight data with defensive checks
-            destination = getattr(obj.ndb, 'flight_destination', None)
-            target = getattr(obj.ndb, 'flight_target', None)
-            origin = getattr(obj.ndb, 'flight_origin', None)
-            is_weapon = getattr(obj.ndb, 'flight_is_weapon', False)
-            thrower = getattr(obj.ndb, 'flight_thrower', None)
+            # Get flight data with defensive checks - wrap in try-catch to handle race conditions
+            try:
+                destination = getattr(obj.ndb, 'flight_destination', None)
+                target = getattr(obj.ndb, 'flight_target', None)
+                origin = getattr(obj.ndb, 'flight_origin', None)
+                is_weapon = getattr(obj.ndb, 'flight_is_weapon', False)
+                thrower = getattr(obj.ndb, 'flight_thrower', None)
+            except (AttributeError, TypeError):
+                # Race condition - object state changed between checks
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Race condition detected during flight data access, skipping complete_flight")
+                return
             
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Flight data - destination: {destination}, target: {target}, origin: {origin}")
             
-            # Clean up origin room flying objects
-            origin_flying_objects = getattr(origin.ndb, NDB_FLYING_OBJECTS, None)
-            if origin and origin_flying_objects:
-                flying_objects = getattr(origin.ndb, NDB_FLYING_OBJECTS)
-                if flying_objects and obj in flying_objects:
-                    flying_objects.remove(obj)
-                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Removed {obj} from origin flying objects")
+            # Clean up origin room flying objects with additional safety
+            if origin and hasattr(origin, 'ndb') and origin.ndb is not None:
+                try:
+                    origin_flying_objects = getattr(origin.ndb, NDB_FLYING_OBJECTS, None)
+                    if origin_flying_objects and obj in origin_flying_objects:
+                        origin_flying_objects.remove(obj)
+                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Removed {obj} from origin flying objects")
+                except (AttributeError, TypeError, ValueError):
+                    # Safe to ignore - object cleanup isn't critical
+                    pass
             
             # Move object to destination
             if destination:
-                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Moving {obj} to destination {destination}")
-                obj.move_to(destination)
-                
-                # Announce arrival only for cross-room throws
-                if destination != origin:
-                    # Cross-room throw - announce arrival
-                    arrival_dir = self.get_arrival_direction(origin, destination)
-                    message = MSG_THROW_ARRIVAL.format(object=obj.key, direction=arrival_dir)
-                    destination.msg_contents(message)
-                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Cross-room arrival message sent")
-                else:
-                    # Same-room throw - no arrival message needed (already had throw announcement)
-                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Same-room throw - skipping arrival message")
-                
-                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: About to call handle_landing")
-                # Handle landing and proximity
-                self.handle_landing(obj, destination, target, is_weapon, thrower)
-                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Completed handle_landing")
+                try:
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Moving {obj} to destination {destination}")
+                    obj.move_to(destination)
+                    
+                    # Announce arrival only for cross-room throws
+                    if destination != origin:
+                        # Cross-room throw - announce arrival
+                        arrival_dir = self.get_arrival_direction(origin, destination)
+                        message = MSG_THROW_ARRIVAL.format(object=obj.key, direction=arrival_dir)
+                        destination.msg_contents(message)
+                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Cross-room arrival message sent")
+                    else:
+                        # Same-room throw - no arrival message needed (already had throw announcement)
+                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Same-room throw - skipping arrival message")
+                    
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: About to call handle_landing")
+                    # Handle landing and proximity
+                    self.handle_landing(obj, destination, target, is_weapon, thrower)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Completed handle_landing")
+                except Exception as e:
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error during object movement/landing: {e}")
+                    # Try to move to origin as fallback
+                    if origin:
+                        try:
+                            obj.move_to(origin)
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Moved {obj} back to origin {origin} as fallback")
+                        except:
+                            pass  # If even fallback fails, give up gracefully
             
-            # Clean up flight data
-            del obj.ndb.flight_destination
-            del obj.ndb.flight_target  
-            del obj.ndb.flight_origin
-            del obj.ndb.flight_is_weapon
-            del obj.ndb.flight_thrower
-            if hasattr(obj.ndb, 'flight_timer'):
-                del obj.ndb.flight_timer
-            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Cleaned up flight data for {obj}")
+            # Clean up flight data with defensive checks
+            try:
+                if hasattr(obj, 'ndb') and obj.ndb is not None:
+                    if hasattr(obj.ndb, 'flight_destination'):
+                        del obj.ndb.flight_destination
+                    if hasattr(obj.ndb, 'flight_target'):
+                        del obj.ndb.flight_target
+                    if hasattr(obj.ndb, 'flight_origin'):
+                        del obj.ndb.flight_origin
+                    if hasattr(obj.ndb, 'flight_is_weapon'):
+                        del obj.ndb.flight_is_weapon
+                    if hasattr(obj.ndb, 'flight_thrower'):
+                        del obj.ndb.flight_thrower
+                    if hasattr(obj.ndb, 'flight_timer'):
+                        del obj.ndb.flight_timer
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Cleaned up flight data for {obj}")
+            except (AttributeError, TypeError):
+                # Object state changed during cleanup - not critical
+                pass
             
         except Exception as e:
-            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in complete_flight: {e}")
-            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error details - destination: {destination}, target: {target}, origin: {origin}")
-            # Failsafe: move object to origin if destination fails
-            flight_origin = getattr(obj.ndb, 'flight_origin', None)
-            if flight_origin:
-                obj.move_to(flight_origin)
-                splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Moved {obj} back to origin {flight_origin} due to error")
+            if splattercast:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Unexpected error in complete_flight: {e}")
+            # Final failsafe - try to put object somewhere safe
+            try:
+                if obj and hasattr(obj, 'move_to'):
+                    # Try to get origin from flight data if still available
+                    flight_origin = None
+                    if hasattr(obj, 'ndb') and obj.ndb and hasattr(obj.ndb, 'flight_origin'):
+                        flight_origin = getattr(obj.ndb, 'flight_origin', None)
+                    if flight_origin:
+                        obj.move_to(flight_origin)
+                        if splattercast:
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Emergency moved {obj} back to origin {flight_origin}")
+            except:
+                pass  # If all else fails, give up gracefully
     
     def get_arrival_direction(self, origin, destination):
         """Determine arrival direction for announcement."""
