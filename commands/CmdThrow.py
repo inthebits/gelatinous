@@ -408,8 +408,8 @@ class CmdThrow(Command):
         obj.ndb.flight_is_weapon = is_weapon
         obj.ndb.flight_thrower = self.caller
         
-        # Start flight timer
-        utils.delay(THROW_FLIGHT_TIME, self.complete_flight, obj)
+        # Start flight timer and store reference for potential cancellation
+        obj.ndb.flight_timer = utils.delay(THROW_FLIGHT_TIME, self.complete_flight, obj)
         
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: {self.caller} started flight for {obj} to {destination}(#{destination.id})")
@@ -459,6 +459,11 @@ class CmdThrow(Command):
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Starting complete_flight for {obj}")
             
+            # Check if object was caught (flight data cleaned up)
+            if not hasattr(obj.ndb, 'flight_destination'):
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Object {obj} was caught, skipping complete_flight")
+                return
+            
             # Get flight data
             destination = obj.ndb.flight_destination
             target = obj.ndb.flight_target
@@ -503,6 +508,8 @@ class CmdThrow(Command):
             del obj.ndb.flight_origin
             del obj.ndb.flight_is_weapon
             del obj.ndb.flight_thrower
+            if hasattr(obj.ndb, 'flight_timer'):
+                del obj.ndb.flight_timer
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Cleaned up flight data for {obj}")
             
         except Exception as e:
@@ -1017,6 +1024,8 @@ class CmdCatch(Command):
             del obj.ndb.flight_is_weapon
         if hasattr(obj.ndb, 'flight_thrower'):
             del obj.ndb.flight_thrower
+        if hasattr(obj.ndb, 'flight_timer'):
+            del obj.ndb.flight_timer
         
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: {self.caller} caught {obj} mid-flight")
