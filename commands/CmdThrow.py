@@ -460,7 +460,7 @@ class CmdThrow(Command):
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Starting complete_flight for {obj}")
             
             # Check if object is None or doesn't have ndb (deleted/caught)
-            if not obj or not hasattr(obj, 'ndb'):
+            if not obj or not hasattr(obj, 'ndb') or obj.ndb is None:
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Object {obj} is None or missing ndb, skipping complete_flight")
                 return
             
@@ -469,10 +469,10 @@ class CmdThrow(Command):
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Object {obj} was caught, skipping complete_flight")
                 return
             
-            # Get flight data
-            destination = obj.ndb.flight_destination
-            target = obj.ndb.flight_target
-            origin = obj.ndb.flight_origin
+            # Get flight data with defensive checks
+            destination = getattr(obj.ndb, 'flight_destination', None)
+            target = getattr(obj.ndb, 'flight_target', None)
+            origin = getattr(obj.ndb, 'flight_origin', None)
             is_weapon = getattr(obj.ndb, 'flight_is_weapon', False)
             thrower = getattr(obj.ndb, 'flight_thrower', None)
             
