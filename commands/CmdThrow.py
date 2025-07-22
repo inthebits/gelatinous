@@ -546,7 +546,7 @@ class CmdThrow(Command):
             # Assign proximity for universal proximity system
             try:
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Assigning landing proximity")
-                self.assign_landing_proximity(obj, target)
+                self.assign_landing_proximity(obj, target, thrower)
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: assign_landing_proximity completed")
             except Exception as e:
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in assign_landing_proximity: {e}")
@@ -556,7 +556,7 @@ class CmdThrow(Command):
             if self.is_explosive(obj):
                 try:
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Handling grenade landing")
-                    self.handle_grenade_landing(obj, target)
+                    self.handle_grenade_landing(obj, target, thrower)
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: handle_grenade_landing completed")
                 except Exception as e:
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in handle_grenade_landing: {e}")
@@ -623,11 +623,11 @@ class CmdThrow(Command):
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in resolve_weapon_hit: {e}")
             # Don't re-raise - weapon hit failure shouldn't fail entire throw
     
-    def assign_landing_proximity(self, obj, target):
+    def assign_landing_proximity(self, obj, target, thrower=None):
         """Assign proximity for universal proximity system."""
         try:
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: assign_landing_proximity called - obj: {obj}, target: {target}")
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: assign_landing_proximity called - obj: {obj}, target: {target}, thrower: {thrower}")
             
             # Ensure object has proximity list (use same pattern as drop command)
             proximity_list = getattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, None)
@@ -648,14 +648,17 @@ class CmdThrow(Command):
                     proximity_list.append(target)
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Added target {target} to obj proximity")
                 
-                # Inherit target's existing proximity relationships
+                # Inherit target's existing proximity relationships, but exclude the thrower
                 target_proximity = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL, None)
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: target_proximity: {target_proximity}")
                 if target_proximity and isinstance(target_proximity, list):
                     for character in target_proximity:
-                        if character and character not in proximity_list:
+                        # Filter out the thrower - they shouldn't be in proximity to their own thrown object
+                        if character and character not in proximity_list and character != thrower:
                             proximity_list.append(character)
                             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Added {character} from target proximity")
+                        elif character == thrower:
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Skipped thrower {character} from proximity inheritance")
             
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: assign_landing_proximity completed successfully")
             
@@ -664,11 +667,11 @@ class CmdThrow(Command):
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in assign_landing_proximity: {e}")
             raise  # Re-raise to let handle_landing handle it
     
-    def handle_grenade_landing(self, grenade, target):
+    def handle_grenade_landing(self, grenade, target, thrower=None):
         """Handle grenade-specific landing mechanics."""
         try:
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: handle_grenade_landing called - grenade: {grenade}, target: {target}")
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: handle_grenade_landing called - grenade: {grenade}, target: {target}, thrower: {thrower}")
             
             # If grenade lands near someone, everyone in their proximity gets added
             target_proximity = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL, None) if target else None
@@ -680,9 +683,12 @@ class CmdThrow(Command):
                     grenade_proximity = []
                 
                 for character in target_proximity:
-                    if character and character not in grenade_proximity:
+                    # Filter out the thrower - they shouldn't be in proximity to their own thrown grenade
+                    if character and character not in grenade_proximity and character != thrower:
                         grenade_proximity.append(character)
                         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Added {character} to grenade proximity")
+                    elif character == thrower:
+                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Skipped thrower {character} from grenade proximity inheritance")
                 
                 setattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, grenade_proximity)
             
