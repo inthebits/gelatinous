@@ -459,6 +459,11 @@ class CmdThrow(Command):
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Starting complete_flight for {obj}")
             
+            # Check if object is None or doesn't have ndb (deleted/caught)
+            if not obj or not hasattr(obj, 'ndb'):
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Object {obj} is None or missing ndb, skipping complete_flight")
+                return
+            
             # Check if object was caught (flight data cleaned up)
             if not hasattr(obj.ndb, 'flight_destination'):
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Object {obj} was caught, skipping complete_flight")
