@@ -190,9 +190,23 @@ class CmdFlee(Command):
                     
                     splattercast.msg(f"{DEBUG_PREFIX_FLEE}_AIM_FAIL: {caller.key} failed to break {current_aimer_for_break_attempt.key}'s NDB aim. {current_aimer_for_break_attempt.key} initiates an attack.")
                     
-                    # The aimer attack logic continues here but is extensive...
-                    # For brevity in this refactor demonstration, I'll truncate this section
-                    # but it would include the full attack logic from the original
+                    # Aimer gets an immediate attack on the failed flee attempt
+                    # Import and execute the attack command from the aimer's perspective
+                    from commands.combat.core_actions import CmdAttack
+                    
+                    # Create a temporary attack command instance for the aimer
+                    attack_cmd = CmdAttack()
+                    attack_cmd.caller = current_aimer_for_break_attempt
+                    attack_cmd.args = caller.key  # Target is the caller who failed to flee
+                    attack_cmd.cmdstring = "attack"
+                    
+                    # Display messages about the aimer's opportunity attack
+                    caller.msg(caller_msg_flee_fail)
+                    if current_aimer_for_break_attempt.access(caller, "view"):
+                        current_aimer_for_break_attempt.msg(aimer_msg_flee_fail)
+                    
+                    # Execute the attack
+                    attack_cmd.func()
                     
                     return # Flee attempt ends here, aimer gets an attack.
 
