@@ -180,6 +180,17 @@ DAGGER = {
     "weapon_type": "knife",  # Using existing message type
 }
 
+# Chainsaw (devastating damage, no deflection)
+CHAINSAW = {
+    "prototype_parent": "MELEE_WEAPON_BASE",
+    "key": "chainsaw",
+    "aliases": ["saw", "power saw"],
+    "desc": "A gas-powered chainsaw with razor-sharp teeth. The engine sputters and growls, hungry for violence. Its mechanical brutality leaves no room for finesse.",
+    "damage": 25,  # Extremely high damage
+    "deflection_bonus": -0.50,  # -10 to deflection threshold (major penalty - chainsaws are terrible for defense)
+    "weapon_type": "chainsaw",  # Using our newly converted message type
+}
+
 # =============================================================================
 # THROWING WEAPON PROTOTYPES
 # =============================================================================
