@@ -136,6 +136,9 @@ class CmdGrapple(Command):
             log_combat_action(caller, "grapple_fail", target, details=f"being grappled by {grappler.key}")
             return
 
+        # Check if target is grappling someone (Scenario 2: grappling an active grappler)
+        target_grappling_someone = handler.get_grappling_obj(target_combat_entry)
+        
         if handler.get_grappled_by_obj(target_combat_entry):
             # Check if it's the caller grappling them (should be caught above, but good for clarity)
             # Or if someone *else* is grappling them
@@ -166,8 +169,15 @@ class CmdGrapple(Command):
         # --- Determine grapple type based on target's current grapple state ---
         target_is_currently_grappled = handler.get_grappled_by_obj(target_combat_entry) is not None
         
-        if target_is_currently_grappled:
-            # Target is already being grappled by someone - this is a join attempt
+        if target_grappling_someone:
+            # Scenario 2: Target is actively grappling someone - this is a takeover attempt
+            # This will force the target to release their victim if successful
+            caller_combat_entry["combat_action"] = "grapple_takeover"
+            caller_combat_entry["takeover_victim"] = target_grappling_someone  # Store who will be released
+            handler.set_target(caller, target)
+            log_combat_action(caller, "grapple_action", target, details=f"combat action set to grapple_takeover (target currently grappling {target_grappling_someone.key})")
+        elif target_is_currently_grappled:
+            # Scenario 1: Target is already being grappled by someone - this is a join attempt
             caller_combat_entry["combat_action"] = "grapple_join"  
             handler.set_target(caller, target)
             log_combat_action(caller, "grapple_action", target, details="combat action set to grapple_join")

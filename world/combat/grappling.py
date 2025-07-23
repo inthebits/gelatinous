@@ -478,6 +478,128 @@ def resolve_grapple_join(char_entry, combatants_list, handler):
             splattercast.msg(f"GRAPPLE_CONTEST_FAIL_YIELD: {char.key} initiated combat but failed contest, setting to yielding.")
 
 
+def resolve_grapple_takeover(char_entry, combatants_list, handler):
+    """
+    Resolve a grapple takeover action - forcing an active grappler to release their victim.
+    
+    This implements Scenario 2: A grapples B, then C attempts to grapple A.
+    If successful, A is forced to release B and C grapples A.
+    
+    Args:
+        char_entry: The character's combat entry (C in scenario)
+        combatants_list: List of all combatants
+        handler: The combat handler instance
+    """
+    from evennia.comms.models import ChannelDB
+    from .constants import (
+        SPLATTERCAST_CHANNEL, NDB_PROXIMITY, DB_CHAR,
+        DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF, DB_IS_YIELDING, DB_TARGET_DBREF
+    )
+    from .utils import get_numeric_stat
+    from random import randint
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    char = char_entry.get(DB_CHAR)  # C (new grappler)
+    
+    # Find the target who is actively grappling someone
+    target = handler.get_target_obj(char_entry)  # A (active grappler)
+    if not target:
+        char.msg("You have no target to takeover grapple from.")
+        return
+    
+    # Check if target is in combat
+    target_entry = next((e for e in combatants_list if e.get(DB_CHAR) == target), None)
+    if not target_entry:
+        char.msg(f"{target.key} is not in combat.")
+        return
+    
+    # Get who the target is currently grappling (should be stored in takeover_victim)
+    victim = char_entry.get("takeover_victim")
+    if not victim:
+        # Fallback: try to get from target's grappling state
+        victim = handler.get_grappling_obj(target_entry)
+        if not victim:
+            char.msg(f"{target.key} is not currently grappling anyone.")
+            return
+    
+    # Find victim's combat entry
+    victim_entry = next((e for e in combatants_list if e.get(DB_CHAR) == victim), None)
+    if not victim_entry:
+        char.msg(f"{victim.key} is not properly registered in combat.")
+        return
+    
+    # Check proximity (grappling allows "rush in" but still need proximity for contest)
+    if not hasattr(char.ndb, NDB_PROXIMITY):
+        setattr(char.ndb, NDB_PROXIMITY, set())
+    if target not in getattr(char.ndb, NDB_PROXIMITY):
+        # For takeover, we allow rush-in behavior like regular grapple initiation
+        splattercast.msg(f"GRAPPLE_TAKEOVER_RUSH: {char.key} rushing in to grapple {target.key}")
+    
+    # Contest: new grappler vs current grappler (both using motorics)
+    new_grappler_roll = randint(1, max(1, get_numeric_stat(char, "motorics", 1)))
+    current_grappler_roll = randint(1, max(1, get_numeric_stat(target, "motorics", 1)))
+    
+    splattercast.msg(f"GRAPPLE_TAKEOVER_CONTEST: {char.key} ({new_grappler_roll}) vs {target.key} ({current_grappler_roll}) - forcing release of {victim.key}")
+    
+    if new_grappler_roll > current_grappler_roll:
+        # Success: Force target to release victim, then establish new grapple
+        
+        # Step 1: Break the existing grapple (A releases B)
+        target_entry[DB_GRAPPLING_DBREF] = None
+        victim_entry[DB_GRAPPLED_BY_DBREF] = None
+        
+        # Step 2: Establish new grapple (C grapples A)
+        char_entry[DB_GRAPPLING_DBREF] = get_character_dbref(target)
+        target_entry[DB_GRAPPLED_BY_DBREF] = get_character_dbref(char)
+        
+        # Set target's target to the new grappler for potential retaliation
+        target_entry[DB_TARGET_DBREF] = get_character_dbref(char)
+        
+        # Establish proximity between new grappler and target
+        if char.location == target.location:
+            from .proximity import establish_proximity
+            establish_proximity(char, target)
+            splattercast.msg(f"GRAPPLE_TAKEOVER_PROXIMITY: Established proximity between {char.key} and {target.key}")
+        
+        # Set yielding states: new grappler yields (restraint intent), target doesn't (resistance)
+        char_entry[DB_IS_YIELDING] = True
+        # target remains non-yielding for auto-resistance
+        
+        # Success messages
+        char.msg(f"|gYou successfully grapple {target.key}, forcing them to release {victim.key}!|n")
+        target.msg(f"|r{char.key} grapples you, forcing you to release {victim.key}!|n")
+        victim.msg(f"|g{target.key} is forced to release you as {char.key} grapples them!|n")
+        
+        if char.location:
+            char.location.msg_contents(
+                f"|g{char.key} grapples {target.key}, forcing them to release {victim.key}!|n",
+                exclude=[char, target, victim]
+            )
+        
+        splattercast.msg(f"GRAPPLE_TAKEOVER_SUCCESS: {char.key} grappled {target.key}, forcing release of {victim.key}")
+        
+    else:
+        # Failure: Target maintains their grapple, new grappler fails
+        char.msg(f"|yYou fail to grapple {target.key}, who maintains their hold on {victim.key}!|n")
+        target.msg(f"|gYou resist {char.key}'s grapple attempt and maintain your grip on {victim.key}!|n")
+        victim.msg(f"|y{char.key} tries to grapple {target.key} but fails - you remain grappled!|n")
+        
+        if char.location:
+            char.location.msg_contents(
+                f"|y{char.key} fails to grapple {target.key}, who maintains their hold on {victim.key}!|n",
+                exclude=[char, target, victim]
+            )
+        
+        splattercast.msg(f"GRAPPLE_TAKEOVER_FAIL: {char.key} failed to grapple {target.key}, who keeps {victim.key}")
+        
+        # Check if the failed grappler initiated combat - if so, they should become yielding
+        initiated_combat = char_entry.get("initiated_combat_this_action", False)
+        if initiated_combat:
+            char_entry[DB_IS_YIELDING] = True
+            char.msg("|gYour failed grapple attempt leaves you non-aggressive.|n")
+            splattercast.msg(f"GRAPPLE_TAKEOVER_FAIL_YIELD: {char.key} initiated combat but failed takeover, setting to yielding.")
+
+
 def resolve_release_grapple(char_entry, combatants_list, handler):
     """
     Resolve a release grapple action.

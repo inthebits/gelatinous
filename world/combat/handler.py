@@ -39,7 +39,7 @@ from .utils import (
 )
 from .grappling import (
     break_grapple, establish_grapple, resolve_grapple_initiate,
-    resolve_grapple_join, resolve_release_grapple, validate_and_cleanup_grapple_state
+    resolve_grapple_join, resolve_grapple_takeover, resolve_release_grapple, validate_and_cleanup_grapple_state
 )
 
 
@@ -625,6 +625,10 @@ class CombatHandler(DefaultScript):
                         self._resolve_grapple_join(current_char_combat_entry, combatants_list)
                         current_char_combat_entry["combat_action"] = None
                         continue
+                    elif combat_action == "grapple_takeover":
+                        self._resolve_grapple_takeover(current_char_combat_entry, combatants_list)
+                        current_char_combat_entry["combat_action"] = None
+                        continue
                     elif combat_action == "release_grapple":
                         self._resolve_release_grapple(current_char_combat_entry, combatants_list)
                         current_char_combat_entry["combat_action"] = None
@@ -952,6 +956,10 @@ class CombatHandler(DefaultScript):
     def _resolve_grapple_join(self, char_entry, combatants_list):
         """Resolve a grapple join action."""
         resolve_grapple_join(char_entry, combatants_list, self)
+    
+    def _resolve_grapple_takeover(self, char_entry, combatants_list):
+        """Resolve a grapple takeover action."""
+        resolve_grapple_takeover(char_entry, combatants_list, self)
     
     def _resolve_release_grapple(self, char_entry, combatants_list):
         """Resolve a release grapple action."""

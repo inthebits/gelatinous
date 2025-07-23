@@ -108,14 +108,15 @@ Failure: Defender >= Grappler
 - **Resolution**: Winner gets B, loser gets nothing
 - **Outcome**: B remains grappled by winner
 
-#### **Scenario 2: Grappling an Active Grappler** ⚠️ **NEEDS IMPLEMENTATION**
+#### **Scenario 2: Grappling an Active Grappler** ✅ **IMPLEMENTED**
 - **Setup**: A grapples B, then C attempts to grapple A
-- **Current Issue**: System blocks this as "A already grappling someone"
-- **Needed Behavior**: Force A to release B, then C can grapple A
+- **Implementation**: System now detects "grapple_takeover" scenario
+- **Behavior**: Force A to release B, then C can grapple A
 - **Sequence**: 
-  1. C initiates grapple on A
-  2. If successful, A releases B automatically
-  3. C establishes grapple on A
+  1. C initiates grapple on A (detected as grapple_takeover)
+  2. Contest: C's Motorics vs A's Motorics
+  3. If successful: A releases B automatically, C grapples A
+  4. If failed: A maintains grapple on B, C becomes yielding (if initiated combat)
 
 ### Contest Mechanics
 ```
@@ -322,19 +323,19 @@ Failure: Current Grappler >= Challenger → Maintains control
 
 ## Implementation Priorities
 
-### High Priority ⚠️
+### High Priority
 
-1. **Multi-Grapple Chain Logic**: 
-   - Fix scenario where C tries to grapple A (who is grappling B)
-   - Implement forced release mechanism
-   - Test edge cases thoroughly
+1. **Multi-Grapple Chain Logic**: ✅ **COMPLETED**
+   - ✅ Fix scenario where C tries to grapple A (who is grappling B)
+   - ✅ Implement forced release mechanism  
+   - ⚠️ Test edge cases thoroughly
 
-2. **Proximity Inheritance**:
+2. **Proximity Inheritance**: ⚠️ **IN PROGRESS**
    - Implement victim proximity copying during grappler movement
    - Ensure consistency across advance/retreat/charge
    - Handle multi-character scenarios
 
-3. **Advance While Grappling**:
+3. **Advance While Grappling**: ⚠️ **PENDING**
    - Add grapple check to advance command
    - Implement victim dragging during advance
    - Maintain grapple state through movement
