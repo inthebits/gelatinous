@@ -299,12 +299,8 @@ def resolve_grapple_initiate(char_entry, combatants_list, handler):
         char.msg(f"{target.key} is not in combat.")
         return
     
-    # Check proximity
-    if not hasattr(char.ndb, NDB_PROXIMITY):
-        setattr(char.ndb, NDB_PROXIMITY, set())
-    if target not in getattr(char.ndb, NDB_PROXIMITY):
-        char.msg(f"You need to be in melee proximity with {target.key} to grapple them.")
-        return
+    # Grappling inherently allows "rush in" - proximity will be established on success
+    # No proximity check needed here since grapple commands handle their own proximity logic
     
     # Roll for grapple
     attacker_roll = randint(1, max(1, get_numeric_stat(char, "motorics", 1)))
@@ -317,6 +313,12 @@ def resolve_grapple_initiate(char_entry, combatants_list, handler):
         
         # Set victim's target to the grappler for potential retaliation after escape/release
         target_entry[DB_TARGET_DBREF] = get_character_dbref(char)
+        
+        # Establish proximity now that grapple is successful
+        if char.location == target.location:
+            from .proximity import establish_proximity
+            establish_proximity(char, target)
+            splattercast.msg(f"GRAPPLE_SUCCESS_PROXIMITY: Established proximity between {char.key} and {target.key} for successful grapple.")
         
         # Auto-yield only the grappler (restraint intent)
         # The victim remains non-yielding so they auto-resist each turn

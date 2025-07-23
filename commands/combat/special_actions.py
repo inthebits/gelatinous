@@ -145,15 +145,11 @@ class CmdGrapple(Command):
                  log_combat_action(caller, "grapple_fail", target, details=f"target already grappled by {target_grappler.key}")
                  return
 
-        # --- Proximity check (unless initiating combat) ---
-        # If caller initiated combat this action, they can rush in without proximity
-        # Otherwise, they must be in melee proximity to grapple
-        if not caller_initiated_combat_this_action:
-            initialize_proximity_ndb(caller)
-            if not hasattr(caller.ndb, NDB_PROXIMITY) or target not in caller.ndb.in_proximity_with:
-                caller.msg(MSG_GRAPPLE_NOT_IN_PROXIMITY.format(target=target.key))
-                log_combat_action(caller, "grapple_fail", target, details="not in melee proximity")
-                return
+        # --- Proximity check ---
+        # Grappling allows "rush in" behavior - proximity will be established on successful grapple
+        # Skip proximity requirement for grapple attempts since they establish their own proximity
+        # (This is different from regular attacks which require existing proximity)
+        # Note: The grapple resolution will handle proximity establishment on success
         
         # --- Set combat action ---
         # Ensure combat_action key exists for the entry
@@ -167,14 +163,6 @@ class CmdGrapple(Command):
         target_initiated_combat_this_action = not target_is_in_combat
         target_combat_entry["initiated_combat_this_action"] = target_initiated_combat_this_action
         
-        # --- Establish proximity for grapple combat ---
-        if caller.location == target.location:
-            # Same room grapple - establish proximity for melee combat
-            from world.combat.proximity import establish_proximity
-            establish_proximity(caller, target)
-            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-            splattercast.msg(f"{DEBUG_PREFIX_GRAPPLE}: Established proximity between {caller.key} and {target.key} for grapple combat.")
-
         # --- Determine grapple type based on target's current grapple state ---
         target_is_currently_grappled = handler.get_grappled_by_obj(target_combat_entry) is not None
         
