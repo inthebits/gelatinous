@@ -340,16 +340,29 @@ def resolve_grapple_initiate(char_entry, combatants_list, handler):
         target.msg(f"|y{char.key} fails to grapple you.|n")
         
         # Check if grappler initiated combat - if so, they should become yielding on failure
-        initiated_combat = char_entry.get("initiated_combat_this_action", False)
-        if initiated_combat:
+        grappler_initiated_combat = char_entry.get("initiated_combat_this_action", False)
+        if grappler_initiated_combat:
             char_entry[DB_IS_YIELDING] = True
             char.msg("|gYour failed grapple attempt leaves you non-aggressive.|n")
             splattercast.msg(f"GRAPPLE_FAIL_YIELD: {char.key} initiated combat with grapple but failed, setting to yielding.")
             
-            # Also set the target to yielding since the grapple was a non-violent initiation
-            target_entry[DB_IS_YIELDING] = True
-            target.msg("|gAfter the failed grapple attempt, you also stand down from aggression.|n")
-            splattercast.msg(f"GRAPPLE_FAIL_YIELD: {target.key} also set to yielding after failed grapple initiation.")
+            # Check if target also initiated combat (wasn't already fighting)
+            # If target was already in combat, they should continue fighting
+            target_initiated_combat = target_entry.get("initiated_combat_this_action", False)
+            target_has_existing_target = target_entry.get(DB_TARGET_DBREF) is not None
+            
+            if target_initiated_combat and not target_has_existing_target:
+                # Target initiated combat this round AND has no existing combat target
+                # This means they were pulled into combat by the grapple attempt - both should yield
+                target_entry[DB_IS_YIELDING] = True
+                target.msg("|gAfter the failed grapple attempt, you also stand down from aggression.|n")
+                splattercast.msg(f"GRAPPLE_FAIL_YIELD: {target.key} also set to yielding after failed grapple initiation.")
+            else:
+                # Target was already in combat with someone else, or didn't initiate combat
+                # They should continue their existing fight
+                target.msg("|rThe failed grapple attempt doesn't deter you from your current fight!|n")
+                splattercast.msg(f"GRAPPLE_FAIL_CONTINUE: {target.key} continues fighting (already engaged or was already in combat).")
+                # Target should potentially get a bonus or opportunity attack here in future implementation
         
         if char.location:
             char.location.msg_contents(

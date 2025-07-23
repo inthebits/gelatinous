@@ -92,7 +92,8 @@ Failure: Defender >= Grappler
 1. **No Relationship**: No grapple state changes
 2. **Yielding Consequences**: 
    - If grappler initiated combat: Auto-yield
-   - If defender was pulled into combat: Also auto-yield
+   - If defender joined combat this round AND has no existing combat target: Also auto-yield
+   - If defender was already engaged in combat: Continue existing fight
 3. **Messaging**: Failure messages with narrative context
 
 ---
