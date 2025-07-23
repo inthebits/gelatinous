@@ -140,6 +140,20 @@ class CmdAttack(Command):
         if initialize_proximity_ndb(caller):
             splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_{DEBUG_FAILSAFE}: Initialized {NDB_PROXIMITY} for {caller.key}.")
 
+        # --- COMBAT INITIATION PROXIMITY ESTABLISHMENT ---
+        # For melee weapons in same room, establish proximity if this is NEW combat initiation
+        if not aiming_direction and caller.location == target.location and not is_ranged_weapon:
+            # Check if either character is already in combat (existing combat scenario)
+            caller_existing_handler = getattr(caller.ndb, "combat_handler", None)
+            target_existing_handler = getattr(target.ndb, "combat_handler", None)
+            
+            # If neither is in combat, this is NEW combat initiation - grant proximity to melee aggressor
+            if not caller_existing_handler and not target_existing_handler:
+                establish_proximity(caller, target)
+                splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_COMBAT_INITIATION: Established proximity between {caller.key} and {target.key} for melee combat initiation.")
+            else:
+                splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_EXISTING_COMBAT: Preserving existing proximity state. Caller handler: {caller_existing_handler.key if caller_existing_handler else 'None'}, Target handler: {target_existing_handler.key if target_existing_handler else 'None'}.")
+
         if not aiming_direction: # SAME ROOM ATTACK
             splattercast.msg(f"{DEBUG_PREFIX_ATTACK}: Validating same-room attack by {caller.key} on {target.key}.")
             is_in_melee_proximity = target in caller.ndb.in_proximity_with
@@ -221,13 +235,6 @@ class CmdAttack(Command):
                      final_handler.set_target(target, caller)
                 # Do not automatically un-yield target if they were already yielding.
                 # target_entry["is_yielding"] = False
-
-        # --- ESTABLISH PROXIMITY FOR SAME-ROOM COMBAT ---
-        if not aiming_direction and caller.location == target.location:
-            # Same room attack - establish proximity for melee combat
-            if not is_ranged_weapon:  # Only for melee weapons
-                establish_proximity(caller, target)
-                splattercast.msg(f"{DEBUG_PREFIX_ATTACK}: Established proximity between {caller.key} and {target.key} for melee combat.")
 
         # --- Messaging and Action ---
         if aiming_direction:
