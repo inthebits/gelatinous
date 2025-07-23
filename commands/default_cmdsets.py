@@ -63,6 +63,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         # Add inventory commands
         self.add(CmdInventory.CmdWield())
         self.add(CmdInventory.CmdUnwield())
+        self.add(CmdInventory.CmdFreeHands())
         self.add(CmdInventory.CmdInventory())
         self.add(CmdInventory.CmdDrop())
         self.add(CmdInventory.CmdGet())

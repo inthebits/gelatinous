@@ -2,6 +2,7 @@
 # 
 # Complete inventory management system for the Mr. Hand system including:
 # - CmdWield/CmdUnwield: Hand-based item management
+# - CmdFreeHands: Unwield all held items at once
 # - CmdInventory: Display carried vs held items
 # - CmdDrop/CmdGet: Smart item pickup/drop with hand integration
 # - CmdGive: Player-to-player item transfer with hand support
@@ -100,6 +101,45 @@ class CmdUnwield(Command):
                 return
 
         caller.msg(f"You aren't holding '{itemname}'.")
+
+
+class CmdFreeHands(Command):
+    """
+    Unwield all items from your hands at once.
+
+    Usage:
+        freehands
+        free hands
+
+    This command will automatically unwield every item you're currently
+    holding in any hand, using the normal unwield process for each item.
+    """
+
+    key = "freehands"
+    aliases = ["free hands"]
+
+    def func(self):
+        caller = self.caller
+        hands = caller.hands
+        
+        # Find all items currently being held
+        held_items = []
+        for hand, item in hands.items():
+            if item:
+                held_items.append((hand, item))
+        
+        if not held_items:
+            caller.msg("Your hands are already empty.")
+            return
+        
+        # Unwield each item using the existing unwield_item method
+        results = []
+        for hand, item in held_items:
+            result = caller.unwield_item(hand)
+            results.append(result)
+        
+        # Send all results as a single message
+        caller.msg("\n".join(results))
 
 
 class CmdInventory(Command):
