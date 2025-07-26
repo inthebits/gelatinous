@@ -400,6 +400,17 @@ class CombatHandler(DefaultScript):
         # Validate and clean up stale grapple references
         self.validate_and_cleanup_grapple_state()
 
+        # Remove orphaned combatants (no target, not grappling, not grappled, not targeted)
+        from .utils import detect_and_remove_orphaned_combatants
+        orphaned_chars = detect_and_remove_orphaned_combatants(self)
+        if orphaned_chars:
+            # Re-fetch combatants list after orphan removal
+            combatants_list = []
+            db_combatants = getattr(self.db, DB_COMBATANTS, [])
+            for entry in db_combatants:
+                regular_entry = dict(entry)
+                combatants_list.append(regular_entry)
+
         valid_combatants_entries = []
         managed_rooms = getattr(self.db, DB_MANAGED_ROOMS, [])
         for entry in combatants_list:

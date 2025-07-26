@@ -788,6 +788,84 @@ def get_character_by_dbref(dbref):
         return None
 
 
+def detect_and_remove_orphaned_combatants(handler):
+    """
+    Detect and remove combatants who are orphaned (no valid combat relationships).
+    
+    An orphaned combatant is one who:
+    - Has no target (target_dbref is None)
+    - Is not grappling anyone (grappling_dbref is None)
+    - Is not being grappled (grappled_by_dbref is None)
+    - Is not being targeted by anyone else
+    
+    Note: Yielding status is NOT considered a valid combat relationship.
+    A single yielding character with no other relationships is effectively
+    orphaned since they have no one to interact with.
+    
+    This prevents handlers from running indefinitely when game mechanics
+    create valid but inactive combat states (e.g., grapple target switching + flee).
+    
+    Args:
+        handler: The combat handler instance
+        
+    Returns:
+        list: List of orphaned combatants that were removed
+    """
+    from evennia.comms.models import ChannelDB
+    from .constants import (
+        SPLATTERCAST_CHANNEL, DB_COMBATANTS, DB_CHAR, DB_TARGET_DBREF,
+        DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF, DB_IS_YIELDING
+    )
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    combatants = getattr(handler.db, DB_COMBATANTS, [])
+    orphaned_chars = []
+    
+    if not combatants:
+        return orphaned_chars
+    
+    # Build a set of all character DBREFs that are being targeted
+    targeted_dbrefs = set()
+    for entry in combatants:
+        target_dbref = entry.get(DB_TARGET_DBREF)
+        if target_dbref is not None:
+            targeted_dbrefs.add(target_dbref)
+    
+    # Check each combatant for orphan status
+    for entry in combatants:
+        char = entry.get(DB_CHAR)
+        if not char:
+            continue
+            
+        char_dbref = get_character_dbref(char)
+        
+        # Check all orphan conditions (excluding yielding status)
+        has_target = entry.get(DB_TARGET_DBREF) is not None
+        is_grappling = entry.get(DB_GRAPPLING_DBREF) is not None
+        is_grappled = entry.get(DB_GRAPPLED_BY_DBREF) is not None
+        is_targeted = char_dbref in targeted_dbrefs
+        
+        # Yielding status for context logging (but not considered in orphan check)
+        is_yielding = entry.get(DB_IS_YIELDING, False)
+        
+        # If combatant has no combat relationships, they are orphaned
+        if not (has_target or is_grappling or is_grappled or is_targeted):
+            yield_context = " (yielding)" if is_yielding else " (not yielding)"
+            splattercast.msg(f"ORPHAN_DETECT: {char.key} is orphaned{yield_context} - no target, not grappling, not grappled, not targeted")
+            orphaned_chars.append(char)
+    
+    # Remove all orphaned combatants
+    for orphaned_char in orphaned_chars:
+        splattercast.msg(f"ORPHAN_REMOVE: Removing {orphaned_char.key} from combat (orphaned state)")
+        remove_combatant(handler, orphaned_char)
+    
+    if orphaned_chars:
+        char_names = [char.key for char in orphaned_chars]
+        splattercast.msg(f"ORPHAN_CLEANUP: Removed {len(orphaned_chars)} orphaned combatants: {', '.join(char_names)}")
+    
+    return orphaned_chars
+
+
 def resolve_bonus_attack(handler, attacker, target):
     """
     Resolve a bonus attack triggered by specific combat events.
