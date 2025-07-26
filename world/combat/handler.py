@@ -1133,18 +1133,20 @@ class CombatHandler(DefaultScript):
             should_drag_victim = False
             
             if grappled_victim:
-                # Check drag conditions: grappling someone, yielding, and not targeted by others (except victim)
+                # Check drag conditions: grappling someone, yielding, and not targeted by others (except victim and advance target)
                 is_yielding = entry.get(DB_IS_YIELDING, False)
                 
-                # Check if targeted by others (excluding the victim)
+                # Check if targeted by others in the same room (excluding the victim and the advance target)
                 is_targeted_by_others_not_victim = False
                 for e in combatants_list:
-                    if e[DB_CHAR] != char and e[DB_CHAR] != grappled_victim:
+                    other_char = e[DB_CHAR]
+                    if (other_char != char and other_char != grappled_victim and other_char != target and
+                        other_char.location == char.location):  # Only check same-room combatants
                         if self.get_target_obj(e) == char:
                             is_targeted_by_others_not_victim = True
                             break
                 
-                # Drag conditions: grappling someone, yielding, and not targeted by others (except victim)
+                # Drag conditions: grappling someone, yielding, and not targeted by others (except victim and advance target)
                 if is_yielding and not is_targeted_by_others_not_victim:
                     should_drag_victim = True
                     splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_DRAG: {char.key} meets drag conditions - will attempt to drag {grappled_victim.key}.")
