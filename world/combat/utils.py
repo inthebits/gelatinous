@@ -756,6 +756,67 @@ def get_combatant_grappled_by(entry, handler):
     return get_character_by_dbref(grappled_by_dbref)
 
 
+def update_all_combatant_handler_references(handler):
+    """
+    Update all combatants' NDB combat_handler references to point to the given handler.
+    
+    This is critical after handler merges to ensure all combatants have correct references.
+    
+    Args:
+        handler: The combat handler instance all combatants should reference
+    """
+    from evennia.comms.models import ChannelDB
+    from .constants import SPLATTERCAST_CHANNEL, DB_COMBATANTS, DB_CHAR, NDB_COMBAT_HANDLER
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    combatants = getattr(handler.db, DB_COMBATANTS, [])
+    
+    updated_count = 0
+    for entry in combatants:
+        char = entry.get(DB_CHAR)
+        if char:
+            setattr(char.ndb, NDB_COMBAT_HANDLER, handler)
+            updated_count += 1
+    
+    splattercast.msg(f"HANDLER_REFERENCE_UPDATE: Updated {updated_count} combatants' handler references to {handler.key}.")
+
+
+def validate_character_handler_reference(char):
+    """
+    Validate that a character's combat_handler reference points to a valid, active handler.
+    
+    Args:
+        char: The character to validate
+        
+    Returns:
+        tuple: (is_valid, handler_or_none, error_message)
+    """
+    from .constants import NDB_COMBAT_HANDLER
+    
+    # Check if character has a handler reference
+    handler = getattr(char.ndb, NDB_COMBAT_HANDLER, None)
+    if not handler:
+        return False, None, "No combat_handler reference"
+    
+    # Check if handler still exists and is valid
+    try:
+        # Try to access handler attributes to verify it's still valid
+        if not hasattr(handler, 'db') or not hasattr(handler.db, 'combatants'):
+            return False, None, "Handler missing required attributes"
+        
+        # Check if character is actually in the handler's combatants list
+        combatants = getattr(handler.db, 'combatants', [])
+        char_in_handler = any(entry.get('char') == char for entry in combatants)
+        
+        if not char_in_handler:
+            return False, handler, "Character not found in handler's combatants list"
+        
+        return True, handler, "Valid handler reference"
+        
+    except Exception as e:
+        return False, None, f"Handler validation error: {e}"
+
+
 def get_character_dbref(char):
     """
     Get DBREF for a character object.

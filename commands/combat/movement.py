@@ -451,9 +451,13 @@ class CmdAdvance(Command):
         caller = self.caller
         args = self.args.strip()
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        handler = getattr(caller.ndb, "combat_handler", None)
-
-        if not handler:
+        
+        # Use robust handler validation to catch merge-related issues
+        from world.combat.utils import validate_character_handler_reference
+        is_valid, handler, error_msg = validate_character_handler_reference(caller)
+        
+        if not is_valid:
+            splattercast.msg(f"{DEBUG_PREFIX_ADVANCE}_{DEBUG_ERROR}: {caller.key} handler validation failed: {error_msg}")
             caller.msg(MSG_ADVANCE_NOT_IN_COMBAT)
             return
 

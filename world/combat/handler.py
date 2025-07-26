@@ -295,8 +295,6 @@ class CombatHandler(DefaultScript):
             char = entry.get(DB_CHAR)
             if char and char not in [e.get(DB_CHAR) for e in our_combatants]:
                 our_combatants.append(entry)
-                # Update the character's handler reference
-                setattr(char.ndb, NDB_COMBAT_HANDLER, self)
         
         # Merge managed rooms
         our_rooms = getattr(self.db, DB_MANAGED_ROOMS, [])
@@ -308,6 +306,11 @@ class CombatHandler(DefaultScript):
         # Update our state
         setattr(self.db, DB_COMBATANTS, our_combatants)
         setattr(self.db, DB_MANAGED_ROOMS, our_rooms)
+        
+        # CRITICAL FIX: Update ALL combatants' handler references after merge
+        # This ensures both existing and newly merged combatants point to the correct handler
+        from .utils import update_all_combatant_handler_references
+        update_all_combatant_handler_references(self)
         
         # Stop and clean up the other handler
         other_handler.stop_combat_logic(cleanup_combatants=False)
