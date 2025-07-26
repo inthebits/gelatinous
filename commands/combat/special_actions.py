@@ -123,30 +123,8 @@ class CmdGrapple(Command):
         # This will be overridden if grapple is successful AND initiated combat.
         caller_combat_entry["is_yielding"] = False 
 
-        # --- Grapple-specific checks (already grappling, being grappled, target grappled) ---
-        if handler.get_grappling_obj(caller_combat_entry):
-            currently_grappling = handler.get_grappling_obj(caller_combat_entry)
-            caller.msg(MSG_ALREADY_GRAPPLING.format(target=currently_grappling.key))
-            log_combat_action(caller, "grapple_fail", target, details=f"already grappling {currently_grappling.key}")
-            return
-        
-        if handler.get_grappled_by_obj(caller_combat_entry):
-            grappler = handler.get_grappled_by_obj(caller_combat_entry)
-            caller.msg(MSG_CANNOT_GRAPPLE_WHILE_GRAPPLED.format(grappler=grappler.key))
-            log_combat_action(caller, "grapple_fail", target, details=f"being grappled by {grappler.key}")
-            return
-
         # Check if target is grappling someone (Scenario 2: grappling an active grappler)
         target_grappling_someone = handler.get_grappling_obj(target_combat_entry)
-        
-        if handler.get_grappled_by_obj(target_combat_entry):
-            # Check if it's the caller grappling them (should be caught above, but good for clarity)
-            # Or if someone *else* is grappling them
-            target_grappler = handler.get_grappled_by_obj(target_combat_entry)
-            if target_grappler != caller:
-                 caller.msg(MSG_TARGET_ALREADY_GRAPPLED.format(target=target.key, grappler=target_grappler.key))
-                 log_combat_action(caller, "grapple_fail", target, details=f"target already grappled by {target_grappler.key}")
-                 return
 
         # --- Proximity check ---
         # Grappling allows "rush in" behavior - proximity will be established on successful grapple
