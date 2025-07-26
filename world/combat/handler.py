@@ -256,11 +256,18 @@ class CombatHandler(DefaultScript):
         """
         Called when the script is stopped.
         
-        Performs cleanup of all combatant state when the handler is stopped.
+        Performs cleanup of all combatant state when the handler is stopped,
+        unless a merge is in progress.
         """
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_STOP: Handler {self.key} at_stop() called. Cleaning up combat state.")
-        self.stop_combat_logic(cleanup_combatants=True)
+        
+        # Skip cleanup if merge is in progress to preserve combatant references
+        if hasattr(self, '_merge_in_progress') and self._merge_in_progress:
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_STOP: Merge in progress for {self.key}, skipping combatant cleanup.")
+            self.stop_combat_logic(cleanup_combatants=False)
+        else:
+            self.stop_combat_logic(cleanup_combatants=True)
 
     def enroll_room(self, room_to_add):
         """
@@ -322,7 +329,9 @@ class CombatHandler(DefaultScript):
         from .utils import update_all_combatant_handler_references
         update_all_combatant_handler_references(self)
         
-        # Stop and clean up the other handler
+        # Stop and clean up the other handler WITHOUT triggering at_stop cleanup
+        # Set a flag to prevent at_stop() from cleaning up combatants during merge
+        other_handler._merge_in_progress = True
         other_handler.stop_combat_logic(cleanup_combatants=False)
         
         # Only delete if the handler has been saved to the database
@@ -336,6 +345,10 @@ class CombatHandler(DefaultScript):
                 splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE: Error deleting other handler {other_handler.key}: {e}. Handler stopped but not deleted.")
         else:
             splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE: Other handler {other_handler.key} was not saved to database, skipping delete.")
+        
+        # Clear the merge flag now that deletion is complete
+        if hasattr(other_handler, '_merge_in_progress'):
+            delattr(other_handler, '_merge_in_progress')
         
         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE: Merged {other_handler.key} into {self.key}. Now managing {len(our_rooms)} rooms with {len(our_combatants)} combatants.")
 
