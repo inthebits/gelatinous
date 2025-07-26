@@ -1070,7 +1070,7 @@ class CombatHandler(DefaultScript):
         from random import randint
         from .utils import get_numeric_stat, initialize_proximity_ndb
         from .proximity import establish_proximity, is_in_proximity
-        from .constants import SPLATTERCAST_CHANNEL, DEBUG_PREFIX_HANDLER
+        from .constants import SPLATTERCAST_CHANNEL, DEBUG_PREFIX_HANDLER, DB_COMBATANTS, DB_IS_YIELDING
         
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         target = entry.get("combat_action_target")
@@ -1128,6 +1128,31 @@ class CombatHandler(DefaultScript):
                 char.msg(f"|r{target.key} is no longer in a combat area you can reach.|n")
                 return
             
+            # Check if advancing character is grappling someone and should drag them
+            grappled_victim = self.get_grappling_obj(entry)
+            should_drag_victim = False
+            
+            if grappled_victim:
+                # Check drag conditions: grappling someone, yielding, and not targeted by others (except victim)
+                is_yielding = entry.get(DB_IS_YIELDING, False)
+                
+                # Check if targeted by others (excluding the victim)
+                is_targeted_by_others_not_victim = False
+                for e in combatants_list:
+                    if e[DB_CHAR] != char and e[DB_CHAR] != grappled_victim:
+                        if self.get_target_obj(e) == char:
+                            is_targeted_by_others_not_victim = True
+                            break
+                
+                # Drag conditions: grappling someone, yielding, and not targeted by others (except victim)
+                if is_yielding and not is_targeted_by_others_not_victim:
+                    should_drag_victim = True
+                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_DRAG: {char.key} meets drag conditions - will attempt to drag {grappled_victim.key}.")
+                else:
+                    char.msg(f"|rYou cannot advance to another room while actively grappling {grappled_victim.key} - others are targeting you or you're being aggressive.|n")
+                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_DRAG_BLOCKED: {char.key} cannot drag {grappled_victim.key} - yielding:{is_yielding}, targeted_by_others:{is_targeted_by_others_not_victim}")
+                    return
+            
             # Try to move to the target's room
             # Find the exit from current room to target room
             exit_to_target = None
@@ -1159,7 +1184,23 @@ class CombatHandler(DefaultScript):
                 else:
                     clear_aim_state(char)
                 
-                char.move_to(target_room)
+                # Handle grapple victim dragging if needed
+                if should_drag_victim and grappled_victim:
+                    # Announce dragging
+                    char.msg(f"|gYou drag {grappled_victim.key} with you as you advance to {target_room.key}.|n")
+                    grappled_victim.msg(f"|r{char.key} drags you along as they advance to {target_room.key}!|n")
+                    old_location.msg_contents(f"|y{char.key} drags {grappled_victim.key} along as they advance toward {target_room.key}.|n", exclude=[char, grappled_victim])
+                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_DRAG: {char.key} is dragging {grappled_victim.key} from {old_location.key} to {target_room.key}.")
+                    
+                    # Move both characters
+                    char.move_to(target_room)
+                    grappled_victim.move_to(target_room, quiet=True, move_hooks=False)
+                    
+                    # Announce arrival in new location
+                    target_room.msg_contents(f"|y{char.key} arrives dragging {grappled_victim.key}.|n", exclude=[char, grappled_victim])
+                else:
+                    # Normal single character movement
+                    char.move_to(target_room)
                 
                 # Check for rigged grenades after successful movement
                 from commands.CmdThrow import check_rigged_grenade, check_auto_defuse
@@ -1168,11 +1209,16 @@ class CombatHandler(DefaultScript):
                 # Check for auto-defuse opportunities after advancing to new room
                 check_auto_defuse(char)
                 
-                char.msg(f"|gYou successfully advance to {target_room.key} to engage {target.key}.|n")
-                target.msg(f"|y{char.key} advances into the room to engage you!|n")
-                old_location.msg_contents(f"|y{char.key} advances toward {target_room.key} to engage {target.key}.|n", exclude=[char])
-                target_room.msg_contents(f"|y{char.key} advances into the room to engage {target.key}!|n", exclude=[char, target])
-                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_MOVE: {char.key} successfully moved to {target_room.key} to engage {target.key}.")
+                if should_drag_victim and grappled_victim:
+                    char.msg(f"|gYou successfully advance to {target_room.key} with {grappled_victim.key} in tow to engage {target.key}.|n")
+                    target.msg(f"|y{char.key} advances into the room dragging {grappled_victim.key} to engage you!|n")
+                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_MOVE: {char.key} successfully moved to {target_room.key} with {grappled_victim.key} to engage {target.key}.")
+                else:
+                    char.msg(f"|gYou successfully advance to {target_room.key} to engage {target.key}.|n")
+                    target.msg(f"|y{char.key} advances into the room to engage you!|n")
+                    old_location.msg_contents(f"|y{char.key} advances toward {target_room.key} to engage {target.key}.|n", exclude=[char])
+                    target_room.msg_contents(f"|y{char.key} advances into the room to engage {target.key}!|n", exclude=[char, target])
+                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_MOVE: {char.key} successfully moved to {target_room.key} to engage {target.key}.")
             else:
                 # Failure - no movement
                 char.msg(f"|rYour advance toward {target.key} fails! You cannot reach their position.|n")
