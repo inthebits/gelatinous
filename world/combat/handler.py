@@ -286,6 +286,16 @@ class CombatHandler(DefaultScript):
         """
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+        # Defensive logging to understand the merge scenario
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE_DEBUG: self={self} (key={self.key}, id={getattr(self, 'id', 'None')}, obj={self.obj.key})")
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE_DEBUG: other_handler={other_handler} (key={other_handler.key}, id={getattr(other_handler, 'id', 'None')}, obj={other_handler.obj.key})")
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE_DEBUG: Identity check: self is other_handler = {self is other_handler}")
+        
+        # Safety check: Don't merge a handler with itself
+        if other_handler is self:
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_MERGE: Attempted to merge handler with itself. Skipping merge.")
+            return
+        
         # Get combatants from both handlers
         our_combatants = getattr(self.db, DB_COMBATANTS, [])
         their_combatants = getattr(other_handler.db, DB_COMBATANTS, [])
