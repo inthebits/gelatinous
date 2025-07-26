@@ -591,13 +591,31 @@ class CmdCharge(Command):
             if args:
                 # Caller specified a target while grappling
                 target_search = caller.search(args, location=caller.location, quiet=True)
+                # Handle case where search returns a list
+                if isinstance(target_search, list):
+                    if len(target_search) == 1:
+                        target_search = target_search[0]
+                    elif len(target_search) > 1:
+                        caller.msg(f"Multiple targets match '{args}'. Please be more specific.")
+                        return
+                    else:
+                        target_search = None
+                        
                 if not target_search:
                     # Try searching in adjacent combat rooms
                     managed_rooms = getattr(handler.db, "managed_rooms", [])
                     for room in managed_rooms:
                         if room != caller.location:
                             potential_target = caller.search(args, location=room, quiet=True)
-                            if potential_target:
+                            # Handle list results for adjacent rooms too
+                            if isinstance(potential_target, list):
+                                if len(potential_target) == 1:
+                                    target_search = potential_target[0]
+                                    break
+                                elif len(potential_target) > 1:
+                                    caller.msg(f"Multiple targets match '{args}' in {room.key}. Please be more specific.")
+                                    return
+                            elif potential_target:
                                 target_search = potential_target
                                 break
                 
@@ -638,13 +656,31 @@ class CmdCharge(Command):
         target = None
         if args:
             target = caller.search(args, location=caller.location, quiet=True)
+            # Handle case where search returns a list
+            if isinstance(target, list):
+                if len(target) == 1:
+                    target = target[0]
+                elif len(target) > 1:
+                    caller.msg(f"Multiple targets match '{args}'. Please be more specific.")
+                    return
+                else:
+                    target = None
+                    
             if not target:
                 # Try searching in adjacent combat rooms
                 managed_rooms = getattr(handler.db, "managed_rooms", [])
                 for room in managed_rooms:
                     if room != caller.location:
                         potential_target = caller.search(args, location=room, quiet=True)
-                        if potential_target:
+                        # Handle list results for adjacent rooms too
+                        if isinstance(potential_target, list):
+                            if len(potential_target) == 1:
+                                target = potential_target[0]
+                                break
+                            elif len(potential_target) > 1:
+                                caller.msg(f"Multiple targets match '{args}' in {room.key}. Please be more specific.")
+                                return
+                        elif potential_target:
                             target = potential_target
                             break
                             
