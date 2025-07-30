@@ -538,8 +538,8 @@ class CombatHandler(DefaultScript):
             
             # Note: charge_attack_bonus_active is consumed automatically when used in attacks.
             # No need to clean it up here as it should be consumed during the attack phase.
-            # Only clean it up if it exists AND the character is not going to attack this turn.
-            if hasattr(char.ndb, "charge_attack_bonus_active"):
+            # Only clean it up if it exists AND has a truthy value AND the character is not going to attack this turn.
+            if hasattr(char.ndb, "charge_attack_bonus_active") and getattr(char.ndb, "charge_attack_bonus_active", False):
                 # In auto-combat, all characters attack, so bonus will be consumed naturally
                 # Only clean up if character won't attack (yielding, dead, etc.)
                 if current_char_combat_entry.get(DB_IS_YIELDING, False) or char.is_dead():
