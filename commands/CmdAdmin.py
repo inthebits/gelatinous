@@ -48,8 +48,9 @@ class CmdHeal(Command):
             if not location:
                 caller.msg("|rYou have no location.|n")
                 return
-            # Heal all objects in location with hp/hp_max
-            targets = [obj for obj in location.contents if hasattr(obj, "hp") and hasattr(obj, "hp_max")]
+            # Heal all characters in location (both PCs and NPCs)
+            from typeclasses.characters import Character
+            targets = [obj for obj in location.contents if isinstance(obj, Character)]
             if not targets:
                 caller.msg("|yNo healable targets found in this location.|n")
                 return
@@ -61,7 +62,9 @@ class CmdHeal(Command):
                 caller.msg(f"|rNo room found with dbref {target_name}.|n")
                 return
             room = room[0]
-            targets = [obj for obj in room.contents if hasattr(obj, "hp") and hasattr(obj, "hp_max")]
+            # Heal all characters in room (both PCs and NPCs)
+            from typeclasses.characters import Character
+            targets = [obj for obj in room.contents if isinstance(obj, Character)]
             if not targets:
                 caller.msg(f"|yNo healable targets found in {room.key}.|n")
                 return

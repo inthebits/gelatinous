@@ -320,10 +320,12 @@ class CmdThrow(Command):
         
         # If not found or invalid, check if it might be a character name mistaken for direction
         if exit_obj:
-            char_hands = getattr(exit_obj, 'hands', None)
-            splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: Found object but no destination, has_hands = {char_hands is not None}")
+            # Use typeclass check to distinguish characters from other objects
+            from typeclasses.characters import Character
+            is_character = isinstance(exit_obj, Character)
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: Found object but no destination, is_character = {is_character}")
             
-            if char_hands is not None:
+            if is_character:
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: get_destination_room: '{direction}' is a character, suggesting 'at' syntax")
                 self.caller.msg(MSG_THROW_SUGGEST_AT_SYNTAX.format(
                     object=self.object_name, target=direction))
@@ -338,7 +340,9 @@ class CmdThrow(Command):
         if not room:
             return None
         
-        characters = [obj for obj in room.contents if getattr(obj, 'hands', None) is not None and obj != self.caller]
+        # Use typeclass check to distinguish characters (PCs and NPCs) from other objects
+        from typeclasses.characters import Character
+        characters = [obj for obj in room.contents if isinstance(obj, Character) and obj != self.caller]
         if characters:
             return random.choice(characters)
         return None
@@ -1132,10 +1136,14 @@ class CmdPull(Command):
             blast_damage = getattr(grenade.db, DB_BLAST_DAMAGE, 10)
             
             # Check if grenade is in someone's inventory when it explodes
+            # Use typeclass check to distinguish characters (PCs and NPCs) from rooms
             holder = None
-            if grenade.location and hasattr(grenade.location, 'has_account'):
-                # Grenade is in a character's inventory - they're holding it!
-                holder = grenade.location
+            if grenade.location:
+                from typeclasses.characters import Character
+                if isinstance(grenade.location, Character):
+                    # Grenade is in a character's inventory - they're holding it!
+                    # This works for both PCs and NPCs, regardless of hands/account status
+                    holder = grenade.location
             
             # Get proximity list
             proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
@@ -1751,16 +1759,18 @@ def explode_standalone_grenade(grenade):
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Blast damage: {blast_damage}")
         
         # Check if grenade is in someone's inventory when it explodes
+        # Use typeclass check to distinguish characters (PCs and NPCs) from rooms
         holder = None
-        if (grenade.location and 
-            hasattr(grenade.location, 'has_account') and 
-            grenade.location.has_account):
-            # Grenade is in a character's inventory - they're holding it!
-            holder = grenade.location
+        if grenade.location:
+            from typeclasses.characters import Character
+            if isinstance(grenade.location, Character):
+                # Grenade is in a character's inventory - they're holding it!
+                # This works for both PCs and NPCs, regardless of hands/account status
+                holder = grenade.location
         
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Holder check - location: {grenade.location}, holder: {holder}")
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Location has_account: {hasattr(grenade.location, 'has_account') if grenade.location else 'No location'}")
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Location has_account value: {getattr(grenade.location, 'has_account', 'No attribute') if grenade.location else 'No location'}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Location is Character: {isinstance(grenade.location, Character) if grenade.location else 'No location'}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Location typeclass: {type(grenade.location).__name__ if grenade.location else 'No location'}")
         
         # Get proximity list
         proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
@@ -1798,7 +1808,12 @@ def explode_standalone_grenade(grenade):
             if grenade.location:
                 explosion_msg = MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key)
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Standalone explosion sending message to room {grenade.location}: {explosion_msg}")
-                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Room occupants: {[char.key for char in grenade.location.contents if hasattr(char, 'has_account') and char.has_account]}")
+                
+                # Debug: Show room occupants (characters only, both PCs and NPCs)
+                from typeclasses.characters import Character
+                room_characters = [char.key for char in grenade.location.contents if isinstance(char, Character)]
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Room occupants: {room_characters}")
+                
                 grenade.location.msg_contents(explosion_msg)
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: Standalone explosion message sent to {grenade.location}")
             else:
