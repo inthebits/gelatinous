@@ -1752,11 +1752,15 @@ def explode_standalone_grenade(grenade):
         
         # Check if grenade is in someone's inventory when it explodes
         holder = None
-        if grenade.location and hasattr(grenade.location, 'has_account'):
+        if (grenade.location and 
+            hasattr(grenade.location, 'has_account') and 
+            grenade.location.has_account):
             # Grenade is in a character's inventory - they're holding it!
             holder = grenade.location
         
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Holder check - location: {grenade.location}, holder: {holder}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Location has_account: {hasattr(grenade.location, 'has_account') if grenade.location else 'No location'}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Location has_account value: {getattr(grenade.location, 'has_account', 'No attribute') if grenade.location else 'No location'}")
         
         # Get proximity list
         proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
