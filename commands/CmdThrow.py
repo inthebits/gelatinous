@@ -1083,7 +1083,18 @@ class CmdPull(Command):
                 elif remaining == 1:
                     # Final countdown - explode next tick
                     setattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 0)
-                    timer = utils.delay(1, lambda: explode_standalone_grenade(grenade))
+                    
+                    # Create a proper closure that captures the explosion function
+                    def trigger_explosion():
+                        try:
+                            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_TICKER: Triggering explosion for {grenade.key}")
+                            explode_standalone_grenade(grenade)
+                        except Exception as e:
+                            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_TICKER_ERROR: Error in trigger_explosion: {e}")
+                    
+                    timer = utils.delay(1, trigger_explosion)
                     setattr(grenade.ndb, NDB_GRENADE_TIMER, timer)
                     
                     if splattercast:
