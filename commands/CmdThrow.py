@@ -1154,10 +1154,17 @@ class CmdPull(Command):
                         
             else:
                 # Normal room explosion
+                splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
                 if grenade.location:
-                    grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
+                    explosion_msg = MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Sending explosion message to room {grenade.location}: {explosion_msg}")
+                    grenade.location.msg_contents(explosion_msg)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: Explosion message sent to {grenade.location}")
+                else:
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Grenade has no location for explosion message")
                 
                 # Apply damage to all in proximity
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Processing proximity list for damage: {[char.key if hasattr(char, 'key') else str(char) for char in proximity_list]}")
                 for character in proximity_list:
                     if hasattr(character, 'msg'):  # Is a character
                         apply_damage(character, blast_damage)
