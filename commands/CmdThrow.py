@@ -1733,15 +1733,22 @@ def explode_standalone_grenade(grenade):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: explode_standalone_grenade called for {grenade}")
         
-        # Check dud chance
+        # Debug: Check dud chance
         dud_chance = getattr(grenade.db, DB_DUD_CHANCE, 0.0)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Dud chance: {dud_chance}")
         if random.random() < dud_chance:
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Grenade {grenade} is a dud")
             if grenade.location:
                 grenade.location.msg_contents(MSG_GRENADE_DUD_ROOM.format(grenade=grenade.key))
             return
         
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Grenade {grenade} is not a dud, proceeding with explosion")
+        
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Grenade {grenade} is not a dud, proceeding with explosion")
+        
         # Get blast damage
         blast_damage = getattr(grenade.db, DB_BLAST_DAMAGE, 10)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Blast damage: {blast_damage}")
         
         # Check if grenade is in someone's inventory when it explodes
         holder = None
@@ -1749,13 +1756,18 @@ def explode_standalone_grenade(grenade):
             # Grenade is in a character's inventory - they're holding it!
             holder = grenade.location
         
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Holder check - location: {grenade.location}, holder: {holder}")
+        
         # Get proximity list
         proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
         if proximity_list is None:
             proximity_list = []
         
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Proximity list: {[char.key if hasattr(char, 'key') else str(char) for char in proximity_list]}")
+        
         # Handle explosion in someone's hands (much more dangerous!)
         if holder:
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Handling explosion in holder's hands: {holder}")
             # Explosion in hands - double damage and guaranteed hit
             holder_damage = blast_damage * 2
             apply_damage(holder, holder_damage)
@@ -1777,6 +1789,7 @@ def explode_standalone_grenade(grenade):
                     
         else:
             # Normal room explosion
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Handling normal room explosion")
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
             if grenade.location:
                 explosion_msg = MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key)
