@@ -924,7 +924,15 @@ class CombatHandler(DefaultScript):
             attacker_roll += 2
             splattercast.msg(f"ATTACK_BONUS: {attacker.key} gets +2 charge attack bonus.")
             splattercast.msg(f"ATTACK_BONUS_DEBUG: {attacker.key} had charge_attack_bonus_active set - this should only happen after using the 'charge' command.")
-            delattr(attacker.ndb, "charge_attack_bonus_active")
+            # Ensure complete attribute removal - delattr might leave None in Evennia ndb
+            try:
+                delattr(attacker.ndb, "charge_attack_bonus_active")
+            except AttributeError:
+                pass
+            # Double-check removal worked
+            if hasattr(attacker.ndb, "charge_attack_bonus_active"):
+                attacker.ndb.charge_attack_bonus_active = None
+                delattr(attacker.ndb, "charge_attack_bonus_active")
         else:
             splattercast.msg(f"ATTACK_BONUS_DEBUG: {attacker.key} does not have charge_attack_bonus_active - no bonus applied.")
         
