@@ -916,7 +916,11 @@ class CombatHandler(DefaultScript):
         target_roll = randint(1, 20) + target_skill
         
         # Check for charge bonus
-        if hasattr(attacker.ndb, "charge_attack_bonus_active") and getattr(attacker.ndb, "charge_attack_bonus_active", False):
+        has_attr = hasattr(attacker.ndb, "charge_attack_bonus_active")
+        attr_value = getattr(attacker.ndb, "charge_attack_bonus_active", "MISSING") if has_attr else "MISSING"
+        splattercast.msg(f"ATTACK_BONUS_DEBUG_DETAILED: {attacker.key} hasattr={has_attr}, value={attr_value}")
+        
+        if has_attr and getattr(attacker.ndb, "charge_attack_bonus_active", False):
             attacker_roll += 2
             splattercast.msg(f"ATTACK_BONUS: {attacker.key} gets +2 charge attack bonus.")
             splattercast.msg(f"ATTACK_BONUS_DEBUG: {attacker.key} had charge_attack_bonus_active set - this should only happen after using the 'charge' command.")
