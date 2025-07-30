@@ -917,7 +917,7 @@ class CombatHandler(DefaultScript):
         
         # Check for charge bonus
         has_attr = hasattr(attacker.ndb, "charge_attack_bonus_active")
-        attr_value = getattr(attacker.ndb, "charge_attack_bonus_active", "MISSING") if has_attr else "MISSING"
+        attr_value = getattr(attacker.ndb, "charge_attack_bonus_active", "MISSING")
         splattercast.msg(f"ATTACK_BONUS_DEBUG_DETAILED: {attacker.key} hasattr={has_attr}, value={attr_value}")
         
         if has_attr and getattr(attacker.ndb, "charge_attack_bonus_active", False):
