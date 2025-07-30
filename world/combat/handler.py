@@ -536,20 +536,17 @@ class CombatHandler(DefaultScript):
                 splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing charging_vulnerability_active for {char.key} (was active from their own previous charge).")
                 delattr(char.ndb, "charging_vulnerability_active")
             
+            # Note: charge_attack_bonus_active is consumed automatically when used in attacks.
+            # No need to clean it up here as it should be consumed during the attack phase.
+            # Only clean it up if it exists AND the character is not going to attack this turn.
             if hasattr(char.ndb, "charge_attack_bonus_active"):
-                splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing expired/unused charge_attack_bonus_active for {char.key}.")
-                delattr(char.ndb, "charge_attack_bonus_active")
-                # Double-check that it's really gone
-                if hasattr(char.ndb, "charge_attack_bonus_active"):
-                    splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: WARNING - charge_attack_bonus_active still present after deletion for {char.key}! Force clearing.")
-                    try:
-                        delattr(char.ndb, "charge_attack_bonus_active")
-                    except AttributeError:
-                        pass
-                    # Also try setting it to False as a fallback
-                    char.ndb.charge_attack_bonus_active = False
+                # In auto-combat, all characters attack, so bonus will be consumed naturally
+                # Only clean up if character won't attack (yielding, dead, etc.)
+                if current_char_combat_entry.get(DB_IS_YIELDING, False) or char.is_dead():
+                    splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing unused charge_attack_bonus_active for {char.key} (won't attack this turn).")
+                    delattr(char.ndb, "charge_attack_bonus_active")
                 else:
-                    splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Confirmed charge_attack_bonus_active successfully cleared for {char.key}.")
+                    splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: {char.key} has charge_attack_bonus_active - will be consumed during attack.")
 
             # Get combat action for this character
             combat_action = current_char_combat_entry.get("combat_action")
