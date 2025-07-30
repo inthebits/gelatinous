@@ -1718,6 +1718,10 @@ def explode_standalone_grenade(grenade):
     try:
         from world.combat.utils import apply_damage
         
+        # Debug: Confirm this function is being called
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: explode_standalone_grenade called for {grenade}")
+        
         # Check dud chance
         dud_chance = getattr(grenade.db, DB_DUD_CHANCE, 0.0)
         if random.random() < dud_chance:
@@ -1762,10 +1766,17 @@ def explode_standalone_grenade(grenade):
                     
         else:
             # Normal room explosion
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
             if grenade.location:
-                grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
+                explosion_msg = MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key)
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Standalone explosion sending message to room {grenade.location}: {explosion_msg}")
+                grenade.location.msg_contents(explosion_msg)
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: Standalone explosion message sent to {grenade.location}")
+            else:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Standalone explosion - grenade has no location")
             
             # Apply damage to all in proximity
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Standalone explosion processing proximity list: {[char.key if hasattr(char, 'key') else str(char) for char in proximity_list]}")
             for character in proximity_list:
                 if hasattr(character, 'msg'):  # Is a character
                     apply_damage(character, blast_damage)
