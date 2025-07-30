@@ -1781,6 +1781,7 @@ def explode_standalone_grenade(grenade):
             if grenade.location:
                 explosion_msg = MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key)
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Standalone explosion sending message to room {grenade.location}: {explosion_msg}")
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Room occupants: {[char.key for char in grenade.location.contents if hasattr(char, 'has_account') and char.has_account]}")
                 grenade.location.msg_contents(explosion_msg)
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: Standalone explosion message sent to {grenade.location}")
             else:
