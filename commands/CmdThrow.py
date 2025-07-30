@@ -1083,7 +1083,7 @@ class CmdPull(Command):
                 elif remaining == 1:
                     # Final countdown - explode next tick
                     setattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, 0)
-                    timer = utils.delay(1, lambda: self.explode_grenade(grenade))
+                    timer = utils.delay(1, lambda: explode_standalone_grenade(grenade))
                     setattr(grenade.ndb, NDB_GRENADE_TIMER, timer)
                     
                     if splattercast:
@@ -1093,7 +1093,7 @@ class CmdPull(Command):
                     # Should not reach here - explosion should have been triggered
                     if splattercast:
                         splattercast.msg(f"{DEBUG_PREFIX_THROW}_TICKER_ERROR: {grenade.key} reached 0 without explosion - triggering now")
-                    self.explode_grenade(grenade)
+                    explode_standalone_grenade(grenade)
                     
             except Exception as e:
                 # Failsafe - if ticker fails, explode immediately to avoid duds
@@ -1101,7 +1101,7 @@ class CmdPull(Command):
                 if splattercast:
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_TICKER_ERROR: Ticker error for {grenade.key}: {e} - triggering explosion")
                 try:
-                    self.explode_grenade(grenade)
+                    explode_standalone_grenade(grenade)
                 except:
                     pass  # If even explosion fails, give up gracefully
         
