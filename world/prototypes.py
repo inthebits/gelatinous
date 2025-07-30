@@ -169,6 +169,18 @@ STAFF = {
     "weapon_type": "staff",  # Using existing message type
 }
 
+# Tennis Racket (excellent deflection!)
+TENNIS_RACKET = {
+    "prototype_parent": "MELEE_WEAPON_BASE",
+    "key": "tennis racket",
+    "aliases": ["racket", "racquet"],
+    "desc": "A professional tennis racket with tight strings and a lightweight frame. Perfect for returning serves... and grenades!",
+    "damage": 5,  # Lower damage but amazing deflection
+    "deflection_bonus": 0.50,  # +10 to deflection threshold (0.50 * 20) - BEST deflection weapon!
+    "weapon_type": "tennis_racket",
+    "hands": 1,
+}
+
 # Dagger (poor deflection)
 DAGGER = {
     "prototype_parent": "MELEE_WEAPON_BASE",
