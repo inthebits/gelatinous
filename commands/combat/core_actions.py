@@ -212,6 +212,10 @@ class CmdAttack(Command):
             if caller_entry: # Ensure entry exists
                 final_handler.set_target(caller, target) # This command updates the target
                 
+                # Clear any existing combat action when attacking (prevents stuck charge actions)
+                caller_entry["combat_action"] = None
+                caller_entry["combat_action_target"] = None
+                
                 # Check if caller was yielding and provide appropriate messaging
                 was_yielding = caller_entry.get("is_yielding", False)
                 caller_entry["is_yielding"] = False
