@@ -814,8 +814,22 @@ class CombatHandler(DefaultScript):
             # Clear the combat action after processing
             current_char_combat_entry["combat_action"] = None
 
-        # Save the modified combatants list back to the database
-        setattr(self.db, DB_COMBATANTS, combatants_list)
+        # Don't overwrite database with working copy - set_target() already updated database
+        # Just ensure any other changes from working list are preserved
+        db_combatants = getattr(self.db, DB_COMBATANTS, [])
+        for working_entry in combatants_list:
+            char = working_entry.get(DB_CHAR)
+            if char:
+                # Find corresponding database entry
+                db_entry = next((e for e in db_combatants if e.get(DB_CHAR) == char), None)
+                if db_entry:
+                    # Preserve non-target changes from working list (but don't overwrite target_dbref)
+                    for key, value in working_entry.items():
+                        if key != DB_TARGET_DBREF:  # Don't overwrite target changes made during round
+                            db_entry[key] = value
+        
+        # Save the updated database list
+        setattr(self.db, DB_COMBATANTS, db_combatants)
         
         # Clear active list tracking now that round processing is complete
         self._active_combatants_list = None
