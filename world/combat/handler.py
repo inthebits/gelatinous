@@ -890,11 +890,14 @@ class CombatHandler(DefaultScript):
         """Set the target for a given character."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
-        # Get the database list
-        db_combatants_list = getattr(self.db, DB_COMBATANTS, [])
-        db_entry = next((e for e in db_combatants_list if e.get(DB_CHAR) == char), None)
+        # Follow the same pattern as utils.py functions:
+        # 1. Get a copy of the combatants list
+        # 2. Modify the copy
+        # 3. Save the entire modified copy back
+        combatants = getattr(self.db, DB_COMBATANTS, [])
+        db_entry = next((e for e in combatants if e.get(DB_CHAR) == char), None)
         
-        # Also check if there's an active processing list (during at_repeat)
+        # Also update active processing list if it exists
         active_list = getattr(self, '_active_combatants_list', None)
         active_entry = None
         if active_list:
@@ -904,7 +907,7 @@ class CombatHandler(DefaultScript):
             new_target_dbref = self._get_dbref(target) if target else None
             old_target_dbref = db_entry.get(DB_TARGET_DBREF)
             
-            # Update database entry
+            # Update database entry in the copy
             db_entry[DB_TARGET_DBREF] = new_target_dbref
             
             # Update active processing entry if it exists
@@ -912,11 +915,17 @@ class CombatHandler(DefaultScript):
                 active_entry[DB_TARGET_DBREF] = new_target_dbref
                 splattercast.msg(f"SET_TARGET: Updated both DB and active list for {char.key}")
             
-            # Save to database
-            setattr(self.db, DB_COMBATANTS, db_combatants_list)
+            # Save the modified copy back (following utils.py pattern)
+            setattr(self.db, DB_COMBATANTS, combatants)
             
             if target:
                 splattercast.msg(f"SET_TARGET: {char.key} target changed from {old_target_dbref} to {new_target_dbref} ({target.key})")
+                # Verify the change was saved
+                verification_list = getattr(self.db, DB_COMBATANTS, [])
+                verification_entry = next((e for e in verification_list if e.get(DB_CHAR) == char), None)
+                if verification_entry:
+                    actual_dbref = verification_entry.get(DB_TARGET_DBREF)
+                    splattercast.msg(f"SET_TARGET_VERIFY: {char.key} database now shows target_dbref: {actual_dbref}")
             else:
                 splattercast.msg(f"SET_TARGET: {char.key} target cleared to None")
             
