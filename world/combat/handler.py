@@ -852,7 +852,13 @@ class CombatHandler(DefaultScript):
 
     def get_target(self, char):
         """Get the target character for a given character."""
-        combatants_list = getattr(self.db, DB_COMBATANTS, [])
+        # Use active list if available (during round processing), otherwise use database
+        active_list = getattr(self, '_active_combatants_list', None)
+        if active_list:
+            combatants_list = active_list
+        else:
+            combatants_list = getattr(self.db, DB_COMBATANTS, [])
+        
         entry = next((e for e in combatants_list if e.get(DB_CHAR) == char), None)
         if entry:
             return self.get_target_obj(entry)
