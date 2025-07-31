@@ -822,24 +822,6 @@ class CombatHandler(DefaultScript):
             # Clear the combat action after processing
             current_char_combat_entry["combat_action"] = None
 
-        # Don't overwrite database with working copy - set_target() already updated database
-        # The working copy may be stale since it was created before mid-round target changes
-        # Only copy back non-target fields to preserve target changes made during the round
-        db_combatants = getattr(self.db, DB_COMBATANTS, [])
-        for working_entry in combatants_list:
-            char = working_entry.get(DB_CHAR)
-            if char:
-                # Find corresponding database entry
-                db_entry = next((e for e in db_combatants if e.get(DB_CHAR) == char), None)
-                if db_entry:
-                    # Copy back all fields EXCEPT target_dbref which may have been updated mid-round
-                    for key, value in working_entry.items():
-                        if key != DB_TARGET_DBREF:  # Don't overwrite target changes made during round
-                            db_entry[key] = value
-        
-        # Save the updated database list
-        setattr(self.db, DB_COMBATANTS, db_combatants)
-        
         # Clear active list tracking now that round processing is complete
         self._active_combatants_list = None
 
@@ -898,12 +880,6 @@ class CombatHandler(DefaultScript):
         combatants = getattr(self.db, DB_COMBATANTS, [])
         db_entry = next((e for e in combatants if e.get(DB_CHAR) == char), None)
         
-        # Also update active processing list if it exists
-        active_list = getattr(self, '_active_combatants_list', None)
-        active_entry = None
-        if active_list:
-            active_entry = next((e for e in active_list if e.get(DB_CHAR) == char), None)
-        
         if db_entry:
             new_target_dbref = self._get_dbref(target) if target else None
             old_target_dbref = db_entry.get(DB_TARGET_DBREF)
@@ -911,10 +887,14 @@ class CombatHandler(DefaultScript):
             # Update database entry in the copy
             db_entry[DB_TARGET_DBREF] = new_target_dbref
             
-            # Update active processing entry if it exists
-            if active_entry:
-                active_entry[DB_TARGET_DBREF] = new_target_dbref
-                splattercast.msg(f"SET_TARGET: Updated both DB and active list for {char.key}")
+            # CRITICAL: Also update active processing list if it exists
+            # This prevents the working copy from reverting the change at end of round
+            active_list = getattr(self, '_active_combatants_list', None)
+            if active_list:
+                active_entry = next((e for e in active_list if e.get(DB_CHAR) == char), None)
+                if active_entry:
+                    active_entry[DB_TARGET_DBREF] = new_target_dbref
+                    splattercast.msg(f"SET_TARGET: Updated both DB and active list for {char.key}")
             
             # Save the modified copy back (following utils.py pattern)
             setattr(self.db, DB_COMBATANTS, combatants)
