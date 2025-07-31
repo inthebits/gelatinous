@@ -780,7 +780,22 @@ def validate_and_cleanup_grapple_state(handler):
     
     # Save changes if any cleanup was needed
     if cleanup_needed:
-        setattr(handler.db, "combatants", combatants_list)
+        # Use the same pattern as set_target(): get fresh copy, apply changes, save back
+        # Don't overwrite the entire list as it may contain mid-round target changes
+        fresh_combatants = getattr(handler.db, "combatants", [])
+        
+        # Apply grapple cleanup changes to the fresh copy
+        for modified_entry in combatants_list:
+            char = modified_entry.get(DB_CHAR)
+            if char:
+                # Find the corresponding entry in the fresh database list
+                fresh_entry = next((e for e in fresh_combatants if e.get(DB_CHAR) == char), None)
+                if fresh_entry:
+                    # Only update grapple-related fields, preserve target_dbref changes
+                    fresh_entry[DB_GRAPPLING_DBREF] = modified_entry.get(DB_GRAPPLING_DBREF)
+                    fresh_entry[DB_GRAPPLED_BY_DBREF] = modified_entry.get(DB_GRAPPLED_BY_DBREF)
+        
+        setattr(handler.db, "combatants", fresh_combatants)
         splattercast.msg(f"GRAPPLE_CLEANUP: Grapple state cleanup completed for handler {handler.key}. Changes saved.")
     else:
         splattercast.msg(f"GRAPPLE_VALIDATE: All grapple states valid for handler {handler.key}.")

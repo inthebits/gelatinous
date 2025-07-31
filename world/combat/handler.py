@@ -823,7 +823,8 @@ class CombatHandler(DefaultScript):
             current_char_combat_entry["combat_action"] = None
 
         # Don't overwrite database with working copy - set_target() already updated database
-        # Just ensure any other changes from working list are preserved
+        # The working copy may be stale since it was created before mid-round target changes
+        # Only copy back non-target fields to preserve target changes made during the round
         db_combatants = getattr(self.db, DB_COMBATANTS, [])
         for working_entry in combatants_list:
             char = working_entry.get(DB_CHAR)
@@ -831,7 +832,7 @@ class CombatHandler(DefaultScript):
                 # Find corresponding database entry
                 db_entry = next((e for e in db_combatants if e.get(DB_CHAR) == char), None)
                 if db_entry:
-                    # Preserve non-target changes from working list (but don't overwrite target_dbref)
+                    # Copy back all fields EXCEPT target_dbref which may have been updated mid-round
                     for key, value in working_entry.items():
                         if key != DB_TARGET_DBREF:  # Don't overwrite target changes made during round
                             db_entry[key] = value
