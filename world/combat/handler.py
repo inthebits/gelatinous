@@ -1421,19 +1421,19 @@ class CombatHandler(DefaultScript):
                 # Success - establish proximity and charge bonus
                 
                 # Check if charger is grappling someone and release them
-                charger_entry = next((e for e in combatants_list if e[DB_CHAR] == char), None)
-                if charger_entry and charger_entry.get(DB_GRAPPLING_DBREF):
-                    grappled_victim_dbref = charger_entry.get(DB_GRAPPLING_DBREF)
-                    grappled_victim = get_character_by_dbref(grappled_victim_dbref)
+                if entry.get(DB_GRAPPLING_DBREF):
+                    grappled_victim = self.get_grappling_obj(entry)
                     
                     if grappled_victim:
-                        # Release the grapple
-                        charger_entry[DB_GRAPPLING_DBREF] = None
+                        # Release the grapple - update the actual combatants list
+                        for combatant_entry in combatants_list:
+                            if combatant_entry[DB_CHAR] == char:
+                                combatant_entry[DB_GRAPPLING_DBREF] = None
+                            elif combatant_entry[DB_CHAR] == grappled_victim:
+                                combatant_entry[DB_GRAPPLED_BY_DBREF] = None
                         
-                        # Clear victim's grappled_by state
-                        victim_entry = next((e for e in combatants_list if e[DB_CHAR] == grappled_victim), None)
-                        if victim_entry:
-                            victim_entry[DB_GRAPPLED_BY_DBREF] = None
+                        # Save the updated combatants list
+                        self.db.combatants = combatants_list
                         
                         # Announce grapple release
                         char.msg(f"|yYou release your grapple on {grappled_victim.get_display_name(char)} as you charge {target.key}!|n")
@@ -1504,19 +1504,19 @@ class CombatHandler(DefaultScript):
                 char.move_to(target_room)
                 
                 # Check if charger is grappling someone and release them
-                charger_entry = next((e for e in combatants_list if e[DB_CHAR] == char), None)
-                if charger_entry and charger_entry.get(DB_GRAPPLING_DBREF):
-                    grappled_victim_dbref = charger_entry.get(DB_GRAPPLING_DBREF)
-                    grappled_victim = get_character_by_dbref(grappled_victim_dbref)
+                if entry.get(DB_GRAPPLING_DBREF):
+                    grappled_victim = self.get_grappling_obj(entry)
                     
                     if grappled_victim:
-                        # Release the grapple
-                        charger_entry[DB_GRAPPLING_DBREF] = None
+                        # Release the grapple - update the actual combatants list
+                        for combatant_entry in combatants_list:
+                            if combatant_entry[DB_CHAR] == char:
+                                combatant_entry[DB_GRAPPLING_DBREF] = None
+                            elif combatant_entry[DB_CHAR] == grappled_victim:
+                                combatant_entry[DB_GRAPPLED_BY_DBREF] = None
                         
-                        # Clear victim's grappled_by state
-                        victim_entry = next((e for e in combatants_list if e[DB_CHAR] == grappled_victim), None)
-                        if victim_entry:
-                            victim_entry[DB_GRAPPLED_BY_DBREF] = None
+                        # Save the updated combatants list
+                        self.db.combatants = combatants_list
                         
                         # Announce grapple release (victim might be in different room now)
                         char.msg(f"|yYou release your grapple on {grappled_victim.get_display_name(char)} as you charge away!|n")
