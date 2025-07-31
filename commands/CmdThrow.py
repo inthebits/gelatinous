@@ -792,6 +792,18 @@ class CmdThrow(Command):
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Target {target} not in destination {destination}")
                 return False
             
+            # Check if target is grappled or grappling (cannot deflect while restricted)
+            if hasattr(target, 'ndb') and hasattr(target.ndb, NDB_COMBAT_HANDLER):
+                handler = getattr(target.ndb, NDB_COMBAT_HANDLER)
+                if handler:
+                    combat_entry = handler.get_combatant_entry(target)
+                    if combat_entry:
+                        grappled_by = combat_entry.get(DB_GRAPPLED_BY_DBREF)
+                        grappling = combat_entry.get(DB_GRAPPLING_DBREF)
+                        if grappled_by or grappling:
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Target {target} cannot deflect - grappled_by: {grappled_by}, grappling: {grappling}")
+                            return False
+            
             # Check if target has hands and a melee weapon
             target_hands = getattr(target, 'hands', None)
             if not target_hands:
