@@ -1516,6 +1516,9 @@ class CombatHandler(DefaultScript):
                 # Clear aim states
                 clear_aim_state(char)
                 
+                # Update target on successful charge
+                self.set_target(char, target)
+                
                 # Set charge bonus
                 char.ndb.charge_attack_bonus_active = True
                 splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} charge_attack_bonus_active set to True by successful charge.")
@@ -1600,6 +1603,9 @@ class CombatHandler(DefaultScript):
                 
                 clear_aim_state(char)
                 establish_proximity(char, target)
+                
+                # Update target on successful charge
+                self.set_target(char, target)
                 
                 # Set charge bonus
                 char.ndb.charge_attack_bonus_active = True
