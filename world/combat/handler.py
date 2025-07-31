@@ -1240,6 +1240,11 @@ class CombatHandler(DefaultScript):
                     char.move_to(target_room)
                     grappled_victim.move_to(target_room, quiet=True, move_hooks=False)
                     
+                    # Re-establish proximity between grappler and victim after drag
+                    from .proximity import establish_proximity
+                    establish_proximity(char, grappled_victim)
+                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_DRAG: Re-established proximity between {char.key} and dragged victim {grappled_victim.key} in {target_room.key}.")
+                    
                     # Announce arrival in new location
                     target_room.msg_contents(f"|y{char.key} arrives dragging {grappled_victim.key}.|n", exclude=[char, grappled_victim])
                 else:
