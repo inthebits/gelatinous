@@ -676,7 +676,7 @@ class CombatHandler(DefaultScript):
                         current_char_combat_entry["combat_action_target"] = None
                         continue
                     elif combat_action == COMBAT_ACTION_CHARGE:
-                        self._resolve_charge(char, current_char_combat_entry)
+                        self._resolve_charge(char, current_char_combat_entry, combatants_list)
                         current_char_combat_entry["combat_action"] = None
                         current_char_combat_entry["combat_action_target"] = None
                         continue
@@ -1375,7 +1375,7 @@ class CombatHandler(DefaultScript):
                     splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_ADVANCE_MOVE_BONUS: {target.key} gets bonus attack vs {char.key} for failed cross-room advance.")
                     self.resolve_bonus_attack(target, char)
 
-    def _resolve_charge(self, char, entry):
+    def _resolve_charge(self, char, entry, combatants_list):
         """Resolve a charge action."""
         from random import randint
         from .utils import get_numeric_stat, initialize_proximity_ndb, roll_with_disadvantage, standard_roll, clear_aim_state, is_wielding_ranged_weapon
@@ -1390,7 +1390,6 @@ class CombatHandler(DefaultScript):
             return
         
         # Validate target is still in combat
-        combatants_list = getattr(self.db, "combatants", [])
         if not any(e["char"] == target for e in combatants_list):
             char.msg(f"|r{target.key} is no longer in combat.|n")
             return
@@ -1431,9 +1430,6 @@ class CombatHandler(DefaultScript):
                                 combatant_entry[DB_GRAPPLING_DBREF] = None
                             elif combatant_entry[DB_CHAR] == grappled_victim:
                                 combatant_entry[DB_GRAPPLED_BY_DBREF] = None
-                        
-                        # Save the updated combatants list
-                        self.db.combatants = combatants_list
                         
                         # Announce grapple release
                         char.msg(f"|yYou release your grapple on {grappled_victim.get_display_name(char)} as you charge {target.key}!|n")
@@ -1514,9 +1510,6 @@ class CombatHandler(DefaultScript):
                                 combatant_entry[DB_GRAPPLING_DBREF] = None
                             elif combatant_entry[DB_CHAR] == grappled_victim:
                                 combatant_entry[DB_GRAPPLED_BY_DBREF] = None
-                        
-                        # Save the updated combatants list
-                        self.db.combatants = combatants_list
                         
                         # Announce grapple release (victim might be in different room now)
                         char.msg(f"|yYou release your grapple on {grappled_victim.get_display_name(char)} as you charge away!|n")
