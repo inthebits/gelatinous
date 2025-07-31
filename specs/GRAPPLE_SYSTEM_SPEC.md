@@ -161,6 +161,49 @@ Failure: Current Grappler >= Challenger → Maintains control
   - Grapple damage hits: Control damage during struggle
   - Grapple damage misses: Failed attempts to harm
 
+### Human Shield System
+
+#### **Bodyshield Mechanics** ⚠️ **MISSING IMPLEMENTATION**
+When a character attacks someone who is grappling a victim, the victim may intercept the attack as an involuntary human shield.
+
+#### **Shield Chance Calculation**
+```
+Base Shield Chance: 40%
++ Grappler Motorics modifier: +5% per point above 1
++ Victim Resistance modifier: 
+  - Yielding victim: +10% (easier to position)
+  - Non-yielding victim: -10% (struggling against positioning)
+- Ranged Attack modifier: -20% (harder to shield against projectiles)
+```
+
+#### **Shield Resolution Process**
+1. **Attack Targeting**: Someone attacks a grappler
+2. **Shield Check**: Roll d100 vs calculated shield chance
+3. **Shield Success**: 
+   - **Shield Messages**: Inform all parties about interception
+   - **Target Redirect**: Change attack target to grappled victim
+   - **Normal Combat Flow**: Proceed with standard attack resolution on victim
+4. **Shield Failure**: Attack proceeds normally against intended grappler target
+
+#### **Shield Messaging System**
+- **Attacker Message**: `"Your attack is intercepted by {victim} as {grappler} uses them as a shield!"`
+- **Grappler Message**: `"You position {victim} to absorb {attacker}'s attack!"`
+- **Victim Message**: `"You are forced into the path of {attacker}'s attack by {grappler}!"`
+- **Observer Message**: `"{grappler} uses {victim} as a human shield against {attacker}'s attack!"`
+
+#### **Integration with Combat System**
+- **Pre-Attack Check**: Shield check occurs before normal attack resolution
+- **Target Substitution**: Victim becomes new target for existing combat flow
+- **Damage Application**: Uses normal `take_damage()` on victim
+- **Combat Messages**: Uses existing weapon-based combat message system
+- **Natural Escalation**: Existing "external violence" triggers handle mode changes automatically
+
+#### **Strategic Implications**
+- **Defensive Grappling**: Makes grappling a protective strategy
+- **Victim Motivation**: Strong incentive for victims to escape or negotiate
+- **Multi-Character Tactics**: Affects targeting decisions in group combat
+- **Roleplay Opportunities**: Creates dramatic tension and moral dilemmas
+
 ---
 
 ## Movement Integration
@@ -330,12 +373,18 @@ Failure: Current Grappler >= Challenger → Maintains control
    - ✅ Implement forced release mechanism  
    - ⚠️ Test edge cases thoroughly
 
-2. **Proximity Inheritance**: ⚠️ **IN PROGRESS**
-   - Implement victim proximity copying during grappler movement
-   - Ensure consistency across advance/retreat/charge
-   - Handle multi-character scenarios
+2. **Proximity Inheritance**: ✅ **COMPLETED**
+   - ✅ Implement victim proximity copying during grappler movement
+   - ✅ Ensure consistency across advance/retreat/charge
+   - ✅ Handle multi-character scenarios
 
-3. **Advance While Grappling**: ⚠️ **PENDING**
+3. **Human Shield System**: ⚠️ **PENDING**
+   - Add bodyshield mechanics to attack resolution
+   - Implement shield chance calculation
+   - Add shield-specific messaging system
+   - Integrate with existing combat damage flow
+
+4. **Advance While Grappling**: ⚠️ **PENDING**
    - Add grapple check to advance command
    - Implement victim dragging during advance
    - Maintain grapple state through movement
