@@ -837,13 +837,18 @@ class CombatHandler(DefaultScript):
     
     def set_target(self, char, target):
         """Set the target for a given character."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         combatants_list = getattr(self.db, DB_COMBATANTS, [])
         entry = next((e for e in combatants_list if e.get(DB_CHAR) == char), None)
         if entry:
             if target:
-                entry[DB_TARGET_DBREF] = self._get_dbref(target)
+                new_target_dbref = self._get_dbref(target)
+                old_target_dbref = entry.get(DB_TARGET_DBREF)
+                entry[DB_TARGET_DBREF] = new_target_dbref
+                splattercast.msg(f"SET_TARGET: {char.key} target changed from {old_target_dbref} to {new_target_dbref} ({target.key})")
             else:
                 entry[DB_TARGET_DBREF] = None
+                splattercast.msg(f"SET_TARGET: {char.key} target cleared to None")
             # Update the persistent storage
             setattr(self.db, DB_COMBATANTS, combatants_list)
             return True
