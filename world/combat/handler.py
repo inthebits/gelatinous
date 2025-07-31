@@ -432,6 +432,14 @@ class CombatHandler(DefaultScript):
             target_dbref = entry.get(DB_TARGET_DBREF)
             if char:
                 splattercast.msg(f"AT_REPEAT_TARGET_DEBUG: {char.key} has target_dbref: {target_dbref}")
+        
+        # Debug: Also show what's actually in the database
+        db_combatants_debug = getattr(self.db, DB_COMBATANTS, [])
+        for entry in db_combatants_debug:
+            char = entry.get(DB_CHAR)
+            target_dbref = entry.get(DB_TARGET_DBREF)
+            if char:
+                splattercast.msg(f"AT_REPEAT_DB_DEBUG: {char.key} has target_dbref: {target_dbref} in database")
 
         # Validate and clean up stale grapple references
         self.validate_and_cleanup_grapple_state()
