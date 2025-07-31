@@ -422,6 +422,13 @@ class CombatHandler(DefaultScript):
                 regular_entry = dict(entry)
                 combatants_list.append(regular_entry)
         splattercast.msg(f"AT_REPEAT_DEBUG: Converted SaverList to regular list with {len(combatants_list)} entries")
+        
+        # Debug: Show target_dbref for all combatants at start of round
+        for entry in combatants_list:
+            char = entry.get(DB_CHAR)
+            target_dbref = entry.get(DB_TARGET_DBREF)
+            if char:
+                splattercast.msg(f"AT_REPEAT_TARGET_DEBUG: {char.key} has target_dbref: {target_dbref}")
 
         # Validate and clean up stale grapple references
         self.validate_and_cleanup_grapple_state()
@@ -839,6 +846,7 @@ class CombatHandler(DefaultScript):
         """Set the target for a given character."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         combatants_list = getattr(self.db, DB_COMBATANTS, [])
+        splattercast.msg(f"SET_TARGET_DEBUG: Before change, combatants_list type: {type(combatants_list)}")
         entry = next((e for e in combatants_list if e.get(DB_CHAR) == char), None)
         if entry:
             if target:
@@ -846,11 +854,17 @@ class CombatHandler(DefaultScript):
                 old_target_dbref = entry.get(DB_TARGET_DBREF)
                 entry[DB_TARGET_DBREF] = new_target_dbref
                 splattercast.msg(f"SET_TARGET: {char.key} target changed from {old_target_dbref} to {new_target_dbref} ({target.key})")
+                splattercast.msg(f"SET_TARGET_DEBUG: After change, entry target_dbref: {entry.get(DB_TARGET_DBREF)}")
             else:
                 entry[DB_TARGET_DBREF] = None
                 splattercast.msg(f"SET_TARGET: {char.key} target cleared to None")
             # Update the persistent storage
             setattr(self.db, DB_COMBATANTS, combatants_list)
+            # Verify the change was saved
+            verification_list = getattr(self.db, DB_COMBATANTS, [])
+            verification_entry = next((e for e in verification_list if e.get(DB_CHAR) == char), None)
+            if verification_entry:
+                splattercast.msg(f"SET_TARGET_DEBUG: Verification - saved target_dbref: {verification_entry.get(DB_TARGET_DBREF)}")
             return True
         return False
     
