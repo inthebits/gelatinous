@@ -1023,34 +1023,61 @@ class CombatHandler(DefaultScript):
         """Resolve a retreat action."""
         from random import randint
         from .utils import get_numeric_stat, initialize_proximity_ndb
-        from .proximity import break_proximity, is_in_proximity
-        from .constants import SPLATTERCAST_CHANNEL, DEBUG_PREFIX_HANDLER
+        from .proximity import break_proximity, is_in_proximity, establish_proximity
+        from .constants import SPLATTERCAST_CHANNEL, DEBUG_PREFIX_HANDLER, NDB_PROXIMITY_UNIVERSAL, DB_GRAPPLING_DBREF
         
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_RETREAT: {char.key} executing retreat action.")
         
-        # Check if in proximity with anyone
+        # Check if in proximity with anyone (combat proximity)
         initialize_proximity_ndb(char)
-        proximity_list = getattr(char.ndb, "in_proximity_with", set())
+        combat_proximity_list = getattr(char.ndb, "in_proximity_with", set())
         
-        if not proximity_list:
+        # Also check grenade proximity
+        grenade_proximity_list = getattr(char.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        if not isinstance(grenade_proximity_list, list):
+            grenade_proximity_list = []
+        
+        # Combine both proximity systems to get all nearby entities
+        all_proximity = set(combat_proximity_list) | set(grenade_proximity_list)
+        all_proximity.discard(char)  # Remove self
+        
+        if not all_proximity:
+            char.msg("|yYou are not in melee with anyone to retreat from.|n")
+            return
+        
+        # Check if currently grappling someone
+        grappled_victim = None
+        grappled_victim_dbref = entry.get(DB_GRAPPLING_DBREF)
+        if grappled_victim_dbref:
+            grappled_victim = self._get_char_by_dbref(grappled_victim_dbref)
+        
+        # Get valid opponents (exclude grappled victim from motorics contest)
+        opponents = []
+        for entity in all_proximity:
+            if (entity != char and 
+                entity.location == char.location and
+                entity != grappled_victim):  # Exclude grappled victim from contest
+                opponents.append(entity)
+        
+        # Special case: If only in proximity with grappled victim, retreat fails
+        if grappled_victim and len(all_proximity) == 1 and grappled_victim in all_proximity:
+            char.msg("|rYou cannot retreat while grappling your only opponent! You are physically latched together.|n")
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_RETREAT: {char.key} cannot retreat - only in proximity with grappled victim {grappled_victim.key}.")
+            return
+        
+        # If no valid opponents for contest (shouldn't happen after above check, but safety)
+        if not opponents:
             char.msg("|yYou are not in melee with anyone to retreat from.|n")
             return
         
         # Find the highest opponent stat for retreat difficulty
         highest_opponent_stat = 0
-        opponents = []
-        for opponent in proximity_list:
-            if opponent != char and opponent.location == char.location:
-                opponents.append(opponent)
-                opponent_stat = get_numeric_stat(opponent, "motorics")
-                if opponent_stat > highest_opponent_stat:
-                    highest_opponent_stat = opponent_stat
-        
-        if not opponents:
-            char.msg("|yYou are not in melee with anyone to retreat from.|n")
-            return
+        for opponent in opponents:
+            opponent_stat = get_numeric_stat(opponent, "motorics")
+            if opponent_stat > highest_opponent_stat:
+                highest_opponent_stat = opponent_stat
         
         # Make opposed roll
         char_motorics = get_numeric_stat(char, "motorics")
@@ -1060,10 +1087,15 @@ class CombatHandler(DefaultScript):
         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_RETREAT: {char.key} (motorics:{char_motorics}, roll:{char_roll}) vs highest opponent (motorics:{highest_opponent_stat}, roll:{opponent_roll})")
         
         if char_roll > opponent_roll:
-            # Success - break proximity with all opponents
+            # Success - break proximity with opponents but maintain with grappled victim
             for opponent in opponents:
                 if is_in_proximity(char, opponent):
                     break_proximity(char, opponent)
+            
+            # If grappling someone, ensure proximity is maintained with victim
+            if grappled_victim and not is_in_proximity(char, grappled_victim):
+                establish_proximity(char, grappled_victim)
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_RETREAT: Maintained proximity with grappled victim {grappled_victim.key} during retreat.")
             
             char.msg("|gYou successfully retreat from melee combat.|n")
             char.location.msg_contents(f"|y{char.key} retreats from melee combat.|n", exclude=[char])
