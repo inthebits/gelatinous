@@ -605,6 +605,15 @@ def add_combatant(handler, char, target=None, initial_grappling=None, initial_gr
     splattercast.msg(f"ADD_COMB: {char.key} added to combat in {handler.key} with initiative {entry['initiative']}.")
     char.msg("|rYou enter combat!|n")
     
+    # Establish proximity for grappled pairs when adding to new handler
+    from .proximity import establish_proximity
+    if initial_grappling:
+        establish_proximity(char, initial_grappling)
+        splattercast.msg(f"ADD_COMB: Established proximity between {char.key} and grappled victim {initial_grappling.key}.")
+    if initial_grappled_by:
+        establish_proximity(char, initial_grappled_by)
+        splattercast.msg(f"ADD_COMB: Established proximity between {char.key} and grappler {initial_grappled_by.key}.")
+    
     # Start combat if not already running
     if not getattr(handler.db, DB_COMBAT_RUNNING, False):
         handler.start()
