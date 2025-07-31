@@ -904,6 +904,32 @@ class CombatHandler(DefaultScript):
             # For ranged attacks, just log that we're allowing cross-room attack
             splattercast.msg(f"ATTACK_RANGED: {attacker.key} making ranged attack on {target.key} from {attacker.location.key} to {target.location.key}.")
         
+        # Human Shield System Check
+        # Check if target is grappling someone who could act as a human shield
+        target_entry = None
+        for entry in combatants_list:
+            if entry.get(DB_CHAR) == target:
+                target_entry = entry
+                break
+        
+        original_target = target
+        if target_entry:
+            grappling_victim = get_combatant_grappling_target(target_entry, self)
+            if grappling_victim:
+                # Target is grappling someone - check for human shield interception
+                shield_chance = self._calculate_shield_chance(target, grappling_victim, is_ranged_attack)
+                shield_roll = randint(1, 100)
+                
+                splattercast.msg(f"HUMAN_SHIELD: {attacker.key} attacking {target.key} who is grappling {grappling_victim.key}. Shield chance: {shield_chance}%, roll: {shield_roll}")
+                
+                if shield_roll <= shield_chance:
+                    # Shield successful - redirect attack to victim
+                    self._send_shield_messages(attacker, target, grappling_victim)
+                    target = grappling_victim  # Redirect the attack
+                    splattercast.msg(f"HUMAN_SHIELD_SUCCESS: Attack redirected from {original_target.key} to {target.key}")
+                else:
+                    splattercast.msg(f"HUMAN_SHIELD_FAIL: Attack proceeds normally against {target.key}")
+        
         # Get weapon and stats
         weapon = get_wielded_weapon(attacker)
         weapon_name = weapon.key if weapon else "unarmed"
@@ -992,6 +1018,72 @@ class CombatHandler(DefaultScript):
             attacker.location.msg_contents(miss_messages["observer_msg"], exclude=[attacker, target])
             
             splattercast.msg(f"ATTACK_MISS: {attacker.key} missed {target.key}.")
+    
+    def _calculate_shield_chance(self, grappler, victim, is_ranged_attack):
+        """
+        Calculate the chance that a grappled victim will act as a human shield.
+        
+        Args:
+            grappler: The character doing the grappling
+            victim: The character being grappled (potential shield)
+            is_ranged_attack: Whether this is a ranged attack
+            
+        Returns:
+            int: Shield chance percentage (0-100)
+        """
+        # Base shield chance
+        base_chance = 40
+        
+        # Grappler Motorics modifier: +5% per point above 1
+        grappler_motorics = get_numeric_stat(grappler, "motorics", 1)
+        motorics_bonus = (grappler_motorics - 1) * 5
+        
+        # Victim resistance modifier based on yielding state
+        victim_entry = None
+        for entry in self.get_all_combatants():
+            if entry.get(DB_CHAR) == victim:
+                victim_entry = entry
+                break
+        
+        resistance_modifier = 0
+        if victim_entry:
+            is_yielding = victim_entry.get(DB_IS_YIELDING, False)
+            if is_yielding:
+                resistance_modifier = 10  # Easier to position yielding victim
+            else:
+                resistance_modifier = -10  # Struggling against positioning
+        
+        # Ranged attack modifier
+        ranged_modifier = -20 if is_ranged_attack else 0
+        
+        # Calculate final chance
+        final_chance = base_chance + motorics_bonus + resistance_modifier + ranged_modifier
+        
+        # Clamp to 0-100 range
+        return max(0, min(100, final_chance))
+    
+    def _send_shield_messages(self, attacker, grappler, victim):
+        """
+        Send human shield interception messages to all parties.
+        
+        Args:
+            attacker: The character making the attack
+            grappler: The character using victim as shield
+            victim: The character being used as shield
+        """
+        # Message templates from the spec
+        attacker_msg = f"|rYour attack is intercepted by {get_display_name_safe(victim)} as {get_display_name_safe(grappler)} uses them as a shield!|n"
+        grappler_msg = f"|yYou position {get_display_name_safe(victim)} to absorb {get_display_name_safe(attacker)}'s attack!|n"
+        victim_msg = f"|RYou are forced into the path of {get_display_name_safe(attacker)}'s attack by {get_display_name_safe(grappler)}!|n"
+        observer_msg = f"|y{get_display_name_safe(grappler)} uses {get_display_name_safe(victim)} as a human shield against {get_display_name_safe(attacker)}'s attack!|n"
+        
+        # Send messages
+        attacker.msg(attacker_msg)
+        grappler.msg(grappler_msg)
+        victim.msg(victim_msg)
+        
+        # Send to observers (exclude the three participants)
+        attacker.location.msg_contents(observer_msg, exclude=[attacker, grappler, victim])
     
     def _resolve_grapple_initiate(self, char_entry, combatants_list):
         """Resolve a grapple initiate action."""
