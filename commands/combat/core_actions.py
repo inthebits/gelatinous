@@ -213,22 +213,29 @@ class CmdAttack(Command):
                 final_handler.set_target(caller, target) # This command updates the target
                 
                 # Clear any existing combat action when attacking (prevents stuck charge actions)
-                caller_entry["combat_action"] = None
-                caller_entry["combat_action_target"] = None
-                
-                # Check if caller was yielding and provide appropriate messaging
-                was_yielding = caller_entry.get("is_yielding", False)
-                caller_entry["is_yielding"] = False
-                
-                if was_yielding:
-                    # Check if caller is grappled (being grappled by someone)
-                    grappler_obj = final_handler.get_grappled_by_obj(caller_entry)
-                    if grappler_obj:
-                        # Special message for switching to violent resistance while grappled
-                        caller.msg(MSG_GRAPPLE_VIOLENT_SWITCH.format(grappler=grappler_obj.key))
-                    else:
-                        # General message for resuming attacking
-                        caller.msg(MSG_RESUME_ATTACKING)
+                # Use copy-modify-save pattern to ensure changes persist
+                combatants_copy = getattr(final_handler.db, "combatants", [])
+                caller_entry_copy = next((e for e in combatants_copy if e.get("char") == caller), None)
+                if caller_entry_copy:
+                    caller_entry_copy["combat_action"] = None
+                    caller_entry_copy["combat_action_target"] = None
+                    
+                    # Check if caller was yielding and provide appropriate messaging
+                    was_yielding = caller_entry_copy.get("is_yielding", False)
+                    caller_entry_copy["is_yielding"] = False
+                    
+                    # Save the modified combatants list back
+                    setattr(final_handler.db, "combatants", combatants_copy)
+                    
+                    if was_yielding:
+                        # Check if caller is grappled (being grappled by someone)
+                        grappler_obj = final_handler.get_grappled_by_obj(caller_entry_copy)
+                        if grappler_obj:
+                            # Special message for switching to violent resistance while grappled
+                            caller.msg(MSG_GRAPPLE_VIOLENT_SWITCH.format(grappler=grappler_obj.key))
+                        else:
+                            # General message for resuming attacking
+                            caller.msg(MSG_RESUME_ATTACKING)
 
         if not target_was_in_final_handler:
             final_handler.add_combatant(target, target=caller) 
