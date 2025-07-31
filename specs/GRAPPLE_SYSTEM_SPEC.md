@@ -163,7 +163,7 @@ Failure: Current Grappler >= Challenger → Maintains control
 
 ### Human Shield System
 
-#### **Bodyshield Mechanics** ⚠️ **MISSING IMPLEMENTATION**
+#### **Bodyshield Mechanics** ✅ **IMPLEMENTED**
 When a character attacks someone who is grappling a victim, the victim may intercept the attack as an involuntary human shield.
 
 #### **Shield Chance Calculation**
@@ -191,7 +191,7 @@ Base Shield Chance: 40%
 - **Victim Message**: `"You are forced into the path of {attacker}'s attack by {grappler}!"`
 - **Observer Message**: `"{grappler} uses {victim} as a human shield against {attacker}'s attack!"`
 
-#### **Integration with Combat System**
+#### **Integration with Combat System** ✅ **IMPLEMENTED**
 - **Pre-Attack Check**: Shield check occurs before normal attack resolution
 - **Target Substitution**: Victim becomes new target for existing combat flow
 - **Damage Application**: Uses normal `take_damage()` on victim
@@ -203,6 +203,41 @@ Base Shield Chance: 40%
 - **Victim Motivation**: Strong incentive for victims to escape or negotiate
 - **Multi-Character Tactics**: Affects targeting decisions in group combat
 - **Roleplay Opportunities**: Creates dramatic tension and moral dilemmas
+
+#### **Grenade Bodyshield System** ⚠️ **MISSING IMPLEMENTATION**
+When grenades explode in proximity to grappling pairs, the grappled victim can absorb damage intended for their grappler.
+
+#### **Current Grenade Shielding**
+- **Holder Shielding**: When grenade explodes in someone's hands, others in proximity take 50% damage due to "body shielding"
+- **Proximity-Based**: All characters in proximity list take equal damage (except holder reduction)
+- **No Grappling Integration**: Grenade explosions do not check for grappling-based human shields
+
+#### **Proposed Grenade Human Shield Mechanics**
+When a grenade explodes, before applying damage to characters in proximity:
+
+1. **Grappling Check**: For each character in the explosion proximity list who is grappling someone
+2. **Shield Calculation**: Use modified shield chance calculation:
+   ```
+   Base Shield Chance: 30% (reduced from attack-based 40%)
+   + Grappler Motorics modifier: +5% per point above 1
+   + Victim Resistance modifier: 
+     - Yielding victim: +10% (easier to position as blast shield)
+     - Non-yielding victim: -10% (struggling against positioning)
+   - Area Effect modifier: -10% (harder to shield against explosions)
+   ```
+3. **Shield Success**: 
+   - **Damage Redirect**: Grappler takes no explosion damage
+   - **Victim Absorption**: Grappled victim takes grappler's full explosion damage + their own
+   - **Shield Messages**: Explosive-specific messaging for dramatic effect
+4. **Shield Failure**: Both grappler and victim take normal explosion damage
+
+#### **Explosive Shield Messaging System**
+- **Grappler Message**: `"You instinctively use {victim} to shield yourself from the {grenade} blast!"`
+- **Victim Message**: `"You are forcibly positioned to absorb the {grenade} explosion meant for {grappler}!"`
+- **Observer Message**: `"{grappler} uses {victim} as a blast shield against the {grenade} explosion!"`
+
+#### **Implementation Gap**
+The grenade explosion system (`CmdThrow.py`) bypasses combat handler's `_process_attack()` method, using direct `apply_damage()` calls instead. Integration would require adding grappling shield checks within the explosion damage resolution before `apply_damage()` calls.
 
 ---
 
@@ -229,23 +264,23 @@ Base Shield Chance: 40%
 
 ### Needed Implementations ⚠️
 
-#### **Advance While Grappling**
-- **Current Gap**: No logic for grappler advancing while maintaining hold
-- **Needed Behavior**: 
+#### **Advance While Grappling** ✅ **IMPLEMENTED**
+- **Current Implementation**: Full logic for grappler advancing while maintaining hold
+- **Behavior**: 
   - Allow advance to new target while holding victim
-  - Drag victim along during advance
+  - Drag victim along during advance if conditions met
   - Victim inherits grappler's new proximity relationships
 - **Restrictions**: Only if victim is yielding for room traversal
 
-#### **Retreat While Grappling** 
-- **Current Gap**: No grapple-specific retreat logic
-- **Needed Behavior**:
+#### **Retreat While Grappling** ✅ **IMPLEMENTED**
+- **Current Implementation**: Complete grapple-specific retreat logic
+- **Behavior**:
   - Allow retreat while maintaining grapple
   - Drag victim back with grappler
   - Both maintain proximity after retreat
-- **Consistency**: Both should remain in proximity post-retreat
+- **Consistency**: Both remain in proximity post-retreat
 
-#### **Proximity Inheritance** ⚠️ **CRITICAL IMPLEMENTATION**
+#### **Proximity Inheritance** ✅ **IMPLEMENTED**
 - **Principle**: Victim inherits all of grappler's proximity relationships
 - **Timing**: After successful movement (advance/retreat/charge)
 - **Mechanism**: Copy grappler's proximity set to victim
@@ -366,49 +401,57 @@ Base Shield Chance: 40%
 
 ## Implementation Priorities
 
-### High Priority
+### High Priority ✅ **COMPLETED**
 
 1. **Multi-Grapple Chain Logic**: ✅ **COMPLETED**
    - ✅ Fix scenario where C tries to grapple A (who is grappling B)
    - ✅ Implement forced release mechanism  
-   - ⚠️ Test edge cases thoroughly
+   - ✅ Test edge cases thoroughly
 
 2. **Proximity Inheritance**: ✅ **COMPLETED**
    - ✅ Implement victim proximity copying during grappler movement
    - ✅ Ensure consistency across advance/retreat/charge
    - ✅ Handle multi-character scenarios
 
-3. **Human Shield System**: ⚠️ **PENDING**
-   - Add bodyshield mechanics to attack resolution
-   - Implement shield chance calculation
-   - Add shield-specific messaging system
-   - Integrate with existing combat damage flow
+3. **Human Shield System**: ✅ **COMPLETED**
+   - ✅ Add bodyshield mechanics to attack resolution
+   - ✅ Implement shield chance calculation
+   - ✅ Add shield-specific messaging system
+   - ✅ Integrate with existing combat damage flow
+   - ⚠️ **Missing**: Grenade explosion human shield integration
 
-4. **Advance While Grappling**: ⚠️ **PENDING**
-   - Add grapple check to advance command
-   - Implement victim dragging during advance
-   - Maintain grapple state through movement
+4. **Advance While Grappling**: ✅ **COMPLETED**
+   - ✅ Add grapple check to advance command
+   - ✅ Implement victim dragging during advance
+   - ✅ Maintain grapple state through movement
 
 ### Medium Priority
 
-4. **Retreat Grapple Logic**:
-   - Add grapple awareness to retreat command
-   - Implement victim dragging during retreat
-   - Ensure proximity maintenance
+5. **Retreat Grapple Logic**: ✅ **COMPLETED**
+   - ✅ Add grapple awareness to retreat command
+   - ✅ Implement victim dragging during retreat
+   - ✅ Ensure proximity maintenance
 
-5. **Enhanced Contest System**:
+6. **Enhanced Contest System**:
    - Add modifiers for different situations
    - Implement fatigue mechanics for extended grapples
    - Add environmental factors
 
+7. **Grenade Human Shield Integration**:
+   - Integrate grappling-based blast shields with grenade explosions
+   - Implement damage absorption mechanics (victim takes grappler's damage + own)
+   - Add explosive-specific shield chance calculation (reduced effectiveness)
+   - Create dramatic explosive-specific messaging system
+   - Balance tactical opportunity with moral consequences
+
 ### Low Priority
 
-6. **Advanced Grapple Moves**:
+8. **Advanced Grapple Moves**:
    - Submission attempts
    - Position-based modifiers
    - Team grappling mechanics
 
-7. **Grapple Specialization**:
+9. **Grapple Specialization**:
    - Character-specific grappling styles
    - Equipment modifiers
    - Training-based improvements
@@ -491,19 +534,21 @@ The specification identifies key implementation gaps that need addressing to com
 
 ## Implementation Roadmap
 
-### Phase 1: Core Fixes (High Priority)
-- Fix multi-grapple chain logic
-- Implement proximity inheritance
-- Add advance-while-grappling support
+### Phase 1: Core Fixes (High Priority) ✅ **COMPLETED**
+- ✅ Fix multi-grapple chain logic
+- ✅ Implement proximity inheritance
+- ✅ Add advance-while-grappling support
+- ✅ Implement human shield system
+- ✅ Complete retreat-while-grappling logic
 
-### Phase 2: Movement Integration (Medium Priority)  
-- Complete retreat-while-grappling logic
-- Enhance contest system
-- Add environmental factors
+### Phase 2: Enhancement Features (Medium Priority)  
+- Enhanced contest system with modifiers
+- Environmental factors integration
+- Performance optimization
 
 ### Phase 3: Advanced Features (Low Priority)
 - Specialized grapple moves
 - Character customization
-- Performance optimization
+- Team grappling mechanics
 
-This roadmap ensures the grappling system evolves systematically while maintaining backwards compatibility and system stability.
+This roadmap shows the grappling system has achieved its core functionality goals, with Phase 1 completely implemented. The system now provides a robust foundation for complex, engaging combat encounters that prioritize character development and story progression.
