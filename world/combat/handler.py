@@ -1419,6 +1419,29 @@ class CombatHandler(DefaultScript):
             
             if charge_roll > resist_roll:
                 # Success - establish proximity and charge bonus
+                
+                # Check if charger is grappling someone and release them
+                charger_entry = next((e for e in combatants_list if e[DB_CHAR] == char), None)
+                if charger_entry and charger_entry.get(DB_GRAPPLING_DBREF):
+                    grappled_victim_dbref = charger_entry.get(DB_GRAPPLING_DBREF)
+                    grappled_victim = get_character_by_dbref(grappled_victim_dbref)
+                    
+                    if grappled_victim:
+                        # Release the grapple
+                        charger_entry[DB_GRAPPLING_DBREF] = None
+                        
+                        # Clear victim's grappled_by state
+                        victim_entry = next((e for e in combatants_list if e[DB_CHAR] == grappled_victim), None)
+                        if victim_entry:
+                            victim_entry[DB_GRAPPLED_BY_DBREF] = None
+                        
+                        # Announce grapple release
+                        char.msg(f"|yYou release your grapple on {grappled_victim.get_display_name(char)} as you charge {target.key}!|n")
+                        if grappled_victim.access(char, "view"):
+                            grappled_victim.msg(f"|y{char.get_display_name(grappled_victim)} releases their grapple on you to charge {target.get_display_name(grappled_victim)}!|n")
+                        
+                        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE_GRAPPLE_RELEASE: {char.key} released grapple on {grappled_victim.key} due to successful charge.")
+                
                 establish_proximity(char, target)
                 
                 # Clear aim states
@@ -1479,6 +1502,28 @@ class CombatHandler(DefaultScript):
                 # Success - move and establish proximity
                 exit_to_use = exits_to_target[0]
                 char.move_to(target_room)
+                
+                # Check if charger is grappling someone and release them
+                charger_entry = next((e for e in combatants_list if e[DB_CHAR] == char), None)
+                if charger_entry and charger_entry.get(DB_GRAPPLING_DBREF):
+                    grappled_victim_dbref = charger_entry.get(DB_GRAPPLING_DBREF)
+                    grappled_victim = get_character_by_dbref(grappled_victim_dbref)
+                    
+                    if grappled_victim:
+                        # Release the grapple
+                        charger_entry[DB_GRAPPLING_DBREF] = None
+                        
+                        # Clear victim's grappled_by state
+                        victim_entry = next((e for e in combatants_list if e[DB_CHAR] == grappled_victim), None)
+                        if victim_entry:
+                            victim_entry[DB_GRAPPLED_BY_DBREF] = None
+                        
+                        # Announce grapple release (victim might be in different room now)
+                        char.msg(f"|yYou release your grapple on {grappled_victim.get_display_name(char)} as you charge away!|n")
+                        if grappled_victim.access(char, "view"):
+                            grappled_victim.msg(f"|y{char.get_display_name(grappled_victim)} releases their grapple on you and charges away!|n")
+                        
+                        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE_GRAPPLE_RELEASE: {char.key} released grapple on {grappled_victim.key} due to successful cross-room charge.")
                 
                 # Check for rigged grenades after successful movement
                 from commands.CmdThrow import check_rigged_grenade, check_auto_defuse

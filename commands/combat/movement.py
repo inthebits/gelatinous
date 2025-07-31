@@ -625,23 +625,10 @@ class CmdCharge(Command):
                     splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_{DEBUG_FAIL}: {caller.key} attempted to charge their grapple victim {grappling_victim_obj.key}.")
                     return
                 elif target_search:
-                    # Charging someone else - release the grapple first
-                    # Use proper SaverList updating pattern
-                    combatants_list = list(handler.db.combatants)
-                    for i, entry in enumerate(combatants_list):
-                        if entry["char"] == caller:
-                            combatants_list[i] = dict(entry)  # Deep copy
-                            combatants_list[i]["grappling_dbref"] = None
-                        elif entry["char"] == grappling_victim_obj:
-                            combatants_list[i] = dict(entry)  # Deep copy
-                            combatants_list[i]["grappled_by_dbref"] = None
-                    handler.db.combatants = combatants_list
-                    
-                    caller.msg(f"|yYou release your grapple on {grappling_victim_obj.get_display_name(caller)} to charge {target_search.get_display_name(caller)}!|n")
-                    if grappling_victim_obj.access(caller, "view"):
-                        grappling_victim_obj.msg(f"|y{caller.get_display_name(grappling_victim_obj)} releases their grapple on you to charge {target_search.get_display_name(grappling_victim_obj)}!|n")
-                    
-                    splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_GRAPPLE_RELEASE: {caller.key} released grapple on {grappling_victim_obj.key} to charge {target_search.key}.")
+                    # Charging someone else - prepare to potentially release grapple on successful charge
+                    # (Grapple release will be handled by combat handler only on successful charge)
+                    caller.msg(f"|yYou prepare to release your grapple on {grappling_victim_obj.get_display_name(caller)} and charge {target_search.get_display_name(caller)}!|n")
+                    splattercast.msg(f"{DEBUG_PREFIX_CHARGE}_GRAPPLE_CHARGE: {caller.key} preparing to charge {target_search.key} while grappling {grappling_victim_obj.key}.")
                     # Continue with normal charge logic using target_search
                 else:
                     caller.msg(f"You cannot find '{args}' to charge at.")
