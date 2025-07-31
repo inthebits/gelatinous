@@ -1466,8 +1466,8 @@ class CombatHandler(DefaultScript):
         
         # Check if already in proximity
         if is_in_proximity(char, target):
-            char.msg(f"|yYou are already in melee proximity with {target.key}. No need to charge.|n")
-            # Clear the charge action since it's not needed
+            char.msg(f"|yYou are already in melee proximity with {target.key}.|n")
+            # Clear the charge action and convert to normal attack
             # Get the combat entry and clear action fields
             combatants_list = list(self.db.combatants)
             for combat_entry in combatants_list:
@@ -1476,6 +1476,9 @@ class CombatHandler(DefaultScript):
                     combat_entry["combat_action_target"] = None
                     break
             self.db.combatants = combatants_list
+            
+            # Don't return - let the charge convert to a normal attack this round
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_CHARGE: {char.key} already in proximity with {target.key}, converting charge to normal attack.")
             return
         
         # Handle same room vs different room charge
