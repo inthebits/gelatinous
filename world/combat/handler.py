@@ -917,7 +917,7 @@ class CombatHandler(DefaultScript):
             grappling_victim = get_combatant_grappling_target(target_entry, self)
             if grappling_victim:
                 # Target is grappling someone - check for human shield interception
-                shield_chance = self._calculate_shield_chance(target, grappling_victim, is_ranged_attack)
+                shield_chance = self._calculate_shield_chance(target, grappling_victim, is_ranged_attack, combatants_list)
                 shield_roll = randint(1, 100)
                 
                 splattercast.msg(f"HUMAN_SHIELD: {attacker.key} attacking {target.key} who is grappling {grappling_victim.key}. Shield chance: {shield_chance}%, roll: {shield_roll}")
@@ -1019,7 +1019,7 @@ class CombatHandler(DefaultScript):
             
             splattercast.msg(f"ATTACK_MISS: {attacker.key} missed {target.key}.")
     
-    def _calculate_shield_chance(self, grappler, victim, is_ranged_attack):
+    def _calculate_shield_chance(self, grappler, victim, is_ranged_attack, combatants_list):
         """
         Calculate the chance that a grappled victim will act as a human shield.
         
@@ -1027,6 +1027,7 @@ class CombatHandler(DefaultScript):
             grappler: The character doing the grappling
             victim: The character being grappled (potential shield)
             is_ranged_attack: Whether this is a ranged attack
+            combatants_list: List of all combat entries
             
         Returns:
             int: Shield chance percentage (0-100)
@@ -1040,7 +1041,7 @@ class CombatHandler(DefaultScript):
         
         # Victim resistance modifier based on yielding state
         victim_entry = None
-        for entry in self.get_all_combatants():
+        for entry in combatants_list:
             if entry.get(DB_CHAR) == victim:
                 victim_entry = entry
                 break
