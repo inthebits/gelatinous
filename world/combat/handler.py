@@ -1092,9 +1092,10 @@ class CombatHandler(DefaultScript):
                 if is_in_proximity(char, opponent):
                     break_proximity(char, opponent)
             
-            # If grappling someone, ensure proximity is maintained with victim
-            if grappled_victim and not is_in_proximity(char, grappled_victim):
-                establish_proximity(char, grappled_victim)
+            # Always ensure proximity is maintained with grappled victim during retreat
+            if grappled_victim:
+                if not is_in_proximity(char, grappled_victim):
+                    establish_proximity(char, grappled_victim)
                 splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_RETREAT: Maintained proximity with grappled victim {grappled_victim.key} during retreat.")
             
             char.msg("|gYou successfully retreat from melee combat.|n")
