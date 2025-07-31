@@ -446,6 +446,8 @@ class CombatHandler(DefaultScript):
             for entry in db_combatants:
                 regular_entry = dict(entry)
                 combatants_list.append(regular_entry)
+            # Update active list reference after orphan removal
+            self._active_combatants_list = combatants_list
 
         valid_combatants_entries = []
         managed_rooms = getattr(self.db, DB_MANAGED_ROOMS, [])
@@ -468,6 +470,8 @@ class CombatHandler(DefaultScript):
         
         # Update the working list
         combatants_list = valid_combatants_entries
+        # Update active list reference after validation
+        self._active_combatants_list = combatants_list
 
         if not combatants_list:
             splattercast.msg(f"AT_REPEAT: No valid combatants remain in managed rooms for handler {self.key}. Stopping.")
