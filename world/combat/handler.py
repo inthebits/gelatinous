@@ -1467,6 +1467,15 @@ class CombatHandler(DefaultScript):
         # Check if already in proximity
         if is_in_proximity(char, target):
             char.msg(f"|yYou are already in melee proximity with {target.key}. No need to charge.|n")
+            # Clear the charge action since it's not needed
+            # Get the combat entry and clear action fields
+            combatants_list = list(self.db.combatants)
+            for combat_entry in combatants_list:
+                if combat_entry["char"] == char:
+                    combat_entry["combat_action"] = None
+                    combat_entry["combat_action_target"] = None
+                    break
+            self.db.combatants = combatants_list
             return
         
         # Handle same room vs different room charge
