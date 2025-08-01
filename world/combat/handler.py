@@ -852,6 +852,10 @@ class CombatHandler(DefaultScript):
             self.stop_combat_logic()
             return
 
+        # Save the modified combatants list back to the database to persist combat_action changes
+        self.db.combatants = combatants_list
+        splattercast.msg(f"AT_REPEAT_SAVE: Saved modified combatants list back to database.")
+        
         self.db.round += 1
         splattercast.msg(f"AT_REPEAT: Handler {self.key}. Round {self.db.round} scheduled for next interval.")
 
