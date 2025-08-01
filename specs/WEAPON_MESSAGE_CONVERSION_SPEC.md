@@ -106,6 +106,23 @@ MESSAGES = {
 - Keep all weapon-specific character and atmosphere unchanged
 - Preserve all sound effects (e.g., "*CRACK*", "*THUMP*") exactly
 - Keep all damage descriptions and physical effects identical
+- **CRITICAL**: Preserve poetic and atmospheric language exactly
+- Maintain metaphors, imagery, and distinctive voice
+- Keep all descriptive phrases that define weapon character
+
+### 5. Atmospheric Writing Preservation Examples
+**✅ PRESERVE EXACTLY:**
+- "The metal stretches and sighs"
+- "like trust on the verge of betrayal"
+- "drops with the grace of rubble"
+- "kissing air and threat into the space between them"
+- "The chain doesn't creak. It hums."
+
+**❌ AVOID:**
+- Generic rewrites that lose atmospheric voice
+- Simplifying poetic language
+- Removing metaphors or distinctive imagery
+- Adding new content not in the original
 
 ## Quality Assurance Checklist
 
@@ -133,15 +150,33 @@ MESSAGES = {
 ## File Handling Process
 
 ### Recommended Workflow
-1. **Read Original**: Use `read_file` to examine the complete original file
-2. **Create New**: Use `create_file` to generate the converted version with "_new" suffix
-3. **Verify Quality**: Review the conversion for completeness and accuracy
-4. **Replace Original**: Move original to backup and rename new file (manual process)
+1. **Create Blank**: Use `create_file` to create a blank test file with "_new" suffix first
+2. **Set Up Structure**: Add basic MESSAGES dictionary structure with empty arrays
+3. **Read Original**: Use `read_file` to examine the complete original file
+4. **Systematic Chunking**: Convert messages in groups of 5 to prevent replacement failures
+5. **Build Incrementally**: Use `replace_string_in_file` to add each chunk of converted messages
+6. **Verify Quality**: Review the conversion for completeness and accuracy
+7. **Replace Original**: Move original to backup and rename new file (manual process)
+
+### Chunking Strategy (Critical for Success)
+- **Convert 5 messages at a time** to avoid string replacement failures
+- **Use specific context** when replacing - include 3-5 lines before/after target
+- **Build systematically**: First 5 messages, then next 5, etc.
+- **Track progress**: Note which messages have been converted to avoid duplication
+
+### Example Chunking Pattern
+```
+Initiate Messages: 1-5 (first chunk) → 6-10 (second chunk) → 11-15 (third chunk)...
+Hit Messages: 1-5 (first chunk) → 6-10 (second chunk) → 11-15 (third chunk)...
+Miss Messages: 1-5 (first chunk) → 6-10 (second chunk) → 11-15 (third chunk)...
+Kill Messages: 1-5 (first chunk) → 6-10 (second chunk) → 11-15 (third chunk)...
+```
 
 ### Avoid In-Place Editing
-- Do NOT use `replace_string_in_file` for large conversions
+- Do NOT use `replace_string_in_file` for large conversions on original files
 - In-place editing can cause corruption with complex multi-line changes
 - Always create clean new files for weapon conversions
+- Large single replacements often fail - use systematic chunking instead
 
 ## Error Prevention
 
