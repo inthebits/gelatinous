@@ -176,9 +176,7 @@ class CmdThrow(Command):
         if hasattr(self.caller, 'ndb') and hasattr(self.caller.ndb, NDB_COMBAT_HANDLER):
             handler = getattr(self.caller.ndb, NDB_COMBAT_HANDLER)
             if handler:
-                from world.combat.constants import DB_COMBATANTS, DB_CHAR
-                combatants = getattr(handler.db, DB_COMBATANTS, [])
-                combat_entry = next((e for e in combatants if e.get(DB_CHAR) == self.caller), None)
+                combat_entry = handler.get_combatant_entry(self.caller)
                 if combat_entry and combat_entry.get(DB_GRAPPLED_BY_DBREF):
                     self.caller.msg(MSG_THROW_GRAPPLED)
                     return None
@@ -798,9 +796,7 @@ class CmdThrow(Command):
             if hasattr(target, 'ndb') and hasattr(target.ndb, NDB_COMBAT_HANDLER):
                 handler = getattr(target.ndb, NDB_COMBAT_HANDLER)
                 if handler:
-                    from world.combat.constants import DB_COMBATANTS, DB_CHAR
-                    combatants = getattr(handler.db, DB_COMBATANTS, [])
-                    combat_entry = next((e for e in combatants if e.get(DB_CHAR) == target), None)
+                    combat_entry = handler.get_combatant_entry(target)
                     if combat_entry:
                         grappled_by = combat_entry.get(DB_GRAPPLED_BY_DBREF)
                         grappling = combat_entry.get(DB_GRAPPLING_DBREF)
@@ -1207,12 +1203,11 @@ class CmdPull(Command):
                     if hasattr(character, 'msg'):  # Is a character
                         # Check if this character is grappling someone who's also in proximity
                         from world.combat.handler import get_or_create_combat
-                        from world.combat.constants import DB_GRAPPLING_DBREF, DB_COMBATANTS, DB_CHAR
+                        from world.combat.constants import DB_GRAPPLING_DBREF
                         
                         handler = get_or_create_combat(character)
                         if handler:
-                            combatants = getattr(handler.db, DB_COMBATANTS, [])
-                            combat_entry = next((e for e in combatants if e.get(DB_CHAR) == character), None)
+                            combat_entry = handler.get_combatant_entry(character)
                             if combat_entry:
                                 grappling_dbref = combat_entry.get(DB_GRAPPLING_DBREF)
                                 if grappling_dbref:
@@ -1666,12 +1661,11 @@ def check_rigged_grenade(character, exit_obj):
                 if hasattr(target, 'msg'):  # Is a character
                     # Check if this character is grappling someone who's also in the blast
                     from world.combat.handler import get_or_create_combat
-                    from world.combat.constants import DB_GRAPPLING_DBREF, DB_COMBATANTS, DB_CHAR
+                    from world.combat.constants import DB_GRAPPLING_DBREF
                     
                     handler = get_or_create_combat(target)
                     if handler:
-                        combatants = getattr(handler.db, DB_COMBATANTS, [])
-                        combat_entry = next((e for e in combatants if e.get(DB_CHAR) == target), None)
+                        combat_entry = handler.get_combatant_entry(target)
                         if combat_entry:
                             grappling_dbref = combat_entry.get(DB_GRAPPLING_DBREF)
                             if grappling_dbref:
@@ -1961,12 +1955,11 @@ def explode_standalone_grenade(grenade):
                 if hasattr(character, 'msg'):  # Is a character
                     # Check if this character is grappling someone who's also in proximity
                     from world.combat.handler import get_or_create_combat
-                    from world.combat.constants import DB_GRAPPLING_DBREF, DB_COMBATANTS, DB_CHAR
+                    from world.combat.constants import DB_GRAPPLING_DBREF
                     
                     handler = get_or_create_combat(character)
                     if handler:
-                        combatants = getattr(handler.db, DB_COMBATANTS, [])
-                        combat_entry = next((e for e in combatants if e.get(DB_CHAR) == character), None)
+                        combat_entry = handler.get_combatant_entry(character)
                         if combat_entry:
                             grappling_dbref = combat_entry.get(DB_GRAPPLING_DBREF)
                             if grappling_dbref:
@@ -2253,12 +2246,11 @@ def trigger_auto_defuse_explosion(grenade):
             if hasattr(character, 'msg'):  # Is a character
                 # Check if this character is grappling someone who's also in proximity
                 from world.combat.handler import get_or_create_combat
-                from world.combat.constants import DB_GRAPPLING_DBREF, DB_COMBATANTS, DB_CHAR
+                from world.combat.constants import DB_GRAPPLING_DBREF
                 
                 handler = get_or_create_combat(character)
                 if handler:
-                    combatants = getattr(handler.db, DB_COMBATANTS, [])
-                    combat_entry = next((e for e in combatants if e.get(DB_CHAR) == character), None)
+                    combat_entry = handler.get_combatant_entry(character)
                     if combat_entry:
                         grappling_dbref = combat_entry.get(DB_GRAPPLING_DBREF)
                         if grappling_dbref:
@@ -2746,12 +2738,11 @@ class CmdDefuse(Command):
                 if hasattr(character, 'msg'):  # Is a character
                     # Check if this character is grappling someone who's also in proximity
                     from world.combat.handler import get_or_create_combat
-                    from world.combat.constants import DB_GRAPPLING_DBREF, DB_COMBATANTS, DB_CHAR
+                    from world.combat.constants import DB_GRAPPLING_DBREF
                     
                     handler = get_or_create_combat(character)
                     if handler:
-                        combatants = getattr(handler.db, DB_COMBATANTS, [])
-                        combat_entry = next((e for e in combatants if e.get(DB_CHAR) == character), None)
+                        combat_entry = handler.get_combatant_entry(character)
                         if combat_entry:
                             grappling_dbref = combat_entry.get(DB_GRAPPLING_DBREF)
                             if grappling_dbref:
