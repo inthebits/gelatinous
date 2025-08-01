@@ -1194,17 +1194,68 @@ class CmdPull(Command):
                 else:
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Grenade has no location for explosion message")
                 
-                # Apply damage to all in proximity
+                # Apply damage to all in proximity, checking for grapple human shields
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Processing proximity list for damage: {[char.key if hasattr(char, 'key') else str(char) for char in proximity_list]}")
+                
+                # Check for grapple human shields before applying damage
+                shield_pairs = {}  # grappler -> victim mapping for successful shields
                 for character in proximity_list:
                     if hasattr(character, 'msg'):  # Is a character
-                        apply_damage(character, blast_damage)
-                        character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
-                        if character.location:
-                            character.location.msg_contents(
-                                MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
-                                exclude=character
-                            )
+                        # Check if this character is grappling someone who's also in proximity
+                        from world.combat.handler import get_or_create_combat
+                        from world.combat.constants import DB_GRAPPLING_DBREF
+                        
+                        handler = get_or_create_combat(character)
+                        if handler:
+                            combat_entry = handler.get_combatant_entry(character)
+                            if combat_entry:
+                                grappling_dbref = combat_entry.get(DB_GRAPPLING_DBREF)
+                                if grappling_dbref:
+                                    # Find the grappled victim
+                                    from world.combat.utils import get_character_by_dbref
+                                    victim = get_character_by_dbref(grappling_dbref)
+                                    if victim and victim in proximity_list:
+                                        # Both grappler and victim are in blast radius
+                                        # Simple implementation: grappler shields, victim takes double
+                                        shield_pairs[character] = victim
+                                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Grapple shield: {character.key} using {victim.key} as blast shield")
+                                        
+                                        # Send shield messages
+                                        character.msg(f"You instinctively use {victim.key} to shield yourself from the {grenade.key} blast!")
+                                        victim.msg(f"You are forcibly positioned to absorb the {grenade.key} explosion meant for {character.key}!")
+                                        if character.location:
+                                            character.location.msg_contents(
+                                                f"{character.key} uses {victim.key} as a blast shield against the {grenade.key} explosion!",
+                                                exclude=[character, victim]
+                                            )
+                
+                # Apply damage based on shield results
+                for character in proximity_list:
+                    if hasattr(character, 'msg'):  # Is a character
+                        if character in shield_pairs:
+                            # Grappler using victim as shield - takes no damage
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: {character.key} shielded by {shield_pairs[character].key}, taking no damage")
+                            continue
+                        elif character in shield_pairs.values():
+                            # Victim being used as shield - takes double damage
+                            double_damage = blast_damage * 2
+                            apply_damage(character, double_damage)
+                            character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: {character.key} used as shield, taking double damage: {double_damage}")
+                            if character.location:
+                                character.location.msg_contents(
+                                    MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                                    exclude=character
+                                )
+                        else:
+                            # Normal damage
+                            apply_damage(character, blast_damage)
+                            character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                            if character.location:
+                                character.location.msg_contents(
+                                    MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                                    exclude=character
+                                )
             
             # Handle chain reactions
             self.handle_chain_reactions(grenade)
@@ -1597,29 +1648,93 @@ def check_rigged_grenade(character, exit_obj):
             if rigged_grenade.location:
                 rigged_grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=rigged_grenade.key))
             
-            # Apply damage to trigger character
-            apply_damage(character, blast_damage)
-            character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
-            if character.location:
-                character.location.msg_contents(
-                    MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=rigged_grenade.key),
-                    exclude=character
-                )
-            
-            # Apply damage to others in proximity
+            # Apply damage to trigger character and others in proximity, checking for grapple shields
             proximity_list = getattr(rigged_grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
             if proximity_list is None:
                 proximity_list = []
             
+            # Check for grapple human shields before applying damage
+            shield_pairs = {}  # grappler -> victim mapping for successful shields
+            all_targets = [character] + [c for c in proximity_list if c != character and hasattr(c, 'msg')]
+            
+            for target in all_targets:
+                if hasattr(target, 'msg'):  # Is a character
+                    # Check if this character is grappling someone who's also in the blast
+                    from world.combat.handler import get_or_create_combat
+                    from world.combat.constants import DB_GRAPPLING_DBREF
+                    
+                    handler = get_or_create_combat(target)
+                    if handler:
+                        combat_entry = handler.get_combatant_entry(target)
+                        if combat_entry:
+                            grappling_dbref = combat_entry.get(DB_GRAPPLING_DBREF)
+                            if grappling_dbref:
+                                # Find the grappled victim
+                                from world.combat.utils import get_character_by_dbref
+                                victim = get_character_by_dbref(grappling_dbref)
+                                if victim and (victim == character or victim in proximity_list):
+                                    # Both grappler and victim are in blast radius
+                                    # Simple implementation: grappler shields, victim takes double
+                                    shield_pairs[target] = victim
+                                    
+                                    # Send shield messages
+                                    target.msg(f"You instinctively use {victim.key} to shield yourself from the {rigged_grenade.key} blast!")
+                                    victim.msg(f"You are forcibly positioned to absorb the {rigged_grenade.key} explosion meant for {target.key}!")
+                                    if target.location:
+                                        target.location.msg_contents(
+                                            f"{target.key} uses {victim.key} as a blast shield against the {rigged_grenade.key} explosion!",
+                                            exclude=[target, victim]
+                                        )
+            
+            # Apply damage to trigger character
+            if character in shield_pairs:
+                # Trigger character using victim as shield - takes no damage
+                pass
+            elif character in shield_pairs.values():
+                # Trigger character being used as shield - takes double damage
+                double_damage = blast_damage * 2
+                apply_damage(character, double_damage)
+                character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
+                if character.location:
+                    character.location.msg_contents(
+                        MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=rigged_grenade.key),
+                        exclude=character
+                    )
+            else:
+                # Normal damage to trigger character
+                apply_damage(character, blast_damage)
+                character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
+                if character.location:
+                    character.location.msg_contents(
+                        MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=rigged_grenade.key),
+                        exclude=character
+                    )
+            
+            # Apply damage to others in proximity based on shield results
             for other_character in proximity_list:
                 if other_character != character and hasattr(other_character, 'msg'):
-                    apply_damage(other_character, blast_damage)
-                    other_character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
-                    if other_character.location:
-                        other_character.location.msg_contents(
-                            MSG_GRENADE_DAMAGE_ROOM.format(victim=other_character.key, grenade=rigged_grenade.key),
-                            exclude=other_character
-                        )
+                    if other_character in shield_pairs:
+                        # Grappler using victim as shield - takes no damage
+                        continue
+                    elif other_character in shield_pairs.values():
+                        # Victim being used as shield - takes double damage
+                        double_damage = blast_damage * 2
+                        apply_damage(other_character, double_damage)
+                        other_character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
+                        if other_character.location:
+                            other_character.location.msg_contents(
+                                MSG_GRENADE_DAMAGE_ROOM.format(victim=other_character.key, grenade=rigged_grenade.key),
+                                exclude=other_character
+                            )
+                    else:
+                        # Normal damage
+                        apply_damage(other_character, blast_damage)
+                        other_character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
+                        if other_character.location:
+                            other_character.location.msg_contents(
+                                MSG_GRENADE_DAMAGE_ROOM.format(victim=other_character.key, grenade=rigged_grenade.key),
+                                exclude=other_character
+                            )
             
             # Handle chain reactions if enabled
             if getattr(rigged_grenade.db, DB_CHAIN_TRIGGER, False):
@@ -1831,17 +1946,68 @@ def explode_standalone_grenade(grenade):
             else:
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Standalone explosion - grenade has no location")
             
-            # Apply damage to all in proximity
+            # Apply damage to all in proximity, checking for grapple human shields
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Standalone explosion processing proximity list: {[char.key if hasattr(char, 'key') else str(char) for char in proximity_list]}")
+            
+            # Check for grapple human shields before applying damage
+            shield_pairs = {}  # grappler -> victim mapping for successful shields
             for character in proximity_list:
                 if hasattr(character, 'msg'):  # Is a character
-                    apply_damage(character, blast_damage)
-                    character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
-                    if character.location:
-                        character.location.msg_contents(
-                            MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
-                            exclude=character
-                        )
+                    # Check if this character is grappling someone who's also in proximity
+                    from world.combat.handler import get_or_create_combat
+                    from world.combat.constants import DB_GRAPPLING_DBREF
+                    
+                    handler = get_or_create_combat(character)
+                    if handler:
+                        combat_entry = handler.get_combatant_entry(character)
+                        if combat_entry:
+                            grappling_dbref = combat_entry.get(DB_GRAPPLING_DBREF)
+                            if grappling_dbref:
+                                # Find the grappled victim
+                                from world.combat.utils import get_character_by_dbref
+                                victim = get_character_by_dbref(grappling_dbref)
+                                if victim and victim in proximity_list:
+                                    # Both grappler and victim are in blast radius
+                                    # Simple implementation: grappler shields, victim takes double
+                                    shield_pairs[character] = victim
+                                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Grapple shield: {character.key} using {victim.key} as blast shield")
+                                    
+                                    # Send shield messages
+                                    character.msg(f"You instinctively use {victim.key} to shield yourself from the {grenade.key} blast!")
+                                    victim.msg(f"You are forcibly positioned to absorb the {grenade.key} explosion meant for {character.key}!")
+                                    if character.location:
+                                        character.location.msg_contents(
+                                            f"{character.key} uses {victim.key} as a blast shield against the {grenade.key} explosion!",
+                                            exclude=[character, victim]
+                                        )
+            
+            # Apply damage based on shield results
+            for character in proximity_list:
+                if hasattr(character, 'msg'):  # Is a character
+                    if character in shield_pairs:
+                        # Grappler using victim as shield - takes no damage
+                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: {character.key} shielded by {shield_pairs[character].key}, taking no damage")
+                        continue
+                    elif character in shield_pairs.values():
+                        # Victim being used as shield - takes double damage
+                        double_damage = blast_damage * 2
+                        apply_damage(character, double_damage)
+                        character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: {character.key} used as shield, taking double damage: {double_damage}")
+                        if character.location:
+                            character.location.msg_contents(
+                                MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                                exclude=character
+                            )
+                    else:
+                        # Normal damage
+                        apply_damage(character, blast_damage)
+                        character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                        if character.location:
+                            character.location.msg_contents(
+                                MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                                exclude=character
+                            )
         
         # Handle chain reactions
         if getattr(grenade.db, DB_CHAIN_TRIGGER, False):
@@ -2069,20 +2235,67 @@ def trigger_auto_defuse_explosion(grenade):
         if grenade.location:
             grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
         
-        # Apply damage to all in proximity
+        # Apply damage to all in proximity, checking for grapple human shields
         proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
         if proximity_list is None:
             proximity_list = []
         
+        # Check for grapple human shields before applying damage
+        shield_pairs = {}  # grappler -> victim mapping for successful shields
         for character in proximity_list:
             if hasattr(character, 'msg'):  # Is a character
-                apply_damage(character, blast_damage)
-                character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
-                if character.location:
-                    character.location.msg_contents(
-                        MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
-                        exclude=character
-                    )
+                # Check if this character is grappling someone who's also in proximity
+                from world.combat.handler import get_or_create_combat
+                from world.combat.constants import DB_GRAPPLING_DBREF
+                
+                handler = get_or_create_combat(character)
+                if handler:
+                    combat_entry = handler.get_combatant_entry(character)
+                    if combat_entry:
+                        grappling_dbref = combat_entry.get(DB_GRAPPLING_DBREF)
+                        if grappling_dbref:
+                            # Find the grappled victim
+                            from world.combat.utils import get_character_by_dbref
+                            victim = get_character_by_dbref(grappling_dbref)
+                            if victim and victim in proximity_list:
+                                # Both grappler and victim are in blast radius
+                                # Simple implementation: grappler shields, victim takes double
+                                shield_pairs[character] = victim
+                                
+                                # Send shield messages
+                                character.msg(f"You instinctively use {victim.key} to shield yourself from the {grenade.key} blast!")
+                                victim.msg(f"You are forcibly positioned to absorb the {grenade.key} explosion meant for {character.key}!")
+                                if character.location:
+                                    character.location.msg_contents(
+                                        f"{character.key} uses {victim.key} as a blast shield against the {grenade.key} explosion!",
+                                        exclude=[character, victim]
+                                    )
+        
+        # Apply damage based on shield results
+        for character in proximity_list:
+            if hasattr(character, 'msg'):  # Is a character
+                if character in shield_pairs:
+                    # Grappler using victim as shield - takes no damage
+                    continue
+                elif character in shield_pairs.values():
+                    # Victim being used as shield - takes double damage
+                    double_damage = blast_damage * 2
+                    apply_damage(character, double_damage)
+                    character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                    if character.location:
+                        character.location.msg_contents(
+                            MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                            exclude=character
+                        )
+                else:
+                    # Normal damage
+                    apply_damage(character, blast_damage)
+                    character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                    if character.location:
+                        character.location.msg_contents(
+                            MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                            exclude=character
+                        )
         
         # Handle chain reactions if enabled
         if getattr(grenade.db, DB_CHAIN_TRIGGER, False):
@@ -2514,20 +2727,67 @@ class CmdDefuse(Command):
             if grenade.location:
                 grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
             
-            # Apply damage to all in proximity
+            # Apply damage to all in proximity, checking for grapple human shields
             proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
             if proximity_list is None:
                 proximity_list = []
             
+            # Check for grapple human shields before applying damage
+            shield_pairs = {}  # grappler -> victim mapping for successful shields
             for character in proximity_list:
                 if hasattr(character, 'msg'):  # Is a character
-                    apply_damage(character, blast_damage)
-                    character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
-                    if character.location:
-                        character.location.msg_contents(
-                            MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
-                            exclude=character
-                        )
+                    # Check if this character is grappling someone who's also in proximity
+                    from world.combat.handler import get_or_create_combat
+                    from world.combat.constants import DB_GRAPPLING_DBREF
+                    
+                    handler = get_or_create_combat(character)
+                    if handler:
+                        combat_entry = handler.get_combatant_entry(character)
+                        if combat_entry:
+                            grappling_dbref = combat_entry.get(DB_GRAPPLING_DBREF)
+                            if grappling_dbref:
+                                # Find the grappled victim
+                                from world.combat.utils import get_character_by_dbref
+                                victim = get_character_by_dbref(grappling_dbref)
+                                if victim and victim in proximity_list:
+                                    # Both grappler and victim are in blast radius
+                                    # Simple implementation: grappler shields, victim takes double
+                                    shield_pairs[character] = victim
+                                    
+                                    # Send shield messages
+                                    character.msg(f"You instinctively use {victim.key} to shield yourself from the {grenade.key} blast!")
+                                    victim.msg(f"You are forcibly positioned to absorb the {grenade.key} explosion meant for {character.key}!")
+                                    if character.location:
+                                        character.location.msg_contents(
+                                            f"{character.key} uses {victim.key} as a blast shield against the {grenade.key} explosion!",
+                                            exclude=[character, victim]
+                                        )
+            
+            # Apply damage based on shield results
+            for character in proximity_list:
+                if hasattr(character, 'msg'):  # Is a character
+                    if character in shield_pairs:
+                        # Grappler using victim as shield - takes no damage
+                        continue
+                    elif character in shield_pairs.values():
+                        # Victim being used as shield - takes double damage
+                        double_damage = blast_damage * 2
+                        apply_damage(character, double_damage)
+                        character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                        if character.location:
+                            character.location.msg_contents(
+                                MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                                exclude=character
+                            )
+                    else:
+                        # Normal damage
+                        apply_damage(character, blast_damage)
+                        character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                        if character.location:
+                            character.location.msg_contents(
+                                MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                                exclude=character
+                            )
             
             # Handle chain reactions if enabled
             if getattr(grenade.db, DB_CHAIN_TRIGGER, False):
