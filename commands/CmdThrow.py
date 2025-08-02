@@ -176,7 +176,8 @@ class CmdThrow(Command):
         if hasattr(self.caller, 'ndb') and hasattr(self.caller.ndb, NDB_COMBAT_HANDLER):
             handler = getattr(self.caller.ndb, NDB_COMBAT_HANDLER)
             if handler:
-                combat_entry = handler.get_combatant_entry(self.caller)
+                combatants_list = getattr(handler.db, DB_COMBATANTS, [])
+                combat_entry = next((e for e in combatants_list if e.get(DB_CHAR) == self.caller), None)
                 if combat_entry and combat_entry.get(DB_GRAPPLED_BY_DBREF):
                     self.caller.msg(MSG_THROW_GRAPPLED)
                     return None
@@ -796,7 +797,8 @@ class CmdThrow(Command):
             if hasattr(target, 'ndb') and hasattr(target.ndb, NDB_COMBAT_HANDLER):
                 handler = getattr(target.ndb, NDB_COMBAT_HANDLER)
                 if handler:
-                    combat_entry = handler.get_combatant_entry(target)
+                    combatants_list = getattr(handler.db, DB_COMBATANTS, [])
+                    combat_entry = next((e for e in combatants_list if e.get(DB_CHAR) == target), None)
                     if combat_entry:
                         grappled_by = combat_entry.get(DB_GRAPPLED_BY_DBREF)
                         grappling = combat_entry.get(DB_GRAPPLING_DBREF)
