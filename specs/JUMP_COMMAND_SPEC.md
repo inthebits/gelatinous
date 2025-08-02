@@ -7,8 +7,9 @@ The `jump` command serves two distinct heroic and tactical functions: **explosiv
 
 ### Command Syntax
 ```
-jump on <explosive>     # Heroic sacrifice - absorb explosive damage
-jump off <edge>         # Tactical descent from elevated position
+jump on <explosive>           # Heroic sacrifice - absorb explosive damage
+jump off <direction> edge     # Tactical descent from elevated position
+jump across <direction> edge  # Horizontal leap across gaps at same level
 ```
 
 ### Function 1: Explosive Sacrifice
@@ -39,8 +40,9 @@ Others damage = 0 (complete protection)
 #### Integration with Grenade System
 - **Works with all explosive types**: Standard grenades, flashbangs, smoke grenades, etc.
 - **Property-driven**: Uses existing `db.blast_damage`, `db.fuse_time` properties
-- **Chain reaction prevention**: Hero absorbs damage, preventing chain triggers
+- **Chain reaction prevention**: Hero absorbs damage, explosive doesn't trigger other explosives
 - **Timer system**: Integrates with existing countdown mechanics from throw command
+- **Proximity positioning**: Hero ends up in proximity to explosive (and inherits ALL its proximity relationships)
 
 ### Function 2: Tactical Descent
 
@@ -53,17 +55,36 @@ Others damage = 0 (complete protection)
 - **One-way descent**: Jump down only (climbing back up requires different mechanics)
 - **Safe landing**: No fall damage (tactical descent, not accidental fall)
 
+### Function 3: Horizontal Leap
+
+#### Purpose
+**Same-level gap crossing** between buildings, rooftops, or across dangerous terrain.
+
+#### Gap Jump System
+- **Gap edge property**: `db.is_gap = True` flag on exits (can combine with `db.is_edge`)
+- **Same-level movement**: Horizontal jump between rooms at equal elevation
+- **Risk/reward**: Potential for failure and consequences
+- **Tactical repositioning**: Quick movement across obstacles
+
 #### Validation Requirements
 1. **Edge exit must exist** in current room
 2. **Edge must be valid**: `db.is_edge = True` on exit object
 3. **Destination must exist**: Exit leads to valid room below
 4. **Caller movement allowed**: Standard movement restrictions apply
 
+#### Gap Jump Validation Requirements
+1. **Gap exit must exist** in current room
+2. **Gap must be valid**: `db.is_gap = True` on exit object  
+3. **Destination must exist**: Exit leads to valid room at same level
+4. **Jump success check**: General Motorics stat check vs gap difficulty
+5. **Caller movement allowed**: Standard movement restrictions apply
+
 #### Tactical Advantages of Edge Positions
 - **Elevated combat**: Height advantage for ranged attacks
-- **Protected position**: Harder for ground-level opponents to advance
+- **Protected position**: Not adjacent to ground level - prevents melee advancement
 - **Sniper mechanics**: Enhanced aim and attack capabilities
 - **Observation**: Can look down on ground level (enhanced reconnaissance)
+- **Melee immunity**: Ground-level opponents cannot advance for melee attacks
 
 ## Technical Implementation
 
@@ -115,29 +136,66 @@ def jump_on_explosive(caller, explosive):
 
 ### Edge Exit Implementation
 
+#### Edge Exit Implementation
+
 #### Exit Property System
 ```python
 # Exit object properties for edge designation
 exit.db.is_edge = True
 exit.db.edge_type = "rooftop"  # Optional categorization
 exit.db.height_advantage = 2  # Combat bonus (future use)
+
+# Gap jump properties (can combine with is_edge)
+exit.db.is_gap = True
+exit.db.gap_difficulty = 3    # Jump difficulty (1-5 scale)
+exit.db.gap_distance = "wide" # Descriptive distance category
+exit.db.failure_room = None   # Fall room destination for failed jumps
+
+# 3D Room Structure Example:
+# Rooftop (origin) --east--> Sky Room (transit only) --east--> Adjacent Rooftop (destination)
+#                                 |
+#                               down
+#                                 |
+#                            Fall Room (failure destination)
+# Each sky room has corresponding directional exits (east sky room has west back to origin)
+#
+# Future Compatibility: Sky rooms will naturally support flying vehicles/characters
+# who can traverse these exits normally without jump mechanics
 ```
 
 #### Jump Descent Flow
 ```
-1. Parse "jump off <edge>" syntax
-2. Find edge exit in room
+1. Parse "jump off <direction> edge" syntax
+2. Find edge exit in specified direction
 3. Validate edge properties
 4. Move character to destination room
 5. Announce dramatic descent
 6. Update character position
 ```
 
+#### Gap Jump Flow
+```
+1. Parse "jump across <direction> edge" syntax
+2. Find gap exit in specified direction
+3. Validate gap properties and difficulty
+4. Make jump success roll (Motorics stat vs gap difficulty)
+5. On success or tie: Move to destination room (flee-like action, transit through sky)
+6. On failure or critical failure: Fall to failure_room with fall damage
+7. Announce jump attempt and outcome
+8. Consume combat turn (flee-like timing)
+9. Calculate fall damage: rooms_fallen × damage_multiplier
+```
+
 #### Room Integration
 - **Elevated rooms**: Rooms with edge exits have tactical advantage
 - **Ground rooms**: Normal rooms accessible via edge descent
-- **Vertical connectivity**: Edge exits connect elevated and ground levels
+- **Sky rooms**: Transit-only spaces for edge/gap movement (never stop here)
+- **Fall rooms**: Failure destinations with fall damage based on room count fallen
+- **3D connectivity**: Sky rooms have bidirectional exits (east sky has west return)
+- **Damage calculation**: Fall damage = rooms fallen × damage multiplier
 - **Bidirectional awareness**: People below can potentially see elevated positions
+- **Edge visibility**: Edge and gap properties visible in room descriptions (future look framework)
+- **Framework building**: Current implementation focuses on mechanics, visibility enhancements later
 
 ## Combat Integration
 
@@ -150,12 +208,13 @@ exit.db.height_advantage = 2  # Combat bonus (future use)
 ### Edge Position Combat Advantages
 - **Aim bonus**: Enhanced accuracy from elevated position
 - **Range advantage**: Extended effective range for attacks
-- **Advance difficulty**: Ground opponents cannot easily advance to edge
+- **Melee immunity**: Ground opponents cannot advance to edge positions (not adjacent)
 - **Retreat limitation**: Limited escape routes from elevated position
 
 ### Turn-Based Considerations
-- **Jump on explosive**: Immediate action, bypasses turn system
-- **Jump off edge**: Counts as movement action if in combat
+- **Jump on explosive**: Immediate action, bypasses turn system (heroic emergency action)
+- **Jump off edge**: Counts as movement action if in combat (flee-like timing)
+- **Jump across gap**: Counts as movement action if in combat (flee-like timing)
 - **Position bonuses**: Elevated positions provide combat modifiers
 
 ## Room Announcements
@@ -170,9 +229,18 @@ exit.db.height_advantage = 2  # Combat bonus (future use)
 - **Origin room**: "Alice leaps off the edge, disappearing toward the street below!"
 - **Destination room**: "Alice drops down from above, landing dramatically!"
 
+### Gap Jump Messages
+- **Success caller**: "You sprint forward and leap across the gap, landing safely!"
+- **Success origin**: "Alice takes a running leap across the gap and disappears!"
+- **Success destination**: "Alice comes flying across the gap, landing with a roll!"
+- **Failure caller**: "You leap toward the gap but fall short, tumbling down!"
+- **Failure origin**: "Alice attempts the jump but falls short, disappearing below!"
+- **Failure destination**: "Alice crashes down from above, having missed the jump!"
+
 ### Message Variations by Context
 - **Different explosives**: "Alice dives onto the flashbang!" vs "Alice covers the pipe bomb!"
 - **Edge types**: "Alice leaps from the fire escape!" vs "Alice jumps down from the balcony!"
+- **Gap types**: "Alice vaults across the alley!" vs "Alice bounds between rooftops!"
 
 ## Error Handling
 
@@ -187,6 +255,13 @@ exit.db.height_advantage = 2  # Combat bonus (future use)
 - **Invalid exit**: "That is not an edge you can jump from."
 - **Blocked exit**: "The edge is blocked - you cannot jump off."
 - **No destination**: "The edge leads nowhere - jumping would be suicide."
+
+### Gap Jump Errors
+- **No gap exit**: "There is no gap to jump across here."
+- **Invalid gap**: "That is not a gap you can jump across."
+- **Blocked gap**: "The gap is blocked - you cannot make the jump."
+- **No destination**: "The gap leads nowhere safe to land."
+- **Movement restricted**: "You cannot attempt that jump right now."
 
 ### Safety Validations
 - **Explosive state checking**: Ensure explosive object is in valid state
@@ -204,9 +279,13 @@ exit.db.height_advantage = 2  # Combat bonus (future use)
 
 ### New Systems Required
 - **Edge exit flagging**: Property system for marking edge exits
+- **Gap jump system**: Horizontal leap mechanics with success/failure
 - **Vertical combat**: Height-based combat advantages
 - **Heroic sacrifice**: Damage absorption mechanics
 - **Timer cancellation**: Ability to interrupt explosive countdowns
+- **Jump skill system**: Stat-based success probability for gap jumps
+- **Fall damage calculation**: Distance-based damage (rooms fallen × multiplier)
+- **3D room navigation**: Transit-only sky rooms with bidirectional connectivity
 
 ### Integration with Throw Command
 - **Shared explosive properties**: Uses same `db.blast_damage`, `db.fuse_time` system
@@ -227,6 +306,12 @@ exit.db.height_advantage = 2  # Combat bonus (future use)
 - Command parsing for "jump off" syntax
 - Vertical movement mechanics
 - Room transition and announcements
+
+### Phase 2b: Gap Jump System  
+- Gap exit property system
+- Command parsing for "jump across" syntax
+- Success/failure mechanics based on stats
+- Horizontal movement with risk elements
 
 ### Phase 3: Combat Integration
 - Elevated position combat bonuses
@@ -253,6 +338,15 @@ attack bob       # Snipe from elevated position
 jump off edge    # Tactical descent when position compromised
 ```
 
+### Gap Crossing
+```
+# Rooftop-to-rooftop movement
+look across north    # Check destination rooftop
+jump across north    # Attempt horizontal leap
+# On success: tactical repositioning
+# On failure: fall to street level or take damage
+```
+
 ### Coordinated Tactics
 ```
 # Team sniper support
@@ -275,6 +369,12 @@ Player A: jump off edge (when needed for repositioning)
 - **Dramatic effect**: Jumping down is more dramatic than climbing up
 - **Balance consideration**: Prevents easy position abuse
 
+### Why Gap Jumps Have Failure Risk?
+- **Skill expression**: Allows character abilities to matter
+- **Tactical decision**: Risk/reward for rapid repositioning
+- **Dramatic tension**: Success is not guaranteed
+- **Balance mechanism**: Prevents gap jumping from being too powerful
+
 ### Why Complete Damage Absorption?
 - **Ultimate heroism**: Makes sacrifice truly meaningful
 - **Clear mechanics**: Binary outcome (hero hurt, others safe)
@@ -294,6 +394,8 @@ Player A: jump off edge (when needed for repositioning)
 - **Equipment system**: Special gear for edge traversal
 - **Advanced explosives**: More complex explosive types and interactions
 - **Environmental effects**: Weather/conditions affecting jumps
+- **Flying mechanics**: Sky rooms naturally support flying vehicles/characters
+- **Aerial combat**: Future aerial positioning and combat in sky rooms
 
 ## Open Implementation Questions
 
@@ -309,6 +411,13 @@ Player A: jump off edge (when needed for repositioning)
 3. **Equipment effects**: Should gear affect jumping ability or safety?
 4. **Observation range**: How far can you see/aim from elevated positions?
 
+### Gap Jump Mechanics
+1. **Success calculation**: What stats determine jump success? (Motorics? Athletics?)
+2. **Failure consequences**: Damage? Different destination? Equipment loss?
+3. **Gap difficulty scaling**: How to categorize gap difficulty (1-5 scale)?
+4. **Combat integration**: Can you gap jump while in combat? Turn cost?
+5. **Motorics check**: Success on success or tie, failure means falling to fall room
+
 ### System Integration
 1. **Aim system**: Should elevated positions enhance existing aim mechanics?
 2. **Retreat mechanics**: Can you retreat "up" to edges, or only down from them?
@@ -320,10 +429,17 @@ Player A: jump off edge (when needed for repositioning)
 Based on the philosophy of heroic action and tactical depth:
 
 1. **Damage bonus**: +10 damage for heroic sacrifice (meaningful cost)
-2. **Death mechanics**: Standard death rules (heroism doesn't change lethality)
+2. **Death mechanics**: Standard death rules (heroism doesn't change lethality)  
 3. **Multiple explosives**: One at a time (keeps action focused)
 4. **Combat turn**: Bypasses turn system (emergency heroic action)
 5. **Height effects**: Binary advantage (simple elevated vs ground)
 6. **Landing position**: Random proximity if room occupied
 7. **Observation**: Enhanced look/aim range from elevated positions
 8. **Retreat direction**: Can retreat to edges, one-way descent only
+9. **Gap success**: General Motorics stat check vs gap difficulty (success on success or tie)
+10. **Gap failure**: Fall to failure_room with distance-based fall damage (rooms fallen × multiplier)
+11. **Gap combat**: Counts as movement action if in combat (flee-like timing)
+12. **Gap difficulty**: 1-5 scale (trivial to nearly impossible)
+13. **Jump syntax**: Uses direction-based syntax (`jump off north edge`, `jump across east edge`)
+14. **Proximity inheritance**: Hero inherits ALL proximity relationships from explosive
+15. **Framework focus**: Mechanics first, visibility/discovery enhancements in future look system
