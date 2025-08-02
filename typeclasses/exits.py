@@ -233,6 +233,14 @@ class Exit(DefaultExit):
                 super().at_traverse(traversing_object, target_location) 
                 grappled_victim_obj.move_to(target_location, quiet=True, move_hooks=False)
 
+                # Check for rigged grenades after drag movement (same as normal traversal)
+                from commands.CmdThrow import check_rigged_grenade, check_auto_defuse
+                check_rigged_grenade(traversing_object, self)
+
+                # Check for auto-defuse opportunities for both characters after drag
+                check_auto_defuse(traversing_object)
+                check_auto_defuse(grappled_victim_obj)
+
                 # Announce arrival in new location
                 msg_arrive_room = f"{traversing_object.key} arrives, dragging {grappled_victim_obj.key}."
                 target_location.msg_contents(msg_arrive_room, exclude=[traversing_object, grappled_victim_obj])
