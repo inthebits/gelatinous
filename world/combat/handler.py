@@ -1153,6 +1153,8 @@ class CombatHandler(DefaultScript):
         
         # Send to observers (exclude the three participants)
         attacker.location.msg_contents(observer_msg, exclude=[attacker, grappler, victim])
+
+
     
     def _resolve_grapple_initiate(self, char_entry, combatants_list):
         """Resolve a grapple initiate action."""

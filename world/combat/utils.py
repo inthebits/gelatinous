@@ -972,6 +972,89 @@ def resolve_bonus_attack(handler, attacker, target):
 # DAMAGE SYSTEM
 # ===================================================================
 
+def check_grenade_human_shield(proximity_list, combat_handler=None):
+    """
+    Check for human shield mechanics in grenade explosions.
+    
+    For characters in the proximity list who are grappling someone,
+    implement simplified human shield mechanics:
+    - Grappler automatically uses victim as blast shield
+    - Grappler takes no damage 
+    - Victim takes double damage
+    
+    Args:
+        proximity_list: List of characters in blast radius
+        combat_handler: Optional combat handler for grapple state checking
+        
+    Returns:
+        dict: Modified damage assignments {char: damage_multiplier}
+             where damage_multiplier is 0.0 for grapplers, 2.0 for victims
+    """
+    from evennia.comms.models import ChannelDB
+    from .constants import SPLATTERCAST_CHANNEL, DB_CHAR, DB_GRAPPLING_DBREF, DB_COMBATANTS, NDB_COMBAT_HANDLER
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    damage_modifiers = {}
+    
+    # If no combat handler provided, try to find one from the characters
+    if not combat_handler and proximity_list:
+        for char in proximity_list:
+            if hasattr(char.ndb, NDB_COMBAT_HANDLER):
+                combat_handler = getattr(char.ndb, NDB_COMBAT_HANDLER)
+                break
+    
+    if not combat_handler:
+        splattercast.msg("GRENADE_SHIELD: No combat handler found, skipping human shield checks")
+        return damage_modifiers
+    
+    # Get current combatants list for grapple state checking
+    combatants_list = getattr(combat_handler.db, DB_COMBATANTS, [])
+    
+    for char in proximity_list:
+        # Find this character's combat entry
+        char_entry = next((e for e in combatants_list if e.get(DB_CHAR) == char), None)
+        if not char_entry:
+            continue
+            
+        # Check if this character is grappling someone
+        grappling_dbref = char_entry.get(DB_GRAPPLING_DBREF)
+        if grappling_dbref:
+            victim = get_character_by_dbref(grappling_dbref)
+            if victim and victim in proximity_list:
+                # Both grappler and victim are in blast radius - apply shield mechanics
+                damage_modifiers[char] = 0.0  # Grappler takes no damage
+                damage_modifiers[victim] = 2.0  # Victim takes double damage
+                
+                # Send human shield messages
+                send_grenade_shield_messages(char, victim)
+                
+                splattercast.msg(f"GRENADE_SHIELD: {char.key} using {victim.key} as blast shield")
+    
+    return damage_modifiers
+
+
+def send_grenade_shield_messages(grappler, victim):
+    """
+    Send human shield messages specific to grenade explosions.
+    
+    Args:
+        grappler: The character using victim as shield
+        victim: The character being used as shield
+    """
+    # Grenade-specific shield messages
+    grappler_msg = f"|yYou instinctively position {get_display_name_safe(victim)} between yourself and the explosion!|n"
+    victim_msg = f"|RYou are forced to absorb the full blast as {get_display_name_safe(grappler)} uses you as a shield!|n"
+    observer_msg = f"|y{get_display_name_safe(grappler)} uses {get_display_name_safe(victim)} as a human shield against the explosion!|n"
+    
+    # Send messages
+    grappler.msg(grappler_msg)
+    victim.msg(victim_msg)
+    
+    # Send to observers in the same location (exclude the two participants)
+    if grappler.location:
+        grappler.location.msg_contents(observer_msg, exclude=[grappler, victim])
+
+
 def apply_damage(character, damage_amount):
     """
     Apply damage to a character, handling health reduction and death.

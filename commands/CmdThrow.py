@@ -1194,17 +1194,27 @@ class CmdPull(Command):
                 else:
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Grenade has no location for explosion message")
                 
-                # Apply damage to all in proximity
+                # Check for human shield mechanics
+                from world.combat.utils import check_grenade_human_shield
+                damage_modifiers = check_grenade_human_shield(proximity_list)
+                
+                # Apply damage to all in proximity with human shield modifiers
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Processing proximity list for damage: {[char.key if hasattr(char, 'key') else str(char) for char in proximity_list]}")
                 for character in proximity_list:
                     if hasattr(character, 'msg'):  # Is a character
-                        apply_damage(character, blast_damage)
-                        character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
-                        if character.location:
-                            character.location.msg_contents(
-                                MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
-                                exclude=character
-                            )
+                        # Apply damage modifier (0.0 for grapplers, 2.0 for victims, 1.0 for others)
+                        modifier = damage_modifiers.get(character, 1.0)
+                        final_damage = int(blast_damage * modifier)
+                        
+                        if final_damage > 0:
+                            apply_damage(character, final_damage)
+                            character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                            if character.location:
+                                character.location.msg_contents(
+                                    MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                                    exclude=character
+                                )
+                        # Note: Characters with 0.0 modifier (grapplers) take no damage and get no damage messages
             
             # Handle chain reactions
             self.handle_chain_reactions(grenade)
@@ -1597,29 +1607,44 @@ def check_rigged_grenade(character, exit_obj):
             if rigged_grenade.location:
                 rigged_grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=rigged_grenade.key))
             
-            # Apply damage to trigger character
-            apply_damage(character, blast_damage)
-            character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
-            if character.location:
-                character.location.msg_contents(
-                    MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=rigged_grenade.key),
-                    exclude=character
-                )
-            
-            # Apply damage to others in proximity
+            # Get proximity list
             proximity_list = getattr(rigged_grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
             if proximity_list is None:
                 proximity_list = []
             
+            # Check for human shield mechanics
+            from world.combat.utils import check_grenade_human_shield
+            damage_modifiers = check_grenade_human_shield(proximity_list)
+            
+            # Apply damage to trigger character with human shield modifier
+            modifier = damage_modifiers.get(character, 1.0)
+            trigger_damage = int(blast_damage * modifier)
+            
+            if trigger_damage > 0:
+                apply_damage(character, trigger_damage)
+                character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
+                if character.location:
+                    character.location.msg_contents(
+                        MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=rigged_grenade.key),
+                        exclude=character
+                    )
+            
+            # Apply damage to others in proximity with human shield modifiers
             for other_character in proximity_list:
                 if other_character != character and hasattr(other_character, 'msg'):
-                    apply_damage(other_character, blast_damage)
-                    other_character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
-                    if other_character.location:
-                        other_character.location.msg_contents(
-                            MSG_GRENADE_DAMAGE_ROOM.format(victim=other_character.key, grenade=rigged_grenade.key),
-                            exclude=other_character
-                        )
+                    # Apply damage modifier (0.0 for grapplers, 2.0 for victims, 1.0 for others)
+                    modifier = damage_modifiers.get(other_character, 1.0)
+                    final_damage = int(blast_damage * modifier)
+                    
+                    if final_damage > 0:
+                        apply_damage(other_character, final_damage)
+                        other_character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
+                        if other_character.location:
+                            other_character.location.msg_contents(
+                                MSG_GRENADE_DAMAGE_ROOM.format(victim=other_character.key, grenade=rigged_grenade.key),
+                                exclude=other_character
+                            )
+                    # Note: Characters with 0.0 modifier (grapplers) take no damage and get no damage messages
             
             # Handle chain reactions if enabled
             if getattr(rigged_grenade.db, DB_CHAIN_TRIGGER, False):
@@ -1831,17 +1856,27 @@ def explode_standalone_grenade(grenade):
             else:
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Standalone explosion - grenade has no location")
             
-            # Apply damage to all in proximity
+            # Check for human shield mechanics
+            from world.combat.utils import check_grenade_human_shield
+            damage_modifiers = check_grenade_human_shield(proximity_list)
+            
+            # Apply damage to all in proximity with human shield modifiers
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Standalone explosion processing proximity list: {[char.key if hasattr(char, 'key') else str(char) for char in proximity_list]}")
             for character in proximity_list:
                 if hasattr(character, 'msg'):  # Is a character
-                    apply_damage(character, blast_damage)
-                    character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
-                    if character.location:
-                        character.location.msg_contents(
-                            MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
-                            exclude=character
-                        )
+                    # Apply damage modifier (0.0 for grapplers, 2.0 for victims, 1.0 for others)
+                    modifier = damage_modifiers.get(character, 1.0)
+                    final_damage = int(blast_damage * modifier)
+                    
+                    if final_damage > 0:
+                        apply_damage(character, final_damage)
+                        character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                        if character.location:
+                            character.location.msg_contents(
+                                MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                                exclude=character
+                            )
+                    # Note: Characters with 0.0 modifier (grapplers) take no damage and get no damage messages
         
         # Handle chain reactions
         if getattr(grenade.db, DB_CHAIN_TRIGGER, False):
@@ -2069,20 +2104,31 @@ def trigger_auto_defuse_explosion(grenade):
         if grenade.location:
             grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
         
-        # Apply damage to all in proximity
+        # Get proximity list
         proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
         if proximity_list is None:
             proximity_list = []
         
+        # Check for human shield mechanics
+        from world.combat.utils import check_grenade_human_shield
+        damage_modifiers = check_grenade_human_shield(proximity_list)
+        
+        # Apply damage to all in proximity with human shield modifiers
         for character in proximity_list:
             if hasattr(character, 'msg'):  # Is a character
-                apply_damage(character, blast_damage)
-                character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
-                if character.location:
-                    character.location.msg_contents(
-                        MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
-                        exclude=character
-                    )
+                # Apply damage modifier (0.0 for grapplers, 2.0 for victims, 1.0 for others)
+                modifier = damage_modifiers.get(character, 1.0)
+                final_damage = int(blast_damage * modifier)
+                
+                if final_damage > 0:
+                    apply_damage(character, final_damage)
+                    character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                    if character.location:
+                        character.location.msg_contents(
+                            MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                            exclude=character
+                        )
+                # Note: Characters with 0.0 modifier (grapplers) take no damage and get no damage messages
         
         # Handle chain reactions if enabled
         if getattr(grenade.db, DB_CHAIN_TRIGGER, False):
@@ -2514,20 +2560,31 @@ class CmdDefuse(Command):
             if grenade.location:
                 grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
             
-            # Apply damage to all in proximity
+            # Get proximity list
             proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
             if proximity_list is None:
                 proximity_list = []
             
+            # Check for human shield mechanics
+            from world.combat.utils import check_grenade_human_shield
+            damage_modifiers = check_grenade_human_shield(proximity_list)
+            
+            # Apply damage to all in proximity with human shield modifiers
             for character in proximity_list:
                 if hasattr(character, 'msg'):  # Is a character
-                    apply_damage(character, blast_damage)
-                    character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
-                    if character.location:
-                        character.location.msg_contents(
-                            MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
-                            exclude=character
-                        )
+                    # Apply damage modifier (0.0 for grapplers, 2.0 for victims, 1.0 for others)
+                    modifier = damage_modifiers.get(character, 1.0)
+                    final_damage = int(blast_damage * modifier)
+                    
+                    if final_damage > 0:
+                        apply_damage(character, final_damage)
+                        character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
+                        if character.location:
+                            character.location.msg_contents(
+                                MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=grenade.key),
+                                exclude=character
+                            )
+                    # Note: Characters with 0.0 modifier (grapplers) take no damage and get no damage messages
             
             # Handle chain reactions if enabled
             if getattr(grenade.db, DB_CHAIN_TRIGGER, False):
