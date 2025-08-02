@@ -720,16 +720,33 @@ class CmdThrow(Command):
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Added target {target} to obj proximity")
                 
                 # Inherit target's existing proximity relationships, but exclude the thrower
+                # Check both proximity systems:
+                
+                # 1. Object proximity system (NDB_PROXIMITY_UNIVERSAL)
                 target_proximity = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL, None)
-                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: target_proximity: {target_proximity}")
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: target_proximity (objects): {target_proximity}")
                 if target_proximity and isinstance(target_proximity, list):
                     for character in target_proximity:
                         # Filter out the thrower - they shouldn't be in proximity to their own thrown object
                         if character and character not in proximity_list and character != thrower:
                             proximity_list.append(character)
-                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Added {character} from target proximity")
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Added {character} from target object proximity")
                         elif character == thrower:
-                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Skipped thrower {character} from proximity inheritance")
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Skipped thrower {character} from object proximity inheritance")
+                
+                # 2. Character proximity system (in_proximity_with)
+                character_proximity = getattr(target.ndb, NDB_PROXIMITY, None)
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: target_proximity (characters): {character_proximity}")
+                if character_proximity:
+                    # Convert set to list for consistent handling
+                    character_list = list(character_proximity) if hasattr(character_proximity, '__iter__') else []
+                    for character in character_list:
+                        # Filter out the thrower - they shouldn't be in proximity to their own thrown object
+                        if character and character not in proximity_list and character != thrower:
+                            proximity_list.append(character)
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Added {character} from target character proximity")
+                        elif character == thrower:
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Skipped thrower {character} from character proximity inheritance")
             
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: assign_landing_proximity completed successfully")
             
@@ -1160,9 +1177,8 @@ class CmdPull(Command):
                     holder = grenade.location
             
             # Get proximity list
-            proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
-            if proximity_list is None:
-                proximity_list = []
+            # Get unified proximity list (includes current grappling relationships)
+            proximity_list = get_unified_explosion_proximity(grenade)
             
             # Handle explosion in someone's hands (much more dangerous!)
             if holder:
@@ -1609,10 +1625,8 @@ def check_rigged_grenade(character, exit_obj):
             if rigged_grenade.location:
                 rigged_grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=rigged_grenade.key))
             
-            # Get proximity list
-            proximity_list = getattr(rigged_grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
-            if proximity_list is None:
-                proximity_list = []
+            # Get unified proximity list (includes current grappling relationships)
+            proximity_list = get_unified_explosion_proximity(rigged_grenade)
             
             # Check for human shield mechanics
             from world.combat.utils import check_grenade_human_shield
@@ -1771,6 +1785,52 @@ def start_standalone_grenade_ticker(grenade, explosion_callback=None):
     tick()
 
 
+def get_unified_explosion_proximity(grenade):
+    """
+    Get unified proximity list for explosions by combining object proximity 
+    with current character proximity relationships (grappling, etc.).
+    
+    This ensures human shield mechanics work regardless of when grappling
+    relationships were established relative to grenade placement.
+    """
+    try:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Start with grenade's existing proximity list
+        proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+        if proximity_list is None:
+            proximity_list = []
+        
+        # Make a copy to avoid modifying the original
+        unified_list = list(proximity_list)
+        
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: get_unified_explosion_proximity - initial list: {[char.key if hasattr(char, 'key') else str(char) for char in unified_list]}")
+        
+        # For each character already in proximity, add their current proximity relationships
+        for character in list(proximity_list):  # Use list() to avoid modification during iteration
+            if not hasattr(character, 'ndb'):
+                continue
+                
+            # Check character proximity system (grappling relationships)
+            character_proximity = getattr(character.ndb, NDB_PROXIMITY, None)
+            if character_proximity:
+                # Convert set to list for consistent handling
+                character_list = list(character_proximity) if hasattr(character_proximity, '__iter__') else []
+                for related_char in character_list:
+                    if related_char and related_char not in unified_list:
+                        unified_list.append(related_char)
+                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Added {related_char.key if hasattr(related_char, 'key') else str(related_char)} from {character.key}'s character proximity")
+        
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: get_unified_explosion_proximity - final list: {[char.key if hasattr(char, 'key') else str(char) for char in unified_list]}")
+        return unified_list
+        
+    except Exception as e:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in get_unified_explosion_proximity: {e}")
+        # Return original proximity list as fallback
+        return getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
+
+
 def explode_standalone_grenade(grenade):
     """Handle explosion for grenades outside of CmdPull context (like chain reactions)."""
     try:
@@ -1811,12 +1871,10 @@ def explode_standalone_grenade(grenade):
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Location is Character: {isinstance(grenade.location, Character) if grenade.location else 'No location'}")
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Location typeclass: {type(grenade.location).__name__ if grenade.location else 'No location'}")
         
-        # Get proximity list
-        proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
-        if proximity_list is None:
-            proximity_list = []
+        # Get unified proximity list (includes current grappling relationships)
+        proximity_list = get_unified_explosion_proximity(grenade)
         
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Proximity list: {[char.key if hasattr(char, 'key') else str(char) for char in proximity_list]}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Unified proximity list: {[char.key if hasattr(char, 'key') else str(char) for char in proximity_list]}")
         
         # Handle explosion in someone's hands (much more dangerous!)
         if holder:
@@ -2106,10 +2164,8 @@ def trigger_auto_defuse_explosion(grenade):
         if grenade.location:
             grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
         
-        # Get proximity list
-        proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
-        if proximity_list is None:
-            proximity_list = []
+        # Get unified proximity list (includes current grappling relationships)
+        proximity_list = get_unified_explosion_proximity(grenade)
         
         # Check for human shield mechanics
         from world.combat.utils import check_grenade_human_shield
@@ -2562,10 +2618,8 @@ class CmdDefuse(Command):
             if grenade.location:
                 grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
             
-            # Get proximity list
-            proximity_list = getattr(grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
-            if proximity_list is None:
-                proximity_list = []
+            # Get unified proximity list (includes current grappling relationships)
+            proximity_list = get_unified_explosion_proximity(grenade)
             
             # Check for human shield mechanics
             from world.combat.utils import check_grenade_human_shield
