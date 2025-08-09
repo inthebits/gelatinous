@@ -1331,53 +1331,20 @@ class CmdJump(Command):
         splattercast.msg(f"JUMP_FALL_FAIL: {self.caller.key} failed {fall_type}, took {fall_damage} damage, remained in {self.caller.location.key}")
     
     def get_sky_room_for_gap(self, origin, destination, direction):
-        """Get the existing sky room for this gap jump route."""
-        # Strategy 1: Look for sky room tagged with origin+destination combination
-        sky_room_tag = f"sky_{origin.id}_{destination.id}"
-        sky_rooms = origin.search(sky_room_tag, global_search=True, quiet=True)
-        if sky_rooms:
-            return sky_rooms[0]
-        
-        # Strategy 2: Look for sky room with explicit origin/destination properties
-        # This will work when builders manually create sky rooms
-        from evennia.objects.models import ObjectDB
-        potential_sky_rooms = ObjectDB.objects.filter(db_tags__db_tag="sky_room")
-        for sky_room in potential_sky_rooms:
-            sky_origin = getattr(sky_room.db, "origin_room", None)
-            sky_destination = getattr(sky_room.db, "destination_room", None)
-            if sky_origin == origin and sky_destination == destination:
+        """Get the sky room associated with this exit."""
+        exit_obj = origin.search(direction, quiet=True)
+        if exit_obj:
+            sky_room = getattr(exit_obj[0].db, "sky_room", None)
+            if sky_room:
                 return sky_room
-        
-        # Strategy 3: Look for bidirectional sky room (works for both directions)
-        for sky_room in potential_sky_rooms:
-            sky_origin = getattr(sky_room.db, "origin_room", None)
-            sky_destination = getattr(sky_room.db, "destination_room", None)
-            if (sky_origin == origin and sky_destination == destination) or \
-               (sky_origin == destination and sky_destination == origin):
-                return sky_room
-        
-        # No sky room found - this gap doesn't have sky transit configured
         return None
     
     def get_fall_room_for_gap(self, intended_destination, exit_obj):
         """Get the fall room for a failed gap jump."""
-        # Strategy 1: Check if exit specifies a fall room
+        # Check if exit specifies a fall room
         fall_room = getattr(exit_obj.db, "fall_room", None)
-        if fall_room and hasattr(fall_room, 'location'):
+        if fall_room:
             return fall_room
-        
-        # Strategy 2: Look for room tagged as fall room for this destination
-        fall_tag = f"fall_room_{intended_destination.id}"
-        fall_rooms = intended_destination.search(fall_tag, global_search=True, quiet=True)
-        if fall_rooms:
-            return fall_rooms[0]
-        
-        # Strategy 3: Look for dedicated crash site near destination
-        potential_fall_rooms = intended_destination.search("crash", location=intended_destination, quiet=True)
-        if potential_fall_rooms:
-            for room in potential_fall_rooms:
-                if getattr(room.db, "is_fall_room", False):
-                    return room
         
         # Fallback: Use intended destination (soft landing)
         return intended_destination
