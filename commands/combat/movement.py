@@ -794,6 +794,19 @@ class CmdJump(Command):
         """Handle jumping on explosive for heroic sacrifice."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+        # Check if caller is being grappled (can't sacrifice while restrained)
+        handler = getattr(self.caller.ndb, "combat_handler", None)
+        if handler:
+            combatants_list = getattr(handler.db, "combatants", [])
+            caller_entry = next((e for e in combatants_list if e.get("char") == self.caller), None)
+            if caller_entry:
+                from world.combat.grappling import get_grappled_by
+                grappler = get_grappled_by(handler, caller_entry)
+                if grappler:
+                    self.caller.msg(f"|rYou cannot perform heroic sacrifices while being grappled by {grappler.key}!|n")
+                    splattercast.msg(f"JUMP_SACRIFICE_BLOCKED: {self.caller.key} attempted sacrifice while grappled by {grappler.key}")
+                    return
+        
         if not self.explosive_name:
             self.caller.msg("Jump on what explosive?")
             return
@@ -1026,6 +1039,19 @@ class CmdJump(Command):
         """Handle jumping off edge for tactical descent."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+        # Check if caller is being grappled (can't jump while restrained)
+        handler = getattr(self.caller.ndb, "combat_handler", None)
+        if handler:
+            combatants_list = getattr(handler.db, "combatants", [])
+            caller_entry = next((e for e in combatants_list if e.get("char") == self.caller), None)
+            if caller_entry:
+                from world.combat.grappling import get_grappled_by
+                grappler = get_grappled_by(handler, caller_entry)
+                if grappler:
+                    self.caller.msg(f"|rYou cannot jump while being grappled by {grappler.key}!|n")
+                    splattercast.msg(f"JUMP_EDGE_BLOCKED: {self.caller.key} attempted edge jump while grappled by {grappler.key}")
+                    return
+        
         if not self.direction:
             self.caller.msg("Jump off which direction?")
             return
@@ -1096,6 +1122,19 @@ class CmdJump(Command):
     def handle_gap_jump(self):
         """Handle jumping across gap between same-level areas."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Check if caller is being grappled (can't jump while restrained)
+        handler = getattr(self.caller.ndb, "combat_handler", None)
+        if handler:
+            combatants_list = getattr(handler.db, "combatants", [])
+            caller_entry = next((e for e in combatants_list if e.get("char") == self.caller), None)
+            if caller_entry:
+                from world.combat.grappling import get_grappled_by
+                grappler = get_grappled_by(handler, caller_entry)
+                if grappler:
+                    self.caller.msg(f"|rYou cannot jump while being grappled by {grappler.key}!|n")
+                    splattercast.msg(f"JUMP_GAP_BLOCKED: {self.caller.key} attempted gap jump while grappled by {grappler.key}")
+                    return
         
         if not self.direction:
             self.caller.msg("Jump across which direction?")
