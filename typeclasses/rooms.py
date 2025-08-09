@@ -29,10 +29,15 @@ class Room(ObjectParent, DefaultRoom):
 
         Enhanced to show flying objects during throw mechanics and custom exit display.
         """
-        # Build the appearance from scratch to avoid parent footer duplication
+        # Get the standard appearance but without footer
+        # We'll build our own footer to avoid duplicates
         
-        # Get the basic room description
+        # Get basic room info (name, desc, etc.)
+        name = self.get_display_name(looker)
         desc = self.db.desc or ""
+        
+        # Build the main appearance
+        appearance = f"{name}\n{desc}"
         
         # Add flying objects if any exist
         flying_objects = getattr(self.ndb, NDB_FLYING_OBJECTS, [])
@@ -42,14 +47,14 @@ class Room(ObjectParent, DefaultRoom):
                 flying_desc.append(f"|y{obj.key} is flying through the air|n")
             
             if flying_desc:
-                desc += "\n\n" + "\n".join(flying_desc)
+                appearance += "\n\n" + "\n".join(flying_desc)
         
         # Add our custom footer (exits, characters, objects)
         footer = self.get_display_footer(looker, **kwargs)
         if footer:
-            desc += "\n" + footer
+            appearance += "\n" + footer
         
-        return desc
+        return appearance
     
     def get_display_footer(self, looker, **kwargs):
         """
