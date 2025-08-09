@@ -1360,14 +1360,11 @@ class CmdJump(Command):
         # Failed jump experience
         self.caller.msg(f"|rYou leap for the {self.direction} gap but don't make it far enough... you're falling!|n")
         
-        # Calculate fall damage
-        fall_distance = getattr(exit_obj.db, "fall_distance", 2)  # Default 2 rooms
-        fall_damage = fall_distance * 5  # 5 damage per room fallen
-        
         def handle_fall_landing():
             if self.caller.location == sky_room:
-                # Use gravity to find ground level instead of specific fall room
-                ground_room = self.follow_gravity_to_ground(sky_room)
+                # Use gravity to find ground level and calculate fall distance
+                ground_room, fall_distance = self.follow_gravity_to_ground(sky_room)
+                fall_damage = fall_distance * 5  # 5 damage per room fallen
                 
                 # Move to ground level
                 self.caller.move_to(ground_room, quiet=True)
@@ -1528,7 +1525,7 @@ class CmdJump(Command):
             splattercast.msg(f"JUMP_EDGE_LANDING: {self.caller.key} motorics:{motorics_roll} vs difficulty:{landing_difficulty}, success:{success}")
             
             # Follow gravity down from sky room to find ground level
-            final_destination = self.follow_gravity_to_ground(destination)
+            final_destination, fall_distance = self.follow_gravity_to_ground(destination)
             
             # Check if there's a specific fall room for failures
             if not success:
@@ -1595,6 +1592,9 @@ class CmdJump(Command):
         Follow gravity down from a sky room until hitting ground level.
         Traverses downward exits until finding a room without a down exit,
         or a room marked as ground level.
+        
+        Returns:
+            tuple: (ground_room, rooms_fallen)
         """
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         current_room = start_room
@@ -1607,7 +1607,7 @@ class CmdJump(Command):
             # Check if this room is marked as ground level
             if getattr(current_room.db, "is_ground", False):
                 splattercast.msg(f"GRAVITY_GROUND: Found ground room {current_room.key} after {rooms_fallen} rooms")
-                return current_room
+                return current_room, rooms_fallen
             
             # Look for a down exit
             down_exit = current_room.search("down", quiet=True)
@@ -1617,18 +1617,18 @@ class CmdJump(Command):
             if not down_exit:
                 # No down exit found - this is ground level
                 splattercast.msg(f"GRAVITY_BOTTOM: No down exit from {current_room.key}, treating as ground after {rooms_fallen} rooms")
-                return current_room
+                return current_room, rooms_fallen
             
             # Get the destination of the down exit
             next_room = down_exit[0].destination
             if not next_room:
                 splattercast.msg(f"GRAVITY_DEAD_END: Down exit from {current_room.key} has no destination, stopping fall")
-                return current_room
+                return current_room, rooms_fallen
             
             # Check if we're going in circles
             if next_room == start_room:
                 splattercast.msg(f"GRAVITY_LOOP: Detected loop back to start room, stopping at {current_room.key}")
-                return current_room
+                return current_room, rooms_fallen
             
             # Move down one level
             current_room = next_room
@@ -1637,4 +1637,4 @@ class CmdJump(Command):
         
         # Safety limit reached
         splattercast.msg(f"GRAVITY_LIMIT: Hit max depth limit at {current_room.key}, treating as ground")
-        return current_room
+        return current_room, rooms_fallen
