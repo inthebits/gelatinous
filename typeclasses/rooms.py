@@ -22,13 +22,15 @@ class Room(ObjectParent, DefaultRoom):
     properties and methods available on all Objects.
     """
     
-    # Override the appearance template to use our custom footer only
-    # This avoids duplicate display issues with the default template variables
+    # Override the appearance template to use our custom footer for exits only
+    # This avoids duplicate display issues with exits while letting Evennia handle characters/objects
     # See: https://www.evennia.com/docs/latest/Components/Objects.html#changing-an-objects-appearance
     appearance_template = """
 {header}
 |c{name}|n
 {desc}
+{characters}
+{things}
 {footer}
 """
 
@@ -57,56 +59,18 @@ class Room(ObjectParent, DefaultRoom):
     
     def get_display_footer(self, looker, **kwargs):
         """
-        Get the 'footer' of the object description. This is called by return_appearance
-        and displays exits, characters, and objects with custom formatting.
+        Get custom footer display for exits with edge/gap categorization.
+        Let Evennia handle characters and objects via {characters} and {things} template variables.
+        
+        Returns:
+            str: Formatted footer display string
         """
         lines = []
         
-        # Add our custom exit display
-        custom_exits = self.get_custom_exit_display(looker)
-        if custom_exits:
-            lines.append(custom_exits)
-        
-        # Add characters in the room (excluding the looker themselves)
-        things = self.contents
-        
-        # Debug: Let's see what's in the room
-        try:
-            from evennia.comms.models import ChannelDB
-            from evennia import utils
-            splattercast = ChannelDB.objects.get_channel("Splattercast")
-            if splattercast:
-                all_things = [f"{thing.key}(is_character:{utils.inherits_from(thing, 'evennia.objects.objects.DefaultCharacter')})" for thing in things]
-                splattercast.msg(f"ROOM_DEBUG: All contents: {all_things}")
-                splattercast.msg(f"ROOM_DEBUG: Looker: {looker.key}")
-        except:
-            pass
-        
-        # Use proper character detection via inherits_from DefaultCharacter
-        from evennia import utils
-        characters = [thing for thing in things 
-                     if utils.inherits_from(thing, 'evennia.objects.objects.DefaultCharacter') and thing != looker]
-        if characters:
-            char_names = [char.get_display_name(looker) for char in characters]
-            lines.append(f"Characters: {', '.join(char_names)}")
-        
-        # Add objects in the room (excluding characters and exits)
-        objects = [thing for thing in things 
-                  if not utils.inherits_from(thing, 'evennia.objects.objects.DefaultCharacter') and not hasattr(thing, 'destination')]
-        
-        # Debug: Let's see what objects we found
-        try:
-            if splattercast:
-                obj_debug = [f"{thing.key}(has_destination:{hasattr(thing, 'destination')})" for thing in things 
-                           if not utils.inherits_from(thing, 'evennia.objects.objects.DefaultCharacter')]
-                splattercast.msg(f"ROOM_DEBUG: Non-character objects: {obj_debug}")
-                splattercast.msg(f"ROOM_DEBUG: Final objects list: {[obj.key for obj in objects]}")
-        except:
-            pass
-        
-        if objects:
-            obj_names = [obj.get_display_name(looker) for obj in objects]
-            lines.append(f"You see: {', '.join(obj_names)}")
+        # Only handle custom exit categorization in footer
+        exit_display = self.get_custom_exit_display(looker)
+        if exit_display:
+            lines.append(exit_display)
         
         return '\n'.join(lines) if lines else ""
     
