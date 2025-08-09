@@ -1244,17 +1244,25 @@ class CmdJump(Command):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
         # Get sky room directly from the exit object
-        sky_room_id = getattr(exit_obj.db, "sky_room", None)
+        sky_room_id = exit_obj.attributes.get("sky_room", None)
         sky_room = None
+        
+        # Debug logging
+        splattercast.msg(f"DEBUG_SKY: sky_room_id={sky_room_id}, type={type(sky_room_id)}")
+        
         if sky_room_id:
             # Convert sky_room ID to actual room object
             if isinstance(sky_room_id, (str, int)):
                 search_id = f"#{sky_room_id}" if not str(sky_room_id).startswith("#") else str(sky_room_id)
+                splattercast.msg(f"DEBUG_SKY: searching for '{search_id}'")
                 # Use caller's location to search globally
                 sky_rooms = self.caller.location.search(search_id, global_search=True, quiet=True)
+                splattercast.msg(f"DEBUG_SKY: search results: {sky_rooms}")
                 sky_room = sky_rooms[0] if sky_rooms else None
             else:
                 sky_room = sky_room_id  # Already an object
+        
+        splattercast.msg(f"DEBUG_SKY: final sky_room={sky_room}")
         
         if not sky_room:
             # Fallback: direct movement if no sky room configured
