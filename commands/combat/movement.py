@@ -1360,18 +1360,27 @@ class CmdJump(Command):
         # Failed jump experience
         self.caller.msg(f"|rYou leap for the {self.direction} gap but don't make it far enough... you're falling!|n")
         
+        # Calculate fall damage
+        fall_distance = getattr(exit_obj.db, "fall_distance", None)
+        if fall_distance is None:
+            # If no fall_distance configured, use gravity system's result
+            fall_distance = 1  # Default fallback, will be updated by gravity system
+        fall_damage = fall_distance * 5  # 5 damage per room fallen
+        
         def handle_fall_landing():
             if self.caller.location == sky_room:
-                # Use gravity to find ground level and calculate fall distance
-                ground_room, fall_distance = self.follow_gravity_to_ground(sky_room)
-                fall_damage = fall_distance * 5  # 5 damage per room fallen
+                # Use gravity to find ground level instead of specific fall room
+                ground_room, actual_fall_distance = self.follow_gravity_to_ground(sky_room)
+                
+                # Update fall damage based on actual distance fallen
+                actual_fall_damage = actual_fall_distance * 5  # 5 damage per room fallen
                 
                 # Move to ground level
                 self.caller.move_to(ground_room, quiet=True)
                 
                 # Apply fall damage
                 from world.combat.utils import apply_damage
-                apply_damage(self.caller, fall_damage)
+                apply_damage(self.caller, actual_fall_damage)
                 
                 # Clear combat state (fell out of combat)
                 handler = getattr(self.caller.ndb, "combat_handler", None)
@@ -1382,10 +1391,10 @@ class CmdJump(Command):
                 clear_aim_state(self.caller)
                 
                 # Failure messages
-                self.caller.msg(f"|rYou fall {fall_distance} stories and crash into {ground_room.key}, taking {fall_damage} damage!|n")
+                self.caller.msg(f"|rYou fall {actual_fall_distance} stories and crash into {ground_room.key}, taking {actual_fall_damage} damage!|n")
                 self.caller.location.msg_contents(f"|r{self.caller.key} crashes down from above, having failed a gap jump!|n", exclude=[self.caller])
                 
-                splattercast.msg(f"JUMP_GAP_FAIL: {self.caller.key} fell {fall_distance} rooms, took {fall_damage} damage, landed in {ground_room.key}")
+                splattercast.msg(f"JUMP_GAP_FAIL: {self.caller.key} fell {actual_fall_distance} rooms, took {actual_fall_damage} damage, landed in {ground_room.key}")
         
         # Schedule fall landing
         delay(2, handle_fall_landing)
@@ -1500,7 +1509,10 @@ class CmdJump(Command):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
         # Get fall distance for story counting (stories = fall difficulty multiplier)
-        fall_distance = getattr(exit_obj.db, "fall_distance", 1)  # Default 1 story
+        fall_distance = getattr(exit_obj.db, "fall_distance", None)
+        if fall_distance is None:
+            # If no fall_distance configured, use default
+            fall_distance = 1  # Default 1 story
         base_edge_difficulty = getattr(exit_obj.db, "edge_difficulty", 8)  # Base difficulty
         
         # Calculate landing difficulty based on fall distance
@@ -1525,9 +1537,10 @@ class CmdJump(Command):
             splattercast.msg(f"JUMP_EDGE_LANDING: {self.caller.key} motorics:{motorics_roll} vs difficulty:{landing_difficulty}, success:{success}")
             
             # Follow gravity down from sky room to find ground level
-            final_destination, fall_distance = self.follow_gravity_to_ground(destination)
+            final_destination, actual_fall_distance = self.follow_gravity_to_ground(destination)
             
-            # Check if there's a specific fall room for failures
+            # Update fall damage based on actual distance fallen
+            actual_fall_damage = base_fall_damage * actual_fall_distance
             if not success:
                 fall_room_id = getattr(exit_obj.db, "fall_room", None)
                 if fall_room_id:
@@ -1547,7 +1560,7 @@ class CmdJump(Command):
             # Apply damage based on success/failure and fall distance
             if success:
                 # Successful landing - reduced or no damage
-                reduced_damage = max(1, fall_damage // 3)  # Much less damage on success
+                reduced_damage = max(1, actual_fall_damage // 3)  # Much less damage on success
                 if reduced_damage > 1:
                     from world.combat.utils import apply_damage
                     apply_damage(self.caller, reduced_damage)
@@ -1564,12 +1577,12 @@ class CmdJump(Command):
             else:
                 # Failed landing - full damage
                 from world.combat.utils import apply_damage
-                apply_damage(self.caller, fall_damage)
-                self.caller.msg(f"|rYou crash hard into the ground after falling {fall_distance} {'story' if fall_distance == 1 else 'stories'}! You take {fall_damage} damage!|n")
+                apply_damage(self.caller, actual_fall_damage)
+                self.caller.msg(f"|rYou crash hard into the ground after falling {actual_fall_distance} {'story' if actual_fall_distance == 1 else 'stories'}! You take {actual_fall_damage} damage!|n")
                 if grappled_victim:
-                    apply_damage(grappled_victim, fall_damage)
-                    grappled_victim.msg(f"|r{self.caller.key} drags you into a devastating crash landing! You take {fall_damage} damage!|n")
-                splattercast.msg(f"JUMP_EDGE_CRASH: {self.caller.key} crashed after {fall_distance} story fall, took {fall_damage} damage")
+                    apply_damage(grappled_victim, actual_fall_damage)
+                    grappled_victim.msg(f"|r{self.caller.key} drags you into a devastating crash landing! You take {actual_fall_damage} damage!|n")
+                splattercast.msg(f"JUMP_EDGE_CRASH: {self.caller.key} crashed after {actual_fall_distance} story fall, took {actual_fall_damage} damage")
             
             # Arrival messages
             if success:
@@ -1582,7 +1595,7 @@ class CmdJump(Command):
             if grappled_victim:
                 setattr(grappled_victim.ndb, NDB_SKIP_ROUND, True)
             
-            splattercast.msg(f"JUMP_EDGE_COMPLETE: {self.caller.key} completed {fall_distance}-story edge jump to {final_destination.key}")
+            splattercast.msg(f"JUMP_EDGE_COMPLETE: {self.caller.key} completed {actual_fall_distance}-story edge jump to {final_destination.key}")
         
         # Schedule the landing after fall time
         delay(fall_time, handle_landing)
@@ -1593,8 +1606,7 @@ class CmdJump(Command):
         Traverses downward exits until finding a room without a down exit,
         or a room marked as ground level.
         
-        Returns:
-            tuple: (ground_room, rooms_fallen)
+        Returns: tuple of (final_room, rooms_fallen)
         """
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         current_room = start_room
