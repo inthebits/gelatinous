@@ -73,22 +73,26 @@ class Room(ObjectParent, DefaultRoom):
         # Debug: Let's see what's in the room
         try:
             from evennia.comms.models import ChannelDB
+            from evennia import utils
             splattercast = ChannelDB.objects.get_channel("Splattercast")
             if splattercast:
-                all_things = [f"{thing.key}(has_account:{hasattr(thing, 'has_account') and thing.has_account})" for thing in things]
+                all_things = [f"{thing.key}(is_character:{utils.inherits_from(thing, 'evennia.objects.objects.DefaultCharacter')})" for thing in things]
                 splattercast.msg(f"ROOM_DEBUG: All contents: {all_things}")
                 splattercast.msg(f"ROOM_DEBUG: Looker: {looker.key}")
         except:
             pass
         
-        characters = [thing for thing in things if hasattr(thing, 'has_account') and thing.has_account and thing != looker]
+        # Use proper character detection via inherits_from DefaultCharacter
+        from evennia import utils
+        characters = [thing for thing in things 
+                     if utils.inherits_from(thing, 'evennia.objects.objects.DefaultCharacter') and thing != looker]
         if characters:
             char_names = [char.get_display_name(looker) for char in characters]
             lines.append(f"Characters: {', '.join(char_names)}")
         
         # Add objects in the room (excluding characters and exits)
         objects = [thing for thing in things 
-                  if not (hasattr(thing, 'has_account') and thing.has_account) and not hasattr(thing, 'destination')]
+                  if not utils.inherits_from(thing, 'evennia.objects.objects.DefaultCharacter') and not hasattr(thing, 'destination')]
         if objects:
             obj_names = [obj.get_display_name(looker) for obj in objects]
             lines.append(f"You see: {', '.join(obj_names)}")
