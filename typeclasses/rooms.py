@@ -52,27 +52,34 @@ class Room(ObjectParent, DefaultRoom):
         
         We override this to customize exit display for edges and gaps.
         """
-        # Get the standard footer from parent (typically shows exits, contents, etc.)
-        footer = super().get_display_footer(looker, **kwargs)
-        
-        # Replace the standard exit display with our custom one
+        # Start with just the custom exit display instead of inheriting parent footer
         custom_exits = self.get_custom_exit_display(looker)
         
-        if custom_exits:
-            # Remove any existing "Exits:" line from the footer and replace it
-            footer_lines = footer.split('\n') if footer else []
-            filtered_lines = []
-            
-            for line in footer_lines:
-                # Skip any line that starts with "Exits:" or "Exit:" 
-                if not (line.strip().startswith("Exits:") or line.strip().startswith("Exit:")):
-                    filtered_lines.append(line)
-            
-            # Add our custom exit display
-            filtered_lines.append(custom_exits)
-            footer = '\n'.join(filtered_lines)
+        # Get other footer content (like contents) but exclude exits
+        # We'll build this manually to avoid the default exit handling
+        lines = []
         
-        return footer
+        # Add custom exits if any
+        if custom_exits:
+            lines.append(custom_exits)
+        
+        # Add other content that would normally be in footer (like contents)
+        # Get characters and objects in the room
+        things = self.contents_get(looker)
+        
+        # Characters (excluding the looker themselves)
+        characters = [thing for thing in things if thing.has_account and thing != looker]
+        if characters:
+            char_names = [char.get_display_name(looker) for char in characters]
+            lines.append(f"Characters: {', '.join(char_names)}")
+        
+        # Objects (excluding characters and exits)
+        objects = [thing for thing in things if not thing.has_account and not thing.destination]
+        if objects:
+            obj_names = [obj.get_display_name(looker) for obj in objects]
+            lines.append(f"Objects: {', '.join(obj_names)}")
+        
+        return '\n'.join(lines) if lines else ""
     
     def get_custom_exit_display(self, looker):
         """
