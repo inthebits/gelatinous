@@ -87,19 +87,18 @@ class Room(ObjectParent, DefaultRoom):
         
         regular_exits = []
         edge_exits = []
-        gap_exits = []
         
         # Categorize exits
         for exit_obj in exits:
             is_edge = getattr(exit_obj.db, "is_edge", False)
             is_gap = getattr(exit_obj.db, "is_gap", False)
             
-            if is_edge and is_gap:
-                gap_exits.append(f"{exit_obj.key} (edge gap)")
-            elif is_edge:
-                edge_exits.append(f"{exit_obj.key} (edge)")
-            elif is_gap:
-                gap_exits.append(f"{exit_obj.key} (gap)")
+            if is_edge or is_gap:
+                # Mark gaps for special display
+                if is_gap:
+                    edge_exits.append(f"{exit_obj.key} (gap)")
+                else:
+                    edge_exits.append(exit_obj.key)
             else:
                 regular_exits.append(exit_obj.key)
         
@@ -110,12 +109,9 @@ class Room(ObjectParent, DefaultRoom):
             lines.append(f"Exits: {', '.join(regular_exits)}")
         
         if edge_exits:
-            lines.append(f"|yEdges|n: {', '.join(edge_exits)} |c(use 'jump off <direction> edge')|n")
+            lines.append(f"Edges: {', '.join(edge_exits)}")
         
-        if gap_exits:
-            lines.append(f"|rGaps|n: {', '.join(gap_exits)} |c(use 'jump across <direction> edge')|n")
-        
-        if not regular_exits and not edge_exits and not gap_exits:
+        if not regular_exits and not edge_exits:
             return ""
         
         return "\n".join(lines)
