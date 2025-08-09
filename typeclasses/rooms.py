@@ -69,6 +69,18 @@ class Room(ObjectParent, DefaultRoom):
         
         # Add characters in the room (excluding the looker themselves)
         things = self.contents
+        
+        # Debug: Let's see what's in the room
+        try:
+            from evennia.comms.models import ChannelDB
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            if splattercast:
+                all_things = [f"{thing.key}(has_account:{hasattr(thing, 'has_account') and thing.has_account})" for thing in things]
+                splattercast.msg(f"ROOM_DEBUG: All contents: {all_things}")
+                splattercast.msg(f"ROOM_DEBUG: Looker: {looker.key}")
+        except:
+            pass
+        
         characters = [thing for thing in things if hasattr(thing, 'has_account') and thing.has_account and thing != looker]
         if characters:
             char_names = [char.get_display_name(looker) for char in characters]
