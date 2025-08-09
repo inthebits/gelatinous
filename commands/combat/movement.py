@@ -1340,8 +1340,8 @@ class CmdJump(Command):
         
         # Strategy 2: Look for sky room with explicit origin/destination properties
         # This will work when builders manually create sky rooms
-        from evennia.utils.search import search_object
-        potential_sky_rooms = search_object(tag="sky_room", category="room_type")
+        from evennia.objects.models import ObjectDB
+        potential_sky_rooms = ObjectDB.objects.filter(db_tags__db_tag="sky_room")
         for sky_room in potential_sky_rooms:
             sky_origin = getattr(sky_room.db, "origin_room", None)
             sky_destination = getattr(sky_room.db, "destination_room", None)
