@@ -1039,6 +1039,9 @@ class CmdJump(Command):
         """Handle jumping off edge for tactical descent."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+        # Initialize grappled_victim variable
+        grappled_victim = None
+        
         # Check if caller is being grappled (can't jump while restrained)
         handler = getattr(self.caller.ndb, "combat_handler", None)
         if handler:
@@ -1057,8 +1060,6 @@ class CmdJump(Command):
                 if grappled_victim:
                     self.caller.msg(f"|yYou leap from the {self.direction} edge while dragging {grappled_victim.key} with you!|n")
                     splattercast.msg(f"JUMP_EDGE_WITH_VICTIM: {self.caller.key} edge jumping while grappling {grappled_victim.key}")
-                else:
-                    grappled_victim = None
         
         if not self.direction:
             self.caller.msg("Jump off which direction?")
@@ -1361,17 +1362,33 @@ class CmdJump(Command):
         """Get the sky room associated with this exit."""
         exit_obj = origin.search(direction, quiet=True)
         if exit_obj:
-            sky_room = getattr(exit_obj[0].db, "sky_room", None)
-            if sky_room:
-                return sky_room
+            sky_room_id = getattr(exit_obj[0].db, "sky_room", None)
+            if sky_room_id:
+                # Convert string/int ID to actual room object
+                if isinstance(sky_room_id, (str, int)):
+                    # Convert to string with # prefix for search
+                    search_id = f"#{sky_room_id}" if not str(sky_room_id).startswith("#") else str(sky_room_id)
+                    # Use player character to search for the room by dbref
+                    sky_room = origin.search(search_id, global_search=True, quiet=True)
+                    return sky_room[0] if sky_room else None
+                else:
+                    return sky_room_id  # Already an object
         return None
     
     def get_fall_room_for_gap(self, intended_destination, exit_obj):
         """Get the fall room for a failed gap jump."""
         # Check if exit specifies a fall room
-        fall_room = getattr(exit_obj.db, "fall_room", None)
-        if fall_room:
-            return fall_room
+        fall_room_id = getattr(exit_obj.db, "fall_room", None)
+        if fall_room_id:
+            # Convert string/int ID to actual room object
+            if isinstance(fall_room_id, (str, int)):
+                # Convert to string with # prefix for search
+                search_id = f"#{fall_room_id}" if not str(fall_room_id).startswith("#") else str(fall_room_id)
+                # Use exit object to search for the room by dbref
+                fall_room = exit_obj.search(search_id, global_search=True, quiet=True)
+                return fall_room[0] if fall_room else intended_destination
+            else:
+                return fall_room_id  # Already an object
         
         # Fallback: Use intended destination (soft landing)
         return intended_destination
