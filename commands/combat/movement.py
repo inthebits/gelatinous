@@ -1250,7 +1250,8 @@ class CmdJump(Command):
             # Convert sky_room ID to actual room object
             if isinstance(sky_room_id, (str, int)):
                 search_id = f"#{sky_room_id}" if not str(sky_room_id).startswith("#") else str(sky_room_id)
-                sky_rooms = exit_obj.search(search_id, global_search=True, quiet=True)
+                # Use caller's location to search globally
+                sky_rooms = self.caller.location.search(search_id, global_search=True, quiet=True)
                 sky_room = sky_rooms[0] if sky_rooms else None
             else:
                 sky_room = sky_room_id  # Already an object
