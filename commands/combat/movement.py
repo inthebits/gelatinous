@@ -1639,24 +1639,43 @@ class CmdJump(Command):
                 splattercast.msg(f"JUMP_EDGE_SURVIVAL_CHECK: {self.caller.key} HP={getattr(self.caller, 'hp', 10)} alive={grappler_alive}, {actual_grappled_victim.key} HP={getattr(actual_grappled_victim, 'hp', 10)} alive={victim_alive}")
                 
                 if victim_alive and grappler_alive:
-                    splattercast.msg(f"JUMP_EDGE_ATTEMPTING_RESTORATION: Both {self.caller.key} and {actual_grappled_victim.key} survived, restoring grapple")
-                    # Both survived - restore grapple relationship in new combat handler
-                    from world.combat.handler import CombatHandler
-                    from world.combat.grappling import establish_grapple
-                    
-                    # Create new combat handler at landing location
-                    new_handler = CombatHandler.get_or_create_handler(final_destination)
-                    
-                    # Add both characters to combat
-                    new_handler.add_combatant(self.caller)
-                    new_handler.add_combatant(actual_grappled_victim)
-                    
-                    # Restore grapple relationship
-                    establish_grapple(new_handler, grappler=self.caller, victim=actual_grappled_victim)
-                    
-                    self.caller.msg(f"|yYou maintain your grip on {actual_grappled_victim.key} after the fall!|n")
-                    actual_grappled_victim.msg(f"|r{self.caller.key} still has you in their grip after that brutal fall!|n")
-                    splattercast.msg(f"JUMP_EDGE_GRAPPLE_RESTORED: {self.caller.key} maintains grapple on {actual_grappled_victim.key} after fall survival")
+                    try:
+                        splattercast.msg(f"JUMP_EDGE_ATTEMPTING_RESTORATION: Both {self.caller.key} and {actual_grappled_victim.key} survived, restoring grapple")
+                        # Both survived - restore grapple relationship in new combat handler
+                        from world.combat.handler import CombatHandler
+                        
+                        # Create new combat handler at landing location
+                        splattercast.msg(f"JUMP_EDGE_RESTORE_STEP1: Creating new combat handler at {final_destination}")
+                        new_handler = CombatHandler.get_or_create_handler(final_destination)
+                        splattercast.msg(f"JUMP_EDGE_RESTORE_STEP2: Got handler {new_handler}")
+                        
+                        # Add both characters to combat with initial grapple state (like room traversal)
+                        splattercast.msg(f"JUMP_EDGE_RESTORE_STEP3: Adding {self.caller.key} to combat with initial_grappling={actual_grappled_victim.key}")
+                        new_handler.add_combatant(
+                            self.caller,
+                            target=None,  # Grappler is yielding after fall
+                            initial_grappling=actual_grappled_victim,  # Set grapple state directly
+                            initial_grappled_by=None,
+                            initial_is_yielding=True  # Restraint mode after fall
+                        )
+                        
+                        splattercast.msg(f"JUMP_EDGE_RESTORE_STEP4: Adding {actual_grappled_victim.key} to combat with initial_grappled_by={self.caller.key}")
+                        new_handler.add_combatant(
+                            actual_grappled_victim,
+                            target=None,  # Victim has no offensive target after fall
+                            initial_grappling=None,
+                            initial_grappled_by=self.caller,  # Set grappled state directly
+                            initial_is_yielding=False  # Victim can still struggle
+                        )
+                        
+                        splattercast.msg(f"JUMP_EDGE_RESTORE_STEP5: Combat entries created with grapple state")
+                        
+                        self.caller.msg(f"|yYou maintain your grip on {actual_grappled_victim.key} after the fall!|n")
+                        actual_grappled_victim.msg(f"|r{self.caller.key} still has you in their grip after that brutal fall!|n")
+                        splattercast.msg(f"JUMP_EDGE_GRAPPLE_RESTORED: {self.caller.key} maintains grapple on {actual_grappled_victim.key} after fall survival")
+                    except Exception as e:
+                        splattercast.msg(f"JUMP_EDGE_RESTORE_ERROR: Failed to restore grapple - {e}")
+                        self.caller.msg(f"|rYour grip on {actual_grappled_victim.key} was lost during the fall!|n")
                     
                 elif not victim_alive and grappler_alive:
                     # Victim died from fall - grappler is holding a corpse
