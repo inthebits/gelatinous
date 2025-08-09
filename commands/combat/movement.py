@@ -1045,12 +1045,20 @@ class CmdJump(Command):
             combatants_list = getattr(handler.db, "combatants", [])
             caller_entry = next((e for e in combatants_list if e.get("char") == self.caller), None)
             if caller_entry:
-                from world.combat.grappling import get_grappled_by
+                from world.combat.grappling import get_grappled_by, get_grappling_target
                 grappler = get_grappled_by(handler, caller_entry)
                 if grappler:
                     self.caller.msg(f"|rYou cannot jump while being grappled by {grappler.key}!|n")
                     splattercast.msg(f"JUMP_EDGE_BLOCKED: {self.caller.key} attempted edge jump while grappled by {grappler.key}")
                     return
+                
+                # Check if caller is grappling someone - take them along for the ride
+                grappled_victim = get_grappling_target(handler, caller_entry)
+                if grappled_victim:
+                    self.caller.msg(f"|yYou leap from the {self.direction} edge while dragging {grappled_victim.key} with you!|n")
+                    splattercast.msg(f"JUMP_EDGE_WITH_VICTIM: {self.caller.key} edge jumping while grappling {grappled_victim.key}")
+                else:
+                    grappled_victim = None
         
         if not self.direction:
             self.caller.msg("Jump off which direction?")
@@ -1094,9 +1102,16 @@ class CmdJump(Command):
             # Successful descent
             self.caller.move_to(destination, quiet=True)
             
+            # Move grappled victim along if any
+            if grappled_victim:
+                grappled_victim.move_to(destination, quiet=True)
+                grappled_victim.msg(f"|r{self.caller.key} drags you off the {self.direction} edge!|n")
+            
             # Clear combat state if fleeing via edge
             if handler:
                 handler.remove_combatant(self.caller)
+                if grappled_victim:
+                    handler.remove_combatant(grappled_victim)
             
             # Clear aim states
             clear_aim_state(self.caller)
@@ -1117,7 +1132,7 @@ class CmdJump(Command):
             splattercast.msg(f"JUMP_EDGE_SUCCESS: {self.caller.key} successfully descended via {self.direction} edge to {destination.key}")
         else:
             # Failed descent - potential fall damage
-            self.handle_fall_failure(exit_obj, destination, "edge descent")
+            self.handle_fall_failure(exit_obj, destination, "edge descent", grappled_victim)
     
     def handle_gap_jump(self):
         """Handle jumping across gap between same-level areas."""
@@ -1129,12 +1144,24 @@ class CmdJump(Command):
             combatants_list = getattr(handler.db, "combatants", [])
             caller_entry = next((e for e in combatants_list if e.get("char") == self.caller), None)
             if caller_entry:
-                from world.combat.grappling import get_grappled_by
+                from world.combat.grappling import get_grappled_by, get_grappling_target
                 grappler = get_grappled_by(handler, caller_entry)
                 if grappler:
                     self.caller.msg(f"|rYou cannot jump while being grappled by {grappler.key}!|n")
                     splattercast.msg(f"JUMP_GAP_BLOCKED: {self.caller.key} attempted gap jump while grappled by {grappler.key}")
                     return
+                
+                # Check if caller is grappling someone - break grapple for gap jump
+                grappled_victim = get_grappling_target(handler, caller_entry)
+                if grappled_victim:
+                    from world.combat.grappling import break_grapple
+                    break_grapple(handler, grappler=self.caller, victim=grappled_victim)
+                    self.caller.msg(f"|yYou release your grip on {grappled_victim.key} to focus on the gap jump!|n")
+                    grappled_victim.msg(f"|g{self.caller.key} releases their grip on you to attempt a gap jump!|n")
+                    splattercast.msg(f"JUMP_GAP_GRAPPLE_BREAK: {self.caller.key} broke grapple with {grappled_victim.key} for gap jump")
+                    grappled_victim = None
+                else:
+                    grappled_victim = None
         
         if not self.direction:
             self.caller.msg("Jump across which direction?")
@@ -1311,7 +1338,7 @@ class CmdJump(Command):
         # Schedule fall landing
         delay(2, handle_fall_landing)
     
-    def handle_fall_failure(self, exit_obj, destination, fall_type):
+    def handle_fall_failure(self, exit_obj, destination, fall_type, grappled_victim=None):
         """Handle general fall failure (for edge descent failures)."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
