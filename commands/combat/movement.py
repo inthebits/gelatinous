@@ -1476,8 +1476,8 @@ class CmdJump(Command):
             
             splattercast.msg(f"JUMP_EDGE_LANDING: {self.caller.key} motorics:{motorics_roll} vs difficulty:{landing_difficulty}, success:{success}")
             
-            # Get the intended destination room
-            final_destination = destination
+            # Follow gravity down from sky room to find ground level
+            final_destination = self.follow_gravity_to_ground(destination)
             
             # Check if there's a specific fall room for failures
             if not success:
@@ -1538,3 +1538,52 @@ class CmdJump(Command):
         
         # Schedule the landing after fall time
         delay(fall_time, handle_landing)
+
+    def follow_gravity_to_ground(self, start_room):
+        """
+        Follow gravity down from a sky room until hitting ground level.
+        Traverses downward exits until finding a room without a down exit,
+        or a room marked as ground level.
+        """
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        current_room = start_room
+        rooms_fallen = 0
+        max_depth = 10  # Safety limit to prevent infinite loops
+        
+        splattercast.msg(f"GRAVITY_FOLLOW: Starting gravity fall from {current_room.key} (#{current_room.id})")
+        
+        while rooms_fallen < max_depth:
+            # Check if this room is marked as ground level
+            if getattr(current_room.db, "is_ground", False):
+                splattercast.msg(f"GRAVITY_GROUND: Found ground room {current_room.key} after {rooms_fallen} rooms")
+                return current_room
+            
+            # Look for a down exit
+            down_exit = current_room.search("down", quiet=True)
+            if not down_exit:
+                down_exit = current_room.search("d", quiet=True)
+            
+            if not down_exit:
+                # No down exit found - this is ground level
+                splattercast.msg(f"GRAVITY_BOTTOM: No down exit from {current_room.key}, treating as ground after {rooms_fallen} rooms")
+                return current_room
+            
+            # Get the destination of the down exit
+            next_room = down_exit[0].destination
+            if not next_room:
+                splattercast.msg(f"GRAVITY_DEAD_END: Down exit from {current_room.key} has no destination, stopping fall")
+                return current_room
+            
+            # Check if we're going in circles
+            if next_room == start_room:
+                splattercast.msg(f"GRAVITY_LOOP: Detected loop back to start room, stopping at {current_room.key}")
+                return current_room
+            
+            # Move down one level
+            current_room = next_room
+            rooms_fallen += 1
+            splattercast.msg(f"GRAVITY_FALL: Falling to {current_room.key} (#{current_room.id}), depth: {rooms_fallen}")
+        
+        # Safety limit reached
+        splattercast.msg(f"GRAVITY_LIMIT: Hit max depth limit at {current_room.key}, treating as ground")
+        return current_room
