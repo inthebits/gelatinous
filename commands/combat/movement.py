@@ -1178,7 +1178,19 @@ class CmdJump(Command):
             self.caller.msg(f"The {self.direction} exit is not a gap you can jump across.")
             return
         
-        destination = exit_obj.destination
+        # Determine destination - use gap_destination if set, otherwise use exit destination
+        gap_destination_id = getattr(exit_obj.db, "gap_destination", None)
+        if gap_destination_id:
+            # Convert gap_destination ID to actual room object
+            if isinstance(gap_destination_id, (str, int)):
+                search_id = f"#{gap_destination_id}" if not str(gap_destination_id).startswith("#") else str(gap_destination_id)
+                gap_dest_rooms = exit_obj.search(search_id, global_search=True, quiet=True)
+                destination = gap_dest_rooms[0] if gap_dest_rooms else exit_obj.destination
+            else:
+                destination = gap_destination_id  # Already an object
+        else:
+            destination = exit_obj.destination
+            
         if not destination:
             self.caller.msg(f"The {self.direction} gap doesn't lead anywhere safe to land.")
             return
