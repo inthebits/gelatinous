@@ -1243,8 +1243,18 @@ class CmdJump(Command):
         """Execute a successful gap jump with sky room transit."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
-        # Find or use existing sky room for this gap
-        sky_room = self.get_sky_room_for_gap(self.caller.location, destination, self.direction)
+        # Get sky room directly from the exit object
+        sky_room_id = getattr(exit_obj.db, "sky_room", None)
+        sky_room = None
+        if sky_room_id:
+            # Convert sky_room ID to actual room object
+            if isinstance(sky_room_id, (str, int)):
+                search_id = f"#{sky_room_id}" if not str(sky_room_id).startswith("#") else str(sky_room_id)
+                sky_rooms = exit_obj.search(search_id, global_search=True, quiet=True)
+                sky_room = sky_rooms[0] if sky_rooms else None
+            else:
+                sky_room = sky_room_id  # Already an object
+        
         if not sky_room:
             # Fallback: direct movement if no sky room configured
             splattercast.msg(f"JUMP_GAP_NO_SKY: No sky room configured for {self.caller.location.key} -> {destination.key}, using direct movement")
