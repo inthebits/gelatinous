@@ -872,10 +872,25 @@ class CmdJump(Command):
         # Mark the hero as performing sacrifice (for movement restrictions)
         self.caller.ndb.performing_sacrifice = True
         
-        # Immediate dramatic messaging (everyone sees the heroic gesture)
-        self.caller.location.msg_contents(
-            f"|R{self.caller.key} makes the ultimate sacrifice, leaping onto {self.explosive_name}!|n"
-        )
+        # Check if hero is grappling someone for initial messaging
+        handler = getattr(self.caller.ndb, "combat_handler", None)
+        grappled_victim_preview = None
+        if handler:
+            combatants_list = getattr(handler.db, "combatants", [])
+            caller_entry = next((e for e in combatants_list if e.get("char") == self.caller), None)
+            if caller_entry:
+                from world.combat.grappling import get_grappling_target
+                grappled_victim_preview = get_grappling_target(handler, caller_entry)
+        
+        # Immediate dramatic messaging - hint at the grappling situation
+        if grappled_victim_preview and grappled_victim_preview.location == self.caller.location:
+            self.caller.location.msg_contents(
+                f"|R{self.caller.key} makes the ultimate sacrifice, leaping onto {self.explosive_name} while still holding {grappled_victim_preview.key}!|n"
+            )
+        else:
+            self.caller.location.msg_contents(
+                f"|R{self.caller.key} makes the ultimate sacrifice, leaping onto {self.explosive_name}!|n"
+            )
         
         # Get blast damage for real explosions
         blast_damage = getattr(explosive.db, "blast_damage", 10)
@@ -891,11 +906,53 @@ class CmdJump(Command):
                 delattr(self.caller.ndb, "performing_sacrifice")
             
             if is_armed and has_active_countdown:
-                # REAL HEROIC SACRIFICE
+                # REAL HEROIC SACRIFICE WITH CRUEL GRAPPLING MECHANICS
                 
-                # Heroic sacrifice: caller takes ALL damage, others take none
-                from world.combat.utils import apply_damage
-                apply_damage(self.caller, blast_damage)
+                # Check if hero is grappling someone - implement human shield mechanics
+                handler = getattr(self.caller.ndb, "combat_handler", None)
+                grappled_victim = None
+                shield_used = False
+                
+                if handler:
+                    combatants_list = getattr(handler.db, "combatants", [])
+                    caller_entry = next((e for e in combatants_list if e.get("char") == self.caller), None)
+                    if caller_entry:
+                        from world.combat.grappling import get_grappling_target
+                        grappled_victim = get_grappling_target(handler, caller_entry)
+                
+                if grappled_victim and grappled_victim.location == self.caller.location:
+                    # CRUEL REALISM: Hero uses grappled victim as blast shield
+                    shield_used = True
+                    
+                    # Send cruel shield messages
+                    self.caller.msg(f"|RYou instinctively use {grappled_victim.key} to shield yourself from the blast!|n")
+                    grappled_victim.msg(f"|RYou are forced between {self.caller.key} and the explosion!|n")
+                    observer_msg = f"|R{self.caller.key} uses {grappled_victim.key} as a human shield against their own 'heroic' sacrifice!|n"
+                    self.caller.location.msg_contents(observer_msg, exclude=[self.caller, grappled_victim])
+                    
+                    # Cruel damage distribution
+                    from world.combat.utils import apply_damage
+                    victim_hp_before = getattr(grappled_victim, 'hp', 10)
+                    apply_damage(grappled_victim, blast_damage * 2)  # Victim takes double damage
+                    victim_hp_after = getattr(grappled_victim, 'hp', 0)
+                    
+                    # Hero damage - currently set to 0 for maximum cruelty (adjustable)
+                    hero_damage_multiplier = 0.0  # Change this to increase hero damage if desired
+                    hero_damage = int(blast_damage * hero_damage_multiplier)
+                    if hero_damage > 0:
+                        apply_damage(self.caller, hero_damage)
+                    
+                    # Check if victim died and add guilt messaging
+                    if victim_hp_after <= 0 and victim_hp_before > 0:
+                        self.caller.msg(f"|RYour 'heroic' sacrifice just killed {grappled_victim.key}... some hero you are.|n")
+                        splattercast.msg(f"JUMP_SACRIFICE_VICTIM_DEATH: {grappled_victim.key} died from blast shield damage caused by {self.caller.key}")
+                    
+                    splattercast.msg(f"JUMP_SACRIFICE_CRUEL: {self.caller.key} used {grappled_victim.key} as blast shield - victim took {blast_damage * 2}, hero took {hero_damage}")
+                else:
+                    # Standard heroic sacrifice: hero takes ALL damage, others protected
+                    from world.combat.utils import apply_damage
+                    apply_damage(self.caller, blast_damage)
+                    splattercast.msg(f"JUMP_SACRIFICE_HEROIC: {self.caller.key} absorbed {blast_damage} damage, protecting all others")
                 
                 # Move caller to explosive's location and inherit ALL its proximity relationships
                 from world.combat.proximity import establish_proximity, get_proximity_list
@@ -922,15 +979,28 @@ class CmdJump(Command):
                 
                 splattercast.msg(f"JUMP_SACRIFICE: Final cleanup - stopped {timer_scripts_stopped} remaining scripts, cleared countdown attributes")
                 
-                # Prevent chain reactions - explosive is absorbed by hero
+                # Prevent chain reactions - explosive is absorbed/explodes
                 explosive.delete()
                 
-                # Revelation message - REAL sacrifice
-                self.caller.location.msg_contents(
-                    f"|R{self.explosive_name} explodes with a muffled blast - {self.caller.key} absorbed the full force to protect everyone!|n"
-                )
-                
-                splattercast.msg(f"JUMP_SACRIFICE_SUCCESS: {self.caller.key} absorbed {blast_damage} damage from {explosive.key}, protecting all others in proximity.")
+                # Revelation message - varies based on whether shield was used
+                if shield_used:
+                    self.caller.location.msg_contents(
+                        f"|R{self.explosive_name} explodes with a deafening blast - {grappled_victim.key} bore the brunt while {self.caller.key} used them as a shield!|n"
+                    )
+                    splattercast.msg(f"JUMP_SACRIFICE_SUCCESS: {self.caller.key} used {grappled_victim.key} as blast shield - victim took {blast_damage * 2}, hero took {hero_damage} (completely shielded)")
+                    
+                    # Break the grapple after blast (trauma, shock, possible unconsciousness)
+                    if handler and grappled_victim:
+                        from world.combat.grappling import break_grapple
+                        break_grapple(handler, grappler=self.caller, victim=grappled_victim)
+                        grappled_victim.msg("|yThe blast throws you clear of your captor's grasp!|n")
+                        self.caller.msg("|yThe explosion breaks your hold!|n")
+                        splattercast.msg(f"JUMP_SACRIFICE_GRAPPLE_BREAK: Blast broke grapple between {self.caller.key} and {grappled_victim.key}")
+                else:
+                    self.caller.location.msg_contents(
+                        f"|R{self.explosive_name} explodes with a muffled blast - {self.caller.key} absorbed the full force to protect everyone!|n"
+                    )
+                    splattercast.msg(f"JUMP_SACRIFICE_SUCCESS: {self.caller.key} absorbed {blast_damage} damage from {explosive.key}, protecting all others in proximity.")
                 
                 # Skip turn if in combat (heroic actions have consequences)
                 setattr(self.caller.ndb, NDB_SKIP_ROUND, True)
