@@ -1564,6 +1564,9 @@ class CmdJump(Command):
             bodyshield_victim = getattr(self.caller.ndb, "bodyshield_victim", None)
             actual_grappled_victim = grappled_victim or bodyshield_victim
             
+            # Debug: Check what we found
+            splattercast.msg(f"JUMP_EDGE_DEBUG: grappled_victim={grappled_victim.key if grappled_victim else 'None'}, bodyshield_victim={bodyshield_victim.key if bodyshield_victim else 'None'}, actual_grappled_victim={actual_grappled_victim.key if actual_grappled_victim else 'None'}")
+            
             if bodyshield_victim and not grappled_victim:
                 splattercast.msg(f"JUMP_EDGE_BODYSHIELD_RESTORE: Restored bodyshield victim {bodyshield_victim.key} for landing damage and grapple restoration")
             
@@ -1633,7 +1636,10 @@ class CmdJump(Command):
                 victim_alive = getattr(actual_grappled_victim, 'hp', 10) > 0
                 grappler_alive = getattr(self.caller, 'hp', 10) > 0
                 
+                splattercast.msg(f"JUMP_EDGE_SURVIVAL_CHECK: {self.caller.key} HP={getattr(self.caller, 'hp', 10)} alive={grappler_alive}, {actual_grappled_victim.key} HP={getattr(actual_grappled_victim, 'hp', 10)} alive={victim_alive}")
+                
                 if victim_alive and grappler_alive:
+                    splattercast.msg(f"JUMP_EDGE_ATTEMPTING_RESTORATION: Both {self.caller.key} and {actual_grappled_victim.key} survived, restoring grapple")
                     # Both survived - restore grapple relationship in new combat handler
                     from world.combat.handler import CombatHandler
                     from world.combat.grappling import establish_grapple
