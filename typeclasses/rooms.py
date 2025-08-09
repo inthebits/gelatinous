@@ -50,31 +50,25 @@ class Room(ObjectParent, DefaultRoom):
         Get the 'footer' of the object description. This is called by return_appearance
         and usually displays things like exits, inventory, etc. 
         
-        We override this to customize exit display for edges and gaps.
+        We completely override this to provide custom exit display for edges and gaps.
         """
-        # Start with just the custom exit display instead of inheriting parent footer
-        custom_exits = self.get_custom_exit_display(looker)
-        
-        # Get other footer content (like contents) but exclude exits
-        # We'll build this manually to avoid the default exit handling
         lines = []
         
-        # Add custom exits if any
+        # Add our custom exit display
+        custom_exits = self.get_custom_exit_display(looker)
         if custom_exits:
             lines.append(custom_exits)
         
-        # Add other content that would normally be in footer (like contents)
-        # Get characters and objects in the room
+        # Add characters in the room (excluding the looker themselves)
         things = self.contents_get(looker)
-        
-        # Characters (excluding the looker themselves)
         characters = [thing for thing in things if thing.has_account and thing != looker]
         if characters:
             char_names = [char.get_display_name(looker) for char in characters]
             lines.append(f"Characters: {', '.join(char_names)}")
         
-        # Objects (excluding characters and exits)
-        objects = [thing for thing in things if not thing.has_account and not thing.destination]
+        # Add objects in the room (excluding characters and exits)
+        objects = [thing for thing in things 
+                  if not thing.has_account and not hasattr(thing, 'destination')]
         if objects:
             obj_names = [obj.get_display_name(looker) for obj in objects]
             lines.append(f"Objects: {', '.join(obj_names)}")
