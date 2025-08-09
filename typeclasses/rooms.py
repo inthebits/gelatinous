@@ -21,6 +21,16 @@ class Room(ObjectParent, DefaultRoom):
     See mygame/typeclasses/objects.py for a list of
     properties and methods available on all Objects.
     """
+    
+    # Override the appearance template to use our custom footer only
+    # This avoids duplicate display issues with the default template variables
+    # See: https://www.evennia.com/docs/latest/Components/Objects.html#changing-an-objects-appearance
+    appearance_template = """
+{header}
+|c{name}|n
+{desc}
+{footer}
+"""
 
     def return_appearance(self, looker, **kwargs):
         """
@@ -45,33 +55,10 @@ class Room(ObjectParent, DefaultRoom):
         
         return appearance
     
-    def get_display_exits(self, looker, **kwargs):
-        """
-        Override the default exit display to return empty string.
-        We handle exits in get_display_footer() instead for custom categorization.
-        """
-        return ""
-    
-    def get_display_characters(self, looker, **kwargs):
-        """
-        Override the default character display to return empty string.
-        We handle characters in get_display_footer() instead.
-        """
-        return ""
-    
-    def get_display_things(self, looker, **kwargs):
-        """
-        Override the default things display to return empty string.
-        We handle objects in get_display_footer() instead.
-        """
-        return ""
-
     def get_display_footer(self, looker, **kwargs):
         """
         Get the 'footer' of the object description. This is called by return_appearance
-        and usually displays things like exits, inventory, etc. 
-        
-        We completely override this to provide custom exit display for edges and gaps.
+        and displays exits, characters, and objects with custom formatting.
         """
         lines = []
         
@@ -81,15 +68,15 @@ class Room(ObjectParent, DefaultRoom):
             lines.append(custom_exits)
         
         # Add characters in the room (excluding the looker themselves)
-        things = self.contents_get(looker)
-        characters = [thing for thing in things if thing.has_account and thing != looker]
+        things = self.contents
+        characters = [thing for thing in things if hasattr(thing, 'has_account') and thing.has_account and thing != looker]
         if characters:
             char_names = [char.get_display_name(looker) for char in characters]
             lines.append(f"Characters: {', '.join(char_names)}")
         
         # Add objects in the room (excluding characters and exits)
         objects = [thing for thing in things 
-                  if not thing.has_account and not hasattr(thing, 'destination')]
+                  if not (hasattr(thing, 'has_account') and thing.has_account) and not hasattr(thing, 'destination')]
         if objects:
             obj_names = [obj.get_display_name(looker) for obj in objects]
             lines.append(f"You see: {', '.join(obj_names)}")
