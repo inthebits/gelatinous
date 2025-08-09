@@ -1350,11 +1350,8 @@ class CmdJump(Command):
         # Clear aim states
         clear_aim_state(self.caller)
         
-        # Check for rigged grenades at destination
-        from commands.CmdThrow import check_rigged_grenade, check_auto_defuse
-        exit_obj = self.find_edge_exit(self.direction)
-        if exit_obj:
-            check_rigged_grenade(self.caller, exit_obj)
+        # Check for auto-defuse opportunities in destination room
+        from commands.CmdThrow import check_auto_defuse
         check_auto_defuse(self.caller)
         
         # Success messages
