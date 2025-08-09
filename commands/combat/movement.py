@@ -1244,7 +1244,7 @@ class CmdJump(Command):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
         # Get sky room directly from the exit object
-        sky_room_id = exit_obj.attributes.get("sky_room", None)
+        sky_room_id = exit_obj.db.sky_room
         sky_room = None
         
         # Debug logging
