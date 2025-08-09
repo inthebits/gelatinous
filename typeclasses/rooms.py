@@ -96,7 +96,7 @@ class Room(ObjectParent, DefaultRoom):
             if is_edge or is_gap:
                 # Mark gaps for special display
                 if is_gap:
-                    edge_exits.append({exit_obj.key})
+                    edge_exits.append(exit_obj.key)
                 else:
                     edge_exits.append(exit_obj.key)
             else:
