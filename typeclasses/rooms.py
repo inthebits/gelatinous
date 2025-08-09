@@ -44,3 +44,78 @@ class Room(ObjectParent, DefaultRoom):
                 appearance += "\n\n" + "\n".join(flying_desc)
         
         return appearance
+    
+    def get_display_footer(self, looker, **kwargs):
+        """
+        Get the 'footer' of the object description. This is called by return_appearance
+        and usually displays things like exits, inventory, etc. 
+        
+        We override this to customize exit display for edges and gaps.
+        """
+        # Get the standard footer from parent (typically shows exits, contents, etc.)
+        footer = super().get_display_footer(looker, **kwargs)
+        
+        # Replace the standard exit display with our custom one
+        custom_exits = self.get_custom_exit_display(looker)
+        
+        if custom_exits:
+            # Remove any existing "Exits:" line from the footer and replace it
+            footer_lines = footer.split('\n') if footer else []
+            filtered_lines = []
+            
+            for line in footer_lines:
+                # Skip any line that starts with "Exits:" or "Exit:" 
+                if not (line.strip().startswith("Exits:") or line.strip().startswith("Exit:")):
+                    filtered_lines.append(line)
+            
+            # Add our custom exit display
+            filtered_lines.append(custom_exits)
+            footer = '\n'.join(filtered_lines)
+        
+        return footer
+    
+    def get_custom_exit_display(self, looker):
+        """
+        Get custom exit display that separates edges, gaps, and regular exits.
+        
+        Returns:
+            str: Formatted exit display string
+        """
+        exits = self.exits
+        if not exits:
+            return ""
+        
+        regular_exits = []
+        edge_exits = []
+        gap_exits = []
+        
+        # Categorize exits
+        for exit_obj in exits:
+            is_edge = getattr(exit_obj.db, "is_edge", False)
+            is_gap = getattr(exit_obj.db, "is_gap", False)
+            
+            if is_edge and is_gap:
+                gap_exits.append(f"{exit_obj.key} (edge gap)")
+            elif is_edge:
+                edge_exits.append(f"{exit_obj.key} (edge)")
+            elif is_gap:
+                gap_exits.append(f"{exit_obj.key} (gap)")
+            else:
+                regular_exits.append(exit_obj.key)
+        
+        # Build display
+        lines = []
+        
+        if regular_exits:
+            lines.append(f"Exits: {', '.join(regular_exits)}")
+        
+        if edge_exits:
+            lines.append(f"|yEdges|n: {', '.join(edge_exits)} |c(use 'jump off <direction> edge')|n")
+        
+        if gap_exits:
+            lines.append(f"|rGaps|n: {', '.join(gap_exits)} |c(use 'jump across <direction> edge')|n")
+        
+        if not regular_exits and not edge_exits and not gap_exits:
+            return ""
+        
+        return "\n".join(lines)

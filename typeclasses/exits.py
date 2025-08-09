@@ -46,6 +46,23 @@ class Exit(DefaultExit):
     def at_traverse(self, traversing_object, target_location):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+        # --- EDGE/GAP RESTRICTION CHECK ---
+        # Block normal traversal of edge and gap exits - these require jump command
+        is_edge = getattr(self.db, "is_edge", False)
+        is_gap = getattr(self.db, "is_gap", False)
+        
+        if is_edge or is_gap:
+            if is_edge and is_gap:
+                traversing_object.msg(f"|rYou cannot simply walk to the {self.key} - it's an edge with a gap! Use 'jump off {self.key} edge' or 'jump across {self.key} edge' instead.|n")
+            elif is_edge:
+                traversing_object.msg(f"|rYou cannot simply walk to the {self.key} - it's an edge! Use 'jump off {self.key} edge' to descend.|n")
+            elif is_gap:
+                traversing_object.msg(f"|rYou cannot simply walk to the {self.key} - it's a gap! Use 'jump across {self.key} edge' to leap across.|n")
+            
+            splattercast.msg(f"EDGE_GAP_BLOCK: {traversing_object.key} attempted normal traversal of {self.key} (is_edge={is_edge}, is_gap={is_gap}). Blocked.")
+            return  # Block traversal
+        # --- END EDGE/GAP RESTRICTION CHECK ---
+        
         # --- SACRIFICE RESTRICTION CHECK ---
         # Check if traversing character is performing sacrifice
         if getattr(traversing_object.ndb, "performing_sacrifice", False):
