@@ -106,10 +106,10 @@ class Room(ObjectParent, DefaultRoom):
         lines = []
         
         if regular_exits:
-            lines.append(f"Exits: {', '.join(regular_exits)}")
+            lines.append(f"|wExits:|n {', '.join(regular_exits)}")
         
         if edge_exits:
-            lines.append(f"Edges: {', '.join(edge_exits)}")
+            lines.append(f"|wEdges:|n {', '.join(edge_exits)}")
         
         if not regular_exits and not edge_exits:
             return ""
