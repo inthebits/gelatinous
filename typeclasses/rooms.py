@@ -93,6 +93,17 @@ class Room(ObjectParent, DefaultRoom):
         # Add objects in the room (excluding characters and exits)
         objects = [thing for thing in things 
                   if not utils.inherits_from(thing, 'evennia.objects.objects.DefaultCharacter') and not hasattr(thing, 'destination')]
+        
+        # Debug: Let's see what objects we found
+        try:
+            if splattercast:
+                obj_debug = [f"{thing.key}(has_destination:{hasattr(thing, 'destination')})" for thing in things 
+                           if not utils.inherits_from(thing, 'evennia.objects.objects.DefaultCharacter')]
+                splattercast.msg(f"ROOM_DEBUG: Non-character objects: {obj_debug}")
+                splattercast.msg(f"ROOM_DEBUG: Final objects list: {[obj.key for obj in objects]}")
+        except:
+            pass
+        
         if objects:
             obj_names = [obj.get_display_name(looker) for obj in objects]
             lines.append(f"You see: {', '.join(obj_names)}")
