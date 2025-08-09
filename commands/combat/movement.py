@@ -811,76 +811,146 @@ class CmdJump(Command):
             self.caller.msg(f"{explosive.key} is not an explosive device.")
             return
         
-        # Check if it's armed (pin pulled)
-        if not getattr(explosive.db, "pin_pulled", False):
-            self.caller.msg(f"{explosive.key} is not armed - you cannot sacrifice yourself for an inactive explosive.")
+        # Check if someone is already jumping on this grenade
+        if getattr(explosive.ndb, "sacrifice_in_progress", False):
+            current_hero = getattr(explosive.ndb, "current_hero", "someone")
+            if hasattr(current_hero, 'key'):
+                hero_name = current_hero.key
+            else:
+                hero_name = str(current_hero)
+            self.caller.msg(f"{explosive.key} is already being heroically tackled by {hero_name}!")
             return
         
-        # Check if it has an active countdown
+        # Claim the grenade for this hero
+        explosive.ndb.sacrifice_in_progress = True
+        explosive.ndb.current_hero = self.caller
+        
+        # Determine explosive state for delayed revelation
+        is_armed = getattr(explosive.db, "pin_pulled", False)
         remaining_time = getattr(explosive.ndb, "countdown_remaining", None)
-        if remaining_time is None or remaining_time <= 0:
-            self.caller.msg(f"{explosive.key} is no longer counting down - too late for heroic sacrifice.")
-            return
+        has_active_countdown = remaining_time is not None and remaining_time > 0
         
-        splattercast.msg(f"JUMP_SACRIFICE: {self.caller.key} attempting heroic sacrifice on {explosive.key} with {remaining_time}s remaining.")
+        # Always allow the heroic leap - false heroics are part of the drama!
         
-        # Get blast damage
-        blast_damage = getattr(explosive.db, "blast_damage", 10)
+        # Always allow the heroic leap - false heroics are part of the drama!
         
-        # Heroic sacrifice: caller takes ALL damage, others take none
-        from world.combat.utils import apply_damage
-        apply_damage(self.caller, blast_damage)
+        splattercast.msg(f"JUMP_SACRIFICE: {self.caller.key} attempting heroic sacrifice on {explosive.key} (armed:{is_armed}, countdown:{remaining_time}).")
         
-        # Move caller to explosive's location and inherit ALL its proximity relationships
-        from world.combat.proximity import establish_proximity, get_proximity_list
+        # Calculate revelation timing - hybrid approach
+        if is_armed and has_active_countdown:
+            # For real grenades, use remaining time but ensure dramatic minimum
+            if remaining_time <= 2.5:
+                revelation_delay = max(remaining_time - 0.3, 0.5)  # Beat the timer with safety margin
+                splattercast.msg(f"JUMP_SACRIFICE: Using urgent timing: {revelation_delay}s (grenade: {remaining_time}s)")
+            else:
+                revelation_delay = 2.5  # Full dramatic timing for longer fuses
+                splattercast.msg(f"JUMP_SACRIFICE: Using dramatic timing: {revelation_delay}s (grenade: {remaining_time}s)")
+        else:
+            # For false heroics/duds, always use full dramatic timing
+            revelation_delay = 2.5
+            splattercast.msg(f"JUMP_SACRIFICE: Using dramatic timing for non-live explosive: {revelation_delay}s")
         
-        # Get everyone currently in proximity to the explosive
-        explosive_proximity = getattr(explosive.ndb, NDB_PROXIMITY, set())
-        if explosive_proximity:
-            for char in list(explosive_proximity):
-                if char != self.caller and hasattr(char, 'location') and char.location:
-                    establish_proximity(self.caller, char)
-                    splattercast.msg(f"JUMP_SACRIFICE_PROXIMITY: Established proximity between {self.caller.key} and {char.key}")
+        # Stop the grenade timer immediately to prevent race conditions
+        if is_armed and has_active_countdown:
+            # Cancel delay timers stored in NDB (prevent original timer from firing)
+            if hasattr(explosive.ndb, "grenade_timer"):
+                timer = getattr(explosive.ndb, "grenade_timer", None)
+                if timer:
+                    try:
+                        timer.cancel()  # Cancel the utils.delay timer
+                        splattercast.msg(f"JUMP_SACRIFICE: Cancelled original grenade timer on {explosive.key}")
+                    except:
+                        splattercast.msg(f"JUMP_SACRIFICE: Failed to cancel original grenade timer on {explosive.key}")
+                delattr(explosive.ndb, "grenade_timer")
+            
+            # Stop any timer scripts
+            for script in explosive.scripts.all():
+                if "timer" in script.key.lower() or "countdown" in script.key.lower() or "grenade" in script.key.lower():
+                    script.stop()
+                    splattercast.msg(f"JUMP_SACRIFICE: Stopped timer script {script.key} on {explosive.key}")
         
-        # Stop any active timer script on the explosive FIRST
-        timer_scripts_stopped = 0
-        for script in explosive.scripts.all():
-            if "timer" in script.key.lower() or "countdown" in script.key.lower() or "grenade" in script.key.lower():
-                script.stop()
-                timer_scripts_stopped += 1
-                splattercast.msg(f"JUMP_SACRIFICE: Stopped timer script {script.key} on {explosive.key}")
+        # Mark the hero as performing sacrifice (for movement restrictions)
+        self.caller.ndb.performing_sacrifice = True
         
-        # Cancel delay timers stored in NDB (the actual timer mechanism)
-        delay_timers_stopped = 0
-        if hasattr(explosive.ndb, "grenade_timer"):
-            timer = getattr(explosive.ndb, "grenade_timer", None)
-            if timer:
-                try:
-                    timer.cancel()  # Cancel the utils.delay timer
-                    delay_timers_stopped += 1
-                    splattercast.msg(f"JUMP_SACRIFICE: Cancelled delay timer on {explosive.key}")
-                except:
-                    splattercast.msg(f"JUMP_SACRIFICE: Failed to cancel delay timer on {explosive.key}")
-            delattr(explosive.ndb, "grenade_timer")
-        
-        # Clear explosive's timer attributes
-        if hasattr(explosive.ndb, "countdown_remaining"):
-            delattr(explosive.ndb, "countdown_remaining")
-        
-        splattercast.msg(f"JUMP_SACRIFICE: Stopped {timer_scripts_stopped} timer scripts, {delay_timers_stopped} delay timers, cleared countdown attributes")
-        
-        # Prevent chain reactions - explosive is absorbed by hero
-        explosive.delete()
-        
-        # Dramatic messaging
+        # Immediate dramatic messaging (everyone sees the heroic gesture)
         self.caller.location.msg_contents(
-            f"|R{self.caller.key} makes the ultimate sacrifice, leaping onto {self.explosive_name} and absorbing the full blast to protect everyone else!|n"
+            f"|R{self.caller.key} makes the ultimate sacrifice, leaping onto {self.explosive_name}!|n"
         )
         
-        splattercast.msg(f"JUMP_SACRIFICE_SUCCESS: {self.caller.key} absorbed {blast_damage} damage from {explosive.key}, protecting all others in proximity.")
+        # Get blast damage for real explosions
+        blast_damage = getattr(explosive.db, "blast_damage", 10)
         
-        # Skip turn if in combat (heroic actions have consequences)
-        setattr(self.caller.ndb, NDB_SKIP_ROUND, True)
+        # Delayed revelation function
+        def reveal_outcome():
+            # Clear the sacrifice lock and hero state first (important for error cases)
+            if hasattr(explosive.ndb, "sacrifice_in_progress"):
+                delattr(explosive.ndb, "sacrifice_in_progress")
+            if hasattr(explosive.ndb, "current_hero"):
+                delattr(explosive.ndb, "current_hero")
+            if hasattr(self.caller.ndb, "performing_sacrifice"):
+                delattr(self.caller.ndb, "performing_sacrifice")
+            
+            if is_armed and has_active_countdown:
+                # REAL HEROIC SACRIFICE
+                
+                # Heroic sacrifice: caller takes ALL damage, others take none
+                from world.combat.utils import apply_damage
+                apply_damage(self.caller, blast_damage)
+                
+                # Move caller to explosive's location and inherit ALL its proximity relationships
+                from world.combat.proximity import establish_proximity, get_proximity_list
+                
+                # Get everyone currently in proximity to the explosive
+                explosive_proximity = getattr(explosive.ndb, NDB_PROXIMITY, set())
+                if explosive_proximity:
+                    for char in list(explosive_proximity):
+                        if char != self.caller and hasattr(char, 'location') and char.location:
+                            establish_proximity(self.caller, char)
+                            splattercast.msg(f"JUMP_SACRIFICE_PROXIMITY: Established proximity between {self.caller.key} and {char.key}")
+                
+                # Timer cleanup (any remaining scripts/attributes)
+                timer_scripts_stopped = 0
+                for script in explosive.scripts.all():
+                    if "timer" in script.key.lower() or "countdown" in script.key.lower() or "grenade" in script.key.lower():
+                        script.stop()
+                        timer_scripts_stopped += 1
+                        splattercast.msg(f"JUMP_SACRIFICE: Stopped remaining timer script {script.key} on {explosive.key}")
+                
+                # Clear explosive's timer attributes
+                if hasattr(explosive.ndb, "countdown_remaining"):
+                    delattr(explosive.ndb, "countdown_remaining")
+                
+                splattercast.msg(f"JUMP_SACRIFICE: Final cleanup - stopped {timer_scripts_stopped} remaining scripts, cleared countdown attributes")
+                
+                # Prevent chain reactions - explosive is absorbed by hero
+                explosive.delete()
+                
+                # Revelation message - REAL sacrifice
+                self.caller.location.msg_contents(
+                    f"|R{self.explosive_name} explodes with a muffled blast - {self.caller.key} absorbed the full force to protect everyone!|n"
+                )
+                
+                splattercast.msg(f"JUMP_SACRIFICE_SUCCESS: {self.caller.key} absorbed {blast_damage} damage from {explosive.key}, protecting all others in proximity.")
+                
+                # Skip turn if in combat (heroic actions have consequences)
+                setattr(self.caller.ndb, NDB_SKIP_ROUND, True)
+                
+            elif is_armed and not has_active_countdown:
+                # Armed but expired/dud
+                self.caller.location.msg_contents(
+                    f"|y...but {self.explosive_name} makes only a small 'click' sound. It was a dud or the timer expired.|n"
+                )
+                splattercast.msg(f"JUMP_SACRIFICE_DUD: {self.caller.key} jumped on expired/dud {explosive.key}")
+                
+            else:
+                # Not armed - false heroics
+                self.caller.location.msg_contents(
+                    f"|y...but nothing happens. {self.explosive_name} wasn't even armed.|n"
+                )
+                splattercast.msg(f"JUMP_SACRIFICE_FALSE: {self.caller.key} jumped on unarmed {explosive.key} - false heroics")
+        
+        # Schedule the revelation with calculated timing
+        delay(revelation_delay, reveal_outcome)
     
     def handle_edge_descent(self):
         """Handle jumping off edge for tactical descent."""

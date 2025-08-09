@@ -46,6 +46,14 @@ class Exit(DefaultExit):
     def at_traverse(self, traversing_object, target_location):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+        # --- SACRIFICE RESTRICTION CHECK ---
+        # Check if traversing character is performing sacrifice
+        if getattr(traversing_object.ndb, "performing_sacrifice", False):
+            traversing_object.msg("|rYou cannot move while performing a heroic sacrifice!|n")
+            splattercast.msg(f"SACRIFICE BLOCK: {traversing_object.key} attempted to traverse {self.key} while performing sacrifice.")
+            return
+        # --- END SACRIFICE RESTRICTION CHECK ---
+        
         # --- AIMING LOCK CHECK ---
         aimer = getattr(traversing_object.ndb, "aimed_at_by", None)
         if aimer:
