@@ -1108,12 +1108,32 @@ class CmdJump(Command):
         
         if not sky_room:
             # No sky room configured - direct movement (fallback)
+            # Still need to apply fall damage but skip the sky room transit
             self.caller.move_to(destination, quiet=True)
             
-            # Move grappled victim along if any
+            # Move grappled victim along if any and apply bodyshield mechanics
             if grappled_victim:
                 grappled_victim.move_to(destination, quiet=True)
                 grappled_victim.msg(f"|r{self.caller.key} drags you off the {self.direction} edge!|n")
+                
+                # Apply bodyshield damage even without sky room
+                base_damage = getattr(exit_obj.db, "fall_damage", 8)
+                victim_damage = max(1, int(base_damage * 1.2))  # Victim takes 120% damage
+                grappler_damage = max(1, int(base_damage * 0.3))  # Grappler takes 30% due to bodyshield
+                
+                from world.combat.utils import apply_damage
+                apply_damage(grappled_victim, victim_damage)
+                apply_damage(self.caller, grappler_damage)
+                
+                self.caller.msg(f"|gYou use {grappled_victim.key} to cushion your fall! You take {grappler_damage} damage while they absorb the impact.|n")
+                grappled_victim.msg(f"|r{self.caller.key} uses you as a bodyshield during the fall! You take {victim_damage} damage!|n")
+                splattercast.msg(f"JUMP_EDGE_BODYSHIELD_DIRECT: {self.caller.key} used {grappled_victim.key} as bodyshield in direct fall - victim took {victim_damage}, grappler took {grappler_damage}")
+            else:
+                # Normal fall damage without bodyshield
+                base_damage = getattr(exit_obj.db, "fall_damage", 8)
+                from world.combat.utils import apply_damage
+                apply_damage(self.caller, base_damage)
+                self.caller.msg(f"|rYou land hard and take {base_damage} damage from the fall!|n")
             
             # Clear combat state if fleeing via edge
             if handler:
@@ -1136,10 +1156,15 @@ class CmdJump(Command):
         # Jumping off always succeeds - you're airborne now!
         self.caller.move_to(sky_room, quiet=True)
         
-        # Move grappled victim along if any
+        # Move grappled victim along if any, but preserve the grapple relationship
+        # for bodyshield mechanics during the fall
         if grappled_victim:
             grappled_victim.move_to(sky_room, quiet=True)
             grappled_victim.msg(f"|r{self.caller.key} drags you off the {self.direction} edge!|n")
+            # Store bodyshield state to survive combat handler cleanup
+            self.caller.ndb.bodyshield_victim = grappled_victim
+            grappled_victim.ndb.bodyshield_grappler = self.caller
+            splattercast.msg(f"JUMP_EDGE_BODYSHIELD: Preserving grapple relationship for bodyshield mechanics during fall")
         
         # Clear combat state immediately (can't fight while falling)
         if handler:
@@ -1508,6 +1533,12 @@ class CmdJump(Command):
         """Handle fall mechanics and landing after jumping off an edge."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+        # Check for preserved bodyshield relationship
+        bodyshield_victim = getattr(self.caller.ndb, "bodyshield_victim", None)
+        if bodyshield_victim and not grappled_victim:
+            grappled_victim = bodyshield_victim
+            splattercast.msg(f"JUMP_EDGE_BODYSHIELD_RESTORE: Restored bodyshield victim {grappled_victim.key} for fall damage calculation")
+        
         # Get fall distance for story counting (stories = fall difficulty multiplier)
         fall_distance = getattr(exit_obj.db, "fall_distance", None)
         if fall_distance is None:
@@ -1557,38 +1588,107 @@ class CmdJump(Command):
             if grappled_victim:
                 grappled_victim.move_to(final_destination, quiet=True)
             
-            # Apply damage based on success/failure and fall distance
-            if success:
-                # Successful landing - reduced or no damage
-                reduced_damage = max(1, actual_fall_damage // 3)  # Much less damage on success
-                if reduced_damage > 1:
+            # Apply bodyshield damage mechanics if victim present
+            if grappled_victim:
+                # Bodyshield mechanics: victim takes most damage, grappler gets protection
+                if success:
+                    # Successful landing - victim still takes more damage due to being used as cushion
+                    victim_damage = max(1, int(actual_fall_damage * 0.75))  # Victim takes 75% of damage
+                    grappler_damage = max(1, int(actual_fall_damage * 0.25))  # Grappler takes 25% due to bodyshield
+                    
                     from world.combat.utils import apply_damage
-                    apply_damage(self.caller, reduced_damage)
-                    self.caller.msg(f"|gYou land gracefully but still feel the impact! You take {reduced_damage} damage from the controlled landing.|n")
-                    if grappled_victim:
-                        apply_damage(grappled_victim, reduced_damage)
-                        grappled_victim.msg(f"|r{self.caller.key} drags you into a controlled landing, but you still take {reduced_damage} damage!|n")
-                    splattercast.msg(f"JUMP_EDGE_SUCCESS_DAMAGE: {self.caller.key} landed successfully, took {reduced_damage} controlled fall damage")
+                    apply_damage(grappled_victim, victim_damage)
+                    apply_damage(self.caller, grappler_damage)
+                    
+                    self.caller.msg(f"|gYou use {grappled_victim.key} to cushion your landing! You take {grappler_damage} damage while they absorb most of the impact.|n")
+                    grappled_victim.msg(f"|r{self.caller.key} uses you as a bodyshield during the landing! You take {victim_damage} damage from being crushed beneath them!|n")
+                    splattercast.msg(f"JUMP_EDGE_BODYSHIELD_SUCCESS: {self.caller.key} used {grappled_victim.key} as bodyshield - victim took {victim_damage}, grappler took {grappler_damage}")
                 else:
-                    self.caller.msg(f"|gYou execute a perfect landing with minimal impact!|n")
-                    if grappled_victim:
-                        grappled_victim.msg(f"|r{self.caller.key} somehow manages a perfect landing while dragging you along!|n")
-                    splattercast.msg(f"JUMP_EDGE_PERFECT: {self.caller.key} executed perfect landing, no damage")
+                    # Failed landing - even worse for victim, grappler still gets some protection
+                    victim_damage = int(actual_fall_damage * 1.5)  # Victim takes 150% damage (crushed on impact)
+                    grappler_damage = max(1, int(actual_fall_damage * 0.5))  # Grappler takes 50% due to bodyshield
+                    
+                    from world.combat.utils import apply_damage
+                    apply_damage(grappled_victim, victim_damage)
+                    apply_damage(self.caller, grappler_damage)
+                    
+                    self.caller.msg(f"|rYou crash hard but {grappled_victim.key} cushions your impact! You take {grappler_damage} damage while they are crushed beneath you!|n")
+                    grappled_victim.msg(f"|R{self.caller.key} uses you as a human cushion during the devastating crash! You take {victim_damage} damage from being crushed!|n")
+                    splattercast.msg(f"JUMP_EDGE_BODYSHIELD_CRASH: {self.caller.key} used {grappled_victim.key} as bodyshield in crash - victim took {victim_damage}, grappler took {grappler_damage}")
+                
+                # Clean up bodyshield state
+                if hasattr(self.caller.ndb, "bodyshield_victim"):
+                    del self.caller.ndb.bodyshield_victim
+                if hasattr(grappled_victim.ndb, "bodyshield_grappler"):
+                    del grappled_victim.ndb.bodyshield_grappler
+                
+                # Handle grapple relationship after fall
+                victim_alive = getattr(grappled_victim, 'hp', 10) > 0
+                grappler_alive = getattr(self.caller, 'hp', 10) > 0
+                
+                if victim_alive and grappler_alive:
+                    # Both survived - restore grapple relationship in new combat handler
+                    from world.combat.handler import CombatHandler
+                    from world.combat.grappling import establish_grapple
+                    
+                    # Create new combat handler at landing location
+                    new_handler = CombatHandler.get_or_create_handler(final_destination)
+                    
+                    # Add both characters to combat
+                    new_handler.add_combatant(self.caller)
+                    new_handler.add_combatant(grappled_victim)
+                    
+                    # Restore grapple relationship
+                    establish_grapple(new_handler, grappler=self.caller, victim=grappled_victim)
+                    
+                    self.caller.msg(f"|yYou maintain your grip on {grappled_victim.key} after the fall!|n")
+                    grappled_victim.msg(f"|r{self.caller.key} still has you in their grip after that brutal fall!|n")
+                    splattercast.msg(f"JUMP_EDGE_GRAPPLE_RESTORED: {self.caller.key} maintains grapple on {grappled_victim.key} after fall survival")
+                    
+                elif not victim_alive and grappler_alive:
+                    # Victim died from fall - grappler is holding a corpse
+                    self.caller.msg(f"|RYou feel {grappled_victim.key}'s body go limp in your grip - they didn't survive the fall!|n")
+                    splattercast.msg(f"JUMP_EDGE_VICTIM_DEATH: {grappled_victim.key} died from bodyshield fall damage - grapple relationship ended")
+                    
+                elif not grappler_alive and victim_alive:
+                    # Grappler died (somehow) - victim is free
+                    grappled_victim.msg(f"|gYou feel {self.caller.key}'s grip loosen as they succumb to their injuries!|n")
+                    splattercast.msg(f"JUMP_EDGE_GRAPPLER_DEATH: {self.caller.key} died from fall damage - grapple relationship ended")
+                    
+                else:
+                    # Both died - tragic
+                    splattercast.msg(f"JUMP_EDGE_DOUBLE_DEATH: Both {self.caller.key} and {grappled_victim.key} died from fall damage")
             else:
-                # Failed landing - full damage
-                from world.combat.utils import apply_damage
-                apply_damage(self.caller, actual_fall_damage)
-                self.caller.msg(f"|rYou crash hard into the ground after falling {actual_fall_distance} {'story' if actual_fall_distance == 1 else 'stories'}! You take {actual_fall_damage} damage!|n")
-                if grappled_victim:
-                    apply_damage(grappled_victim, actual_fall_damage)
-                    grappled_victim.msg(f"|r{self.caller.key} drags you into a devastating crash landing! You take {actual_fall_damage} damage!|n")
-                splattercast.msg(f"JUMP_EDGE_CRASH: {self.caller.key} crashed after {actual_fall_distance} story fall, took {actual_fall_damage} damage")
+                # No bodyshield - normal damage calculation
+                if success:
+                    # Successful landing - reduced damage
+                    reduced_damage = max(1, actual_fall_damage // 3)  # Much less damage on success
+                    if reduced_damage > 1:
+                        from world.combat.utils import apply_damage
+                        apply_damage(self.caller, reduced_damage)
+                        self.caller.msg(f"|gYou land gracefully but still feel the impact! You take {reduced_damage} damage from the controlled landing.|n")
+                        splattercast.msg(f"JUMP_EDGE_SUCCESS_DAMAGE: {self.caller.key} landed successfully, took {reduced_damage} controlled fall damage")
+                    else:
+                        self.caller.msg(f"|gYou execute a perfect landing with minimal impact!|n")
+                        splattercast.msg(f"JUMP_EDGE_PERFECT: {self.caller.key} executed perfect landing, no damage")
+                else:
+                    # Failed landing - full damage
+                    from world.combat.utils import apply_damage
+                    apply_damage(self.caller, actual_fall_damage)
+                    self.caller.msg(f"|rYou crash hard into the ground after falling {actual_fall_distance} {'story' if actual_fall_distance == 1 else 'stories'}! You take {actual_fall_damage} damage!|n")
+                    splattercast.msg(f"JUMP_EDGE_CRASH: {self.caller.key} crashed after {actual_fall_distance} story fall, took {actual_fall_damage} damage")
             
             # Arrival messages
-            if success:
-                self.caller.location.msg_contents(f"|g{self.caller.key} lands with athletic grace from above!|n", exclude=[self.caller])
+            if grappled_victim:
+                if success:
+                    self.caller.location.msg_contents(f"|g{self.caller.key} lands with {grappled_victim.key} crushed beneath them!|n", exclude=[self.caller, grappled_victim])
+                else:
+                    self.caller.location.msg_contents(f"|r{self.caller.key} crashes down from above with {grappled_victim.key} taking the brunt of the impact!|n", exclude=[self.caller, grappled_victim])
             else:
-                self.caller.location.msg_contents(f"|r{self.caller.key} crashes down from above with a bone-jarring impact!|n", exclude=[self.caller])
+                if success:
+                    self.caller.location.msg_contents(f"|g{self.caller.key} lands with athletic grace from above!|n", exclude=[self.caller])
+                else:
+                    self.caller.location.msg_contents(f"|r{self.caller.key} crashes down from above with a bone-jarring impact!|n", exclude=[self.caller])
             
             # Skip turn due to fall recovery
             setattr(self.caller.ndb, NDB_SKIP_ROUND, True)
