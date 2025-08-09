@@ -1183,8 +1183,8 @@ class CmdJump(Command):
         if gap_destination_id:
             # Convert gap_destination ID to actual room object
             if isinstance(gap_destination_id, (str, int)):
-                search_id = f"#{gap_destination_id}" if not str(gap_destination_id).startswith("#") else str(gap_destination_id)
-                gap_dest_rooms = exit_obj.search(search_id, global_search=True, quiet=True)
+                from evennia.utils.search import search_object
+                gap_dest_rooms = search_object(f"#{gap_destination_id}")
                 destination = gap_dest_rooms[0] if gap_dest_rooms else exit_obj.destination
             else:
                 destination = gap_destination_id  # Already an object
@@ -1247,22 +1247,15 @@ class CmdJump(Command):
         sky_room_id = exit_obj.db.sky_room
         sky_room = None
         
-        # Debug logging
-        splattercast.msg(f"DEBUG_SKY: sky_room_id={sky_room_id}, type={type(sky_room_id)}")
-        
         if sky_room_id:
             # Convert sky_room ID to actual room object
             if isinstance(sky_room_id, (str, int)):
                 # Use Evennia's search_object to find by dbref
                 from evennia.utils.search import search_object
-                splattercast.msg(f"DEBUG_SKY: searching for dbref {sky_room_id}")
                 sky_rooms = search_object(f"#{sky_room_id}")
-                splattercast.msg(f"DEBUG_SKY: search results: {sky_rooms}")
                 sky_room = sky_rooms[0] if sky_rooms else None
             else:
                 sky_room = sky_room_id  # Already an object
-        
-        splattercast.msg(f"DEBUG_SKY: final sky_room={sky_room}")
         
         if not sky_room:
             # Fallback: direct movement if no sky room configured
