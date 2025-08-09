@@ -842,15 +842,21 @@ class CmdJump(Command):
                     establish_proximity(self.caller, char)
                     splattercast.msg(f"JUMP_SACRIFICE_PROXIMITY: Established proximity between {self.caller.key} and {char.key}")
         
-        # Clear explosive's timer and remove it
+        # Stop any active timer script on the explosive FIRST
+        timer_scripts_stopped = 0
+        for script in explosive.scripts.all():
+            if "timer" in script.key.lower() or "countdown" in script.key.lower() or "grenade" in script.key.lower():
+                script.stop()
+                timer_scripts_stopped += 1
+                splattercast.msg(f"JUMP_SACRIFICE: Stopped timer script {script.key} on {explosive.key}")
+        
+        # Clear explosive's timer attributes
         if hasattr(explosive.ndb, "countdown_remaining"):
             delattr(explosive.ndb, "countdown_remaining")
+        if hasattr(explosive.ndb, "grenade_timer"):
+            delattr(explosive.ndb, "grenade_timer")
         
-        # Stop any active timer script on the explosive
-        for script in explosive.scripts.all():
-            if "timer" in script.key.lower() or "countdown" in script.key.lower():
-                script.stop()
-                splattercast.msg(f"JUMP_SACRIFICE: Stopped timer script {script.key} on {explosive.key}")
+        splattercast.msg(f"JUMP_SACRIFICE: Stopped {timer_scripts_stopped} timer scripts, cleared countdown attributes")
         
         # Prevent chain reactions - explosive is absorbed by hero
         explosive.delete()
