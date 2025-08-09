@@ -11,7 +11,7 @@ These commands handle the tactical movement aspects of combat,
 allowing players to control distance and positioning strategically.
 """
 
-from evennia import Command
+from evennia import Command, search_object
 from evennia.utils.utils import inherits_from, delay
 from evennia import create_object
 from random import choice
@@ -1090,17 +1090,24 @@ class CmdJump(Command):
                     self.caller.msg(f"You cannot jump while {grappler_obj.key} is grappling you!")
                     return
         
-        # Edge descent is tactical - requires Motorics check for safe landing
-        caller_motorics = get_numeric_stat(self.caller, "motorics")
-        edge_difficulty = getattr(exit_obj.db, "edge_difficulty", 8)  # Default moderate difficulty
+        # Edge jumping always succeeds at getting off the edge - you're committed!
+        # The skill check happens during the fall/landing phase
         
-        motorics_roll, _, _ = standard_roll(caller_motorics)
-        success = motorics_roll >= edge_difficulty
+        # Get sky room for the fall transit
+        sky_room_id = exit_obj.db.sky_room
+        sky_room = None
         
-        splattercast.msg(f"JUMP_EDGE_DESCENT: {self.caller.key} motorics:{motorics_roll} vs difficulty:{edge_difficulty}, success:{success}")
+        if sky_room_id:
+            # Use global search to find sky room by dbref
+            search_results = search_object(f"#{sky_room_id}")
+            if search_results:
+                sky_room = search_results[0]
+                splattercast.msg(f"JUMP_EDGE_SKY: Found sky room {sky_room.key} (#{sky_room_id})")
+            else:
+                splattercast.msg(f"JUMP_EDGE_NO_SKY: Could not find sky room #{sky_room_id}")
         
-        if success:
-            # Successful descent
+        if not sky_room:
+            # No sky room configured - direct movement (fallback)
             self.caller.move_to(destination, quiet=True)
             
             # Move grappled victim along if any
@@ -1122,18 +1129,43 @@ class CmdJump(Command):
             check_rigged_grenade(self.caller, exit_obj)
             check_auto_defuse(self.caller)
             
-            # Success messages
             self.caller.msg(f"|gYou successfully leap from the {self.direction} edge and land safely in {destination.key}!|n")
-            self.caller.location.msg_contents(f"|y{self.caller.key} arrives with a tactical leap from above.|n", exclude=[self.caller])
-            
-            # Message the room they left
-            if hasattr(self.caller, 'previous_location') and self.caller.previous_location:
-                self.caller.previous_location.msg_contents(f"|y{self.caller.key} leaps off the {self.direction} edge!|n")
-            
             splattercast.msg(f"JUMP_EDGE_SUCCESS: {self.caller.key} successfully descended via {self.direction} edge to {destination.key}")
-        else:
-            # Failed descent - potential fall damage
-            self.handle_fall_failure(exit_obj, destination, "edge descent", grappled_victim)
+            return
+        
+        # Jumping off always succeeds - you're airborne now!
+        self.caller.move_to(sky_room, quiet=True)
+        
+        # Move grappled victim along if any
+        if grappled_victim:
+            grappled_victim.move_to(sky_room, quiet=True)
+            grappled_victim.msg(f"|r{self.caller.key} drags you off the {self.direction} edge!|n")
+        
+        # Clear combat state immediately (can't fight while falling)
+        if handler:
+            handler.remove_combatant(self.caller)
+            if grappled_victim:
+                handler.remove_combatant(grappled_victim)
+        
+        # Clear aim states
+        clear_aim_state(self.caller)
+        
+        # Auto-defuse check in sky room
+        from commands.CmdThrow import check_auto_defuse
+        check_auto_defuse(self.caller)
+        
+        # Initial jump message - you always make it off the edge
+        self.caller.msg(f"|yYou leap from the {self.direction} edge and are now falling through the air!|n")
+        
+        # Message the room they left
+        original_location = self.caller.location
+        if hasattr(self.caller, 'previous_location') and self.caller.previous_location:
+            self.caller.previous_location.msg_contents(f"|y{self.caller.key} leaps off the {self.direction} edge!|n")
+        
+        splattercast.msg(f"JUMP_EDGE_AIRBORNE: {self.caller.key} successfully jumped off {self.direction} edge, now falling in {sky_room.key}")
+        
+        # Now handle the fall and landing mechanics
+        self.handle_edge_fall_and_landing(exit_obj, destination, grappled_victim)
     
     def handle_gap_jump(self):
         """Handle jumping across gap between same-level areas."""
@@ -1183,7 +1215,6 @@ class CmdJump(Command):
         if gap_destination_id:
             # Convert gap_destination ID to actual room object
             if isinstance(gap_destination_id, (str, int)):
-                from evennia.utils.search import search_object
                 gap_dest_rooms = search_object(f"#{gap_destination_id}")
                 destination = gap_dest_rooms[0] if gap_dest_rooms else exit_obj.destination
             else:
@@ -1251,7 +1282,6 @@ class CmdJump(Command):
             # Convert sky_room ID to actual room object
             if isinstance(sky_room_id, (str, int)):
                 # Use Evennia's search_object to find by dbref
-                from evennia.utils.search import search_object
                 sky_rooms = search_object(f"#{sky_room_id}")
                 sky_room = sky_rooms[0] if sky_rooms else None
             else:
@@ -1416,3 +1446,95 @@ class CmdJump(Command):
         
         # Fallback: Use intended destination (soft landing)
         return intended_destination
+
+    def handle_edge_fall_and_landing(self, exit_obj, destination, grappled_victim=None):
+        """Handle fall mechanics and landing after jumping off an edge."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Get fall distance for story counting (stories = fall difficulty multiplier)
+        fall_distance = getattr(exit_obj.db, "fall_distance", 1)  # Default 1 story
+        base_edge_difficulty = getattr(exit_obj.db, "edge_difficulty", 8)  # Base difficulty
+        
+        # Calculate landing difficulty based on fall distance
+        # Each story adds difficulty - falling farther = harder to land safely
+        landing_difficulty = base_edge_difficulty + (fall_distance * 2)  # +2 per story
+        
+        # Get fall damage (scaled by fall distance)
+        base_fall_damage = getattr(exit_obj.db, "fall_damage", 8)  # Base damage
+        fall_damage = base_fall_damage * fall_distance  # Scale with distance
+        
+        splattercast.msg(f"JUMP_EDGE_FALL: {self.caller.key} falling {fall_distance} stories, landing difficulty:{landing_difficulty}, potential damage:{fall_damage}")
+        
+        # Short delay for fall time (more dramatic with distance)
+        fall_time = max(1, fall_distance * 0.5)  # 0.5 seconds per story
+        
+        def handle_landing():
+            # Landing skill check - Motorics vs scaled difficulty
+            caller_motorics = get_numeric_stat(self.caller, "motorics")
+            motorics_roll, _, _ = standard_roll(caller_motorics)
+            success = motorics_roll >= landing_difficulty
+            
+            splattercast.msg(f"JUMP_EDGE_LANDING: {self.caller.key} motorics:{motorics_roll} vs difficulty:{landing_difficulty}, success:{success}")
+            
+            # Get the intended destination room
+            final_destination = destination
+            
+            # Check if there's a specific fall room for failures
+            if not success:
+                fall_room_id = getattr(exit_obj.db, "fall_room", None)
+                if fall_room_id:
+                    if isinstance(fall_room_id, (str, int)):
+                        fall_rooms = search_object(f"#{fall_room_id}")
+                        if fall_rooms:
+                            final_destination = fall_rooms[0]
+                            splattercast.msg(f"JUMP_EDGE_FALL_ROOM: {self.caller.key} falling to designated fall room {final_destination.key}")
+            
+            # Move to final destination
+            self.caller.move_to(final_destination, quiet=True)
+            
+            # Move grappled victim too if any
+            if grappled_victim:
+                grappled_victim.move_to(final_destination, quiet=True)
+            
+            # Apply damage based on success/failure and fall distance
+            if success:
+                # Successful landing - reduced or no damage
+                reduced_damage = max(1, fall_damage // 3)  # Much less damage on success
+                if reduced_damage > 1:
+                    from world.combat.utils import apply_damage
+                    apply_damage(self.caller, reduced_damage)
+                    self.caller.msg(f"|gYou land gracefully but still feel the impact! You take {reduced_damage} damage from the controlled landing.|n")
+                    if grappled_victim:
+                        apply_damage(grappled_victim, reduced_damage)
+                        grappled_victim.msg(f"|r{self.caller.key} drags you into a controlled landing, but you still take {reduced_damage} damage!|n")
+                    splattercast.msg(f"JUMP_EDGE_SUCCESS_DAMAGE: {self.caller.key} landed successfully, took {reduced_damage} controlled fall damage")
+                else:
+                    self.caller.msg(f"|gYou execute a perfect landing with minimal impact!|n")
+                    if grappled_victim:
+                        grappled_victim.msg(f"|r{self.caller.key} somehow manages a perfect landing while dragging you along!|n")
+                    splattercast.msg(f"JUMP_EDGE_PERFECT: {self.caller.key} executed perfect landing, no damage")
+            else:
+                # Failed landing - full damage
+                from world.combat.utils import apply_damage
+                apply_damage(self.caller, fall_damage)
+                self.caller.msg(f"|rYou crash hard into the ground after falling {fall_distance} {'story' if fall_distance == 1 else 'stories'}! You take {fall_damage} damage!|n")
+                if grappled_victim:
+                    apply_damage(grappled_victim, fall_damage)
+                    grappled_victim.msg(f"|r{self.caller.key} drags you into a devastating crash landing! You take {fall_damage} damage!|n")
+                splattercast.msg(f"JUMP_EDGE_CRASH: {self.caller.key} crashed after {fall_distance} story fall, took {fall_damage} damage")
+            
+            # Arrival messages
+            if success:
+                self.caller.location.msg_contents(f"|g{self.caller.key} lands with athletic grace from above!|n", exclude=[self.caller])
+            else:
+                self.caller.location.msg_contents(f"|r{self.caller.key} crashes down from above with a bone-jarring impact!|n", exclude=[self.caller])
+            
+            # Skip turn due to fall recovery
+            setattr(self.caller.ndb, NDB_SKIP_ROUND, True)
+            if grappled_victim:
+                setattr(grappled_victim.ndb, NDB_SKIP_ROUND, True)
+            
+            splattercast.msg(f"JUMP_EDGE_COMPLETE: {self.caller.key} completed {fall_distance}-story edge jump to {final_destination.key}")
+        
+        # Schedule the landing after fall time
+        delay(fall_time, handle_landing)
