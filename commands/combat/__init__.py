@@ -19,7 +19,6 @@ organization and readability.
 from .core_actions import CmdAttack, CmdStop
 from .movement import CmdFlee, CmdRetreat, CmdAdvance, CmdCharge
 from .special_actions import CmdGrapple, CmdEscapeGrapple, CmdReleaseGrapple, CmdDisarm, CmdAim
-from .info_commands import CmdLook
 
 __all__ = [
     # Core actions
@@ -27,7 +26,5 @@ __all__ = [
     # Movement
     "CmdFlee", "CmdRetreat", "CmdAdvance", "CmdCharge", 
     # Special actions
-    "CmdGrapple", "CmdEscapeGrapple", "CmdReleaseGrapple", "CmdDisarm", "CmdAim",
-    # Info
-    "CmdLook"
+    "CmdGrapple", "CmdEscapeGrapple", "CmdReleaseGrapple", "CmdDisarm", "CmdAim"
 ]

@@ -21,7 +21,6 @@ from commands import CmdInventory
 from commands import CmdAdmin
 from commands.CmdSpawnMob import CmdSpawnMob
 from commands.combat.cmdset_combat import CombatCmdSet
-from commands.combat.info_commands import CmdLook
 from commands.combat.special_actions import CmdAim, CmdGrapple
 from commands.CmdThrow import CmdThrow, CmdPull, CmdCatch, CmdRig, CmdDefuse
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -47,9 +46,6 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdAdmin.CmdHeal())
         self.add(CmdAdmin.CmdPeace())
         self.add(CmdAdmin.CmdTestDeathCurtain())
-        
-        # Override default look command with enhanced one that supports aiming
-        self.add(CmdLook())
         
         # Add aim command for ranged combat preparation
         self.add(CmdAim())
