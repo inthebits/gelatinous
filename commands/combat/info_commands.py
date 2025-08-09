@@ -94,4 +94,11 @@ class CmdLook(default_cmds.CmdLook):
                 # Fall through to normal look behavior
         
         # Default look behavior for all other cases
-        super().func()
+        # Instead of calling super().func(), use the room's return_appearance directly
+        # to avoid duplicate exit listings from parent command
+        current_location = caller.location
+        if current_location:
+            look_string = current_location.return_appearance(caller)
+            caller.msg(look_string)
+        else:
+            caller.msg("You are floating in limbo.")

@@ -27,17 +27,10 @@ class Room(ObjectParent, DefaultRoom):
         This formats a description. It is the hook a 'look' command
         should call.
 
-        Enhanced to show flying objects during throw mechanics and custom exit display.
+        Enhanced to show flying objects during throw mechanics.
         """
-        # Get the standard appearance but without footer
-        # We'll build our own footer to avoid duplicates
-        
-        # Get basic room info (name, desc, etc.)
-        name = self.get_display_name(looker)
-        desc = self.db.desc or ""
-        
-        # Build the main appearance
-        appearance = f"{name}\n{desc}"
+        # Get the base description from the parent class
+        appearance = super().return_appearance(looker, **kwargs)
         
         # Add flying objects if any exist
         flying_objects = getattr(self.ndb, NDB_FLYING_OBJECTS, [])
@@ -47,12 +40,8 @@ class Room(ObjectParent, DefaultRoom):
                 flying_desc.append(f"|y{obj.key} is flying through the air|n")
             
             if flying_desc:
+                # Add flying objects section to room description
                 appearance += "\n\n" + "\n".join(flying_desc)
-        
-        # Add our custom footer (exits, characters, objects)
-        footer = self.get_display_footer(looker, **kwargs)
-        if footer:
-            appearance += "\n" + footer
         
         return appearance
     
