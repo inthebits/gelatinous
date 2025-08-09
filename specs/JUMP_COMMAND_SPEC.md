@@ -1,5 +1,9 @@
 # Jump Command Implementation Specification
 
+**Status: IMPLEMENTATION COMPLETE** ✅  
+**Location:** `commands/combat/movement.py` - CmdJump class  
+**Integration:** Added to combat cmdset, ready for live testing
+
 ## Overview
 The `jump` command serves two distinct heroic and tactical functions: **explosive sacrifice** to protect others from blast damage, and **tactical descent** from elevated positions via edge exits. It integrates with existing explosive mechanics and introduces new vertical combat positioning.
 
@@ -138,18 +142,72 @@ def jump_on_explosive(caller, explosive):
 
 #### Edge Exit Implementation
 
+#### Sky Room System (Pre-existing Architecture)
+
+**Philosophy**: Sky rooms are permanent world features, not temporary objects. This prepares for future XYZ coordinate systems and flying vehicle mechanics.
+
+**Room Lookup Strategy**:
+1. **Tagged rooms**: Sky rooms tagged with `sky_{origin_id}_{destination_id}`
+2. **Property-based**: Sky rooms with `db.origin_room` and `db.destination_room` properties
+3. **Bidirectional**: Sky rooms that work for both directions of travel
+4. **Fallback**: Direct movement if no sky room configured (graceful degradation)
+
+**Fall Room Strategy**:
+1. **Exit-specified**: `exit.db.fall_room` points to specific crash site
+2. **Tagged rooms**: Fall rooms tagged with `fall_room_{destination_id}`
+3. **Dedicated crash sites**: Rooms with `db.is_fall_room = True` near destination
+4. **Fallback**: Use intended destination for soft landing
+
+**Future XYZ Integration**:
+- Sky rooms become normal traversable rooms at elevated coordinates
+- Flying characters/vehicles use regular movement through sky rooms
+- Jump mechanics become special case of general aerial movement
+- No dynamic creation/deletion required
+
+**Builder Workflow**:
+```python
+# Create sky room between rooftops
+sky_room = create_object("typeclasses.rooms.Room", key="Sky above Downtown")
+sky_room.tags.add("sky_room", category="room_type")
+sky_room.db.origin_room = rooftop_a
+sky_room.db.destination_room = rooftop_b
+sky_room.db.desc = "You soar through the air between towering buildings..."
+
+# Create fall room for failures
+crash_site = create_object("typeclasses.rooms.Room", key="Alley Crash Site")
+crash_site.tags.add(f"fall_room_{rooftop_b.id}")
+crash_site.db.is_fall_room = True
+
+# Configure gap exit
+gap_exit.db.is_gap = True
+gap_exit.db.gap_difficulty = 10
+gap_exit.db.fall_room = crash_site
+```
+
 #### Exit Property System
 ```python
 # Exit object properties for edge designation
 exit.db.is_edge = True
-exit.db.edge_type = "rooftop"  # Optional categorization
-exit.db.height_advantage = 2  # Combat bonus (future use)
+exit.db.edge_type = "rooftop"     # Optional categorization
+exit.db.edge_difficulty = 8       # Motorics check difficulty (1-20 scale)
+exit.db.fall_damage = 8           # Damage for failed edge descent
 
 # Gap jump properties (can combine with is_edge)
 exit.db.is_gap = True
-exit.db.gap_difficulty = 3    # Jump difficulty (1-5 scale)
-exit.db.gap_distance = "wide" # Descriptive distance category
-exit.db.failure_room = None   # Fall room destination for failed jumps
+exit.db.gap_difficulty = 10       # Higher difficulty for gap jumps
+exit.db.gap_distance = "wide"     # Descriptive distance category
+exit.db.fall_distance = 2         # Rooms fallen for gap jump failures
+exit.db.fall_room = room_obj       # Specific fall destination (optional)
+
+# Sky room properties (pre-existing rooms)
+sky_room.db.is_sky_room = True     # Marks transit-only sky rooms
+sky_room.db.origin_room = room1    # Where gap jump originates
+sky_room.db.destination_room = room2  # Where gap jump lands
+sky_room.tags.add("sky_room", category="room_type")  # For lookup
+
+# Fall room properties
+fall_room.db.is_fall_room = True   # Marks crash landing sites
+fall_room.tags.add(f"fall_room_{destination.id}")  # For destination-specific falls
 
 # 3D Room Structure Example:
 # Rooftop (origin) --east--> Sky Room (transit only) --east--> Adjacent Rooftop (destination)

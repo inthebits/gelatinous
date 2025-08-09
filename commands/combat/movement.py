@@ -12,7 +12,8 @@ allowing players to control distance and positioning strategically.
 """
 
 from evennia import Command
-from evennia.utils.utils import inherits_from
+from evennia.utils.utils import inherits_from, delay
+from evennia import create_object
 from random import choice
 from world.combat.handler import get_or_create_combat
 from world.combat.constants import COMBAT_SCRIPT_KEY
@@ -29,7 +30,7 @@ from world.combat.constants import (
     MSG_ADVANCE_NOT_IN_COMBAT, MSG_ADVANCE_COMBAT_DATA_MISSING, MSG_ADVANCE_NO_TARGET, MSG_ADVANCE_SELF_TARGET,
     MSG_CHARGE_NOT_IN_COMBAT, MSG_CHARGE_COMBAT_DATA_MISSING, MSG_CHARGE_NO_TARGET, MSG_CHARGE_SELF_TARGET,
     MSG_CHARGE_FAILED_PENALTY,
-    DEBUG_PREFIX_FLEE, DEBUG_PREFIX_RETREAT, DEBUG_PREFIX_ADVANCE, DEBUG_PREFIX_CHARGE,
+    DEBUG_PREFIX_FLEE, DEBUG_PREFIX_RETREAT, DEBUG_PREFIX_ADVANCE, DEBUG_PREFIX_CHARGE, DEBUG_PREFIX_JUMP,
     DEBUG_FAILSAFE, DEBUG_SUCCESS, DEBUG_FAIL, DEBUG_ERROR,
     NDB_PROXIMITY, NDB_SKIP_ROUND, SPLATTERCAST_CHANNEL,
     COMBAT_ACTION_RETREAT, MSG_RETREAT_PREPARE, MSG_RETREAT_QUEUE_SUCCESS,
@@ -705,3 +706,482 @@ class CmdCharge(Command):
         # Ensure combat handler is active
         if handler and not handler.is_active:
             handler.start()
+
+
+class CmdJump(Command):
+    """
+    Perform heroic explosive sacrifice or tactical descent/gap jumping.
+
+    Usage:
+      jump on <explosive>           # Heroic sacrifice - absorb explosive damage
+      jump off <direction> edge     # Tactical descent from elevated position  
+      jump across <direction> edge  # Horizontal leap across gaps at same level
+
+    Examples:
+      jump on grenade              # Absorb grenade blast to protect others
+      jump off north edge          # Descend from rooftop/balcony to north
+      jump across east edge        # Leap across gap to the east
+
+    The jump command serves heroic and tactical functions. Jumping on explosives
+    provides complete protection to others in proximity at the cost of taking all
+    damage yourself. Edge jumping allows vertical descent from elevated positions
+    or horizontal gap crossing with risk/reward mechanics.
+
+    All edge jumps require Motorics skill checks and may result in falling if failed.
+    Explosive sacrifice is instant and always succeeds but consumes your life for others.
+    """
+    
+    key = "jump"
+    locks = "cmd:all()"
+    help_category = "Combat"
+    
+    def parse(self):
+        """Parse jump command with syntax detection."""
+        self.args = self.args.strip()
+        
+        # Initialize parsing results
+        self.explosive_name = None
+        self.direction = None
+        self.jump_type = None  # 'on_explosive', 'off_edge', 'across_gap'
+        
+        if not self.args:
+            return
+        
+        # Parse for "on" keyword - explosive sacrifice
+        if self.args.startswith("on "):
+            parts = self.args.split(" ", 1)
+            if len(parts) == 2:
+                self.explosive_name = parts[1].strip()
+                self.jump_type = "on_explosive"
+                return
+        
+        # Parse for "off" keyword - tactical descent
+        if self.args.startswith("off "):
+            parts = self.args.split(" ", 1)
+            if len(parts) == 2:
+                direction_part = parts[1].strip()
+                if direction_part.endswith(" edge"):
+                    self.direction = direction_part[:-5].strip()  # Remove " edge"
+                    self.jump_type = "off_edge"
+                    return
+        
+        # Parse for "across" keyword - gap jumping
+        if self.args.startswith("across "):
+            parts = self.args.split(" ", 1)
+            if len(parts) == 2:
+                direction_part = parts[1].strip()
+                if direction_part.endswith(" edge"):
+                    self.direction = direction_part[:-5].strip()  # Remove " edge"
+                    self.jump_type = "across_gap"
+                    return
+    
+    def func(self):
+        """Execute the jump command."""
+        if not self.args:
+            self.caller.msg("Jump how? Use 'jump on <explosive>', 'jump off <direction> edge', or 'jump across <direction> edge'.")
+            return
+        
+        if self.jump_type == "on_explosive":
+            self.handle_explosive_sacrifice()
+        elif self.jump_type == "off_edge":
+            self.handle_edge_descent()
+        elif self.jump_type == "across_gap":
+            self.handle_gap_jump()
+        else:
+            self.caller.msg("Invalid jump syntax. Use 'jump on <explosive>', 'jump off <direction> edge', or 'jump across <direction> edge'.")
+    
+    def handle_explosive_sacrifice(self):
+        """Handle jumping on explosive for heroic sacrifice."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        if not self.explosive_name:
+            self.caller.msg("Jump on what explosive?")
+            return
+        
+        # Find explosive in current room
+        explosive = self.caller.search(self.explosive_name, location=self.caller.location, quiet=True)
+        if not explosive:
+            self.caller.msg(f"You don't see '{self.explosive_name}' here.")
+            return
+        
+        explosive = explosive[0]  # Take first match
+        
+        # Validate it's an explosive
+        if not getattr(explosive.db, "is_explosive", False):
+            self.caller.msg(f"{explosive.key} is not an explosive device.")
+            return
+        
+        # Check if it's armed (pin pulled)
+        if not getattr(explosive.db, "pin_pulled", False):
+            self.caller.msg(f"{explosive.key} is not armed - you cannot sacrifice yourself for an inactive explosive.")
+            return
+        
+        # Check if it has an active countdown
+        remaining_time = getattr(explosive.ndb, "countdown_remaining", None)
+        if remaining_time is None or remaining_time <= 0:
+            self.caller.msg(f"{explosive.key} is no longer counting down - too late for heroic sacrifice.")
+            return
+        
+        splattercast.msg(f"JUMP_SACRIFICE: {self.caller.key} attempting heroic sacrifice on {explosive.key} with {remaining_time}s remaining.")
+        
+        # Get blast damage
+        blast_damage = getattr(explosive.db, "blast_damage", 10)
+        
+        # Heroic sacrifice: caller takes ALL damage, others take none
+        from world.combat.utils import apply_damage
+        apply_damage(self.caller, blast_damage)
+        
+        # Move caller to explosive's location and inherit ALL its proximity relationships
+        from world.combat.proximity import establish_proximity, get_proximity_list
+        
+        # Get everyone currently in proximity to the explosive
+        explosive_proximity = getattr(explosive.ndb, NDB_PROXIMITY, set())
+        if explosive_proximity:
+            for char in list(explosive_proximity):
+                if char != self.caller and hasattr(char, 'location') and char.location:
+                    establish_proximity(self.caller, char)
+                    splattercast.msg(f"JUMP_SACRIFICE_PROXIMITY: Established proximity between {self.caller.key} and {char.key}")
+        
+        # Clear explosive's timer and remove it
+        if hasattr(explosive.ndb, "countdown_remaining"):
+            delattr(explosive.ndb, "countdown_remaining")
+        
+        # Stop any active timer script on the explosive
+        for script in explosive.scripts.all():
+            if "timer" in script.key.lower() or "countdown" in script.key.lower():
+                script.stop()
+                splattercast.msg(f"JUMP_SACRIFICE: Stopped timer script {script.key} on {explosive.key}")
+        
+        # Prevent chain reactions - explosive is absorbed by hero
+        explosive.delete()
+        
+        # Dramatic messaging
+        self.caller.location.msg_contents(
+            f"|R{self.caller.key} makes the ultimate sacrifice, leaping onto {self.explosive_name} and absorbing the full blast to protect everyone else!|n"
+        )
+        
+        splattercast.msg(f"JUMP_SACRIFICE_SUCCESS: {self.caller.key} absorbed {blast_damage} damage from {explosive.key}, protecting all others in proximity.")
+        
+        # Skip turn if in combat (heroic actions have consequences)
+        setattr(self.caller.ndb, NDB_SKIP_ROUND, True)
+    
+    def handle_edge_descent(self):
+        """Handle jumping off edge for tactical descent."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        if not self.direction:
+            self.caller.msg("Jump off which direction?")
+            return
+        
+        # Find exit in the specified direction
+        exit_obj = self.find_edge_exit(self.direction)
+        if not exit_obj:
+            return
+        
+        # Validate it's an edge
+        if not getattr(exit_obj.db, "is_edge", False):
+            self.caller.msg(f"The {self.direction} exit is not an edge you can jump from.")
+            return
+        
+        destination = exit_obj.destination
+        if not destination:
+            self.caller.msg(f"The {self.direction} edge doesn't lead anywhere safe to land.")
+            return
+        
+        # Check if caller is grappled (can't jump while grappled)
+        handler = getattr(self.caller.ndb, "combat_handler", None)
+        if handler:
+            caller_entry = next((e for e in getattr(handler.db, "combatants", []) if e.get("char") == self.caller), None)
+            if caller_entry:
+                grappler_obj = handler.get_grappled_by_obj(caller_entry)
+                if grappler_obj:
+                    self.caller.msg(f"You cannot jump while {grappler_obj.key} is grappling you!")
+                    return
+        
+        # Edge descent is tactical - requires Motorics check for safe landing
+        caller_motorics = get_numeric_stat(self.caller, "motorics")
+        edge_difficulty = getattr(exit_obj.db, "edge_difficulty", 8)  # Default moderate difficulty
+        
+        motorics_roll, _, _ = standard_roll(caller_motorics)
+        success = motorics_roll >= edge_difficulty
+        
+        splattercast.msg(f"JUMP_EDGE_DESCENT: {self.caller.key} motorics:{motorics_roll} vs difficulty:{edge_difficulty}, success:{success}")
+        
+        if success:
+            # Successful descent
+            self.caller.move_to(destination, quiet=True)
+            
+            # Clear combat state if fleeing via edge
+            if handler:
+                handler.remove_combatant(self.caller)
+            
+            # Clear aim states
+            clear_aim_state(self.caller)
+            
+            # Check for rigged grenades at destination
+            from commands.CmdThrow import check_rigged_grenade, check_auto_defuse
+            check_rigged_grenade(self.caller, exit_obj)
+            check_auto_defuse(self.caller)
+            
+            # Success messages
+            self.caller.msg(f"|gYou successfully leap from the {self.direction} edge and land safely in {destination.key}!|n")
+            self.caller.location.msg_contents(f"|y{self.caller.key} arrives with a tactical leap from above.|n", exclude=[self.caller])
+            
+            # Message the room they left
+            if hasattr(self.caller, 'previous_location') and self.caller.previous_location:
+                self.caller.previous_location.msg_contents(f"|y{self.caller.key} leaps off the {self.direction} edge!|n")
+            
+            splattercast.msg(f"JUMP_EDGE_SUCCESS: {self.caller.key} successfully descended via {self.direction} edge to {destination.key}")
+        else:
+            # Failed descent - potential fall damage
+            self.handle_fall_failure(exit_obj, destination, "edge descent")
+    
+    def handle_gap_jump(self):
+        """Handle jumping across gap between same-level areas."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        if not self.direction:
+            self.caller.msg("Jump across which direction?")
+            return
+        
+        # Find exit in the specified direction
+        exit_obj = self.find_edge_exit(self.direction)
+        if not exit_obj:
+            return
+        
+        # Validate it's a gap
+        if not getattr(exit_obj.db, "is_gap", False):
+            self.caller.msg(f"The {self.direction} exit is not a gap you can jump across.")
+            return
+        
+        destination = exit_obj.destination
+        if not destination:
+            self.caller.msg(f"The {self.direction} gap doesn't lead anywhere safe to land.")
+            return
+        
+        # Check if caller is grappled (can't jump while grappled)
+        handler = getattr(self.caller.ndb, "combat_handler", None)
+        if handler:
+            caller_entry = next((e for e in getattr(handler.db, "combatants", []) if e.get("char") == self.caller), None)
+            if caller_entry:
+                grappler_obj = handler.get_grappled_by_obj(caller_entry)
+                if grappler_obj:
+                    self.caller.msg(f"You cannot jump while {grappler_obj.key} is grappling you!")
+                    return
+        
+        # Gap jumping requires Motorics check vs gap difficulty
+        caller_motorics = get_numeric_stat(self.caller, "motorics")
+        gap_difficulty = getattr(exit_obj.db, "gap_difficulty", 10)  # Default hard difficulty
+        
+        motorics_roll, _, _ = standard_roll(caller_motorics)
+        success = motorics_roll >= gap_difficulty
+        
+        splattercast.msg(f"JUMP_GAP: {self.caller.key} motorics:{motorics_roll} vs difficulty:{gap_difficulty}, success:{success}")
+        
+        if success:
+            # Successful gap jump
+            self.execute_successful_gap_jump(exit_obj, destination)
+        else:
+            # Failed gap jump - create sky room for transit and fall
+            self.handle_gap_jump_failure(exit_obj, destination)
+    
+    def find_edge_exit(self, direction):
+        """Find and validate an exit in the specified direction."""
+        # Search for exit by direction name
+        exit_obj = self.caller.search(direction, location=self.caller.location, quiet=True)
+        
+        if not exit_obj:
+            self.caller.msg(f"There is no exit to the {direction}.")
+            return None
+        
+        exit_obj = exit_obj[0]  # Take first match
+        
+        # Verify it's actually an exit with a destination
+        if not hasattr(exit_obj, 'destination') or not exit_obj.destination:
+            self.caller.msg(f"The {direction} exit doesn't lead anywhere.")
+            return None
+        
+        return exit_obj
+    
+    def execute_successful_gap_jump(self, exit_obj, destination):
+        """Execute a successful gap jump with sky room transit."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Find or use existing sky room for this gap
+        sky_room = self.get_sky_room_for_gap(self.caller.location, destination, self.direction)
+        if not sky_room:
+            # Fallback: direct movement if no sky room configured
+            splattercast.msg(f"JUMP_GAP_NO_SKY: No sky room configured for {self.caller.location.key} -> {destination.key}, using direct movement")
+            self.caller.move_to(destination, quiet=True)
+            self.finalize_successful_gap_jump(destination)
+            return
+        
+        # Move to sky room first (transit phase)
+        self.caller.move_to(sky_room, quiet=True)
+        
+        # Message the origin room
+        if hasattr(self.caller, 'previous_location') and self.caller.previous_location:
+            self.caller.previous_location.msg_contents(f"|y{self.caller.key} leaps across the {self.direction} gap!|n")
+        
+        # Brief sky room experience
+        self.caller.msg(f"|CYou soar through the air across the {self.direction} gap...|n")
+        
+        # Delay before landing (simulate transit time)
+        def land_successfully():
+            if self.caller.location == sky_room:
+                self.caller.move_to(destination, quiet=True)
+                self.finalize_successful_gap_jump(destination)
+        
+        # Schedule landing
+        delay(2, land_successfully)
+    
+    def finalize_successful_gap_jump(self, destination):
+        """Finalize successful gap jump with cleanup and messaging."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Clear combat state if fleeing via gap
+        handler = getattr(self.caller.ndb, "combat_handler", None)
+        if handler:
+            handler.remove_combatant(self.caller)
+        
+        # Clear aim states
+        clear_aim_state(self.caller)
+        
+        # Check for rigged grenades at destination
+        from commands.CmdThrow import check_rigged_grenade, check_auto_defuse
+        exit_obj = self.find_edge_exit(self.direction)
+        if exit_obj:
+            check_rigged_grenade(self.caller, exit_obj)
+        check_auto_defuse(self.caller)
+        
+        # Success messages
+        self.caller.msg(f"|gYou successfully leap across the gap and land safely in {destination.key}!|n")
+        self.caller.location.msg_contents(f"|y{self.caller.key} arrives with a spectacular leap from across the gap.|n", exclude=[self.caller])
+        
+        splattercast.msg(f"JUMP_GAP_SUCCESS: {self.caller.key} successfully crossed gap to {destination.key}")
+    
+    def handle_gap_jump_failure(self, exit_obj, destination):
+        """Handle failed gap jump with fall consequences."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Find or use existing sky room for this gap
+        sky_room = self.get_sky_room_for_gap(self.caller.location, destination, self.direction)
+        if not sky_room:
+            # Fallback: apply damage in current room if no sky room configured
+            splattercast.msg(f"JUMP_GAP_FAIL_NO_SKY: No sky room configured for {self.caller.location.key} -> {destination.key}, applying damage in place")
+            self.handle_fall_failure(exit_obj, destination, "gap jump")
+            return
+        
+        # Move to sky room first (failed transit)
+        self.caller.move_to(sky_room, quiet=True)
+        
+        # Message the origin room
+        if hasattr(self.caller, 'previous_location') and self.caller.previous_location:
+            self.caller.previous_location.msg_contents(f"|r{self.caller.key} attempts to leap across the {self.direction} gap but falls short!|n")
+        
+        # Failed jump experience
+        self.caller.msg(f"|rYou leap for the {self.direction} gap but don't make it far enough... you're falling!|n")
+        
+        # Find fall room (existing room, not created)
+        fall_room = self.get_fall_room_for_gap(destination, exit_obj)
+        
+        # Calculate fall damage
+        fall_distance = getattr(exit_obj.db, "fall_distance", 2)  # Default 2 rooms
+        fall_damage = fall_distance * 5  # 5 damage per room fallen
+        
+        def handle_fall_landing():
+            if self.caller.location == sky_room:
+                # Move to fall room
+                self.caller.move_to(fall_room, quiet=True)
+                
+                # Apply fall damage
+                from world.combat.utils import apply_damage
+                apply_damage(self.caller, fall_damage)
+                
+                # Clear combat state (fell out of combat)
+                handler = getattr(self.caller.ndb, "combat_handler", None)
+                if handler:
+                    handler.remove_combatant(self.caller)
+                
+                # Clear aim states
+                clear_aim_state(self.caller)
+                
+                # Failure messages
+                self.caller.msg(f"|rYou fall {fall_distance} stories and crash into {fall_room.key}, taking {fall_damage} damage!|n")
+                self.caller.location.msg_contents(f"|r{self.caller.key} crashes down from above, having failed a gap jump!|n", exclude=[self.caller])
+                
+                splattercast.msg(f"JUMP_GAP_FAIL: {self.caller.key} fell {fall_distance} rooms, took {fall_damage} damage, landed in {fall_room.key}")
+        
+        # Schedule fall landing
+        delay(2, handle_fall_landing)
+    
+    def handle_fall_failure(self, exit_obj, destination, fall_type):
+        """Handle general fall failure (for edge descent failures)."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # For edge descent failure, apply damage but stay in current room
+        fall_damage = getattr(exit_obj.db, "fall_damage", 8)  # Default moderate damage
+        
+        from world.combat.utils import apply_damage
+        apply_damage(self.caller, fall_damage)
+        
+        # Skip turn due to failed attempt
+        setattr(self.caller.ndb, NDB_SKIP_ROUND, True)
+        
+        # Failure messages
+        self.caller.msg(f"|rYou slip during your {fall_type} attempt and take {fall_damage} damage from the awkward landing!|n")
+        self.caller.location.msg_contents(f"|r{self.caller.key} slips during a {fall_type} attempt and crashes back down!|n", exclude=[self.caller])
+        
+        splattercast.msg(f"JUMP_FALL_FAIL: {self.caller.key} failed {fall_type}, took {fall_damage} damage, remained in {self.caller.location.key}")
+    
+    def get_sky_room_for_gap(self, origin, destination, direction):
+        """Get the existing sky room for this gap jump route."""
+        # Strategy 1: Look for sky room tagged with origin+destination combination
+        sky_room_tag = f"sky_{origin.id}_{destination.id}"
+        sky_rooms = origin.search(sky_room_tag, global_search=True, quiet=True)
+        if sky_rooms:
+            return sky_rooms[0]
+        
+        # Strategy 2: Look for sky room with explicit origin/destination properties
+        # This will work when builders manually create sky rooms
+        from evennia.utils.search import search_object
+        potential_sky_rooms = search_object(tag="sky_room", category="room_type")
+        for sky_room in potential_sky_rooms:
+            sky_origin = getattr(sky_room.db, "origin_room", None)
+            sky_destination = getattr(sky_room.db, "destination_room", None)
+            if sky_origin == origin and sky_destination == destination:
+                return sky_room
+        
+        # Strategy 3: Look for bidirectional sky room (works for both directions)
+        for sky_room in potential_sky_rooms:
+            sky_origin = getattr(sky_room.db, "origin_room", None)
+            sky_destination = getattr(sky_room.db, "destination_room", None)
+            if (sky_origin == origin and sky_destination == destination) or \
+               (sky_origin == destination and sky_destination == origin):
+                return sky_room
+        
+        # No sky room found - this gap doesn't have sky transit configured
+        return None
+    
+    def get_fall_room_for_gap(self, intended_destination, exit_obj):
+        """Get the fall room for a failed gap jump."""
+        # Strategy 1: Check if exit specifies a fall room
+        fall_room = getattr(exit_obj.db, "fall_room", None)
+        if fall_room and hasattr(fall_room, 'location'):
+            return fall_room
+        
+        # Strategy 2: Look for room tagged as fall room for this destination
+        fall_tag = f"fall_room_{intended_destination.id}"
+        fall_rooms = intended_destination.search(fall_tag, global_search=True, quiet=True)
+        if fall_rooms:
+            return fall_rooms[0]
+        
+        # Strategy 3: Look for dedicated crash site near destination
+        potential_fall_rooms = intended_destination.search("crash", location=intended_destination, quiet=True)
+        if potential_fall_rooms:
+            for room in potential_fall_rooms:
+                if getattr(room.db, "is_fall_room", False):
+                    return room
+        
+        # Fallback: Use intended destination (soft landing)
+        return intended_destination
