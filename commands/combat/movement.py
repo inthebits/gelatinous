@@ -1414,10 +1414,16 @@ class CmdJump(Command):
     
     def get_sky_room_for_gap(self, origin, destination, direction):
         """Get the sky room associated with this gap, checking both directions."""
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
         # First try: look for sky room on the exit from origin
         exit_obj = origin.search(direction, quiet=True)
+        splattercast.msg(f"SKY_ROOM_DEBUG: Looking for exit '{direction}' from {origin.key}, found: {exit_obj}")
+        
         if exit_obj:
             sky_room_id = getattr(exit_obj[0].db, "sky_room", None)
+            splattercast.msg(f"SKY_ROOM_DEBUG: Exit {exit_obj[0].key} has sky_room: {sky_room_id}")
+            
             if sky_room_id:
                 # Convert string/int ID to actual room object
                 if isinstance(sky_room_id, (str, int)):
@@ -1425,9 +1431,12 @@ class CmdJump(Command):
                     search_id = f"#{sky_room_id}" if not str(sky_room_id).startswith("#") else str(sky_room_id)
                     # Use player character to search for the room by dbref
                     sky_room = origin.search(search_id, global_search=True, quiet=True)
+                    splattercast.msg(f"SKY_ROOM_DEBUG: Searched for {search_id}, found: {sky_room}")
                     if sky_room:
+                        splattercast.msg(f"SKY_ROOM_DEBUG: Returning sky room {sky_room[0].key} (#{sky_room[0].id})")
                         return sky_room[0]
                 else:
+                    splattercast.msg(f"SKY_ROOM_DEBUG: Sky room ID is already an object: {sky_room_id}")
                     return sky_room_id  # Already an object
         
         # Second try: check the reverse direction from destination
@@ -1441,20 +1450,30 @@ class CmdJump(Command):
         }
         
         reverse_direction = reverse_directions.get(direction)
+        splattercast.msg(f"SKY_ROOM_DEBUG: Trying reverse direction '{reverse_direction}' from {destination.key}")
+        
         if reverse_direction:
             reverse_exit = destination.search(reverse_direction, quiet=True)
+            splattercast.msg(f"SKY_ROOM_DEBUG: Found reverse exit: {reverse_exit}")
+            
             if reverse_exit:
                 sky_room_id = getattr(reverse_exit[0].db, "sky_room", None)
+                splattercast.msg(f"SKY_ROOM_DEBUG: Reverse exit {reverse_exit[0].key} has sky_room: {sky_room_id}")
+                
                 if sky_room_id:
                     # Convert string/int ID to actual room object
                     if isinstance(sky_room_id, (str, int)):
                         search_id = f"#{sky_room_id}" if not str(sky_room_id).startswith("#") else str(sky_room_id)
                         sky_room = destination.search(search_id, global_search=True, quiet=True)
+                        splattercast.msg(f"SKY_ROOM_DEBUG: Reverse search for {search_id}, found: {sky_room}")
                         if sky_room:
+                            splattercast.msg(f"SKY_ROOM_DEBUG: Returning reverse sky room {sky_room[0].key} (#{sky_room[0].id})")
                             return sky_room[0]
                     else:
+                        splattercast.msg(f"SKY_ROOM_DEBUG: Reverse sky room ID is already an object: {sky_room_id}")
                         return sky_room_id
         
+        splattercast.msg(f"SKY_ROOM_DEBUG: No sky room found for {origin.key} -> {destination.key} direction {direction}")
         return None
     
     def get_fall_room_for_gap(self, intended_destination, exit_obj):
