@@ -45,6 +45,27 @@ class Room(ObjectParent, DefaultRoom):
         
         return appearance
     
+    def get_display_exits(self, looker, **kwargs):
+        """
+        Override the default exit display to return empty string.
+        We handle exits in get_display_footer() instead for custom categorization.
+        """
+        return ""
+    
+    def get_display_characters(self, looker, **kwargs):
+        """
+        Override the default character display to return empty string.
+        We handle characters in get_display_footer() instead.
+        """
+        return ""
+    
+    def get_display_things(self, looker, **kwargs):
+        """
+        Override the default things display to return empty string.
+        We handle objects in get_display_footer() instead.
+        """
+        return ""
+
     def get_display_footer(self, looker, **kwargs):
         """
         Get the 'footer' of the object description. This is called by return_appearance
@@ -71,7 +92,7 @@ class Room(ObjectParent, DefaultRoom):
                   if not thing.has_account and not hasattr(thing, 'destination')]
         if objects:
             obj_names = [obj.get_display_name(looker) for obj in objects]
-            lines.append(f"Objects: {', '.join(obj_names)}")
+            lines.append(f"You see: {', '.join(obj_names)}")
         
         return '\n'.join(lines) if lines else ""
     
