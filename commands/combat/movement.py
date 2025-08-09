@@ -1350,6 +1350,24 @@ class CmdJump(Command):
         # Clear aim states
         clear_aim_state(self.caller)
         
+        # Find the return edge from destination back to origin and check for rigged grenades
+        origin_room = getattr(self.caller, 'previous_location', None)
+        splattercast.msg(f"JUMP_GAP_DEBUG: Origin room: {origin_room}, destination: {destination}")
+        if origin_room:
+            # Look for edge from destination back to origin room
+            for obj in destination.contents:
+                splattercast.msg(f"JUMP_GAP_DEBUG: Checking destination content: {obj}, has destination: {hasattr(obj, 'destination')}")
+                if hasattr(obj, 'destination'):
+                    splattercast.msg(f"JUMP_GAP_DEBUG: Object {obj} destination: {obj.destination}")
+                if (hasattr(obj, 'destination') and obj.destination == origin_room):
+                    # Found return edge - check for rigged grenades
+                    splattercast.msg(f"JUMP_GAP_DEBUG: Found return edge {obj}, checking for rigged grenades")
+                    from commands.CmdThrow import check_rigged_grenade
+                    check_rigged_grenade(self.caller, obj)
+                    break
+        else:
+            splattercast.msg(f"JUMP_GAP_DEBUG: No origin room found, previous_location not set")
+        
         # Check for auto-defuse opportunities in destination room
         from commands.CmdThrow import check_auto_defuse
         check_auto_defuse(self.caller)
