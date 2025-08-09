@@ -1642,11 +1642,10 @@ class CmdJump(Command):
                     try:
                         splattercast.msg(f"JUMP_EDGE_ATTEMPTING_RESTORATION: Both {self.caller.key} and {actual_grappled_victim.key} survived, restoring grapple")
                         # Both survived - restore grapple relationship in new combat handler
-                        from world.combat.handler import CombatHandler
                         
-                        # Create new combat handler at landing location
+                        # Create new combat handler at landing location (use standalone function, not class method)
                         splattercast.msg(f"JUMP_EDGE_RESTORE_STEP1: Creating new combat handler at {final_destination}")
-                        new_handler = CombatHandler.get_or_create_handler(final_destination)
+                        new_handler = get_or_create_combat(final_destination)
                         splattercast.msg(f"JUMP_EDGE_RESTORE_STEP2: Got handler {new_handler}")
                         
                         # Add both characters to combat with initial grapple state (like room traversal)
