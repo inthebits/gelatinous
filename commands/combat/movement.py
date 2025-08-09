@@ -850,13 +850,24 @@ class CmdJump(Command):
                 timer_scripts_stopped += 1
                 splattercast.msg(f"JUMP_SACRIFICE: Stopped timer script {script.key} on {explosive.key}")
         
+        # Cancel delay timers stored in NDB (the actual timer mechanism)
+        delay_timers_stopped = 0
+        if hasattr(explosive.ndb, "grenade_timer"):
+            timer = getattr(explosive.ndb, "grenade_timer", None)
+            if timer:
+                try:
+                    timer.cancel()  # Cancel the utils.delay timer
+                    delay_timers_stopped += 1
+                    splattercast.msg(f"JUMP_SACRIFICE: Cancelled delay timer on {explosive.key}")
+                except:
+                    splattercast.msg(f"JUMP_SACRIFICE: Failed to cancel delay timer on {explosive.key}")
+            delattr(explosive.ndb, "grenade_timer")
+        
         # Clear explosive's timer attributes
         if hasattr(explosive.ndb, "countdown_remaining"):
             delattr(explosive.ndb, "countdown_remaining")
-        if hasattr(explosive.ndb, "grenade_timer"):
-            delattr(explosive.ndb, "grenade_timer")
         
-        splattercast.msg(f"JUMP_SACRIFICE: Stopped {timer_scripts_stopped} timer scripts, cleared countdown attributes")
+        splattercast.msg(f"JUMP_SACRIFICE: Stopped {timer_scripts_stopped} timer scripts, {delay_timers_stopped} delay timers, cleared countdown attributes")
         
         # Prevent chain reactions - explosive is absorbed by hero
         explosive.delete()
