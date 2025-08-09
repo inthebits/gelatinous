@@ -1360,17 +1360,17 @@ class CmdJump(Command):
         # Failed jump experience
         self.caller.msg(f"|rYou leap for the {self.direction} gap but don't make it far enough... you're falling!|n")
         
-        # Find fall room (existing room, not created)
-        fall_room = self.get_fall_room_for_gap(destination, exit_obj)
-        
         # Calculate fall damage
         fall_distance = getattr(exit_obj.db, "fall_distance", 2)  # Default 2 rooms
         fall_damage = fall_distance * 5  # 5 damage per room fallen
         
         def handle_fall_landing():
             if self.caller.location == sky_room:
-                # Move to fall room
-                self.caller.move_to(fall_room, quiet=True)
+                # Use gravity to find ground level instead of specific fall room
+                ground_room = self.follow_gravity_to_ground(sky_room)
+                
+                # Move to ground level
+                self.caller.move_to(ground_room, quiet=True)
                 
                 # Apply fall damage
                 from world.combat.utils import apply_damage
@@ -1385,10 +1385,10 @@ class CmdJump(Command):
                 clear_aim_state(self.caller)
                 
                 # Failure messages
-                self.caller.msg(f"|rYou fall {fall_distance} stories and crash into {fall_room.key}, taking {fall_damage} damage!|n")
+                self.caller.msg(f"|rYou fall {fall_distance} stories and crash into {ground_room.key}, taking {fall_damage} damage!|n")
                 self.caller.location.msg_contents(f"|r{self.caller.key} crashes down from above, having failed a gap jump!|n", exclude=[self.caller])
                 
-                splattercast.msg(f"JUMP_GAP_FAIL: {self.caller.key} fell {fall_distance} rooms, took {fall_damage} damage, landed in {fall_room.key}")
+                splattercast.msg(f"JUMP_GAP_FAIL: {self.caller.key} fell {fall_distance} rooms, took {fall_damage} damage, landed in {ground_room.key}")
         
         # Schedule fall landing
         delay(2, handle_fall_landing)
@@ -1413,7 +1413,8 @@ class CmdJump(Command):
         splattercast.msg(f"JUMP_FALL_FAIL: {self.caller.key} failed {fall_type}, took {fall_damage} damage, remained in {self.caller.location.key}")
     
     def get_sky_room_for_gap(self, origin, destination, direction):
-        """Get the sky room associated with this exit."""
+        """Get the sky room associated with this gap, checking both directions."""
+        # First try: look for sky room on the exit from origin
         exit_obj = origin.search(direction, quiet=True)
         if exit_obj:
             sky_room_id = getattr(exit_obj[0].db, "sky_room", None)
@@ -1424,9 +1425,36 @@ class CmdJump(Command):
                     search_id = f"#{sky_room_id}" if not str(sky_room_id).startswith("#") else str(sky_room_id)
                     # Use player character to search for the room by dbref
                     sky_room = origin.search(search_id, global_search=True, quiet=True)
-                    return sky_room[0] if sky_room else None
+                    if sky_room:
+                        return sky_room[0]
                 else:
                     return sky_room_id  # Already an object
+        
+        # Second try: check the reverse direction from destination
+        # Map direction to its opposite
+        reverse_directions = {
+            "north": "south", "south": "north", "east": "west", "west": "east",
+            "n": "s", "s": "n", "e": "w", "w": "e",
+            "northeast": "southwest", "ne": "sw", "southwest": "northeast", "sw": "ne",
+            "northwest": "southeast", "nw": "se", "southeast": "northwest", "se": "nw",
+            "up": "down", "u": "d", "down": "up", "d": "u"
+        }
+        
+        reverse_direction = reverse_directions.get(direction)
+        if reverse_direction:
+            reverse_exit = destination.search(reverse_direction, quiet=True)
+            if reverse_exit:
+                sky_room_id = getattr(reverse_exit[0].db, "sky_room", None)
+                if sky_room_id:
+                    # Convert string/int ID to actual room object
+                    if isinstance(sky_room_id, (str, int)):
+                        search_id = f"#{sky_room_id}" if not str(sky_room_id).startswith("#") else str(sky_room_id)
+                        sky_room = destination.search(search_id, global_search=True, quiet=True)
+                        if sky_room:
+                            return sky_room[0]
+                    else:
+                        return sky_room_id
+        
         return None
     
     def get_fall_room_for_gap(self, intended_destination, exit_obj):
