@@ -1253,10 +1253,10 @@ class CmdJump(Command):
         if sky_room_id:
             # Convert sky_room ID to actual room object
             if isinstance(sky_room_id, (str, int)):
-                search_id = f"#{sky_room_id}" if not str(sky_room_id).startswith("#") else str(sky_room_id)
-                splattercast.msg(f"DEBUG_SKY: searching for '{search_id}'")
-                # Use caller's location to search globally
-                sky_rooms = self.caller.location.search(search_id, global_search=True, quiet=True)
+                # Use Evennia's search_object to find by dbref
+                from evennia.utils.search import search_object
+                splattercast.msg(f"DEBUG_SKY: searching for dbref {sky_room_id}")
+                sky_rooms = search_object(f"#{sky_room_id}")
                 splattercast.msg(f"DEBUG_SKY: search results: {sky_rooms}")
                 sky_room = sky_rooms[0] if sky_rooms else None
             else:
