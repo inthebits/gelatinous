@@ -1565,15 +1565,28 @@ class CmdRig(Command):
 
 def check_rigged_grenade(character, exit_obj):
     """Check if character triggers a rigged grenade. Character should already be at destination."""
+    from evennia.comms.models import ChannelDB
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    
+    splattercast.msg(f"RIGGED_DEBUG: check_rigged_grenade called for {character.key} on exit {exit_obj.key}")
+    
     # Check if there's a rigged grenade on this exit
     rigged_grenade = getattr(exit_obj.db, 'rigged_grenade', None)
+    splattercast.msg(f"RIGGED_DEBUG: rigged_grenade found: {rigged_grenade}")
+    
     if not rigged_grenade:
+        splattercast.msg(f"RIGGED_DEBUG: No rigged grenade found on exit {exit_obj.key}")
         return False
     
     # Check if this character is the rigger (immunity)
     rigger = getattr(rigged_grenade.db, 'rigged_by', None)
+    splattercast.msg(f"RIGGED_DEBUG: Rigger: {rigger}, Character: {character}")
+    
     if rigger and character == rigger:
+        splattercast.msg(f"RIGGED_DEBUG: Character {character.key} is the rigger, immune to own trap")
         return False  # Rigger is immune to their own trap
+    
+    splattercast.msg(f"RIGGED_DEBUG: Triggering rigged grenade {rigged_grenade.key}!")
     
     # Trigger the rigged grenade
     character.msg(MSG_RIG_TRIGGERED.format(object=rigged_grenade.key))
