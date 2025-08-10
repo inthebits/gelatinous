@@ -151,6 +151,10 @@ class CmdAttack(Command):
             if not caller_existing_handler and not target_existing_handler:
                 establish_proximity(caller, target)
                 splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_COMBAT_INITIATION: Established proximity between {caller.key} and {target.key} for melee combat initiation.")
+            # If caller is not in combat but target is, this is JOINING existing combat - grant proximity
+            elif not caller_existing_handler and target_existing_handler:
+                establish_proximity(caller, target)
+                splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_COMBAT_JOIN: {caller.key} joins existing combat by establishing proximity with {target.key}.")
             else:
                 splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_EXISTING_COMBAT: Preserving existing proximity state. Caller handler: {caller_existing_handler.key if caller_existing_handler else 'None'}, Target handler: {target_existing_handler.key if target_existing_handler else 'None'}.")
 
