@@ -1364,6 +1364,11 @@ class CmdJump(Command):
             
             # Look for edge with the opposite direction
             for obj in destination.contents:
+                splattercast.msg(f"JUMP_GAP_DEBUG: Checking object {obj} with key '{obj.key}' for direction match")
+                if hasattr(obj, 'key') and hasattr(obj, 'destination'):
+                    splattercast.msg(f"JUMP_GAP_DEBUG: Object {obj} key matches check: {obj.key.lower() in [opposite_direction, opposite_direction[0]]}")
+                    if hasattr(obj.db, 'is_edge'):
+                        splattercast.msg(f"JUMP_GAP_DEBUG: Object {obj} is_edge: {getattr(obj.db, 'is_edge', False)}")
                 if (hasattr(obj, 'key') and hasattr(obj, 'destination') and 
                     obj.key.lower() in [opposite_direction, opposite_direction[0]] and
                     hasattr(obj.db, 'is_edge') and getattr(obj.db, 'is_edge', False)):
