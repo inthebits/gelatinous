@@ -95,7 +95,7 @@ The **G.R.I.M. Combat System** is a roleplay-focused, turn-based combat engine t
 - **`stop attacking`**: Cease aggressive actions, enter yielding state
 
 ### Movement Commands (`commands/combat/movement.py`)
-- **`flee [direction]`**: Attempt to escape combat entirely
+- **`flee`**: Attempt to escape combat entirely (once per round, instant execution)
 - **`retreat`**: Back away from melee range (same room)
 - **`advance <target>`**: Close distance for melee combat
 - **`charge <target>`**: Reckless rush attack with bonuses/penalties

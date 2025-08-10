@@ -67,7 +67,11 @@ class CmdFlee(Command):
     you will attempt to escape the current combat and leave the room.
     You cannot flee into a room where an opponent is already targeting
     you with a ranged weapon.
-    If you fail any step, you remain in place (and may skip your next combat turn if failing to flee combat).
+    
+    Flee occurs instantly but consumes your combat action. You can only
+    attempt to flee once per combat round to prevent spam.
+    
+    If you fail any step, you remain in place and skip your next combat turn.
     Cannot be used if you are currently grappled in combat.
     If you disengage from local attackers but cannot find a safe exit, you remain in combat.
     """
@@ -79,12 +83,22 @@ class CmdFlee(Command):
         caller = self.caller
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+        # Check if player has already attempted to flee this combat round
+        if hasattr(caller.ndb, "flee_attempted_this_round") and caller.ndb.flee_attempted_this_round:
+            caller.msg("|rYou have already attempted to flee this combat round! Wait for the next round.|n")
+            splattercast.msg(f"{DEBUG_PREFIX_FLEE}_COOLDOWN: {caller.key} attempted to flee but already tried this round.")
+            return
+        
         original_handler_at_flee_start = getattr(caller.ndb, "combat_handler", None)
         # This is the specific character who has an NDB-level aim lock on the caller.
         # This aimer could be in the same room or an adjacent one.
         ndb_aimer_locking_caller = getattr(caller.ndb, "aimed_at_by", None) 
 
         splattercast.msg(f"{DEBUG_PREFIX_FLEE}_DEBUG ({caller.key}): Initial Handler='{original_handler_at_flee_start.key if original_handler_at_flee_start else None}', NDB Aimer='{ndb_aimer_locking_caller.key if ndb_aimer_locking_caller else None}'")
+
+        # Set flee attempt flag to prevent spam within the same round
+        caller.ndb.flee_attempted_this_round = True
+        splattercast.msg(f"{DEBUG_PREFIX_FLEE}_ATTEMPT: {caller.key} marked as having attempted flee this round.")
 
         # --- PRE-FLEE SAFETY CHECK: PINNED BY RANGED TARGETERS IN ADJACENT ROOMS ---
         available_exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]

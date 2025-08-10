@@ -557,6 +557,11 @@ class CombatHandler(DefaultScript):
                 char.msg("|yYou skip this combat round.|n")
                 continue
 
+            # Clear flee attempt flag at start of each round
+            if hasattr(char.ndb, "flee_attempted_this_round"):
+                delattr(char.ndb, "flee_attempted_this_round")
+                splattercast.msg(f"AT_REPEAT: Cleared flee attempt flag for {char.key} at start of new round.")
+
             # START-OF-TURN NDB CLEANUP for charge flags
             if hasattr(char.ndb, "charging_vulnerability_active"):
                 splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing charging_vulnerability_active for {char.key} (was active from their own previous charge).")
