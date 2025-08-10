@@ -148,8 +148,8 @@ class DeathCurtain:
             if self.character:
                 self.character.msg(self.frames[self.current_frame])
             
-            # Optionally send to room observers (less frequently)
-            if self.location and self.current_frame % 15 == 0:
+            # Send observer message only on the first frame
+            if self.location and self.current_frame == 0:
                 observer_msg = f"|r{self.character.key} is dying...|n"
                 self.location.msg_contents(observer_msg, exclude=[self.character])
             
