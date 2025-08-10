@@ -238,11 +238,48 @@ fall_room.tags.add(f"fall_room_{destination.id}")  # For destination-specific fa
 3. Validate gap properties and difficulty
 4. Make jump success roll (Motorics stat vs gap difficulty)
 5. On success or tie: Move to destination room (flee-like action, transit through sky)
-6. On failure or critical failure: Fall to failure_room with fall damage
-7. Announce jump attempt and outcome
-8. Consume combat turn (flee-like timing)
-9. Calculate fall damage: rooms_fallen × damage_multiplier
+6. **Check for rigged grenades on landing edge** (new security integration)
+7. On failure or critical failure: Fall to failure_room with fall damage
+8. Announce jump attempt and outcome
+9. Consume combat turn (flee-like timing)
+10. Calculate fall damage: rooms_fallen × damage_multiplier
 ```
+
+#### Rigged Grenade Integration for Gap Jumps
+
+**New Security Feature**: Gap jumps now integrate with the rigged grenade system to detect and trigger traps when landing on rigged edges.
+
+**Detection Logic**:
+1. **Return edge identification**: When landing from a gap jump, identifies the return edge leading back to origin
+2. **Direction mapping**: Uses opposite direction mapping (jump north → look for south edge on landing)
+3. **Edge matching**: Checks both exit key AND aliases for proper direction matching
+4. **Rigged grenade check**: Calls existing `check_rigged_grenade` function on matched edge
+5. **Rigger immunity**: Maintains rigger immunity system (can't trigger own traps)
+
+**Technical Implementation**:
+```python
+# Find return edge by opposite direction
+opposite_direction = self.get_opposite_direction(self.direction)
+
+# Check destination contents for matching edge
+for obj in destination.contents:
+    # Match by key or aliases
+    key_matches = obj.key.lower() == opposite_direction
+    aliases_match = any(alias.lower() == opposite_direction 
+                       for alias in obj.aliases.all())
+    
+    if ((key_matches or aliases_match) and 
+        hasattr(obj.db, 'is_edge') and obj.db.is_edge):
+        # Found return edge - check for rigged grenades
+        check_rigged_grenade(self.caller, obj)
+```
+
+**Integration Points**:
+- **Uses existing rigged grenade system**: No new mechanics, leverages CmdThrow rigging
+- **Respects rigger immunity**: Riggers cannot trigger their own traps
+- **Full explosion sequence**: Pin pull, countdown, proximity, damage, cleanup
+- **Edge cleanup**: Automatically cleans up rigged grenades after triggering
+- **Debug logging**: Enhanced debug output for troubleshooting edge detection
 
 #### Room Integration
 - **Elevated rooms**: Rooms with edge exits have tactical advantage
@@ -350,6 +387,9 @@ fall_room.tags.add(f"fall_room_{destination.id}")  # For destination-specific fa
 - **Timer compatibility**: Works with existing countdown mechanics
 - **Proximity system**: Interacts with grenade proximity from throw command
 - **Chain reaction handling**: Prevents chain explosions through sacrifice
+- **Rigged grenade detection**: Gap jumps check for and trigger rigged grenades on landing edges
+- **Direction mapping system**: Uses opposite direction calculation for return edge detection
+- **Alias matching**: Enhanced edge detection that checks both exit keys and aliases
 
 ## Implementation Priority
 
@@ -405,6 +445,15 @@ jump across north    # Attempt horizontal leap
 # On failure: fall to street level or take damage
 ```
 
+### Gap Crossing with Rigged Traps
+```
+# Advanced tactical scenario - rigged edge traps
+Player A: rig grenade to s     # Rig the south edge
+Player B: jump across n edge   # Jump from opposite direction (north to south)
+# Player B lands on south edge and triggers Player A's rigged grenade
+# Rigged grenades provide area denial for gap jump landing zones
+```
+
 ### Coordinated Tactics
 ```
 # Team sniper support
@@ -438,6 +487,60 @@ Player A: jump off edge (when needed for repositioning)
 - **Clear mechanics**: Binary outcome (hero hurt, others safe)
 - **Tactical value**: Completely removes explosive threat
 - **Roleplay emphasis**: Encourages heroic character moments
+
+## Implementation Notes & Technical Details
+
+### Direction Mapping System
+Gap jump rigged grenade detection uses opposite direction mapping to find return edges:
+
+```python
+direction_map = {
+    'north': 'south', 'n': 's',
+    'south': 'north', 's': 'n', 
+    'east': 'west', 'e': 'w',
+    'west': 'east', 'w': 'e',
+    'northeast': 'southwest', 'ne': 'sw',
+    'northwest': 'southeast', 'nw': 'se',
+    'southeast': 'northwest', 'se': 'nw',
+    'southwest': 'northeast', 'sw': 'ne',
+    'up': 'down', 'u': 'd',
+    'down': 'up', 'd': 'u'
+}
+```
+
+### Edge Detection Enhancement
+Critical fix implemented for proper edge matching - exits may have different keys and aliases:
+
+```python
+# Enhanced matching logic checks both key and aliases
+key_matches = obj.key.lower() == opposite_direction
+aliases_match = any(alias.lower() == opposite_direction 
+                   for alias in obj.aliases.all())
+
+if key_matches or aliases_match:
+    # Found matching edge - proceed with rigged grenade check
+```
+
+**Why this matters**: Exit with key "south" and alias "s" will match when looking for direction "s", enabling proper rigged grenade detection on landing.
+
+### Origin Room Tracking
+Gap jumps now track origin room for proper return edge detection:
+
+```python
+def finalize_successful_gap_jump(self, destination, origin_room):
+    # Enhanced to accept origin_room parameter for rigged grenade checking
+    if origin_room:
+        opposite_direction = self.get_opposite_direction(self.direction)
+        # Look for edge that leads back to origin_room
+```
+
+### Debug Enhancement
+Comprehensive debug logging added for troubleshooting edge detection:
+- Function entry/exit logging
+- Rigged grenade presence detection  
+- Rigger immunity checking
+- Direction matching results
+- Edge detection success/failure
 
 ## Future Considerations
 
