@@ -1366,17 +1366,29 @@ class CmdJump(Command):
             for obj in destination.contents:
                 splattercast.msg(f"JUMP_GAP_DEBUG: Checking object {obj} with key '{obj.key}' for direction match")
                 if hasattr(obj, 'key') and hasattr(obj, 'destination'):
-                    splattercast.msg(f"JUMP_GAP_DEBUG: Object {obj} key matches check: {obj.key.lower() in [opposite_direction, opposite_direction[0]]}")
+                    # Check if the object's key or any of its aliases match the direction
+                    key_matches = obj.key.lower() == opposite_direction
+                    aliases_match = False
+                    if hasattr(obj, 'aliases') and obj.aliases:
+                        aliases_match = any(alias.lower() == opposite_direction for alias in obj.aliases.all())
+                    direction_matches = key_matches or aliases_match
+                    splattercast.msg(f"JUMP_GAP_DEBUG: Object {obj} direction matches check: {direction_matches} (key: {key_matches}, aliases: {aliases_match})")
                     if hasattr(obj.db, 'is_edge'):
                         splattercast.msg(f"JUMP_GAP_DEBUG: Object {obj} is_edge: {getattr(obj.db, 'is_edge', False)}")
-                if (hasattr(obj, 'key') and hasattr(obj, 'destination') and 
-                    obj.key.lower() in [opposite_direction, opposite_direction[0]] and
+                if (hasattr(obj, 'key') and hasattr(obj, 'destination') and
                     hasattr(obj.db, 'is_edge') and getattr(obj.db, 'is_edge', False)):
-                    # Found return edge - check for rigged grenades
-                    splattercast.msg(f"JUMP_GAP_DEBUG: Found return edge {obj}, checking for rigged grenades")
-                    from commands.CmdThrow import check_rigged_grenade
-                    check_rigged_grenade(self.caller, obj)
-                    break
+                    # Check if direction matches
+                    key_matches = obj.key.lower() == opposite_direction
+                    aliases_match = False
+                    if hasattr(obj, 'aliases') and obj.aliases:
+                        aliases_match = any(alias.lower() == opposite_direction for alias in obj.aliases.all())
+                    
+                    if key_matches or aliases_match:
+                        # Found return edge - check for rigged grenades
+                        splattercast.msg(f"JUMP_GAP_DEBUG: Found return edge {obj}, checking for rigged grenades")
+                        from commands.CmdThrow import check_rigged_grenade
+                        check_rigged_grenade(self.caller, obj)
+                        break
         else:
             splattercast.msg(f"JUMP_GAP_DEBUG: No origin room found, previous_location not set")
         
