@@ -1026,6 +1026,11 @@ class CombatHandler(DefaultScript):
         """
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+        # Check if target is already dead - prevents duplicate death processing
+        if target.is_dead():
+            splattercast.msg(f"ATTACK_CANCELLED: {target.key} is already dead, cancelling {attacker.key}'s attack.")
+            return
+        
         # Check if attacker is wielding a ranged weapon
         is_ranged_attack = is_wielding_ranged_weapon(attacker)
         
