@@ -1314,17 +1314,21 @@ class CmdJump(Command):
         
         if not sky_room:
             # Fallback: direct movement if no sky room configured
+            origin_room = self.caller.location
             splattercast.msg(f"JUMP_GAP_NO_SKY: No sky room configured for {self.caller.location.key} -> {destination.key}, using direct movement")
             self.caller.move_to(destination, quiet=True)
-            self.finalize_successful_gap_jump(destination)
+            self.finalize_successful_gap_jump(destination, origin_room)
             return
+        
+        # Store origin room before movement
+        origin_room = self.caller.location
         
         # Move to sky room first (transit phase)
         self.caller.move_to(sky_room, quiet=True)
         
         # Message the origin room
-        if hasattr(self.caller, 'previous_location') and self.caller.previous_location:
-            self.caller.previous_location.msg_contents(f"|y{self.caller.key} leaps across the {self.direction} gap!|n")
+        if origin_room:
+            origin_room.msg_contents(f"|y{self.caller.key} leaps across the {self.direction} gap!|n")
         
         # Brief sky room experience
         self.caller.msg(f"|CYou soar through the air across the {self.direction} gap...|n")
@@ -1333,12 +1337,12 @@ class CmdJump(Command):
         def land_successfully():
             if self.caller.location == sky_room:
                 self.caller.move_to(destination, quiet=True)
-                self.finalize_successful_gap_jump(destination)
+                self.finalize_successful_gap_jump(destination, origin_room)
         
         # Schedule landing
         delay(2, land_successfully)
     
-    def finalize_successful_gap_jump(self, destination):
+    def finalize_successful_gap_jump(self, destination, origin_room):
         """Finalize successful gap jump with cleanup and messaging."""
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
@@ -1351,7 +1355,6 @@ class CmdJump(Command):
         clear_aim_state(self.caller)
         
         # Find the return edge from destination back to origin and check for rigged grenades
-        origin_room = getattr(self.caller, 'previous_location', None)
         splattercast.msg(f"JUMP_GAP_DEBUG: Origin room: {origin_room}, destination: {destination}")
         if origin_room:
             # Look for edge from destination back to origin room
