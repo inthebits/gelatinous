@@ -418,6 +418,15 @@ MSG_GRENADE_CHAIN_TRIGGER = "The explosion triggers another nearby {grenade}!"
 THROW_FLIGHT_TIME = 2  # seconds
 
 # ===================================================================
+# COMBAT TIMING CONSTANTS
+# ===================================================================
+
+# Round timing
+COMBAT_ROUND_INTERVAL = 6  # seconds - base combat round duration
+STAGGER_DELAY_INTERVAL = 1.5  # seconds - delay between staggered attacks
+MAX_STAGGER_DELAY = 4.5  # seconds - maximum delay to ensure completion before next round
+
+# ===================================================================
 # SCRIPT & HANDLER CONSTANTS
 # ===================================================================
 

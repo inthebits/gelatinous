@@ -47,13 +47,15 @@ The **G.R.I.M. Combat System** is a roleplay-focused, turn-based combat engine t
 - **Round Structure**: Clear turn order with automatic progression
 
 #### **Round Timing**
-- **6-Second Rounds**: Each combat round represents 6 seconds of in-game time
+- **6-Second Rounds**: Each combat round represents 6 seconds of in-game time (configurable via `COMBAT_ROUND_INTERVAL`)
 - **Staggered Attacks**: Individual attacks are staggered within each round to prevent message spam
   - First attacker: Executes immediately when round begins
-  - Subsequent attackers: Delayed by 1.5 seconds each (2nd at +1.5s, 3rd at +3.0s, etc.)
-  - Maximum delay: 4.5 seconds to ensure all attacks complete before next round
+  - Subsequent attackers: Delayed by 1.5 seconds each (configurable via `STAGGER_DELAY_INTERVAL`)
+  - Maximum delay: 4.5 seconds (configurable via `MAX_STAGGER_DELAY`) to ensure all attacks complete before next round
 - **Instant Actions**: Some actions (flee, jump) bypass the round system for emergency situations
 - **Turn-Based Actions**: Most tactical actions (advance, retreat, charge, disarm) are queued for the next round
+
+**Configuration**: All timing values can be adjusted in `world/combat/constants.py` without code changes.
 
 ### Proximity-Based Engagement
 

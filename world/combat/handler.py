@@ -27,7 +27,8 @@ from .constants import (
     NDB_COMBAT_HANDLER, NDB_PROXIMITY, NDB_SKIP_ROUND,
     DEBUG_PREFIX_HANDLER, DEBUG_SUCCESS, DEBUG_FAIL, DEBUG_ERROR, DEBUG_CLEANUP,
     MSG_GRAPPLE_AUTO_ESCAPE_VIOLENT, MSG_GRAPPLE_AUTO_YIELD,
-    COMBAT_ACTION_RETREAT, COMBAT_ACTION_ADVANCE, COMBAT_ACTION_CHARGE, COMBAT_ACTION_DISARM
+    COMBAT_ACTION_RETREAT, COMBAT_ACTION_ADVANCE, COMBAT_ACTION_CHARGE, COMBAT_ACTION_DISARM,
+    COMBAT_ROUND_INTERVAL, STAGGER_DELAY_INTERVAL, MAX_STAGGER_DELAY
 )
 from .utils import (
     get_numeric_stat, log_combat_action, get_display_name_safe,
@@ -137,7 +138,7 @@ class CombatHandler(DefaultScript):
         the combatants list, round counter, and room management.
         """
         self.key = COMBAT_SCRIPT_KEY
-        self.interval = 6  # 6-second combat rounds
+        self.interval = COMBAT_ROUND_INTERVAL  # Use configurable round interval
         self.persistent = True
         
         # Initialize database attributes using constants
@@ -960,12 +961,12 @@ class CombatHandler(DefaultScript):
                 attacker_position = i
                 break
         
-        # Stagger attacks by 1.5 seconds each within the round
+        # Stagger attacks using configurable interval
         # First attacker goes immediately, subsequent attackers are delayed
-        base_delay = attacker_position * 1.5
+        base_delay = attacker_position * STAGGER_DELAY_INTERVAL
         
-        # Cap at 4.5 seconds to ensure all attacks complete before next round
-        return min(base_delay, 4.5)
+        # Cap at max delay to ensure all attacks complete before next round
+        return min(base_delay, MAX_STAGGER_DELAY)
 
     def _process_delayed_attack(self, attacker, target, attacker_entry, combatants_list):
         """
