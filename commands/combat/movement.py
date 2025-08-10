@@ -1357,12 +1357,16 @@ class CmdJump(Command):
         # Find the return edge from destination back to origin and check for rigged grenades
         splattercast.msg(f"JUMP_GAP_DEBUG: Origin room: {origin_room}, destination: {destination}")
         if origin_room:
-            # Look for edge from destination back to origin room
+            # Look for return edge in destination that would lead back toward origin
+            # For gap jumps, we need to find the edge that has the opposite direction
+            opposite_direction = self.get_opposite_direction(self.direction)
+            splattercast.msg(f"JUMP_GAP_DEBUG: Looking for return edge in direction: {opposite_direction}")
+            
+            # Look for edge with the opposite direction
             for obj in destination.contents:
-                splattercast.msg(f"JUMP_GAP_DEBUG: Checking destination content: {obj}, has destination: {hasattr(obj, 'destination')}")
-                if hasattr(obj, 'destination'):
-                    splattercast.msg(f"JUMP_GAP_DEBUG: Object {obj} destination: {obj.destination}")
-                if (hasattr(obj, 'destination') and obj.destination == origin_room):
+                if (hasattr(obj, 'key') and hasattr(obj, 'destination') and 
+                    obj.key.lower() in [opposite_direction, opposite_direction[0]] and
+                    hasattr(obj.db, 'is_edge') and getattr(obj.db, 'is_edge', False)):
                     # Found return edge - check for rigged grenades
                     splattercast.msg(f"JUMP_GAP_DEBUG: Found return edge {obj}, checking for rigged grenades")
                     from commands.CmdThrow import check_rigged_grenade
@@ -1380,6 +1384,22 @@ class CmdJump(Command):
         self.caller.location.msg_contents(f"|y{self.caller.key} arrives with a spectacular leap from across the gap.|n", exclude=[self.caller])
         
         splattercast.msg(f"JUMP_GAP_SUCCESS: {self.caller.key} successfully crossed gap to {destination.key}")
+    
+    def get_opposite_direction(self, direction):
+        """Get the opposite direction for finding return edges."""
+        direction_map = {
+            'north': 'south', 'n': 's',
+            'south': 'north', 's': 'n', 
+            'east': 'west', 'e': 'w',
+            'west': 'east', 'w': 'e',
+            'northeast': 'southwest', 'ne': 'sw',
+            'northwest': 'southeast', 'nw': 'se',
+            'southeast': 'northwest', 'se': 'nw',
+            'southwest': 'northeast', 'sw': 'ne',
+            'up': 'down', 'u': 'd',
+            'down': 'up', 'd': 'u'
+        }
+        return direction_map.get(direction.lower(), direction)
     
     def handle_gap_jump_failure(self, exit_obj, destination):
         """Handle failed gap jump with fall consequences."""
