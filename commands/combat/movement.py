@@ -1154,12 +1154,17 @@ class CmdJump(Command):
             return
         
         # Jumping off always succeeds - you're airborne now!
+        # Allow jump system to move through sky rooms
+        self.caller.ndb.jump_movement_allowed = True
         self.caller.move_to(sky_room, quiet=True)
+        del self.caller.ndb.jump_movement_allowed
         
         # Move grappled victim along if any, but preserve the grapple relationship
         # for bodyshield mechanics during the fall
         if grappled_victim:
+            grappled_victim.ndb.jump_movement_allowed = True
             grappled_victim.move_to(sky_room, quiet=True)
+            del grappled_victim.ndb.jump_movement_allowed
             grappled_victim.msg(f"|r{self.caller.key} drags you off the {self.direction} edge!|n")
             # Store bodyshield state to survive combat handler cleanup
             self.caller.ndb.bodyshield_victim = grappled_victim
@@ -1324,7 +1329,10 @@ class CmdJump(Command):
         origin_room = self.caller.location
         
         # Move to sky room first (transit phase)
+        # Allow jump system to move through sky rooms
+        self.caller.ndb.jump_movement_allowed = True
         self.caller.move_to(sky_room, quiet=True)
+        del self.caller.ndb.jump_movement_allowed
         
         # Message the origin room
         if origin_room:
@@ -1336,7 +1344,10 @@ class CmdJump(Command):
         # Delay before landing (simulate transit time)
         def land_successfully():
             if self.caller.location == sky_room:
+                # Allow jump system to move out of sky rooms
+                self.caller.ndb.jump_movement_allowed = True
                 self.caller.move_to(destination, quiet=True)
+                del self.caller.ndb.jump_movement_allowed
                 self.finalize_successful_gap_jump(destination, origin_room)
         
         # Schedule landing
@@ -1431,7 +1442,10 @@ class CmdJump(Command):
             return
         
         # Move to sky room first (failed transit)
+        # Allow jump system to move through sky rooms
+        self.caller.ndb.jump_movement_allowed = True
         self.caller.move_to(sky_room, quiet=True)
+        del self.caller.ndb.jump_movement_allowed
         
         # Message the origin room
         if hasattr(self.caller, 'previous_location') and self.caller.previous_location:
@@ -1456,7 +1470,10 @@ class CmdJump(Command):
                 actual_fall_damage = actual_fall_distance * 5  # 5 damage per room fallen
                 
                 # Move to ground level
+                # Allow jump system to move out of sky rooms during gravity fall
+                self.caller.ndb.jump_movement_allowed = True
                 self.caller.move_to(ground_room, quiet=True)
+                del self.caller.ndb.jump_movement_allowed
                 
                 # Apply fall damage
                 from world.combat.utils import apply_damage
@@ -1647,11 +1664,16 @@ class CmdJump(Command):
                             splattercast.msg(f"JUMP_EDGE_FALL_ROOM: {self.caller.key} falling to designated fall room {final_destination.key}")
             
             # Move to final destination
+            # Allow jump system to move out of sky rooms during edge descent
+            self.caller.ndb.jump_movement_allowed = True
             self.caller.move_to(final_destination, quiet=True)
+            del self.caller.ndb.jump_movement_allowed
             
             # Move grappled victim too if any
             if actual_grappled_victim:
+                actual_grappled_victim.ndb.jump_movement_allowed = True
                 actual_grappled_victim.move_to(final_destination, quiet=True)
+                del actual_grappled_victim.ndb.jump_movement_allowed
             
             # Apply bodyshield damage mechanics if victim present
             if actual_grappled_victim:

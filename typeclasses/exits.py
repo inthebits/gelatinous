@@ -46,6 +46,28 @@ class Exit(DefaultExit):
     def at_traverse(self, traversing_object, target_location):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+    def at_traverse(self, traversing_object, target_location):
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # --- SKY ROOM RESTRICTION CHECK ---
+        # Block normal traversal to/from sky rooms - these are transit-only spaces
+        # Exception: Allow jump command system to use sky rooms for aerial transit
+        current_room_is_sky = getattr(traversing_object.location.db, "is_sky_room", False)
+        target_room_is_sky = getattr(target_location.db, "is_sky_room", False)
+        is_jump_movement = getattr(traversing_object.ndb, "jump_movement_allowed", False)
+        
+        if (current_room_is_sky or target_room_is_sky) and not is_jump_movement:
+            if current_room_is_sky and target_room_is_sky:
+                traversing_object.msg(f"|rYou cannot traverse between sky rooms! Sky rooms are transit-only spaces.|n")
+            elif current_room_is_sky:
+                traversing_object.msg(f"|rYou cannot leave sky rooms through normal movement! You are falling - wait for gravity to take effect.|n")
+            elif target_room_is_sky:
+                traversing_object.msg(f"|rYou cannot enter sky rooms through normal movement! Use jump commands to access aerial transit.|n")
+            
+            splattercast.msg(f"SKY_ROOM_BLOCK: {traversing_object.key} attempted normal traversal from {traversing_object.location.key} (sky={current_room_is_sky}) to {target_location.key} (sky={target_room_is_sky}). Blocked.")
+            return  # Block traversal
+        # --- END SKY ROOM RESTRICTION CHECK ---
+        
         # --- EDGE/GAP RESTRICTION CHECK ---
         # Block normal traversal of edge and gap exits - these require jump command
         is_edge = getattr(self.db, "is_edge", False)

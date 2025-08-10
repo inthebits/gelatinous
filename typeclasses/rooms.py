@@ -93,6 +93,17 @@ class Room(ObjectParent, DefaultRoom):
             is_edge = getattr(exit_obj.db, "is_edge", False)
             is_gap = getattr(exit_obj.db, "is_gap", False)
             
+            # Check if exit leads to a sky room
+            destination = exit_obj.destination
+            destination_is_sky = False
+            if destination:
+                destination_is_sky = getattr(destination.db, "is_sky_room", False)
+            
+            # Filter out exits to sky rooms unless they're also edges/gaps
+            if destination_is_sky and not (is_edge or is_gap):
+                # Skip this exit - pure sky rooms are hidden from display
+                continue
+            
             if is_edge or is_gap:
                 # Mark gaps for special display
                 if is_gap:

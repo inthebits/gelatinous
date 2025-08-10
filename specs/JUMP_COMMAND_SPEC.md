@@ -284,13 +284,59 @@ for obj in destination.contents:
 #### Room Integration
 - **Elevated rooms**: Rooms with edge exits have tactical advantage
 - **Ground rooms**: Normal rooms accessible via edge descent
-- **Sky rooms**: Transit-only spaces for edge/gap movement (never stop here)
+- **Sky rooms**: Transit-only spaces for edge/gap movement - **restricted from normal traversal**
 - **Fall rooms**: Failure destinations with fall damage based on room count fallen
 - **3D connectivity**: Sky rooms have bidirectional exits (east sky has west return)
 - **Damage calculation**: Fall damage = rooms fallen × damage multiplier
 - **Bidirectional awareness**: People below can potentially see elevated positions
 - **Edge visibility**: Edge and gap properties visible in room descriptions (future look framework)
 - **Framework building**: Current implementation focuses on mechanics, visibility enhancements later
+
+#### Sky Room Traversal Restrictions
+
+**Philosophy**: Sky rooms are transit-only spaces that cannot be accessed through normal movement commands. This prevents bypassing the gap jump mechanics while maintaining their function as aerial transit zones.
+
+**Restriction Implementation**:
+- **Normal movement blocked**: Characters cannot use standard movement commands (n, s, e, w, up, down) to enter or exit sky rooms
+- **Jump system exempt**: Jump commands can move through sky rooms using `ndb.jump_movement_allowed` flag
+- **Visibility filtering**: Pure sky rooms are hidden from room exit displays (not shown in "Exits:" listing)
+- **Edge/gap exception**: Sky rooms that are also edges/gaps are visible but blocked by existing edge/gap restrictions
+- **Clear error messages**: Informative feedback when players attempt forbidden movement
+- **Gravity system support**: Fall mechanics work normally through sky rooms
+
+**Technical Details**:
+```python
+# In Exit.at_traverse() - sky room restriction check
+current_room_is_sky = getattr(traversing_object.location.db, "is_sky_room", False)
+target_room_is_sky = getattr(target_location.db, "is_sky_room", False)
+is_jump_movement = getattr(traversing_object.ndb, "jump_movement_allowed", False)
+
+if (current_room_is_sky or target_room_is_sky) and not is_jump_movement:
+    # Block traversal with appropriate error message
+    return
+
+# In Room.get_custom_exit_display() - visibility filtering
+destination_is_sky = getattr(exit_obj.destination.db, "is_sky_room", False)
+if destination_is_sky and not (is_edge or is_gap):
+    continue  # Skip pure sky rooms from exit display
+```
+
+**Error Messages**:
+- **Entering sky room**: "You cannot enter sky rooms through normal movement! Use jump commands to access aerial transit."
+- **Leaving sky room**: "You cannot leave sky rooms through normal movement! You are falling - wait for gravity to take effect."
+- **Between sky rooms**: "You cannot traverse between sky rooms! Sky rooms are transit-only spaces."
+
+**Visibility Behavior**:
+- **Pure sky rooms**: Completely invisible in room exit listings
+- **Sky + edge rooms**: Visible in "Edges:" section, blocked by edge restrictions
+- **Sky + gap rooms**: Visible in "Edges:" section, blocked by gap restrictions
+- **Result**: Players cannot see or access pure transit sky rooms
+
+**Jump System Integration**:
+- Jump commands temporarily set `ndb.jump_movement_allowed = True` before sky room movement
+- Flag is cleared immediately after successful movement
+- Ensures only legitimate jump mechanics can use sky rooms
+- Maintains security while allowing intended functionality
 
 ## Combat Integration
 
