@@ -809,18 +809,17 @@ class CombatHandler(DefaultScript):
                                 splattercast.msg(f"ESCAPE FAIL: {char.key} failed to escape {grappler.key}.")
                         continue
 
-            # Standard attack processing - get target and attack
+            # Standard attack processing - get target and schedule attack with staggered timing
             target = self.get_target(char)
             splattercast.msg(f"AT_REPEAT: After get_target(), {char.key} target is {target.key if target else None}")
             if target:
-                splattercast.msg(f"AT_REPEAT: About to call _process_attack({char.key}, {target.key}, ...)")
-                try:
-                    self._process_attack(char, target, current_char_combat_entry, combatants_list)
-                    splattercast.msg(f"AT_REPEAT: _process_attack completed for {char.key} -> {target.key}")
-                except Exception as e:
-                    splattercast.msg(f"AT_REPEAT: ERROR in _process_attack for {char.key} -> {target.key}: {e}")
-                    import traceback
-                    splattercast.msg(f"AT_REPEAT: Traceback: {traceback.format_exc()}")
+                # Calculate attack delay based on position in initiative order
+                attack_delay = self._calculate_attack_delay(char, initiative_order)
+                
+                splattercast.msg(f"AT_REPEAT: Scheduling attack for {char.key} -> {target.key} with {attack_delay}s delay")
+                
+                # Schedule the attack with delay to stagger combat messages
+                delay(attack_delay, self._process_delayed_attack, char, target, current_char_combat_entry, combatants_list)
             else:
                 splattercast.msg(f"AT_REPEAT: {char.key} has no valid target for attack.")
 
@@ -943,6 +942,77 @@ class CombatHandler(DefaultScript):
         """Get character object by DBREF."""
         return get_character_by_dbref(dbref)
     
+    def _calculate_attack_delay(self, attacker, initiative_order):
+        """
+        Calculate attack delay to stagger combat messages within a round.
+        
+        Args:
+            attacker: The attacking character
+            initiative_order: List of combatants in initiative order
+            
+        Returns:
+            float: Delay in seconds for this attacker's attack
+        """
+        # Find attacker's position in initiative order
+        attacker_position = 0
+        for i, entry in enumerate(initiative_order):
+            if entry.get(DB_CHAR) == attacker:
+                attacker_position = i
+                break
+        
+        # Stagger attacks by 1.5 seconds each within the round
+        # First attacker goes immediately, subsequent attackers are delayed
+        base_delay = attacker_position * 1.5
+        
+        # Cap at 4.5 seconds to ensure all attacks complete before next round
+        return min(base_delay, 4.5)
+
+    def _process_delayed_attack(self, attacker, target, attacker_entry, combatants_list):
+        """
+        Process a delayed attack - wrapper for _process_attack with validation.
+        
+        Args:
+            attacker: The attacking character
+            target: The target character  
+            attacker_entry: The attacker's combat entry
+            combatants_list: List of all combat entries at time of scheduling
+        """
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Validate that combat is still active
+        if not getattr(self.db, DB_COMBAT_RUNNING, False):
+            splattercast.msg(f"DELAYED_ATTACK: Combat ended before {attacker.key}'s attack on {target.key} could execute.")
+            return
+            
+        # Validate that both characters are still in combat
+        current_combatants = getattr(self.db, DB_COMBATANTS, [])
+        attacker_still_in_combat = any(e.get(DB_CHAR) == attacker for e in current_combatants)
+        target_still_in_combat = any(e.get(DB_CHAR) == target for e in current_combatants)
+        
+        if not attacker_still_in_combat:
+            splattercast.msg(f"DELAYED_ATTACK: {attacker.key} no longer in combat, attack cancelled.")
+            return
+            
+        if not target_still_in_combat:
+            splattercast.msg(f"DELAYED_ATTACK: {target.key} no longer in combat, {attacker.key}'s attack cancelled.")
+            return
+        
+        # Get fresh combat entries
+        fresh_attacker_entry = next((e for e in current_combatants if e.get(DB_CHAR) == attacker), None)
+        if not fresh_attacker_entry:
+            splattercast.msg(f"DELAYED_ATTACK: Could not find fresh entry for {attacker.key}, attack cancelled.")
+            return
+        
+        splattercast.msg(f"DELAYED_ATTACK: Executing {attacker.key} -> {target.key}")
+        
+        try:
+            self._process_attack(attacker, target, fresh_attacker_entry, current_combatants)
+            splattercast.msg(f"DELAYED_ATTACK: _process_attack completed for {attacker.key} -> {target.key}")
+        except Exception as e:
+            splattercast.msg(f"DELAYED_ATTACK: ERROR in _process_attack for {attacker.key} -> {target.key}: {e}")
+            import traceback
+            splattercast.msg(f"DELAYED_ATTACK: Traceback: {traceback.format_exc()}")
+
     def _process_attack(self, attacker, target, attacker_entry, combatants_list):
         """
         Process an attack between two characters.
