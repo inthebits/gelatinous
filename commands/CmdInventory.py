@@ -267,6 +267,8 @@ class CmdGet(Command):
     aliases = ["take", "grab"]
 
     def func(self):
+        from typeclasses.items import Item
+        
         caller = self.caller
         itemname = self.args.strip().lower()
 
@@ -277,6 +279,11 @@ class CmdGet(Command):
         # Search in the room
         item = caller.search(itemname, location=caller.location)
         if not item:
+            return
+
+        # Only allow picking up actual items
+        if not isinstance(item, Item):
+            caller.msg(f"You can't pick up {item.key}.")
             return
 
         # Try to put it in a free hand
