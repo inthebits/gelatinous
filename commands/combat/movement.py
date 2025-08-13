@@ -1888,22 +1888,49 @@ def apply_gravity_to_items(room):
     # Check if this is a sky room
     is_sky_room = getattr(room.db, "is_sky_room", False)
     if not is_sky_room:
+        splattercast.msg(f"GRAVITY_ITEMS: {room.key} is not a sky room, skipping gravity check")
         return  # Nothing to do if not a sky room
     
     splattercast.msg(f"GRAVITY_ITEMS: Checking items in sky room {room.key}")
     
-    # Get all items in the room
-    items = [obj for obj in room.contents if obj.has_account is False]  # Only non-character objects
+    # Get all items in the room (exclude characters)
+    all_objects = list(room.contents)
+    splattercast.msg(f"GRAVITY_ITEMS: Found {len(all_objects)} total objects in room")
+    
+    items = []
+    for obj in all_objects:
+        # Check if this is an Item (not a Character)
+        from typeclasses.items import Item
+        from typeclasses.characters import Character
+        
+        is_item = isinstance(obj, Item)
+        is_character = isinstance(obj, Character)
+        splattercast.msg(f"GRAVITY_ITEMS: Object {obj.key} - is_item: {is_item}, is_character: {is_character}")
+        
+        if is_item and not is_character:
+            items.append(obj)
+    
+    splattercast.msg(f"GRAVITY_ITEMS: Found {len(items)} items to check for gravity")
     
     if not items:
+        splattercast.msg(f"GRAVITY_ITEMS: No items found in {room.key}")
         return  # No items to process
     
     # Use the same gravity logic as characters
     jump_cmd = CmdJump()  # Create instance to access the method
-    ground_room, fall_distance = jump_cmd.follow_gravity_to_ground(room)
+    try:
+        ground_room, fall_distance = jump_cmd.follow_gravity_to_ground(room)
+        splattercast.msg(f"GRAVITY_ITEMS: Gravity check result - ground_room: {ground_room.key if ground_room else None}, fall_distance: {fall_distance}")
+    except Exception as e:
+        splattercast.msg(f"GRAVITY_ITEMS_ERROR: Failed to calculate gravity path: {e}")
+        return
     
     if ground_room == room:
-        # Already at ground level somehow
+        splattercast.msg(f"GRAVITY_ITEMS: {room.key} is already at ground level")
+        return
+    
+    if not ground_room:
+        splattercast.msg(f"GRAVITY_ITEMS_ERROR: No ground room found for {room.key}")
         return
     
     # Move each item to ground level
@@ -1914,6 +1941,7 @@ def apply_gravity_to_items(room):
             
             # Announce the item falling to the ground room
             ground_room.msg_contents(f"A {item.key} falls from above and lands with a clatter.")
+            splattercast.msg(f"GRAVITY_ITEMS: Successfully moved {item.key} to {ground_room.key}")
             
         except Exception as e:
             splattercast.msg(f"GRAVITY_ITEMS_ERROR: Failed to move {item.key}: {e}")
