@@ -535,6 +535,12 @@ class CmdThrow(Command):
                     # Handle landing and proximity
                     self.handle_landing(obj, destination, target, is_weapon, thrower)
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Completed handle_landing")
+                    
+                    # Apply gravity if item landed in a sky room
+                    from commands.combat.movement import apply_gravity_to_items
+                    apply_gravity_to_items(destination)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Applied gravity check to destination {destination}")
+                    
                 except Exception as e:
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error during object movement/landing: {e}")
                     # Try to move to origin as fallback

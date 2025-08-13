@@ -1872,3 +1872,49 @@ class CmdJump(Command):
         # Safety limit reached
         splattercast.msg(f"GRAVITY_LIMIT: Hit max depth limit at {current_room.key}, treating as ground")
         return current_room, rooms_fallen
+
+
+def apply_gravity_to_items(room):
+    """
+    Apply gravity to all items in a sky room, causing them to fall to ground level.
+    This function can be called from various systems (throw, drop, etc.) to ensure
+    items don't remain suspended in sky rooms.
+    
+    Args:
+        room: The room to check for items that need to fall
+    """
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    
+    # Check if this is a sky room
+    is_sky_room = getattr(room.db, "is_sky_room", False)
+    if not is_sky_room:
+        return  # Nothing to do if not a sky room
+    
+    splattercast.msg(f"GRAVITY_ITEMS: Checking items in sky room {room.key}")
+    
+    # Get all items in the room
+    items = [obj for obj in room.contents if obj.has_account is False]  # Only non-character objects
+    
+    if not items:
+        return  # No items to process
+    
+    # Use the same gravity logic as characters
+    jump_cmd = CmdJump()  # Create instance to access the method
+    ground_room, fall_distance = jump_cmd.follow_gravity_to_ground(room)
+    
+    if ground_room == room:
+        # Already at ground level somehow
+        return
+    
+    # Move each item to ground level
+    for item in items:
+        try:
+            splattercast.msg(f"GRAVITY_ITEMS: Moving {item.key} from {room.key} to {ground_room.key} (fell {fall_distance} levels)")
+            item.move_to(ground_room, quiet=True)
+            
+            # Announce the item falling to the ground room
+            ground_room.msg_contents(f"A {item.key} falls from above and lands with a clatter.")
+            
+        except Exception as e:
+            splattercast.msg(f"GRAVITY_ITEMS_ERROR: Failed to move {item.key}: {e}")
+            # Continue with other items even if one fails

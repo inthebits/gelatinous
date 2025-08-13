@@ -235,6 +235,10 @@ class CmdDrop(Command):
 
         # Move the item to the room
         obj.move_to(caller.location, quiet=True)
+
+        # Apply gravity if item is dropped in a sky room
+        from commands.combat.movement import apply_gravity_to_items
+        apply_gravity_to_items(caller.location)
         
         # Universal proximity assignment for all dropped objects
         if not hasattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL):
