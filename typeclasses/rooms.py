@@ -6,6 +6,7 @@ Rooms are simple containers that has no location of their own.
 """
 
 from evennia.objects.objects import DefaultRoom
+from world.combat.constants import NDB_FLYING_OBJECTS
 
 from .objects import ObjectParent
 
@@ -80,6 +81,11 @@ class Room(ObjectParent, DefaultRoom):
         # Find all @integrate objects in this room
         integrated_objects = []
         
+        # Get flying objects list managed by CmdThrow
+        flying_objects = getattr(self.ndb, NDB_FLYING_OBJECTS, [])
+        if flying_objects is None:
+            flying_objects = []
+        
         for obj in self.contents:
             # Only check items for integration (can expand to vehicles, etc. later)
             if not obj.is_typeclass("typeclasses.items.Item"):
@@ -87,8 +93,8 @@ class Room(ObjectParent, DefaultRoom):
             
             # Check if item should be integrated
             is_integrate = getattr(obj.db, "integrate", False)
-            # Check if object is currently in flight by looking for flight attributes
-            is_flying = hasattr(obj.ndb, 'flight_destination') and obj.ndb.flight_destination is not None
+            # Check if object is currently flying (using both list and attributes for robustness)
+            is_flying = (obj in flying_objects) or (hasattr(obj.ndb, 'flight_destination') and obj.ndb.flight_destination is not None)
             
             if is_integrate or is_flying:
                 # Flying objects get high priority (priority 1) so they appear first
