@@ -46,51 +46,25 @@ class Room(ObjectParent, DefaultRoom):
         # Get the base description from the parent class
         appearance = super().return_appearance(looker, **kwargs)
         
-        # Process @integrate objects and flying objects - these blend into the room description
+        # Process @integrate objects and flying objects - append to room description
         integrated_content = self.get_integrated_objects_content(looker)
         if integrated_content:
-            # Integrate content into the room description itself, not as a separate section
+            # Simple approach: find room description and append integrated content
             lines = appearance.split('\n')
-            
-            # Find the room description section (after the room name, before Characters:/You see:/Exits:)
-            desc_start = -1
-            desc_end = -1
+            room_name_found = False
             
             for i, line in enumerate(lines):
-                # Skip the header and room name
-                if line.startswith('|c') and line.endswith('|n') and desc_start == -1:
-                    desc_start = i + 1
+                # Skip until we find the room name
+                if not room_name_found and line.startswith('|c') and line.endswith('|n'):
+                    room_name_found = True
                     continue
                 
-                # Find end of description (start of characters/things/exits section)
-                if desc_start != -1 and desc_end == -1:
-                    if line.startswith('Characters:') or line.startswith('You see:') or line.startswith('Exits:') or line.startswith('Edges:'):
-                        desc_end = i
-                        break
+                # After room name, find first non-empty line (room description) and append
+                if room_name_found and line.strip() and not line.startswith('Characters:') and not line.startswith('You see:') and not line.startswith('Exits:'):
+                    lines[i] += f" {integrated_content}"
+                    break
             
-            # If we found the description section, integrate the content
-            if desc_start != -1:
-                if desc_end == -1:
-                    desc_end = len(lines)  # Description goes to end of text
-                
-                # Get the description text and append integrated content
-                desc_lines = lines[desc_start:desc_end]
-                desc_text = ' '.join(desc_lines).strip()
-                
-                # Combine room description with integrated content
-                if desc_text:
-                    combined_desc = f"{desc_text} {integrated_content}"
-                else:
-                    combined_desc = integrated_content
-                
-                # Replace the description section with the combined text
-                new_lines = lines[:desc_start] + [combined_desc] + lines[desc_end:]
-                appearance = '\n'.join(new_lines)
-            else:
-                # Fallback: append before the last line
-                lines = appearance.rstrip().split('\n')
-                lines.insert(-1, integrated_content)
-                appearance = '\n'.join(lines)
+            appearance = '\n'.join(lines)
         
         return appearance
     
