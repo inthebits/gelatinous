@@ -178,6 +178,10 @@ class Room(ObjectParent, DefaultRoom):
             if obj.is_typeclass("typeclasses.characters.Character"):
                 continue
             
+            # Skip exits (handled by get_display_footer)
+            if obj.is_typeclass("typeclasses.exits.Exit"):
+                continue
+            
             # Skip @integrate items - they're handled in room description
             if obj.is_typeclass("typeclasses.items.Item") and getattr(obj.db, "integrate", False):
                 continue
