@@ -54,7 +54,7 @@ See the `spawn` command and `evennia.prototypes.spawner.spawn` for more info.
 
 # Base explosive prototype with common properties
 EXPLOSIVE_BASE = {
-    "typeclass": "typeclasses.objects.Object",
+    "typeclass": "typeclasses.items.Item",
     "desc": "A military-grade explosive device with a pin-pull mechanism.",
     "is_explosive": True,
     "requires_pin": True,
