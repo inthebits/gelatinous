@@ -4,7 +4,7 @@
 
 ## 🌃 Play in the near to distant future (Closed during Pre-Alpha)
 
-**Live Game**: [https://gel.monster](https://gel.monster) Port 23
+**Live Game**: [play.gel.monster](https://gel.monster) Port 23
 
 Connect with any MUD client.
 
