@@ -46,9 +46,6 @@ class Exit(DefaultExit):
     def at_traverse(self, traversing_object, target_location):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
-    def at_traverse(self, traversing_object, target_location):
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        
         # --- SKY ROOM RESTRICTION CHECK ---
         # Block normal traversal to/from sky rooms - these are transit-only spaces
         # Exception: Allow jump command system to use sky rooms for aerial transit
