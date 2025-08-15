@@ -86,25 +86,27 @@ class Room(ObjectParent, DefaultRoom):
         if flying_objects is None:
             flying_objects = []
         
+        # Add all flying objects first (they get highest priority)
+        for obj in flying_objects:
+            priority = 1  # High priority for flying objects
+            integrated_objects.append((priority, obj, True))
+        
         for obj in self.contents:
             # Only check items for integration (can expand to vehicles, etc. later)
             if not obj.is_typeclass("typeclasses.items.Item"):
                 continue
             
+            # Skip if already added as flying object
+            if obj in flying_objects:
+                continue
+            
             # Check if item should be integrated
             is_integrate = getattr(obj.db, "integrate", False)
-            # Check if object is currently flying (using both list and attributes for robustness)
-            is_flying = (obj in flying_objects) or (hasattr(obj.ndb, 'flight_destination') and obj.ndb.flight_destination is not None)
             
-            if is_integrate or is_flying:
-                # Flying objects get high priority (priority 1) so they appear first
+            if is_integrate:
                 # Regular @integrate objects use their configured priority
-                if is_flying:
-                    priority = 1  # High priority for flying objects
-                else:
-                    priority = getattr(obj.db, "integration_priority", 5)
-                
-                integrated_objects.append((priority, obj, is_flying))
+                priority = getattr(obj.db, "integration_priority", 5)
+                integrated_objects.append((priority, obj, False))
         
         if not integrated_objects:
             return ""
