@@ -2,7 +2,7 @@
 
 **Gelatinous Monster** is a text-based multiplayer game in development, built on the Evennia platform. It aspires to feature tactical combat, roleplay mechanics, and atmospheric storytelling.
 
-## 🌃 Play in the near the distant future (Closed during Pre-Alpha)
+## 🌃 Play in the near to distant future (Closed during Pre-Alpha)
 
 **Live Game**: [https://gel.monster](https://gel.monster) Port 23
 
