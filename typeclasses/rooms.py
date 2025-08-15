@@ -46,7 +46,7 @@ class Room(ObjectParent, DefaultRoom):
         # Get the base description from the parent class
         appearance = super().return_appearance(looker, **kwargs)
         
-        # Process @integrate objects - these blend into the room description
+        # Process @integrate objects and flying objects - these blend into the room description
         integrated_content = self.get_integrated_objects_content(looker)
         if integrated_content:
             # Find the description section and append integrated content
@@ -61,17 +61,6 @@ class Room(ObjectParent, DefaultRoom):
                 # Fallback: just append to the end of the description
                 appearance += " " + integrated_content
         
-        # Add flying objects if any exist
-        flying_objects = getattr(self.ndb, NDB_FLYING_OBJECTS, [])
-        if flying_objects:
-            flying_desc = []
-            for obj in flying_objects:
-                flying_desc.append(f"|y{obj.key} is flying through the air|n")
-            
-            if flying_desc:
-                # Add flying objects section to room description
-                appearance += "\n\n" + "\n".join(flying_desc)
-        
         return appearance
     
     def get_integrated_objects_content(self, looker):
@@ -81,24 +70,36 @@ class Room(ObjectParent, DefaultRoom):
         Objects with @integrate = True contribute to the room description
         instead of appearing in the traditional object list.
         
+        Flying objects are automatically integrated regardless of @integrate status.
+        
         Args:
             looker: Character looking at the room
             
         Returns:
-            str: Combined integrated content from all @integrate objects
+            str: Combined integrated content from all @integrate objects and flying objects
         """
         # Find all @integrate objects in this room
         integrated_objects = []
+        flying_objects = getattr(self.ndb, NDB_FLYING_OBJECTS, [])
         
         for obj in self.contents:
             # Only check items for integration (can expand to vehicles, etc. later)
             if not obj.is_typeclass("typeclasses.items.Item"):
                 continue
-                
+            
             # Check if item should be integrated
-            if getattr(obj.db, "integrate", False):
-                priority = getattr(obj.db, "integration_priority", 5)
-                integrated_objects.append((priority, obj))
+            is_integrate = getattr(obj.db, "integrate", False)
+            is_flying = obj in flying_objects
+            
+            if is_integrate or is_flying:
+                # Flying objects get high priority (priority 1) so they appear first
+                # Regular @integrate objects use their configured priority
+                if is_flying:
+                    priority = 1  # High priority for flying objects
+                else:
+                    priority = getattr(obj.db, "integration_priority", 5)
+                
+                integrated_objects.append((priority, obj, is_flying))
         
         if not integrated_objects:
             return ""
@@ -108,8 +109,14 @@ class Room(ObjectParent, DefaultRoom):
         
         # Collect integration content
         content_parts = []
-        for priority, obj in integrated_objects:
-            content = self.get_object_integration_content(obj, looker)
+        for priority, obj, is_flying in integrated_objects:
+            if is_flying:
+                # Use flying-specific description with teal item name
+                content = f"|c{obj.key}|n is flying through the air."
+            else:
+                # Use regular integration content
+                content = self.get_object_integration_content(obj, looker)
+            
             if content:
                 content_parts.append(content)
         
