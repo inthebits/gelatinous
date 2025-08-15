@@ -8,11 +8,40 @@
 - `ARCHITECTURE.md` - File structure and architectural decisions
 - `COMBAT_SYSTEM.md` - G.R.I.M. combat system documentation
 - `DEVELOPMENT_GUIDE.md` - Developer guidelines and best practices
+- Security exclusions to `.gitignore` for sensitive configuration files
+- **Complete Throw Command System** - Production-ready throwing mechanics
+  - `CmdThrow` - Multi-syntax throwing with cross-room targeting
+  - `CmdPull` - Pin pulling mechanism for grenade activation
+  - `CmdCatch` - Defensive object interception system
+  - `CmdRig` - Exit trapping with immunity system
+  - `CmdDefuse` - Manual and automatic defuse mechanics
+  - Flight system with 2-second timing and room announcements
+  - Grenade proximity inheritance and chain reactions
+  - Universal proximity assignment for landing mechanics
+- **Complete Grappling System** - Full restraint and combat mechanics
+  - Multi-grapple scenario handling (contests, takeovers, chains)
+  - Movement integration (advance/retreat while grappling)
+  - Victim dragging system with resistance rolls
+  - Auto-resistance and yielding mechanics
+  - Human shield functionality
+  - Proximity inheritance during grapple movements
+- **Wrest Command System** - Object wrestling mechanics
+  - `CmdWrest` - Take objects from other characters
+  - Grit-based contest system with grapple integration
+  - Combat state validation and cooldown mechanics
 
 ### Changed
 - Updated project documentation to reflect current state
 - Consolidated scattered documentation into focused files
 - Aligned documentation with core project tenets
+- **SECURITY**: Removed `secret_settings.py` from git history for clean open-source release
+- Repository made public with sanitized commit history
+- **DISCLAIMER**: Developer still has no idea what they're doing (proceed with caution)
+
+### Fixed
+- Gravity physics system now properly affects items in sky rooms
+- Enhanced typeclass checking in `apply_gravity_to_items()` function
+- Improved debugging output for gravity system troubleshooting
 
 ### Deprecated
 - Legacy documentation files marked for removal:
@@ -25,7 +54,7 @@
   - `GRAPPLE_SYSTEM_IMPLEMENTATION.md`
   - `GRAPPLE_TEST_SCENARIOS.md`
 
-## [2.0.0] - 2025-07-09 - "The Great Refactor"
+## [0.2.0] - 2025-07-09 - "The Great Refactor"
 
 ### Major Changes
 - **BREAKING**: Complete combat system refactor from monolithic to modular architecture
