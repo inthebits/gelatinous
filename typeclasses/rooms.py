@@ -49,17 +49,19 @@ class Room(ObjectParent, DefaultRoom):
         # Process @integrate objects and flying objects - these blend into the room description
         integrated_content = self.get_integrated_objects_content(looker)
         if integrated_content:
-            # Find the description section and append integrated content
-            parts = appearance.split('\n\n')
-            if len(parts) >= 2:
-                # Insert integrated content after the room description but before characters/objects
-                desc_section = parts[1] if parts[1].strip() else parts[0]
-                desc_section += " " + integrated_content
-                parts[1] = desc_section
-                appearance = '\n\n'.join(parts)
+            # Simple approach: find where the description ends and characters begin
+            # Look for "Characters:" line and insert before it
+            if '\nCharacters:' in appearance:
+                appearance = appearance.replace('\nCharacters:', '\n' + integrated_content + '\nCharacters:')
+            elif '\nYou see:' in appearance:
+                appearance = appearance.replace('\nYou see:', '\n' + integrated_content + '\nYou see:')
+            elif '\nExits:' in appearance:
+                appearance = appearance.replace('\nExits:', '\n' + integrated_content + '\nExits:')
             else:
-                # Fallback: just append to the end of the description
-                appearance += " " + integrated_content
+                # Fallback: append before the last line
+                lines = appearance.rstrip().split('\n')
+                lines.insert(-1, integrated_content)
+                appearance = '\n'.join(lines)
         
         return appearance
     
@@ -119,7 +121,7 @@ class Room(ObjectParent, DefaultRoom):
         for priority, obj, is_flying in integrated_objects:
             if is_flying:
                 # Use flying-specific description with teal item name
-                content = f"|c{obj.key}|n is flying through the air."
+                content = f"A |c{obj.key}|n is flying through the air."
             else:
                 # Use regular integration content
                 content = self.get_object_integration_content(obj, looker)
