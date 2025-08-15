@@ -116,7 +116,7 @@
 - No breaking changes to existing command usage
 - Gradual migration path provided
 
-## [1.0.0] - 2025-07-08 - "Foundation Release"
+## [0.1.0] - 2025-07-08 - "Foundation Release"
 
 ### Added
 - Initial G.R.I.M. combat system implementation
@@ -141,9 +141,9 @@
 - **Patch versions** (X.Y.Z): Bug fixes, small improvements
 
 ### Development Milestones
-- **v1.0.0**: Initial working combat system
-- **v2.0.0**: Major architectural refactor for maintainability
-- **v3.0.0**: (Planned) Service layer and event system implementation
+- **v0.1.0**: Initial working combat system
+- **v0.2.0**: Major architectural refactor for maintainability
+- **v0.3.0**: (Planned) Service layer and event system implementation
 
 ### Release Philosophy
 - **Atomic releases**: Each version is complete and functional
@@ -151,6 +151,3 @@
 - **Comprehensive testing**: Thorough validation before release
 - **Documentation**: Complete documentation with each release
 
----
-
-*This changelog follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html) principles.*
