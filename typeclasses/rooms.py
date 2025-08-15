@@ -80,7 +80,14 @@ class Room(ObjectParent, DefaultRoom):
         """
         # Find all @integrate objects in this room
         integrated_objects = []
-        flying_objects = getattr(self.ndb, NDB_FLYING_OBJECTS, [])
+        
+        # Safely get flying objects list with error handling
+        try:
+            flying_objects = getattr(self.ndb, NDB_FLYING_OBJECTS, [])
+            if flying_objects is None:
+                flying_objects = []
+        except Exception:
+            flying_objects = []
         
         for obj in self.contents:
             # Only check items for integration (can expand to vehicles, etc. later)
