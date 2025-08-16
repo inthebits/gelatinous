@@ -26,12 +26,8 @@ class Room(ObjectParent, DefaultRoom):
     # and custom things display to handle @integrate objects
     # This avoids duplicate display issues with exits while letting Evennia handle characters
     # See: https://www.evennia.com/docs/latest/Components/Objects.html#changing-an-objects-appearance
-    appearance_template = """{header}
-|c{name}|n
-{desc}
-{things}
-{characters}
-{footer}"""
+    appearance_template = """{header}|c{name}|n
+{desc}{things}{characters}{footer}"""
 
     def return_appearance(self, looker, **kwargs):
         """
@@ -301,30 +297,40 @@ class Room(ObjectParent, DefaultRoom):
         Returns:
             str: Final formatted appearance
         """
-        from evennia.comms.models import ChannelDB
-        from world.combat.constants import SPLATTERCAST_CHANNEL
-        
         # Check what content we actually have
         things = self.get_display_things(looker, **kwargs)
         characters = self.get_display_characters(looker, **kwargs)
-        footer = self.get_display_footer(looker, **kwargs)
         
-        # Debug output
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        splattercast.msg(f"DEBUG format_appearance: things='{things}', characters='{characters}', footer='{footer}'")
-        splattercast.msg(f"DEBUG original appearance:\n{repr(appearance)}")
-        
-        # The template already handles spacing correctly, we just need to fix spacing between items and characters
+        # Based on debug: Evennia adds \n at start (header) and \n\n before footer
+        # We need to add spacing after room description and between items/characters
         result = appearance
         
         # Add spacing between items and characters if both exist
         if things and characters:
+            # Look for the pattern where items is immediately followed by characters
             old_pattern = things + '\n' + characters
             new_pattern = things + '\n\n' + characters
-            splattercast.msg(f"DEBUG replacing: {repr(old_pattern)} with {repr(new_pattern)}")
             result = result.replace(old_pattern, new_pattern)
         
-        splattercast.msg(f"DEBUG final result:\n{repr(result)}")
+        # Add spacing after room description (before first content section)
+        if things or characters:
+            lines = result.split('\n')
+            new_lines = []
+            
+            for i, line in enumerate(lines):
+                new_lines.append(line)
+                
+                # After room description (long line that doesn't start with |w or contain standard content markers)
+                if (i > 0 and len(line) > 50 and  # Long line (room description)
+                    not line.startswith('|w') and  # Not "You see:" or "Exits:"
+                    'is ' not in line and 'are ' not in line):  # Not character descriptions
+                    
+                    # Check if next line is content
+                    if i + 1 < len(lines) and lines[i + 1].strip():
+                        new_lines.append('')  # Add blank line after room description
+            
+            result = '\n'.join(new_lines)
+        
         return result
     
     def get_custom_exit_display(self, looker):
