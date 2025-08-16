@@ -469,7 +469,7 @@ class Room(ObjectParent, DefaultRoom):
             
             # Join all street descriptions
             for desc in street_descriptions:
-                descriptions.append(f"{desc}.")
+                descriptions.append(desc)
         
         # Format custom types (grouped by type)
         for dest_type, exits in exit_groups['custom_types'].items():
