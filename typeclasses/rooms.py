@@ -29,6 +29,7 @@ class Room(ObjectParent, DefaultRoom):
     appearance_template = """{header}
 |c{name}|n
 {desc}
+
 {characters}
 {things}
 {footer}"""
@@ -235,7 +236,7 @@ class Room(ObjectParent, DefaultRoom):
                 all_but_last = ", ".join(char_names[:-1])
                 descriptions.append(f"{all_but_last}, and {char_names[-1]} are {placement}")
         
-        return "\n" + " ".join(descriptions) if descriptions else ""
+        return " ".join(descriptions) if descriptions else ""
     
     def get_display_things(self, looker, **kwargs):
         """
@@ -286,6 +287,39 @@ class Room(ObjectParent, DefaultRoom):
             lines.append(exit_display)
         
         return '\n'.join(lines) if lines else ""
+    
+    def format_appearance(self, appearance, looker, **kwargs):
+        """
+        Final formatting step for room appearance.
+        
+        This is called last in the appearance pipeline and allows for final
+        adjustments like adding line breaks between sections.
+        
+        Args:
+            appearance (str): The formatted appearance string from the template
+            looker: Character looking at the room
+            
+        Returns:
+            str: Final formatted appearance
+        """
+        # Split the appearance into lines for processing
+        lines = appearance.split('\n')
+        
+        # Find where the room description ends and character section begins
+        processed_lines = []
+        for i, line in enumerate(lines):
+            processed_lines.append(line)
+            
+            # If this line contains room description content and the next line
+            # contains character information, add an extra line break
+            if line.strip() and not line.startswith('|c') and not line.startswith('|w'):
+                # Check if next line has character content
+                if i + 1 < len(lines):
+                    next_line = lines[i + 1].strip()
+                    if next_line and any(char_indicator in next_line.lower() for char_indicator in ['is standing', 'is sitting', 'is crouched', 'is hiding', 'is lying', 'is kneeling']):
+                        processed_lines.append('')  # Add blank line
+        
+        return '\n'.join(processed_lines)
     
     def get_custom_exit_display(self, looker):
         """
