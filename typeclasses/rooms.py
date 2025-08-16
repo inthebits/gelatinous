@@ -22,6 +22,16 @@ class Room(ObjectParent, DefaultRoom):
     properties and methods available on all Objects.
     """
     
+    def at_object_creation(self):
+        """
+        Called when room is first created.
+        Initialize room attributes.
+        """
+        super().at_object_creation()
+        
+        # Create empty type attribute for builders to use
+        self.db.type = None
+    
     # Override the appearance template to use our custom footer for exits
     # and custom things display to handle @integrate objects
     # This avoids duplicate display issues with exits while letting Evennia handle characters
