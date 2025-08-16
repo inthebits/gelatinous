@@ -31,6 +31,7 @@ class Room(ObjectParent, DefaultRoom):
 {desc}
 
 {things}
+
 {characters}
 {footer}"""
 
