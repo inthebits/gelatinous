@@ -313,11 +313,11 @@ class Room(ObjectParent, DefaultRoom):
             new_pattern = things + '\n\n' + characters
             result = result.replace(old_pattern, new_pattern)
         
-        # Add spacing between room description and items/characters when both items and characters are present
-        if desc and things and characters:
-            # Find where the description ends and items begin
-            old_pattern = desc + '\n' + things
-            new_pattern = desc + '\n\n' + things
+        # Add spacing between room description and first content section (items or characters)
+        if desc and (things or characters):
+            first_content = things if things else characters
+            old_pattern = desc + '\n' + first_content
+            new_pattern = desc + '\n\n' + first_content
             result = result.replace(old_pattern, new_pattern)
         
         return result
