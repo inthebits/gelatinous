@@ -41,6 +41,9 @@ class Room(ObjectParent, DefaultRoom):
     # Sky room flag for exit filtering
     is_sky_room = AttributeProperty(default=False, autocreate=True)
     
+    # Room description
+    desc = AttributeProperty(default="", autocreate=True)
+    
     def at_object_creation(self):
         """
         Called when room is first created.
@@ -54,6 +57,8 @@ class Room(ObjectParent, DefaultRoom):
             self.type = None
         if not hasattr(self, 'is_sky_room'):
             self.is_sky_room = False
+        if not hasattr(self, 'desc'):
+            self.desc = ""
     
     # Override the appearance template to use our custom footer for exits
     # and custom things display to handle @integrate objects
