@@ -10,7 +10,38 @@ The enhanced look command system assembles rich, dynamic environmental descripti
 
 ### 1. Character Placement System
 - **Natural Language Positioning**: Implemented `@temp_place`, `@look_place`, `@override_place` commands
-- **Hierarchy System**: `@override_place` > `@temp_place` > `@look_place` > default fallback
+- **Hierarchy **Example Implementation:**
+
+**Component Assembly Example:**
+```
+Base Room: "Large intersection where Sinn crosses Knife"
++ ✅ Weather Integration: "cool evening air carries hints of exhaust and distant cooking, while the soft murmur of traffic drifts from the main thoroughfare"
++ Crowd (moderate): "foot traffic starting to get heavy but personal space"
++ @integrate Vehicles: "bullet-ridden vehicles pass through on drive-bys"
++ @integrate Graffiti: "walls daubed with colorful graffiti"
++ Traditional Objects: "You see a flyer [Nyrek the Unwired]"
++ Smart Exits: "street to the south/west/east" (intersection detected)
+= Final assembled description with integrated weather system
+```
+
+**Actual Weather System Output:**
+```
+Braddock Avenue
+Tall, grim-faced tenement buildings flank the way here, seeming to lean in 
+towards each other and restricting overhead light. |wCool evening air carries 
+hints of exhaust and distant cooking, while the soft murmur of traffic drifts 
+from the main thoroughfare.|n
+
+Kathy Cohen-Gold is doing a handstand. Nick Kramer is in a full-split.
+
+The street continues to the west (w) and east (e).
+```
+
+**Weather Integration Details:**
+- Weather text appears with |w (bold white) formatting in room description
+- Messages selected randomly from appropriate time+weather pools  
+- Integrates directly into room description flow after base text
+- All 17 weather types covered with intensity-appropriate message complexityverride_place` > `@temp_place` > `@look_place` > default fallback
 - **Character Commands**: `CmdLookPlace` and `CmdTempPlace` classes in `commands/CmdCharacter.py`
 - **Natural Language Output**: Characters show with placement descriptions like "Kathy Cohen-Gold is doing a handstand. Nick Kramer is in a full-split."
 
@@ -72,13 +103,33 @@ The enhanced look command system assembles rich, dynamic environmental descripti
 - Adds flying objects during throw mechanics
 - ✅ **Smart Exit Display**: Delegates to `get_custom_exit_display()` with intelligent grouping
 - Filters sky room exits unless they're edges/gaps
+- ✅ **Weather System Integration**: Integrates weather directly into room description via `weather_system.get_weather_contributions()`
 
 **Pending Implementation (🚧):**
 
-### 8. Weather System
+### 8. Weather System ✅
 - **Dynamic Message Pools**: Weather-based sensory descriptions using combat message architecture
-- **Environmental Integration**: Weather effects integrated into room descriptions
-- **Sensory Categories**: Visual, auditory, olfactory, tactile weather contributions
+- **Environmental Integration**: Weather effects integrated into room descriptions via `return_appearance`
+- **Sensory Categories**: Visual, auditory, olfactory, atmospheric weather contributions
+- **Intensity-Based Messages**: Weather types scaled by intensity (mild/moderate/intense/extreme)
+- **Time Period Variations**: Weather messages vary by time of day for atmospheric consistency
+- **Comprehensive Coverage**: All 17 weather types from `WEATHER_INTENSITY` mapping implemented
+- **Noir/Cinematic Style**: Adult-focused atmospheric descriptions with proper intensity scaling
+- **Formatting Integration**: Weather text displayed with |w (bold white) formatting
+- **Message Pool Architecture**: Extensive message pools following combat system patterns
+- **Universal Descriptions**: Weather-focused messages avoid location-specific references
+
+**Weather Types Implemented:**
+- **Mild Intensity**: clear, overcast, windy (8-12 word messages)
+- **Moderate Intensity**: fog, rain, soft_snow, foggy_rain, light_rain (12-16 word messages) 
+- **Intense Intensity**: dry_thunderstorm, rainy_thunderstorm, hard_snow, blizzard, gray_pall, tox_rain, sandstorm, blind_fog, heavy_fog (16-20 word messages)
+- **Extreme Intensity**: flashstorm, torrential_rain (20+ word epic messages)
+
+**Technical Implementation:**
+- Message pools in `world/weather/weather_messages.py` with 4 sensory categories per weather type
+- Integration via `world/weather/weather_system.py` with proper |w formatting
+- Room integration through modified `return_appearance()` method in `typeclasses/rooms.py`
+- Weather appears directly in room description after base text, before characters/exits
 
 ### 9. Crowd System  
 - **Population Density**: Crowd levels affecting room atmosphere
@@ -108,7 +159,7 @@ The enhanced look command system assembles rich, dynamic environmental descripti
 **Assembly Order:**
 1. **Room Name & Base Description**: Foundation sensory content
 2. **@integrate Object Integration**: Objects stacked at end of room description
-3. **Weather System Contribution**: Current weather sensory additions
+3. **Weather System Contribution**: ✅ **Current weather sensory additions via integrated weather system**
 4. **Crowd System Contribution**: Current crowd level sensory additions
 5. **Traditional Object Listing**: Non-integrated objects listed separately
 6. **Smart Exit Descriptions**: Context-aware exit information
@@ -139,22 +190,66 @@ Objects with `@integrate` attribute appear at end of room description, stacking 
 ### 4. Dynamic Message Pool Systems
 
 **Weather System Design:**
-Similar to combat message system architecture:
+✅ **Implemented with comprehensive message pools following combat system architecture:**
 ```python
+# Located in world/weather/weather_messages.py
 weather_messages = {
-    'rain': {
-        'visual': ['acid rain falls from the platform above', 'moisture beads on metal surfaces'],
-        'auditory': ['steady patter of raindrops', 'water dripping from overhangs'],
-        'olfactory': ['petrichor mixed with industrial chemicals', 'wet concrete smell'],
-        'tactile': ['cool dampness in the air', 'humidity clings to skin'],
-        'atmospheric': ['oppressive gray atmosphere', 'dreary weather mood']
-    },
-    'clear': {
-        'visual': ['harsh sunlight glints off metal', 'clear visibility'],
-        'auditory': ['distant city hum more audible', 'no rain interference'],
-        # ... etc
+    'default': {
+        'rain_evening': {
+            'visual': [
+                'steady rain turns the streets into dark mirrors reflecting neon light',
+                'water streams down building facades and pools in street corners',
+                'the city takes on a noir-like quality under the rain-washed evening light'
+            ],
+            'auditory': [
+                'rain patters steadily against concrete and metal surfaces',
+                'tires splash through growing puddles with wet hissing sounds', 
+                'the rainfall creates a white noise that muffles other city sounds'
+            ],
+            'olfactory': [
+                'petrichor mingles with urban scents of wet concrete and metal',
+                'the rain releases stored smells from the pavement and gutters',
+                'clean water scent fights against underlying industrial odors'
+            ],
+            'atmospheric': [
+                'the rain creates an intimate, enclosed feeling despite the open space',
+                'the city feels washed clean yet somehow more mysterious',
+                'there\'s a sense of renewal mixed with urban grit'
+            ]
+        },
+        'clear_midday': {
+            'visual': [
+                'harsh sun beats down mercilessly',
+                'heat shimmer rises from every baked surface',
+                'shadows shrink to sharp, minimal lines'
+            ],
+            'auditory': [
+                'everything thrums with peak activity and motion',
+                'cooling systems hum and rattle desperately',
+                'background noise forms a steady symphony'
+            ],
+            'olfactory': [
+                'heated surfaces create distinctive burning scents',
+                'exhaust and industrial odors hang heavy',
+                'overheated machinery adds acrid notes'
+            ],
+            'atmospheric': [
+                'heat creates pressing, almost oppressive weight',
+                'the air itself vibrates with intense energy',
+                'energy levels feel maxed out everywhere'
+            ]
+        }
     }
 }
+```
+
+**Weather Integration Implementation:**
+- **Message Selection**: Random selection from appropriate pools per look command
+- **Formatting**: Weather text appears with |w (bold white) formatting followed by |n reset
+- **Integration Point**: Weather messages integrated directly into room description via modified `return_appearance()` 
+- **17 Weather Types**: Complete coverage from mild (clear, overcast) to extreme (torrential_rain, flashstorm)
+- **Time Variations**: Weather messages vary by time of day (clear has 12 time periods, others have 1-4)
+- **Intensity Scaling**: Message length/complexity scales with weather intensity level
 ```
 
 **Crowd System Design:**
@@ -174,22 +269,46 @@ crowd_messages = {
 ```
 
 **Message Selection System:**
+✅ **Implemented with the following features:**
 - **Per Look Command**: New random selection each time room is looked at
-- **Combat Message Architecture**: Uses room variables + weather system variables to select from description pools
-- **No Weighting**: Equal probability for all messages in pool
-- **Variable-Driven Selection**: Room attributes + weather state inform available message pools
+- **Combat Message Architecture**: Uses weather system variables to select from description pools
+- **Equal Probability**: All messages in pool have equal selection chance
+- **Variable-Driven Selection**: Weather type + time of day inform available message pools
+- **Intensity-Based Scaling**: Message complexity scales with weather intensity (mild/moderate/intense/extreme)
+- **Noir/Cinematic Style**: Adult-focused atmospheric writing with sophisticated descriptions
+- **Universal Descriptions**: Weather messages avoid location-specific references for broad applicability
 
 **Message Pool Structure:**
+✅ **Implemented with comprehensive structure:**
 ```python
-weather_pools = {
-    'rain_heavy': {
-        'visual': [pool of visual rain messages],
-        'auditory': [pool of auditory rain messages],
-        'tactile': [pool of tactile rain messages]
+# Located in world/weather/weather_messages.py
+WEATHER_INTENSITY = {
+    # Mild weather (8-12 word messages)
+    'clear': 'mild', 'overcast': 'mild', 'windy': 'mild',
+    # Moderate weather (12-16 word messages)
+    'fog': 'moderate', 'rain': 'moderate', 'soft_snow': 'moderate', 
+    'foggy_rain': 'moderate', 'light_rain': 'moderate',
+    # Intense weather (16-20 word messages)
+    'dry_thunderstorm': 'intense', 'rainy_thunderstorm': 'intense',
+    'hard_snow': 'intense', 'blizzard': 'intense', 'gray_pall': 'intense',
+    'tox_rain': 'intense', 'sandstorm': 'intense', 'blind_fog': 'intense', 
+    'heavy_fog': 'intense',
+    # Extreme weather (20+ word epic messages)
+    'flashstorm': 'extreme', 'torrential_rain': 'extreme'
+}
+
+WEATHER_MESSAGES = {
+    'default': {
+        'clear_midday': { 'visual': [...], 'auditory': [...], 'olfactory': [...], 'atmospheric': [...] },
+        'rain_evening': { 'visual': [...], 'auditory': [...], 'olfactory': [...], 'atmospheric': [...] },
+        'torrential_rain_night': { 'visual': [...], 'auditory': [...], 'olfactory': [...], 'atmospheric': [...] }
+        # ... 44 total weather+time combinations implemented
     }
 }
-# Selection based on: room.weather_intensity + weather_system.current_state
 ```
+**Selection Logic**: `weather_type + "_" + time_period` determines message pool (e.g., `clear_midday`, `rain_evening`)
+**Coverage**: All 17 weather types implemented with 1-12 time period variations each
+**Integration**: Weather system in `world/weather/weather_system.py` selects and formats messages with |w bolding
 
 ### 5. Smart Exit System Enhancement
 
@@ -519,10 +638,22 @@ Base Room: "Large intersection where Sinn crosses Knife"
 
 ## Integration Points
 
-### Weather System Integration
-- Weather contributes to all sensory categories
-- Message pools rotated like combat messages
-- Conditional effects based on room type and settings
+### Weather System Integration ✅
+✅ **Fully Implemented:**
+- Weather contributes to all sensory categories (visual, auditory, olfactory, atmospheric)
+- Message pools rotated like combat messages with fresh selection per look command
+- 17 weather types with intensity-based message complexity scaling
+- Time period variations for atmospheric consistency (1-12 time periods per weather type)
+- Noir/cinematic writing style with adult-focused sophisticated descriptions
+- |w formatting integration for bold white weather text display
+- Universal weather descriptions avoid location-specific references
+- Direct integration into room descriptions via modified `return_appearance()` method
+
+**Technical Implementation:**
+- `world/weather/weather_messages.py`: Comprehensive message pools with 4 sensory categories
+- `world/weather/weather_system.py`: Message selection and formatting logic  
+- `typeclasses/rooms.py`: Integration point in `return_appearance()` method
+- Weather appears directly in room description after base text, before characters/exits
 
 ### Crowd System Integration  
 - Crowd levels affect atmospheric and auditory categories
@@ -705,9 +836,14 @@ Braddock Avenue
 Tall, grim-faced tenement buildings flank the way here, seeming to lean in 
 towards each other and restricting overhead light. A labyrinth of rusted fire 
 escapes clings to their facades, some sections looking dangerously unstable. 
-[Weather integration: Cool evening air carries hints of exhaust and distant 
-cooking, while the soft murmur of traffic drifts from the main thoroughfare. 
-A light breeze stirs loose papers along the gutter.]
+Most windows are dark or covered with yellowed blinds, offering little sign 
+of life within their depths. The street level is a mix of boarded-up shops 
+with faded signage and the entrances to dimly lit alleyways, the air carrying 
+the scent of stale cooking oil, damp concrete, and a faint trace of mildew. 
+Loose paving stones and crumbling curbs line the edge of the narrow street. 
+|wCool evening air carries hints of exhaust and distant cooking, while the 
+soft murmur of traffic drifts from the main thoroughfare. A light breeze 
+stirs loose papers along the gutter.|n
 [Crowd integration: Despite the fortress-like precautions, there's a 
 neighborhood warmth here — this is where locals come for milk at midnight.]
 
@@ -722,6 +858,7 @@ its edges worn smooth by countless footsteps.]
 The street continues to the west (w) and east (e). There is a corner store 
 to the north (n). There is a laundromat to the south (s).
 ```
+**Note**: Weather integration is ✅ **currently implemented** - the |w formatted weather text appears directly in room descriptions.
 
 ## Future Extensions
 
