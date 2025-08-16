@@ -40,6 +40,29 @@ WEATHER_INTENSITY = {
 WEATHER_MESSAGES = {
     'default': {
         # Clear weather variations by time of day
+        'clear_pre_dawn': {
+            'visual': [
+                "darkness still holds the city in its grip with only hints of coming light",
+                "streetlights cast isolated pools of yellow illumination",
+                "the sky remains deep and starless above the urban sprawl"
+            ],
+            'auditory': [
+                "the city sleeps with only distant hums and occasional sounds",
+                "night shift machinery provides a low mechanical backdrop",
+                "sporadic traffic creates brief interruptions in the quiet"
+            ],
+            'olfactory': [
+                "cool night air carries traces of exhaust and urban decay",
+                "the smell of dew begins to mix with concrete dust",
+                "industrial odors from the night shift drift through empty streets"
+            ],
+            'atmospheric': [
+                "the pre-dawn stillness feels heavy and expectant",
+                "there's a sense that the world is holding its breath",
+                "the air carries the promise of approaching dawn"
+            ]
+        },
+        
         'clear_dawn': {
             'visual': [
                 "pale dawn light filters through the urban haze",
@@ -86,6 +109,29 @@ WEATHER_MESSAGES = {
             ]
         },
         
+        'clear_late_morning': {
+            'visual': [
+                "bright morning sun climbs higher, casting shorter shadows",
+                "the city basks in full daylight with crisp visibility",
+                "business districts show peak activity under clear skies"
+            ],
+            'auditory': [
+                "late morning brings peak urban activity and energy",
+                "construction, traffic, and business create a lively soundscape",
+                "the city hums with productivity and forward momentum"
+            ],
+            'olfactory': [
+                "warming asphalt and concrete begin to release their heat",
+                "coffee shops and food vendors add rich aromas to the air",
+                "the morning's fresh air starts mixing with urban industrial scents"
+            ],
+            'atmospheric': [
+                "late morning feels dynamic and full of purpose",
+                "there's an energetic quality to the warming air",
+                "productivity and ambition seem to fill the urban atmosphere"
+            ]
+        },
+        
         'clear_midday': {
             'visual': [
                 "harsh midday sun beats down on the concrete and steel",
@@ -109,6 +155,167 @@ WEATHER_MESSAGES = {
             ]
         },
         
+        'clear_early_afternoon': {
+            'visual': [
+                "afternoon light starts to take on a warmer, golden quality",
+                "long shadows begin to creep across the urban landscape",
+                "the sun's angle creates interesting patterns through the city grid"
+            ],
+            'auditory': [
+                "the post-lunch city maintains its energetic pace",
+                "traffic continues its steady flow with occasional horn bursts",
+                "construction and business sounds blend into the afternoon din"
+            ],
+            'olfactory': [
+                "warming concrete releases stored heat with distinctive urban scents",
+                "food vendors and restaurants add cooking aromas to the air",
+                "the afternoon heat carries exhaust and industrial smells"
+            ],
+            'atmospheric': [
+                "the afternoon energy feels focused and purposeful",
+                "there's a sense of productivity in the warm air",
+                "the city hums with mid-day momentum"
+            ]
+        },
+        
+        'clear_late_afternoon': {
+            'visual': [
+                "golden hour light bathes the city in warm, amber tones",
+                "building facades glow with reflected sunlight",
+                "shadows stretch long and dramatic across streets and plazas"
+            ],
+            'auditory': [
+                "rush hour traffic begins its evening crescendo",
+                "the city's pace quickens as people head home",
+                "air conditioning units work harder against the day's accumulated heat"
+            ],
+            'olfactory': [
+                "the day's heat has concentrated all urban scents",
+                "hot asphalt and concrete dominate with metallic undertones",
+                "restaurant ventilation systems add complex food aromas"
+            ],
+            'atmospheric': [
+                "the late afternoon carries anticipation of evening",
+                "energy levels feel heightened but tinged with weariness",
+                "there's a golden quality to the warm, busy air"
+            ]
+        },
+        
+        'clear_dusk': {
+            'visual': [
+                "the sky transforms into shades of orange and deep purple",
+                "city lights begin to flicker on against the darkening horizon",
+                "neon signs start their evening glow against twilight shadows"
+            ],
+            'auditory': [
+                "evening traffic creates a steady flow of urban sound",
+                "restaurant patios and street life add voices to the mix",
+                "the city transitions from day sounds to night rhythms"
+            ],
+            'olfactory': [
+                "evening air carries cooled concrete and the day's accumulated scents",
+                "restaurant and food vendor aromas become more prominent",
+                "exhaust mixes with hints of night-blooming urban plants"
+            ],
+            'atmospheric': [
+                "dusk brings a sense of transition and possibility",
+                "the air feels electric with evening energy",
+                "there's anticipation in the cooling, vibrant atmosphere"
+            ]
+        },
+        
+        'clear_early_evening': {
+            'visual': [
+                "street lights and neon create a vibrant urban tapestry",
+                "windows glow warmly against the deepening night",
+                "the city transforms into a constellation of human activity"
+            ],
+            'auditory': [
+                "evening entertainment districts come alive with music and voices",
+                "traffic maintains its steady hum with occasional sirens",
+                "the soundscape becomes richer and more varied"
+            ],
+            'olfactory': [
+                "cool evening air carries scents from restaurants and bars",
+                "the urban fragrance becomes more complex and inviting",
+                "exhaust mingles with food, perfume, and night air"
+            ],
+            'atmospheric': [
+                "early evening energy feels social and dynamic",
+                "there's excitement and possibility in the cool air",
+                "the city pulses with nightlife beginning to stir"
+            ]
+        },
+        
+        'clear_late_evening': {
+            'visual': [
+                "city lights create a glowing network against the dark sky",
+                "neon reflections dance on wet pavement and building surfaces",
+                "the urban landscape takes on a cinematic quality"
+            ],
+            'auditory': [
+                "nightlife sounds mix with diminishing traffic",
+                "music spills from clubs and bars into the night air",
+                "the city's rhythm shifts to its evening tempo"
+            ],
+            'olfactory': [
+                "night air carries a complex blend of urban nightlife scents",
+                "cooling concrete releases the day's stored heat and odors",
+                "food, alcohol, and exhaust create a distinctive late evening atmosphere"
+            ],
+            'atmospheric': [
+                "late evening brings a sense of urban adventure",
+                "the air feels alive with entertainment and possibility",
+                "there's an electric quality to the cool, active night"
+            ]
+        },
+        
+        'clear_night': {
+            'visual': [
+                "deep night wraps the city in darkness punctuated by artificial light",
+                "street lamps create islands of illumination in urban shadows",
+                "late-night establishments glow like beacons in the quiet darkness"
+            ],
+            'auditory': [
+                "the city settles into its quieter night rhythm",
+                "distant traffic provides a low, steady background hum",
+                "occasional late-night sounds echo more clearly in the stillness"
+            ],
+            'olfactory': [
+                "cool night air carries concentrated urban scents",
+                "the darkness seems to intensify smells of concrete and metal",
+                "late-night food vendors add warm, comforting aromas"
+            ],
+            'atmospheric': [
+                "night brings a sense of urban solitude and mystery",
+                "the air feels cooler and more intimate",
+                "there's a contemplative quality to the quiet darkness"
+            ]
+        },
+        
+        'clear_late_night': {
+            'visual': [
+                "the deep hours paint the city in stark contrasts of light and shadow",
+                "only essential lighting remains, creating dramatic urban scenes",
+                "the few active windows suggest insomniacs and night shift workers"
+            ],
+            'auditory': [
+                "the city reaches its quietest point with minimal traffic",
+                "night shift machinery and distant sounds carry clearly",
+                "occasional sirens or late vehicles stand out against the silence"
+            ],
+            'olfactory': [
+                "cold air sharpens urban scents into distinct, clear notes",
+                "industrial night operations add their own distinctive odors",
+                "the smell of empty streets and cooling concrete dominates"
+            ],
+            'atmospheric': [
+                "late night carries a sense of urban isolation",
+                "the air feels thin and crisp with possibility",
+                "there's something both lonely and peaceful in the stillness"
+            ]
+        },
+
         # Rain weather
         'rain_evening': {
             'visual': [
