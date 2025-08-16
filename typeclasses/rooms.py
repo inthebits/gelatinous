@@ -269,13 +269,13 @@ class Room(ObjectParent, DefaultRoom):
         
         # Format using natural language similar to character placement
         if len(things) == 1:
-            return f"You see: {things[0]}"
+            return f"You see a {things[0]}"
         elif len(things) == 2:
-            return f"You see: {things[0]} and {things[1]}"
+            return f"You see a {things[0]} and {things[1]}"
         else:
             # Handle 3+ objects: "You see: A, B, and C"
             all_but_last = ", ".join(things[:-1])
-            return f"You see: {all_but_last}, and {things[-1]}"
+            return f"You see a {all_but_last}, and {things[-1]}"
     
     def get_display_footer(self, looker, **kwargs):
         """
