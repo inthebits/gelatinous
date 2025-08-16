@@ -74,6 +74,10 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdCatch())
         self.add(CmdRig())
         self.add(CmdDefuse())
+        
+        # Add character placement commands
+        self.add(CmdCharacter.CmdLookPlace())
+        self.add(CmdCharacter.CmdTempPlace())
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """

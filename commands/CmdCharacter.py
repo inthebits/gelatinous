@@ -64,3 +64,210 @@ class CmdStats(Command):
 {COLOR_SUCCESS}{BOX_BOTTOM_LEFT}{BOX_HORIZONTAL * 48}{BOX_BOTTOM_RIGHT}{COLOR_NORMAL}"""
 
         caller.msg(string)
+
+
+class CmdLookPlace(Command):
+    """
+    Set your default room positioning description.
+    
+    Usage:
+        @look_place <description>
+        @look_place me is <description>
+        @look_place me is "<description>"
+        @look_place is <description>
+        @look_place "<description>"
+        @look_place clear
+    
+    Examples:
+        @look_place standing here.
+        @look_place me is "sitting on a rock"
+        @look_place me is "is lounging lazily"
+        @look_place is crouched in the shadows
+        @look_place clear
+    
+    This sets your default positioning that others see when they look at a room.
+    Instead of "Characters: YourName", they'll see "YourName is <your description>".
+    
+    Use 'clear' to remove your look_place and return to default display.
+    """
+    
+    key = "@look_place"
+    aliases = ["@lookplace"]
+    locks = "cmd:all()"
+    help_category = "Character"
+    
+    def func(self):
+        """Execute the command."""
+        caller = self.caller
+        
+        if not self.args:
+            # Show current setting
+            current = caller.look_place or ""
+            if current:
+                caller.msg(f"Your current look_place: '{current}'")
+            else:
+                caller.msg("You have no look_place set. Others see you in the default character listing.")
+            return
+        
+        # Handle 'clear' command
+        if self.args.strip().lower() in ('clear', 'none', 'remove'):
+            caller.look_place = ""
+            caller.msg("Your look_place has been cleared.")
+            return
+        
+        # Parse the description with smart 'is' handling
+        description = self.parse_placement_description(self.args)
+        
+        if not description:
+            caller.msg("Please provide a description for your look_place.")
+            return
+        
+        # Ensure description ends with proper punctuation
+        if not description.endswith(('.', '!', '?')):
+            description += '.'
+        
+        # Set the look_place
+        caller.look_place = description
+        caller.msg(f"Your look_place is now: '{description}'")
+        caller.msg("Others will see: '|c" + caller.get_display_name(caller) + f"|n is {description}'")
+    
+    def parse_placement_description(self, raw_input):
+        """
+        Parse various input formats to extract the placement description.
+        
+        Handles patterns like:
+        - "standing here"
+        - "me is standing here"  
+        - "me is \"standing here\""
+        - "is standing here"
+        - "\"standing here\""
+        - "me is \"is standing here\""
+        
+        Args:
+            raw_input (str): The raw command arguments
+            
+        Returns:
+            str: The cleaned placement description
+        """
+        text = raw_input.strip()
+        
+        # Remove outer quotes if present
+        if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
+            text = text[1:-1]
+        
+        # Handle "me is ..." pattern
+        if text.lower().startswith('me is '):
+            text = text[6:].strip()  # Remove "me is "
+            
+            # Remove inner quotes if present after "me is"
+            if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
+                text = text[1:-1]
+        
+        # Handle "is ..." pattern (without "me")
+        elif text.lower().startswith('is '):
+            text = text[3:].strip()  # Remove "is "
+        
+        # Clean up redundant "is" at the beginning
+        # Handle cases like "me is \"is standing here\""
+        if text.lower().startswith('is '):
+            text = text[3:].strip()
+        
+        return text.strip()
+
+
+class CmdTempPlace(Command):
+    """
+    Set a temporary room positioning description.
+    
+    Usage:
+        @temp_place <description>
+        @temp_place me is <description>
+        @temp_place me is "<description>"
+        @temp_place is <description>
+        @temp_place "<description>"
+        @temp_place clear
+    
+    Examples:
+        @temp_place hiding behind a tree.
+        @temp_place me is "examining the wall closely"
+        @temp_place me is "is investigating something"
+        @temp_place is crouched and ready to spring
+        @temp_place clear
+    
+    This sets a temporary positioning that overrides your @look_place.
+    It will be automatically cleared when you move to a different room.
+    
+    Use 'clear' to remove your temp_place immediately.
+    """
+    
+    key = "@temp_place"
+    aliases = ["@tempplace"]
+    locks = "cmd:all()"
+    help_category = "Character"
+    
+    def func(self):
+        """Execute the command."""
+        caller = self.caller
+        
+        if not self.args:
+            # Show current setting
+            current = caller.temp_place or ""
+            if current:
+                caller.msg(f"Your current temp_place: '{current}'")
+            else:
+                caller.msg("You have no temp_place set.")
+            return
+        
+        # Handle 'clear' command
+        if self.args.strip().lower() in ('clear', 'none', 'remove'):
+            caller.temp_place = ""
+            caller.msg("Your temp_place has been cleared.")
+            return
+        
+        # Parse the description with smart 'is' handling
+        description = self.parse_placement_description(self.args)
+        
+        if not description:
+            caller.msg("Please provide a description for your temp_place.")
+            return
+        
+        # Ensure description ends with proper punctuation
+        if not description.endswith(('.', '!', '?')):
+            description += '.'
+        
+        # Set the temp_place
+        caller.temp_place = description
+        caller.msg(f"Your temp_place is now: '{description}'")
+        caller.msg("Others will see: '|c" + caller.get_display_name(caller) + f"|n is {description}'")
+        caller.msg("This will be cleared when you move to a different room.")
+    
+    def parse_placement_description(self, raw_input):
+        """
+        Parse various input formats to extract the placement description.
+        
+        Same logic as CmdLookPlace for consistency.
+        """
+        text = raw_input.strip()
+        
+        # Remove outer quotes if present
+        if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
+            text = text[1:-1]
+        
+        # Handle "me is ..." pattern
+        if text.lower().startswith('me is '):
+            text = text[6:].strip()  # Remove "me is "
+            
+            # Remove inner quotes if present after "me is"
+            if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
+                text = text[1:-1]
+        
+        # Handle "is ..." pattern (without "me")
+        elif text.lower().startswith('is '):
+            text = text[3:].strip()  # Remove "is "
+        
+        # Clean up redundant "is" at the beginning
+        # Handle cases like "me is \"is standing here\""
+        if text.lower().startswith('is '):
+            text = text[3:].strip()
+        
+        return text.strip()
