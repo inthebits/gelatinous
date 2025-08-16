@@ -29,9 +29,7 @@ class Room(ObjectParent, DefaultRoom):
     appearance_template = """{header}
 |c{name}|n
 {desc}
-
 {things}
-
 {characters}
 {footer}"""
 
@@ -310,7 +308,7 @@ class Room(ObjectParent, DefaultRoom):
         for i, line in enumerate(lines):
             processed_lines.append(line)
             
-            # Add line break after room description when content follows
+            # Add line break after room description when any content follows (including exits)
             if (line.strip() and 
                 not line.startswith('|c') and  # Not room name
                 not line.startswith('|w') and  # Not colored headers
@@ -319,7 +317,7 @@ class Room(ObjectParent, DefaultRoom):
                 not line.strip().startswith('Exits:') and   # Not exits
                 not line.strip().startswith('Edges:')):     # Not edges
                 
-                # Check if next line has content (items, characters, or exits)
+                # Check if next line has any content (items, characters, or exits)
                 if i + 1 < len(lines):
                     next_line = lines[i + 1].strip()
                     if (next_line and 
@@ -329,7 +327,7 @@ class Room(ObjectParent, DefaultRoom):
                          next_line.startswith('Edges:'))):
                         processed_lines.append('')  # Add blank line after room description
             
-            # Add line break between items and characters
+            # Add line break between items and characters (only if both exist)
             elif line.strip().startswith('You see:'):
                 # Check if next line has character content
                 if i + 1 < len(lines):
@@ -337,6 +335,19 @@ class Room(ObjectParent, DefaultRoom):
                     if (next_line and 
                         any(char_indicator in next_line.lower() for char_indicator in ['is standing', 'is sitting', 'is crouched', 'is hiding', 'is lying', 'is kneeling', 'is doing', 'is in'])):
                         processed_lines.append('')  # Add blank line between items and characters
+            
+            # Add line break before exits if no items or characters preceded them
+            elif (line.strip().startswith('Exits:') or line.strip().startswith('Edges:')):
+                # Check if previous line was room description (not items or characters)
+                if processed_lines and len(processed_lines) >= 2:
+                    prev_line = processed_lines[-2].strip()  # -2 because we just added the current line
+                    if (prev_line and 
+                        not prev_line.startswith('You see:') and
+                        not any(char_indicator in prev_line.lower() for char_indicator in ['is standing', 'is sitting', 'is crouched', 'is hiding', 'is lying', 'is kneeling', 'is doing', 'is in']) and
+                        not prev_line.startswith('Exits:') and
+                        not prev_line.startswith('Edges:')):
+                        # Insert blank line before this exits line
+                        processed_lines.insert(-1, '')
         
         return '\n'.join(processed_lines)
     
