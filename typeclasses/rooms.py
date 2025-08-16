@@ -400,6 +400,10 @@ class Room(ObjectParent, DefaultRoom):
         Returns:
             str: Formatted natural language exit display string
         """
+        # Sky rooms don't display exits
+        if self.is_sky_room:
+            return ""
+            
         exits = self.exits
         if not exits:
             return ""
