@@ -30,6 +30,7 @@ class Room(ObjectParent, DefaultRoom):
 {header}
 |c{name}|n
 {desc}
+
 {characters}
 {things}
 {footer}
