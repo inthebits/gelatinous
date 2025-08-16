@@ -238,7 +238,7 @@ class Room(ObjectParent, DefaultRoom):
     
     def get_display_things(self, looker, **kwargs):
         """
-        Override things display to exclude @integrate objects.
+        Override things display to exclude @integrate objects and use natural language formatting.
         
         @integrate objects are woven into the room description and
         should not appear in the traditional object listing.
@@ -264,10 +264,18 @@ class Room(ObjectParent, DefaultRoom):
             
             things.append(obj.get_display_name(looker))
         
-        if things:
-            return f"|wYou see:|n {', '.join(things)}"
+        if not things:
+            return ""
         
-        return ""
+        # Format using natural language similar to character placement
+        if len(things) == 1:
+            return f"You see: {things[0]}"
+        elif len(things) == 2:
+            return f"You see: {things[0]} and {things[1]}"
+        else:
+            # Handle 3+ objects: "You see: A, B, and C"
+            all_but_last = ", ".join(things[:-1])
+            return f"You see: {all_but_last}, and {things[-1]}"
     
     def get_display_footer(self, looker, **kwargs):
         """
