@@ -443,9 +443,13 @@ class Room(ObjectParent, DefaultRoom):
         """
         descriptions = []
         
-        # Format streets (analyze destination room layout)
+        # Format streets (analyze destination room layout and group by type)
         if exit_groups['streets']:
-            street_descriptions = []
+            # Group streets by their type
+            dead_ends = []
+            continues = []
+            intersections = []
+            
             for direction, alias in exit_groups['streets']:
                 dir_text = self.format_direction_with_alias(direction, alias)
                 
@@ -463,18 +467,36 @@ class Room(ObjectParent, DefaultRoom):
                                           and e.destination.type == 'street')
                     
                     if street_exit_count <= 1:
-                        street_descriptions.append(f"There is a dead-end to the {dir_text}.")
+                        dead_ends.append(dir_text)
                     elif street_exit_count == 2:
-                        street_descriptions.append(f"The street continues to the {dir_text}.")
+                        continues.append(dir_text)
                     else:
-                        street_descriptions.append(f"There is an intersection to the {dir_text}.")
+                        intersections.append(dir_text)
                 else:
                     # Fallback if we can't analyze destination
-                    street_descriptions.append(f"The street continues to the {dir_text}.")
+                    continues.append(dir_text)
             
-            # Join all street descriptions
-            for desc in street_descriptions:
-                descriptions.append(desc)
+            # Format grouped street descriptions
+            if dead_ends:
+                if len(dead_ends) == 1:
+                    descriptions.append(f"There is a dead-end to the {dead_ends[0]}.")
+                else:
+                    dead_end_desc = self.format_direction_list(dead_ends)
+                    descriptions.append(f"There are dead-ends to the {dead_end_desc}.")
+                    
+            if continues:
+                if len(continues) == 1:
+                    descriptions.append(f"The street continues to the {continues[0]}.")
+                else:
+                    continue_desc = self.format_direction_list(continues)
+                    descriptions.append(f"The street continues to the {continue_desc}.")
+                    
+            if intersections:
+                if len(intersections) == 1:
+                    descriptions.append(f"There is an intersection to the {intersections[0]}.")
+                else:
+                    intersection_desc = self.format_direction_list(intersections)
+                    descriptions.append(f"There are intersections to the {intersection_desc}.")
         
         # Format custom types (grouped by type)
         for dest_type, exits in exit_groups['custom_types'].items():
