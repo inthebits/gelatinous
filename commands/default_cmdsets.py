@@ -20,6 +20,7 @@ from commands import CmdCharacter
 from commands import CmdInventory
 from commands import CmdAdmin
 from commands.CmdSpawnMob import CmdSpawnMob
+from commands.CmdWeather import CmdWeather
 from commands.combat.cmdset_combat import CombatCmdSet
 from commands.combat.special_actions import CmdAim, CmdGrapple
 from commands.CmdThrow import CmdThrow, CmdPull, CmdCatch, CmdRig, CmdDefuse
@@ -46,6 +47,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdAdmin.CmdHeal())
         self.add(CmdAdmin.CmdPeace())
         self.add(CmdAdmin.CmdTestDeathCurtain())
+        self.add(CmdWeather())
         
         # Add aim command for ranged combat preparation
         self.add(CmdAim())
