@@ -382,15 +382,8 @@ class Room(ObjectParent, DefaultRoom):
         # Add weather contributions for outdoor rooms (weather acts as "caboose")
         weather_desc = weather_system.get_weather_contributions(self, looker)
         if weather_desc:
-            # Add weather at the very end, before footer if it exists
-            if footer:
-                # Insert weather before footer
-                old_pattern = '\n' + footer
-                new_pattern = '\n\n' + weather_desc + '\n' + footer
-                result = result.replace(old_pattern, new_pattern)
-            else:
-                # No footer, just append weather
-                result = result.rstrip() + '\n\n' + weather_desc
+            # Add weather at the very end, after everything including footer (exits)
+            result = result.rstrip() + '\n\n' + weather_desc
         
         return result
     

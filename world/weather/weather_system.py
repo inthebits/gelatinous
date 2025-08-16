@@ -55,8 +55,22 @@ class WeatherSystem:
         if not selected_messages:
             return ""
             
-        # Combine messages with comma separator and bold white formatting
-        combined = ", ".join(selected_messages)
+        # Format messages with proper capitalization and punctuation
+        formatted_messages = []
+        for message in selected_messages:
+            # Capitalize first letter and ensure period at end
+            formatted_message = message.strip()
+            if formatted_message:
+                formatted_message = formatted_message[0].upper() + formatted_message[1:]
+                if not formatted_message.endswith('.'):
+                    formatted_message += '.'
+                formatted_messages.append(formatted_message)
+        
+        if not formatted_messages:
+            return ""
+            
+        # Combine messages with space separator and bold white formatting
+        combined = " ".join(formatted_messages)
         return f"|W{combined}|n"
         
     def get_sensory_messages(self, weather_key, looker):
