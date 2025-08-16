@@ -307,14 +307,15 @@ class Room(ObjectParent, DefaultRoom):
         
         result = appearance
         
-        # Add spacing between items and characters if both exist
-        if things and characters:
-            old_pattern = things + '\n' + characters
-            new_pattern = things + '\n\n' + characters
-            result = result.replace(old_pattern, new_pattern)
-        
-        # Add spacing between room description and first content section (items or characters)
-        if desc and (things or characters):
+        # Only modify spacing if we have actual content (items or characters)
+        if things or characters:
+            # Add spacing between items and characters if both exist
+            if things and characters:
+                old_pattern = things + '\n' + characters
+                new_pattern = things + '\n\n' + characters
+                result = result.replace(old_pattern, new_pattern)
+            
+            # Add spacing between room description and first content section
             first_content = things if things else characters
             old_pattern = desc + '\n' + first_content
             new_pattern = desc + '\n\n' + first_content
