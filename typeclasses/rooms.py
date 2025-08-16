@@ -26,15 +26,12 @@ class Room(ObjectParent, DefaultRoom):
     # and custom things display to handle @integrate objects
     # This avoids duplicate display issues with exits while letting Evennia handle characters
     # See: https://www.evennia.com/docs/latest/Components/Objects.html#changing-an-objects-appearance
-    appearance_template = """
-{header}
+    appearance_template = """{header}
 |c{name}|n
-{desc}
-
+{desc}\n
 {characters}
 {things}
-{footer}
-"""
+{footer}"""
 
     def return_appearance(self, looker, **kwargs):
         """
