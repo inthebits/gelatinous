@@ -306,25 +306,27 @@ class Room(ObjectParent, DefaultRoom):
         characters = self.get_display_characters(looker, **kwargs)
         footer = self.get_display_footer(looker, **kwargs)
         
-        # Split appearance and rebuild with proper spacing
-        lines = appearance.split('\n')
-        result_lines = []
+        # Simple approach: add spacing based on what content exists
+        result = appearance
         
-        for line in lines:
-            result_lines.append(line)
-            
-            # Add blank line after room description if there's any content following
-            if (line.strip() and 
-                not line.startswith('|c') and  # Not room name
-                line == lines[1]):  # This is the room description line
-                if things or characters or footer:
-                    result_lines.append('')
-                    
-            # Add blank line after items if there are characters
-            elif line == things and characters:
-                result_lines.append('')
+        # Add spacing between room description and first content section
+        if things or characters:
+            # Find where room description ends (after room name line)
+            lines = result.split('\n')
+            for i, line in enumerate(lines):
+                if line.startswith('|c') and line.endswith('|n'):  # Room name
+                    # Next non-empty line is room description
+                    if i + 1 < len(lines) and lines[i + 1].strip():
+                        # Insert blank line after room description
+                        lines.insert(i + 2, '')
+                        break
+            result = '\n'.join(lines)
         
-        return '\n'.join(result_lines)
+        # Add spacing between items and characters if both exist
+        if things and characters:
+            result = result.replace(things + '\n' + characters, things + '\n\n' + characters)
+        
+        return result
     
     def get_custom_exit_display(self, looker):
         """
