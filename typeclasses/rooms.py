@@ -219,7 +219,7 @@ class Room(ObjectParent, DefaultRoom):
             placement = (override_place if override_place else
                         temp_place if temp_place else
                         look_place if look_place else
-                        "is here.")
+                        "here.")
             
             if placement not in placement_groups:
                 placement_groups[placement] = []
@@ -229,13 +229,13 @@ class Room(ObjectParent, DefaultRoom):
         descriptions = []
         for placement, char_names in placement_groups.items():
             if len(char_names) == 1:
-                descriptions.append(f"{char_names[0]} {placement}")
+                descriptions.append(f"{char_names[0]} is {placement}")
             elif len(char_names) == 2:
-                descriptions.append(f"{char_names[0]} and {char_names[1]} {placement}")
+                descriptions.append(f"{char_names[0]} and {char_names[1]} are {placement}")
             else:
                 # Handle 3+ characters: "A, B, and C are here"
                 all_but_last = ", ".join(char_names[:-1])
-                descriptions.append(f"{all_but_last}, and {char_names[-1]} {placement}")
+                descriptions.append(f"{all_but_last}, and {char_names[-1]} are {placement}")
         
         return "\n".join(descriptions) if descriptions else ""
     

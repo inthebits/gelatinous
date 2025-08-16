@@ -46,7 +46,7 @@ class Character(ObjectParent, DefaultCharacter):
     hp_max = AttributeProperty(10, category='health', autocreate=True)
 
 # Character Placement Descriptions
-    look_place = AttributeProperty("is standing here.", category='description', autocreate=True)
+    look_place = AttributeProperty("standing here.", category='description', autocreate=True)
     temp_place = AttributeProperty("", category='description', autocreate=True)
     override_place = AttributeProperty("", category='description', autocreate=True)
 
