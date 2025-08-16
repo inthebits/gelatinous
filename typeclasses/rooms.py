@@ -82,14 +82,26 @@ class Room(ObjectParent, DefaultRoom):
         should call.
 
         Enhanced to show flying objects during throw mechanics and 
-        integrate @integrate objects into the room description.
+        integrate @integrate objects and weather into the room description.
         """
         # Get the base description from the parent class
         appearance = super().return_appearance(looker, **kwargs)
         
         # Process @integrate objects and flying objects - append to room description
         integrated_content = self.get_integrated_objects_content(looker)
+        
+        # Get weather contributions for outdoor rooms
+        weather_desc = weather_system.get_weather_contributions(self, looker)
+        
+        # Combine integrated content and weather
+        all_integrated_content = []
         if integrated_content:
+            all_integrated_content.append(integrated_content)
+        if weather_desc:
+            all_integrated_content.append(weather_desc)
+        
+        if all_integrated_content:
+            combined_content = " ".join(all_integrated_content)
             # Simple approach: find room description and append integrated content
             lines = appearance.split('\n')
             room_name_found = False
@@ -102,7 +114,7 @@ class Room(ObjectParent, DefaultRoom):
                 
                 # After room name, find first non-empty line (room description) and append
                 if room_name_found and line.strip() and not line.startswith('Characters:') and not line.startswith('You see:') and not line.startswith('Exits:'):
-                    lines[i] += f" {integrated_content}"
+                    lines[i] += f" {combined_content}"
                     break
             
             appearance = '\n'.join(lines)
@@ -378,12 +390,6 @@ class Room(ObjectParent, DefaultRoom):
             if desc and footer and '\n\n\n' in result:
                 # Replace triple line breaks with double
                 result = result.replace('\n\n\n', '\n\n')
-        
-        # Add weather contributions for outdoor rooms (weather acts as "caboose")
-        weather_desc = weather_system.get_weather_contributions(self, looker)
-        if weather_desc:
-            # Add weather at the very end, after everything including footer (exits)
-            result = result.rstrip() + '\n\n' + weather_desc
         
         return result
     
