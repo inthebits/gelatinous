@@ -6,6 +6,7 @@ Rooms are simple containers that has no location of their own.
 """
 
 from evennia.objects.objects import DefaultRoom
+from evennia.typeclasses.attributes import AttributeProperty
 from world.combat.constants import NDB_FLYING_OBJECTS
 
 from .objects import ObjectParent
@@ -22,15 +23,8 @@ class Room(ObjectParent, DefaultRoom):
     properties and methods available on all Objects.
     """
     
-    def at_object_creation(self):
-        """
-        Called when room is first created.
-        Initialize room attributes.
-        """
-        super().at_object_creation()
-        
-        # Create empty type attribute for builders to use
-        self.db.type = None
+    # Room type for smart exit system
+    type = AttributeProperty(default=None, autocreate=True)
     
     # Override the appearance template to use our custom footer for exits
     # and custom things display to handle @integrate objects
@@ -388,8 +382,8 @@ class Room(ObjectParent, DefaultRoom):
             elif getattr(exit_obj.db, "is_gap", False):
                 exit_groups['gaps'].append((direction, alias))
             # Check destination type
-            elif destination and hasattr(destination.db, 'type') and destination.db.type:
-                dest_type = destination.db.type
+            elif destination and hasattr(destination, 'type') and destination.type:
+                dest_type = destination.type
                 if dest_type == 'street':
                     exit_groups['streets'].append((direction, alias))
                 else:
