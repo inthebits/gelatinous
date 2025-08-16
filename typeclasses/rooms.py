@@ -306,11 +306,6 @@ class Room(ObjectParent, DefaultRoom):
         desc = self.db.desc or ""
         footer = self.get_display_footer(looker, **kwargs)
         
-        # Debug empty rooms
-        if not things and not characters:
-            looker.msg(f"[Splattercast] DEBUG empty room: desc='{desc}', footer='{footer}'", channel="splattercast")
-            looker.msg(f"[Splattercast] DEBUG appearance before: '{repr(appearance)}'", channel="splattercast")
-        
         result = appearance
         
         # Only modify spacing if we have actual content (items or characters)
@@ -327,13 +322,10 @@ class Room(ObjectParent, DefaultRoom):
             new_pattern = desc + '\n\n' + first_content
             result = result.replace(old_pattern, new_pattern)
         else:
-            # For empty rooms, check if there are excessive line breaks before footer
+            # For empty rooms, fix excessive line breaks before footer
             if desc and footer and '\n\n\n' in result:
                 # Replace triple line breaks with double
                 result = result.replace('\n\n\n', '\n\n')
-        
-        if not things and not characters:
-            looker.msg(f"[Splattercast] DEBUG appearance after: '{repr(result)}'", channel="splattercast")
         
         return result
     
