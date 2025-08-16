@@ -26,6 +26,23 @@ class Room(ObjectParent, DefaultRoom):
     # Room type for smart exit system
     type = AttributeProperty(default=None, autocreate=True)
     
+    # Sky room flag for exit filtering
+    is_sky_room = AttributeProperty(default=False, autocreate=True)
+    
+    def at_object_creation(self):
+        """
+        Called when room is first created.
+        Initialize room attributes for existing rooms.
+        """
+        super().at_object_creation()
+        
+        # Initialize attributes - AttributeProperty will handle new rooms,
+        # but existing rooms need this to ensure attributes exist
+        if not hasattr(self, 'type'):
+            self.type = None
+        if not hasattr(self, 'is_sky_room'):
+            self.is_sky_room = False
+    
     # Override the appearance template to use our custom footer for exits
     # and custom things display to handle @integrate objects
     # This avoids duplicate display issues with exits while letting Evennia handle characters
@@ -371,7 +388,7 @@ class Room(ObjectParent, DefaultRoom):
             # Check if exit leads to a sky room (skip unless edge/gap)
             destination_is_sky = False
             if destination:
-                destination_is_sky = getattr(destination.db, "is_sky_room", False)
+                destination_is_sky = destination.is_sky_room
             
             if destination_is_sky and not (getattr(exit_obj.db, "is_edge", False) or getattr(exit_obj.db, "is_gap", False)):
                 continue  # Skip pure sky rooms
