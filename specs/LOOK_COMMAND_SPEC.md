@@ -127,25 +127,52 @@ weather_pools = {
 
 ### 5. Smart Exit System Enhancement
 
-**Room Type Detection:**
-- **Automatic Labeling**: 3+ exits to 'street' type rooms = "intersection"
-- **Manual Override**: Builders can set custom labels ("nightclub", "alley")
-- **Contextual Descriptions**: "street to the south" vs. generic "south"
+**Room Type System:**
+- **Storage**: `room.db.type` attribute for room classification
+- **Auto-Detected Types**: `street`, `intersection`, `dead-end` (based on adjacent room analysis)
+- **Custom Types**: `courier service`, `cube hotel`, `hospital`, `stairway` (builder-defined)
+- **Integration**: Auto-detected and custom types work together for mixed scenarios
 
-**Exit Integration with Sensory Categories:**
-- **Visual**: Exit appearance based on destination type
-- **Auditory**: Sounds coming from different directions
-- **Atmospheric**: How exits affect room mood
+**Auto-Detection Rules:**
+- **Intersection**: 3+ exits leading to rooms with `type="street"`
+- **Dead-end**: 1 exit from a room with `type="street"`
+- **Street**: Connected to other street-type rooms in linear fashion
 
-**Enhanced Exit Descriptions:**
-```python
-exit_templates = {
-    'street': "There is a street to the {direction}",
-    'alley': "A narrow alley leads {direction}",
-    'nightclub': "Bass thumps from the nightclub to the {direction}",
-    'intersection': "The intersection continues {direction}"
-}
+**Natural Language Exit Patterns:**
+1. **Grouped by Type**: "The street continues north and south"
+2. **Individual Destinations**: "There is a courier service to the west and a cube hotel to the east"
+3. **Mixed Integration**: "The street continues north. There is a hospital to the east and an edge to the south"
+4. **Fallback Format**: "There is an exit to the south (s)" when no type information available
+
+**Exit Display Examples:**
 ```
+Example 1 (Mixed types):
+"The street continues south and north. There is a courier service to the west and a cube hotel to the east."
+
+Example 2 (Utilitarian/Complex):  
+"There are exits to the east (e), west (w), C01 (01), C02 (02), C03 (03), C04 (04), C05 (05), C06 (06)."
+
+Example 3 (Simple mixed):
+"The street continues north. There is an intersection to the south and a stairway to the west."
+```
+
+**Alias Integration:**
+- **Standard Format**: "north (n)" - shows direction and first alias
+- **No Alias**: "north" - omits parentheses when no alias exists
+- **Complex Exits**: Custom exit names with their primary alias
+
+**Edge/Gap Integration:**
+- **Natural Language**: "There is an edge to the south and west"
+- **Mixed Content**: Edges integrated with other exit types naturally
+- **Multiple Edges**: Grouped using natural language conjunctions
+
+**Implementation Logic:**
+1. **Analyze Destinations**: Check each exit's destination `room.db.type`
+2. **Group by Type**: Collect exits leading to same destination types
+3. **Apply Grouping Rules**: "street continues" for multiple street destinations
+4. **Format Individual Types**: "There is a [type] to the [direction]"
+5. **Integrate Edges/Gaps**: Include in natural language flow
+6. **Fallback Handling**: Use generic format for unknown types
 
 ### 6. Character Integration Enhancement
 
@@ -281,8 +308,52 @@ integration_settings = {
     'crowd_base_level': 'moderate'
 }
 
-# Room type for exit labeling
-room_type = 'intersection'  # auto-detected or manually set
+# Room type for smart exit labeling
+room.db.type = 'street'  # Can be auto-detected or manually set
+# Auto-detected: 'street', 'intersection', 'dead-end'
+# Custom: 'courier service', 'cube hotel', 'hospital', 'stairway', etc.
+```
+
+**Smart Exit Implementation:**
+```python
+def get_smart_exit_description(self, looker):
+    """Generate natural language exit descriptions."""
+    
+    # Group exits by destination type and special properties
+    exit_groups = {
+        'streets': [],
+        'edges': [],
+        'gaps': [],
+        'custom_types': {},
+        'fallback': []
+    }
+    
+    # Analyze each exit
+    for exit_obj in self.exits:
+        direction = exit_obj.key
+        alias = exit_obj.aliases[0] if exit_obj.aliases else None
+        destination = exit_obj.destination
+        
+        # Check for edge/gap first
+        if getattr(exit_obj.db, "is_edge", False):
+            exit_groups['edges'].append((direction, alias))
+        elif getattr(exit_obj.db, "is_gap", False):
+            exit_groups['gaps'].append((direction, alias))
+        # Check destination type
+        elif destination and hasattr(destination.db, 'type'):
+            dest_type = destination.db.type
+            if dest_type == 'street':
+                exit_groups['streets'].append((direction, alias))
+            else:
+                if dest_type not in exit_groups['custom_types']:
+                    exit_groups['custom_types'][dest_type] = []
+                exit_groups['custom_types'][dest_type].append((direction, alias))
+        else:
+            # Fallback for exits without type information
+            exit_groups['fallback'].append((direction, alias))
+    
+    # Generate natural language descriptions
+    return self.format_exit_groups(exit_groups)
 ```
 
 ### Enhanced return_appearance Method

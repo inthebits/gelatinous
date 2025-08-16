@@ -339,53 +339,153 @@ class Room(ObjectParent, DefaultRoom):
     
     def get_custom_exit_display(self, looker):
         """
-        Get custom exit display that separates edges, gaps, and regular exits.
+        Get smart exit display using natural language based on destination room types.
         
         Returns:
-            str: Formatted exit display string
+            str: Formatted natural language exit display string
         """
         exits = self.exits
         if not exits:
             return ""
         
-        regular_exits = []
-        edge_exits = []
+        # Group exits by destination type and special properties
+        exit_groups = {
+            'streets': [],
+            'edges': [],
+            'gaps': [],
+            'custom_types': {},
+            'fallback': []
+        }
         
-        # Categorize exits
+        # Analyze each exit
         for exit_obj in exits:
-            is_edge = getattr(exit_obj.db, "is_edge", False)
-            is_gap = getattr(exit_obj.db, "is_gap", False)
-            
-            # Check if exit leads to a sky room
+            direction = exit_obj.key
+            alias = exit_obj.aliases[0] if exit_obj.aliases else None
             destination = exit_obj.destination
+            
+            # Check if exit leads to a sky room (skip unless edge/gap)
             destination_is_sky = False
             if destination:
                 destination_is_sky = getattr(destination.db, "is_sky_room", False)
             
-            # Filter out exits to sky rooms unless they're also edges/gaps
-            if destination_is_sky and not (is_edge or is_gap):
-                # Skip this exit - pure sky rooms are hidden from display
-                continue
+            if destination_is_sky and not (getattr(exit_obj.db, "is_edge", False) or getattr(exit_obj.db, "is_gap", False)):
+                continue  # Skip pure sky rooms
             
-            if is_edge or is_gap:
-                # Mark gaps for special display
-                if is_gap:
-                    edge_exits.append(exit_obj.key)
+            # Check for edge/gap first (highest priority)
+            if getattr(exit_obj.db, "is_edge", False):
+                exit_groups['edges'].append((direction, alias))
+            elif getattr(exit_obj.db, "is_gap", False):
+                exit_groups['gaps'].append((direction, alias))
+            # Check destination type
+            elif destination and hasattr(destination.db, 'type') and destination.db.type:
+                dest_type = destination.db.type
+                if dest_type == 'street':
+                    exit_groups['streets'].append((direction, alias))
                 else:
-                    edge_exits.append(exit_obj.key)
+                    if dest_type not in exit_groups['custom_types']:
+                        exit_groups['custom_types'][dest_type] = []
+                    exit_groups['custom_types'][dest_type].append((direction, alias))
             else:
-                regular_exits.append(exit_obj.key)
+                # Fallback for exits without type information
+                exit_groups['fallback'].append((direction, alias))
         
-        # Build display
-        lines = []
+        # Generate natural language descriptions
+        return self.format_exit_groups(exit_groups)
+    
+    def format_exit_groups(self, exit_groups):
+        """
+        Format grouped exits into natural language descriptions.
         
-        if regular_exits:
-            lines.append(f"|wExits:|n {', '.join(regular_exits)}")
+        Args:
+            exit_groups (dict): Dictionary of grouped exits by type
+            
+        Returns:
+            str: Formatted natural language exit descriptions
+        """
+        descriptions = []
         
-        if edge_exits:
-            lines.append(f"|wEdges:|n {', '.join(edge_exits)}")
+        # Format streets (grouped)
+        if exit_groups['streets']:
+            street_dirs = [self.format_direction_with_alias(direction, alias) 
+                          for direction, alias in exit_groups['streets']]
+            if len(street_dirs) == 1:
+                descriptions.append(f"The street continues {street_dirs[0]}")
+            else:
+                street_desc = self.format_direction_list(street_dirs)
+                descriptions.append(f"The street continues {street_desc}")
         
-        if not regular_exits and not edge_exits:
-            return ""
+        # Format custom types (grouped by type)
+        for dest_type, exits in exit_groups['custom_types'].items():
+            type_dirs = [self.format_direction_with_alias(direction, alias) 
+                        for direction, alias in exits]
+            if len(type_dirs) == 1:
+                descriptions.append(f"There is a {dest_type} to the {type_dirs[0]}")
+            else:
+                type_desc = self.format_direction_list(type_dirs)
+                descriptions.append(f"There are {dest_type}s to the {type_desc}")
         
-        return "\n".join(lines)
+        # Format edges (grouped)
+        if exit_groups['edges']:
+            edge_dirs = [self.format_direction_with_alias(direction, alias) 
+                        for direction, alias in exit_groups['edges']]
+            if len(edge_dirs) == 1:
+                descriptions.append(f"There is an edge to the {edge_dirs[0]}")
+            else:
+                edge_desc = self.format_direction_list(edge_dirs)
+                descriptions.append(f"There are edges to the {edge_desc}")
+        
+        # Format gaps (grouped)
+        if exit_groups['gaps']:
+            gap_dirs = [self.format_direction_with_alias(direction, alias) 
+                       for direction, alias in exit_groups['gaps']]
+            if len(gap_dirs) == 1:
+                descriptions.append(f"There is a gap to the {gap_dirs[0]}")
+            else:
+                gap_desc = self.format_direction_list(gap_dirs)
+                descriptions.append(f"There are gaps to the {gap_desc}")
+        
+        # Format fallback exits
+        if exit_groups['fallback']:
+            fallback_dirs = [self.format_direction_with_alias(direction, alias) 
+                           for direction, alias in exit_groups['fallback']]
+            if len(fallback_dirs) == 1:
+                descriptions.append(f"There is an exit to the {fallback_dirs[0]}")
+            else:
+                fallback_desc = self.format_direction_list(fallback_dirs)
+                descriptions.append(f"There are exits to the {fallback_desc}")
+        
+        return " ".join(descriptions) if descriptions else ""
+    
+    def format_direction_with_alias(self, direction, alias):
+        """
+        Format a direction with its alias in parentheses if available.
+        
+        Args:
+            direction (str): The direction name
+            alias (str): The alias, if any
+            
+        Returns:
+            str: Formatted direction string
+        """
+        if alias and alias != direction:
+            return f"{direction} ({alias})"
+        return direction
+    
+    def format_direction_list(self, directions):
+        """
+        Format a list of directions using natural language conjunctions.
+        
+        Args:
+            directions (list): List of formatted direction strings
+            
+        Returns:
+            str: Natural language list of directions
+        """
+        if len(directions) == 1:
+            return directions[0]
+        elif len(directions) == 2:
+            return f"{directions[0]} and {directions[1]}"
+        else:
+            # Handle 3+ directions: "north, south, and east"
+            all_but_last = ", ".join(directions[:-1])
+            return f"{all_but_last}, and {directions[-1]}"
