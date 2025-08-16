@@ -1,0 +1,130 @@
+"""
+Core Weather System
+
+Manages global weather state and provides weather descriptions for rooms.
+Designed to be easily expandable for regional weather systems.
+"""
+
+import random
+from evennia.utils import logger
+from .weather_messages import WEATHER_MESSAGES, WEATHER_INTENSITY
+from .time_system import get_current_time_period
+
+
+class WeatherSystem:
+    """
+    Global weather management system.
+    
+    Handles current weather state and provides atmospheric descriptions
+    for outdoor rooms based on weather conditions and time of day.
+    """
+    
+    def __init__(self):
+        """Initialize weather system with default conditions."""
+        self.current_weather = "clear"
+        self.weather_region = "default"  # Future: support multiple regions
+        
+    def get_weather_contributions(self, room, looker):
+        """
+        Get weather contributions for a room's atmosphere.
+        
+        Args:
+            room: The room to get weather for
+            looker: Character looking at the room (for sensory filtering)
+            
+        Returns:
+            str: Weather description for the room, or empty string if not applicable
+        """
+        # Only apply weather to outdoor rooms
+        if not getattr(room, 'is_outdoor', False):
+            return ""
+            
+        # Get current time period
+        time_period = get_current_time_period()
+        
+        # Get available sensory messages
+        weather_key = f"{self.current_weather}_{time_period}"
+        sensory_messages = self.get_sensory_messages(weather_key, looker)
+        
+        if not sensory_messages:
+            return ""
+            
+        # Select 2 messages from available senses, designed to synergize
+        selected_messages = self.select_weather_messages(sensory_messages, 2)
+        
+        if not selected_messages:
+            return ""
+            
+        # Combine messages with comma separator and bold white formatting
+        combined = ", ".join(selected_messages)
+        return f"|W{combined}|n"
+        
+    def get_sensory_messages(self, weather_key, looker):
+        """
+        Get available sensory messages based on player capabilities.
+        
+        Args:
+            weather_key: Weather and time combination key
+            looker: Character to check sensory capabilities for
+            
+        Returns:
+            list: Available sensory messages for this character
+        """
+        # Get message pool for current weather/time
+        region_messages = WEATHER_MESSAGES.get(self.weather_region, {})
+        weather_messages = region_messages.get(weather_key, {})
+        
+        if not weather_messages:
+            # Fallback: try just weather type without time
+            weather_messages = region_messages.get(self.current_weather, {})
+            
+        if not weather_messages:
+            return []
+            
+        # For now, return all available messages
+        # Future: filter based on looker's sensory capabilities
+        available_messages = []
+        for sense, messages in weather_messages.items():
+            if messages:  # Only include senses that have messages
+                available_messages.extend(messages)
+                
+        return available_messages
+        
+    def select_weather_messages(self, available_messages, count=2):
+        """
+        Select weather messages from available pool.
+        
+        Args:
+            available_messages: List of available messages
+            count: Number of messages to select
+            
+        Returns:
+            list: Selected messages
+        """
+        if not available_messages:
+            return []
+            
+        # Select up to 'count' random messages
+        selection_count = min(count, len(available_messages))
+        return random.sample(available_messages, selection_count)
+        
+    def set_weather(self, weather_type):
+        """
+        Change current weather state.
+        
+        Args:
+            weather_type: New weather type from WEATHER_INTENSITY keys
+        """
+        if weather_type in WEATHER_INTENSITY:
+            self.current_weather = weather_type
+            logger.log_info(f"Weather changed to: {weather_type}")
+        else:
+            logger.log_warn(f"Unknown weather type: {weather_type}")
+            
+    def get_current_weather(self):
+        """Get current weather state."""
+        return self.current_weather
+        
+    def get_weather_intensity(self):
+        """Get current weather intensity level."""
+        return WEATHER_INTENSITY.get(self.current_weather, 'mild')

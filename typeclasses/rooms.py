@@ -8,6 +8,7 @@ Rooms are simple containers that has no location of their own.
 from evennia.objects.objects import DefaultRoom
 from evennia.typeclasses.attributes import AttributeProperty
 from world.combat.constants import NDB_FLYING_OBJECTS
+from world.weather import weather_system
 
 from .objects import ObjectParent
 
@@ -41,6 +42,9 @@ class Room(ObjectParent, DefaultRoom):
     # Sky room flag for exit filtering
     is_sky_room = AttributeProperty(default=False, autocreate=True)
     
+    # Outdoor room flag for weather system
+    is_outdoor = AttributeProperty(default=False, autocreate=True)
+    
     # Room description
     desc = AttributeProperty(default="", autocreate=True)
     
@@ -57,6 +61,8 @@ class Room(ObjectParent, DefaultRoom):
             self.type = None
         if not hasattr(self, 'is_sky_room'):
             self.is_sky_room = False
+        if not hasattr(self, 'is_outdoor'):
+            self.is_outdoor = False
         if not hasattr(self, 'desc'):
             self.desc = ""
     
@@ -372,6 +378,19 @@ class Room(ObjectParent, DefaultRoom):
             if desc and footer and '\n\n\n' in result:
                 # Replace triple line breaks with double
                 result = result.replace('\n\n\n', '\n\n')
+        
+        # Add weather contributions for outdoor rooms (weather acts as "caboose")
+        weather_desc = weather_system.get_weather_contributions(self, looker)
+        if weather_desc:
+            # Add weather at the very end, before footer if it exists
+            if footer:
+                # Insert weather before footer
+                old_pattern = '\n' + footer
+                new_pattern = '\n\n' + weather_desc + '\n' + footer
+                result = result.replace(old_pattern, new_pattern)
+            else:
+                # No footer, just append weather
+                result = result.rstrip() + '\n\n' + weather_desc
         
         return result
     
