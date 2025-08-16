@@ -301,53 +301,30 @@ class Room(ObjectParent, DefaultRoom):
         Returns:
             str: Final formatted appearance
         """
-        # Split the appearance into lines for processing
-        lines = [line for line in appearance.split('\n')]
+        # Check what content we actually have
+        things = self.get_display_things(looker, **kwargs)
+        characters = self.get_display_characters(looker, **kwargs)
+        footer = self.get_display_footer(looker, **kwargs)
         
-        # Find key sections
-        room_desc_end = -1
-        items_line = -1
-        chars_line = -1
-        exits_line = -1
+        # Split appearance and rebuild with proper spacing
+        lines = appearance.split('\n')
+        result_lines = []
         
-        for i, line in enumerate(lines):
-            line_stripped = line.strip()
+        for line in lines:
+            result_lines.append(line)
             
-            # Find room description end (last line before items/characters/exits that isn't empty or room name)
-            if (line_stripped and 
+            # Add blank line after room description if there's any content following
+            if (line.strip() and 
                 not line.startswith('|c') and  # Not room name
-                not line_stripped.startswith('You see:') and
-                not any(char_indicator in line_stripped.lower() for char_indicator in ['is standing', 'is sitting', 'is crouched', 'is hiding', 'is lying', 'is kneeling', 'is doing', 'is in']) and
-                not line_stripped.startswith('Exits:') and
-                not line_stripped.startswith('Edges:')):
-                room_desc_end = i
-                
-            elif line_stripped.startswith('You see:'):
-                items_line = i
-                
-            elif (line_stripped and 
-                  any(char_indicator in line_stripped.lower() for char_indicator in ['is standing', 'is sitting', 'is crouched', 'is hiding', 'is lying', 'is kneeling', 'is doing', 'is in'])):
-                if chars_line == -1:  # Only capture first character line
-                    chars_line = i
+                line == lines[1]):  # This is the room description line
+                if things or characters or footer:
+                    result_lines.append('')
                     
-            elif line_stripped.startswith('Exits:') or line_stripped.startswith('Edges:'):
-                if exits_line == -1:  # Only capture first exit line
-                    exits_line = i
+            # Add blank line after items if there are characters
+            elif line == things and characters:
+                result_lines.append('')
         
-        # Now insert blank lines as needed
-        processed_lines = []
-        for i, line in enumerate(lines):
-            processed_lines.append(line)
-            
-            # Add blank line after room description if there's content following
-            if i == room_desc_end and (items_line > i or chars_line > i or exits_line > i):
-                processed_lines.append('')
-                
-            # Add blank line after items if characters follow
-            elif i == items_line and chars_line > i:
-                processed_lines.append('')
-        
-        return '\n'.join(processed_lines)
+        return '\n'.join(result_lines)
     
     def get_custom_exit_display(self, looker):
         """
