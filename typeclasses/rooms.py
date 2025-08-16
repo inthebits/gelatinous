@@ -301,10 +301,18 @@ class Room(ObjectParent, DefaultRoom):
         Returns:
             str: Final formatted appearance
         """
+        from evennia.comms.models import ChannelDB
+        from world.combat.constants import SPLATTERCAST_CHANNEL
+        
         # Check what content we actually have
         things = self.get_display_things(looker, **kwargs)
         characters = self.get_display_characters(looker, **kwargs)
         footer = self.get_display_footer(looker, **kwargs)
+        
+        # Debug output
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"DEBUG format_appearance: things='{things}', characters='{characters}', footer='{footer}'")
+        splattercast.msg(f"DEBUG original appearance:\n{repr(appearance)}")
         
         # Simple approach: add spacing based on what content exists
         result = appearance
@@ -313,19 +321,28 @@ class Room(ObjectParent, DefaultRoom):
         if things or characters:
             # Find where room description ends (after room name line)
             lines = result.split('\n')
+            splattercast.msg(f"DEBUG lines: {[repr(line) for line in lines]}")
+            
             for i, line in enumerate(lines):
                 if line.startswith('|c') and line.endswith('|n'):  # Room name
+                    splattercast.msg(f"DEBUG found room name at line {i}: {repr(line)}")
                     # Next non-empty line is room description
                     if i + 1 < len(lines) and lines[i + 1].strip():
+                        splattercast.msg(f"DEBUG room desc at line {i+1}: {repr(lines[i + 1])}")
                         # Insert blank line after room description
                         lines.insert(i + 2, '')
+                        splattercast.msg(f"DEBUG inserted blank line at position {i + 2}")
                         break
             result = '\n'.join(lines)
         
         # Add spacing between items and characters if both exist
         if things and characters:
-            result = result.replace(things + '\n' + characters, things + '\n\n' + characters)
+            old_pattern = things + '\n' + characters
+            new_pattern = things + '\n\n' + characters
+            splattercast.msg(f"DEBUG replacing: {repr(old_pattern)} with {repr(new_pattern)}")
+            result = result.replace(old_pattern, new_pattern)
         
+        splattercast.msg(f"DEBUG final result:\n{repr(result)}")
         return result
     
     def get_custom_exit_display(self, looker):
