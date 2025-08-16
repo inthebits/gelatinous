@@ -391,6 +391,10 @@ class Room(ObjectParent, DefaultRoom):
                 # Replace triple line breaks with double
                 result = result.replace('\n\n\n', '\n\n')
         
+        # Clean up trailing whitespace and empty lines at the end
+        # This handles cases where footer is empty (like sky rooms)
+        result = result.rstrip('\n') + '\n' if result.rstrip() else ""
+        
         return result
     
     def get_custom_exit_display(self, looker):
