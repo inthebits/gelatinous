@@ -42,8 +42,8 @@ class Room(ObjectParent, DefaultRoom):
     # Sky room flag for exit filtering
     is_sky_room = AttributeProperty(default=False, autocreate=True)
     
-    # Outdoor room flag for weather system
-    is_outdoor = AttributeProperty(default=False, autocreate=True)
+    # Outside room flag for weather system
+    outside = AttributeProperty(default=False, autocreate=True)
     
     # Room description
     desc = AttributeProperty(default="", autocreate=True)
@@ -61,8 +61,8 @@ class Room(ObjectParent, DefaultRoom):
             self.type = None
         if not hasattr(self, 'is_sky_room'):
             self.is_sky_room = False
-        if not hasattr(self, 'is_outdoor'):
-            self.is_outdoor = False
+        if not hasattr(self, 'outside'):
+            self.outside = False
         if not hasattr(self, 'desc'):
             self.desc = ""
     

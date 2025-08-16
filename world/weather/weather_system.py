@@ -36,7 +36,7 @@ class WeatherSystem:
             str: Weather description for the room, or empty string if not applicable
         """
         # Only apply weather to outdoor rooms
-        if not getattr(room, 'is_outdoor', False):
+        if not getattr(room, 'outside', False):
             return ""
             
         # Get current time period
