@@ -28,7 +28,7 @@ class Room(ObjectParent, DefaultRoom):
     # See: https://www.evennia.com/docs/latest/Components/Objects.html#changing-an-objects-appearance
     appearance_template = """{header}
 |c{name}|n
-{desc}\n
+{desc}
 {characters}
 {things}
 {footer}"""
@@ -235,7 +235,7 @@ class Room(ObjectParent, DefaultRoom):
                 all_but_last = ", ".join(char_names[:-1])
                 descriptions.append(f"{all_but_last}, and {char_names[-1]} are {placement}")
         
-        return " ".join(descriptions) if descriptions else ""
+        return "\n" + " ".join(descriptions) if descriptions else ""
     
     def get_display_things(self, looker, **kwargs):
         """
