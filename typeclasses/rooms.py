@@ -426,55 +426,78 @@ class Room(ObjectParent, DefaultRoom):
         """
         descriptions = []
         
-        # Format streets (grouped)
+        # Format streets (analyze destination room layout)
         if exit_groups['streets']:
-            street_dirs = [self.format_direction_with_alias(direction, alias) 
-                          for direction, alias in exit_groups['streets']]
-            if len(street_dirs) == 1:
-                descriptions.append(f"The street continues {street_dirs[0]}")
-            else:
-                street_desc = self.format_direction_list(street_dirs)
-                descriptions.append(f"The street continues {street_desc}")
+            street_descriptions = []
+            for direction, alias in exit_groups['streets']:
+                dir_text = self.format_direction_with_alias(direction, alias)
+                
+                # Analyze the destination room's exit count to determine type
+                exit_obj = None
+                for exit in self.exits:
+                    if exit.key == direction:
+                        exit_obj = exit
+                        break
+                
+                if exit_obj and exit_obj.destination:
+                    dest_exits = exit_obj.destination.exits
+                    street_exit_count = sum(1 for e in dest_exits 
+                                          if e.destination and hasattr(e.destination, 'type') 
+                                          and e.destination.type == 'street')
+                    
+                    if street_exit_count <= 1:
+                        street_descriptions.append(f"There is a dead-end to the {dir_text}.")
+                    elif street_exit_count == 2:
+                        street_descriptions.append(f"The street continues to the {dir_text}")
+                    else:
+                        street_descriptions.append(f"There is an intersection to the {dir_text}.")
+                else:
+                    # Fallback if we can't analyze destination
+                    street_descriptions.append(f"The street continues to the {dir_text}.")
+            
+            # Join all street descriptions
+            for desc in street_descriptions:
+                descriptions.append(f"{desc}.")
         
         # Format custom types (grouped by type)
         for dest_type, exits in exit_groups['custom_types'].items():
             type_dirs = [self.format_direction_with_alias(direction, alias) 
                         for direction, alias in exits]
             if len(type_dirs) == 1:
-                descriptions.append(f"There is a {dest_type} to the {type_dirs[0]}")
+                descriptions.append(f"There is a {dest_type} to the {type_dirs[0]}.")
             else:
                 type_desc = self.format_direction_list(type_dirs)
-                descriptions.append(f"There are {dest_type}s to the {type_desc}")
+                descriptions.append(f"There are {dest_type}s to the {type_desc}.")
         
         # Format edges (grouped)
         if exit_groups['edges']:
             edge_dirs = [self.format_direction_with_alias(direction, alias) 
                         for direction, alias in exit_groups['edges']]
             if len(edge_dirs) == 1:
-                descriptions.append(f"There is an edge to the {edge_dirs[0]}")
+                descriptions.append(f"There is an edge to the {edge_dirs[0]}.")
             else:
                 edge_desc = self.format_direction_list(edge_dirs)
-                descriptions.append(f"There are edges to the {edge_desc}")
+                descriptions.append(f"There are edges to the {edge_desc}.")
         
         # Format gaps (grouped)
         if exit_groups['gaps']:
             gap_dirs = [self.format_direction_with_alias(direction, alias) 
                        for direction, alias in exit_groups['gaps']]
             if len(gap_dirs) == 1:
-                descriptions.append(f"There is a gap to the {gap_dirs[0]}")
+                descriptions.append(f"There is a gap to the {gap_dirs[0]}.")
             else:
                 gap_desc = self.format_direction_list(gap_dirs)
-                descriptions.append(f"There are gaps to the {gap_desc}")
+                descriptions.append(f"There are gaps to the {gap_desc}.")
         
         # Format fallback exits
         if exit_groups['fallback']:
             fallback_dirs = [self.format_direction_with_alias(direction, alias) 
                            for direction, alias in exit_groups['fallback']]
             if len(fallback_dirs) == 1:
-                descriptions.append(f"There is an exit to the {fallback_dirs[0]}")
+                descriptions.append(f"There is an exit to the {fallback_dirs[0]}.")
             else:
                 fallback_desc = self.format_direction_list(fallback_dirs)
-                descriptions.append(f"There are exits to the {fallback_desc}")
+                descriptions.append(f"There are exits to the {fallback_desc}.")
         
         return " ".join(descriptions) if descriptions else ""
     
