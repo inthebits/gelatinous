@@ -314,26 +314,8 @@ class Room(ObjectParent, DefaultRoom):
         splattercast.msg(f"DEBUG format_appearance: things='{things}', characters='{characters}', footer='{footer}'")
         splattercast.msg(f"DEBUG original appearance:\n{repr(appearance)}")
         
-        # Simple approach: add spacing based on what content exists
+        # The template already handles spacing correctly, we just need to fix spacing between items and characters
         result = appearance
-        
-        # Add spacing between room description and first content section
-        if things or characters:
-            # Find where room description ends (after room name line)
-            lines = result.split('\n')
-            splattercast.msg(f"DEBUG lines: {[repr(line) for line in lines]}")
-            
-            for i, line in enumerate(lines):
-                if line.startswith('|c') and line.endswith('|n'):  # Room name
-                    splattercast.msg(f"DEBUG found room name at line {i}: {repr(line)}")
-                    # Next non-empty line is room description
-                    if i + 1 < len(lines) and lines[i + 1].strip():
-                        splattercast.msg(f"DEBUG room desc at line {i+1}: {repr(lines[i + 1])}")
-                        # Insert blank line after room description
-                        lines.insert(i + 2, '')
-                        splattercast.msg(f"DEBUG inserted blank line at position {i + 2}")
-                        break
-            result = '\n'.join(lines)
         
         # Add spacing between items and characters if both exist
         if things and characters:
