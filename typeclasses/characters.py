@@ -45,6 +45,11 @@ class Character(ObjectParent, DefaultCharacter):
     hp = AttributeProperty(10, category='health', autocreate=True)
     hp_max = AttributeProperty(10, category='health', autocreate=True)
 
+# Character Placement Descriptions
+    look_place = AttributeProperty("is standing here.", category='description', autocreate=True)
+    temp_place = AttributeProperty("", category='description', autocreate=True)
+    override_place = AttributeProperty("", category='description', autocreate=True)
+
     def at_object_creation(self):
         """
         Called once, at creation, to set dynamic stats.
@@ -55,7 +60,6 @@ class Character(ObjectParent, DefaultCharacter):
         grit_value = self.grit or 1
         self.hp_max = 10 + (grit_value * 2)
         self.hp = self.hp_max  # Start at full health
-
 
 # Mortality Management  
     def take_damage(self, amount):

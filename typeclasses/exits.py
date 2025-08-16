@@ -337,6 +337,10 @@ class Exit(DefaultExit):
         # Not in combat, standard traversal
         super().at_traverse(traversing_object, target_location)
         
+        # Clear temporary character placement on room change
+        if hasattr(traversing_object, 'temp_place'):
+            traversing_object.temp_place = ""
+        
         # Check for rigged grenades after successful movement
         from commands.CmdThrow import check_rigged_grenade, check_auto_defuse
         check_rigged_grenade(traversing_object, self)

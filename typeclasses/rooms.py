@@ -183,6 +183,62 @@ class Room(ObjectParent, DefaultRoom):
         # Last resort: use the object's short_desc or key
         return getattr(obj.db, "integration_fallback", f"{obj.key} is here")
     
+    def get_display_characters(self, looker, **kwargs):
+        """
+        Custom character display using placement descriptions.
+        
+        Uses @override_place, @temp_place, or @look_place attributes to create
+        natural language character positioning instead of "Characters:" listing.
+        
+        Args:
+            looker: Character looking at the room
+            
+        Returns:
+            str: Natural language character placement descriptions
+        """
+        characters = []
+        
+        for obj in self.contents:
+            if obj.is_typeclass("typeclasses.characters.Character") and obj != looker:
+                if obj.access(looker, "view"):
+                    characters.append(obj)
+        
+        if not characters:
+            return ""
+        
+        # Group characters by their placement description
+        placement_groups = {}
+        
+        for char in characters:
+            # Check placement hierarchy: override_place > temp_place > look_place > fallback
+            # Empty strings are treated as not set
+            override_place = char.override_place or ""
+            temp_place = char.temp_place or ""
+            look_place = char.look_place or ""
+            
+            placement = (override_place if override_place else
+                        temp_place if temp_place else
+                        look_place if look_place else
+                        "is here.")
+            
+            if placement not in placement_groups:
+                placement_groups[placement] = []
+            placement_groups[placement].append(char.get_display_name(looker))
+        
+        # Generate natural language descriptions
+        descriptions = []
+        for placement, char_names in placement_groups.items():
+            if len(char_names) == 1:
+                descriptions.append(f"{char_names[0]} {placement}")
+            elif len(char_names) == 2:
+                descriptions.append(f"{char_names[0]} and {char_names[1]} {placement}")
+            else:
+                # Handle 3+ characters: "A, B, and C are here"
+                all_but_last = ", ".join(char_names[:-1])
+                descriptions.append(f"{all_but_last}, and {char_names[-1]} {placement}")
+        
+        return "\n".join(descriptions) if descriptions else ""
+    
     def get_display_things(self, looker, **kwargs):
         """
         Override things display to exclude @integrate objects.
