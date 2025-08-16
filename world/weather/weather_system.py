@@ -71,7 +71,7 @@ class WeatherSystem:
             
         # Combine messages with space separator and bold white formatting
         combined = " ".join(formatted_messages)
-        return f"^w{combined}^n"
+        return f"|w{combined}|n"
         
     def get_sensory_messages(self, weather_key, looker):
         """
