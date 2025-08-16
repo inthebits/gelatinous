@@ -360,7 +360,8 @@ class Room(ObjectParent, DefaultRoom):
         # Analyze each exit
         for exit_obj in exits:
             direction = exit_obj.key
-            alias = exit_obj.aliases[0] if exit_obj.aliases else None
+            aliases = exit_obj.aliases.all()
+            alias = aliases[0] if aliases else None
             destination = exit_obj.destination
             
             # Check if exit leads to a sky room (skip unless edge/gap)
