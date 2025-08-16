@@ -304,6 +304,12 @@ class Room(ObjectParent, DefaultRoom):
         things = self.get_display_things(looker, **kwargs)
         characters = self.get_display_characters(looker, **kwargs)
         desc = self.db.desc or ""
+        footer = self.get_display_footer(looker, **kwargs)
+        
+        # Debug empty rooms
+        if not things and not characters:
+            looker.msg(f"[Splattercast] DEBUG empty room: desc='{desc}', footer='{footer}'", channel="splattercast")
+            looker.msg(f"[Splattercast] DEBUG appearance before: '{repr(appearance)}'", channel="splattercast")
         
         result = appearance
         
@@ -320,6 +326,14 @@ class Room(ObjectParent, DefaultRoom):
             old_pattern = desc + '\n' + first_content
             new_pattern = desc + '\n\n' + first_content
             result = result.replace(old_pattern, new_pattern)
+        else:
+            # For empty rooms, check if there are excessive line breaks before footer
+            if desc and footer and '\n\n\n' in result:
+                # Replace triple line breaks with double
+                result = result.replace('\n\n\n', '\n\n')
+        
+        if not things and not characters:
+            looker.msg(f"[Splattercast] DEBUG appearance after: '{repr(result)}'", channel="splattercast")
         
         return result
     
