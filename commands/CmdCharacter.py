@@ -73,20 +73,24 @@ class CmdLookPlace(Command):
     Usage:
         @look_place <description>
         @look_place me is <description>
+        @look_place me are <description>
         @look_place me is "<description>"
         @look_place is <description>
+        @look_place are <description>
         @look_place "<description>"
         @look_place clear
     
     Examples:
         @look_place standing here.
         @look_place me is "sitting on a rock"
+        @look_place me are "lounging lazily"
         @look_place me is "is lounging lazily"
-        @look_place is crouched in the shadows
+        @look_place are crouched in the shadows
         @look_place clear
     
     This sets your default positioning that others see when they look at a room.
-    Instead of "Characters: YourName", they'll see "YourName is <your description>".
+    Instead of appearing in a separate "Characters:" section, you'll appear naturally
+    in the room description as "YourName is <your description>".
     
     Use 'clear' to remove your look_place and return to default display.
     """
@@ -102,17 +106,14 @@ class CmdLookPlace(Command):
         
         if not self.args:
             # Show current setting
-            current = caller.look_place or ""
-            if current:
-                caller.msg(f"Your current look_place: '{current}'")
-            else:
-                caller.msg("You have no look_place set. Others see you in the default character listing.")
+            current = caller.look_place or "standing here."
+            caller.msg(f"Your current look_place: '{current}'")
             return
         
         # Handle 'clear' command
         if self.args.strip().lower() in ('clear', 'none', 'remove'):
-            caller.look_place = ""
-            caller.msg("Your look_place has been cleared.")
+            caller.look_place = "standing here."
+            caller.msg("Your look_place has been cleared and reset to 'standing here.'")
             return
         
         # Parse the description with smart 'is' handling
@@ -120,6 +121,11 @@ class CmdLookPlace(Command):
         
         if not description:
             caller.msg("Please provide a description for your look_place.")
+            return
+        
+        # Check length limit to prevent abuse while allowing creativity
+        if len(description) > 200:
+            caller.msg(f"Your look_place description is too long ({len(description)} characters). Please keep it under 200 characters.")
             return
         
         # Ensure description ends with proper punctuation
@@ -182,16 +188,19 @@ class CmdTempPlace(Command):
     Usage:
         @temp_place <description>
         @temp_place me is <description>
+        @temp_place me are <description>
         @temp_place me is "<description>"
         @temp_place is <description>
+        @temp_place are <description>
         @temp_place "<description>"
         @temp_place clear
     
     Examples:
         @temp_place hiding behind a tree.
         @temp_place me is "examining the wall closely"
+        @temp_place me are "investigating something"
         @temp_place me is "is investigating something"
-        @temp_place is crouched and ready to spring
+        @temp_place are crouched and ready to spring
         @temp_place clear
     
     This sets a temporary positioning that overrides your @look_place.
@@ -231,8 +240,14 @@ class CmdTempPlace(Command):
             caller.msg("Please provide a description for your temp_place.")
             return
         
+        # Check length limit to prevent abuse while allowing creativity
+        if len(description) > 200:
+            caller.msg(f"Your temp_place description is too long ({len(description)} characters). Please keep it under 200 characters.")
+            return
+        
         # Ensure description ends with proper punctuation
         if not description.endswith(('.', '!', '?')):
+            description += '.'
             description += '.'
         
         # Set the temp_place

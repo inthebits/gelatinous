@@ -219,7 +219,7 @@ class Room(ObjectParent, DefaultRoom):
             placement = (override_place if override_place else
                         temp_place if temp_place else
                         look_place if look_place else
-                        "here.")
+                        "standing here.")
             
             if placement not in placement_groups:
                 placement_groups[placement] = []
@@ -237,7 +237,7 @@ class Room(ObjectParent, DefaultRoom):
                 all_but_last = ", ".join(char_names[:-1])
                 descriptions.append(f"{all_but_last}, and {char_names[-1]} are {placement}")
         
-        return "\n".join(descriptions) if descriptions else ""
+        return " ".join(descriptions) if descriptions else ""
     
     def get_display_things(self, looker, **kwargs):
         """
