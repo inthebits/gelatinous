@@ -20,7 +20,7 @@ from commands import CmdCharacter
 from commands import CmdInventory
 from commands import CmdAdmin
 from commands.CmdSpawnMob import CmdSpawnMob
-from commands.CmdWeather import CmdWeather
+from commands.CmdAdmin import CmdHeal, CmdPeace, CmdTestDeathCurtain, CmdWeather
 from commands.combat.cmdset_combat import CombatCmdSet
 from commands.combat.special_actions import CmdAim, CmdGrapple
 from commands.CmdThrow import CmdThrow, CmdPull, CmdCatch, CmdRig, CmdDefuse
