@@ -136,6 +136,28 @@ The street continues to the west (w) and east (e).
 - **Dynamic Descriptions**: Crowd-based sensory messages
 - **Activity Integration**: Crowd noise, movement, and presence effects
 
+### 10. Ambient Message System (🚧)
+- **Periodic Atmospheric Messages**: Random yet informed frequency ambient messages
+- **Contextual Integration**: Messages draw from contributing room factors (weather, crowd, etc.)
+- **Dynamic Environmental Feedback**: Continuous atmospheric presence without player action
+- **Sensory Immersion**: Brief flavor text that maintains environmental awareness
+
+**Ambient Message Concept:**
+Ambient messages appear at random intervals (every 2-5 minutes) to players in a room, providing brief atmospheric updates that reflect current environmental conditions. These messages are informed by the same systems that power the look command - weather, crowd levels, time of day, and room characteristics.
+
+**Example Ambient Messages:**
+- Weather-based: "The rain patters against the ground with a soft yet relentless persistence."
+- Crowd-based: "A group of pedestrians hurries past, their footsteps echoing off wet pavement."
+- Time-based: "The evening shadows grow longer, deepening the gloom between streetlights."
+- Combined factors: "Despite the drizzle, street vendors continue their calls, their voices mixing with the hiss of tires on wet asphalt."
+
+**Technical Implementation:**
+- **Message Pool Integration**: Leverage existing weather/crowd message pools with ambient-specific variants
+- **Frequency Management**: Configurable timing system to prevent message spam
+- **Context Awareness**: Messages selected based on current room state (weather, crowd, time)
+- **Player Filtering**: Optional ambient message preferences (full/reduced/off)
+- **Room-Specific Pools**: Different ambient message types for different room types/themes
+
 ## Enhanced System Architecture
 
 ### 1. Sensory Category Framework
@@ -266,6 +288,98 @@ crowd_messages = {
         'atmospheric': ['building energy', 'comfortable activity level']
     }
 }
+```
+
+**Ambient Message System Design:**
+```python
+ambient_messages = {
+    'weather_rain': [
+        "The rain patters against the ground with a soft yet relentless persistence.",
+        "Water drips steadily from overhead fixtures, creating small puddles below.",
+        "A gentle mist rises from the wet pavement as rain continues to fall."
+    ],
+    'crowd_moderate': [
+        "A group of pedestrians hurries past, their footsteps echoing off wet pavement.",
+        "Quiet conversations drift from nearby groups before fading into background noise.",
+        "Someone's footsteps approach from behind, then veer off down a side path."
+    ],
+    'combined_rain_crowd': [
+        "Despite the drizzle, street vendors continue their calls, their voices mixing with the hiss of tires on wet asphalt.",
+        "Umbrellas bob and weave through the crowd as people navigate the rain-slicked street.",
+        "The sound of hurried footsteps on wet concrete mingles with the steady patter of rain."
+    ],
+    'time_evening': [
+        "The evening shadows grow longer, deepening the gloom between streetlights.",
+        "As darkness approaches, windows begin to glow with warm artificial light.",
+        "The day's heat slowly radiates from pavement and brick walls."
+    ]
+}
+```
+
+**Ambient Message Technical Implementation:**
+```python
+class AmbientMessageSystem:
+    def __init__(self, room):
+        self.room = room
+        self.last_message_time = time.time()
+        self.base_interval = 180  # 3 minutes base interval
+        self.variance = 60       # +/- 1 minute variance
+    
+    def should_send_ambient_message(self):
+        """Determine if it's time for an ambient message"""
+        current_time = time.time()
+        time_since_last = current_time - self.last_message_time
+        
+        # Calculate next interval with variance
+        target_interval = self.base_interval + random.randint(-self.variance, self.variance)
+        
+        return time_since_last >= target_interval
+    
+    def select_ambient_message(self):
+        """Select appropriate ambient message based on current conditions"""
+        conditions = []
+        
+        # Check weather
+        weather = self.room.get_current_weather()
+        if weather != 'clear':
+            conditions.append(f'weather_{weather}')
+        
+        # Check crowd level
+        crowd_level = self.room.get_crowd_level()
+        if crowd_level != 'sparse':
+            conditions.append(f'crowd_{crowd_level}')
+        
+        # Check time of day
+        time_period = self.room.get_time_period()
+        if time_period in ['evening', 'night', 'dawn']:
+            conditions.append(f'time_{time_period}')
+        
+        # Try combined conditions first, then individual
+        message_pools = []
+        if len(conditions) > 1:
+            combined_key = '_'.join(sorted(conditions))
+            if combined_key in ambient_messages:
+                message_pools.append(ambient_messages[combined_key])
+        
+        # Add individual condition pools
+        for condition in conditions:
+            if condition in ambient_messages:
+                message_pools.append(ambient_messages[condition])
+        
+        # Select random message from available pools
+        if message_pools:
+            selected_pool = random.choice(message_pools)
+            return random.choice(selected_pool)
+        
+        return None
+    
+    def send_ambient_message(self):
+        """Send ambient message to all players in room"""
+        message = self.select_ambient_message()
+        if message:
+            # Send to all players in room with special formatting
+            self.room.msg_contents(f"|K{message}|n", exclude_disconnected=True)
+            self.last_message_time = time.time()
 ```
 
 **Message Selection System:**
@@ -677,6 +791,7 @@ Base Room: "Large intersection where Sinn crosses Knife"
 - **Security Level**: Patrol presence, safety indicators  
 - **Time Cycling**: Day/night variations in all systems
 - **Seasonal Changes**: Long-term environmental variations
+- **Ambient Message System**: Periodic atmospheric messages based on current room conditions
 
 ### Enhanced Integration
 - **Cross-Component Effects**: Weather affecting crowd behavior
