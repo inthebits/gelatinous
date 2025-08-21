@@ -9,6 +9,7 @@ from evennia.objects.objects import DefaultRoom
 from evennia.typeclasses.attributes import AttributeProperty
 from world.combat.constants import NDB_FLYING_OBJECTS
 from world.weather import weather_system
+from world.crowd import crowd_system
 
 from .objects import ObjectParent
 
@@ -48,6 +49,9 @@ class Room(ObjectParent, DefaultRoom):
     # Room description
     desc = AttributeProperty(default="", autocreate=True)
     
+    # Crowd system base level
+    crowd_base_level = AttributeProperty(default=0, autocreate=True)
+    
     def at_object_creation(self):
         """
         Called when room is first created.
@@ -65,6 +69,8 @@ class Room(ObjectParent, DefaultRoom):
             self.outside = False
         if not hasattr(self, 'desc'):
             self.desc = ""
+        if not hasattr(self, 'crowd_base_level'):
+            self.crowd_base_level = 0
     
     # Override the appearance template to use our custom footer for exits
     # and custom things display to handle @integrate objects
@@ -242,12 +248,13 @@ class Room(ObjectParent, DefaultRoom):
         
         Uses @override_place, @temp_place, or @look_place attributes to create
         natural language character positioning instead of "Characters:" listing.
+        Now includes crowd system messages that appear before character listings.
         
         Args:
             looker: Character looking at the room
             
         Returns:
-            str: Natural language character placement descriptions
+            str: Combined crowd and character placement descriptions
         """
         characters = []
         
@@ -256,8 +263,12 @@ class Room(ObjectParent, DefaultRoom):
                 if obj.access(looker, "view"):
                     characters.append(obj)
         
+        # Get crowd contributions (appears before character listings)
+        crowd_msg = crowd_system.get_crowd_contributions(self, looker)
+        
         if not characters:
-            return ""
+            # No characters, but might still have crowd messages
+            return crowd_msg if crowd_msg else ""
         
         # Group characters by their placement description
         placement_groups = {}
@@ -290,7 +301,17 @@ class Room(ObjectParent, DefaultRoom):
                 all_but_last = ", ".join(char_names[:-1])
                 descriptions.append(f"{all_but_last}, and {char_names[-1]} are {placement}")
         
-        return " ".join(descriptions) if descriptions else ""
+        character_display = " ".join(descriptions) if descriptions else ""
+        
+        # Combine crowd and character display on same line
+        if crowd_msg and character_display:
+            return f"{crowd_msg} {character_display}"
+        elif crowd_msg:
+            return crowd_msg
+        elif character_display:
+            return character_display
+        else:
+            return ""
     
     def get_display_things(self, looker, **kwargs):
         """
