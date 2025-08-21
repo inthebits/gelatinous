@@ -396,12 +396,22 @@ class Room(ObjectParent, DefaultRoom):
         # Only modify spacing if we have actual content (items or characters)
         if things or characters:
             # Add spacing between items and characters if both exist
+            # Use a more robust approach that works regardless of character content
             if things and characters:
-                # Simple approach: replace the single newline with double newline
-                # between the exact things and characters content
-                single_line_pattern = f"{things}\n{characters}"
-                double_line_pattern = f"{things}\n\n{characters}"
-                result = result.replace(single_line_pattern, double_line_pattern)
+                # Find where things section ends and characters section starts
+                things_lines = things.split('\n')
+                characters_lines = characters.split('\n') 
+                
+                # Get the last line of things and first line of characters
+                last_things_line = things_lines[-1].strip()
+                first_characters_line = characters_lines[0].strip()
+                
+                # Look for the pattern where these two sections are adjacent
+                if last_things_line and first_characters_line:
+                    # Pattern: last line of things + newline + first line of characters
+                    adjacent_pattern = f"{last_things_line}\n{first_characters_line}"
+                    spaced_pattern = f"{last_things_line}\n\n{first_characters_line}"
+                    result = result.replace(adjacent_pattern, spaced_pattern)
             
             # Add spacing between room description and first content section
             first_content = things if things else characters
