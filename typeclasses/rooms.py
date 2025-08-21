@@ -396,22 +396,24 @@ class Room(ObjectParent, DefaultRoom):
         # Only modify spacing if we have actual content (items or characters)
         if things or characters:
             # Add spacing between items and characters if both exist
-            # Use a more robust approach that works regardless of character content
             if things and characters:
-                # Find where things section ends and characters section starts
-                things_lines = things.split('\n')
-                characters_lines = characters.split('\n') 
+                # Very simple approach: just ensure there's a blank line between sections
+                # by looking for any case where content is directly adjacent
+                lines = result.split('\n')
+                new_lines = []
                 
-                # Get the last line of things and first line of characters
-                last_things_line = things_lines[-1].strip()
-                first_characters_line = characters_lines[0].strip()
+                for i, line in enumerate(lines):
+                    new_lines.append(line)
+                    # If this line contains items content and the next line contains character content
+                    if (i < len(lines) - 1 and 
+                        line.strip() and lines[i + 1].strip() and
+                        'You see' in line and
+                        (any(crowd_word in lines[i + 1].lower() for crowd_word in 
+                             ['people', 'crowd', 'pedestrians', 'traffic', 'individuals', 'presence', 'space']) or
+                         any(name in lines[i + 1] for name in ['Kathy', 'Nick', 'Sterling', 'Janice', 'Dean']))):
+                        new_lines.append('')  # Add blank line
                 
-                # Look for the pattern where these two sections are adjacent
-                if last_things_line and first_characters_line:
-                    # Pattern: last line of things + newline + first line of characters
-                    adjacent_pattern = f"{last_things_line}\n{first_characters_line}"
-                    spaced_pattern = f"{last_things_line}\n\n{first_characters_line}"
-                    result = result.replace(adjacent_pattern, spaced_pattern)
+                result = '\n'.join(new_lines)
             
             # Add spacing between room description and first content section
             first_content = things if things else characters
