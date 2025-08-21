@@ -119,7 +119,11 @@ class CrowdSystem:
             category_messages = crowd_messages[selected_category]
             if category_messages:
                 selected_message = random.choice(category_messages)
-                return f"|C{selected_message.capitalize()}|n"
+                # Ensure message ends with period and format with color
+                formatted_message = selected_message.capitalize()
+                if not formatted_message.endswith('.'):
+                    formatted_message += '.'
+                return f"|C{formatted_message}|n"
         
         return ""
     
