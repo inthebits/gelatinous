@@ -403,18 +403,14 @@ class Room(ObjectParent, DefaultRoom):
                     formatted_items.append(f"{euphemism} {plural_name}")
         
         # Format using natural language similar to character placement
-        result = ""
         if len(formatted_items) == 1:
-            result = f"You see {formatted_items[0]}."
+            return f"You see {formatted_items[0]}."
         elif len(formatted_items) == 2:
-            result = f"You see {formatted_items[0]} and {formatted_items[1]}."
+            return f"You see {formatted_items[0]} and {formatted_items[1]}."
         else:
             # Handle 3+ item groups: "You see: A, B, and C"
             all_but_last = ", ".join(formatted_items[:-1])
-            result = f"You see {all_but_last}, and {formatted_items[-1]}."
-        
-        # Always add a line break after items to separate from characters section
-        return result + "\n" if result else ""
+            return f"You see {all_but_last}, and {formatted_items[-1]}."
     
     def get_display_footer(self, looker, **kwargs):
         """
@@ -437,45 +433,48 @@ class Room(ObjectParent, DefaultRoom):
         """
         Final formatting step for room appearance.
         
-        This is called last in the appearance pipeline and allows for final
-        adjustments like adding line breaks between sections.
+        This follows Evennia's standard pattern: take the template-assembled
+        appearance and add proper spacing between sections that have content.
         
-        Now simplified since items handle their own spacing.
+        Key requirement: Empty sections don't create extra spacing.
         
         Args:
             appearance (str): The formatted appearance string from the template
             looker: Character looking at the room
             
         Returns:
-            str: Final formatted appearance
+            str: Final formatted appearance with proper spacing
         """
-        # Get the actual template variables directly
+        # Get components to determine what sections exist
         things = self.get_display_things(looker, **kwargs)
         characters = self.get_display_characters(looker, **kwargs)
         desc = self.db.desc or ""
-        footer = self.get_display_footer(looker, **kwargs)
         
-        result = appearance
+        lines = appearance.split('\n')
+        result = []
         
-        # Add spacing between room description and first content section (items or characters)
-        if desc and (things or characters):
-            first_content = things if things else characters
-            if first_content:
-                # Look for the pattern: desc followed by content, add spacing
-                desc_pattern = desc + '\n' + first_content.strip()
-                desc_with_spacing = desc + '\n\n' + first_content.strip()
-                result = result.replace(desc_pattern, desc_with_spacing)
-        
-        # Clean up excessive newlines
-        while '\n\n\n' in result:
-            result = result.replace('\n\n\n', '\n\n')
-        
-        # Ensure proper ending
-        result = result.rstrip()
-        if result:
-            result += '\n'
+        for i, line in enumerate(lines):
+            # Skip empty lines from template (these are from empty sections)
+            if not line.strip():
+                continue
+                
+            result.append(line)
             
-        return result
+            # Add spacing after description if there's content following
+            if desc and line.strip() == desc.strip() and (things or characters):
+                result.append("")
+            
+            # Add spacing after things if they exist  
+            elif things and line.strip() == things.strip():
+                result.append("")
+        
+        final = '\n'.join(result)
+        
+        # Clean up any triple+ newlines that might have been introduced
+        while '\n\n\n' in final:
+            final = final.replace('\n\n\n', '\n\n')
+            
+        return final
     
     def get_custom_exit_display(self, looker):
         """
