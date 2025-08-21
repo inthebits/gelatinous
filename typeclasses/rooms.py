@@ -475,17 +475,9 @@ class Room(ObjectParent, DefaultRoom):
                 if next_content_line:
                     result_lines.append("")  # Add blank line after description
             
-            # Add spacing after items section if it exists and characters follow
-            elif things and line.strip() == things.strip() and characters:
-                # Look ahead to see if characters actually follow
-                next_content_line = None
-                for j in range(i + 1, len(lines)):
-                    if lines[j].strip():
-                        next_content_line = lines[j].strip()
-                        break
-                
-                if next_content_line == characters.strip():
-                    result_lines.append("")  # Add blank line after items
+            # Add spacing after items section if it exists (always, whether characters follow or not)
+            elif things and line.strip() == things.strip():
+                result_lines.append("")  # Add blank line after items
             
             i += 1
         
