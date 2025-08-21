@@ -395,20 +395,11 @@ class Room(ObjectParent, DefaultRoom):
         
         # Only modify spacing if we have actual content (items or characters)
         if things or characters:
-            # Add spacing between items and characters if both exist
-            if things and characters:
-                # Proper approach: find where things content ends and characters content begins
-                # We know both exist, so look for their actual content in the result
-                things_content = things.strip()
-                characters_content = characters.strip()
-                
-                # Look for where things content is immediately followed by characters content
-                if things_content and characters_content:
-                    # Find the pattern where these appear on adjacent lines
-                    pattern = f"{things_content}\n{characters_content}"
-                    if pattern in result:
-                        replacement = f"{things_content}\n\n{characters_content}"
-                        result = result.replace(pattern, replacement)
+            # If there are items, automatically add spacing after them
+            if things:
+                # Simple: add blank line after any items section
+                things_with_spacing = f"{things}\n"
+                result = result.replace(things, things_with_spacing)
             
             # Add spacing between room description and first content section
             first_content = things if things else characters
