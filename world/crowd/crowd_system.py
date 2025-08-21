@@ -101,7 +101,12 @@ class CrowdSystem:
         """
         crowd_level = self.calculate_crowd_level(room)
         
-        # No message for crowd level 0
+        # Check base level first - if explicitly set to 0, no crowd messages ever
+        # This allows builders to disable crowd messages for specific rooms
+        if room.crowd_base_level == 0:
+            return ""
+        
+        # No message for calculated crowd level 0
         if crowd_level == 0:
             return ""
         
