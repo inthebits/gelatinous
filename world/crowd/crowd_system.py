@@ -123,7 +123,7 @@ class CrowdSystem:
                 formatted_message = selected_message.capitalize()
                 if not formatted_message.endswith('.'):
                     formatted_message += '.'
-                return f"|C{formatted_message}|n"
+                return f"|W{formatted_message}|n"
         
         return ""
     
