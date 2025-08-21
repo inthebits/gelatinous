@@ -397,9 +397,11 @@ class Room(ObjectParent, DefaultRoom):
         if things or characters:
             # Add spacing between items and characters if both exist
             if things and characters:
-                old_pattern = things + '\n' + characters
-                new_pattern = things + '\n\n' + characters
-                result = result.replace(old_pattern, new_pattern)
+                # Simple approach: replace the single newline with double newline
+                # between the exact things and characters content
+                single_line_pattern = f"{things}\n{characters}"
+                double_line_pattern = f"{things}\n\n{characters}"
+                result = result.replace(single_line_pattern, double_line_pattern)
             
             # Add spacing between room description and first content section
             first_content = things if things else characters
