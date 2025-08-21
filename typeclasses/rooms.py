@@ -433,10 +433,8 @@ class Room(ObjectParent, DefaultRoom):
         """
         Final formatting step for room appearance.
         
-        This follows Evennia's standard pattern: take the template-assembled
-        appearance and add proper spacing between sections that have content.
-        
-        Key requirement: Empty sections don't create extra spacing.
+        Simple approach: just add spacing after lines that start with "You see"
+        since that's our consistent things pattern.
         
         Args:
             appearance (str): The formatted appearance string from the template
@@ -453,7 +451,7 @@ class Room(ObjectParent, DefaultRoom):
         lines = appearance.split('\n')
         result = []
         
-        for i, line in enumerate(lines):
+        for line in lines:
             # Skip empty lines from template (these are from empty sections)
             if not line.strip():
                 continue
@@ -464,8 +462,8 @@ class Room(ObjectParent, DefaultRoom):
             if desc and line.strip() == desc.strip() and (things or characters):
                 result.append("")
             
-            # Add spacing after things if they exist  
-            elif things and line.strip() == things.strip():
+            # Add spacing after any line that starts with "You see" (our things pattern)
+            elif line.strip().startswith("You see"):
                 result.append("")
         
         final = '\n'.join(result)
