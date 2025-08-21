@@ -436,6 +436,11 @@ class Room(ObjectParent, DefaultRoom):
         This is called last in the appearance pipeline and allows for final
         adjustments like adding line breaks between sections.
         
+        Key requirements:
+        - Proper spacing between room description, items, characters, and exits
+        - Empty sections don't create extra spacing
+        - Clean handling of sky rooms and empty footers
+        
         Args:
             appearance (str): The formatted appearance string from the template
             looker: Character looking at the room
@@ -449,31 +454,63 @@ class Room(ObjectParent, DefaultRoom):
         desc = self.db.desc or ""
         footer = self.get_display_footer(looker, **kwargs)
         
-        result = appearance
+        # Process appearance line by line for precise control
+        lines = appearance.split('\n')
+        result_lines = []
         
-        # Only modify spacing if we have actual content (items or characters)
-        if things or characters:
-            # If there are items, automatically add spacing after them
-            if things:
-                # Simple: add blank line after any items section
-                things_with_spacing = f"{things}\n"
-                result = result.replace(things, things_with_spacing)
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            result_lines.append(line)
             
-            # Add spacing between room description and first content section
-            first_content = things if things else characters
-            old_pattern = desc + '\n' + first_content
-            new_pattern = desc + '\n\n' + first_content
-            result = result.replace(old_pattern, new_pattern)
-        else:
-            # For empty rooms, fix excessive line breaks before footer
-            if desc and footer and '\n\n\n' in result:
-                # Replace triple line breaks with double
-                result = result.replace('\n\n\n', '\n\n')
+            # Add spacing after room description if we have any content following
+            if line.strip() == desc.strip() and desc and (things or characters):
+                # Look ahead to see if next non-empty line has content
+                next_content_line = None
+                for j in range(i + 1, len(lines)):
+                    if lines[j].strip():
+                        next_content_line = lines[j].strip()
+                        break
+                
+                if next_content_line:
+                    result_lines.append("")  # Add blank line after description
+            
+            # Add spacing after items section if it exists and characters follow
+            elif things and line.strip() == things.strip() and characters:
+                # Look ahead to see if characters actually follow
+                next_content_line = None
+                for j in range(i + 1, len(lines)):
+                    if lines[j].strip():
+                        next_content_line = lines[j].strip()
+                        break
+                
+                if next_content_line == characters.strip():
+                    result_lines.append("")  # Add blank line after items
+            
+            i += 1
         
-        # Clean up trailing whitespace and empty lines at the end
-        # This handles cases where footer is empty (like sky rooms)
-        result = result.rstrip('\n') + '\n' if result.rstrip() else ""
+        # Join lines back together
+        result = '\n'.join(result_lines)
         
+        # Clean up excessive newlines - never more than double spacing
+        while '\n\n\n' in result:
+            result = result.replace('\n\n\n', '\n\n')
+        
+        # Handle empty sections by removing lines that are just whitespace
+        lines = result.split('\n')
+        cleaned_lines = []
+        for line in lines:
+            # Keep lines that have actual content or are intentional spacing
+            if line.strip() or (cleaned_lines and cleaned_lines[-1].strip()):
+                cleaned_lines.append(line)
+        
+        result = '\n'.join(cleaned_lines)
+        
+        # Ensure proper ending - single newline if content, empty string if no content
+        result = result.rstrip()
+        if result:
+            result += '\n'
+            
         return result
     
     def get_custom_exit_display(self, looker):
