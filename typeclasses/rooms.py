@@ -315,12 +315,17 @@ class Room(ObjectParent, DefaultRoom):
     
     def get_display_things(self, looker, **kwargs):
         """
-        Override things display to exclude @integrate objects and use natural language formatting.
+        Override things display to exclude @integrate objects and use natural language formatting
+        with stacking for identical items.
         
         @integrate objects are woven into the room description and
         should not appear in the traditional object listing.
         """
-        things = []
+        import random
+        from collections import defaultdict
+        
+        # Collect objects and group by display name
+        item_counts = defaultdict(int)
         
         for obj in self.contents:
             # Skip characters (handled by get_display_characters)
@@ -339,20 +344,73 @@ class Room(ObjectParent, DefaultRoom):
             if not obj.access(looker, "view"):
                 continue
             
-            things.append(obj.get_display_name(looker))
+            display_name = obj.get_display_name(looker)
+            item_counts[display_name] += 1
         
-        if not things:
+        if not item_counts:
             return ""
         
+        # Quantity words for numbers 1-50
+        quantity_words = {
+            1: "a", 2: "two", 3: "three", 4: "four", 5: "five", 
+            6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten",
+            11: "eleven", 12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen",
+            16: "sixteen", 17: "seventeen", 18: "eighteen", 19: "nineteen", 20: "twenty",
+            21: "twenty-one", 22: "twenty-two", 23: "twenty-three", 24: "twenty-four", 25: "twenty-five",
+            26: "twenty-six", 27: "twenty-seven", 28: "twenty-eight", 29: "twenty-nine", 30: "thirty",
+            31: "thirty-one", 32: "thirty-two", 33: "thirty-three", 34: "thirty-four", 35: "thirty-five",
+            36: "thirty-six", 37: "thirty-seven", 38: "thirty-eight", 39: "thirty-nine", 40: "forty",
+            41: "forty-one", 42: "forty-two", 43: "forty-three", 44: "forty-four", 45: "forty-five",
+            46: "forty-six", 47: "forty-seven", 48: "forty-eight", 49: "forty-nine", 50: "fifty"
+        }
+        
+        # Euphemisms for quantities > 50
+        euphemisms = [
+            "a shitload of", "a fuckton of", "a metric assload of", "way too many",
+            "an ungodly amount of", "more {} than you know what to do with",
+            "a ridiculous number of", "an obscene amount of", "a crapton of"
+        ]
+        
+        # Format each item group with appropriate quantifier
+        formatted_items = []
+        for item_name, count in item_counts.items():
+            if count == 1:
+                formatted_items.append(f"a {item_name}")
+            elif count <= 50:
+                quantity = quantity_words[count]
+                # Handle plural forms - simple approach for now
+                if item_name.endswith('s') or item_name.endswith('x') or item_name.endswith('z'):
+                    plural_name = item_name
+                elif item_name.endswith('y'):
+                    plural_name = item_name[:-1] + "ies"
+                elif item_name.endswith('f'):
+                    plural_name = item_name[:-1] + "ves"
+                elif item_name.endswith('fe'):
+                    plural_name = item_name[:-2] + "ves"
+                else:
+                    plural_name = item_name + "s"
+                formatted_items.append(f"{quantity} {plural_name}")
+            else:
+                # Use random euphemism for large quantities
+                euphemism = random.choice(euphemisms)
+                if "{}" in euphemism:
+                    # Handle template euphemisms like "more {} than you know what to do with"
+                    plural_name = item_name + "s" if not item_name.endswith('s') else item_name
+                    formatted_items.append(euphemism.format(plural_name))
+                else:
+                    # Handle direct euphemisms like "a shitload of"
+                    plural_name = item_name + "s" if not item_name.endswith('s') else item_name
+                    formatted_items.append(f"{euphemism} {plural_name}")
+        
         # Format using natural language similar to character placement
-        if len(things) == 1:
-            return f"You see a {things[0]}."
-        elif len(things) == 2:
-            return f"You see a {things[0]} and {things[1]}."
+        if len(formatted_items) == 1:
+            return f"You see {formatted_items[0]}."
+        elif len(formatted_items) == 2:
+            return f"You see {formatted_items[0]} and {formatted_items[1]}."
         else:
-            # Handle 3+ objects: "You see: A, B, and C"
-            all_but_last = ", ".join(things[:-1])
-            return f"You see a {all_but_last}, and {things[-1]}."
+            # Handle 3+ item groups: "You see: A, B, and C"
+            all_but_last = ", ".join(formatted_items[:-1])
+            return f"You see {all_but_last}, and {formatted_items[-1]}."
     
     def get_display_footer(self, looker, **kwargs):
         """
