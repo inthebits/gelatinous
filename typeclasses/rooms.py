@@ -403,14 +403,18 @@ class Room(ObjectParent, DefaultRoom):
                     formatted_items.append(f"{euphemism} {plural_name}")
         
         # Format using natural language similar to character placement
+        result = ""
         if len(formatted_items) == 1:
-            return f"You see {formatted_items[0]}."
+            result = f"You see {formatted_items[0]}."
         elif len(formatted_items) == 2:
-            return f"You see {formatted_items[0]} and {formatted_items[1]}."
+            result = f"You see {formatted_items[0]} and {formatted_items[1]}."
         else:
             # Handle 3+ item groups: "You see: A, B, and C"
             all_but_last = ", ".join(formatted_items[:-1])
-            return f"You see {all_but_last}, and {formatted_items[-1]}."
+            result = f"You see {all_but_last}, and {formatted_items[-1]}."
+        
+        # Always add a line break after items to separate from characters section
+        return result + "\n" if result else ""
     
     def get_display_footer(self, looker, **kwargs):
         """
@@ -436,10 +440,7 @@ class Room(ObjectParent, DefaultRoom):
         This is called last in the appearance pipeline and allows for final
         adjustments like adding line breaks between sections.
         
-        Key requirements:
-        - Proper spacing between room description, items, characters, and exits
-        - Empty sections don't create extra spacing
-        - Clean handling of sky rooms and empty footers
+        Now simplified since items handle their own spacing.
         
         Args:
             appearance (str): The formatted appearance string from the template
@@ -454,52 +455,22 @@ class Room(ObjectParent, DefaultRoom):
         desc = self.db.desc or ""
         footer = self.get_display_footer(looker, **kwargs)
         
-        # Process appearance line by line for precise control
-        lines = appearance.split('\n')
-        result_lines = []
+        result = appearance
         
-        i = 0
-        while i < len(lines):
-            line = lines[i]
-            result_lines.append(line)
-            
-            # Add spacing after room description if we have any content following
-            if line.strip() == desc.strip() and desc and (things or characters):
-                # Look ahead to see if next non-empty line has content
-                next_content_line = None
-                for j in range(i + 1, len(lines)):
-                    if lines[j].strip():
-                        next_content_line = lines[j].strip()
-                        break
-                
-                if next_content_line:
-                    result_lines.append("")  # Add blank line after description
-            
-            # Add spacing after items section if it exists (always, whether characters follow or not)
-            # Check if this line exactly matches the things content
-            elif things and line == things:
-                result_lines.append("")  # Add blank line after items
-            
-            i += 1
+        # Add spacing between room description and first content section (items or characters)
+        if desc and (things or characters):
+            first_content = things if things else characters
+            if first_content:
+                # Look for the pattern: desc followed by content, add spacing
+                desc_pattern = desc + '\n' + first_content.strip()
+                desc_with_spacing = desc + '\n\n' + first_content.strip()
+                result = result.replace(desc_pattern, desc_with_spacing)
         
-        # Join lines back together
-        result = '\n'.join(result_lines)
-        
-        # Clean up excessive newlines - never more than double spacing
+        # Clean up excessive newlines
         while '\n\n\n' in result:
             result = result.replace('\n\n\n', '\n\n')
         
-        # Handle empty sections by removing lines that are just whitespace
-        lines = result.split('\n')
-        cleaned_lines = []
-        for line in lines:
-            # Keep lines that have actual content or are intentional spacing
-            if line.strip() or (cleaned_lines and cleaned_lines[-1].strip()):
-                cleaned_lines.append(line)
-        
-        result = '\n'.join(cleaned_lines)
-        
-        # Ensure proper ending - single newline if content, empty string if no content
+        # Ensure proper ending
         result = result.rstrip()
         if result:
             result += '\n'
