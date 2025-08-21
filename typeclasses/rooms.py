@@ -397,23 +397,18 @@ class Room(ObjectParent, DefaultRoom):
         if things or characters:
             # Add spacing between items and characters if both exist
             if things and characters:
-                # Very simple approach: just ensure there's a blank line between sections
-                # by looking for any case where content is directly adjacent
-                lines = result.split('\n')
-                new_lines = []
+                # Proper approach: find where things content ends and characters content begins
+                # We know both exist, so look for their actual content in the result
+                things_content = things.strip()
+                characters_content = characters.strip()
                 
-                for i, line in enumerate(lines):
-                    new_lines.append(line)
-                    # If this line contains items content and the next line contains character content
-                    if (i < len(lines) - 1 and 
-                        line.strip() and lines[i + 1].strip() and
-                        'You see' in line and
-                        (any(crowd_word in lines[i + 1].lower() for crowd_word in 
-                             ['people', 'crowd', 'pedestrians', 'traffic', 'individuals', 'presence', 'space']) or
-                         any(name in lines[i + 1] for name in ['Kathy', 'Nick', 'Sterling', 'Janice', 'Dean']))):
-                        new_lines.append('')  # Add blank line
-                
-                result = '\n'.join(new_lines)
+                # Look for where things content is immediately followed by characters content
+                if things_content and characters_content:
+                    # Find the pattern where these appear on adjacent lines
+                    pattern = f"{things_content}\n{characters_content}"
+                    if pattern in result:
+                        replacement = f"{things_content}\n\n{characters_content}"
+                        result = result.replace(pattern, replacement)
             
             # Add spacing between room description and first content section
             first_content = things if things else characters
