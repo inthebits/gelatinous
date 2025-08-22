@@ -303,15 +303,55 @@ class Room(ObjectParent, DefaultRoom):
         
         character_display = " ".join(descriptions) if descriptions else ""
         
-        # Combine crowd and character display on same line
-        if crowd_msg and character_display:
-            return f"{crowd_msg} {character_display}"
-        elif crowd_msg:
-            return crowd_msg
-        elif character_display:
-            return character_display
-        else:
-            return ""
+        # Get adjacent character sightings (simple approach - no complex visibility logic)
+        adjacent_sightings = self.get_adjacent_character_sightings(looker)
+        
+        # Combine crowd, local characters, and adjacent sightings
+        all_displays = []
+        if crowd_msg:
+            all_displays.append(crowd_msg)
+        if character_display:
+            all_displays.append(character_display)
+        if adjacent_sightings:
+            all_displays.append(adjacent_sightings)
+        
+        return " ".join(all_displays) if all_displays else ""
+    
+    def get_adjacent_character_sightings(self, looker):
+        """
+        Simple adjacent room character detection.
+        No complex visibility logic - just scan adjacent rooms and report characters.
+        Encourages interaction and chase scenes.
+        
+        Args:
+            looker: Character looking at the room
+            
+        Returns:
+            str: Description of characters visible in adjacent rooms
+        """
+        sightings = []
+        
+        for exit_obj in self.exits:
+            destination = exit_obj.destination
+            if not destination:
+                continue
+                
+            # Count visible characters (excluding looker)
+            char_count = 0
+            for obj in destination.contents:
+                if (obj.is_typeclass("typeclasses.characters.Character") 
+                    and obj != looker 
+                    and obj.access(looker, "view")):
+                    char_count += 1
+            
+            if char_count > 0:
+                direction = exit_obj.key
+                if char_count == 1:
+                    sightings.append(f"You see a lone figure to the {direction}.")
+                else:
+                    sightings.append(f"You see a group of people standing to the {direction}.")
+        
+        return " ".join(sightings)
     
     def get_display_things(self, looker, **kwargs):
         """
