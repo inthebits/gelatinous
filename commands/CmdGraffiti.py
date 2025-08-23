@@ -41,55 +41,63 @@ class CmdGraffiti(Command):
     def func(self):
         """Execute the spray command."""
         if not self.args:
-            self.caller.msg("Usage: spray \"<message>\" with <spray_can> OR spray here with <solvent_can>")
+            self.caller.msg("Usage: spray \"<message>\" with <can> OR spray here with <can>")
             return
         
-        # Parse command patterns
+        # Parse command patterns to determine intent
         args_lower = self.args.lower()
         
         if args_lower.startswith("here with "):
-            self._handle_clean(self.args[10:].strip())
+            # User wants to clean - get the can name
+            can_name = self.args[10:].strip()
+            intent = "clean"
+            message = None
         elif " with " in self.args:
-            self._handle_spray_paint(self.args)
+            # User wants to spray paint - parse message and can name
+            message_part, can_part = self.args.rsplit(" with ", 1)
+            message = message_part.strip().strip('"\'')  # Remove quotes if present
+            can_name = can_part.strip()
+            intent = "spraypaint"
         else:
-            self.caller.msg("Usage: spray \"<message>\" with <spray_can> OR spray here with <solvent_can>")
-    
-    def _handle_spray_paint(self, args):
-        """Handle spray painting graffiti."""
-        if " with " not in args:
-            self.caller.msg("Usage: spray \"<message>\" with <spray_can>")
+            self.caller.msg("Usage: spray \"<message>\" with <can> OR spray here with <can>")
             return
         
-        # Split message and can name
-        message_part, can_part = args.rsplit(" with ", 1)
-        message = message_part.strip().strip('"\'')  # Remove quotes if present
-        can_name = can_part.strip()
+        # Find the can object
+        can = self.caller.search(can_name, candidates=self.caller.contents, quiet=True)
+        if not can:
+            self.caller.msg(f"You don't have a '{can_name}'.")
+            return
         
+        can = can[0]  # Get first match
+        
+        # Check what type of aerosol contents the can has
+        aerosol_contents = getattr(can.db, 'aerosol_contents', None)
+        if not aerosol_contents:
+            self.caller.msg(f"You can't use {can.name} for spraying.")
+            return
+        
+        # Route to appropriate handler based on can contents AND user intent
+        if aerosol_contents == "spraypaint":
+            if intent == "spraypaint":
+                self._handle_spray_paint_with_spraypaint(can, message)
+            else:  # intent == "clean"
+                self.caller.msg(f"You can't clean with {can.name} - it contains paint, not solvent.")
+        elif aerosol_contents == "solvent":
+            if intent == "clean":
+                self._handle_clean_with_solvent(can)
+            else:  # intent == "spraypaint"
+                self.caller.msg(f"You can't spray paint with {can.name} - it contains solvent, not paint.")
+        else:
+            self.caller.msg(f"You can't use {can.name} for spraying - unknown contents: {aerosol_contents}.")
+    
+    def _handle_spray_paint_with_spraypaint(self, spray_can, message):
+        """Handle spray painting with a spray paint can."""
         if not message:
             self.caller.msg("You need to specify a message to spray.")
             return
         
         if len(message) > 100:
             self.caller.msg("Your message is too long! Keep it under 100 characters.")
-            return
-        
-        # Find the spray can
-        spray_can = self.caller.search(can_name, candidates=self.caller.contents, quiet=True)
-        if not spray_can:
-            self.caller.msg(f"You don't have a '{can_name}'.")
-            return
-        
-        spray_can = spray_can[0]  # Get first match
-        
-        # Check if it's an aerosol can with contents
-        aerosol_contents = getattr(spray_can.db, 'aerosol_contents', None)
-        if not aerosol_contents:
-            self.caller.msg(f"You can't spray paint with {spray_can.name}.")
-            return
-        
-        # Verify it contains spraypaint
-        if aerosol_contents != "spraypaint":
-            self.caller.msg(f"You can't spray paint with {spray_can.name}.")
             return
         
         # Check if spray can has paint
@@ -147,30 +155,8 @@ class CmdGraffiti(Command):
             exclude=self.caller
         )
     
-    def _handle_clean(self, can_name):
-        """Handle cleaning graffiti with solvent."""
-        if not can_name:
-            self.caller.msg("Usage: spray here with <solvent_can>")
-            return
-        
-        # Find the solvent can
-        solvent_can = self.caller.search(can_name, candidates=self.caller.contents, quiet=True)
-        if not solvent_can:
-            self.caller.msg(f"You don't have a '{can_name}'.")
-            return
-        
-        solvent_can = solvent_can[0]  # Get first match
-        
-        # Check if it's an aerosol can with contents
-        aerosol_contents = getattr(solvent_can.db, 'aerosol_contents', None)
-        if not aerosol_contents:
-            self.caller.msg(f"You can't clean with {solvent_can.name}.")
-            return
-        
-        # Verify it contains solvent
-        if aerosol_contents != "solvent":
-            self.caller.msg(f"You can't clean with {solvent_can.name}.")
-            return
+    def _handle_clean_with_solvent(self, solvent_can):
+        """Handle cleaning graffiti with a solvent can."""
         
         # Check if solvent can has uses left
         if solvent_can.db.aerosol_level <= 0:
