@@ -65,6 +65,14 @@ WEBCLIENT_ENABLED = False
 DEFAULT_EXIT_TYPECLASS = "typeclasses.exits.Exit"
 
 ######################################################################
+# Custom search handling
+######################################################################
+
+# Use our custom search handler that supports ordinal numbers (1st, 2nd, 3rd)
+# in addition to the default dash-number format (sword-1, sword-2)
+SEARCH_AT_RESULT = "server.conf.at_search.at_search_result"
+
+######################################################################
 # Django web features
 ######################################################################
 

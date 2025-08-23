@@ -72,22 +72,21 @@ class CmdWield(Command):
         caller.msg("Your hands are full.")
         
     def _find_item_in_inventory(self, caller, itemname):
-        """Enhanced search that checks display name, key, and aliases."""
-        itemname = itemname.lower()
+        """Enhanced search that supports display names, keys, aliases, and ordinal numbers."""
+        # Use Evennia's standard search which supports ordinal numbers like "1st sword"
+        # but limit candidates to caller's inventory
+        item = caller.search(itemname, location=caller, quiet=True)
+        if item:
+            # Search found something using standard mechanism (including ordinal support)
+            return item[0] if isinstance(item, list) else item
         
-        # Search through caller's inventory
+        # Fallback: try partial matching on display names for better user experience
+        itemname_lower = itemname.lower()
         for obj in caller.contents:
-            # Check display name
-            if itemname in obj.get_display_name(caller).lower():
+            # Check display name (for aerosol cans, etc.)
+            if itemname_lower in obj.get_display_name(caller).lower():
                 return obj
-            # Check key
-            if itemname in obj.key.lower():
-                return obj
-            # Check aliases
-            aliases = [alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else [])]
-            if any(itemname in alias for alias in aliases):
-                return obj
-        
+                
         caller.msg(f"You don't have a '{itemname}'.")
         return None
 
@@ -107,28 +106,32 @@ class CmdUnwield(Command):
 
     def func(self):
         caller = self.caller
-        itemname = self.args.strip().lower()
+        itemname = self.args.strip()
 
         if not itemname:
             caller.msg("What do you want to unwield?")
             return
 
+        # Get all currently held items as candidates
         hands = caller.hands
-        for hand, held_item in hands.items():
-            if held_item:
-                # Check display name, key, and aliases
-                display_name = held_item.get_display_name(caller).lower()
-                key = held_item.key.lower()
-                aliases = [alias.lower() for alias in (held_item.aliases.all() if hasattr(held_item.aliases, "all") else [])]
-                
-                if (itemname in display_name or 
-                    itemname in key or 
-                    itemname in aliases):
+        held_items = [item for item in hands.values() if item]
+        
+        if not held_items:
+            caller.msg("You aren't holding anything.")
+            return
+
+        # Use standard search with held items as candidates (supports ordinal numbers)
+        item = caller.search(itemname, candidates=held_items, quiet=True)
+        if item:
+            target_item = item[0] if isinstance(item, list) else item
+            
+            # Find which hand contains this item
+            for hand, held_item in hands.items():
+                if held_item and held_item == target_item:
                     result = caller.unwield_item(hand)
                     caller.msg(result)
                     return
-                return
-
+                    
         caller.msg(f"You aren't holding '{itemname}'.")
 
 
