@@ -92,8 +92,8 @@ class CmdGraffiti(Command):
                     can = [held_item]
                     break
                 # Also check aliases
-                if held_item and hasattr(held_item, 'aliases') and held_item.aliases:
-                    for alias in held_item.aliases:
+                if held_item and hasattr(held_item, 'aliases') and held_item.aliases.all():
+                    for alias in held_item.aliases.all():
                         if alias.lower() == can_name.lower():
                             can = [held_item]
                             break
@@ -153,11 +153,12 @@ class CmdGraffiti(Command):
         else:
             paint_used = paint_needed
         
+        # Get the current color and name before using paint (in case can gets deleted)
+        current_color = spray_can.db.current_color or "white"  # Default fallback
+        can_name_for_message = spray_can.name
+        
         # Use the paint
         spray_can.use_paint(paint_used)
-        
-        # Get the current color
-        current_color = spray_can.db.current_color
         
         # Find or create the room's graffiti object
         graffiti_obj = None
@@ -183,9 +184,9 @@ class CmdGraffiti(Command):
             'magenta': 'm', 'cyan': 'c', 'white': 'w', 'black': 'x',
             'purple': 'm', 'pink': 'm', 'orange': 'y'
         }
-        color_code = color_map.get(current_color.lower(), 'w')
+        color_code = color_map.get(current_color.lower() if current_color else 'white', 'w')
         colored_message = f"|{color_code}{message}|n"
-        self.caller.msg(f"You spray '{colored_message}' on the wall with {spray_can.name}.")
+        self.caller.msg(f"You spray '{colored_message}' on the wall with {can_name_for_message}.")
         self.caller.location.msg_contents(
             f"{self.caller.name} sprays '{colored_message}' on the wall.",
             exclude=self.caller
@@ -294,8 +295,8 @@ class CmdPress(Command):
                     spray_can = [held_item]
                     break
                 # Also check aliases
-                if held_item and hasattr(held_item, 'aliases') and held_item.aliases:
-                    for alias in held_item.aliases:
+                if held_item and hasattr(held_item, 'aliases') and held_item.aliases.all():
+                    for alias in held_item.aliases.all():
                         if alias.lower() == can_name.lower():
                             spray_can = [held_item]
                             break

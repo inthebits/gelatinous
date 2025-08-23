@@ -270,6 +270,9 @@ class GraffitiObject(Object):
             'magenta': 'm', 'cyan': 'c', 'white': 'w', 'black': 'x',
             'purple': 'm', 'pink': 'm', 'orange': 'y'
         }
+        # Handle None color gracefully
+        if color is None:
+            color = "white"
         color_code = color_map.get(color.lower(), 'w')  # Default to white
         
         # Format the entry with proper Evennia color codes
