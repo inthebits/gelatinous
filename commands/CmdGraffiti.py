@@ -301,16 +301,13 @@ class CmdPress(Command):
         if not spray_can and hasattr(self.caller, 'hands'):
             hands = self.caller.hands
             for hand_name, held_item in hands.items():
-                if held_item and held_item.key.lower() == can_name.lower():
-                    spray_can = [held_item]
-                    break
-                # Also check aliases
-                if held_item and hasattr(held_item, 'aliases') and held_item.aliases.all():
-                    for alias in held_item.aliases.all():
-                        if alias.lower() == can_name.lower():
-                            spray_can = [held_item]
-                            break
-                    if spray_can:
+                if held_item:
+                    # Check display name, key, and aliases
+                    if (can_name.lower() in held_item.get_display_name(self.caller).lower() or
+                        can_name.lower() in held_item.key.lower() or
+                        (hasattr(held_item, 'aliases') and held_item.aliases.all() and
+                         any(can_name.lower() in alias.lower() for alias in held_item.aliases.all()))):
+                        spray_can = [held_item]
                         break
         
         if not spray_can:
@@ -322,12 +319,12 @@ class CmdPress(Command):
         # Check if it's an aerosol can with color-changing capability (spraypaint)
         aerosol_contents = getattr(spray_can.db, 'aerosol_contents', None)
         if not aerosol_contents:
-            self.caller.msg(f"You can't press colors on {spray_can.name}.")
+            self.caller.msg(f"You can't press colors on {spray_can.get_display_name(self.caller)}.")
             return
         
         # Verify it's a spray can (not solvent)
         if aerosol_contents != "spraypaint":
-            self.caller.msg(f"You can't press colors on {spray_can.name}.")
+            self.caller.msg(f"You can't press colors on {spray_can.get_display_name(self.caller)}.")
             return
         
         # Check if color is available
@@ -364,7 +361,7 @@ class CmdPress(Command):
         color_code = color_map.get(new_color.lower(), 'w')
         colored_name = f"|{color_code}{new_color}|n"
         
-        self.caller.msg(f"You press the {colored_name} button on {spray_can.name}.")
+        self.caller.msg(f"You press the {colored_name} button on {spray_can.get_display_name(self.caller)}.")
         self.caller.location.msg_contents(
             f"{self.caller.name} presses a button on their spray can.",
             exclude=self.caller
