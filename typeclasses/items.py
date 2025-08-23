@@ -37,8 +37,8 @@ class SprayCanItem(Item):
         super().at_object_creation()
         
         # Graffiti-specific attributes
-        self.db.paint_level = 256  # Default paint capacity
-        self.db.max_paint = 256    # Starting paint capacity
+        self.db.aerosol_level = 256  # Default aerosol capacity
+        self.db.max_aerosol = 256    # Starting aerosol capacity
         self.db.current_color = "red"  # Default color
         
         # Available ANSI colors for cycling
@@ -48,9 +48,9 @@ class SprayCanItem(Item):
             "boldmagenta", "boldcyan", "boldwhite"
         ]
         
-        # Override default description
+        # Override default description with aerosol level
         if not self.db.desc:
-            self.db.desc = f"A can of spraypaint with a {self.db.current_color} nozzle. It feels {'heavy' if self.db.paint_level > 128 else 'light' if self.db.paint_level > 0 else 'empty'} with paint."
+            self.db.desc = f"A can of spraypaint with a {self.db.current_color} nozzle. It feels {'heavy' if self.db.aerosol_level > 128 else 'light' if self.db.aerosol_level > 0 else 'empty'} with paint."
         
         # Combat properties for spray can as weapon
         self.db.damage = 2  # Slightly better than default item
@@ -58,33 +58,33 @@ class SprayCanItem(Item):
         
     def get_display_name(self, looker, **kwargs):
         """
-        Display name includes paint level indicator.
+        Display name includes aerosol level indicator.
         """
         base_name = super().get_display_name(looker, **kwargs)
-        if self.db.paint_level <= 0:
+        if self.db.aerosol_level <= 0:
             return f"{base_name} (empty)"
-        elif self.db.paint_level < 50:
+        elif self.db.aerosol_level < 50:
             return f"{base_name} (low)"
         return base_name
     
     def has_paint(self, amount=1):
         """
-        Check if spray can has enough paint for operation.
+        Check if spray can has enough aerosol for operation.
         
         Args:
-            amount (int): Paint amount needed
+            amount (int): Aerosol amount needed
             
         Returns:
-            bool: True if enough paint available
+            bool: True if enough aerosol available
         """
-        return self.db.paint_level >= amount
+        return self.db.aerosol_level >= amount
     
     def use_paint(self, amount):
         """
-        Consume paint from the can.
+        Consume aerosol from the can.
         
         Args:
-            amount (int): Paint amount to consume
+            amount (int): Aerosol amount to consume
             
         Returns:
             int: Actual amount consumed (may be less if running out)
@@ -92,11 +92,11 @@ class SprayCanItem(Item):
         if amount <= 0:
             return 0
             
-        actual_used = min(amount, self.db.paint_level)
-        self.db.paint_level -= actual_used
+        actual_used = min(amount, self.db.aerosol_level)
+        self.db.aerosol_level -= actual_used
         
-        # Update description based on new paint level
-        self.db.desc = f"A can of spraypaint with a {self.db.current_color} nozzle. It feels {'heavy' if self.db.paint_level > 128 else 'light' if self.db.paint_level > 0 else 'empty'} with paint."
+        # Update description based on new aerosol level
+        self.db.desc = f"A can of spraypaint with a {self.db.current_color} nozzle. It feels {'heavy' if self.db.aerosol_level > 128 else 'light' if self.db.aerosol_level > 0 else 'empty'} with paint."
         
         return actual_used
     
@@ -116,7 +116,7 @@ class SprayCanItem(Item):
                 if available_color.lower() == color.lower():
                     self.db.current_color = available_color
                     # Update description with new color
-                    self.db.desc = f"A can of spraypaint with a {self.db.current_color} nozzle. It feels {'heavy' if self.db.paint_level > 128 else 'light' if self.db.paint_level > 0 else 'empty'} with paint."
+                    self.db.desc = f"A can of spraypaint with a {self.db.current_color} nozzle. It feels {'heavy' if self.db.aerosol_level > 128 else 'light' if self.db.aerosol_level > 0 else 'empty'} with paint."
                     return True
         return False
     
@@ -143,16 +143,16 @@ class SolventCanItem(Item):
     """
     
     def at_object_creation(self):
-        """Initialize solvent can with solvent capacity."""
+        """Initialize solvent can with aerosol capacity."""
         super().at_object_creation()
         
-        # Solvent-specific attributes
-        self.db.solvent_level = 256  # Default solvent capacity (matches spray paint)
-        self.db.max_solvent = 256    # Starting solvent capacity
+        # Aerosol-specific attributes (standardized)
+        self.db.aerosol_level = 256  # Default aerosol capacity (matches spray paint)
+        self.db.max_aerosol = 256    # Starting aerosol capacity
         
         # Override default description
         if not self.db.desc:
-            self.db.desc = f"A can of solvent for cleaning graffiti. It feels {'heavy' if self.db.solvent_level > 128 else 'light' if self.db.solvent_level > 0 else 'empty'} with solvent."
+            self.db.desc = f"A can of solvent for cleaning graffiti. It feels {'heavy' if self.db.aerosol_level > 128 else 'light' if self.db.aerosol_level > 0 else 'empty'} with solvent."
             
         # Combat properties for solvent can as weapon
         self.db.damage = 2  # Same as spray can
@@ -160,33 +160,33 @@ class SolventCanItem(Item):
         
     def get_display_name(self, looker, **kwargs):
         """
-        Display name includes solvent level indicator.
+        Display name includes aerosol level indicator.
         """
         base_name = super().get_display_name(looker, **kwargs)
-        if self.db.solvent_level <= 0:
+        if self.db.aerosol_level <= 0:
             return f"{base_name} (empty)"
-        elif self.db.solvent_level < 50:
+        elif self.db.aerosol_level < 50:
             return f"{base_name} (low)"
         return base_name
     
     def has_solvent(self, amount=1):
         """
-        Check if solvent can has enough solvent for operation.
+        Check if solvent can has enough aerosol for operation.
         
         Args:
-            amount (int): Solvent amount needed
+            amount (int): Aerosol amount needed
             
         Returns:
-            bool: True if enough solvent available
+            bool: True if enough aerosol available
         """
-        return self.db.solvent_level >= amount
+        return self.db.aerosol_level >= amount
     
     def use_solvent(self, amount):
         """
-        Consume solvent from the can.
+        Consume aerosol from the can.
         
         Args:
-            amount (int): Solvent amount to consume
+            amount (int): Aerosol amount to consume
             
         Returns:
             int: Actual amount consumed (may be less if running out)
@@ -194,10 +194,10 @@ class SolventCanItem(Item):
         if amount <= 0:
             return 0
             
-        actual_used = min(amount, self.db.solvent_level)
-        self.db.solvent_level -= actual_used
+        actual_used = min(amount, self.db.aerosol_level)
+        self.db.aerosol_level -= actual_used
         
-        # Update description based on new solvent level
-        self.db.desc = f"A can of solvent for cleaning graffiti. It feels {'heavy' if self.db.solvent_level > 128 else 'light' if self.db.solvent_level > 0 else 'empty'} with solvent."
+        # Update description based on new aerosol level
+        self.db.desc = f"A can of solvent for cleaning graffiti. It feels {'heavy' if self.db.aerosol_level > 128 else 'light' if self.db.aerosol_level > 0 else 'empty'} with solvent."
         
         return actual_used

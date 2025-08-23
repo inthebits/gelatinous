@@ -88,13 +88,13 @@ class CmdGraffiti(Command):
             return
         
         # Check if spray can has paint
-        if spray_can.db.paint_remaining <= 0:
+        if spray_can.db.aerosol_level <= 0:
             self.caller.msg(f"{spray_can.name} is empty!")
             return
         
         # Calculate paint needed (1 paint per character)
         paint_needed = len(message)
-        paint_available = spray_can.db.paint_remaining
+        paint_available = spray_can.db.aerosol_level
         
         # Determine actual message length based on available paint
         if paint_needed > paint_available:
@@ -105,11 +105,10 @@ class CmdGraffiti(Command):
             paint_used = paint_needed
         
         # Use the paint
-        spray_can.db.paint_remaining -= paint_used
+        spray_can.use_paint(paint_used)
         
         # Get the current color
         current_color = spray_can.db.current_color
-        color_code = spray_can.db.color_codes.get(current_color, "")
         
         # Create the graffiti object
         graffiti = create_object(
@@ -121,7 +120,6 @@ class CmdGraffiti(Command):
         # Set graffiti properties
         graffiti.db.message = message
         graffiti.db.color = current_color
-        graffiti.db.color_code = color_code
         graffiti.db.creator = self.caller.key
         
         # Add to room's graffiti list
@@ -129,16 +127,13 @@ class CmdGraffiti(Command):
             self.caller.location.db.graffiti = []
         self.caller.location.db.graffiti.append(graffiti)
         
-        # Messages
-        colored_message = f"{color_code}{message}|n" if color_code else message
+        # Messages - using ANSI color formatting
+        colored_message = f"|{current_color}{message}|n"
         self.caller.msg(f"You spray '{colored_message}' on the wall with {spray_can.name}.")
         self.caller.location.msg_contents(
             f"{self.caller.name} sprays '{colored_message}' on the wall.",
             exclude=self.caller
         )
-        
-        # Update spray can description
-        spray_can.update_description()
     
     def _handle_clean(self, can_name):
         """Handle cleaning graffiti with solvent."""
@@ -160,7 +155,7 @@ class CmdGraffiti(Command):
             return
         
         # Check if solvent can has uses left
-        if solvent_can.db.uses_remaining <= 0:
+        if solvent_can.db.aerosol_level <= 0:
             self.caller.msg(f"{solvent_can.name} is empty!")
             return
         
@@ -180,7 +175,7 @@ class CmdGraffiti(Command):
         graffiti_to_remove.delete()
         
         # Use solvent
-        solvent_can.db.uses_remaining -= 1
+        solvent_can.use_solvent(1)
         
         # Messages
         self.caller.msg(f"You clean '{cleaned_message}' from the wall with {solvent_can.name}.")
@@ -188,9 +183,6 @@ class CmdGraffiti(Command):
             f"{self.caller.name} cleans graffiti from the wall.",
             exclude=self.caller
         )
-        
-        # Update solvent can description
-        solvent_can.update_description()
     
     def _handle_color(self, args):
         """Handle changing spray can color."""
@@ -217,22 +209,16 @@ class CmdGraffiti(Command):
             return
         
         # Check if color is available
-        available_colors = list(spray_can.db.color_codes.keys())
-        if new_color not in available_colors:
+        if not spray_can.set_color(new_color):
+            available_colors = spray_can.db.available_colors
             color_list = ", ".join(available_colors)
             self.caller.msg(f"Available colors: {color_list}")
             return
         
-        # Change the color
-        old_color = spray_can.db.current_color
-        spray_can.db.current_color = new_color
-        spray_can.update_description()
+        # Messages - color was successfully changed by set_color()
+        colored_name = f"|{new_color}{new_color}|n"
         
-        # Messages
-        color_code = spray_can.db.color_codes.get(new_color, "")
-        colored_name = f"{color_code}{new_color}|n" if color_code else new_color
-        
-        self.caller.msg(f"You adjust {spray_can.name} from {old_color} to {colored_name}.")
+        self.caller.msg(f"You adjust {spray_can.name} to {colored_name}.")
         self.caller.location.msg_contents(
             f"{self.caller.name} adjusts their spray can.",
             exclude=self.caller

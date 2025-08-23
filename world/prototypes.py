@@ -299,8 +299,8 @@ SPRAYPAINT_CAN = {
     "typeclass": "typeclasses.items.SprayCanItem", 
     "desc": "A can of spraypaint with a red nozzle. It feels heavy with paint.",
     "attrs": [
-        ("paint_level", 256),
-        ("max_paint", 256),
+        ("aerosol_level", 256),
+        ("max_aerosol", 256),
         ("current_color", "red"),
         ("damage", 2),
         ("weapon_type", "spraycan"),
@@ -320,8 +320,8 @@ SOLVENT_CAN = {
     "typeclass": "typeclasses.items.SolventCanItem",
     "desc": "A can of solvent for cleaning graffiti. It feels heavy with solvent.", 
     "attrs": [
-        ("solvent_level", 256),
-        ("max_solvent", 256),
+        ("aerosol_level", 256),
+        ("max_aerosol", 256),
         ("damage", 2),
         ("weapon_type", "spraycan"), 
         ("hands_required", 1)
