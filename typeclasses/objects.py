@@ -264,8 +264,10 @@ class GraffitiObject(Object):
         if not self.db.graffiti_entries:
             self.db.graffiti_entries = []
             
-        # Format the entry
-        formatted_entry = f"Scrawled in |{color}|n paint: {message}"
+        # Format the entry - separate color code from display text
+        color_start = f"|{color}"
+        color_end = "|n"
+        formatted_entry = f"Scrawled in {color_start}{color}{color_end} paint: {color_start}{message}{color_end}"
         
         # Add to storage
         self.db.graffiti_entries.append({
@@ -317,7 +319,9 @@ class GraffitiObject(Object):
                 entry['message'] = new_message
                 
                 # Update the formatted entry
-                entry['entry'] = f"Scrawled in |{entry['color']}|n paint: {new_message}"
+                color_start = f"|{entry['color']}"
+                color_end = "|n"
+                entry['entry'] = f"Scrawled in {color_start}{entry['color']}{color_end} paint: {color_start}{new_message}{color_end}"
                 removed_count += 1
                 
                 # Mark empty entries for removal
