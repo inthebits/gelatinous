@@ -57,14 +57,11 @@ class SprayCanItem(Item):
         
     def get_display_name(self, looker, **kwargs):
         """
-        Display name includes aerosol level indicator.
+        Display name based on aerosol contents.
+        Since cans self-destruct when empty, no need for state indicators.
         """
-        base_name = super().get_display_name(looker, **kwargs)
-        if self.db.aerosol_level <= 0:
-            return f"{base_name} (empty)"
-        elif self.db.aerosol_level < 50:
-            return f"{base_name} (low)"
-        return base_name
+        aerosol_contents = self.db.aerosol_contents or "spraypaint"
+        return f"can of {aerosol_contents}"
     
     def has_paint(self, amount=1):
         """
@@ -174,14 +171,11 @@ class SolventCanItem(Item):
         
     def get_display_name(self, looker, **kwargs):
         """
-        Display name includes aerosol level indicator.
+        Display name based on aerosol contents.
+        Since cans self-destruct when empty, no need for state indicators.
         """
-        base_name = super().get_display_name(looker, **kwargs)
-        if self.db.aerosol_level <= 0:
-            return f"{base_name} (empty)"
-        elif self.db.aerosol_level < 50:
-            return f"{base_name} (low)"
-        return base_name
+        aerosol_contents = self.db.aerosol_contents or "solvent"
+        return f"can of {aerosol_contents}"
     
     def has_solvent(self, amount=1):
         """

@@ -171,8 +171,22 @@ class CmdInventory(Command):
         # Carried (not wielded)
         if inventory_items:
             lines.append("|wCarrying:|n")
+            
+            # Consolidate identical items and count them
+            item_counts = {}
             for obj in inventory_items:
-                lines.append(f"  {obj.name}")
+                item_name = obj.name
+                if item_name in item_counts:
+                    item_counts[item_name] += 1
+                else:
+                    item_counts[item_name] = 1
+            
+            # Display items with counts
+            for item_name, count in item_counts.items():
+                if count > 1:
+                    lines.append(f"  {item_name} ({count})")
+                else:
+                    lines.append(f"  {item_name}")
             lines.append("")
 
         # Held (in hands)
