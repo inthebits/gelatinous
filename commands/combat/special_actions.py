@@ -25,7 +25,7 @@ from world.combat.constants import (
     MSG_DISARM_TARGET_EMPTY_HANDS, MSG_DISARM_FAILED, MSG_DISARM_RESISTED, MSG_DISARM_NOTHING_TO_DISARM,
     MSG_DISARM_SUCCESS_ATTACKER, MSG_DISARM_SUCCESS_VICTIM, MSG_DISARM_SUCCESS_OBSERVER,
     MSG_AIM_WHO_WHAT, MSG_AIM_SELF_TARGET, MSG_GRAPPLE_VIOLENT_SWITCH, MSG_GRAPPLE_ESCAPE_VIOLENT_SWITCH,
-    DEBUG_PREFIX_GRAPPLE, SPLATTERCAST_CHANNEL, NDB_PROXIMITY,
+    MSG_STOP_NOT_AIMING, DEBUG_PREFIX_GRAPPLE, SPLATTERCAST_CHANNEL, NDB_PROXIMITY,
     NDB_COMBAT_HANDLER, COMBAT_ACTION_DISARM, MSG_DISARM_PREPARE
 )
 from world.combat.utils import log_combat_action, get_numeric_stat, roll_stat, initialize_proximity_ndb
@@ -361,7 +361,7 @@ class CmdAim(Command):
             current_direction = getattr(caller.ndb, "aiming_direction", None)
             
             if not current_target and not current_direction:
-                caller.msg("|yYou are not currently aiming at anything.|n")
+                caller.msg(MSG_STOP_NOT_AIMING)
                 return
             
             # Clear target aiming if present
@@ -373,8 +373,8 @@ class CmdAim(Command):
                 # Clear override_place and check for mutual showdown cleanup
                 self._clear_aim_override_place(caller, current_target)
                 
-                caller.msg(f"|gYou stop aiming at {current_target.key}.|n")
-                current_target.msg(f"|g{caller.key} stops aiming at you.|n")
+                caller.msg(f"You stop aiming at {current_target.key}.")
+                current_target.msg(f"{caller.key} stops aiming at you.")
                 splattercast.msg(f"AIM_STOP: {caller.key} stopped aiming at {current_target.key}.")
             
             # Clear directional aiming if present
@@ -385,7 +385,7 @@ class CmdAim(Command):
                 if not current_target:
                     caller.override_place = ""
                 
-                caller.msg(f"|gYou stop aiming {current_direction}.|n")
+                caller.msg(f"You stop aiming {current_direction}.")
                 splattercast.msg(f"AIM_STOP: {caller.key} stopped aiming {current_direction}.")
             
             return        # Clear any existing aim first

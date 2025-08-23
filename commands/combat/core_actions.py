@@ -373,8 +373,8 @@ class CmdStop(Command):
                 # Clear override_place and handle mutual showdown cleanup
                 self._clear_aim_override_place_on_stop(caller, aiming_target)
                 
-                caller.msg(f"|gYou stop aiming at {aiming_target.key}.|n")
-                aiming_target.msg(f"|g{caller.key} stops aiming at you.|n")
+                caller.msg(f"You stop aiming at {aiming_target.key}.")
+                aiming_target.msg(f"{caller.key} stops aiming at you.")
                 
             # Clear direction aiming
             if aiming_direction:
@@ -384,7 +384,7 @@ class CmdStop(Command):
                 if not aiming_target:
                     caller.override_place = ""
                 
-                caller.msg(f"|gYou stop aiming {aiming_direction}.|n")
+                caller.msg(f"You stop aiming {aiming_direction}.")
                 
         elif args == "attacking" or args == "attack":
             handler = getattr(caller.ndb, "combat_handler", None)
