@@ -224,6 +224,15 @@ Unified graffiti system providing player-driven street expression through spray 
 
 ### Future Enhancement Opportunities
 - **Action delays** - spray painting/cleaning takes time, prevents movement during action
+- **Identical tag stacking** - repeated messages get consolidated with quantity descriptors
+  - Single: "Scrawled in red paint: WAKKA RULES"  
+  - Multiple colors: "Scrawled in |rp|ba|gi|yn|mt obsessively: WAKKA RULES"
+  - Visual composition using ANSI color codes reflects spraypaint colors used
+  - Euphemistic progression: few/several/many/countless/obsessively repeated/nearly everywhere
+  - Display priority: unique tags first, stacked tags after (de-emphasized)
+  - Rewards variety, discourages spam with vague acknowledgment
+  - Cleaning interaction: solvent still works character-by-character, ignores stacking
+  - Case-insensitive matching for consolidation
 - **Graffiti aging mechanics** - fade over time
 - **Gang/faction-specific colors** - restricted color palettes
 - **Skill-based quality levels** - novice vs expert graffiti
