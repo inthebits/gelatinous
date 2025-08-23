@@ -378,8 +378,11 @@ class Room(ObjectParent, DefaultRoom):
             if obj.is_typeclass("typeclasses.exits.Exit"):
                 continue
             
-            # Skip @integrate items - they're handled in room description
-            if obj.is_typeclass("typeclasses.items.Item") and getattr(obj.db, "integrate", False):
+            # Skip @integrate items - they're handled in room description  
+            # Check both Items and GraffitiObjects for integration
+            if ((obj.is_typeclass("typeclasses.items.Item") or 
+                 obj.is_typeclass("typeclasses.objects.GraffitiObject")) and 
+                getattr(obj.db, "integrate", False)):
                 continue
             
             # Skip objects the looker can't see
