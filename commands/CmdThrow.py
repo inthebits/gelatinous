@@ -1535,10 +1535,13 @@ class CmdRig(Command):
             grenade.db.original_integrate = getattr(grenade.db, 'integrate', False)
         if not hasattr(grenade.db, 'original_integration_desc'):
             grenade.db.original_integration_desc = getattr(grenade.db, 'integration_desc', None)
+        if not hasattr(grenade.db, 'original_integration_priority'):
+            grenade.db.original_integration_priority = getattr(grenade.db, 'integration_priority', None)
         
-        # Enable integration and set rigging description
+        # Enable integration and set rigging description with priority
         grenade.db.integrate = True
         grenade.db.integration_desc = f"A |C{grenade.get_display_name(self.caller)}|n is rigged to the {exit_obj.key} exit with a barely visible trip wire."
+        grenade.db.integration_priority = 3  # High priority for rigged grenades
         
         # Find and rig the return exit too
         return_exit = self.find_return_exit(exit_obj)
@@ -2596,6 +2599,15 @@ class CmdDefuse(Command):
                     if hasattr(grenade.db, 'integration_desc'):
                         delattr(grenade.db, 'integration_desc')
                 delattr(grenade.db, 'original_integration_desc')
+                
+            if hasattr(grenade.db, 'original_integration_priority'):
+                if grenade.db.original_integration_priority is not None:
+                    grenade.db.integration_priority = grenade.db.original_integration_priority
+                else:
+                    # Remove integration_priority if it wasn't set originally
+                    if hasattr(grenade.db, 'integration_priority'):
+                        delattr(grenade.db, 'integration_priority')
+                delattr(grenade.db, 'original_integration_priority')
             
             # Announce trap disarmament
             self.caller.msg("You also disarm the trap rigging mechanism.")

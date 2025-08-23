@@ -172,6 +172,9 @@ class Room(ObjectParent, DefaultRoom):
             if is_integrate:
                 # Regular @integrate objects use their configured priority
                 priority = getattr(obj.db, "integration_priority", 5)
+                # Safety check: ensure priority is not None
+                if priority is None:
+                    priority = 5
                 integrated_objects.append((priority, obj, False))
         
         if not integrated_objects:
