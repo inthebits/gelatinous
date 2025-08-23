@@ -5,7 +5,7 @@ Unified spray command that handles both spray painting and solvent cleaning
 based on the type of can used and syntax provided.
 """
 
-from evennia import Command, create_object
+from evennia import Command, create_object, delay
 from typeclasses.items import SprayCanItem, SolventCanItem
 from typeclasses.objects import GraffitiObject
 import random
@@ -48,23 +48,17 @@ class CmdGraffiti(Command):
         args_stripped = self.args.strip()
         args_lower = args_stripped.lower()
         
-        # Debug output
-        self.caller.msg(f"DEBUG: args='{self.args}', args_stripped='{args_stripped}', args_lower='{args_lower}'")
-        self.caller.msg(f"DEBUG: args_lower.startswith('here with ')={args_lower.startswith('here with ')}")
-        
         if args_lower.startswith("here with "):
             # User wants to clean - get the can name
             can_name = args_stripped[10:].strip()
             intent = "clean"
             message = None
-            self.caller.msg(f"DEBUG: Parsed as CLEAN intent, can_name='{can_name}'")
         elif " with " in args_stripped:
             # User wants to spray paint - parse message and can name
             message_part, can_part = args_stripped.rsplit(" with ", 1)
             message = message_part.strip().strip('"\'')  # Remove quotes if present
             can_name = can_part.strip()
             intent = "spraypaint"
-            self.caller.msg(f"DEBUG: Parsed as SPRAYPAINT intent, message='{message}', can_name='{can_name}'")
         else:
             self.caller.msg("Usage: spray \"<message>\" with <can> OR spray here with <can>")
             return
@@ -183,20 +177,31 @@ class CmdGraffiti(Command):
         
         # Use solvent to remove random characters from graffiti
         solvent_used = min(10, solvent_can.db.aerosol_level)  # Use up to 10 units of solvent
-        chars_removed = graffiti_obj.remove_random_characters(solvent_used)
+        chars_affected = graffiti_obj.remove_random_characters(solvent_used)
         
         # Use solvent
         solvent_can.use_solvent(solvent_used)
         
         # Messages
-        if chars_removed > 0:
-            self.caller.msg(f"You scrub away some graffiti with {solvent_can.name}, removing {chars_removed} characters.")
+        if chars_affected > 0:
+            # Immediate action message
+            self.caller.msg("You apply solvent to the |cgraffiti|n, watching the colors dissolve away.")
             self.caller.location.msg_contents(
-                f"{self.caller.name} scrubs graffiti from the wall with solvent.",
+                f"{self.caller.name} applies solvent to the |cgraffiti|n, watching the colors dissolve away.",
                 exclude=self.caller
             )
+            
+            # Delayed atmospheric message to everyone including the player
+            def delayed_message():
+                if self.caller.location:  # Make sure location still exists
+                    self.caller.location.msg_contents(
+                        "The colors break down and the solvent evaporates, taking the |cgraffiti|n with it."
+                    )
+            
+            delay(3, delayed_message)
+            
         else:
-            self.caller.msg(f"You scrub at the wall with {solvent_can.name}, but there's nothing left to clean.")
+            self.caller.msg("There's no graffiti here to clean.")
             self.caller.location.msg_contents(
                 f"{self.caller.name} scrubs at the wall with solvent.",
                 exclude=self.caller

@@ -320,12 +320,15 @@ class GraffitiObject(Object):
             entry_index = random.randint(0, len(self.db.graffiti_entries) - 1)
             entry = self.db.graffiti_entries[entry_index]
             
-            # Remove a random character from the message
+            # Remove a random character from the message (replace with space)
             message = entry['message']
             if len(message) > 0:
-                char_index = random.randint(0, len(message) - 1)
-                new_message = message[:char_index] + message[char_index + 1:]
-                entry['message'] = new_message
+                # Only replace non-space characters to avoid creating double spaces
+                non_space_indices = [i for i, char in enumerate(message) if char != ' ']
+                if non_space_indices:
+                    char_index = random.choice(non_space_indices)
+                    new_message = message[:char_index] + ' ' + message[char_index + 1:]
+                    entry['message'] = new_message
                 
                 # Update the formatted entry with proper color codes
                 color_code = entry.get('color_code', 'w')  # Use stored code or default to white
@@ -335,7 +338,7 @@ class GraffitiObject(Object):
                 entry['entry'] = f"Scrawled in {color_start}{color_name}{color_end} paint: {color_start}{new_message}{color_end}"
                 removed_count += 1
                 
-                # Mark empty entries for removal
+                # Mark entries for removal if they're all spaces or empty
                 if len(new_message.strip()) == 0:
                     entries_to_remove.append(entry_index)
         
