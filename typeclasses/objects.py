@@ -9,6 +9,7 @@ with a location in the game world (like Characters, Rooms, Exits).
 """
 
 from evennia.objects.objects import DefaultObject
+from evennia.utils import gametime
 import random
 
 
@@ -272,7 +273,7 @@ class GraffitiObject(Object):
             'message': message,
             'color': color,
             'author': author.key if author else 'someone',
-            'timestamp': self.location.search("*")[0].db.current_time if hasattr(self.location, 'search') else 'unknown'
+            'timestamp': gametime.datetime_format(gametime.datetime())
         })
         
         # Enforce FIFO limit (cannibalization)
