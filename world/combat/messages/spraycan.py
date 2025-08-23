@@ -1,38 +1,5 @@
-"""
-Combat messages for spray can weapons.
 
-This module defines combat messages for spray cans used as weapons in the combat system.
-Spray cans serve dual purposes as both blunt instruments and chemical weapons, offering
-unique narrative possibilities that blend corporate consumer products with street violence.
-
-The messages are organized into four standard combat phases:
-- initiate: Pre-combat preparation and intimidation (26 messages)
-- miss: Failed attacks with varied failure modes (25 messages) 
-- hit: Successful attacks ranging from light to devastating (38 messages)
-- kill: Lethal finishing moves with extreme violence (25 messages)
-
-Thematic elements include:
-- Corporate branding as ironic backdrop to violence
-- Industrial chemistry weaponized for personal combat
-- Street wisdom and urban warfare tactics
-- Dual nature of spray cans as clubs and chemical weapons
-- Noir/cyberpunk aesthetic with toxic corporate overtones
-
-Total: 114 unique combat messages providing extensive variety for encounters.
-
-Usage:
-    The combat system automatically selects appropriate messages based on combat phase
-    and randomly chooses from available messages in each category for variety.
-"""
-
-from world.combat.utils import get_combat_message
-
-# Combat message dictionary with four standard phases
-# Each message contains attacker_msg, victim_msg, and observer_msg variants
 MESSAGES = {
-    # INITIATE PHASE (26 messages)
-    # Pre-combat preparation, intimidation, and weapon readiness
-    # Focuses on the ritual of preparing spray cans as weapons
     "initiate": [
         {
             "attacker_msg": "You shake your spray can, the rattle of the mixing ball echoing as you prepare to engage {target_name}.",
@@ -165,10 +132,6 @@ MESSAGES = {
             "observer_msg": "{attacker_name} holds the pressurized cylinder like a club, savoring the weight before striking {target_name}."
         }
     ],
-    
-    # MISS PHASE (25 messages)
-    # Failed attacks with equipment malfunctions, environmental factors, and evasion
-    # Emphasizes the unreliable nature of improvised weapons
     "miss": [
         {
             "attacker_msg": "Your spray can hisses as you swing it at {target_name}, but they dodge the improvised club.",
@@ -296,10 +259,6 @@ MESSAGES = {
             "observer_msg": "The desperate swing meets only air as {target_name} proves more agile than {attacker_name} anticipated."
         }
     ],
-    
-    # HIT PHASE (38 messages)
-    # Successful attacks ranging from light clips to devastating chemical warfare
-    # Escalates from minor injuries to severe trauma, both blunt and chemical
     "hit": [
         {
             "attacker_msg": "You clip {target_name} with the metal can, the sharp edge leaving a shallow cut.",
@@ -492,10 +451,6 @@ MESSAGES = {
             "observer_msg": "{attacker_name} smashes the spray can against {target_name}'s kneecap, the sharp crack audible over their scream."
         }
     ],
-    
-    # KILL PHASE (25 messages)
-    # Lethal finishing moves combining blunt trauma with chemical toxicity
-    # Extreme violence showcasing both crushing force and poisonous chemicals
     "kill": [
         {
             "attacker_msg": "You drive the spray can's nozzle deep into {target_name}'s throat, then depress it, flooding their windpipe with toxic chemicals.",
@@ -624,21 +579,3 @@ MESSAGES = {
         }
     ]
 }
-
-
-def get_spraycan_message(phase, **kwargs):
-    """
-    Retrieve a random combat message for the specified phase.
-    
-    Args:
-        phase (str): Combat phase ('initiate', 'miss', 'hit', 'kill')
-        **kwargs: Additional arguments passed to combat message formatting
-        
-    Returns:
-        dict: Combat message with attacker_msg, victim_msg, observer_msg
-        
-    Note:
-        This function leverages the standard combat message system to provide
-        consistent formatting and random selection within each phase.
-    """
-    return get_combat_message("spraycan", phase, **kwargs)
