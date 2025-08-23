@@ -1521,13 +1521,21 @@ class CmdRig(Command):
                 caller_hands[hand_name] = None
                 break
         
-        # Move grenade to exit (conceptually attached)
-        grenade.move_to(exit_obj)
+        # Keep grenade in current room instead of moving to exit
+        grenade.move_to(self.caller.location, quiet=True)
         
         # Set up rigging on the main exit
         setattr(exit_obj.db, 'rigged_grenade', grenade)
         setattr(grenade.db, 'rigged_to_exit', exit_obj)
         setattr(grenade.db, 'rigged_by', self.caller)  # Store who rigged it for immunity
+        
+        # Add integrated message to grenade showing which exit it's rigged to
+        # Store original desc if not already stored
+        if not hasattr(grenade.db, 'original_desc'):
+            grenade.db.original_desc = grenade.db.desc or 'A grenade.'
+        
+        # Replace description with rigging message
+        grenade.db.desc = f"A |C{grenade.get_display_name(self.caller)}|n is rigged to the {exit_obj.key} exit with a barely visible trip wire."
         
         # Find and rig the return exit too
         return_exit = self.find_return_exit(exit_obj)
@@ -2568,6 +2576,11 @@ class CmdDefuse(Command):
             delattr(grenade.db, 'rigged_to_exit')
             if hasattr(grenade.db, 'rigged_by'):
                 delattr(grenade.db, 'rigged_by')
+            
+            # Restore original description
+            if hasattr(grenade.db, 'original_desc'):
+                grenade.db.desc = grenade.db.original_desc
+                delattr(grenade.db, 'original_desc')
             
             # Announce trap disarmament
             self.caller.msg("You also disarm the trap rigging mechanism.")
