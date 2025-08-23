@@ -175,7 +175,7 @@ class CmdInventory(Command):
             # Consolidate identical items and count them
             item_counts = {}
             for obj in inventory_items:
-                item_name = obj.name
+                item_name = obj.get_display_name(caller)
                 if item_name in item_counts:
                     item_counts[item_name] += 1
                 else:
@@ -193,7 +193,7 @@ class CmdInventory(Command):
         lines.append("|wHeld:|n")
         for hand, item in hands.items():
             if item:
-                lines.append(f"A {item.name} is held in your {hand.lower()} hand.")
+                lines.append(f"A {item.get_display_name(caller)} is held in your {hand.lower()} hand.")
             else:
                 lines.append(f"Nothing is in your {hand.lower()} hand.")
 
