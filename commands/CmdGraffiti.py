@@ -226,9 +226,9 @@ class CmdGraffiti(Command):
         # Messages
         if chars_affected > 0:
             # Immediate action message
-            self.caller.msg("You apply solvent to the |cgraffiti|n, watching the colors dissolve away.")
+            self.caller.msg("You apply solvent to the |Cgraffiti|n, watching the colors dissolve away.")
             self.caller.location.msg_contents(
-                f"{self.caller.name} applies solvent to the |cgraffiti|n, watching the colors dissolve away.",
+                f"{self.caller.name} applies solvent to the |Cgraffiti|n, watching the colors dissolve away.",
                 exclude=self.caller
             )
             
@@ -236,7 +236,7 @@ class CmdGraffiti(Command):
             def delayed_message():
                 if self.caller.location:  # Make sure location still exists
                     self.caller.location.msg_contents(
-                        "The colors break down and the solvent evaporates, taking the |cgraffiti|n with it."
+                        "The colors break down and the solvent evaporates, taking the |Cgraffiti|n with it."
                     )
             
             delay(3, delayed_message)
