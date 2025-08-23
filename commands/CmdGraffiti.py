@@ -127,8 +127,14 @@ class CmdGraffiti(Command):
         # Add the graffiti message to the object
         graffiti_obj.add_graffiti(message, current_color, self.caller)
         
-        # Messages - using ANSI color formatting
-        colored_message = f"|{current_color}{message}|n"
+        # Messages - using proper Evennia color formatting
+        color_map = {
+            'red': 'r', 'blue': 'b', 'green': 'g', 'yellow': 'y',
+            'magenta': 'm', 'cyan': 'c', 'white': 'w', 'black': 'x',
+            'purple': 'm', 'pink': 'm', 'orange': 'y'
+        }
+        color_code = color_map.get(current_color.lower(), 'w')
+        colored_message = f"|{color_code}{message}|n"
         self.caller.msg(f"You spray '{colored_message}' on the wall with {spray_can.name}.")
         self.caller.location.msg_contents(
             f"{self.caller.name} sprays '{colored_message}' on the wall.",
@@ -253,7 +259,13 @@ class CmdPress(Command):
             return
         
         # Messages - color was successfully changed by set_color()
-        colored_name = f"|{new_color}{new_color}|n"
+        color_map = {
+            'red': 'r', 'blue': 'b', 'green': 'g', 'yellow': 'y',
+            'magenta': 'm', 'cyan': 'c', 'white': 'w', 'black': 'x',
+            'purple': 'm', 'pink': 'm', 'orange': 'y'
+        }
+        color_code = color_map.get(new_color.lower(), 'w')
+        colored_name = f"|{color_code}{new_color}|n"
         
         self.caller.msg(f"You press the {colored_name} button on {spray_can.name}.")
         self.caller.location.msg_contents(
