@@ -398,7 +398,7 @@ class CmdAim(Command):
             delattr(caller.ndb, "aiming_at")
             # Clear override_place and check for mutual showdown cleanup
             self._clear_aim_override_place(caller, current_target)
-            current_target.msg(f"|g{caller.key} stops aiming at you.|n")
+            current_target.msg(f"{caller.key} stops aiming at you.")
             
         if current_direction:
             splattercast.msg(f"AIM_DEBUG: Clearing existing aiming_direction '{current_direction}' for {caller.key}")
@@ -442,7 +442,7 @@ class CmdAim(Command):
                     if hasattr(current_target, "ndb") and hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
                         delattr(current_target.ndb, "aimed_at_by")
                     delattr(caller.ndb, "aiming_at")
-                    current_target.msg(f"|g{caller.key} stops aiming at you.|n")
+                    current_target.msg(f"{caller.key} stops aiming at you.")
                     
                 if current_direction:
                     splattercast.msg(f"AIM_DEBUG: Clearing existing aiming_direction '{current_direction}' for {caller.key}")
@@ -459,7 +459,7 @@ class CmdAim(Command):
                         is_ranged_weapon = getattr(weapon_db, "is_ranged", False)
                 
                 if not is_ranged_weapon:
-                    caller.msg("|rYou need a ranged weapon to aim in a direction.|n")
+                    caller.msg("You need a ranged weapon to aim in a direction.")
                     return
                 
                 # Set direction aiming
@@ -477,14 +477,13 @@ class CmdAim(Command):
                 test_direction = getattr(caller.ndb, "aiming_direction", None)
                 splattercast.msg(f"AIM_DEBUG: Immediate test retrieval: '{test_direction}'")
                 
-                caller.msg(f"|yYou take careful aim {direction}.|n")
+                caller.msg(f"You take careful aim {direction}.")
                 caller.location.msg_contents(
-                    f"|y{caller.key} takes careful aim {direction}.|n",
+                    f"{caller.key} takes careful aim {direction}.",
                     exclude=[caller]
                 )
                 
                 splattercast.msg(f"AIM_DIRECTION: {caller.key} is now aiming {direction}.")
-                caller.msg("|gYour next ranged attack in this direction will have improved accuracy.|n")
                 return
             
             # Target found in room and it's not an exit - prevent self-targeting
@@ -501,10 +500,6 @@ class CmdAim(Command):
                 weapon_db = getattr(weapon, "db", None)
                 if weapon_db:
                     is_ranged_weapon = getattr(weapon_db, "is_ranged", False)
-            
-            if not is_ranged_weapon:
-                caller.msg("|yYou need a ranged weapon to aim effectively.|n")
-                # Allow aiming without ranged weapon but with warning
 
             # Set target aim relationship
             setattr(caller.ndb, "aiming_at", target)
@@ -514,20 +509,14 @@ class CmdAim(Command):
             self._set_aim_override_place(caller, target)
 
             # Send messages
-            caller.msg(f"|yYou carefully aim at {target.key}.|n")
+            caller.msg(f"You carefully aim at {target.key}.")
             target.msg(f"|r{caller.key} is aiming at you! You feel locked in place.|n")
             caller.location.msg_contents(
-                f"|y{caller.key} takes careful aim at {target.key}.|n",
+                f"{caller.key} takes careful aim at {target.key}.",
                 exclude=[caller, target]
             )
 
             splattercast.msg(f"AIM_SET: {caller.key} is now aiming at {target.key}.")
-            
-            # Provide feedback about the aiming bonus
-            if is_ranged_weapon:
-                caller.msg("|gYour next ranged attack will have improved accuracy.|n")
-            else:
-                caller.msg("|yWithout a ranged weapon, this aim provides limited benefit.|n")
                 
         else:
             # No target found in room - check if it's a direction
@@ -564,7 +553,7 @@ class CmdAim(Command):
                         is_ranged_weapon = getattr(weapon_db, "is_ranged", False)
                 
                 if not is_ranged_weapon:
-                    caller.msg("|rYou need a ranged weapon to aim in a direction.|n")
+                    caller.msg("You need a ranged weapon to aim in a direction.")
                     return
                 
                 # Set direction aiming
@@ -582,18 +571,17 @@ class CmdAim(Command):
                 test_direction = getattr(caller.ndb, "aiming_direction", None)
                 splattercast.msg(f"AIM_DEBUG: Immediate test retrieval: '{test_direction}'")
                 
-                caller.msg(f"|yYou take careful aim {direction}.|n")
+                caller.msg(f"You take careful aim {direction}.")
                 caller.location.msg_contents(
-                    f"|y{caller.key} takes careful aim {direction}.|n",
+                    f"{caller.key} takes careful aim {direction}.",
                     exclude=[caller]
                 )
                 
                 splattercast.msg(f"AIM_DIRECTION: {caller.key} is now aiming {direction}.")
-                caller.msg("|gYour next ranged attack in this direction will have improved accuracy.|n")
                 
             else:
                 splattercast.msg(f"AIM_DEBUG: Direction '{direction}' was not found as valid exit")
-                caller.msg(f"|rYou don't see '{args}' here, and it's not a valid direction.|n")
+                caller.msg(f"You don't see '{args}' here, and it's not a valid direction.")
 
     def _set_aim_override_place(self, aimer, target):
         """
