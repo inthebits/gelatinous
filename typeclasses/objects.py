@@ -11,6 +11,7 @@ with a location in the game world (like Characters, Rooms, Exits).
 from evennia.objects.objects import DefaultObject
 from evennia.utils import gametime
 import random
+import re
 
 
 class ObjectParent:
@@ -23,6 +24,56 @@ class ObjectParent:
     take precedence.
 
     """
+    
+    # Ordinal word mapping for natural language search
+    ORDINAL_WORDS = {
+        'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5,
+        'sixth': 6, 'seventh': 7, 'eighth': 8, 'ninth': 9, 'tenth': 10,
+        '1st': 1, '2nd': 2, '3rd': 3, '4th': 4, '5th': 5, '6th': 6,
+        '7th': 7, '8th': 8, '9th': 9, '10th': 10, '11th': 11, '12th': 12,
+        '13th': 13, '14th': 14, '15th': 15, '16th': 16, '17th': 17,
+        '18th': 18, '19th': 19, '20th': 20
+    }
+    
+    # Regex for numeric ordinals (1st, 2nd, 3rd, etc.)
+    ORDINAL_REGEX = re.compile(r'(?P<number>\d+)(?:st|nd|rd|th)\s+(?P<name>.*)', re.I)
+    
+    def get_search_query_replacement(self, searchdata, **kwargs):
+        """
+        Override Evennia's search to handle ordinal numbers (1st, 2nd, first, second, etc.)
+        
+        This method is called before the actual search to allow modification of the search string.
+        We intercept ordinal queries and convert them to Evennia's standard dash-number format.
+        """
+        # First call the parent method for any existing replacements
+        searchdata = super().get_search_query_replacement(searchdata, **kwargs)
+        
+        if not isinstance(searchdata, str):
+            return searchdata
+            
+        searchdata = searchdata.strip()
+        
+        # Try numeric ordinals first (1st sword, 2nd ball, etc.)
+        ordinal_match = self.ORDINAL_REGEX.match(searchdata)
+        if ordinal_match:
+            number = int(ordinal_match.group('number'))
+            name = ordinal_match.group('name').strip()
+            if number > 0:
+                # Convert to Evennia's dash-number format
+                return f"{name}-{number}"
+        
+        # Try word ordinals (first sword, second ball, etc.)
+        words = searchdata.split()
+        if len(words) >= 2:
+            first_word = words[0].lower()
+            if first_word in self.ORDINAL_WORDS:
+                remaining_words = ' '.join(words[1:])
+                number = self.ORDINAL_WORDS[first_word]
+                # Convert to Evennia's dash-number format
+                return f"{remaining_words}-{number}"
+        
+        # No ordinal found, return unchanged
+        return searchdata
 
 
 class Object(ObjectParent, DefaultObject):
