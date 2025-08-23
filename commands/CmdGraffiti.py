@@ -81,8 +81,13 @@ class CmdGraffiti(Command):
         
         spray_can = spray_can[0]  # Get first match
         
-        # Verify it's a spray can
-        if not isinstance(spray_can, SprayCanItem):
+        # Check if it's an aerosol can with contents
+        if not hasattr(spray_can.db, 'aerosol_contents'):
+            self.caller.msg(f"You can't spray paint with {spray_can.name}.")
+            return
+        
+        # Verify it contains spraypaint
+        if spray_can.db.aerosol_contents != "spraypaint":
             self.caller.msg(f"You can't spray paint with {spray_can.name}.")
             return
         
@@ -155,8 +160,13 @@ class CmdGraffiti(Command):
         
         solvent_can = solvent_can[0]  # Get first match
         
-        # Verify it's a solvent can
-        if not isinstance(solvent_can, SolventCanItem):
+        # Check if it's an aerosol can with contents
+        if not hasattr(solvent_can.db, 'aerosol_contents'):
+            self.caller.msg(f"You can't clean with {solvent_can.name}.")
+            return
+        
+        # Verify it contains solvent
+        if solvent_can.db.aerosol_contents != "solvent":
             self.caller.msg(f"You can't clean with {solvent_can.name}.")
             return
         
@@ -246,8 +256,13 @@ class CmdPress(Command):
         
         spray_can = spray_can[0]  # Get first match
         
-        # Verify it's a spray can
-        if not isinstance(spray_can, SprayCanItem):
+        # Check if it's an aerosol can with color-changing capability (spraypaint)
+        if not hasattr(spray_can.db, 'aerosol_contents'):
+            self.caller.msg(f"You can't press colors on {spray_can.name}.")
+            return
+        
+        # Verify it's a spray can (not solvent)
+        if spray_can.db.aerosol_contents != "spraypaint":
             self.caller.msg(f"You can't press colors on {spray_can.name}.")
             return
         

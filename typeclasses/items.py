@@ -40,15 +40,16 @@ class SprayCanItem(Item):
         self.db.aerosol_level = 256  # Default aerosol capacity
         self.db.max_aerosol = 256    # Starting aerosol capacity
         self.db.current_color = "red"  # Default color
+        self.db.aerosol_contents = "spraypaint"  # What's inside the can
         
         # Available ANSI colors for cycling
         self.db.available_colors = [
             "red", "green", "yellow", "blue", "magenta", "cyan", "white"
         ]
         
-        # Override default description with aerosol level
+        # Override default description with aerosol level and contents
         if not self.db.desc:
-            self.db.desc = f"A can of spraypaint with a {self.db.current_color} nozzle. It feels {'heavy' if self.db.aerosol_level > 128 else 'light' if self.db.aerosol_level > 0 else 'empty'} with paint."
+            self.db.desc = f"A can of {self.db.aerosol_contents} with a {self.db.current_color} nozzle. It feels {'heavy' if self.db.aerosol_level > 128 else 'light' if self.db.aerosol_level > 0 else 'empty'} with {self.db.aerosol_contents}."
         
         # Combat properties for spray can as weapon
         self.db.damage = 2  # Slightly better than default item
@@ -147,10 +148,11 @@ class SolventCanItem(Item):
         # Aerosol-specific attributes (standardized)
         self.db.aerosol_level = 256  # Default aerosol capacity (matches spray paint)
         self.db.max_aerosol = 256    # Starting aerosol capacity
+        self.db.aerosol_contents = "solvent"  # What's inside the can
         
-        # Override default description
+        # Override default description with contents
         if not self.db.desc:
-            self.db.desc = f"A can of solvent for cleaning graffiti. It feels {'heavy' if self.db.aerosol_level > 128 else 'light' if self.db.aerosol_level > 0 else 'empty'} with solvent."
+            self.db.desc = f"A can of {self.db.aerosol_contents} for cleaning graffiti. It feels {'heavy' if self.db.aerosol_level > 128 else 'light' if self.db.aerosol_level > 0 else 'empty'} with {self.db.aerosol_contents}."
             
         # Combat properties for solvent can as weapon
         self.db.damage = 2  # Same as spray can

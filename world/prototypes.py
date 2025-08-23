@@ -302,6 +302,7 @@ SPRAYPAINT_CAN = {
         ("aerosol_level", 256),
         ("max_aerosol", 256),
         ("current_color", "red"),
+        ("aerosol_contents", "spraypaint"),
         ("damage", 2),
         ("weapon_type", "spraycan"),
         ("hands_required", 1)
@@ -322,6 +323,7 @@ SOLVENT_CAN = {
     "attrs": [
         ("aerosol_level", 256),
         ("max_aerosol", 256),
+        ("aerosol_contents", "solvent"),
         ("damage", 2),
         ("weapon_type", "spraycan"), 
         ("hands_required", 1)
