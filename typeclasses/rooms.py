@@ -156,8 +156,10 @@ class Room(ObjectParent, DefaultRoom):
             integrated_objects.append((priority, obj, True))
         
         for obj in self.contents:
-            # Only check items for integration (can expand to vehicles, etc. later)
-            if not obj.is_typeclass("typeclasses.items.Item"):
+            # Check objects for integration - currently supports Items and GraffitiObjects
+            # TODO: Consider expanding to other object types or using a more generic approach
+            if not (obj.is_typeclass("typeclasses.items.Item") or 
+                    obj.is_typeclass("typeclasses.objects.GraffitiObject")):
                 continue
             
             # Skip if already added as flying object
