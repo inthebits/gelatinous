@@ -1,170 +1,232 @@
 # Graffiti System Specification
 
 ## Overview
-Player-driven graffiti system allowing street-level expression through spray paint cans. Provides resource-managed tagging mechanics with finite paint supplies, color selection, and room integration.
+Unified graffiti system providing player-driven street expression through spray paint and graffiti cleaning mechanics. Features resource-managed tagging with finite aerosol supplies, color selection, Mr. Hands integration, and enhanced atmospheric messaging with delayed effects.
 
 ## Core Components
 
-### 1. Spray Paint Cans (Item Typeclass)
+### 1. Spray Paint Cans (SprayCanItem Typeclass)
 **Attributes:**
-- `paint_level`: Integer (e.g., 256) - remaining paint characters
-- `current_color`: String - selected ANSI color
-- `max_paint`: Integer - starting paint capacity (prototype-defined)
+- `aerosol_level`: Integer (256 default) - remaining paint characters
+- `current_color`: String - selected ANSI color (red, green, yellow, blue, magenta, cyan, white)
+- `max_aerosol`: Integer - starting paint capacity (256)
+- `aerosol_contents`: String - "spraypaint" (identifies can type)
+- `available_colors`: List - cycling color palette
+- `weapon_type`: String - "spraycan" (combat system integration)
 
 **Functionality:**
-- Color toggle command to cycle through ANSI colors
-- Paint depletion tracking (1 character = 1 paint unit)
-- Empty cans become unusable until refilled/replaced
+- Color selection via `press <color> on <can>` command
+- Paint depletion tracking (1 character = 1 paint unit) 
+- **Automatic deletion** when empty with integrated cleanup messaging
+- **Mr. Hands integration** - works from inventory or wielded
+- Combat weapon capability with spraycan-specific messages
 
-### 2. Solvent Cans (Item Typeclass)
-**Purpose:** Clean all graffiti from current room
+### 2. Solvent Cans (SolventCanItem Typeclass)  
+**Attributes:**
+- `aerosol_level`: Integer (256 default) - remaining solvent uses
+- `max_aerosol`: Integer - starting capacity (256)
+- `aerosol_contents`: String - "solvent" (identifies can type)
+- `weapon_type`: String - "spraycan" (combat system integration)
+
 **Functionality:**
-- Single-use or multi-use (prototype-defined)
-- Removes all graffiti entries from room
-- Removes graffiti integration from room description
+- **Character-based cleaning** - removes random characters from graffiti entries
+- **Enhanced atmospheric messaging** with immediate + delayed effects
+- **Automatic deletion** when empty
+- **Mr. Hands integration** - works from inventory or wielded
+- Combat weapon capability
 
-### 3. Graffiti Storage Object (Room Integration)
+### 3. Graffiti Storage Object (GraffitiObject Typeclass)
 **Storage Mechanics:**
-- Maximum 7 graffiti entries per room
-- FIFO queue - entry 8+ removes oldest entry
+- **Unlimited entries** (no arbitrary cap)
 - Each entry format: `"Scrawled in <color> paint: <message>"`
+- **Persistent storage** with color-coded display
+- **Character replacement system** for solvent effects ("Wheel of Fortune" style)
 
 **Integration:**
-- Appears in room description: "The walls have been daubed with colorful graffiti"
-- Becomes examinable object: `look graffiti`
-- Persists when empty until solvent applied
+- Room description integration: "The walls have been daubed with colorful graffiti"
+- Examinable object: `look graffiti`
+- Auto-creation on first graffiti entry
+- Persists through partial cleaning
 
-### 4. Spray Command
-**Syntax:** `spray "message" with <spray_can>`
-**Target:** Always current room (implicit)
+### 4. Unified Spray Command (CmdGraffiti)
+**Syntax:** 
+- `spray "message" with <spray_can>` - Paint graffiti
+- `spray here with <solvent_can>` - Clean graffiti
 
-**Mechanics:**
-- Validates spray can has paint
-- Enforces maximum message length (quality control)
-- Deducts character count from paint_level
-- Truncates message if paint runs out mid-spray
-- Adds entry to room's graffiti storage
-- Creates graffiti integration if first entry
+**Intelligent Routing:**
+- **Can type detection** via `aerosol_contents` attribute
+- **Intent-based routing** - "here with" = clean, quoted message = paint
+- **Error prevention** - solvent can't paint, paint can't clean
+- **Mr. Hands integration** - searches inventory AND wielded items
 
-**Paint Depletion:**
-- Direct character-to-paint correlation
-- Mid-message truncation creates incomplete entries (e.g., "This here...")
-- No minimum message length before truncation
+**Spray Paint Mechanics:**
+- Validates spray can has paint and correct contents
+- Enforces 100-character message limit
+- **Graceful paint depletion** with ellipsis truncation ("message...")
+- **Consolidated messaging** for runout scenarios
+- **Automatic can deletion** with narrative cleanup
+- Color-coded output with current can color
 
-### 5. Color System
-**Supported Colors:** Standard ANSI color set
-- cyan, green, magenta, red, yellow, blue, white, etc.
+**Solvent Mechanics:**
+- **Character-level removal** (10 units per use)
+- **Immediate feedback** + **3-second delayed atmospheric message**
+- **Random character replacement** with spaces (not deletion)
+- Progressive graffiti degradation over multiple applications
 
-**Color Toggle:** Command on spray can to cycle through available colors
-**Storage:** Current color saved per spray can instance
+### 5. Color Management (CmdPress)
+**Syntax:** `press <color> on <spray_can>`
 
-## Integration with LOOK System
+**Functionality:**
+- **Available color validation** against can's color palette
+- **Color-coded feedback** showing available options
+- **Mr. Hands integration** - works on inventory or wielded cans
+- **Error handling** for non-spray items and invalid colors
+
+**Supported Colors:** red, green, yellow, blue, magenta, cyan, white
+**Visual feedback:** Colored text showing available options
+
+## Integration Systems
 
 ### Room Description Integration
-- Graffiti integration triggers: `@integrate Graffiti`
-- Adds atmospheric line: "The walls have been daubed with colorful graffiti"
-- Integration appears with first graffiti entry
-- Persists until solvent removes all entries
+- **Automatic integration** on first graffiti entry creation
+- Atmospheric line: "The walls have been daubed with colorful graffiti"
+- **Persistent visibility** - integration remains until all graffiti removed
+- **Smart cleanup** - integration removed only when graffiti object deleted
 
-### Examination Mechanics
-- `look graffiti` displays all stored entries
-- Chronological order (newest first or oldest first - TBD)
-- Color-coded display using ANSI colors
-- Empty graffiti objects show appropriate "clean walls" message
+### Mr. Hands Equipment System
+- **Dual search capability** - checks inventory AND wielded items
+- **Alias support** - matches both item names and aliases
+- **Seamless operation** - no difference between carried/wielded functionality
+- **Automatic cleanup** - empty cans removed from hands on deletion
+- **Combat integration** - spray cans function as weapons when wielded
 
-## Resource Economy
+### Enhanced Atmospheric Messaging
+**Immediate Effects:**
+- Paint: "You spray 'message' on the wall with [can]"  
+- Clean: "You apply solvent to the graffiti, watching the colors dissolve away"
 
-### Paint Management
-- Finite paint encourages thoughtful messaging
-- Character-based depletion prevents spam
-- Empty cans create resource scarcity
-- Partial messages add realism/immersion
+**Delayed Effects (3-second delay):**
+- "The colors break down and the solvent evaporates, taking the graffiti with it"
+- **Location-wide messaging** - affects all players in room
+- **Persistence checking** - safely handles location changes
 
-### Cleanup Economics
-- Solvent cans provide graffiti removal
-- Balances creation vs. cleanup
-- Allows property maintenance roleplay
-- Creates janitor/cleanup job opportunities
+### Combat System Integration
+- **Weapon classification** - both can types use "spraycan" weapon_type
+- **Custom combat messages** - 114 unique spraycan-specific combat messages
+- **Balanced stats** - 2 damage, non-ranged, 1-handed weapons
+- **Message variety** - initiate, miss, hit, and kill phases with thematic content
 
-## Quality Control Measures
+## Resource Economy & User Experience
 
-### Message Length Limits
-- Maximum 100 characters per message
-- Prevents excessive room description bloat
-- Maintains readability in graffiti examinations
-- Automatic truncation at limit
+### Smart Resource Management
+- **Finite aerosol supplies** encourage thoughtful messaging (256 characters/can)
+- **Character-based depletion** prevents spam while allowing creativity
+- **Automatic cleanup** - empty cans self-destruct with narrative flair
+- **Graceful degradation** - partial messages with ellipsis show resource exhaustion
 
-### Storage Limits
-- 7-entry maximum prevents room spam
-- FIFO system keeps content fresh (oldest first display)
-- Oldest entries naturally age out
-- Encourages active graffiti areas
+### Enhanced Cleaning Mechanics  
+- **Progressive degradation** - "Wheel of Fortune" style character replacement
+- **Balanced resource costs** - 10 solvent units per cleaning action
+- **Visual feedback** - spaces replace removed characters, maintaining layout
+- **Multi-stage process** - multiple applications needed for complete removal
+
+### Improved User Messaging
+**Successful Operations:**
+- Standard: "You spray 'message' on the wall with [can]"
+- Resource exhaustion: "You start to spray on the wall with [can], but it runs out of paint mid-message! You manage to spray 'truncated...' before the can crumples up and becomes useless."
+
+**Error Prevention:**
+- Clear intent-based routing with helpful error messages
+- "You can't clean with [paint can] - it contains paint, not solvent"
+- "You can't spray paint with [solvent can] - it contains solvent, not paint"
+
+### Quality Control Measures
+- **100-character message limit** prevents description bloat
+- **Ellipsis truncation** shows incomplete messages clearly
+- **Can type validation** prevents misuse
+- **Robust error handling** with informative feedback
 
 ## Technical Implementation Details
 
-### Color Selection Commands
-- `press <color> on <spraycan/red_can/etc>` - Cycle to specified color
-- Separate command file (`CmdPress.py`) - expandable for future press mechanics
-- Feedback message for command issuer only: "You adjust the nozzle to cyan"
-- Works on any spray can object regardless of current color
+### Unified Command Structure (`commands/CmdGraffiti.py`)
+- **Single command file** handles both spray painting and cleaning
+- **Intelligent parsing** determines user intent from syntax
+- **Graceful error handling** with defensive programming practices
+- **Mr. Hands integration** with proper alias handling (`aliases.all()`)
+- **Resource state management** - stores can info before potential deletion
 
-### Graffiti Object Creation
-- Auto-create graffiti objects named simply "graffiti" 
-- Use standard item typeclass, locked in place (not takeable/moveable)
-- One graffiti object maximum per room (enforce uniqueness)
-- Relies on room integration for atmospheric description
+### Advanced Item Management (`typeclasses/items.py`)
+**SprayCanItem:**
+- **Smart deletion** - removes from hands before self-destructing
+- **Color persistence** - maintains current color across sessions  
+- **Combat integration** - dual-purpose as weapon and tool
+- **Aerosol system** - standardized aerosol_level tracking
 
-### Solvent Usage
-- `spray here with <solvent_can>` - Clean graffiti in current room
-- Removes random individual characters from random messages
-- Vague atmospheric feedback: "Solvent bubbles against the wall as graffiti fades away..."
-- 256 uses per solvent can (yin/yang balance with spray paint)
-- Error handling: "There's no graffiti here" if room has no graffiti
+**SolventCanItem:**
+- **Parallel functionality** - mirrors spray can behavior
+- **Silent deletion** - lets command handle user messaging
+- **Unified interface** - same aerosol system as paint cans
 
-### Paint Economics
-- Starting paint_level: 256 characters per spray can
-- All colors cost 1:1 character ratio (color irrelevant for economics)
-- Single prototype covers all spray cans (color is toggleable attribute)
-- Empty cans: Command destroys can with message "You toss the empty can away"
+### Enhanced Graffiti Storage (`typeclasses/objects.py`)  
+- **Character replacement algorithm** - spaces maintain message structure
+- **Null-safe color handling** - graceful fallback to white
+- **Persistent storage** - maintains graffiti across server restarts
+- **Color-coded display** - proper ANSI color formatting
 
-### Partial Spraying Mechanics
-- Mid-message paint depletion creates incomplete entries
-- Message truncated at exact paint exhaustion point
-- Adds realism and resource management tension
+### Prototype System (`world/prototypes.py`)
+- **Aerosol standardization** - both can types use aerosol_contents identifier
+- **Combat stats** - balanced weapon attributes for both can types
+- **Consistent capacity** - 256 aerosol units standard across all cans
 
-### Integration Timing
-- @integrate added: When first graffiti entry created (no existing graffiti object)
-- @integrate removed: When solvent removes all characters (graffiti object deleted)
-- Clean state: No integration, no graffiti object
+### Combat Message Integration (`world/combat/messages/spraycan.py`)
+- **114 unique messages** across all combat phases
+- **Thematic consistency** - corporate dystopia aesthetic
+- **Variety** - prevents repetitive combat descriptions
+- **Narrative coherence** - matches game world tone
 
-### Display Order
-- FIFO (oldest first) - entries display in chronological order
-- Maintains historical narrative flow
+## Implementation Files
 
-### Integration Method
-- Object persistence: Separate graffiti objects in room
-- Graffiti object stores all entries as attributes
-- Integrates with room's LOOK command via contents
+### Core Command Files
+- `commands/CmdGraffiti.py` - Unified spray/clean command with intelligent routing
+- `commands/default_cmdsets.py` - Command registration and integration
 
-## Implementation Notes
+### Typeclass Definitions
+- `typeclasses/items.py` - SprayCanItem and SolventCanItem with Mr. Hands integration
+- `typeclasses/objects.py` - GraffitiObject with character replacement system
 
-### File Structure
-- `commands/CmdPress.py` - Press command for spray can color selection
-- `commands/CmdSpray.py` - Spray command implementation
-- `typeclasses/items.py` - Spray can and solvent can classes
-- `typeclasses/objects.py` - Graffiti storage object class
-- Integration with existing LOOK command system
+### Configuration & Data
+- `world/prototypes.py` - SPRAYPAINT_CAN and SOLVENT_CAN prototypes
+- `world/combat/messages/spraycan.py` - Combat message definitions
 
-### Dependencies
-- LOOK command integration system
-- ANSI color support
-- Room description @integrate functionality
-- Item prototype system
+### Integration Dependencies
+- Mr. Hands system (`typeclasses/characters.py` - hands attribute)
+- Combat system (spraycan weapon_type support)
+- Room description integration system
+- Delayed messaging system (`evennia.utils.delay`)
 
-## Future Enhancements
-- Gang-specific spray can colors
-- Graffiti aging/fading mechanics
-- Special effects (drip patterns, fade over time)
-- Graffiti quality levels (novice vs. expert artists)
-- Paint refill mechanics
-- Graffiti removal difficulty levels
+## Current Status: **PRODUCTION READY**
+
+### Completed Features ✅
+- **Unified command system** with intelligent can-type routing
+- **Mr. Hands integration** - full inventory and wielded item support  
+- **Enhanced atmospheric messaging** with delayed effects
+- **Automatic resource cleanup** - empty cans self-destruct gracefully
+- **Progressive graffiti degradation** - character-based solvent cleaning
+- **Combat system integration** - spray cans as weapons
+- **Robust error handling** - defensive programming throughout
+- **Consolidated user messaging** - clear, narrative feedback
+- **Ellipsis truncation** - visual indication of incomplete messages
+
+### Known Limitations
+- No message persistence across server restarts for graffiti objects
+- No built-in anti-spam protection beyond resource limits
+- Color palette fixed to 7 standard ANSI colors
+
+### Future Enhancement Opportunities
+- **Action delays** - spray painting/cleaning takes time, prevents movement during action
+- **Graffiti aging mechanics** - fade over time
+- **Gang/faction-specific colors** - restricted color palettes
+- **Skill-based quality levels** - novice vs expert graffiti
+- **Paint refill system** - economic sustainability
+- **Advanced cleaning tools** - pressure washers, paint-over mechanics
+- **Graffiti contests/events** - community engagement features
