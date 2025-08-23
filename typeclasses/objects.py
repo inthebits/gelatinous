@@ -247,7 +247,7 @@ class GraffitiObject(Object):
         # Set @integrate attribute for room integration
         self.db.integrate = True
         self.db.integration_priority = 3  # Lower priority than flying objects
-        self.db.integration_desc = "The walls have been daubed with colorful |cgraffiti|n."
+        self.db.integration_desc = "The walls have been daubed with colorful |Cgraffiti|n."
         
     def add_graffiti(self, message, color, author=None):
         """
