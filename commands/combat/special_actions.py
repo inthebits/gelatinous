@@ -358,21 +358,36 @@ class CmdAim(Command):
         # Handle stopping aim
         if args.lower() in ("stop", "clear", "cancel"):
             current_target = getattr(caller.ndb, "aiming_at", None)
-            if not current_target:
+            current_direction = getattr(caller.ndb, "aiming_direction", None)
+            
+            if not current_target and not current_direction:
                 caller.msg("|yYou are not currently aiming at anything.|n")
                 return
             
-            # Clear the aim relationship
-            delattr(caller.ndb, "aiming_at")
-            if hasattr(current_target, "ndb") and hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
-                delattr(current_target.ndb, "aimed_at_by")
+            # Clear target aiming if present
+            if current_target:
+                delattr(caller.ndb, "aiming_at")
+                if hasattr(current_target, "ndb") and hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
+                    delattr(current_target.ndb, "aimed_at_by")
+                
+                # Clear override_place and check for mutual showdown cleanup
+                self._clear_aim_override_place(caller, current_target)
+                
+                caller.msg(f"|gYou stop aiming at {current_target.key}.|n")
+                current_target.msg(f"|g{caller.key} stops aiming at you.|n")
+                splattercast.msg(f"AIM_STOP: {caller.key} stopped aiming at {current_target.key}.")
             
-            # Clear override_place and check for mutual showdown cleanup
-            self._clear_aim_override_place(caller, current_target)
+            # Clear directional aiming if present
+            if current_direction:
+                delattr(caller.ndb, "aiming_direction")
+                
+                # Clear directional aim override_place (but only if we weren't also target aiming)
+                if not current_target:
+                    caller.override_place = ""
+                
+                caller.msg(f"|gYou stop aiming {current_direction}.|n")
+                splattercast.msg(f"AIM_STOP: {caller.key} stopped aiming {current_direction}.")
             
-            caller.msg(f"|gYou stop aiming at {current_target.key}.|n")
-            current_target.msg(f"|g{caller.key} stops aiming at you.|n")
-            splattercast.msg(f"AIM_STOP: {caller.key} stopped aiming at {current_target.key}.")
             return        # Clear any existing aim first
         current_target = getattr(caller.ndb, "aiming_at", None)
         current_direction = getattr(caller.ndb, "aiming_direction", None)
