@@ -43,9 +43,7 @@ class SprayCanItem(Item):
         
         # Available ANSI colors for cycling
         self.db.available_colors = [
-            "red", "green", "yellow", "blue", "magenta", "cyan", "white",
-            "boldred", "boldgreen", "boldyellow", "boldblue", 
-            "boldmagenta", "boldcyan", "boldwhite"
+            "red", "green", "yellow", "blue", "magenta", "cyan", "white"
         ]
         
         # Override default description with aerosol level

@@ -254,8 +254,11 @@ class CmdPress(Command):
         # Check if color is available
         if not spray_can.set_color(new_color):
             available_colors = spray_can.db.available_colors
-            color_list = ", ".join(available_colors)
-            self.caller.msg(f"Available colors: {color_list}")
+            if len(available_colors) > 1:
+                color_list = ", ".join(available_colors[:-1]) + f", and {available_colors[-1]}"
+            else:
+                color_list = available_colors[0] if available_colors else "none"
+            self.caller.msg(f"Available colors: {color_list}.")
             return
         
         # Messages - color was successfully changed by set_color()
