@@ -81,8 +81,25 @@ class CmdGraffiti(Command):
             self.caller.msg("Usage: spray \"<message>\" with <can> OR spray here with <can>")
             return
         
-        # Find the can object
+        # Find the can object - check inventory and wielded items
         can = self.caller.search(can_name, candidates=self.caller.contents, quiet=True)
+        
+        # If not found in inventory, check wielded items (Mr. Hands system)
+        if not can and hasattr(self.caller, 'hands'):
+            hands = self.caller.hands
+            for hand_name, held_item in hands.items():
+                if held_item and held_item.key.lower() == can_name.lower():
+                    can = [held_item]
+                    break
+                # Also check aliases
+                if held_item and hasattr(held_item, 'aliases') and held_item.aliases:
+                    for alias in held_item.aliases:
+                        if alias.lower() == can_name.lower():
+                            can = [held_item]
+                            break
+                    if can:
+                        break
+        
         if not can:
             self.caller.msg(f"You don't have a '{can_name}'.")
             return
@@ -266,8 +283,25 @@ class CmdPress(Command):
             self.caller.msg("You need to specify a color to press.")
             return
         
-        # Find the spray can
+        # Find the spray can - check inventory and wielded items
         spray_can = self.caller.search(can_name, candidates=self.caller.contents, quiet=True)
+        
+        # If not found in inventory, check wielded items (Mr. Hands system)
+        if not spray_can and hasattr(self.caller, 'hands'):
+            hands = self.caller.hands
+            for hand_name, held_item in hands.items():
+                if held_item and held_item.key.lower() == can_name.lower():
+                    spray_can = [held_item]
+                    break
+                # Also check aliases
+                if held_item and hasattr(held_item, 'aliases') and held_item.aliases:
+                    for alias in held_item.aliases:
+                        if alias.lower() == can_name.lower():
+                            spray_can = [held_item]
+                            break
+                    if spray_can:
+                        break
+        
         if not spray_can:
             self.caller.msg(f"You don't have a '{can_name}'.")
             return

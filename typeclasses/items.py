@@ -97,6 +97,22 @@ class SprayCanItem(Item):
         # Update description based on new aerosol level
         self.db.desc = f"A can of spraypaint with a {self.db.current_color} nozzle. It feels {'heavy' if self.db.aerosol_level > 128 else 'light' if self.db.aerosol_level > 0 else 'empty'} with paint."
         
+        # Delete the can if it's empty
+        if self.db.aerosol_level <= 0:
+            # If wielded, remove from hands first
+            if self.location and hasattr(self.location, 'hands'):
+                hands = self.location.hands
+                for hand_name, held_item in hands.items():
+                    if held_item == self:
+                        hands[hand_name] = None
+                        self.location.hands = hands
+                        break
+            
+            # Send message and delete
+            if self.location:
+                self.location.msg(f"{self.key} is empty and crumples up, becoming useless.")
+            self.delete()
+        
         return actual_used
     
     def set_color(self, color):
@@ -199,5 +215,21 @@ class SolventCanItem(Item):
         
         # Update description based on new aerosol level
         self.db.desc = f"A can of solvent for cleaning graffiti. It feels {'heavy' if self.db.aerosol_level > 128 else 'light' if self.db.aerosol_level > 0 else 'empty'} with solvent."
+        
+        # Delete the can if it's empty
+        if self.db.aerosol_level <= 0:
+            # If wielded, remove from hands first
+            if self.location and hasattr(self.location, 'hands'):
+                hands = self.location.hands
+                for hand_name, held_item in hands.items():
+                    if held_item == self:
+                        hands[hand_name] = None
+                        self.location.hands = hands
+                        break
+            
+            # Send message and delete
+            if self.location:
+                self.location.msg(f"{self.key} is empty and gets tossed aside, becoming useless.")
+            self.delete()
         
         return actual_used
