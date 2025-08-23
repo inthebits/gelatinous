@@ -255,7 +255,7 @@ class GraffitiObject(Object):
         
         Args:
             message (str): The graffiti message
-            color (str): ANSI color code
+            color (str): Full color name (e.g., 'red', 'blue', etc.)
             author (Object, optional): Who created the graffiti
             
         Returns:
@@ -264,8 +264,16 @@ class GraffitiObject(Object):
         if not self.db.graffiti_entries:
             self.db.graffiti_entries = []
             
-        # Format the entry - separate color code from display text
-        color_start = f"|{color}"
+        # Map full color names to Evennia single-letter codes
+        color_map = {
+            'red': 'r', 'blue': 'b', 'green': 'g', 'yellow': 'y',
+            'magenta': 'm', 'cyan': 'c', 'white': 'w', 'black': 'x',
+            'purple': 'm', 'pink': 'm', 'orange': 'y'
+        }
+        color_code = color_map.get(color.lower(), 'w')  # Default to white
+        
+        # Format the entry with proper Evennia color codes
+        color_start = f"|{color_code}"
         color_end = "|n"
         formatted_entry = f"Scrawled in {color_start}{color}{color_end} paint: {color_start}{message}{color_end}"
         
@@ -273,7 +281,8 @@ class GraffitiObject(Object):
         self.db.graffiti_entries.append({
             'entry': formatted_entry,
             'message': message,
-            'color': color,
+            'color': color,  # Store full color name for display
+            'color_code': color_code,  # Store single-letter code for formatting
             'author': author.key if author else 'someone',
             'timestamp': str(gametime.gametime())
         })
@@ -318,10 +327,12 @@ class GraffitiObject(Object):
                 new_message = message[:char_index] + message[char_index + 1:]
                 entry['message'] = new_message
                 
-                # Update the formatted entry
-                color_start = f"|{entry['color']}"
+                # Update the formatted entry with proper color codes
+                color_code = entry.get('color_code', 'w')  # Use stored code or default to white
+                color_name = entry.get('color', 'white')   # Use stored color name or default
+                color_start = f"|{color_code}"
                 color_end = "|n"
-                entry['entry'] = f"Scrawled in {color_start}{entry['color']}{color_end} paint: {color_start}{new_message}{color_end}"
+                entry['entry'] = f"Scrawled in {color_start}{color_name}{color_end} paint: {color_start}{new_message}{color_end}"
                 removed_count += 1
                 
                 # Mark empty entries for removal
