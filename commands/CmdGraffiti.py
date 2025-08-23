@@ -81,24 +81,19 @@ class CmdGraffiti(Command):
             self.caller.msg("Usage: spray \"<message>\" with <can> OR spray here with <can>")
             return
         
-        # Find the can object - check inventory and wielded items
-        can = self.caller.search(can_name, candidates=self.caller.contents, quiet=True)
+        # Find the can object - search inventory and wielded items using standard search
+        # First try inventory
+        inventory_candidates = list(self.caller.contents)
+        can = None
+        if inventory_candidates:
+            can = self.caller.search(can_name, candidates=inventory_candidates, quiet=True)
         
-        # If not found in inventory, check wielded items (Mr. Hands system)
+        # If not found in inventory, try wielded items (Mr. Hands system)
         if not can and hasattr(self.caller, 'hands'):
             hands = self.caller.hands
-            for hand_name, held_item in hands.items():
-                if held_item and held_item.key.lower() == can_name.lower():
-                    can = [held_item]
-                    break
-                # Also check aliases
-                if held_item and hasattr(held_item, 'aliases') and held_item.aliases.all():
-                    for alias in held_item.aliases.all():
-                        if alias.lower() == can_name.lower():
-                            can = [held_item]
-                            break
-                    if can:
-                        break
+            held_items = [item for item in hands.values() if item]
+            if held_items:
+                can = self.caller.search(can_name, candidates=held_items, quiet=True)
         
         if not can:
             self.caller.msg(f"You don't have a '{can_name}'.")
