@@ -245,6 +245,7 @@ class GraffitiObject(Object):
         
         # Set @integrate attribute for room integration
         self.db.integrate = True
+        self.db.integration_priority = 3  # Lower priority than flying objects
         self.db.integration_desc = "The walls have been daubed with colorful graffiti."
         
     def add_graffiti(self, message, color, author=None):
@@ -331,9 +332,9 @@ class GraffitiObject(Object):
         return removed_count
     
     def clear_all_graffiti(self):
-        """Remove all graffiti entries."""
+        """Remove all graffiti entries and delete the object."""
         self.db.graffiti_entries = []
-        self._update_description()
+        self.delete()
         
     def has_graffiti(self):
         """
@@ -358,9 +359,12 @@ class GraffitiObject(Object):
     def _update_description(self):
         """Update the object's description based on current graffiti."""
         if not self.db.graffiti_entries:
-            self.db.desc = "The walls are clean."
+            # No graffiti left - delete this object
+            self.delete()
         else:
             self.db.desc = "The walls are covered with graffiti in various colors and styles."
+            # Ensure integration is active when graffiti exists
+            self.db.integrate = True
     
     def return_appearance(self, looker, **kwargs):
         """
@@ -373,6 +377,8 @@ class GraffitiObject(Object):
             str: Formatted appearance
         """
         if not self.db.graffiti_entries:
+            # This shouldn't happen since empty objects get deleted,
+            # but just in case...
             return "The walls are clean and free of graffiti."
         
         # Header

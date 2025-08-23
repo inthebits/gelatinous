@@ -18,19 +18,20 @@ class CmdGraffiti(Command):
     Usage:
         spray "<message>" with <spray_can>    - Spray paint graffiti
         spray here with <solvent_can>         - Clean graffiti in room
-        spray color <color> on <spray_can>    - Change spray can color
         
     Examples:
         spray "HELLO WORLD" with red_can
         spray "WAKKA WAKKA!" with spray_can
         spray here with solvent_can
-        spray color blue on spray_can
-        spray color cyan on my_can
         
     Paint cans have finite paint - if you run out mid-message, your graffiti
     will be cut short. Messages are limited to 100 characters.
     
-    Solvent cans can clean existing graffiti from the current room.
+    Solvent cans can clean existing graffiti from the current room, removing
+    random characters from graffiti messages. Multiple applications may be
+    needed to completely clean walls.
+    
+    To change spray can colors, use: press <color> on <spray_can>
     """
     
     key = "spray"
@@ -40,20 +41,18 @@ class CmdGraffiti(Command):
     def func(self):
         """Execute the spray command."""
         if not self.args:
-            self.caller.msg("Usage: spray \"<message>\" with <spray_can> OR spray here with <solvent_can> OR spray color <color> on <spray_can>")
+            self.caller.msg("Usage: spray \"<message>\" with <spray_can> OR spray here with <solvent_can>")
             return
         
         # Parse command patterns
         args_lower = self.args.lower()
         
-        if args_lower.startswith("color "):
-            self._handle_color(self.args[6:].strip())
-        elif args_lower.startswith("here with "):
+        if args_lower.startswith("here with "):
             self._handle_clean(self.args[10:].strip())
         elif " with " in self.args:
             self._handle_spray_paint(self.args)
         else:
-            self.caller.msg("Usage: spray \"<message>\" with <spray_can> OR spray here with <solvent_can> OR spray color <color> on <spray_can>")
+            self.caller.msg("Usage: spray \"<message>\" with <spray_can> OR spray here with <solvent_can>")
     
     def _handle_spray_paint(self, args):
         """Handle spray painting graffiti."""
@@ -110,22 +109,23 @@ class CmdGraffiti(Command):
         # Get the current color
         current_color = spray_can.db.current_color
         
-        # Create the graffiti object
-        graffiti = create_object(
-            typeclass=GraffitiObject,
-            key=f"graffiti: {message}",
-            location=self.caller.location
-        )
+        # Find or create the room's graffiti object
+        graffiti_obj = None
+        for obj in self.caller.location.contents:
+            if isinstance(obj, GraffitiObject):
+                graffiti_obj = obj
+                break
         
-        # Set graffiti properties
-        graffiti.db.message = message
-        graffiti.db.color = current_color
-        graffiti.db.creator = self.caller.key
+        if not graffiti_obj:
+            # Create new graffiti object for this room
+            graffiti_obj = create_object(
+                typeclass=GraffitiObject,
+                key="graffiti",
+                location=self.caller.location
+            )
         
-        # Add to room's graffiti list
-        if not self.caller.location.db.graffiti:
-            self.caller.location.db.graffiti = []
-        self.caller.location.db.graffiti.append(graffiti)
+        # Add the graffiti message to the object
+        graffiti_obj.add_graffiti(message, current_color, self.caller)
         
         # Messages - using ANSI color formatting
         colored_message = f"|{current_color}{message}|n"
@@ -159,41 +159,78 @@ class CmdGraffiti(Command):
             self.caller.msg(f"{solvent_can.name} is empty!")
             return
         
-        # Check for graffiti in the room
-        room_graffiti = self.caller.location.db.graffiti or []
-        if not room_graffiti:
+        # Find the room's graffiti object
+        graffiti_obj = None
+        for obj in self.caller.location.contents:
+            if isinstance(obj, GraffitiObject):
+                graffiti_obj = obj
+                break
+        
+        if not graffiti_obj or not graffiti_obj.has_graffiti():
             self.caller.msg("There's no graffiti here to clean.")
             return
         
-        # Remove random graffiti
-        graffiti_to_remove = random.choice(room_graffiti)
-        cleaned_message = graffiti_to_remove.db.message
-        
-        # Remove from room and destroy object
-        room_graffiti.remove(graffiti_to_remove)
-        self.caller.location.db.graffiti = room_graffiti
-        graffiti_to_remove.delete()
+        # Use solvent to remove random characters from graffiti
+        solvent_used = min(10, solvent_can.db.aerosol_level)  # Use up to 10 units of solvent
+        chars_removed = graffiti_obj.remove_random_characters(solvent_used)
         
         # Use solvent
-        solvent_can.use_solvent(1)
+        solvent_can.use_solvent(solvent_used)
         
         # Messages
-        self.caller.msg(f"You clean '{cleaned_message}' from the wall with {solvent_can.name}.")
-        self.caller.location.msg_contents(
-            f"{self.caller.name} cleans graffiti from the wall.",
-            exclude=self.caller
-        )
+        if chars_removed > 0:
+            self.caller.msg(f"You scrub away some graffiti with {solvent_can.name}, removing {chars_removed} characters.")
+            self.caller.location.msg_contents(
+                f"{self.caller.name} scrubs graffiti from the wall with solvent.",
+                exclude=self.caller
+            )
+        else:
+            self.caller.msg(f"You scrub at the wall with {solvent_can.name}, but there's nothing left to clean.")
+            self.caller.location.msg_contents(
+                f"{self.caller.name} scrubs at the wall with solvent.",
+                exclude=self.caller
+            )
+
+
+class CmdPress(Command):
+    """
+    Press colored buttons on spray cans to change colors.
     
-    def _handle_color(self, args):
-        """Handle changing spray can color."""
-        if " on " not in args:
-            self.caller.msg("Usage: spray color <color> on <spray_can>")
+    Usage:
+        press <color> on <spray_can>
+        
+    Examples:
+        press blue on spray_can
+        press red on my_can
+        press cyan on paint_can
+        
+    Changes the color of paint that comes out of the spray can.
+    Available colors depend on the specific spray can.
+    """
+    
+    key = "press"
+    locks = "cmd:all()"
+    help_category = "General"
+    
+    def func(self):
+        """Execute the press command."""
+        if not self.args:
+            self.caller.msg("Usage: press <color> on <spray_can>")
+            return
+        
+        if " on " not in self.args:
+            self.caller.msg("Usage: press <color> on <spray_can>")
             return
         
         # Split color and can name
-        color_part, can_part = args.rsplit(" on ", 1)
+        color_part, can_part = self.args.rsplit(" on ", 1)
         new_color = color_part.strip().lower()
         can_name = can_part.strip()
+        
+        # Validate color name
+        if not new_color:
+            self.caller.msg("You need to specify a color to press.")
+            return
         
         # Find the spray can
         spray_can = self.caller.search(can_name, candidates=self.caller.contents, quiet=True)
@@ -205,7 +242,7 @@ class CmdGraffiti(Command):
         
         # Verify it's a spray can
         if not isinstance(spray_can, SprayCanItem):
-            self.caller.msg(f"You can't change colors on {spray_can.name}.")
+            self.caller.msg(f"You can't press colors on {spray_can.name}.")
             return
         
         # Check if color is available
@@ -218,8 +255,8 @@ class CmdGraffiti(Command):
         # Messages - color was successfully changed by set_color()
         colored_name = f"|{new_color}{new_color}|n"
         
-        self.caller.msg(f"You adjust {spray_can.name} to {colored_name}.")
+        self.caller.msg(f"You press the {colored_name} button on {spray_can.name}.")
         self.caller.location.msg_contents(
-            f"{self.caller.name} adjusts their spray can.",
+            f"{self.caller.name} presses a button on their spray can.",
             exclude=self.caller
         )
