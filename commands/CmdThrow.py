@@ -1529,13 +1529,16 @@ class CmdRig(Command):
         setattr(grenade.db, 'rigged_to_exit', exit_obj)
         setattr(grenade.db, 'rigged_by', self.caller)  # Store who rigged it for immunity
         
-        # Add integrated message to grenade showing which exit it's rigged to
-        # Store original desc if not already stored
-        if not hasattr(grenade.db, 'original_desc'):
-            grenade.db.original_desc = grenade.db.desc or 'A grenade.'
+        # Add integration description for rigged grenade
+        # Store original integration state if not already stored
+        if not hasattr(grenade.db, 'original_integrate'):
+            grenade.db.original_integrate = getattr(grenade.db, 'integrate', False)
+        if not hasattr(grenade.db, 'original_integration_desc'):
+            grenade.db.original_integration_desc = getattr(grenade.db, 'integration_desc', None)
         
-        # Replace description with rigging message
-        grenade.db.desc = f"A |C{grenade.get_display_name(self.caller)}|n is rigged to the {exit_obj.key} exit with a barely visible trip wire."
+        # Enable integration and set rigging description
+        grenade.db.integrate = True
+        grenade.db.integration_desc = f"A |C{grenade.get_display_name(self.caller)}|n is rigged to the {exit_obj.key} exit with a barely visible trip wire."
         
         # Find and rig the return exit too
         return_exit = self.find_return_exit(exit_obj)
@@ -2577,10 +2580,22 @@ class CmdDefuse(Command):
             if hasattr(grenade.db, 'rigged_by'):
                 delattr(grenade.db, 'rigged_by')
             
-            # Restore original description
-            if hasattr(grenade.db, 'original_desc'):
-                grenade.db.desc = grenade.db.original_desc
-                delattr(grenade.db, 'original_desc')
+            # Restore original integration state
+            if hasattr(grenade.db, 'original_integrate'):
+                grenade.db.integrate = grenade.db.original_integrate
+                delattr(grenade.db, 'original_integrate')
+            else:
+                # Default: disable integration for regular grenades
+                grenade.db.integrate = False
+                
+            if hasattr(grenade.db, 'original_integration_desc'):
+                if grenade.db.original_integration_desc is not None:
+                    grenade.db.integration_desc = grenade.db.original_integration_desc
+                else:
+                    # Remove integration_desc if it wasn't set originally
+                    if hasattr(grenade.db, 'integration_desc'):
+                        delattr(grenade.db, 'integration_desc')
+                delattr(grenade.db, 'original_integration_desc')
             
             # Announce trap disarmament
             self.caller.msg("You also disarm the trap rigging mechanism.")
