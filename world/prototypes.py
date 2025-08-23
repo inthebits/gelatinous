@@ -293,7 +293,7 @@ BOTTLE = {
 # =============================================================================
 
 # Base spray paint can
-SPRAY_CAN = {
+SPRAYPAINT_CAN = {
     "key": "can of spraypaint",
     "aliases": ["can", "paint", "spray", "spraycan", "spraypaint"],
     "typeclass": "typeclasses.items.SprayCanItem", 

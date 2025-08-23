@@ -1,8 +1,8 @@
 """
-Graffiti Commands
+Spray Commands
 
-Consolidated commands for the graffiti system including spray painting,
-color selection, and solvent cleaning.
+Unified spray command that handles both spray painting and solvent cleaning
+based on the type of can used and syntax provided.
 """
 
 from evennia import Command, create_object
@@ -13,278 +13,227 @@ import random
 
 class CmdGraffiti(Command):
     """
-    Graffiti system commands for spray painting and cleaning.
+    Spray paint graffiti or clean with solvent.
     
     Usage:
-        graffiti spray "<message>" with <spray_can>     - Spray graffiti
-        graffiti clean with <solvent_can>              - Clean graffiti  
-        graffiti color <color> on <spray_can>          - Change spray can color
+        spray "<message>" with <spray_can>    - Spray paint graffiti
+        spray here with <solvent_can>         - Clean graffiti in room
+        spray color <color> on <spray_can>    - Change spray can color
         
     Examples:
-        graffiti spray "HELLO WORLD" with red_can
-        graffiti spray "Snake turf!" with spray_can  
-        graffiti clean with solvent_can
-        graffiti color blue on spray_can
-        graffiti color cyan on my_can
+        spray "HELLO WORLD" with red_can
+        spray "WAKKA WAKKA!" with spray_can
+        spray here with solvent_can
+        spray color blue on spray_can
+        spray color cyan on my_can
         
     Paint cans have finite paint - if you run out mid-message, your graffiti
     will be cut short. Messages are limited to 100 characters.
+    
+    Solvent cans can clean existing graffiti from the current room.
     """
     
-    key = "graffiti"
-    aliases = ["tag", "graf"]
+    key = "spray"
     locks = "cmd:all()"
     help_category = "General"
     
     def func(self):
-        """Execute the graffiti command."""
+        """Execute the spray command."""
         if not self.args:
-            self.caller.msg("Usage: graffiti spray \"<message>\" with <spray_can> OR graffiti clean with <solvent_can> OR graffiti color <color> on <spray_can>")
+            self.caller.msg("Usage: spray \"<message>\" with <spray_can> OR spray here with <solvent_can> OR spray color <color> on <spray_can>")
             return
         
-        # Parse subcommand
+        # Parse command patterns
         args_lower = self.args.lower()
         
-        if args_lower.startswith("spray "):
-            self._handle_spray(self.args[6:].strip())
-        elif args_lower.startswith("clean "):
-            self._handle_clean(self.args[6:].strip())
-        elif args_lower.startswith("color "):
+        if args_lower.startswith("color "):
             self._handle_color(self.args[6:].strip())
+        elif args_lower.startswith("here with "):
+            self._handle_clean(self.args[10:].strip())
+        elif " with " in self.args:
+            self._handle_spray_paint(self.args)
         else:
-            self.caller.msg("Usage: graffiti spray \"<message>\" with <spray_can> OR graffiti clean with <solvent_can> OR graffiti color <color> on <spray_can>")
+            self.caller.msg("Usage: spray \"<message>\" with <spray_can> OR spray here with <solvent_can> OR spray color <color> on <spray_can>")
     
-    def _handle_spray(self, args):
+    def _handle_spray_paint(self, args):
         """Handle spray painting graffiti."""
-        if not args or " with " not in args:
-            self.caller.msg("Usage: graffiti spray \"<message>\" with <spray_can>")
+        if " with " not in args:
+            self.caller.msg("Usage: spray \"<message>\" with <spray_can>")
             return
         
-        # Parse arguments
-        parts = args.split(" with ", 1)
-        if len(parts) != 2:
-            self.caller.msg("Usage: graffiti spray \"<message>\" with <spray_can>")
-            return
-        
-        message_input = parts[0].strip()
-        item_name = parts[1].strip()
-        
-        # Find the spray can
-        item = self.caller.search(item_name, location=self.caller, quiet=True)
-        if not item:
-            self.caller.msg(f"You don't have a '{item_name}' to spray with.")
-            return
-        
-        item = item[0]  # Take first match
-        
-        # Check if caller is in a room
-        if not self.caller.location:
-            self.caller.msg("You need to be somewhere to spray graffiti.")
-            return
-        
-        # Handle spray painting
-        if not isinstance(item, SprayCanItem):
-            self.caller.msg(f"{item.get_display_name(self.caller)} is not a spray paint can.")
-            return
-        
-        if not item.has_paint(1):
-            self.caller.msg("The spray can is empty.")
-            # Destroy empty can
-            self.caller.msg("You toss the empty can away.")
-            item.delete()
-            return
-        
-        # Extract message from quotes if present
-        message = message_input.strip()
-        if message.startswith('"') and message.endswith('"'):
-            message = message[1:-1]
-        elif message.startswith("'") and message.endswith("'"):
-            message = message[1:-1]
+        # Split message and can name
+        message_part, can_part = args.rsplit(" with ", 1)
+        message = message_part.strip().strip('"\'')  # Remove quotes if present
+        can_name = can_part.strip()
         
         if not message:
-            self.caller.msg("What do you want to spray? Use: graffiti spray \"<message>\" with <spray_can>")
+            self.caller.msg("You need to specify a message to spray.")
             return
         
-        # Enforce maximum message length
-        max_length = 100
-        if len(message) > max_length:
-            message = message[:max_length]
-            self.caller.msg(f"Message too long! Truncated to {max_length} characters.")
-        
-        # Check available paint for message
-        available_paint = item.db.paint_level
-        actual_message = message
-        
-        # Handle partial spraying if running out of paint
-        if available_paint < len(message):
-            actual_message = message[:available_paint]
-            if available_paint > 3:  # Add "..." if there's room
-                actual_message = actual_message[:-3] + "..."
-        
-        if not actual_message:
-            self.caller.msg("Not enough paint left to spray anything.")
+        if len(message) > 100:
+            self.caller.msg("Your message is too long! Keep it under 100 characters.")
             return
         
-        # Use paint
-        paint_used = item.use_paint(len(actual_message))
+        # Find the spray can
+        spray_can = self.caller.search(can_name, candidates=self.caller.contents, quiet=True)
+        if not spray_can:
+            self.caller.msg(f"You don't have a '{can_name}'.")
+            return
         
-        # Find or create graffiti object in room
-        graffiti_obj = None
-        for obj in self.caller.location.contents:
-            if isinstance(obj, GraffitiObject):
-                graffiti_obj = obj
-                break
+        spray_can = spray_can[0]  # Get first match
         
-        # Create graffiti object if it doesn't exist
-        if not graffiti_obj:
-            graffiti_obj = create_object(
-                GraffitiObject,
-                key="graffiti",
-                location=self.caller.location
-            )
-            
-            # Add room integration
-            if hasattr(self.caller.location, 'db'):
-                if not hasattr(self.caller.location.db, 'integrate'):
-                    self.caller.location.db.integrate = []
-                if not self.caller.location.db.integrate:
-                    self.caller.location.db.integrate = []
-                    
-                # Add graffiti integration if not already present
-                integration_found = False
-                for integration in self.caller.location.db.integrate:
-                    if 'graffiti' in str(integration).lower():
-                        integration_found = True
-                        break
-                        
-                if not integration_found:
-                    self.caller.location.db.integrate.append("The walls have been daubed with colorful graffiti.")
+        # Verify it's a spray can
+        if not isinstance(spray_can, SprayCanItem):
+            self.caller.msg(f"You can't spray paint with {spray_can.name}.")
+            return
         
-        # Add graffiti entry
-        entry = graffiti_obj.add_graffiti(actual_message, item.db.current_color, self.caller)
+        # Check if spray can has paint
+        if spray_can.db.paint_remaining <= 0:
+            self.caller.msg(f"{spray_can.name} is empty!")
+            return
         
-        # Feedback to player
-        if paint_used < len(message):
-            self.caller.msg(f"You spray on the wall but run out of paint partway through: {entry}")
-            self.caller.msg("You toss the empty can away.")
-            item.delete()
+        # Calculate paint needed (1 paint per character)
+        paint_needed = len(message)
+        paint_available = spray_can.db.paint_remaining
+        
+        # Determine actual message length based on available paint
+        if paint_needed > paint_available:
+            message = message[:paint_available]
+            paint_used = paint_available
+            self.caller.msg(f"{spray_can.name} runs out of paint mid-message!")
         else:
-            self.caller.msg(f"You spray on the wall: {entry}")
+            paint_used = paint_needed
         
-        # Message to room (excluding the sprayer)
+        # Use the paint
+        spray_can.db.paint_remaining -= paint_used
+        
+        # Get the current color
+        current_color = spray_can.db.current_color
+        color_code = spray_can.db.color_codes.get(current_color, "")
+        
+        # Create the graffiti object
+        graffiti = create_object(
+            typeclass=GraffitiObject,
+            key=f"graffiti: {message}",
+            location=self.caller.location
+        )
+        
+        # Set graffiti properties
+        graffiti.db.message = message
+        graffiti.db.color = current_color
+        graffiti.db.color_code = color_code
+        graffiti.db.creator = self.caller.key
+        
+        # Add to room's graffiti list
+        if not self.caller.location.db.graffiti:
+            self.caller.location.db.graffiti = []
+        self.caller.location.db.graffiti.append(graffiti)
+        
+        # Messages
+        colored_message = f"{color_code}{message}|n" if color_code else message
+        self.caller.msg(f"You spray '{colored_message}' on the wall with {spray_can.name}.")
         self.caller.location.msg_contents(
-            f"{self.caller.get_display_name(None)} sprays graffiti on the wall.",
+            f"{self.caller.name} sprays '{colored_message}' on the wall.",
             exclude=self.caller
         )
-    
-    def _handle_clean(self, args):
-        """Handle cleaning graffiti with solvent."""
-        if not args or not args.startswith("with "):
-            self.caller.msg("Usage: graffiti clean with <solvent_can>")
-            return
         
-        item_name = args[5:].strip()  # Remove "with "
+        # Update spray can description
+        spray_can.update_description()
+    
+    def _handle_clean(self, can_name):
+        """Handle cleaning graffiti with solvent."""
+        if not can_name:
+            self.caller.msg("Usage: spray here with <solvent_can>")
+            return
         
         # Find the solvent can
-        item = self.caller.search(item_name, location=self.caller, quiet=True)
-        if not item:
-            self.caller.msg(f"You don't have a '{item_name}' to clean with.")
+        solvent_can = self.caller.search(can_name, candidates=self.caller.contents, quiet=True)
+        if not solvent_can:
+            self.caller.msg(f"You don't have a '{can_name}'.")
             return
         
-        item = item[0]  # Take first match
+        solvent_can = solvent_can[0]  # Get first match
         
-        if not isinstance(item, SolventCanItem):
-            self.caller.msg(f"{item.get_display_name(self.caller)} is not a solvent can.")
+        # Verify it's a solvent can
+        if not isinstance(solvent_can, SolventCanItem):
+            self.caller.msg(f"You can't clean with {solvent_can.name}.")
             return
         
-        if not item.has_solvent(1):
-            self.caller.msg("The solvent can is empty.")
-            # Destroy empty can
-            self.caller.msg("You toss the empty can away.")
-            item.delete()
+        # Check if solvent can has uses left
+        if solvent_can.db.uses_remaining <= 0:
+            self.caller.msg(f"{solvent_can.name} is empty!")
             return
         
-        # Find graffiti object in room
-        graffiti_obj = None
-        for obj in self.caller.location.contents:
-            if isinstance(obj, GraffitiObject):
-                graffiti_obj = obj
-                break
-        
-        if not graffiti_obj or not graffiti_obj.has_graffiti():
+        # Check for graffiti in the room
+        room_graffiti = self.caller.location.db.graffiti or []
+        if not room_graffiti:
             self.caller.msg("There's no graffiti here to clean.")
             return
         
-        # Use solvent to remove characters
-        amount_to_remove = random.randint(15, 25)  # Random cleaning effectiveness
-        solvent_used = min(amount_to_remove, item.db.solvent_level)
+        # Remove random graffiti
+        graffiti_to_remove = random.choice(room_graffiti)
+        cleaned_message = graffiti_to_remove.db.message
         
-        # Remove characters from graffiti
-        chars_removed = graffiti_obj.remove_random_characters(solvent_used)
-        item.use_solvent(solvent_used)
+        # Remove from room and destroy object
+        room_graffiti.remove(graffiti_to_remove)
+        self.caller.location.db.graffiti = room_graffiti
+        graffiti_to_remove.delete()
         
-        # Atmospheric feedback
-        feedback_messages = [
-            "The solvent bubbles against the wall as graffiti begins to fade away...",
-            "Chemical fumes rise as the solvent eats through layers of paint...",
-            "The solvent hisses softly, dissolving random patches of graffiti...",
-            "Streams of dissolved paint run down the wall as the solvent works...",
-            "The harsh chemical smell fills your nostrils as paint dissolves..."
-        ]
+        # Use solvent
+        solvent_can.db.uses_remaining -= 1
         
-        self.caller.msg(random.choice(feedback_messages))
+        # Messages
+        self.caller.msg(f"You clean '{cleaned_message}' from the wall with {solvent_can.name}.")
+        self.caller.location.msg_contents(
+            f"{self.caller.name} cleans graffiti from the wall.",
+            exclude=self.caller
+        )
         
-        # If no graffiti left, remove the graffiti object and integration
-        if not graffiti_obj.has_graffiti():
-            # Delete empty graffiti object
-            graffiti_obj.delete()
-            self.caller.msg("The walls are now completely clean.")
-        
-        # Check if solvent can is empty
-        if not item.has_solvent(1):
-            self.caller.msg("You toss the empty solvent can away.")
-            item.delete()
+        # Update solvent can description
+        solvent_can.update_description()
     
     def _handle_color(self, args):
-        """Handle color selection for spray cans."""
-        if not args or " on " not in args:
-            self.caller.msg("Usage: graffiti color <color> on <spray_can>")
-            return
-            
-        parts = args.split(" on ", 1)
-        if len(parts) != 2:
-            self.caller.msg("Usage: graffiti color <color> on <spray_can>")
-            return
-            
-        color_name = parts[0].strip().lower()
-        item_name = parts[1].strip()
-        
-        # Find the target item
-        item = self.caller.search(item_name, location=self.caller, quiet=True)
-        if not item:
-            self.caller.msg(f"You don't have a '{item_name}' to adjust.")
+        """Handle changing spray can color."""
+        if " on " not in args:
+            self.caller.msg("Usage: spray color <color> on <spray_can>")
             return
         
-        item = item[0]  # Take the first match
+        # Split color and can name
+        color_part, can_part = args.rsplit(" on ", 1)
+        new_color = color_part.strip().lower()
+        can_name = can_part.strip()
         
-        # Check if it's a spray can
-        if not isinstance(item, SprayCanItem):
-            self.caller.msg(f"You can't change colors on {item.get_display_name(self.caller)}.")
+        # Find the spray can
+        spray_can = self.caller.search(can_name, candidates=self.caller.contents, quiet=True)
+        if not spray_can:
+            self.caller.msg(f"You don't have a '{can_name}'.")
             return
         
-        # Handle color selection
-        if color_name:
-            # Try to set the specific color
-            if item.set_color(color_name):
-                self.caller.msg(f"You adjust the nozzle on {item.get_display_name(self.caller)} to |{item.db.current_color}{item.db.current_color}|n.")
-            else:
-                # Show available colors if invalid color provided
-                available = ", ".join(item.db.available_colors)
-                self.caller.msg(f"That's not a valid color. Available colors: {available}")
-        else:
-            # No color specified, cycle to next color
-            next_color = item.get_next_color()
-            if item.set_color(next_color):
-                self.caller.msg(f"You adjust the nozzle on {item.get_display_name(self.caller)} to |{item.db.current_color}{item.db.current_color}|n.")
-            else:
-                self.caller.msg("Something went wrong with the color adjustment.")
+        spray_can = spray_can[0]  # Get first match
+        
+        # Verify it's a spray can
+        if not isinstance(spray_can, SprayCanItem):
+            self.caller.msg(f"You can't change colors on {spray_can.name}.")
+            return
+        
+        # Check if color is available
+        available_colors = list(spray_can.db.color_codes.keys())
+        if new_color not in available_colors:
+            color_list = ", ".join(available_colors)
+            self.caller.msg(f"Available colors: {color_list}")
+            return
+        
+        # Change the color
+        old_color = spray_can.db.current_color
+        spray_can.db.current_color = new_color
+        spray_can.update_description()
+        
+        # Messages
+        color_code = spray_can.db.color_codes.get(new_color, "")
+        colored_name = f"{color_code}{new_color}|n" if color_code else new_color
+        
+        self.caller.msg(f"You adjust {spray_can.name} from {old_color} to {colored_name}.")
+        self.caller.location.msg_contents(
+            f"{self.caller.name} adjusts their spray can.",
+            exclude=self.caller
+        )
