@@ -43,8 +43,8 @@ class CmdWield(Command):
         else:
             itemname, hand = args, None
 
-        # Search for item in inventory
-        item = caller.search(itemname, location=caller)
+        # Search for item in inventory - enhanced search
+        item = self._find_item_in_inventory(caller, itemname)
         if not item:
             return  # error already sent
 
@@ -70,6 +70,26 @@ class CmdWield(Command):
 
         # All hands are full
         caller.msg("Your hands are full.")
+        
+    def _find_item_in_inventory(self, caller, itemname):
+        """Enhanced search that checks display name, key, and aliases."""
+        itemname = itemname.lower()
+        
+        # Search through caller's inventory
+        for obj in caller.contents:
+            # Check display name
+            if itemname in obj.get_display_name(caller).lower():
+                return obj
+            # Check key
+            if itemname in obj.key.lower():
+                return obj
+            # Check aliases
+            aliases = [alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else [])]
+            if any(itemname in alias for alias in aliases):
+                return obj
+        
+        caller.msg(f"You don't have a '{itemname}'.")
+        return None
 
 
 class CmdUnwield(Command):
@@ -95,9 +115,18 @@ class CmdUnwield(Command):
 
         hands = caller.hands
         for hand, held_item in hands.items():
-            if held_item and itemname in held_item.key.lower():
-                result = caller.unwield_item(hand)
-                caller.msg(result)
+            if held_item:
+                # Check display name, key, and aliases
+                display_name = held_item.get_display_name(caller).lower()
+                key = held_item.key.lower()
+                aliases = [alias.lower() for alias in (held_item.aliases.all() if hasattr(held_item.aliases, "all") else [])]
+                
+                if (itemname in display_name or 
+                    itemname in key or 
+                    itemname in aliases):
+                    result = caller.unwield_item(hand)
+                    caller.msg(result)
+                    return
                 return
 
         caller.msg(f"You aren't holding '{itemname}'.")
@@ -221,21 +250,12 @@ class CmdDrop(Command):
             caller.msg("Drop what?")
             return
 
-        # Try inventory first
-        obj = caller.search(args, location=caller, quiet=True)
-
-        # If not found, search hands
-        if not obj:
-            for hand, item in caller.hands.items():
-                if item and args.lower() in item.key.lower():
-                    obj = [item]
-                    break
+        # Enhanced search - try inventory first
+        obj = self._find_item_to_drop(caller, args)
 
         if not obj:
             caller.msg("You aren't carrying or holding that.")
             return
-
-        obj = obj[0]
 
         # If it's wielded, remove it from the hand
         was_wielded = False
@@ -266,11 +286,44 @@ class CmdDrop(Command):
         
         # Send appropriate message based on whether it was wielded
         if was_wielded:
-            caller.msg(f"You release {obj.key} from your {hand_name} hand and drop it.")
-            caller.location.msg_contents(f"{caller.key} drops {obj.key}.", exclude=caller)
+            caller.msg(f"You release {obj.get_display_name(caller)} from your {hand_name} hand and drop it.")
+            caller.location.msg_contents(f"{caller.key} drops {obj.get_display_name(caller)}.", exclude=caller)
         else:
-            caller.msg(f"You drop {obj.key}.")
-            caller.location.msg_contents(f"{caller.key} drops {obj.key}.", exclude=caller)
+            caller.msg(f"You drop {obj.get_display_name(caller)}.")
+            caller.location.msg_contents(f"{caller.key} drops {obj.get_display_name(caller)}.", exclude=caller)
+
+    def _find_item_to_drop(self, caller, itemname):
+        """Enhanced search that checks inventory and hands by display name, key, and aliases."""
+        itemname = itemname.lower()
+        
+        # First search inventory
+        for obj in caller.contents:
+            # Check display name
+            if itemname in obj.get_display_name(caller).lower():
+                return obj
+            # Check key
+            if itemname in obj.key.lower():
+                return obj
+            # Check aliases
+            aliases = [alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else [])]
+            if any(itemname in alias for alias in aliases):
+                return obj
+        
+        # If not found in inventory, search hands
+        for hand, item in caller.hands.items():
+            if item:
+                # Check display name
+                if itemname in item.get_display_name(caller).lower():
+                    return item
+                # Check key
+                if itemname in item.key.lower():
+                    return item
+                # Check aliases
+                aliases = [alias.lower() for alias in (item.aliases.all() if hasattr(item.aliases, "all") else [])]
+                if any(itemname in alias for alias in aliases):
+                    return item
+        
+        return None
 
 
 class CmdGet(Command):
@@ -294,14 +347,14 @@ class CmdGet(Command):
             caller.msg("Get what?")
             return
 
-        # Search in the room
-        item = caller.search(itemname, location=caller.location)
+        # Search in the room - enhanced search by display name and aliases
+        item = self._find_item_in_room(caller, itemname)
         if not item:
             return
 
         # Only allow picking up actual items
         if not isinstance(item, Item):
-            caller.msg(f"You can't pick up {item.key}.")
+            caller.msg(f"You can't pick up {item.get_display_name(caller)}.")
             return
 
         # Try to put it in a free hand
@@ -309,9 +362,9 @@ class CmdGet(Command):
             if held is None:
                 caller.hands[hand] = item
                 item.location = caller
-                caller.msg(f"You pick up {item.key} and hold it in your {hand} hand.")
+                caller.msg(f"You pick up {item.get_display_name(caller)} and hold it in your {hand} hand.")
                 caller.location.msg_contents(
-                    f"{caller.key} picks up {item.key} and holds it in {hand} hand.", exclude=caller
+                    f"{caller.key} picks up {item.get_display_name(caller)} and holds it in {hand} hand.", exclude=caller
                 )
                 return
 
@@ -322,14 +375,36 @@ class CmdGet(Command):
                 caller.hands[hand] = item
                 item.location = caller
                 caller.msg(
-                    f"Your hands are full. You move {held.key} to inventory "
-                    f"and hold {item.key} in your {hand} hand."
+                    f"Your hands are full. You move {held.get_display_name(caller)} to inventory "
+                    f"and hold {item.get_display_name(caller)} in your {hand} hand."
                 )
                 caller.location.msg_contents(
-                    f"{caller.key} picks up {item.key}, shifting {held.key} to inventory.",
+                    f"{caller.key} picks up {item.get_display_name(caller)}, shifting {held.get_display_name(caller)} to inventory.",
                     exclude=caller
                 )
                 return
+    
+    def _find_item_in_room(self, caller, itemname):
+        """Enhanced search that checks display name, key, and aliases in the room."""
+        itemname = itemname.lower()
+        
+        # Search through room contents
+        for obj in caller.location.contents:
+            if obj == caller:  # Skip the caller
+                continue
+            # Check display name
+            if itemname in obj.get_display_name(caller).lower():
+                return obj
+            # Check key
+            if itemname in obj.key.lower():
+                return obj
+            # Check aliases
+            aliases = [alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else [])]
+            if any(itemname in alias for alias in aliases):
+                return obj
+        
+        caller.msg(f"You don't see a '{itemname}' here.")
+        return None
 
         # Edge case fallback — just add to inventory
         item.location = caller
