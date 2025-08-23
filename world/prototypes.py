@@ -287,3 +287,48 @@ BOTTLE = {
     "desc": "An empty glass bottle. Makes a satisfying crash when thrown.",
     "typeclass": "typeclasses.objects.Object",
 }
+
+# =============================================================================
+# GRAFFITI SYSTEM PROTOTYPES
+# =============================================================================
+
+# Base spray paint can
+SPRAY_CAN = {
+    "key": "can of spraypaint",
+    "aliases": ["can", "paint", "spray", "spraycan", "spraypaint"],
+    "typeclass": "typeclasses.items.SprayCanItem", 
+    "desc": "A can of spraypaint with a red nozzle. It feels heavy with paint.",
+    "attrs": [
+        ("paint_level", 256),
+        ("max_paint", 256),
+        ("current_color", "red"),
+        ("damage", 2),
+        ("weapon_type", "spraycan"),
+        ("hands_required", 1)
+    ],
+    "tags": [
+        ("graffiti", "type"),
+        ("spray_can", "category"),
+        ("item", "general")
+    ]
+}
+
+# Solvent can for cleaning graffiti
+SOLVENT_CAN = {
+    "key": "can of solvent",
+    "aliases": ["solvent", "cleaner", "cleaning_can", "can"],
+    "typeclass": "typeclasses.items.SolventCanItem",
+    "desc": "A can of solvent for cleaning graffiti. It feels heavy with solvent.", 
+    "attrs": [
+        ("solvent_level", 256),
+        ("max_solvent", 256),
+        ("damage", 2),
+        ("weapon_type", "spraycan"), 
+        ("hands_required", 1)
+    ],
+    "tags": [
+        ("graffiti", "type"),
+        ("solvent_can", "category"),
+        ("item", "general")
+    ]
+}

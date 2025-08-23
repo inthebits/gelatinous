@@ -9,6 +9,7 @@ with a location in the game world (like Characters, Rooms, Exits).
 """
 
 from evennia.objects.objects import DefaultObject
+import random
 
 
 class ObjectParent:
@@ -215,3 +216,171 @@ class Object(ObjectParent, DefaultObject):
     """
 
     pass
+
+
+class GraffitiObject(Object):
+    """
+    Graffiti storage object for rooms.
+    Stores up to 7 graffiti entries with FIFO management.
+    """
+    
+    def at_object_creation(self):
+        """Initialize graffiti storage."""
+        super().at_object_creation()
+        
+        # Set up graffiti storage
+        self.db.graffiti_entries = []  # List of graffiti entries
+        self.db.max_entries = 7       # Maximum entries before cannibalization
+        
+        # Set basic properties
+        self.key = "graffiti"
+        self.db.desc = "The walls are clean."
+        
+        # Make it non-takeable and locked in place
+        self.locks.add("get:false()")
+        self.locks.add("drop:false()")
+        
+        # Add aliases for examination
+        self.aliases.add(["tags", "writing", "wall", "walls"])
+        
+        # Set @integrate attribute for room integration
+        self.db.integrate = True
+        self.db.integration_desc = "The walls have been daubed with colorful graffiti."
+        
+    def add_graffiti(self, message, color, author=None):
+        """
+        Add a graffiti entry to the storage.
+        
+        Args:
+            message (str): The graffiti message
+            color (str): ANSI color code
+            author (Object, optional): Who created the graffiti
+            
+        Returns:
+            str: The formatted graffiti entry that was added
+        """
+        if not self.db.graffiti_entries:
+            self.db.graffiti_entries = []
+            
+        # Format the entry
+        formatted_entry = f"Scrawled in |{color}{color}|n paint: {message}"
+        
+        # Add to storage
+        self.db.graffiti_entries.append({
+            'entry': formatted_entry,
+            'message': message,
+            'color': color,
+            'author': author.key if author else 'someone',
+            'timestamp': self.location.search("*")[0].db.current_time if hasattr(self.location, 'search') else 'unknown'
+        })
+        
+        # Enforce FIFO limit (cannibalization)
+        if len(self.db.graffiti_entries) > self.db.max_entries:
+            self.db.graffiti_entries.pop(0)  # Remove oldest entry
+            
+        # Update description and integration
+        self._update_description()
+        return formatted_entry
+    
+    def remove_random_characters(self, amount=10):
+        """
+        Remove random characters from random graffiti entries (solvent effect).
+        
+        Args:
+            amount (int): Approximate number of characters to remove
+            
+        Returns:
+            int: Actual number of characters removed
+        """
+        if not self.db.graffiti_entries:
+            return 0
+            
+        removed_count = 0
+        entries_to_remove = []
+        
+        # Randomly remove characters from random messages
+        for _ in range(amount):
+            if not self.db.graffiti_entries:
+                break
+                
+            # Pick a random entry
+            entry_index = random.randint(0, len(self.db.graffiti_entries) - 1)
+            entry = self.db.graffiti_entries[entry_index]
+            
+            # Remove a random character from the message
+            message = entry['message']
+            if len(message) > 0:
+                char_index = random.randint(0, len(message) - 1)
+                new_message = message[:char_index] + message[char_index + 1:]
+                entry['message'] = new_message
+                
+                # Update the formatted entry
+                entry['entry'] = f"Scrawled in |{entry['color']}{entry['color']}|n paint: {new_message}"
+                removed_count += 1
+                
+                # Mark empty entries for removal
+                if len(new_message.strip()) == 0:
+                    entries_to_remove.append(entry_index)
+        
+        # Remove empty entries (in reverse order to maintain indices)
+        for index in sorted(entries_to_remove, reverse=True):
+            if index < len(self.db.graffiti_entries):
+                self.db.graffiti_entries.pop(index)
+        
+        self._update_description()
+        return removed_count
+    
+    def clear_all_graffiti(self):
+        """Remove all graffiti entries."""
+        self.db.graffiti_entries = []
+        self._update_description()
+        
+    def has_graffiti(self):
+        """
+        Check if there are any graffiti entries.
+        
+        Returns:
+            bool: True if graffiti exists
+        """
+        return bool(self.db.graffiti_entries)
+    
+    def get_total_characters(self):
+        """
+        Get total character count across all graffiti entries.
+        
+        Returns:
+            int: Total character count
+        """
+        if not self.db.graffiti_entries:
+            return 0
+        return sum(len(entry['message']) for entry in self.db.graffiti_entries)
+    
+    def _update_description(self):
+        """Update the object's description based on current graffiti."""
+        if not self.db.graffiti_entries:
+            self.db.desc = "The walls are clean."
+        else:
+            self.db.desc = "The walls are covered with graffiti in various colors and styles."
+    
+    def return_appearance(self, looker, **kwargs):
+        """
+        Show graffiti entries when examined.
+        
+        Args:
+            looker (Object): The one looking at the graffiti
+            
+        Returns:
+            str: Formatted appearance
+        """
+        if not self.db.graffiti_entries:
+            return "The walls are clean and free of graffiti."
+        
+        # Header
+        appearance = ["Daubed on the walls you see:"]
+        
+        # Add entries in chronological order (oldest first)
+        for entry in self.db.graffiti_entries:
+            if entry['message'].strip():  # Only show entries with content
+                appearance.append(entry['entry'])
+        
+        return "\n".join(appearance)
