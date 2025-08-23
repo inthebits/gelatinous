@@ -273,7 +273,7 @@ class GraffitiObject(Object):
             'message': message,
             'color': color,
             'author': author.key if author else 'someone',
-            'timestamp': gametime.datetime_format(gametime.datetime())
+            'timestamp': str(gametime.gametime())
         })
         
         # Enforce FIFO limit (cannibalization)
