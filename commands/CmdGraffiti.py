@@ -45,21 +45,22 @@ class CmdGraffiti(Command):
             return
         
         # Parse command patterns to determine intent
-        args_lower = self.args.lower()
+        args_stripped = self.args.strip()
+        args_lower = args_stripped.lower()
         
         # Debug output
-        self.caller.msg(f"DEBUG: args='{self.args}', args_lower='{args_lower}'")
+        self.caller.msg(f"DEBUG: args='{self.args}', args_stripped='{args_stripped}', args_lower='{args_lower}'")
         self.caller.msg(f"DEBUG: args_lower.startswith('here with ')={args_lower.startswith('here with ')}")
         
         if args_lower.startswith("here with "):
             # User wants to clean - get the can name
-            can_name = self.args[10:].strip()
+            can_name = args_stripped[10:].strip()
             intent = "clean"
             message = None
             self.caller.msg(f"DEBUG: Parsed as CLEAN intent, can_name='{can_name}'")
-        elif " with " in self.args:
+        elif " with " in args_stripped:
             # User wants to spray paint - parse message and can name
-            message_part, can_part = self.args.rsplit(" with ", 1)
+            message_part, can_part = args_stripped.rsplit(" with ", 1)
             message = message_part.strip().strip('"\'')  # Remove quotes if present
             can_name = can_part.strip()
             intent = "spraypaint"
