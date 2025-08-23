@@ -190,7 +190,10 @@ class CmdFlee(Command):
                     if hasattr(current_aimer_for_break_attempt, "clear_aim_state"):
                         current_aimer_for_break_attempt.clear_aim_state(reason_for_clearing=f"as {caller.key} breaks free")
                     else: # Fallback if clear_aim_state is missing on aimer
-                        if hasattr(current_aimer_for_break_attempt.ndb, "aiming_at"): del current_aimer_for_break_attempt.ndb.aiming_at
+                        if hasattr(current_aimer_for_break_attempt.ndb, "aiming_at"): 
+                            del current_aimer_for_break_attempt.ndb.aiming_at
+                        # Clear override_place and handle mutual showdown cleanup
+                        self._clear_aim_override_place_on_flee(current_aimer_for_break_attempt, caller)
                     
                     if hasattr(caller.ndb, "aimed_at_by"): del caller.ndb.aimed_at_by # Clear on caller too
                     
@@ -377,6 +380,33 @@ class CmdFlee(Command):
         if original_handler_at_flee_start and hasattr(original_handler_at_flee_start, 'is_active'):
             if not original_handler_at_flee_start.is_active:
                 original_handler_at_flee_start.start()
+
+    def _clear_aim_override_place_on_flee(self, aimer, target):
+        """
+        Clear override_place for aiming when someone flees and breaks aim, handling mutual showdown cleanup.
+        
+        Args:
+            aimer: The character who was aiming (their aim is being broken)
+            target: The character who fled and broke the aim
+        """
+        # Check if they were in a mutual showdown
+        if (hasattr(aimer, 'override_place') and hasattr(target, 'override_place') and
+            aimer.override_place == "locked in a deadly showdown." and 
+            target.override_place == "locked in a deadly showdown."):
+            # They were in a showdown - clear aimer's place, check if target should revert to normal aiming
+            aimer.override_place = ""
+            
+            # If target is still aiming at aimer, revert them to normal aiming
+            target_still_aiming = getattr(target.ndb, "aiming_at", None)
+            if target_still_aiming == aimer:
+                target.override_place = f"aiming carefully at {aimer.key}."
+            else:
+                # Target isn't aiming at anyone, clear their place too
+                target.override_place = ""
+        else:
+            # Normal aiming cleanup
+            if hasattr(aimer, 'override_place'):
+                aimer.override_place = ""
 
 
 class CmdRetreat(Command):

@@ -123,6 +123,9 @@ class Exit(DefaultExit):
                     del old_aim_target.ndb.aimed_at_by
                     old_aim_target.msg(f"{traversing_object.key} stops aiming at you as they move.")
                 traversing_object.msg(f"You stop aiming at {old_aim_target.key} as you move.")
+                
+                # Clear override_place and handle mutual showdown cleanup
+                self._clear_aim_override_place_on_move(traversing_object, old_aim_target)
                 aim_cleared = True
             
             # Clear direction aiming  
@@ -130,6 +133,9 @@ class Exit(DefaultExit):
             if old_aim_direction:
                 del traversing_object.ndb.aiming_direction
                 traversing_object.msg(f"You stop aiming {old_aim_direction} as you move.")
+                
+                # Clear directional aim override_place
+                traversing_object.override_place = ""
                 aim_cleared = True
             
             if not aim_cleared:
@@ -347,3 +353,30 @@ class Exit(DefaultExit):
         
         # Check for auto-defuse opportunities after entering new room
         check_auto_defuse(traversing_object)
+
+    def _clear_aim_override_place_on_move(self, mover, target):
+        """
+        Clear override_place for aiming when someone moves, handling mutual showdown cleanup.
+        
+        Args:
+            mover: The character who is moving (and stopping their aim)
+            target: The character they were aiming at
+        """
+        # Check if they were in a mutual showdown
+        if (hasattr(mover, 'override_place') and hasattr(target, 'override_place') and
+            mover.override_place == "locked in a deadly showdown." and 
+            target.override_place == "locked in a deadly showdown."):
+            # They were in a showdown - clear mover's place, check if target should revert to normal aiming
+            mover.override_place = ""
+            
+            # If target is still aiming at mover, revert them to normal aiming
+            target_still_aiming = getattr(target.ndb, "aiming_at", None)
+            if target_still_aiming == mover:
+                target.override_place = f"aiming carefully at {mover.key}."
+            else:
+                # Target isn't aiming at anyone, clear their place too
+                target.override_place = ""
+        else:
+            # Normal aiming cleanup
+            if hasattr(mover, 'override_place'):
+                mover.override_place = ""

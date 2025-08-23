@@ -185,6 +185,9 @@ class Character(ObjectParent, DefaultCharacter):
                 del old_aim_target_char.ndb.aimed_at_by
                 old_aim_target_char.msg(f"{self.get_display_name(old_aim_target_char)} is no longer aiming directly at you.")
             
+            # Clear override_place and handle mutual showdown cleanup
+            self._clear_aim_override_place_on_aim_clear(old_aim_target_char)
+            
             stopped_aiming_message_parts.append(f"at {old_aim_target_char.get_display_name(self)}")
 
         # Clear directional aim
@@ -193,6 +196,10 @@ class Character(ObjectParent, DefaultCharacter):
             action_taken = True
             del self.ndb.aiming_direction
             log_message_parts.append(f"stopped aiming {old_aim_direction}")
+            
+            # Clear directional aim override_place
+            self.override_place = ""
+            
             stopped_aiming_message_parts.append(f"{old_aim_direction}")
 
         if action_taken:
@@ -221,3 +228,29 @@ class Character(ObjectParent, DefaultCharacter):
             splattercast.msg(f"AIM_CLEAR: {self.key} {', '.join(log_message_parts)}{log_reason_suffix}.")
         
         return action_taken
+
+    def _clear_aim_override_place_on_aim_clear(self, target):
+        """
+        Clear override_place for aiming when clearing aim state, handling mutual showdown cleanup.
+        
+        Args:
+            target: The character that was being aimed at
+        """
+        # Check if they were in a mutual showdown
+        if (hasattr(self, 'override_place') and hasattr(target, 'override_place') and
+            self.override_place == "locked in a deadly showdown." and 
+            target.override_place == "locked in a deadly showdown."):
+            # They were in a showdown - clear aimer's place, check if target should revert to normal aiming
+            self.override_place = ""
+            
+            # If target is still aiming at aimer, revert them to normal aiming
+            target_still_aiming = getattr(target.ndb, "aiming_at", None)
+            if target_still_aiming == self:
+                target.override_place = f"aiming carefully at {self.key}."
+            else:
+                # Target isn't aiming at anyone, clear their place too
+                target.override_place = ""
+        else:
+            # Normal aiming cleanup
+            if hasattr(self, 'override_place'):
+                self.override_place = ""

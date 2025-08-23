@@ -367,12 +367,13 @@ class CmdAim(Command):
             if hasattr(current_target, "ndb") and hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
                 delattr(current_target.ndb, "aimed_at_by")
             
+            # Clear override_place and check for mutual showdown cleanup
+            self._clear_aim_override_place(caller, current_target)
+            
             caller.msg(f"|gYou stop aiming at {current_target.key}.|n")
             current_target.msg(f"|g{caller.key} stops aiming at you.|n")
             splattercast.msg(f"AIM_STOP: {caller.key} stopped aiming at {current_target.key}.")
-            return
-
-        # Clear any existing aim first
+            return        # Clear any existing aim first
         current_target = getattr(caller.ndb, "aiming_at", None)
         current_direction = getattr(caller.ndb, "aiming_direction", None)
         
@@ -380,11 +381,15 @@ class CmdAim(Command):
             if hasattr(current_target, "ndb") and hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
                 delattr(current_target.ndb, "aimed_at_by")
             delattr(caller.ndb, "aiming_at")
+            # Clear override_place and check for mutual showdown cleanup
+            self._clear_aim_override_place(caller, current_target)
             current_target.msg(f"|g{caller.key} stops aiming at you.|n")
             
         if current_direction:
             splattercast.msg(f"AIM_DEBUG: Clearing existing aiming_direction '{current_direction}' for {caller.key}")
             delattr(caller.ndb, "aiming_direction")
+            # Clear directional aim override_place
+            caller.override_place = ""
 
         # Try to find target in current room first
         target = caller.search(args, location=caller.location, quiet=True)
@@ -445,6 +450,9 @@ class CmdAim(Command):
                 # Set direction aiming
                 setattr(caller.ndb, "aiming_direction", direction)
                 
+                # Set override_place for directional aiming with proper grammar
+                caller.override_place = f"aiming carefully to the {direction}."
+                
                 # Debug: Verify the direction was set
                 splattercast.msg(f"AIM_DEBUG: Set aiming_direction to '{direction}' for {caller.key}")
                 splattercast.msg(f"AIM_DEBUG: Verification - getattr result: '{getattr(caller.ndb, 'aiming_direction', 'NOT_FOUND')}'")
@@ -486,6 +494,9 @@ class CmdAim(Command):
             # Set target aim relationship
             setattr(caller.ndb, "aiming_at", target)
             setattr(target.ndb, "aimed_at_by", caller)
+
+            # Set override_place and check for mutual showdown
+            self._set_aim_override_place(caller, target)
 
             # Send messages
             caller.msg(f"|yYou carefully aim at {target.key}.|n")
@@ -544,6 +555,9 @@ class CmdAim(Command):
                 # Set direction aiming
                 setattr(caller.ndb, "aiming_direction", direction)
                 
+                # Set override_place for directional aiming with proper grammar
+                caller.override_place = f"aiming carefully to the {direction}."
+                
                 # Debug: Verify the direction was set
                 splattercast.msg(f"AIM_DEBUG: Set aiming_direction to '{direction}' for {caller.key}")
                 splattercast.msg(f"AIM_DEBUG: Verification - getattr result: '{getattr(caller.ndb, 'aiming_direction', 'NOT_FOUND')}'")
@@ -565,3 +579,47 @@ class CmdAim(Command):
             else:
                 splattercast.msg(f"AIM_DEBUG: Direction '{direction}' was not found as valid exit")
                 caller.msg(f"|rYou don't see '{args}' here, and it's not a valid direction.|n")
+
+    def _set_aim_override_place(self, aimer, target):
+        """
+        Set override_place for aiming, checking for mutual showdown.
+        
+        Args:
+            aimer: The character doing the aiming
+            target: The character being aimed at
+        """
+        # Check if target is also aiming at the aimer (mutual showdown)
+        target_aiming_at = getattr(target.ndb, "aiming_at", None)
+        
+        if target_aiming_at == aimer:
+            # Mutual showdown - both characters get the special override_place
+            aimer.override_place = "locked in a deadly showdown."
+            target.override_place = "locked in a deadly showdown."
+        else:
+            # Normal aiming
+            aimer.override_place = f"aiming carefully at {target.key}."
+
+    def _clear_aim_override_place(self, aimer, target):
+        """
+        Clear override_place for aiming, handling mutual showdown cleanup.
+        
+        Args:
+            aimer: The character stopping their aim
+            target: The character they were aiming at
+        """
+        # Check if they were in a mutual showdown
+        if (aimer.override_place == "locked in a deadly showdown." and 
+            target.override_place == "locked in a deadly showdown."):
+            # They were in a showdown - clear aimer's place, check if target should revert to normal aiming
+            aimer.override_place = ""
+            
+            # If target is still aiming at aimer, revert them to normal aiming
+            target_still_aiming = getattr(target.ndb, "aiming_at", None)
+            if target_still_aiming == aimer:
+                target.override_place = f"aiming carefully at {aimer.key}."
+            else:
+                # Target isn't aiming at anyone, clear their place too
+                target.override_place = ""
+        else:
+            # Normal aiming cleanup
+            aimer.override_place = ""
