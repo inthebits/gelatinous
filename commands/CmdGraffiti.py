@@ -254,10 +254,25 @@ class CmdPress(Command):
         # Check if color is available
         if not spray_can.set_color(new_color):
             available_colors = spray_can.db.available_colors
-            if len(available_colors) > 1:
-                color_list = ", ".join(available_colors[:-1]) + f", and {available_colors[-1]}"
+            
+            # Color mapping for display
+            color_map = {
+                'red': 'r', 'blue': 'b', 'green': 'g', 'yellow': 'y',
+                'magenta': 'm', 'cyan': 'c', 'white': 'w', 'black': 'x'
+            }
+            
+            # Create colored version of each color name
+            colored_names = []
+            for color in available_colors:
+                color_code = color_map.get(color.lower(), 'w')
+                colored_names.append(f"|{color_code}{color}|n")
+            
+            # Format with proper grammar
+            if len(colored_names) > 1:
+                color_list = ", ".join(colored_names[:-1]) + f", and {colored_names[-1]}"
             else:
-                color_list = available_colors[0] if available_colors else "none"
+                color_list = colored_names[0] if colored_names else "none"
+            
             self.caller.msg(f"Available colors: {color_list}.")
             return
         
