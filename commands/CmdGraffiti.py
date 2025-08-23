@@ -185,13 +185,13 @@ class CmdGraffiti(Command):
         
         # Create appropriate message based on whether can ran out
         if ran_out_mid_message:
-            self.caller.msg(f"You start to spray on the wall with {can_name_for_message}, but it runs out of paint mid-message! You manage to spray '{colored_message}' before the can crumples up and becomes useless.")
+            self.caller.msg(f"You start to spray on the wall with a {can_name_for_message}, but it runs out of paint mid-message! You manage to spray '{colored_message}' before the can crumples up and becomes useless.")
             self.caller.location.msg_contents(
                 f"{self.caller.name} starts to spray on the wall, but their can runs out of paint mid-message, managing only '{colored_message}' before tossing the empty can aside.",
                 exclude=self.caller
             )
         else:
-            self.caller.msg(f"You spray '{colored_message}' on the wall with {can_name_for_message}.")
+            self.caller.msg(f"You spray '{colored_message}' on the wall with a {can_name_for_message}.")
             self.caller.location.msg_contents(
                 f"{self.caller.name} sprays '{colored_message}' on the wall.",
                 exclude=self.caller
