@@ -108,9 +108,7 @@ class SprayCanItem(Item):
                         self.location.hands = hands
                         break
             
-            # Send message and delete
-            if self.location:
-                self.location.msg(f"{self.key} is empty and crumples up, becoming useless.")
+            # Delete silently - let calling code handle messaging
             self.delete()
         
         return actual_used
@@ -227,9 +225,7 @@ class SolventCanItem(Item):
                         self.location.hands = hands
                         break
             
-            # Send message and delete
-            if self.location:
-                self.location.msg(f"{self.key} is empty and gets tossed aside, becoming useless.")
+            # Delete silently - let calling code handle messaging
             self.delete()
         
         return actual_used

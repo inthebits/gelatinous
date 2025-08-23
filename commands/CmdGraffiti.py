@@ -146,10 +146,11 @@ class CmdGraffiti(Command):
         paint_available = spray_can.db.aerosol_level
         
         # Determine actual message length based on available paint
+        ran_out_mid_message = False
         if paint_needed > paint_available:
-            message = message[:paint_available]
+            message = message[:paint_available] + "..."  # Add ellipsis to show it was cut off
             paint_used = paint_available
-            self.caller.msg(f"{spray_can.name} runs out of paint mid-message!")
+            ran_out_mid_message = True
         else:
             paint_used = paint_needed
         
@@ -186,11 +187,20 @@ class CmdGraffiti(Command):
         }
         color_code = color_map.get(current_color.lower() if current_color else 'white', 'w')
         colored_message = f"|{color_code}{message}|n"
-        self.caller.msg(f"You spray '{colored_message}' on the wall with {can_name_for_message}.")
-        self.caller.location.msg_contents(
-            f"{self.caller.name} sprays '{colored_message}' on the wall.",
-            exclude=self.caller
-        )
+        
+        # Create appropriate message based on whether can ran out
+        if ran_out_mid_message:
+            self.caller.msg(f"You start to spray on the wall with {can_name_for_message}, but it runs out of paint mid-message! You manage to spray '{colored_message}' before the can crumples up and becomes useless.")
+            self.caller.location.msg_contents(
+                f"{self.caller.name} starts to spray on the wall, but their can runs out of paint mid-message, managing only '{colored_message}' before tossing the empty can aside.",
+                exclude=self.caller
+            )
+        else:
+            self.caller.msg(f"You spray '{colored_message}' on the wall with {can_name_for_message}.")
+            self.caller.location.msg_contents(
+                f"{self.caller.name} sprays '{colored_message}' on the wall.",
+                exclude=self.caller
+            )
     
     def _handle_clean_with_solvent(self, solvent_can):
         """Handle cleaning graffiti with a solvent can."""
