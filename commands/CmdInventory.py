@@ -295,35 +295,21 @@ class CmdDrop(Command):
             caller.location.msg_contents(f"{caller.key} drops {obj.get_display_name(caller)}.", exclude=caller)
 
     def _find_item_to_drop(self, caller, itemname):
-        """Enhanced search that checks inventory and hands by display name, key, and aliases."""
-        itemname = itemname.lower()
-        
+        """Search for an item to drop using Evennia's search system."""
         # First search inventory
-        for obj in caller.contents:
-            # Check display name
-            if itemname in obj.get_display_name(caller).lower():
-                return obj
-            # Check key
-            if itemname in obj.key.lower():
-                return obj
-            # Check aliases
-            aliases = [alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else [])]
-            if any(itemname in alias for alias in aliases):
-                return obj
+        inventory_candidates = list(caller.contents)
+        if inventory_candidates:
+            result = caller.search(itemname, candidates=inventory_candidates, quiet=True)
+            if result:
+                return result[0] if isinstance(result, list) else result
         
         # If not found in inventory, search hands
-        for hand, item in caller.hands.items():
-            if item:
-                # Check display name
-                if itemname in item.get_display_name(caller).lower():
-                    return item
-                # Check key
-                if itemname in item.key.lower():
-                    return item
-                # Check aliases
-                aliases = [alias.lower() for alias in (item.aliases.all() if hasattr(item.aliases, "all") else [])]
-                if any(itemname in alias for alias in aliases):
-                    return item
+        hands = caller.hands
+        held_items = [item for item in hands.values() if item]
+        if held_items:
+            result = caller.search(itemname, candidates=held_items, quiet=True)
+            if result:
+                return result[0] if isinstance(result, list) else result
         
         return None
 
@@ -343,7 +329,7 @@ class CmdGet(Command):
         from typeclasses.items import Item
         
         caller = self.caller
-        itemname = self.args.strip().lower()
+        itemname = self.args.strip()
 
         if not itemname:
             caller.msg("Get what?")
@@ -387,23 +373,16 @@ class CmdGet(Command):
                 return
     
     def _find_item_in_room(self, caller, itemname):
-        """Enhanced search that checks display name, key, and aliases in the room."""
-        itemname = itemname.lower()
-        
-        # Search through room contents
-        for obj in caller.location.contents:
-            if obj == caller:  # Skip the caller
-                continue
-            # Check display name
-            if itemname in obj.get_display_name(caller).lower():
-                return obj
-            # Check key
-            if itemname in obj.key.lower():
-                return obj
-            # Check aliases
-            aliases = [alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else [])]
-            if any(itemname in alias for alias in aliases):
-                return obj
+        """Search for an item in the room using Evennia's search system."""
+        # Get room contents excluding the caller
+        room_candidates = [obj for obj in caller.location.contents if obj != caller]
+        if not room_candidates:
+            caller.msg(f"You don't see a '{itemname}' here.")
+            return None
+            
+        result = caller.search(itemname, candidates=room_candidates, quiet=True)
+        if result:
+            return result[0] if isinstance(result, list) else result
         
         caller.msg(f"You don't see a '{itemname}' here.")
         return None
