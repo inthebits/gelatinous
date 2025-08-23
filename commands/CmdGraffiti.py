@@ -104,7 +104,7 @@ class CmdGraffiti(Command):
         # Check what type of aerosol contents the can has
         aerosol_contents = getattr(can.db, 'aerosol_contents', None)
         if not aerosol_contents:
-            self.caller.msg(f"You can't use {can.name} for spraying.")
+            self.caller.msg(f"You can't use {can.get_display_name(self.caller)} for spraying.")
             return
         
         # Route to appropriate handler based on can contents AND user intent
@@ -112,14 +112,14 @@ class CmdGraffiti(Command):
             if intent == "spraypaint":
                 self._handle_spray_paint_with_spraypaint(can, message)
             else:  # intent == "clean"
-                self.caller.msg(f"You can't clean with {can.name} - it contains paint, not solvent.")
+                self.caller.msg(f"You can't clean with {can.get_display_name(self.caller)} - it contains paint, not solvent.")
         elif aerosol_contents == "solvent":
             if intent == "clean":
                 self._handle_clean_with_solvent(can)
             else:  # intent == "spraypaint"
-                self.caller.msg(f"You can't spray paint with {can.name} - it contains solvent, not paint.")
+                self.caller.msg(f"You can't spray paint with {can.get_display_name(self.caller)} - it contains solvent, not paint.")
         else:
-            self.caller.msg(f"You can't use {can.name} for spraying - unknown contents: {aerosol_contents}.")
+            self.caller.msg(f"You can't use {can.get_display_name(self.caller)} for spraying - unknown contents: {aerosol_contents}.")
     
     def _handle_spray_paint_with_spraypaint(self, spray_can, message):
         """Handle spray painting with a spray paint can."""
@@ -133,7 +133,7 @@ class CmdGraffiti(Command):
         
         # Check if spray can has paint
         if spray_can.db.aerosol_level <= 0:
-            self.caller.msg(f"{spray_can.name} is empty!")
+            self.caller.msg(f"{spray_can.get_display_name(self.caller)} is empty!")
             return
         
         # Calculate paint needed (1 paint per character)
@@ -151,7 +151,7 @@ class CmdGraffiti(Command):
         
         # Get the current color and name before using paint (in case can gets deleted)
         current_color = spray_can.db.current_color or "white"  # Default fallback
-        can_name_for_message = spray_can.name
+        can_name_for_message = spray_can.get_display_name(self.caller)
         
         # Use the paint
         spray_can.use_paint(paint_used)
@@ -202,7 +202,7 @@ class CmdGraffiti(Command):
         
         # Check if solvent can has uses left
         if solvent_can.db.aerosol_level <= 0:
-            self.caller.msg(f"{solvent_can.name} is empty!")
+            self.caller.msg(f"{solvent_can.get_display_name(self.caller)} is empty!")
             return
         
         # Find the room's graffiti object
