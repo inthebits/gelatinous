@@ -1,130 +1,610 @@
 MESSAGES = {
     "initiate": [
-        "{attacker} rips the cap off a flare, ready to strike it into blinding, burning life.",
-        "With a determined look, {attacker} poises the flare and its striker, preparing to unleash a searing light.",
-        "{attacker} fumbles for a moment, then produces a bright red flare, its purpose now grimly offensive.",
-        "A sharp scrape, and the flare in {attacker}'s hand erupts with a dazzling, intense light and a hiss of smoke.",
-        "{attacker} ignites the flare, its brilliant, sputtering flame instantly dominating the area.",
-        "The flare casts dancing, wild shadows as {attacker} brandishes its searing point like a burning brand.",
-        "{attacker} points the fiercely burning flare towards {target}, its heat palpable even from a distance.",
-        "Light erupts from the flare, painfully bright, as {attacker} prepares to use it as a weapon.",
-        "{attacker} offers no warning, just the sudden, blinding ignition of the flare in their hand.",
-        "The flare is held with a careful but aggressive grip, {attacker} ready to wield its burning fury.",
-        "{attacker} shields their own eyes momentarily as the flare bursts into life, then advances on {target}.",
-        "The air around the flare shimmers with heat as {attacker} aims its incandescent tip.",
-        "{attacker}’s face is illuminated by the harsh, flickering light of the flare, their expression fierce.",
-        "The flare feels dangerously hot in {attacker}'s hand, a tool of desperate, fiery attack.",
-        "{attacker} shifts their weight, the flare held ready to thrust or ward off {target} with its intense heat.",
-        "The acrid smoke and blinding light of the flare fill the air as {attacker} prepares their assault.",
-        "{attacker} holds the sputtering flare high, a beacon of aggressive intent.",
-        "The chemical burn of the flare is a fierce, contained inferno in {attacker}'s grasp.",
-        "{attacker} lets the flare burn brightly, a clear, hot warning to {target}.",
-        "With a sharp hiss, the flare ignites, and {attacker} lunges, using its heat and light as a weapon.",
-        "{attacker} presents the flare, its brilliant, angry light a stark contrast to the coming pain.",
-        "The flare is a tool of blinding, burning distraction in {attacker}'s desperate hands.",
-        "{attacker} thrusts the ignited flare towards {target}, its heat a palpable threat.",
-        "A desperate measure, a fiery tool; {attacker} and the flare are a dangerously unpredictable combination.",
-        "{attacker}’s knuckles are starkly lit by the flare's intense glow.",
-        "The flare sputters and spits, casting wild shadows as {attacker} prepares to strike.",
-        "{attacker} seems to draw courage from the flare's defiant light, their eyes fixed on {target}.",
-        "Silence is broken by the fierce hiss of the flare igniting in {attacker}'s hand.",
-        "The flare is a statement of burning defiance, and {attacker} wields it with reckless abandon.",
-        "{attacker} takes a ragged breath, the smell of burning chemicals from the flare sharp in their nostrils."
+        {
+            'attacker_msg': "You rip the cap off a flare, ready to strike it into blinding, burning life.",
+            'victim_msg': "{attacker_name} rips the cap off a flare, ready to strike it into blinding, burning life.",
+            'observer_msg': "{attacker_name} rips the cap off a flare, ready to strike it into blinding, burning life."
+        },
+        {
+            'attacker_msg': "With a determined look, you poise the flare and its striker, preparing to unleash a searing light.",
+            'victim_msg': "With a determined look, {attacker_name} poises the flare and its striker, preparing to unleash a searing light.",
+            'observer_msg': "With a determined look, {attacker_name} poises the flare and its striker, preparing to unleash a searing light."
+        },
+        {
+            'attacker_msg': "You fumble for a moment, then produce a bright red flare, its purpose now grimly offensive.",
+            'victim_msg': "{attacker_name} fumbles for a moment, then produces a bright red flare, its purpose now grimly offensive.",
+            'observer_msg': "{attacker_name} fumbles for a moment, then produces a bright red flare, its purpose now grimly offensive."
+        },
+        {
+            'attacker_msg': "A sharp scrape, and the flare in your hand erupts with a dazzling, intense light and a hiss of smoke.",
+            'victim_msg': "A sharp scrape, and the flare in {attacker_name}'s hand erupts with a dazzling, intense light and a hiss of smoke.",
+            'observer_msg': "A sharp scrape, and the flare in {attacker_name}'s hand erupts with a dazzling, intense light and a hiss of smoke."
+        },
+        {
+            'attacker_msg': "You ignite the flare, its brilliant, sputtering flame instantly dominating the area.",
+            'victim_msg': "{attacker_name} ignites the flare, its brilliant, sputtering flame instantly dominating the area.",
+            'observer_msg': "{attacker_name} ignites the flare, its brilliant, sputtering flame instantly dominating the area."
+        },
+        {
+            'attacker_msg': "The flare casts dancing, wild shadows as you brandish its searing point like a burning brand.",
+            'victim_msg': "The flare casts dancing, wild shadows as {attacker_name} brandishes its searing point like a burning brand.",
+            'observer_msg': "The flare casts dancing, wild shadows as {attacker_name} brandishes its searing point like a burning brand."
+        },
+        {
+            'attacker_msg': "You point the fiercely burning flare towards {target_name}, its heat palpable even from a distance.",
+            'victim_msg': "{attacker_name} points the fiercely burning flare towards you, its heat palpable even from a distance.",
+            'observer_msg': "{attacker_name} points the fiercely burning flare towards {target_name}, its heat palpable even from a distance."
+        },
+        {
+            'attacker_msg': "Light erupts from the flare, painfully bright, as you prepare to use it as a weapon.",
+            'victim_msg': "Light erupts from the flare, painfully bright, as {attacker_name} prepares to use it as a weapon.",
+            'observer_msg': "Light erupts from the flare, painfully bright, as {attacker_name} prepares to use it as a weapon."
+        },
+        {
+            'attacker_msg': "You offer no warning, just the sudden, blinding ignition of the flare in your hand.",
+            'victim_msg': "{attacker_name} offers no warning, just the sudden, blinding ignition of the flare in their hand.",
+            'observer_msg': "{attacker_name} offers no warning, just the sudden, blinding ignition of the flare in their hand."
+        },
+        {
+            'attacker_msg': "The flare is held with a careful but aggressive grip, you ready to wield its burning fury.",
+            'victim_msg': "The flare is held with a careful but aggressive grip, {attacker_name} ready to wield its burning fury.",
+            'observer_msg': "The flare is held with a careful but aggressive grip, {attacker_name} ready to wield its burning fury."
+        },
+        {
+            'attacker_msg': "You shield your own eyes momentarily as the flare bursts into life, then advance on {target_name}.",
+            'victim_msg': "{attacker_name} shields their own eyes momentarily as the flare bursts into life, then advances on you.",
+            'observer_msg': "{attacker_name} shields their own eyes momentarily as the flare bursts into life, then advances on {target_name}."
+        },
+        {
+            'attacker_msg': "The air around the flare shimmers with heat as you aim its incandescent tip.",
+            'victim_msg': "The air around the flare shimmers with heat as {attacker_name} aims its incandescent tip.",
+            'observer_msg': "The air around the flare shimmers with heat as {attacker_name} aims its incandescent tip."
+        },
+        {
+            'attacker_msg': "Your face is illuminated by the harsh, flickering light of the flare, your expression fierce.",
+            'victim_msg': "{attacker_name}'s face is illuminated by the harsh, flickering light of the flare, their expression fierce.",
+            'observer_msg': "{attacker_name}'s face is illuminated by the harsh, flickering light of the flare, their expression fierce."
+        },
+        {
+            'attacker_msg': "The flare feels dangerously hot in your hand, a tool of desperate, fiery attack.",
+            'victim_msg': "The flare feels dangerously hot in {attacker_name}'s hand, a tool of desperate, fiery attack.",
+            'observer_msg': "The flare feels dangerously hot in {attacker_name}'s hand, a tool of desperate, fiery attack."
+        },
+        {
+            'attacker_msg': "You shift your weight, the flare held ready to thrust or ward off {target_name} with its intense heat.",
+            'victim_msg': "{attacker_name} shifts their weight, the flare held ready to thrust or ward off you with its intense heat.",
+            'observer_msg': "{attacker_name} shifts their weight, the flare held ready to thrust or ward off {target_name} with its intense heat."
+        },
+        {
+            'attacker_msg': "The acrid smoke and blinding light of the flare fill the air as you prepare your assault.",
+            'victim_msg': "The acrid smoke and blinding light of the flare fill the air as {attacker_name} prepares their assault.",
+            'observer_msg': "The acrid smoke and blinding light of the flare fill the air as {attacker_name} prepares their assault."
+        },
+        {
+            'attacker_msg': "You hold the sputtering flare high, a beacon of aggressive intent.",
+            'victim_msg': "{attacker_name} holds the sputtering flare high, a beacon of aggressive intent.",
+            'observer_msg': "{attacker_name} holds the sputtering flare high, a beacon of aggressive intent."
+        },
+        {
+            'attacker_msg': "The chemical burn of the flare is a fierce, contained inferno in your grasp.",
+            'victim_msg': "The chemical burn of the flare is a fierce, contained inferno in {attacker_name}'s grasp.",
+            'observer_msg': "The chemical burn of the flare is a fierce, contained inferno in {attacker_name}'s grasp."
+        },
+        {
+            'attacker_msg': "You let the flare burn brightly, a clear, hot warning to {target_name}.",
+            'victim_msg': "{attacker_name} lets the flare burn brightly, a clear, hot warning to you.",
+            'observer_msg': "{attacker_name} lets the flare burn brightly, a clear, hot warning to {target_name}."
+        },
+        {
+            'attacker_msg': "With a sharp hiss, the flare ignites, and you lunge, using its heat and light as a weapon.",
+            'victim_msg': "With a sharp hiss, the flare ignites, and {attacker_name} lunges, using its heat and light as a weapon.",
+            'observer_msg': "With a sharp hiss, the flare ignites, and {attacker_name} lunges, using its heat and light as a weapon."
+        },
+        {
+            'attacker_msg': "You present the flare, its brilliant, angry light a stark contrast to the coming pain.",
+            'victim_msg': "{attacker_name} presents the flare, its brilliant, angry light a stark contrast to the coming pain.",
+            'observer_msg': "{attacker_name} presents the flare, its brilliant, angry light a stark contrast to the coming pain."
+        },
+        {
+            'attacker_msg': "The flare is a tool of blinding, burning distraction in your desperate hands.",
+            'victim_msg': "The flare is a tool of blinding, burning distraction in {attacker_name}'s desperate hands.",
+            'observer_msg': "The flare is a tool of blinding, burning distraction in {attacker_name}'s desperate hands."
+        },
+        {
+            'attacker_msg': "You thrust the ignited flare towards {target_name}, its heat a palpable threat.",
+            'victim_msg': "{attacker_name} thrusts the ignited flare towards you, its heat a palpable threat.",
+            'observer_msg': "{attacker_name} thrusts the ignited flare towards {target_name}, its heat a palpable threat."
+        },
+        {
+            'attacker_msg': "A desperate measure, a fiery tool; you and the flare are a dangerously unpredictable combination.",
+            'victim_msg': "A desperate measure, a fiery tool; {attacker_name} and the flare are a dangerously unpredictable combination.",
+            'observer_msg': "A desperate measure, a fiery tool; {attacker_name} and the flare are a dangerously unpredictable combination."
+        },
+        {
+            'attacker_msg': "Your knuckles are starkly lit by the flare's intense glow.",
+            'victim_msg': "{attacker_name}'s knuckles are starkly lit by the flare's intense glow.",
+            'observer_msg': "{attacker_name}'s knuckles are starkly lit by the flare's intense glow."
+        },
+        {
+            'attacker_msg': "The flare sputters and spits, casting wild shadows as you prepare to strike.",
+            'victim_msg': "The flare sputters and spits, casting wild shadows as {attacker_name} prepares to strike.",
+            'observer_msg': "The flare sputters and spits, casting wild shadows as {attacker_name} prepares to strike."
+        },
+        {
+            'attacker_msg': "You seem to draw courage from the flare's defiant light, your eyes fixed on {target_name}.",
+            'victim_msg': "{attacker_name} seems to draw courage from the flare's defiant light, their eyes fixed on you.",
+            'observer_msg': "{attacker_name} seems to draw courage from the flare's defiant light, their eyes fixed on {target_name}."
+        },
+        {
+            'attacker_msg': "Silence is broken by the fierce hiss of the flare igniting in your hand.",
+            'victim_msg': "Silence is broken by the fierce hiss of the flare igniting in {attacker_name}'s hand.",
+            'observer_msg': "Silence is broken by the fierce hiss of the flare igniting in {attacker_name}'s hand."
+        },
+        {
+            'attacker_msg': "The flare is a statement of burning defiance, and you wield it with reckless abandon.",
+            'victim_msg': "The flare is a statement of burning defiance, and {attacker_name} wields it with reckless abandon.",
+            'observer_msg': "The flare is a statement of burning defiance, and {attacker_name} wields it with reckless abandon."
+        },
+        {
+            'attacker_msg': "You take a ragged breath, the smell of burning chemicals from the flare sharp in your nostrils.",
+            'victim_msg': "{attacker_name} takes a ragged breath, the smell of burning chemicals from the flare sharp in their nostrils.",
+            'observer_msg': "{attacker_name} takes a ragged breath, the smell of burning chemicals from the flare sharp in their nostrils."
+        }
     ],
     "hit": [
-        "A searing pain as {attacker} thrusts the burning flare against {target}'s arm, leaving an instant, angry burn.",
-        "The flare makes contact, and {target} screams as clothing begins to smolder and flesh blisters beneath.",
-        "{attacker}'s flare grazes {target}'s face, the intense heat and light momentarily blinding them and scorching skin.",
-        "Sparks fly as {attacker}'s flare connects, {target} recoiling from the intense, localized heat and acrid smoke.",
-        "The burning tip of the flare is pressed against {target}'s leg, who howls and tries to beat out the spreading heat.",
-        "{attacker}’s aggressive jab with the flare leaves a painful, searing burn on {target}.",
-        "A quick thrust, and the flare scorches {target}'s clothing, the heat biting into the skin underneath.",
-        "The flare’s intense heat washes over {target} as {attacker} manages to make contact, causing immediate, blistering pain.",
-        "{attacker}’s flare makes a glancing hit, but the heat is enough to make {target} cry out and stumble back.",
-        "With a savage push, {attacker} holds the flare against {target}, who thrashes wildly, trying to escape the searing burn.",
-        "The flare scores a painful hit on {target}'s hand, the heat making them drop their weapon with a yelp.",
-        "{attacker}’s well-aimed thrust with the flare leaves a nasty burn on {target}'s exposed neck.",
-        "A sharp hiss and a cry of pain as {attacker}'s flare burns {target}, leaving a blackened, smoking mark.",
-        "The unyielding heat of {attacker}'s flare sears {target}'s flesh, the smell of burnt hair and skin filling the air.",
-        "{attacker}’s follow-up attack with the flare catches {target} again, adding another agonizing burn.",
-        "A desperate block by {target} is met with the burning end of the flare, scorching their arm.",
-        "The flare makes solid contact with {target}'s chest, the intense heat causing them to gasp and fall back.",
-        "{attacker}’s flare finds purchase, delivering a painful, debilitating burn to {target}'s side.",
-        "Even a brief touch from the flare leaves {target} with a significant, throbbing burn.",
-        "{attacker} presses the attack, the flare a constant threat that finally lands, searing {target}'s defenses.",
-        "The flare’s burning end meets {target}'s flesh, and they recoil with a sharp cry from the intense, localized agony.",
-        "{attacker}’s strike is true, the flare burning {target} squarely and causing immediate, severe pain.",
-        "A close-quarters struggle, and {attacker} manages to press the flare against {target}'s face, causing horrific burns.",
-        "The flare, though not a conventional weapon, proves brutally effective as {attacker} burns {target} badly.",
-        "{attacker}’s flare makes contact again, leaving another smoking, painful burn on {target}.",
-        "A painful hiss as the flare from {attacker} touches {target}'s clothing, which begins to catch fire.",
-        "The tip of {attacker}'s flare sears {target}’s cheek, the pain and smell of burning flesh overwhelming.",
-        "{attacker}’s flare delivers another brutal burn to {target}’s torso, the heat unforgiving.",
-        "A well-placed thrust with the flare leaves {target} momentarily blinded and screaming from a fresh burn.",
-        "The flare, guided by {attacker}'s desperate intent, inflicts a series of telling, painful burns upon {target}."
+        {
+            'attacker_msg': "A searing pain as you thrust the burning flare against {target_name}'s arm, leaving an instant, angry burn.",
+            'victim_msg': "A searing pain as {attacker_name} thrusts the burning flare against your arm, leaving an instant, angry burn.",
+            'observer_msg': "A searing pain as {attacker_name} thrusts the burning flare against {target_name}'s arm, leaving an instant, angry burn."
+        },
+        {
+            'attacker_msg': "The flare makes contact, and {target_name} screams as clothing begins to smolder and flesh blisters beneath.",
+            'victim_msg': "The flare makes contact, and you scream as clothing begins to smolder and flesh blisters beneath.",
+            'observer_msg': "The flare makes contact, and {target_name} screams as clothing begins to smolder and flesh blisters beneath."
+        },
+        {
+            'attacker_msg': "Your flare grazes {target_name}'s face, the intense heat and light momentarily blinding them and scorching skin.",
+            'victim_msg': "{attacker_name}'s flare grazes your face, the intense heat and light momentarily blinding you and scorching skin.",
+            'observer_msg': "{attacker_name}'s flare grazes {target_name}'s face, the intense heat and light momentarily blinding them and scorching skin."
+        },
+        {
+            'attacker_msg': "Sparks fly as your flare connects, {target_name} recoiling from the intense, localized heat and acrid smoke.",
+            'victim_msg': "Sparks fly as {attacker_name}'s flare connects, you recoiling from the intense, localized heat and acrid smoke.",
+            'observer_msg': "Sparks fly as {attacker_name}'s flare connects, {target_name} recoiling from the intense, localized heat and acrid smoke."
+        },
+        {
+            'attacker_msg': "The burning tip of the flare is pressed against {target_name}'s leg, who howls and tries to beat out the spreading heat.",
+            'victim_msg': "The burning tip of the flare is pressed against your leg, and you howl and try to beat out the spreading heat.",
+            'observer_msg': "The burning tip of the flare is pressed against {target_name}'s leg, who howls and tries to beat out the spreading heat."
+        },
+        {
+            'attacker_msg': "Your aggressive jab with the flare leaves a painful, searing burn on {target_name}.",
+            'victim_msg': "{attacker_name}'s aggressive jab with the flare leaves a painful, searing burn on you.",
+            'observer_msg': "{attacker_name}'s aggressive jab with the flare leaves a painful, searing burn on {target_name}."
+        },
+        {
+            'attacker_msg': "A quick thrust, and the flare scorches {target_name}'s clothing, the heat biting into the skin underneath.",
+            'victim_msg': "A quick thrust, and the flare scorches your clothing, the heat biting into the skin underneath.",
+            'observer_msg': "A quick thrust, and the flare scorches {target_name}'s clothing, the heat biting into the skin underneath."
+        },
+        {
+            'attacker_msg': "The flare's intense heat washes over {target_name} as you manage to make contact, causing immediate, blistering pain.",
+            'victim_msg': "The flare's intense heat washes over you as {attacker_name} manages to make contact, causing immediate, blistering pain.",
+            'observer_msg': "The flare's intense heat washes over {target_name} as {attacker_name} manages to make contact, causing immediate, blistering pain."
+        },
+        {
+            'attacker_msg': "Your flare makes a glancing hit, but the heat is enough to make {target_name} cry out and stumble back.",
+            'victim_msg': "{attacker_name}'s flare makes a glancing hit, but the heat is enough to make you cry out and stumble back.",
+            'observer_msg': "{attacker_name}'s flare makes a glancing hit, but the heat is enough to make {target_name} cry out and stumble back."
+        },
+        {
+            'attacker_msg': "With a savage push, you hold the flare against {target_name}, who thrashes wildly, trying to escape the searing burn.",
+            'victim_msg': "With a savage push, {attacker_name} holds the flare against you, and you thrash wildly, trying to escape the searing burn.",
+            'observer_msg': "With a savage push, {attacker_name} holds the flare against {target_name}, who thrashes wildly, trying to escape the searing burn."
+        },
+        {
+            'attacker_msg': "The flare scores a painful hit on {target_name}'s hand, the heat making them drop their weapon with a yelp.",
+            'victim_msg': "The flare scores a painful hit on your hand, the heat making you drop your weapon with a yelp.",
+            'observer_msg': "The flare scores a painful hit on {target_name}'s hand, the heat making them drop their weapon with a yelp."
+        },
+        {
+            'attacker_msg': "Your well-aimed thrust with the flare leaves a nasty burn on {target_name}'s exposed neck.",
+            'victim_msg': "{attacker_name}'s well-aimed thrust with the flare leaves a nasty burn on your exposed neck.",
+            'observer_msg': "{attacker_name}'s well-aimed thrust with the flare leaves a nasty burn on {target_name}'s exposed neck."
+        },
+        {
+            'attacker_msg': "A sharp hiss and a cry of pain as your flare burns {target_name}, leaving a blackened, smoking mark.",
+            'victim_msg': "A sharp hiss and a cry of pain as {attacker_name}'s flare burns you, leaving a blackened, smoking mark.",
+            'observer_msg': "A sharp hiss and a cry of pain as {attacker_name}'s flare burns {target_name}, leaving a blackened, smoking mark."
+        },
+        {
+            'attacker_msg': "The unyielding heat of your flare sears {target_name}'s flesh, the smell of burnt hair and skin filling the air.",
+            'victim_msg': "The unyielding heat of {attacker_name}'s flare sears your flesh, the smell of burnt hair and skin filling the air.",
+            'observer_msg': "The unyielding heat of {attacker_name}'s flare sears {target_name}'s flesh, the smell of burnt hair and skin filling the air."
+        },
+        {
+            'attacker_msg': "Your follow-up attack with the flare catches {target_name} again, adding another agonizing burn.",
+            'victim_msg': "{attacker_name}'s follow-up attack with the flare catches you again, adding another agonizing burn.",
+            'observer_msg': "{attacker_name}'s follow-up attack with the flare catches {target_name} again, adding another agonizing burn."
+        },
+        {
+            'attacker_msg': "A desperate block by {target_name} is met with the burning end of the flare, scorching their arm.",
+            'victim_msg': "Your desperate block is met with the burning end of the flare, scorching your arm.",
+            'observer_msg': "A desperate block by {target_name} is met with the burning end of the flare, scorching their arm."
+        },
+        {
+            'attacker_msg': "The flare makes solid contact with {target_name}'s chest, the intense heat causing them to gasp and fall back.",
+            'victim_msg': "The flare makes solid contact with your chest, the intense heat causing you to gasp and fall back.",
+            'observer_msg': "The flare makes solid contact with {target_name}'s chest, the intense heat causing them to gasp and fall back."
+        },
+        {
+            'attacker_msg': "Your flare finds purchase, delivering a painful, debilitating burn to {target_name}'s side.",
+            'victim_msg': "{attacker_name}'s flare finds purchase, delivering a painful, debilitating burn to your side.",
+            'observer_msg': "{attacker_name}'s flare finds purchase, delivering a painful, debilitating burn to {target_name}'s side."
+        },
+        {
+            'attacker_msg': "Even a brief touch from the flare leaves {target_name} with a significant, throbbing burn.",
+            'victim_msg': "Even a brief touch from the flare leaves you with a significant, throbbing burn.",
+            'observer_msg': "Even a brief touch from the flare leaves {target_name} with a significant, throbbing burn."
+        },
+        {
+            'attacker_msg': "You press the attack, the flare a constant threat that finally lands, searing {target_name}'s defenses.",
+            'victim_msg': "{attacker_name} presses the attack, the flare a constant threat that finally lands, searing your defenses.",
+            'observer_msg': "{attacker_name} presses the attack, the flare a constant threat that finally lands, searing {target_name}'s defenses."
+        },
+        {
+            'attacker_msg': "The flare's burning end meets {target_name}'s flesh, and they recoil with a sharp cry from the intense, localized agony.",
+            'victim_msg': "The flare's burning end meets your flesh, and you recoil with a sharp cry from the intense, localized agony.",
+            'observer_msg': "The flare's burning end meets {target_name}'s flesh, and they recoil with a sharp cry from the intense, localized agony."
+        },
+        {
+            'attacker_msg': "Your strike is true, the flare burning {target_name} squarely and causing immediate, severe pain.",
+            'victim_msg': "{attacker_name}'s strike is true, the flare burning you squarely and causing immediate, severe pain.",
+            'observer_msg': "{attacker_name}'s strike is true, the flare burning {target_name} squarely and causing immediate, severe pain."
+        },
+        {
+            'attacker_msg': "A close-quarters struggle, and you manage to press the flare against {target_name}'s face, causing horrific burns.",
+            'victim_msg': "A close-quarters struggle, and {attacker_name} manages to press the flare against your face, causing horrific burns.",
+            'observer_msg': "A close-quarters struggle, and {attacker_name} manages to press the flare against {target_name}'s face, causing horrific burns."
+        },
+        {
+            'attacker_msg': "The flare, though not a conventional weapon, proves brutally effective as you burn {target_name} badly.",
+            'victim_msg': "The flare, though not a conventional weapon, proves brutally effective as {attacker_name} burns you badly.",
+            'observer_msg': "The flare, though not a conventional weapon, proves brutally effective as {attacker_name} burns {target_name} badly."
+        },
+        {
+            'attacker_msg': "Your flare makes contact again, leaving another smoking, painful burn on {target_name}.",
+            'victim_msg': "{attacker_name}'s flare makes contact again, leaving another smoking, painful burn on you.",
+            'observer_msg': "{attacker_name}'s flare makes contact again, leaving another smoking, painful burn on {target_name}."
+        },
+        {
+            'attacker_msg': "A painful hiss as the flare from you touches {target_name}'s clothing, which begins to catch fire.",
+            'victim_msg': "A painful hiss as the flare from {attacker_name} touches your clothing, which begins to catch fire.",
+            'observer_msg': "A painful hiss as the flare from {attacker_name} touches {target_name}'s clothing, which begins to catch fire."
+        },
+        {
+            'attacker_msg': "The tip of your flare sears {target_name}'s cheek, the pain and smell of burning flesh overwhelming.",
+            'victim_msg': "The tip of {attacker_name}'s flare sears your cheek, the pain and smell of burning flesh overwhelming.",
+            'observer_msg': "The tip of {attacker_name}'s flare sears {target_name}'s cheek, the pain and smell of burning flesh overwhelming."
+        },
+        {
+            'attacker_msg': "Your flare delivers another brutal burn to {target_name}'s torso, the heat unforgiving.",
+            'victim_msg': "{attacker_name}'s flare delivers another brutal burn to your torso, the heat unforgiving.",
+            'observer_msg': "{attacker_name}'s flare delivers another brutal burn to {target_name}'s torso, the heat unforgiving."
+        },
+        {
+            'attacker_msg': "A well-placed thrust with the flare leaves {target_name} momentarily blinded and screaming from a fresh burn.",
+            'victim_msg': "A well-placed thrust with the flare leaves you momentarily blinded and screaming from a fresh burn.",
+            'observer_msg': "A well-placed thrust with the flare leaves {target_name} momentarily blinded and screaming from a fresh burn."
+        },
+        {
+            'attacker_msg': "The flare, guided by your desperate intent, inflicts a series of telling, painful burns upon {target_name}.",
+            'victim_msg': "The flare, guided by {attacker_name}'s desperate intent, inflicts a series of telling, painful burns upon you.",
+            'observer_msg': "The flare, guided by {attacker_name}'s desperate intent, inflicts a series of telling, painful burns upon {target_name}."
+        }
     ],
     "miss": [
-        "{attacker}'s flare sizzles through the air, its intense light narrowly missing {target}'s face.",
-        "{target} stumbles back, avoiding the thrust of {attacker}'s burning flare by a hair's breadth.",
-        "The flare strikes a nearby wall, sputtering and smoking, its heat scorching the surface but missing {target}.",
-        "Sparks fly as {attacker}'s flare glances off a metal object, its trajectory diverted from {target}.",
-        "{attacker} overextends, the flare's burning tip hissing harmlessly a few feet from {target}.",
-        "A quick sidestep from {target} causes {attacker}'s flare to meet only empty air, its light casting wild shadows.",
-        "The flare hums with wasted heat as {attacker}'s fiery strike misses its mark.",
-        "{attacker}’s lunge with the flare is parried with difficulty, {target} using an object to deflect the burning head.",
-        "{target} ducks under the arc of {attacker}'s flare, feeling the wave of heat pass over them.",
-        "The flare clatters against a stone floor, still burning fiercely but well away from {target}.",
-        "{attacker}’s flare passes through the space {target} desperately vacated, leaving a trail of acrid smoke.",
-        "A quick retreat from {target} leaves {attacker}'s flare to burn nothing but air.",
-        "The flare feels dangerously hot and awkward in {attacker}'s grip as the intended burning blow fails to connect.",
-        "{attacker} misjudges the distance, the burning end of the flare falling short of {target}.",
-        "{target}'s desperate maneuver foils {attacker}'s attack, the flare hissing angrily in empty space.",
-        "The brilliant light of the flare illuminates nothing but empty air as it misses {target} cleanly.",
-        "{attacker} grunts, the momentum of the missed thrust with the flare carrying them slightly off-kilter.",
-        "A growl of frustration from {attacker} as their flare attack is evaded by a nimble {target}.",
-        "The flare scorches a patch of ground beside {target}'s foot, but draws no blood, only smoke.",
-        "{attacker}’s straightforward attack with the flare is anticipated and dodged by {target}, who coughs on the smoke.",
-        "The air parts before the burning flare, but {target} remains untouched by its searing heat.",
-        "{attacker}’s lunge is too predictable, {target} already moving out of the flare's burning path.",
-        "A desperate swipe from {target} knocks {attacker}'s flare aside at the very last second, its heat still felt.",
-        "The flare’s intense flame finds nothing but air as {target} scrambles away from the fiery assault.",
-        "{attacker}’s flare thrusts harmlessly past, a testament to {target}’s frantic defense against the burning brand.",
-        "The flare sputters erratically for a moment as {attacker} recovers from the missed, fiery swing.",
-        "{target} barely manages to avoid the reach of {attacker}'s intensely burning flare.",
-        "{attacker}’s attack is desperate but ultimately futile as the flare misses its mark by inches.",
-        "The flare hisses a frustrated, fiery note as it fails to connect with {target}.",
-        "A near miss! {attacker}'s flare singes {target}'s hair but the burning tip makes no solid contact."
+        {
+            'attacker_msg': "Your flare sizzles through the air, its intense light narrowly missing {target_name}'s face.",
+            'victim_msg': "{attacker_name}'s flare sizzles through the air, its intense light narrowly missing your face.",
+            'observer_msg': "{attacker_name}'s flare sizzles through the air, its intense light narrowly missing {target_name}'s face."
+        },
+        {
+            'attacker_msg': "{target_name} stumbles back, avoiding the thrust of your burning flare by a hair's breadth.",
+            'victim_msg': "You stumble back, avoiding the thrust of {attacker_name}'s burning flare by a hair's breadth.",
+            'observer_msg': "{target_name} stumbles back, avoiding the thrust of {attacker_name}'s burning flare by a hair's breadth."
+        },
+        {
+            'attacker_msg': "The flare strikes a nearby wall, sputtering and smoking, its heat scorching the surface but missing {target_name}.",
+            'victim_msg': "The flare strikes a nearby wall, sputtering and smoking, its heat scorching the surface but missing you.",
+            'observer_msg': "The flare strikes a nearby wall, sputtering and smoking, its heat scorching the surface but missing {target_name}."
+        },
+        {
+            'attacker_msg': "Sparks fly as your flare glances off a metal object, its trajectory diverted from {target_name}.",
+            'victim_msg': "Sparks fly as {attacker_name}'s flare glances off a metal object, its trajectory diverted from you.",
+            'observer_msg': "Sparks fly as {attacker_name}'s flare glances off a metal object, its trajectory diverted from {target_name}."
+        },
+        {
+            'attacker_msg': "You overextend, the flare's burning tip hissing harmlessly a few feet from {target_name}.",
+            'victim_msg': "{attacker_name} overextends, the flare's burning tip hissing harmlessly a few feet from you.",
+            'observer_msg': "{attacker_name} overextends, the flare's burning tip hissing harmlessly a few feet from {target_name}."
+        },
+        {
+            'attacker_msg': "A quick sidestep from {target_name} causes your flare to meet only empty air, its light casting wild shadows.",
+            'victim_msg': "A quick sidestep from you causes {attacker_name}'s flare to meet only empty air, its light casting wild shadows.",
+            'observer_msg': "A quick sidestep from {target_name} causes {attacker_name}'s flare to meet only empty air, its light casting wild shadows."
+        },
+        {
+            'attacker_msg': "The flare hums with wasted heat as your fiery strike misses its mark.",
+            'victim_msg': "The flare hums with wasted heat as {attacker_name}'s fiery strike misses its mark.",
+            'observer_msg': "The flare hums with wasted heat as {attacker_name}'s fiery strike misses its mark."
+        },
+        {
+            'attacker_msg': "Your lunge with the flare is parried with difficulty, {target_name} using an object to deflect the burning head.",
+            'victim_msg': "{attacker_name}'s lunge with the flare is parried with difficulty, you using an object to deflect the burning head.",
+            'observer_msg': "{attacker_name}'s lunge with the flare is parried with difficulty, {target_name} using an object to deflect the burning head."
+        },
+        {
+            'attacker_msg': "{target_name} ducks under the arc of your flare, feeling the wave of heat pass over them.",
+            'victim_msg': "You duck under the arc of {attacker_name}'s flare, feeling the wave of heat pass over you.",
+            'observer_msg': "{target_name} ducks under the arc of {attacker_name}'s flare, feeling the wave of heat pass over them."
+        },
+        {
+            'attacker_msg': "The flare clatters against a stone floor, still burning fiercely but well away from {target_name}.",
+            'victim_msg': "The flare clatters against a stone floor, still burning fiercely but well away from you.",
+            'observer_msg': "The flare clatters against a stone floor, still burning fiercely but well away from {target_name}."
+        },
+        {
+            'attacker_msg': "Your flare passes through the space {target_name} desperately vacated, leaving a trail of acrid smoke.",
+            'victim_msg': "{attacker_name}'s flare passes through the space you desperately vacated, leaving a trail of acrid smoke.",
+            'observer_msg': "{attacker_name}'s flare passes through the space {target_name} desperately vacated, leaving a trail of acrid smoke."
+        },
+        {
+            'attacker_msg': "A quick retreat from {target_name} leaves your flare to burn nothing but air.",
+            'victim_msg': "A quick retreat from you leaves {attacker_name}'s flare to burn nothing but air.",
+            'observer_msg': "A quick retreat from {target_name} leaves {attacker_name}'s flare to burn nothing but air."
+        },
+        {
+            'attacker_msg': "The flare feels dangerously hot and awkward in your grip as the intended burning blow fails to connect.",
+            'victim_msg': "The flare feels dangerously hot and awkward in {attacker_name}'s grip as the intended burning blow fails to connect.",
+            'observer_msg': "The flare feels dangerously hot and awkward in {attacker_name}'s grip as the intended burning blow fails to connect."
+        },
+        {
+            'attacker_msg': "You misjudge the distance, the burning end of the flare falling short of {target_name}.",
+            'victim_msg': "{attacker_name} misjudges the distance, the burning end of the flare falling short of you.",
+            'observer_msg': "{attacker_name} misjudges the distance, the burning end of the flare falling short of {target_name}."
+        },
+        {
+            'attacker_msg': "{target_name}'s desperate maneuver foils your attack, the flare hissing angrily in empty space.",
+            'victim_msg': "Your desperate maneuver foils {attacker_name}'s attack, the flare hissing angrily in empty space.",
+            'observer_msg': "{target_name}'s desperate maneuver foils {attacker_name}'s attack, the flare hissing angrily in empty space."
+        },
+        {
+            'attacker_msg': "The brilliant light of the flare illuminates nothing but empty air as it misses {target_name} cleanly.",
+            'victim_msg': "The brilliant light of the flare illuminates nothing but empty air as it misses you cleanly.",
+            'observer_msg': "The brilliant light of the flare illuminates nothing but empty air as it misses {target_name} cleanly."
+        },
+        {
+            'attacker_msg': "You grunt, the momentum of the missed thrust with the flare carrying you slightly off-kilter.",
+            'victim_msg': "{attacker_name} grunts, the momentum of the missed thrust with the flare carrying them slightly off-kilter.",
+            'observer_msg': "{attacker_name} grunts, the momentum of the missed thrust with the flare carrying them slightly off-kilter."
+        },
+        {
+            'attacker_msg': "A growl of frustration from you as your flare attack is evaded by a nimble {target_name}.",
+            'victim_msg': "A growl of frustration from {attacker_name} as their flare attack is evaded by a nimble you.",
+            'observer_msg': "A growl of frustration from {attacker_name} as their flare attack is evaded by a nimble {target_name}."
+        },
+        {
+            'attacker_msg': "The flare scorches a patch of ground beside {target_name}'s foot, but draws no blood, only smoke.",
+            'victim_msg': "The flare scorches a patch of ground beside your foot, but draws no blood, only smoke.",
+            'observer_msg': "The flare scorches a patch of ground beside {target_name}'s foot, but draws no blood, only smoke."
+        },
+        {
+            'attacker_msg': "Your straightforward attack with the flare is anticipated and dodged by {target_name}, who coughs on the smoke.",
+            'victim_msg': "{attacker_name}'s straightforward attack with the flare is anticipated and dodged by you, as you cough on the smoke.",
+            'observer_msg': "{attacker_name}'s straightforward attack with the flare is anticipated and dodged by {target_name}, who coughs on the smoke."
+        },
+        {
+            'attacker_msg': "The air parts before the burning flare, but {target_name} remains untouched by its searing heat.",
+            'victim_msg': "The air parts before the burning flare, but you remain untouched by its searing heat.",
+            'observer_msg': "The air parts before the burning flare, but {target_name} remains untouched by its searing heat."
+        },
+        {
+            'attacker_msg': "Your lunge is too predictable, {target_name} already moving out of the flare's burning path.",
+            'victim_msg': "{attacker_name}'s lunge is too predictable, you already moving out of the flare's burning path.",
+            'observer_msg': "{attacker_name}'s lunge is too predictable, {target_name} already moving out of the flare's burning path."
+        },
+        {
+            'attacker_msg': "A desperate swipe from {target_name} knocks your flare aside at the very last second, its heat still felt.",
+            'victim_msg': "A desperate swipe from you knocks {attacker_name}'s flare aside at the very last second, its heat still felt.",
+            'observer_msg': "A desperate swipe from {target_name} knocks {attacker_name}'s flare aside at the very last second, its heat still felt."
+        },
+        {
+            'attacker_msg': "The flare's intense flame finds nothing but air as {target_name} scrambles away from the fiery assault.",
+            'victim_msg': "The flare's intense flame finds nothing but air as you scramble away from the fiery assault.",
+            'observer_msg': "The flare's intense flame finds nothing but air as {target_name} scrambles away from the fiery assault."
+        },
+        {
+            'attacker_msg': "Your flare thrusts harmlessly past, a testament to {target_name}'s frantic defense against the burning brand.",
+            'victim_msg': "{attacker_name}'s flare thrusts harmlessly past, a testament to your frantic defense against the burning brand.",
+            'observer_msg': "{attacker_name}'s flare thrusts harmlessly past, a testament to {target_name}'s frantic defense against the burning brand."
+        },
+        {
+            'attacker_msg': "The flare sputters erratically for a moment as you recover from the missed, fiery swing.",
+            'victim_msg': "The flare sputters erratically for a moment as {attacker_name} recovers from the missed, fiery swing.",
+            'observer_msg': "The flare sputters erratically for a moment as {attacker_name} recovers from the missed, fiery swing."
+        },
+        {
+            'attacker_msg': "{target_name} barely manages to avoid the reach of your intensely burning flare.",
+            'victim_msg': "You barely manage to avoid the reach of {attacker_name}'s intensely burning flare.",
+            'observer_msg': "{target_name} barely manages to avoid the reach of {attacker_name}'s intensely burning flare."
+        },
+        {
+            'attacker_msg': "Your attack is desperate but ultimately futile as the flare misses its mark by inches.",
+            'victim_msg': "{attacker_name}'s attack is desperate but ultimately futile as the flare misses its mark by inches.",
+            'observer_msg': "{attacker_name}'s attack is desperate but ultimately futile as the flare misses its mark by inches."
+        },
+        {
+            'attacker_msg': "The flare hisses a frustrated, fiery note as it fails to connect with {target_name}.",
+            'victim_msg': "The flare hisses a frustrated, fiery note as it fails to connect with you.",
+            'observer_msg': "The flare hisses a frustrated, fiery note as it fails to connect with {target_name}."
+        },
+        {
+            'attacker_msg': "A near miss! Your flare singes {target_name}'s hair but the burning tip makes no solid contact.",
+            'victim_msg': "A near miss! {attacker_name}'s flare singes your hair but the burning tip makes no solid contact.",
+            'observer_msg': "A near miss! {attacker_name}'s flare singes {target_name}'s hair but the burning tip makes no solid contact."
+        }
     ],
     "kill": [
-        "{attacker} shoves the fiercely burning flare into {target}'s face; they collapse, screaming, succumbing to horrific burns and smoke inhalation.",
-        "The flare ignites {target}'s clothing, and they go up in flames, their agonizing cries quickly silenced by the inferno.",
-        "With a final, brutal thrust, {attacker} jams the burning flare into a vital area, and {target} falls, smoke and the smell of burnt flesh rising.",
-        "The intense heat and toxic smoke from the flare, held against {target}'s airway, causes them to asphyxiate and die.",
-        "{attacker} manages to set {target} thoroughly ablaze with the flare; they thrash and burn to death in moments.",
-        "The flare, a beacon of deadly fire, delivers a killing blow as {target} is overcome by catastrophic burns.",
-        "A precise, savage thrust with the flare to {target}'s exposed throat ends their life in a cloud of smoke and searing agony.",
-        "{attacker} presses the flare against {target} until they stop moving, the flesh blackened and smoking, life extinguished.",
-        "The unyielding chemical fire of the flare consumes {target}, who crumples, unmoving, amidst the flames.",
-        "With a final, desperate act, {attacker} uses the flare to set {target} fatally alight.",
-        "The flare, wielded with grim intent, turns {target} into a human torch, their struggles quickly ceasing.",
-        "{attacker}’s flare finds a way to ignite something vital on {target}, and they perish in the ensuing blaze.",
-        "A merciless application of the flare, and {target} is no more, overcome by fire and unbearable pain.",
-        "The flare burns down, its task complete, as {target} lies smoldering and lifeless.",
-        "{attacker} ensures {target} will not rise by thoroughly burning them with the flare's remaining chemical fire.",
-        "Flames engulf {target} as {attacker}'s flare finds purchase, and they quickly succumb to the horrific injuries.",
-        "The point of the flare, driven into a vulnerable spot and held, inflicts fatal burns upon {target}.",
-        "{attacker} stands over {target}'s burning form, the flare still sputtering, the victor of a horrific, fiery confrontation.",
-        "A final, desperate struggle sees {target} overwhelmed by the flare's fire, their life ending in agony.",
-        "The flare’s fiery song ends as it consumes {target}, leaving only scorched remains.",
-        "{attacker}’s perfectly timed attack with the flare sets {target} fatally ablaze.",
-        "With cold, fiery efficiency, {attacker} uses the flare to end {target}'s resistance permanently and horrifically.",
-        "The flare, an instrument of desperate, fiery destruction, claims another victim in {target}.",
-        "{target}’s eyes widen in terror as {attacker}'s flare delivers the final, agonizing, burning blow.",
-        "A fountain of sparks and a horrific scream erupts as {attacker}'s flare fatally burns {target}.",
-        "{attacker} drops the spent flare beside {target}'s smoldering body, a grim testament to its power.",
-        "The battle ends as {attacker}'s flare engulfs {target} in inescapable, lethal flames.",
-        "No mercy in {attacker}'s eyes as the flare completes its grim, fiery task on {target}.",
-        "The flare, once merely bright, is now an agent of death as {target} succumbs to its searing, unstoppable heat.",
-        "{attacker} steps back from {target}'s burning remains, the flare a fallen testament to its terrible, incendiary potential."
+        {
+            'attacker_msg': "You shove the fiercely burning flare into {target_name}'s face; they collapse, screaming, succumbing to horrific burns and smoke inhalation.",
+            'victim_msg': "{attacker_name} shoves the fiercely burning flare into your face; you collapse, screaming, succumbing to horrific burns and smoke inhalation.",
+            'observer_msg': "{attacker_name} shoves the fiercely burning flare into {target_name}'s face; they collapse, screaming, succumbing to horrific burns and smoke inhalation."
+        },
+        {
+            'attacker_msg': "The flare ignites {target_name}'s clothing, and they go up in flames, their agonizing cries quickly silenced by the inferno.",
+            'victim_msg': "The flare ignites your clothing, and you go up in flames, your agonizing cries quickly silenced by the inferno.",
+            'observer_msg': "The flare ignites {target_name}'s clothing, and they go up in flames, their agonizing cries quickly silenced by the inferno."
+        },
+        {
+            'attacker_msg': "With a final, brutal thrust, you jam the burning flare into a vital area, and {target_name} falls, smoke and the smell of burnt flesh rising.",
+            'victim_msg': "With a final, brutal thrust, {attacker_name} jams the burning flare into a vital area, and you fall, smoke and the smell of burnt flesh rising.",
+            'observer_msg': "With a final, brutal thrust, {attacker_name} jams the burning flare into a vital area, and {target_name} falls, smoke and the smell of burnt flesh rising."
+        },
+        {
+            'attacker_msg': "The intense heat and toxic smoke from the flare, held against {target_name}'s airway, causes them to asphyxiate and die.",
+            'victim_msg': "The intense heat and toxic smoke from the flare, held against your airway, causes you to asphyxiate and die.",
+            'observer_msg': "The intense heat and toxic smoke from the flare, held against {target_name}'s airway, causes them to asphyxiate and die."
+        },
+        {
+            'attacker_msg': "You manage to set {target_name} thoroughly ablaze with the flare; they thrash and burn to death in moments.",
+            'victim_msg': "{attacker_name} manages to set you thoroughly ablaze with the flare; you thrash and burn to death in moments.",
+            'observer_msg': "{attacker_name} manages to set {target_name} thoroughly ablaze with the flare; they thrash and burn to death in moments."
+        },
+        {
+            'attacker_msg': "The flare, a beacon of deadly fire, delivers a killing blow as {target_name} is overcome by catastrophic burns.",
+            'victim_msg': "The flare, a beacon of deadly fire, delivers a killing blow as you are overcome by catastrophic burns.",
+            'observer_msg': "The flare, a beacon of deadly fire, delivers a killing blow as {target_name} is overcome by catastrophic burns."
+        },
+        {
+            'attacker_msg': "A precise, savage thrust with the flare to {target_name}'s exposed throat ends their life in a cloud of smoke and searing agony.",
+            'victim_msg': "A precise, savage thrust with the flare to your exposed throat ends your life in a cloud of smoke and searing agony.",
+            'observer_msg': "A precise, savage thrust with the flare to {target_name}'s exposed throat ends their life in a cloud of smoke and searing agony."
+        },
+        {
+            'attacker_msg': "You press the flare against {target_name} until they stop moving, the flesh blackened and smoking, life extinguished.",
+            'victim_msg': "{attacker_name} presses the flare against you until you stop moving, the flesh blackened and smoking, life extinguished.",
+            'observer_msg': "{attacker_name} presses the flare against {target_name} until they stop moving, the flesh blackened and smoking, life extinguished."
+        },
+        {
+            'attacker_msg': "The unyielding chemical fire of the flare consumes {target_name}, who crumples, unmoving, amidst the flames.",
+            'victim_msg': "The unyielding chemical fire of the flare consumes you, and you crumple, unmoving, amidst the flames.",
+            'observer_msg': "The unyielding chemical fire of the flare consumes {target_name}, who crumples, unmoving, amidst the flames."
+        },
+        {
+            'attacker_msg': "With a final, desperate act, you use the flare to set {target_name} fatally alight.",
+            'victim_msg': "With a final, desperate act, {attacker_name} uses the flare to set you fatally alight.",
+            'observer_msg': "With a final, desperate act, {attacker_name} uses the flare to set {target_name} fatally alight."
+        },
+        {
+            'attacker_msg': "The flare, wielded with grim intent, turns {target_name} into a human torch, their struggles quickly ceasing.",
+            'victim_msg': "The flare, wielded with grim intent, turns you into a human torch, your struggles quickly ceasing.",
+            'observer_msg': "The flare, wielded with grim intent, turns {target_name} into a human torch, their struggles quickly ceasing."
+        },
+        {
+            'attacker_msg': "Your flare finds a way to ignite something vital on {target_name}, and they perish in the ensuing blaze.",
+            'victim_msg': "{attacker_name}'s flare finds a way to ignite something vital on you, and you perish in the ensuing blaze.",
+            'observer_msg': "{attacker_name}'s flare finds a way to ignite something vital on {target_name}, and they perish in the ensuing blaze."
+        },
+        {
+            'attacker_msg': "A merciless application of the flare, and {target_name} is no more, overcome by fire and unbearable pain.",
+            'victim_msg': "A merciless application of the flare, and you are no more, overcome by fire and unbearable pain.",
+            'observer_msg': "A merciless application of the flare, and {target_name} is no more, overcome by fire and unbearable pain."
+        },
+        {
+            'attacker_msg': "The flare burns down, its task complete, as {target_name} lies smoldering and lifeless.",
+            'victim_msg': "The flare burns down, its task complete, as you lie smoldering and lifeless.",
+            'observer_msg': "The flare burns down, its task complete, as {target_name} lies smoldering and lifeless."
+        },
+        {
+            'attacker_msg': "You ensure {target_name} will not rise by thoroughly burning them with the flare's remaining chemical fire.",
+            'victim_msg': "{attacker_name} ensures you will not rise by thoroughly burning you with the flare's remaining chemical fire.",
+            'observer_msg': "{attacker_name} ensures {target_name} will not rise by thoroughly burning them with the flare's remaining chemical fire."
+        },
+        {
+            'attacker_msg': "Flames engulf {target_name} as your flare finds purchase, and they quickly succumb to the horrific injuries.",
+            'victim_msg': "Flames engulf you as {attacker_name}'s flare finds purchase, and you quickly succumb to the horrific injuries.",
+            'observer_msg': "Flames engulf {target_name} as {attacker_name}'s flare finds purchase, and they quickly succumb to the horrific injuries."
+        },
+        {
+            'attacker_msg': "The point of the flare, driven into a vulnerable spot and held, inflicts fatal burns upon {target_name}.",
+            'victim_msg': "The point of the flare, driven into a vulnerable spot and held, inflicts fatal burns upon you.",
+            'observer_msg': "The point of the flare, driven into a vulnerable spot and held, inflicts fatal burns upon {target_name}."
+        },
+        {
+            'attacker_msg': "You stand over {target_name}'s burning form, the flare still sputtering, the victor of a horrific, fiery confrontation.",
+            'victim_msg': "{attacker_name} stands over your burning form, the flare still sputtering, the victor of a horrific, fiery confrontation.",
+            'observer_msg': "{attacker_name} stands over {target_name}'s burning form, the flare still sputtering, the victor of a horrific, fiery confrontation."
+        },
+        {
+            'attacker_msg': "A final, desperate struggle sees {target_name} overwhelmed by the flare's fire, their life ending in agony.",
+            'victim_msg': "A final, desperate struggle sees you overwhelmed by the flare's fire, your life ending in agony.",
+            'observer_msg': "A final, desperate struggle sees {target_name} overwhelmed by the flare's fire, their life ending in agony."
+        },
+        {
+            'attacker_msg': "The flare's fiery song ends as it consumes {target_name}, leaving only scorched remains.",
+            'victim_msg': "The flare's fiery song ends as it consumes you, leaving only scorched remains.",
+            'observer_msg': "The flare's fiery song ends as it consumes {target_name}, leaving only scorched remains."
+        },
+        {
+            'attacker_msg': "Your perfectly timed attack with the flare sets {target_name} fatally ablaze.",
+            'victim_msg': "{attacker_name}'s perfectly timed attack with the flare sets you fatally ablaze.",
+            'observer_msg': "{attacker_name}'s perfectly timed attack with the flare sets {target_name} fatally ablaze."
+        },
+        {
+            'attacker_msg': "With cold, fiery efficiency, you use the flare to end {target_name}'s resistance permanently and horrifically.",
+            'victim_msg': "With cold, fiery efficiency, {attacker_name} uses the flare to end your resistance permanently and horrifically.",
+            'observer_msg': "With cold, fiery efficiency, {attacker_name} uses the flare to end {target_name}'s resistance permanently and horrifically."
+        },
+        {
+            'attacker_msg': "The flare, an instrument of desperate, fiery destruction, claims another victim in {target_name}.",
+            'victim_msg': "The flare, an instrument of desperate, fiery destruction, claims another victim in you.",
+            'observer_msg': "The flare, an instrument of desperate, fiery destruction, claims another victim in {target_name}."
+        },
+        {
+            'attacker_msg': "{target_name}'s eyes widen in terror as your flare delivers the final, agonizing, burning blow.",
+            'victim_msg': "Your eyes widen in terror as {attacker_name}'s flare delivers the final, agonizing, burning blow.",
+            'observer_msg': "{target_name}'s eyes widen in terror as {attacker_name}'s flare delivers the final, agonizing, burning blow."
+        },
+        {
+            'attacker_msg': "A fountain of sparks and a horrific scream erupts as your flare fatally burns {target_name}.",
+            'victim_msg': "A fountain of sparks and a horrific scream erupts as {attacker_name}'s flare fatally burns you.",
+            'observer_msg': "A fountain of sparks and a horrific scream erupts as {attacker_name}'s flare fatally burns {target_name}."
+        },
+        {
+            'attacker_msg': "You drop the spent flare beside {target_name}'s smoldering body, a grim testament to its power.",
+            'victim_msg': "{attacker_name} drops the spent flare beside your smoldering body, a grim testament to its power.",
+            'observer_msg': "{attacker_name} drops the spent flare beside {target_name}'s smoldering body, a grim testament to its power."
+        },
+        {
+            'attacker_msg': "The battle ends as your flare engulfs {target_name} in inescapable, lethal flames.",
+            'victim_msg': "The battle ends as {attacker_name}'s flare engulfs you in inescapable, lethal flames.",
+            'observer_msg': "The battle ends as {attacker_name}'s flare engulfs {target_name} in inescapable, lethal flames."
+        },
+        {
+            'attacker_msg': "No mercy in your eyes as the flare completes its grim, fiery task on {target_name}.",
+            'victim_msg': "No mercy in {attacker_name}'s eyes as the flare completes its grim, fiery task on you.",
+            'observer_msg': "No mercy in {attacker_name}'s eyes as the flare completes its grim, fiery task on {target_name}."
+        },
+        {
+            'attacker_msg': "The flare, once merely bright, is now an agent of death as {target_name} succumbs to its searing, unstoppable heat.",
+            'victim_msg': "The flare, once merely bright, is now an agent of death as you succumb to its searing, unstoppable heat.",
+            'observer_msg': "The flare, once merely bright, is now an agent of death as {target_name} succumbs to its searing, unstoppable heat."
+        },
+        {
+            'attacker_msg': "You step back from {target_name}'s burning remains, the flare a fallen testament to its terrible, incendiary potential.",
+            'victim_msg': "{attacker_name} steps back from your burning remains, the flare a fallen testament to its terrible, incendiary potential.",
+            'observer_msg': "{attacker_name} steps back from {target_name}'s burning remains, the flare a fallen testament to its terrible, incendiary potential."
+        }
     ]
 }
