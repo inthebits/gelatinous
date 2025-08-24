@@ -1,130 +1,610 @@
 MESSAGES = {
     'initiate': [
-        "A slow drag leaves a furrow in the ground. {attacker} doesn’t even notice.",
-        "Dust lifts where the blade rests. {attacker} doesn’t. They’re still, dangerous.",
-        "Each step makes the blade sway. Every sway looks like a promise.",
-        "One sharp breath. Then steel lifts. {attacker} doesn’t blink.",
-        "Steel scrapes along the ground as {attacker} drags the axe forward. It leaves scars behind.",
-        "Steel thuds against concrete. {attacker} smiles. It’s not warm.",
-        "The axe arcs through the air with the sound of incoming disaster.",
-        "The axe is almost too big. {attacker} makes it look personal.",
-        "The axe tips forward like a guillotine mid-swing. {attacker} doesn’t stop it.",
-        "The blade tips downward, dragging sparks. {attacker}'s smile says it’s showtime.",
-        "The edge of the blade gleams dully — but it remembers how to cut.",
-        "The haft groans under grip. The edge doesn’t need to gleam — it remembers how to kill.",
-        "The handle creaks. The tension doesn’t break — it builds.",
-        "The metal groans as it swings free. {attacker} breathes like they’re waking something up.",
-        "The weight of it groans in {attacker}'s grip. It’s not a tool — it’s a statement.",
-        "There’s no balance to it. That’s the point. {attacker} doesn’t need grace.",
-        "There’s no elegance to this weapon. Just inevitability.",
-        "There’s no need to threaten. The axe does the talking.",
-        "With a grunt, {attacker} hoists the weapon. The air bends around its mass.",
-        "With one heave, {attacker} shoulders the axe. The room leans away.",
-        "{attacker} flexes once. The axe answers with a hum of pure threat.",
-        "{attacker} grips the axe like it owes them something. Maybe it does.",
-        "{attacker} lifts the large axe with both hands. The motion alone clears space.",
-        "{attacker} lifts the weapon in a wide stance. Everything slows.",
-        "{attacker} plants their feet. The world narrows to swing radius.",
-        "{attacker} rolls their shoulders. The weapon answers with weight and history.",
-        "{attacker} shifts their stance. The axe steadies like something ancient and angry.",
-        "{attacker} swings it once in a lazy arc. The room seems to flinch.",
-        "{attacker} swings the axe once, slow and deliberate. It hums like a slow storm.",
-        "{attacker} tightens their grip. The axe doesn’t care who bleeds — only that it happens.",
+        {
+            'attacker_msg': "A slow drag leaves a furrow in the ground. You don't even notice.",
+            'victim_msg': "A slow drag leaves a furrow in the ground. {attacker_name} doesn't even notice.",
+            'observer_msg': "A slow drag leaves a furrow in the ground. {attacker_name} doesn't even notice."
+        },
+        {
+            'attacker_msg': "Dust lifts where the blade rests. You don't. You're still, dangerous.",
+            'victim_msg': "Dust lifts where the blade rests. {attacker_name} doesn't. They're still, dangerous.",
+            'observer_msg': "Dust lifts where the blade rests. {attacker_name} doesn't. They're still, dangerous."
+        },
+        {
+            'attacker_msg': "Each step makes the blade sway. Every sway looks like a promise.",
+            'victim_msg': "Each step makes the blade sway. Every sway looks like a promise.",
+            'observer_msg': "Each step makes the blade sway. Every sway looks like a promise."
+        },
+        {
+            'attacker_msg': "One sharp breath. Then steel lifts. You don't blink.",
+            'victim_msg': "One sharp breath. Then steel lifts. {attacker_name} doesn't blink.",
+            'observer_msg': "One sharp breath. Then steel lifts. {attacker_name} doesn't blink."
+        },
+        {
+            'attacker_msg': "Steel scrapes along the ground as you drag the axe forward. It leaves scars behind.",
+            'victim_msg': "Steel scrapes along the ground as {attacker_name} drags the axe forward. It leaves scars behind.",
+            'observer_msg': "Steel scrapes along the ground as {attacker_name} drags the axe forward. It leaves scars behind."
+        },
+        {
+            'attacker_msg': "Steel thuds against concrete. You smile. It's not warm.",
+            'victim_msg': "Steel thuds against concrete. {attacker_name} smiles. It's not warm.",
+            'observer_msg': "Steel thuds against concrete. {attacker_name} smiles. It's not warm."
+        },
+        {
+            'attacker_msg': "The axe arcs through the air with the sound of incoming disaster.",
+            'victim_msg': "The axe arcs through the air with the sound of incoming disaster.",
+            'observer_msg': "The axe arcs through the air with the sound of incoming disaster."
+        },
+        {
+            'attacker_msg': "The axe is almost too big. You make it look personal.",
+            'victim_msg': "The axe is almost too big. {attacker_name} makes it look personal.",
+            'observer_msg': "The axe is almost too big. {attacker_name} makes it look personal."
+        },
+        {
+            'attacker_msg': "The axe tips forward like a guillotine mid-swing. You don't stop it.",
+            'victim_msg': "The axe tips forward like a guillotine mid-swing. {attacker_name} doesn't stop it.",
+            'observer_msg': "The axe tips forward like a guillotine mid-swing. {attacker_name} doesn't stop it."
+        },
+        {
+            'attacker_msg': "The blade tips downward, dragging sparks. Your smile says it's showtime.",
+            'victim_msg': "The blade tips downward, dragging sparks. {attacker_name}'s smile says it's showtime.",
+            'observer_msg': "The blade tips downward, dragging sparks. {attacker_name}'s smile says it's showtime."
+        },
+        {
+            'attacker_msg': "The edge of the blade gleams dully — but it remembers how to cut.",
+            'victim_msg': "The edge of the blade gleams dully — but it remembers how to cut.",
+            'observer_msg': "The edge of the blade gleams dully — but it remembers how to cut."
+        },
+        {
+            'attacker_msg': "The haft groans under grip. The edge doesn't need to gleam — it remembers how to kill.",
+            'victim_msg': "The haft groans under grip. The edge doesn't need to gleam — it remembers how to kill.",
+            'observer_msg': "The haft groans under grip. The edge doesn't need to gleam — it remembers how to kill."
+        },
+        {
+            'attacker_msg': "The handle creaks. The tension doesn't break — it builds.",
+            'victim_msg': "The handle creaks. The tension doesn't break — it builds.",
+            'observer_msg': "The handle creaks. The tension doesn't break — it builds."
+        },
+        {
+            'attacker_msg': "The metal groans as it swings free. You breathe like you're waking something up.",
+            'victim_msg': "The metal groans as it swings free. {attacker_name} breathes like they're waking something up.",
+            'observer_msg': "The metal groans as it swings free. {attacker_name} breathes like they're waking something up."
+        },
+        {
+            'attacker_msg': "The weight of it groans in your grip. It's not a tool — it's a statement.",
+            'victim_msg': "The weight of it groans in {attacker_name}'s grip. It's not a tool — it's a statement.",
+            'observer_msg': "The weight of it groans in {attacker_name}'s grip. It's not a tool — it's a statement."
+        },
+        {
+            'attacker_msg': "There's no balance to it. That's the point. You don't need grace.",
+            'victim_msg': "There's no balance to it. That's the point. {attacker_name} doesn't need grace.",
+            'observer_msg': "There's no balance to it. That's the point. {attacker_name} doesn't need grace."
+        },
+        {
+            'attacker_msg': "There's no elegance to this weapon. Just inevitability.",
+            'victim_msg': "There's no elegance to this weapon. Just inevitability.",
+            'observer_msg': "There's no elegance to this weapon. Just inevitability."
+        },
+        {
+            'attacker_msg': "There's no need to threaten. The axe does the talking.",
+            'victim_msg': "There's no need to threaten. The axe does the talking.",
+            'observer_msg': "There's no need to threaten. The axe does the talking."
+        },
+        {
+            'attacker_msg': "With a grunt, you hoist the weapon. The air bends around its mass.",
+            'victim_msg': "With a grunt, {attacker_name} hoists the weapon. The air bends around its mass.",
+            'observer_msg': "With a grunt, {attacker_name} hoists the weapon. The air bends around its mass."
+        },
+        {
+            'attacker_msg': "With one heave, you shoulder the axe. The room leans away.",
+            'victim_msg': "With one heave, {attacker_name} shoulders the axe. The room leans away.",
+            'observer_msg': "With one heave, {attacker_name} shoulders the axe. The room leans away."
+        },
+        {
+            'attacker_msg': "You flex once. The axe answers with a hum of pure threat.",
+            'victim_msg': "{attacker_name} flexes once. The axe answers with a hum of pure threat.",
+            'observer_msg': "{attacker_name} flexes once. The axe answers with a hum of pure threat."
+        },
+        {
+            'attacker_msg': "You grip the axe like it owes you something. Maybe it does.",
+            'victim_msg': "{attacker_name} grips the axe like it owes them something. Maybe it does.",
+            'observer_msg': "{attacker_name} grips the axe like it owes them something. Maybe it does."
+        },
+        {
+            'attacker_msg': "You lift the large axe with both hands. The motion alone clears space.",
+            'victim_msg': "{attacker_name} lifts the large axe with both hands. The motion alone clears space.",
+            'observer_msg': "{attacker_name} lifts the large axe with both hands. The motion alone clears space."
+        },
+        {
+            'attacker_msg': "You lift the weapon in a wide stance. Everything slows.",
+            'victim_msg': "{attacker_name} lifts the weapon in a wide stance. Everything slows.",
+            'observer_msg': "{attacker_name} lifts the weapon in a wide stance. Everything slows."
+        },
+        {
+            'attacker_msg': "You plant your feet. The world narrows to swing radius.",
+            'victim_msg': "{attacker_name} plants their feet. The world narrows to swing radius.",
+            'observer_msg': "{attacker_name} plants their feet. The world narrows to swing radius."
+        },
+        {
+            'attacker_msg': "You roll your shoulders. The weapon answers with weight and history.",
+            'victim_msg': "{attacker_name} rolls their shoulders. The weapon answers with weight and history.",
+            'observer_msg': "{attacker_name} rolls their shoulders. The weapon answers with weight and history."
+        },
+        {
+            'attacker_msg': "You shift your stance. The axe steadies like something ancient and angry.",
+            'victim_msg': "{attacker_name} shifts their stance. The axe steadies like something ancient and angry.",
+            'observer_msg': "{attacker_name} shifts their stance. The axe steadies like something ancient and angry."
+        },
+        {
+            'attacker_msg': "You swing it once in a lazy arc. The room seems to flinch.",
+            'victim_msg': "{attacker_name} swings it once in a lazy arc. The room seems to flinch.",
+            'observer_msg': "{attacker_name} swings it once in a lazy arc. The room seems to flinch."
+        },
+        {
+            'attacker_msg': "You swing the axe once, slow and deliberate. It hums like a slow storm.",
+            'victim_msg': "{attacker_name} swings the axe once, slow and deliberate. It hums like a slow storm.",
+            'observer_msg': "{attacker_name} swings the axe once, slow and deliberate. It hums like a slow storm."
+        },
+        {
+            'attacker_msg': "You tighten your grip. The axe doesn't care who bleeds — only that it happens.",
+            'victim_msg': "{attacker_name} tightens their grip. The axe doesn't care who bleeds — only that it happens.",
+            'observer_msg': "{attacker_name} tightens their grip. The axe doesn't care who bleeds — only that it happens."
+        },
     ],
     'hit': [
-        "A blow to the side sends {target} flying. The landing breaks more.",
-        "A brutal swing lands on the collarbone. It snaps loud and wrong.",
-        "A diagonal arc hacks through the ribs. {target} screams until they can’t.",
-        "A downward blow splits the forearm. The limb sags like a wet rope.",
-        "A downward strike crushes the collarbone. {target}'s arm goes slack.",
-        "A heavy chop slams into the arm. The limb dangles. Hope does too.",
-        "A wild arc slams into {target}'s ribs. They buckle like cheap tin.",
-        "One low arc cuts across the thigh. {target} topples, howling.",
-        "One savage hit tears open the back. The wound won’t wait.",
-        "One thud to the spine. {target} folds over like punctuation.",
-        "Steel clips the face. {target}'s scream is toothless — literally.",
-        "Steel grazes the scalp. Red follows in a thick line.",
-        "Steel rakes across the back. {target} arches, then falls.",
-        "The axe crashes down on the chest. Ribs buckle. So does resolve.",
-        "The axe crashes into {target}'s side. The scream barely escapes.",
-        "The axe lands mid-spine. {target}'s legs give out without argument.",
-        "The axe punches into the gut. {target} folds around it, blood-first.",
-        "The axe slashes into the jaw. A red mist and two teeth fly together.",
-        "The axe smashes into the side. Bone snaps, blood sprays, silence follows.",
-        "The blade digs into the thigh. {target} drops, screaming like it’ll help.",
-        "The edge cleaves open the side. {target} spins and stumbles out of instinct.",
-        "The edge slices from neck to chest. {target} shrieks and stumbles.",
-        "The flat of the blade smashes the temple. Blood follows a heartbeat later.",
-        "The haft strikes the jaw. Teeth fly like punctuation.",
-        "The head of the axe strikes square in the chest. Breath exits, fast and final.",
-        "{attacker} brings the blade into the ribs. Red mists the air.",
-        "{attacker} buries the blade in the thigh. The tear is meaty and merciless.",
-        "{attacker} cleaves the shoulder open. The wound gapes and gushes.",
-        "{attacker} hacks into the shoulder. The spray paints the moment red.",
-        "{attacker} lands a savage hit behind the knee. {target} crumples instantly.",
+        {
+            'attacker_msg': "A blow to the side sends {target_name} flying. The landing breaks more.",
+            'victim_msg': "A blow to the side sends you flying. The landing breaks more.",
+            'observer_msg': "A blow to the side sends {target_name} flying. The landing breaks more."
+        },
+        {
+            'attacker_msg': "A brutal swing lands on the collarbone. It snaps loud and wrong.",
+            'victim_msg': "A brutal swing lands on your collarbone. It snaps loud and wrong.",
+            'observer_msg': "A brutal swing lands on {target_name}'s collarbone. It snaps loud and wrong."
+        },
+        {
+            'attacker_msg': "A diagonal arc hacks through the ribs. {target_name} screams until they can't.",
+            'victim_msg': "A diagonal arc hacks through your ribs. You scream until you can't.",
+            'observer_msg': "A diagonal arc hacks through {target_name}'s ribs. {target_name} screams until they can't."
+        },
+        {
+            'attacker_msg': "A downward blow splits the forearm. The limb sags like a wet rope.",
+            'victim_msg': "A downward blow splits your forearm. The limb sags like a wet rope.",
+            'observer_msg': "A downward blow splits {target_name}'s forearm. The limb sags like a wet rope."
+        },
+        {
+            'attacker_msg': "A downward strike crushes the collarbone. {target_name}'s arm goes slack.",
+            'victim_msg': "A downward strike crushes your collarbone. Your arm goes slack.",
+            'observer_msg': "A downward strike crushes {target_name}'s collarbone. {target_name}'s arm goes slack."
+        },
+        {
+            'attacker_msg': "A heavy chop slams into the arm. The limb dangles. Hope does too.",
+            'victim_msg': "A heavy chop slams into your arm. The limb dangles. Hope does too.",
+            'observer_msg': "A heavy chop slams into {target_name}'s arm. The limb dangles. Hope does too."
+        },
+        {
+            'attacker_msg': "A wild arc slams into {target_name}'s ribs. They buckle like cheap tin.",
+            'victim_msg': "A wild arc slams into your ribs. They buckle like cheap tin.",
+            'observer_msg': "A wild arc slams into {target_name}'s ribs. They buckle like cheap tin."
+        },
+        {
+            'attacker_msg': "One low arc cuts across the thigh. {target_name} topples, howling.",
+            'victim_msg': "One low arc cuts across your thigh. You topple, howling.",
+            'observer_msg': "One low arc cuts across {target_name}'s thigh. {target_name} topples, howling."
+        },
+        {
+            'attacker_msg': "One savage hit tears open the back. The wound won't wait.",
+            'victim_msg': "One savage hit tears open your back. The wound won't wait.",
+            'observer_msg': "One savage hit tears open {target_name}'s back. The wound won't wait."
+        },
+        {
+            'attacker_msg': "One thud to the spine. {target_name} folds over like punctuation.",
+            'victim_msg': "One thud to your spine. You fold over like punctuation.",
+            'observer_msg': "One thud to {target_name}'s spine. {target_name} folds over like punctuation."
+        },
+        {
+            'attacker_msg': "Steel clips the face. {target_name}'s scream is toothless — literally.",
+            'victim_msg': "Steel clips your face. Your scream is toothless — literally.",
+            'observer_msg': "Steel clips {target_name}'s face. {target_name}'s scream is toothless — literally."
+        },
+        {
+            'attacker_msg': "Steel grazes the scalp. Red follows in a thick line.",
+            'victim_msg': "Steel grazes your scalp. Red follows in a thick line.",
+            'observer_msg': "Steel grazes {target_name}'s scalp. Red follows in a thick line."
+        },
+        {
+            'attacker_msg': "Steel rakes across the back. {target_name} arches, then falls.",
+            'victim_msg': "Steel rakes across your back. You arch, then fall.",
+            'observer_msg': "Steel rakes across {target_name}'s back. {target_name} arches, then falls."
+        },
+        {
+            'attacker_msg': "The axe crashes down on the chest. Ribs buckle. So does resolve.",
+            'victim_msg': "The axe crashes down on your chest. Ribs buckle. So does resolve.",
+            'observer_msg': "The axe crashes down on {target_name}'s chest. Ribs buckle. So does resolve."
+        },
+        {
+            'attacker_msg': "The axe crashes into {target_name}'s side. The scream barely escapes.",
+            'victim_msg': "The axe crashes into your side. The scream barely escapes.",
+            'observer_msg': "The axe crashes into {target_name}'s side. The scream barely escapes."
+        },
+        {
+            'attacker_msg': "The axe lands mid-spine. {target_name}'s legs give out without argument.",
+            'victim_msg': "The axe lands mid-spine. Your legs give out without argument.",
+            'observer_msg': "The axe lands mid-spine. {target_name}'s legs give out without argument."
+        },
+        {
+            'attacker_msg': "The axe punches into the gut. {target_name} folds around it, blood-first.",
+            'victim_msg': "The axe punches into your gut. You fold around it, blood-first.",
+            'observer_msg': "The axe punches into {target_name}'s gut. {target_name} folds around it, blood-first."
+        },
+        {
+            'attacker_msg': "The axe slashes into the jaw. A red mist and two teeth fly together.",
+            'victim_msg': "The axe slashes into your jaw. A red mist and two teeth fly together.",
+            'observer_msg': "The axe slashes into {target_name}'s jaw. A red mist and two teeth fly together."
+        },
+        {
+            'attacker_msg': "The axe smashes into the side. Bone snaps, blood sprays, silence follows.",
+            'victim_msg': "The axe smashes into your side. Bone snaps, blood sprays, silence follows.",
+            'observer_msg': "The axe smashes into {target_name}'s side. Bone snaps, blood sprays, silence follows."
+        },
+        {
+            'attacker_msg': "The blade digs into the thigh. {target_name} drops, screaming like it'll help.",
+            'victim_msg': "The blade digs into your thigh. You drop, screaming like it'll help.",
+            'observer_msg': "The blade digs into {target_name}'s thigh. {target_name} drops, screaming like it'll help."
+        },
+        {
+            'attacker_msg': "The edge cleaves open the side. {target_name} spins and stumbles out of instinct.",
+            'victim_msg': "The edge cleaves open your side. You spin and stumble out of instinct.",
+            'observer_msg': "The edge cleaves open {target_name}'s side. {target_name} spins and stumbles out of instinct."
+        },
+        {
+            'attacker_msg': "The edge slices from neck to chest. {target_name} shrieks and stumbles.",
+            'victim_msg': "The edge slices from your neck to chest. You shriek and stumble.",
+            'observer_msg': "The edge slices from {target_name}'s neck to chest. {target_name} shrieks and stumbles."
+        },
+        {
+            'attacker_msg': "The flat of the blade smashes the temple. Blood follows a heartbeat later.",
+            'victim_msg': "The flat of the blade smashes your temple. Blood follows a heartbeat later.",
+            'observer_msg': "The flat of the blade smashes {target_name}'s temple. Blood follows a heartbeat later."
+        },
+        {
+            'attacker_msg': "The haft strikes the jaw. Teeth fly like punctuation.",
+            'victim_msg': "The haft strikes your jaw. Teeth fly like punctuation.",
+            'observer_msg': "The haft strikes {target_name}'s jaw. Teeth fly like punctuation."
+        },
+        {
+            'attacker_msg': "The head of the axe strikes square in the chest. Breath exits, fast and final.",
+            'victim_msg': "The head of the axe strikes square in your chest. Breath exits, fast and final.",
+            'observer_msg': "The head of the axe strikes square in {target_name}'s chest. Breath exits, fast and final."
+        },
+        {
+            'attacker_msg': "You bring the blade into the ribs. Red mists the air.",
+            'victim_msg': "{attacker_name} brings the blade into your ribs. Red mists the air.",
+            'observer_msg': "{attacker_name} brings the blade into {target_name}'s ribs. Red mists the air."
+        },
+        {
+            'attacker_msg': "You bury the blade in the thigh. The tear is meaty and merciless.",
+            'victim_msg': "{attacker_name} buries the blade in your thigh. The tear is meaty and merciless.",
+            'observer_msg': "{attacker_name} buries the blade in {target_name}'s thigh. The tear is meaty and merciless."
+        },
+        {
+            'attacker_msg': "You cleave the shoulder open. The wound gapes and gushes.",
+            'victim_msg': "{attacker_name} cleaves your shoulder open. The wound gapes and gushes.",
+            'observer_msg': "{attacker_name} cleaves {target_name}'s shoulder open. The wound gapes and gushes."
+        },
+        {
+            'attacker_msg': "You hack into the shoulder. The spray paints the moment red.",
+            'victim_msg': "{attacker_name} hacks into your shoulder. The spray paints the moment red.",
+            'observer_msg': "{attacker_name} hacks into {target_name}'s shoulder. The spray paints the moment red."
+        },
+        {
+            'attacker_msg': "You land a savage hit behind the knee. {target_name} crumples instantly.",
+            'victim_msg': "{attacker_name} lands a savage hit behind your knee. You crumple instantly.",
+            'observer_msg': "{attacker_name} lands a savage hit behind {target_name}'s knee. {target_name} crumples instantly."
+        },
     ],
     'miss': [
-        "A backswing slams into shelving. Tools scatter. {target} flees.",
-        "A lunge sends the edge through empty air. The whistle is louder than the contact.",
-        "A misstep slows the arc. {target} scrambles backward, untouched.",
-        "A mistimed jab twists {attacker} off balance. {target} takes advantage.",
-        "A sideways swing misses and topples a chair. Wood dies. Not {target}.",
-        "A wild arc topples a table. {target} dives clear, barely.",
-        "One clumsy arc takes out a stool. The fight continues anyway.",
-        "One heavy breath later, {attacker} adjusts. The miss lingers.",
-        "One misstep throws the arc wide. {target} rolls clear with a curse.",
-        "Steel shaves the wall. Sparks fly. {target} ducks low.",
-        "Steel thunders into flooring. Cracks bloom. {target} isn't among them.",
-        "The axe crashes into a pillar. The structure holds. {attacker} barely does.",
-        "The axe crunches into flooring. Dust explodes. No one bleeds.",
-        "The axe hits a steel beam. The vibration travels up {attacker}'s arms.",
-        "The axe slams into the floor. The crack echoes. {target} doesn’t wait for the rebound.",
-        "The blade bites deep into a crate. It sticks. Just for a second too long.",
-        "The blade embeds in drywall. Dust and rage fill the space.",
-        "The blade glances off a shelf. Tools clatter like applause for failure.",
-        "The blade whistles past {target}'s nose. Close, but not enough.",
-        "The haft slaps a pillar. Vibration rings, but no contact made.",
-        "The steel clips a ceiling fan. Sparks rain down. {target} isn’t among them.",
-        "The swing arcs high. The light explodes. Shadows are louder than pain.",
-        "The swing crashes into a pipe. The steam masks everything — even failure.",
-        "The swing hits nothing but curtain. Fabric dies dramatically.",
-        "The weapon lodges in a wall. {attacker} yanks, growling.",
-        "The weapon skims a pipe. Sparks and curses fly together.",
-        "{attacker} drags the blade free from concrete. It takes a chunk. Not enough.",
-        "{attacker} grunts as the axe thuds into nothing. The echo is mocking.",
-        "{attacker} over-swings. The blade crashes into debris.",
-        "{attacker} swings, but {target} ducks low — the axe crashes into concrete.",
+        {
+            'attacker_msg': "A backswing slams into shelving. Tools scatter. {target_name} flees.",
+            'victim_msg': "A backswing slams into shelving. Tools scatter. You flee.",
+            'observer_msg': "A backswing slams into shelving. Tools scatter. {target_name} flees."
+        },
+        {
+            'attacker_msg': "A lunge sends the edge through empty air. The whistle is louder than the contact.",
+            'victim_msg': "A lunge sends the edge through empty air. The whistle is louder than the contact.",
+            'observer_msg': "A lunge sends the edge through empty air. The whistle is louder than the contact."
+        },
+        {
+            'attacker_msg': "A misstep slows the arc. {target_name} scrambles backward, untouched.",
+            'victim_msg': "A misstep slows the arc. You scramble backward, untouched.",
+            'observer_msg': "A misstep slows the arc. {target_name} scrambles backward, untouched."
+        },
+        {
+            'attacker_msg': "A mistimed jab twists you off balance. {target_name} takes advantage.",
+            'victim_msg': "A mistimed jab twists {attacker_name} off balance. You take advantage.",
+            'observer_msg': "A mistimed jab twists {attacker_name} off balance. {target_name} takes advantage."
+        },
+        {
+            'attacker_msg': "A sideways swing misses and topples a chair. Wood dies. Not {target_name}.",
+            'victim_msg': "A sideways swing misses and topples a chair. Wood dies. Not you.",
+            'observer_msg': "A sideways swing misses and topples a chair. Wood dies. Not {target_name}."
+        },
+        {
+            'attacker_msg': "A wild arc topples a table. {target_name} dives clear, barely.",
+            'victim_msg': "A wild arc topples a table. You dive clear, barely.",
+            'observer_msg': "A wild arc topples a table. {target_name} dives clear, barely."
+        },
+        {
+            'attacker_msg': "One clumsy arc takes out a stool. The fight continues anyway.",
+            'victim_msg': "One clumsy arc takes out a stool. The fight continues anyway.",
+            'observer_msg': "One clumsy arc takes out a stool. The fight continues anyway."
+        },
+        {
+            'attacker_msg': "One heavy breath later, you adjust. The miss lingers.",
+            'victim_msg': "One heavy breath later, {attacker_name} adjusts. The miss lingers.",
+            'observer_msg': "One heavy breath later, {attacker_name} adjusts. The miss lingers."
+        },
+        {
+            'attacker_msg': "One misstep throws the arc wide. {target_name} rolls clear with a curse.",
+            'victim_msg': "One misstep throws the arc wide. You roll clear with a curse.",
+            'observer_msg': "One misstep throws the arc wide. {target_name} rolls clear with a curse."
+        },
+        {
+            'attacker_msg': "Steel shaves the wall. Sparks fly. {target_name} ducks low.",
+            'victim_msg': "Steel shaves the wall. Sparks fly. You duck low.",
+            'observer_msg': "Steel shaves the wall. Sparks fly. {target_name} ducks low."
+        },
+        {
+            'attacker_msg': "Steel thunders into flooring. Cracks bloom. {target_name} isn't among them.",
+            'victim_msg': "Steel thunders into flooring. Cracks bloom. You aren't among them.",
+            'observer_msg': "Steel thunders into flooring. Cracks bloom. {target_name} isn't among them."
+        },
+        {
+            'attacker_msg': "The axe crashes into a pillar. The structure holds. You barely do.",
+            'victim_msg': "The axe crashes into a pillar. The structure holds. {attacker_name} barely does.",
+            'observer_msg': "The axe crashes into a pillar. The structure holds. {attacker_name} barely does."
+        },
+        {
+            'attacker_msg': "The axe crunches into flooring. Dust explodes. No one bleeds.",
+            'victim_msg': "The axe crunches into flooring. Dust explodes. No one bleeds.",
+            'observer_msg': "The axe crunches into flooring. Dust explodes. No one bleeds."
+        },
+        {
+            'attacker_msg': "The axe hits a steel beam. The vibration travels up your arms.",
+            'victim_msg': "The axe hits a steel beam. The vibration travels up {attacker_name}'s arms.",
+            'observer_msg': "The axe hits a steel beam. The vibration travels up {attacker_name}'s arms."
+        },
+        {
+            'attacker_msg': "The axe slams into the floor. The crack echoes. {target_name} doesn't wait for the rebound.",
+            'victim_msg': "The axe slams into the floor. The crack echoes. You don't wait for the rebound.",
+            'observer_msg': "The axe slams into the floor. The crack echoes. {target_name} doesn't wait for the rebound."
+        },
+        {
+            'attacker_msg': "The blade bites deep into a crate. It sticks. Just for a second too long.",
+            'victim_msg': "The blade bites deep into a crate. It sticks. Just for a second too long.",
+            'observer_msg': "The blade bites deep into a crate. It sticks. Just for a second too long."
+        },
+        {
+            'attacker_msg': "The blade embeds in drywall. Dust and rage fill the space.",
+            'victim_msg': "The blade embeds in drywall. Dust and rage fill the space.",
+            'observer_msg': "The blade embeds in drywall. Dust and rage fill the space."
+        },
+        {
+            'attacker_msg': "The blade glances off a shelf. Tools clatter like applause for failure.",
+            'victim_msg': "The blade glances off a shelf. Tools clatter like applause for failure.",
+            'observer_msg': "The blade glances off a shelf. Tools clatter like applause for failure."
+        },
+        {
+            'attacker_msg': "The blade whistles past {target_name}'s nose. Close, but not enough.",
+            'victim_msg': "The blade whistles past your nose. Close, but not enough.",
+            'observer_msg': "The blade whistles past {target_name}'s nose. Close, but not enough."
+        },
+        {
+            'attacker_msg': "The haft slaps a pillar. Vibration rings, but no contact made.",
+            'victim_msg': "The haft slaps a pillar. Vibration rings, but no contact made.",
+            'observer_msg': "The haft slaps a pillar. Vibration rings, but no contact made."
+        },
+        {
+            'attacker_msg': "The steel clips a ceiling fan. Sparks rain down. {target_name} isn't among them.",
+            'victim_msg': "The steel clips a ceiling fan. Sparks rain down. You aren't among them.",
+            'observer_msg': "The steel clips a ceiling fan. Sparks rain down. {target_name} isn't among them."
+        },
+        {
+            'attacker_msg': "The swing arcs high. The light explodes. Shadows are louder than pain.",
+            'victim_msg': "The swing arcs high. The light explodes. Shadows are louder than pain.",
+            'observer_msg': "The swing arcs high. The light explodes. Shadows are louder than pain."
+        },
+        {
+            'attacker_msg': "The swing crashes into a pipe. The steam masks everything — even failure.",
+            'victim_msg': "The swing crashes into a pipe. The steam masks everything — even failure.",
+            'observer_msg': "The swing crashes into a pipe. The steam masks everything — even failure."
+        },
+        {
+            'attacker_msg': "The swing hits nothing but curtain. Fabric dies dramatically.",
+            'victim_msg': "The swing hits nothing but curtain. Fabric dies dramatically.",
+            'observer_msg': "The swing hits nothing but curtain. Fabric dies dramatically."
+        },
+        {
+            'attacker_msg': "The weapon lodges in a wall. You yank, growling.",
+            'victim_msg': "The weapon lodges in a wall. {attacker_name} yanks, growling.",
+            'observer_msg': "The weapon lodges in a wall. {attacker_name} yanks, growling."
+        },
+        {
+            'attacker_msg': "The weapon skims a pipe. Sparks and curses fly together.",
+            'victim_msg': "The weapon skims a pipe. Sparks and curses fly together.",
+            'observer_msg': "The weapon skims a pipe. Sparks and curses fly together."
+        },
+        {
+            'attacker_msg': "You drag the blade free from concrete. It takes a chunk. Not enough.",
+            'victim_msg': "{attacker_name} drags the blade free from concrete. It takes a chunk. Not enough.",
+            'observer_msg': "{attacker_name} drags the blade free from concrete. It takes a chunk. Not enough."
+        },
+        {
+            'attacker_msg': "You grunt as the axe thuds into nothing. The echo is mocking.",
+            'victim_msg': "{attacker_name} grunts as the axe thuds into nothing. The echo is mocking.",
+            'observer_msg': "{attacker_name} grunts as the axe thuds into nothing. The echo is mocking."
+        },
+        {
+            'attacker_msg': "You over-swing. The blade crashes into debris.",
+            'victim_msg': "{attacker_name} over-swings. The blade crashes into debris.",
+            'observer_msg': "{attacker_name} over-swings. The blade crashes into debris."
+        },
+        {
+            'attacker_msg': "You swing, but {target_name} ducks low — the axe crashes into concrete.",
+            'victim_msg': "{attacker_name} swings, but you duck low — the axe crashes into concrete.",
+            'observer_msg': "{attacker_name} swings, but {target_name} ducks low — the axe crashes into concrete."
+        },
     ],
     'kill': [
-        "A blow lands center mass. Breathing stops. So does everything else.",
-        "A brutal backswing removes the jaw. The body drops before the blood hits floor.",
-        "A chop through the hip spins {target} before gravity takes over.",
-        "A crushing overhead swing cracks the skull in two. Silence reigns.",
-        "A downward chop ends mid-breath. The last word never arrives.",
-        "A full-bodied arc cleaves the torso. {target} is no longer one piece.",
-        "A savage strike splits skull from jaw. {target} slumps in two stages.",
-        "A spin and chop lands square in the spine. {target} stiffens, then falls like scaffolding.",
-        "One horizontal swing takes {target}'s head clean. The silence is shocked and total.",
-        "One wide arc severs the arm — and the will to live.",
-        "Ribs split under the force. Organs follow. {attacker} barely notices.",
-        "Steel bites through heart and keeps going. So does the scream, until it doesn’t.",
-        "Steel drives into the gut. The twist afterward makes death linger longer.",
-        "Steel meets spine with a crack like lightning. {target} folds, lifeless.",
-        "The axe bites into the temple. Lights out. Permanently.",
-        "The axe crashes through the neck. {target} collapses headless and irrelevant.",
-        "The axe crushes the face. There’s nothing left to recognize.",
-        "The axe lands in the neck. It doesn’t leave. {target} does.",
-        "The axe splits the chest. Everything inside spills and stills.",
-        "The blade lands in the hip, then slides deeper. {target} twitches, then stops.",
-        "The blade lands with such force it lifts {target} before letting them drop.",
-        "The blade tears through the chest. {target} falls in halves — emotionally and physically.",
-        "The final strike breaks everything. {target} doesn’t move again.",
-        "The final strike caves in the side. {target} is just meat now.",
-        "The spine severs with one crack. {target} hits the ground like a switch flipped off.",
-        "The weapon carves through ribs like butter. {target} barely gets to react.",
-        "{attacker} brings it down one last time. The silence after is thick with respect.",
-        "{attacker} brings the axe down like judgment. It lands mid-skull. The trial ends.",
-        "{attacker} hacks deep into the neck. {target} drops mid-gurgle.",
-        "{attacker} swings down hard. The chest caves in like a kicked door.",
+        {
+            'attacker_msg': "A blow lands center mass. Breathing stops. So does everything else.",
+            'victim_msg': "A blow lands center mass. Breathing stops. So does everything else.",
+            'observer_msg': "A blow lands center mass. Breathing stops. So does everything else."
+        },
+        {
+            'attacker_msg': "A brutal backswing removes the jaw. The body drops before the blood hits floor.",
+            'victim_msg': "A brutal backswing removes your jaw. The body drops before the blood hits floor.",
+            'observer_msg': "A brutal backswing removes {target_name}'s jaw. The body drops before the blood hits floor."
+        },
+        {
+            'attacker_msg': "A chop through the hip spins {target_name} before gravity takes over.",
+            'victim_msg': "A chop through your hip spins you before gravity takes over.",
+            'observer_msg': "A chop through {target_name}'s hip spins {target_name} before gravity takes over."
+        },
+        {
+            'attacker_msg': "A crushing overhead swing cracks the skull in two. Silence reigns.",
+            'victim_msg': "A crushing overhead swing cracks your skull in two. Silence reigns.",
+            'observer_msg': "A crushing overhead swing cracks {target_name}'s skull in two. Silence reigns."
+        },
+        {
+            'attacker_msg': "A downward chop ends mid-breath. The last word never arrives.",
+            'victim_msg': "A downward chop ends mid-breath. The last word never arrives.",
+            'observer_msg': "A downward chop ends mid-breath. The last word never arrives."
+        },
+        {
+            'attacker_msg': "A full-bodied arc cleaves the torso. {target_name} is no longer one piece.",
+            'victim_msg': "A full-bodied arc cleaves your torso. You are no longer one piece.",
+            'observer_msg': "A full-bodied arc cleaves {target_name}'s torso. {target_name} is no longer one piece."
+        },
+        {
+            'attacker_msg': "A savage strike splits skull from jaw. {target_name} slumps in two stages.",
+            'victim_msg': "A savage strike splits your skull from jaw. You slump in two stages.",
+            'observer_msg': "A savage strike splits {target_name}'s skull from jaw. {target_name} slumps in two stages."
+        },
+        {
+            'attacker_msg': "A spin and chop lands square in the spine. {target_name} stiffens, then falls like scaffolding.",
+            'victim_msg': "A spin and chop lands square in your spine. You stiffen, then fall like scaffolding.",
+            'observer_msg': "A spin and chop lands square in {target_name}'s spine. {target_name} stiffens, then falls like scaffolding."
+        },
+        {
+            'attacker_msg': "One horizontal swing takes {target_name}'s head clean. The silence is shocked and total.",
+            'victim_msg': "One horizontal swing takes your head clean. The silence is shocked and total.",
+            'observer_msg': "One horizontal swing takes {target_name}'s head clean. The silence is shocked and total."
+        },
+        {
+            'attacker_msg': "One wide arc severs the arm — and the will to live.",
+            'victim_msg': "One wide arc severs your arm — and the will to live.",
+            'observer_msg': "One wide arc severs {target_name}'s arm — and the will to live."
+        },
+        {
+            'attacker_msg': "Ribs split under the force. Organs follow. You barely notice.",
+            'victim_msg': "Ribs split under the force. Organs follow. {attacker_name} barely notices.",
+            'observer_msg': "Ribs split under the force. Organs follow. {attacker_name} barely notices."
+        },
+        {
+            'attacker_msg': "Steel bites through heart and keeps going. So does the scream, until it doesn't.",
+            'victim_msg': "Steel bites through your heart and keeps going. So does the scream, until it doesn't.",
+            'observer_msg': "Steel bites through {target_name}'s heart and keeps going. So does the scream, until it doesn't."
+        },
+        {
+            'attacker_msg': "Steel drives into the gut. The twist afterward makes death linger longer.",
+            'victim_msg': "Steel drives into your gut. The twist afterward makes death linger longer.",
+            'observer_msg': "Steel drives into {target_name}'s gut. The twist afterward makes death linger longer."
+        },
+        {
+            'attacker_msg': "Steel meets spine with a crack like lightning. {target_name} folds, lifeless.",
+            'victim_msg': "Steel meets your spine with a crack like lightning. You fold, lifeless.",
+            'observer_msg': "Steel meets {target_name}'s spine with a crack like lightning. {target_name} folds, lifeless."
+        },
+        {
+            'attacker_msg': "The axe bites into the temple. Lights out. Permanently.",
+            'victim_msg': "The axe bites into your temple. Lights out. Permanently.",
+            'observer_msg': "The axe bites into {target_name}'s temple. Lights out. Permanently."
+        },
+        {
+            'attacker_msg': "The axe crashes through the neck. {target_name} collapses headless and irrelevant.",
+            'victim_msg': "The axe crashes through your neck. You collapse headless and irrelevant.",
+            'observer_msg': "The axe crashes through {target_name}'s neck. {target_name} collapses headless and irrelevant."
+        },
+        {
+            'attacker_msg': "The axe crushes the face. There's nothing left to recognize.",
+            'victim_msg': "The axe crushes your face. There's nothing left to recognize.",
+            'observer_msg': "The axe crushes {target_name}'s face. There's nothing left to recognize."
+        },
+        {
+            'attacker_msg': "The axe lands in the neck. It doesn't leave. {target_name} does.",
+            'victim_msg': "The axe lands in your neck. It doesn't leave. You do.",
+            'observer_msg': "The axe lands in {target_name}'s neck. It doesn't leave. {target_name} does."
+        },
+        {
+            'attacker_msg': "The axe splits the chest. Everything inside spills and stills.",
+            'victim_msg': "The axe splits your chest. Everything inside spills and stills.",
+            'observer_msg': "The axe splits {target_name}'s chest. Everything inside spills and stills."
+        },
+        {
+            'attacker_msg': "The blade lands in the hip, then slides deeper. {target_name} twitches, then stops.",
+            'victim_msg': "The blade lands in your hip, then slides deeper. You twitch, then stop.",
+            'observer_msg': "The blade lands in {target_name}'s hip, then slides deeper. {target_name} twitches, then stops."
+        },
+        {
+            'attacker_msg': "The blade lands with such force it lifts {target_name} before letting them drop.",
+            'victim_msg': "The blade lands with such force it lifts you before letting you drop.",
+            'observer_msg': "The blade lands with such force it lifts {target_name} before letting them drop."
+        },
+        {
+            'attacker_msg': "The blade tears through the chest. {target_name} falls in halves — emotionally and physically.",
+            'victim_msg': "The blade tears through your chest. You fall in halves — emotionally and physically.",
+            'observer_msg': "The blade tears through {target_name}'s chest. {target_name} falls in halves — emotionally and physically."
+        },
+        {
+            'attacker_msg': "The final strike breaks everything. {target_name} doesn't move again.",
+            'victim_msg': "The final strike breaks everything. You don't move again.",
+            'observer_msg': "The final strike breaks everything. {target_name} doesn't move again."
+        },
+        {
+            'attacker_msg': "The final strike caves in the side. {target_name} is just meat now.",
+            'victim_msg': "The final strike caves in your side. You are just meat now.",
+            'observer_msg': "The final strike caves in {target_name}'s side. {target_name} is just meat now."
+        },
+        {
+            'attacker_msg': "The spine severs with one crack. {target_name} hits the ground like a switch flipped off.",
+            'victim_msg': "Your spine severs with one crack. You hit the ground like a switch flipped off.",
+            'observer_msg': "{target_name}'s spine severs with one crack. {target_name} hits the ground like a switch flipped off."
+        },
+        {
+            'attacker_msg': "The weapon carves through ribs like butter. {target_name} barely gets to react.",
+            'victim_msg': "The weapon carves through your ribs like butter. You barely get to react.",
+            'observer_msg': "The weapon carves through {target_name}'s ribs like butter. {target_name} barely gets to react."
+        },
+        {
+            'attacker_msg': "You bring it down one last time. The silence after is thick with respect.",
+            'victim_msg': "{attacker_name} brings it down one last time. The silence after is thick with respect.",
+            'observer_msg': "{attacker_name} brings it down one last time. The silence after is thick with respect."
+        },
+        {
+            'attacker_msg': "You bring the axe down like judgment. It lands mid-skull. The trial ends.",
+            'victim_msg': "{attacker_name} brings the axe down like judgment. It lands mid-skull. The trial ends.",
+            'observer_msg': "{attacker_name} brings the axe down like judgment. It lands mid-skull. The trial ends."
+        },
+        {
+            'attacker_msg': "You hack deep into the neck. {target_name} drops mid-gurgle.",
+            'victim_msg': "{attacker_name} hacks deep into your neck. You drop mid-gurgle.",
+            'observer_msg': "{attacker_name} hacks deep into {target_name}'s neck. {target_name} drops mid-gurgle."
+        },
+        {
+            'attacker_msg': "You swing down hard. The chest caves in like a kicked door.",
+            'victim_msg': "{attacker_name} swings down hard. Your chest caves in like a kicked door.",
+            'observer_msg': "{attacker_name} swings down hard. {target_name}'s chest caves in like a kicked door."
+        },
     ],
 }
