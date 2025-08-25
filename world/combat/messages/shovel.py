@@ -1,130 +1,610 @@
 MESSAGES = {
     'initiate': [
-        "A heavy, two-handed grip and a forward lean — the shovel’s weight is promise enough.",
-        "A slow spin and a sudden stop — the shovel is ready, and so is the silence.",
-        "A spin, a hiss, and the shovel stops flat in front of them like a drawn boundary.",
-        "It was made to dig, but right now it’s a punctuation mark. {attacker} plans to end this sentence.",
-        "No ceremony. Just a shovel raised with practiced hands and a look that means business.",
-        "Nothing ceremonial — just a sharp pivot, a shove of boots, and a shovel hungry for action.",
-        "One slow breath and the shovel comes up. {attacker} holds it like scripture etched in rust.",
-        "The blade drags a trail across the floor before being lifted — like a warning being drawn.",
-        "The blade is chipped, warped from heat. {attacker} swings it like it was forged that way.",
-        "The blade of the shovel gleams with old rust and new intent. {attacker} doesn't flinch.",
-        "The dented blade catches the light for a moment — then vanishes behind {attacker}'s stance.",
-        "The handle creaks as {attacker} tightens their grip. Wood splinters. Intent sharpens.",
-        "The metal head of the shovel scrapes along the concrete, ringing like a rusted bell.",
-        "The rust on the edge tells stories. {attacker} plans to add another chapter.",
-        "The rusted blade still smells like the last time it was used. So does {attacker}.",
-        "The shovel still has dirt on it. So does {attacker}.",
-        "The tool balances in {attacker}'s palm for a second. Then it tilts forward like a decision made.",
-        "The tool creaks in its bindings. So does the silence around {attacker}.",
-        "The tool doesn’t gleam. It growls. {attacker} knows how to listen.",
-        "This isn't for digging. Not anymore. {attacker} hefts the shovel like it’s made for violence.",
-        "{attacker} balances the handle across their shoulders, grinning beneath the weight of old labor repurposed.",
-        "{attacker} drags the edge across the ground. Sparks follow. So does certainty.",
-        "{attacker} flips the shovel in their hand, blade first, like they’re weighing more than steel.",
-        "{attacker} gives the blade a sharp tap against the ground. It responds with a dead clang.",
-        "{attacker} grips the shovel low, like it’s not the first time they’ve used it to end a conversation.",
-        "{attacker} grips the shovel's splintered handle like an old friend they’ve buried secrets with.",
-        "{attacker} hoists the shovel over their shoulder like a grave digger with different plans.",
-        "{attacker} lets the shovel drag behind them, leaving scratches in the floor and silence in the air.",
-        "{attacker} slaps the flat end of the shovel against their palm. The metal rings with warning.",
-        "{attacker} twirls the tool once, as if it were a sword. The dented edge tells a different story.",
+        {
+            'attacker_msg': "A heavy, two-handed grip and a forward lean — the shovel's weight is promise enough.",
+            'victim_msg': "A heavy, two-handed grip and a forward lean — {attacker_name}'s shovel's weight is promise enough.",
+            'observer_msg': "A heavy, two-handed grip and a forward lean — {attacker_name}'s shovel's weight is promise enough."
+        },
+        {
+            'attacker_msg': "A slow spin and a sudden stop — the shovel is ready, and so is the silence.",
+            'victim_msg': "A slow spin and a sudden stop — {attacker_name}'s shovel is ready, and so is the silence.",
+            'observer_msg': "A slow spin and a sudden stop — {attacker_name}'s shovel is ready, and so is the silence."
+        },
+        {
+            'attacker_msg': "A spin, a hiss, and the shovel stops flat in front of them like a drawn boundary.",
+            'victim_msg': "A spin, a hiss, and {attacker_name}'s shovel stops flat in front of you like a drawn boundary.",
+            'observer_msg': "A spin, a hiss, and {attacker_name}'s shovel stops flat in front of {target_name} like a drawn boundary."
+        },
+        {
+            'attacker_msg': "It was made to dig, but right now it's a punctuation mark. You plan to end this sentence.",
+            'victim_msg': "It was made to dig, but right now it's a punctuation mark. {attacker_name} plans to end this sentence.",
+            'observer_msg': "It was made to dig, but right now it's a punctuation mark. {attacker_name} plans to end this sentence."
+        },
+        {
+            'attacker_msg': "No ceremony. Just a shovel raised with practiced hands and a look that means business.",
+            'victim_msg': "No ceremony. Just a shovel raised with {attacker_name}'s practiced hands and a look that means business.",
+            'observer_msg': "No ceremony. Just a shovel raised with {attacker_name}'s practiced hands and a look that means business."
+        },
+        {
+            'attacker_msg': "Nothing ceremonial — just a sharp pivot, a shove of boots, and a shovel hungry for action.",
+            'victim_msg': "Nothing ceremonial — just {attacker_name}'s sharp pivot, a shove of boots, and a shovel hungry for action.",
+            'observer_msg': "Nothing ceremonial — just {attacker_name}'s sharp pivot, a shove of boots, and a shovel hungry for action."
+        },
+        {
+            'attacker_msg': "One slow breath and the shovel comes up. You hold it like scripture etched in rust.",
+            'victim_msg': "One slow breath and the shovel comes up. {attacker_name} holds it like scripture etched in rust.",
+            'observer_msg': "One slow breath and the shovel comes up. {attacker_name} holds it like scripture etched in rust."
+        },
+        {
+            'attacker_msg': "The blade drags a trail across the floor before being lifted — like a warning being drawn.",
+            'victim_msg': "The blade drags a trail across the floor before being lifted — like {attacker_name} is drawing a warning.",
+            'observer_msg': "The blade drags a trail across the floor before being lifted — like {attacker_name} is drawing a warning."
+        },
+        {
+            'attacker_msg': "The blade is chipped, warped from heat. You swing it like it was forged that way.",
+            'victim_msg': "The blade is chipped, warped from heat. {attacker_name} swings it like it was forged that way.",
+            'observer_msg': "The blade is chipped, warped from heat. {attacker_name} swings it like it was forged that way."
+        },
+        {
+            'attacker_msg': "The blade of the shovel gleams with old rust and new intent. You don't flinch.",
+            'victim_msg': "The blade of {attacker_name}'s shovel gleams with old rust and new intent. {attacker_name} doesn't flinch.",
+            'observer_msg': "The blade of {attacker_name}'s shovel gleams with old rust and new intent. {attacker_name} doesn't flinch."
+        },
+        {
+            'attacker_msg': "The dented blade catches the light for a moment — then vanishes behind your stance.",
+            'victim_msg': "The dented blade catches the light for a moment — then vanishes behind {attacker_name}'s stance.",
+            'observer_msg': "The dented blade catches the light for a moment — then vanishes behind {attacker_name}'s stance."
+        },
+        {
+            'attacker_msg': "The handle creaks as you tighten your grip. Wood splinters. Intent sharpens.",
+            'victim_msg': "The handle creaks as {attacker_name} tightens their grip. Wood splinters. Intent sharpens.",
+            'observer_msg': "The handle creaks as {attacker_name} tightens their grip. Wood splinters. Intent sharpens."
+        },
+        {
+            'attacker_msg': "The metal head of the shovel scrapes along the concrete, ringing like a rusted bell.",
+            'victim_msg': "The metal head of {attacker_name}'s shovel scrapes along the concrete, ringing like a rusted bell.",
+            'observer_msg': "The metal head of {attacker_name}'s shovel scrapes along the concrete, ringing like a rusted bell."
+        },
+        {
+            'attacker_msg': "The rust on the edge tells stories. You plan to add another chapter.",
+            'victim_msg': "The rust on the edge tells stories. {attacker_name} plans to add another chapter.",
+            'observer_msg': "The rust on the edge tells stories. {attacker_name} plans to add another chapter."
+        },
+        {
+            'attacker_msg': "The rusted blade still smells like the last time it was used. So do you.",
+            'victim_msg': "The rusted blade still smells like the last time it was used. So does {attacker_name}.",
+            'observer_msg': "The rusted blade still smells like the last time it was used. So does {attacker_name}."
+        },
+        {
+            'attacker_msg': "The shovel still has dirt on it. So do you.",
+            'victim_msg': "The shovel still has dirt on it. So does {attacker_name}.",
+            'observer_msg': "The shovel still has dirt on it. So does {attacker_name}."
+        },
+        {
+            'attacker_msg': "The tool balances in your palm for a second. Then it tilts forward like a decision made.",
+            'victim_msg': "The tool balances in {attacker_name}'s palm for a second. Then it tilts forward like a decision made.",
+            'observer_msg': "The tool balances in {attacker_name}'s palm for a second. Then it tilts forward like a decision made."
+        },
+        {
+            'attacker_msg': "The tool creaks in its bindings. So does the silence around you.",
+            'victim_msg': "The tool creaks in its bindings. So does the silence around {attacker_name}.",
+            'observer_msg': "The tool creaks in its bindings. So does the silence around {attacker_name}."
+        },
+        {
+            'attacker_msg': "The tool doesn't gleam. It growls. You know how to listen.",
+            'victim_msg': "The tool doesn't gleam. It growls. {attacker_name} knows how to listen.",
+            'observer_msg': "The tool doesn't gleam. It growls. {attacker_name} knows how to listen."
+        },
+        {
+            'attacker_msg': "This isn't for digging. Not anymore. You heft the shovel like it's made for violence.",
+            'victim_msg': "This isn't for digging. Not anymore. {attacker_name} hefts the shovel like it's made for violence.",
+            'observer_msg': "This isn't for digging. Not anymore. {attacker_name} hefts the shovel like it's made for violence."
+        },
+        {
+            'attacker_msg': "You balance the handle across your shoulders, grinning beneath the weight of old labor repurposed.",
+            'victim_msg': "{attacker_name} balances the handle across their shoulders, grinning beneath the weight of old labor repurposed.",
+            'observer_msg': "{attacker_name} balances the handle across their shoulders, grinning beneath the weight of old labor repurposed."
+        },
+        {
+            'attacker_msg': "You drag the edge across the ground. Sparks follow. So does certainty.",
+            'victim_msg': "{attacker_name} drags the edge across the ground. Sparks follow. So does certainty.",
+            'observer_msg': "{attacker_name} drags the edge across the ground. Sparks follow. So does certainty."
+        },
+        {
+            'attacker_msg': "You flip the shovel in your hand, blade first, like you're weighing more than steel.",
+            'victim_msg': "{attacker_name} flips the shovel in their hand, blade first, like they're weighing more than steel.",
+            'observer_msg': "{attacker_name} flips the shovel in their hand, blade first, like they're weighing more than steel."
+        },
+        {
+            'attacker_msg': "You give the blade a sharp tap against the ground. It responds with a dead clang.",
+            'victim_msg': "{attacker_name} gives the blade a sharp tap against the ground. It responds with a dead clang.",
+            'observer_msg': "{attacker_name} gives the blade a sharp tap against the ground. It responds with a dead clang."
+        },
+        {
+            'attacker_msg': "You grip the shovel low, like it's not the first time you've used it to end a conversation.",
+            'victim_msg': "{attacker_name} grips the shovel low, like it's not the first time they've used it to end a conversation.",
+            'observer_msg': "{attacker_name} grips the shovel low, like it's not the first time they've used it to end a conversation."
+        },
+        {
+            'attacker_msg': "You grip the shovel's splintered handle like an old friend you've buried secrets with.",
+            'victim_msg': "{attacker_name} grips the shovel's splintered handle like an old friend they've buried secrets with.",
+            'observer_msg': "{attacker_name} grips the shovel's splintered handle like an old friend they've buried secrets with."
+        },
+        {
+            'attacker_msg': "You hoist the shovel over your shoulder like a grave digger with different plans.",
+            'victim_msg': "{attacker_name} hoists the shovel over their shoulder like a grave digger with different plans.",
+            'observer_msg': "{attacker_name} hoists the shovel over their shoulder like a grave digger with different plans."
+        },
+        {
+            'attacker_msg': "You let the shovel drag behind you, leaving scratches in the floor and silence in the air.",
+            'victim_msg': "{attacker_name} lets the shovel drag behind them, leaving scratches in the floor and silence in the air.",
+            'observer_msg': "{attacker_name} lets the shovel drag behind them, leaving scratches in the floor and silence in the air."
+        },
+        {
+            'attacker_msg': "You slap the flat end of the shovel against your palm. The metal rings with warning.",
+            'victim_msg': "{attacker_name} slaps the flat end of the shovel against their palm. The metal rings with warning.",
+            'observer_msg': "{attacker_name} slaps the flat end of the shovel against their palm. The metal rings with warning."
+        },
+        {
+            'attacker_msg': "You twirl the tool once, as if it were a sword. The dented edge tells a different story.",
+            'victim_msg': "{attacker_name} twirls the tool once, as if it were a sword. The dented edge tells a different story.",
+            'observer_msg': "{attacker_name} twirls the tool once, as if it were a sword. The dented edge tells a different story."
+        }
     ],
     'hit': [
-        "A downward slam into the shoulder sends a sharp crack echoing through the air.",
-        "A fast jab catches {target} in the belly. The air leaves like it’s scared too.",
-        "A full-body swing lands in the side. {target} spins, staggers, screams.",
-        "A jab to the stomach folds {target} with a dry wheeze.",
-        "A reverse swing smacks {target} in the back. They lurch forward, gasping red.",
-        "A sharp uppercut with the edge clips the chin and sends {target} sprawling.",
-        "A wild arc lands across the ribs. {target} folds around the pain.",
-        "One sweep clips the arm. The limb drops like it just gave up.",
-        "The curved edge hooks into {target}'s side. It yanks red and raw.",
-        "The edge cuts across the cheek. Not deep — but enough to distract from what’s next.",
-        "The flat of the blade crashes across the brow. Blood follows like punctuation.",
-        "The flat of the shovel smacks into {target}'s jaw with a clang that could wake the dead — or bury them again.",
-        "The handle cracks against the jaw. The scream gets caught mid-burst.",
-        "The handle jabs into the throat. {target} gags and drops to one knee.",
-        "The metal lip digs into {target}'s shin. Their howl is feral.",
-        "The shaft thuds into the sternum. {target} backs up too fast, too far.",
-        "The shovel cracks against {target}'s ribs. Each one tells a different story — all of them pain.",
-        "The shovel crashes into the back. {target} lurches forward, coughing blood.",
-        "The shovel digs into the thigh. {target} howls and crashes into a stack of regrets.",
-        "The shovel slams into the ribs. The thud is thick. {target} folds around it.",
-        "The shovel's flat end slaps across {target}'s face. It sounds like an argument won.",
-        "{attacker} bashes the edge into the jaw. The sound is wet — and final for some teeth.",
-        "{attacker} drives the edge into the shoulder. {target} reels as blood begins to bloom.",
-        "{attacker} hooks the shovel low and clips the knee. {target} crumbles with a grunt.",
-        "{attacker} jabs low and hard. The blade strikes shinbone, and the sound isn’t right.",
-        "{attacker} slams the blade into {target}'s stomach. It folds them like a dying book.",
-        "{attacker} slams the flat edge down onto the clavicle. Something gives — and doesn’t come back.",
-        "{attacker} sweeps the feet with the handle’s length. {target} meets the floor hard.",
-        "{attacker} swings the shovel like a bat. {target}'s side blossoms in agony.",
-        "{attacker} uses the flat to shove. {target} slams into a wall that wasn’t ready either.",
+        {
+            'attacker_msg': "A downward slam into the shoulder sends a sharp crack echoing through the air.",
+            'victim_msg': "A downward slam into your shoulder sends a sharp crack echoing through the air.",
+            'observer_msg': "A downward slam into {target_name}'s shoulder sends a sharp crack echoing through the air."
+        },
+        {
+            'attacker_msg': "A fast jab catches them in the belly. The air leaves like it's scared too.",
+            'victim_msg': "A fast jab catches you in the belly. The air leaves like it's scared too.",
+            'observer_msg': "A fast jab catches {target_name} in the belly. The air leaves like it's scared too."
+        },
+        {
+            'attacker_msg': "A full-body swing lands in the side. They spin, stagger, scream.",
+            'victim_msg': "A full-body swing lands in your side. You spin, stagger, scream.",
+            'observer_msg': "A full-body swing lands in {target_name}'s side. They spin, stagger, scream."
+        },
+        {
+            'attacker_msg': "A jab to the stomach folds them with a dry wheeze.",
+            'victim_msg': "A jab to your stomach folds you with a dry wheeze.",
+            'observer_msg': "A jab to the stomach folds {target_name} with a dry wheeze."
+        },
+        {
+            'attacker_msg': "A reverse swing smacks them in the back. They lurch forward, gasping red.",
+            'victim_msg': "A reverse swing smacks you in the back. You lurch forward, gasping red.",
+            'observer_msg': "A reverse swing smacks {target_name} in the back. They lurch forward, gasping red."
+        },
+        {
+            'attacker_msg': "A sharp uppercut with the edge clips the chin and sends them sprawling.",
+            'victim_msg': "A sharp uppercut with the edge clips your chin and sends you sprawling.",
+            'observer_msg': "A sharp uppercut with the edge clips {target_name}'s chin and sends them sprawling."
+        },
+        {
+            'attacker_msg': "A wild arc lands across the ribs. They fold around the pain.",
+            'victim_msg': "A wild arc lands across your ribs. You fold around the pain.",
+            'observer_msg': "A wild arc lands across {target_name}'s ribs. They fold around the pain."
+        },
+        {
+            'attacker_msg': "One sweep clips the arm. The limb drops like it just gave up.",
+            'victim_msg': "One sweep clips your arm. The limb drops like it just gave up.",
+            'observer_msg': "One sweep clips {target_name}'s arm. The limb drops like it just gave up."
+        },
+        {
+            'attacker_msg': "The curved edge hooks into their side. It yanks red and raw.",
+            'victim_msg': "The curved edge hooks into your side. It yanks red and raw.",
+            'observer_msg': "The curved edge hooks into {target_name}'s side. It yanks red and raw."
+        },
+        {
+            'attacker_msg': "The edge cuts across the cheek. Not deep — but enough to distract from what's next.",
+            'victim_msg': "The edge cuts across your cheek. Not deep — but enough to distract from what's next.",
+            'observer_msg': "The edge cuts across {target_name}'s cheek. Not deep — but enough to distract from what's next."
+        },
+        {
+            'attacker_msg': "The flat of the blade crashes across the brow. Blood follows like punctuation.",
+            'victim_msg': "The flat of the blade crashes across your brow. Blood follows like punctuation.",
+            'observer_msg': "The flat of the blade crashes across {target_name}'s brow. Blood follows like punctuation."
+        },
+        {
+            'attacker_msg': "The flat of the shovel smacks into their jaw with a clang that could wake the dead — or bury them again.",
+            'victim_msg': "The flat of the shovel smacks into your jaw with a clang that could wake the dead — or bury them again.",
+            'observer_msg': "The flat of the shovel smacks into {target_name}'s jaw with a clang that could wake the dead — or bury them again."
+        },
+        {
+            'attacker_msg': "The handle cracks against the jaw. The scream gets caught mid-burst.",
+            'victim_msg': "The handle cracks against your jaw. Your scream gets caught mid-burst.",
+            'observer_msg': "The handle cracks against {target_name}'s jaw. Their scream gets caught mid-burst."
+        },
+        {
+            'attacker_msg': "The handle jabs into the throat. They gag and drop to one knee.",
+            'victim_msg': "The handle jabs into your throat. You gag and drop to one knee.",
+            'observer_msg': "The handle jabs into {target_name}'s throat. They gag and drop to one knee."
+        },
+        {
+            'attacker_msg': "The metal lip digs into their shin. Their howl is feral.",
+            'victim_msg': "The metal lip digs into your shin. Your howl is feral.",
+            'observer_msg': "The metal lip digs into {target_name}'s shin. Their howl is feral."
+        },
+        {
+            'attacker_msg': "The shaft thuds into the sternum. They back up too fast, too far.",
+            'victim_msg': "The shaft thuds into your sternum. You back up too fast, too far.",
+            'observer_msg': "The shaft thuds into {target_name}'s sternum. They back up too fast, too far."
+        },
+        {
+            'attacker_msg': "The shovel clips their leg. They stumble forward into your follow-up.",
+            'victim_msg': "The shovel clips your leg. You stumble forward into {attacker_name}'s follow-up.",
+            'observer_msg': "The shovel clips {target_name}'s leg. They stumble forward into {attacker_name}'s follow-up."
+        },
+        {
+            'attacker_msg': "The shovel cracks across their collarbone. The sound is ugly. So is their scream.",
+            'victim_msg': "The shovel cracks across your collarbone. The sound is ugly. So is your scream.",
+            'observer_msg': "The shovel cracks across {target_name}'s collarbone. The sound is ugly. So is their scream."
+        },
+        {
+            'attacker_msg': "The shovel lands flat against their chest. The breath leaves in a rush.",
+            'victim_msg': "The shovel lands flat against your chest. Your breath leaves in a rush.",
+            'observer_msg': "The shovel lands flat against {target_name}'s chest. Their breath leaves in a rush."
+        },
+        {
+            'attacker_msg': "The shovel smacks into the ribs with a crunch. They double over, choking.",
+            'victim_msg': "The shovel smacks into your ribs with a crunch. You double over, choking.",
+            'observer_msg': "The shovel smacks into {target_name}'s ribs with a crunch. They double over, choking."
+        },
+        {
+            'attacker_msg': "The tip of the blade pierces the forearm. They jerk back, yelling.",
+            'victim_msg': "The tip of the blade pierces your forearm. You jerk back, yelling.",
+            'observer_msg': "The tip of the blade pierces {target_name}'s forearm. They jerk back, yelling."
+        },
+        {
+            'attacker_msg': "The tool catches them square in the gut. They fold, then fall.",
+            'victim_msg': "The tool catches you square in the gut. You fold, then fall.",
+            'observer_msg': "The tool catches {target_name} square in the gut. They fold, then fall."
+        },
+        {
+            'attacker_msg': "The worn handle swipes across the temple. They stagger backward, blinking.",
+            'victim_msg': "The worn handle swipes across your temple. You stagger backward, blinking.",
+            'observer_msg': "The worn handle swipes across {target_name}'s temple. They stagger backward, blinking."
+        },
+        {
+            'attacker_msg': "You drive the blade into the thigh. Blood follows the metal down.",
+            'victim_msg': "{attacker_name} drives the blade into your thigh. Blood follows the metal down.",
+            'observer_msg': "{attacker_name} drives the blade into {target_name}'s thigh. Blood follows the metal down."
+        },
+        {
+            'attacker_msg': "You slam the flat against their shoulder blade. They drop, gasping.",
+            'victim_msg': "{attacker_name} slams the flat against your shoulder blade. You drop, gasping.",
+            'observer_msg': "{attacker_name} slams the flat against {target_name}'s shoulder blade. They drop, gasping."
+        },
+        {
+            'attacker_msg': "You smash the handle into their wrist. The crack echoes. So does their scream.",
+            'victim_msg': "{attacker_name} smashes the handle into your wrist. The crack echoes. So does your scream.",
+            'observer_msg': "{attacker_name} smashes the handle into {target_name}'s wrist. The crack echoes. So does their scream."
+        },
+        {
+            'attacker_msg': "You swing low and connect with the hip. They collapse with a grunt.",
+            'victim_msg': "{attacker_name} swings low and connects with your hip. You collapse with a grunt.",
+            'observer_msg': "{attacker_name} swings low and connects with {target_name}'s hip. They collapse with a grunt."
+        },
+        {
+            'attacker_msg': "You thrust the handle into the ribs. The wheeze is immediate.",
+            'victim_msg': "{attacker_name} thrusts the handle into your ribs. Your wheeze is immediate.",
+            'observer_msg': "{attacker_name} thrusts the handle into {target_name}'s ribs. Their wheeze is immediate."
+        },
+        {
+            'attacker_msg': "You yank the blade sideways through the flesh. They scream and twist away.",
+            'victim_msg': "{attacker_name} yanks the blade sideways through your flesh. You scream and twist away.",
+            'observer_msg': "{attacker_name} yanks the blade sideways through {target_name}'s flesh. They scream and twist away."
+        },
+        {
+            'attacker_msg': "Your swing clips the elbow. The arm goes limp like a broken wing.",
+            'victim_msg': "{attacker_name}'s swing clips your elbow. Your arm goes limp like a broken wing.",
+            'observer_msg': "{attacker_name}'s swing clips {target_name}'s elbow. Their arm goes limp like a broken wing."
+        }
     ],
     'miss': [
-        "A heavy arc clatters into a crate, spraying splinters. {target} watches and repositions.",
-        "A high swing takes out a light fixture. Sparks rain. {target} slips away under shadow.",
-        "A jab hits a pole, shaking the air with a low hum of regret.",
-        "A jab hits the wall. Concrete shatters, but no blood is drawn.",
-        "A low strike hits a bench. The whole thing shakes. The fight doesn’t.",
-        "A lunge ends in clatter. The shovel lands against metal, not flesh.",
-        "A missed jab dents a wall. {attacker} snarls. {target} doesn’t wait around.",
-        "A missed upswing topples a chair. The furniture suffers instead of {target}.",
-        "One wild overhead smash misses and cracks a light. Shadows take over.",
-        "The arc cuts through empty air. The sound it leaves behind is louder than the steel.",
-        "The blade bites into a desk instead. Papers fly. {target} runs.",
-        "The blade crunches into the floor. Sparks bloom. {target} stays just out of reach.",
-        "The blade smashes through drywall instead of flesh. Plaster dust chokes the air.",
-        "The blow clips a doorframe. The sound echoes — but doesn’t scream.",
-        "The edge scrapes tile. A moment later, {target} isn’t where they were.",
-        "The flat end ricochets off a countertop. {attacker} regains balance fast.",
-        "The flat smacks a hanging lamp. It flickers wildly. {target} escapes into shadow.",
-        "The handle clunks off a metal drum. Echoes linger, but no damage done.",
-        "The shovel bounces off a table edge. The fight doesn’t pause, but {attacker} does.",
-        "The shovel hits a chain-link fence. The clang is accusatory.",
-        "The shovel wedges into a crate. It splits. {attacker} does not.",
-        "The swing connects with a support beam. The clang is pure frustration.",
-        "The swing decimates a crate. Splinters fly. {target} is already moving.",
-        "The swing knocks over a chair. Not a target. Just frustration.",
-        "{attacker} lunges too far. The shovel skids against tile with a screech.",
-        "{attacker} lunges — and misses. The shovel clangs off metal, echoing like disappointment.",
-        "{attacker} overextends and the handle clips a pipe. The noise is ugly — and empty.",
-        "{attacker} swings wide. The shovel whistles past with menace but no contact.",
-        "{attacker} swings, but the shovel glances off a railing. Sparks — no blood.",
-        "{attacker}'s arc is perfect, the timing is not. {target} dodges like it’s luck or prophecy.",
+        {
+            'attacker_msg': "A hard swing and they dodge — the shovel bites into wood instead.",
+            'victim_msg': "A hard swing and you dodge — {attacker_name}'s shovel bites into wood instead.",
+            'observer_msg': "A hard swing and {target_name} dodges — {attacker_name}'s shovel bites into wood instead."
+        },
+        {
+            'attacker_msg': "A swing catches only air and the disappointment that follows.",
+            'victim_msg': "{attacker_name}'s swing catches only air and the disappointment that follows.",
+            'observer_msg': "{attacker_name}'s swing catches only air and the disappointment that follows."
+        },
+        {
+            'attacker_msg': "A wild swing smashes into a wall. The dent stays. They don't.",
+            'victim_msg': "A wild swing smashes into a wall. The dent stays. You don't.",
+            'observer_msg': "A wild swing smashes into a wall. The dent stays. {target_name} doesn't."
+        },
+        {
+            'attacker_msg': "The arc is perfect — but they step away at just the right moment.",
+            'victim_msg': "{attacker_name}'s arc is perfect — but you step away at just the right moment.",
+            'observer_msg': "{attacker_name}'s arc is perfect — but {target_name} steps away at just the right moment."
+        },
+        {
+            'attacker_msg': "The blade clips the edge of a pillar. Dust flies. They don't fall.",
+            'victim_msg': "The blade clips the edge of a pillar. Dust flies. You don't fall.",
+            'observer_msg': "The blade clips the edge of a pillar. Dust flies. {target_name} doesn't fall."
+        },
+        {
+            'attacker_msg': "The blade whistles past their ear, close enough to cut hair but nothing else.",
+            'victim_msg': "The blade whistles past your ear, close enough to cut hair but nothing else.",
+            'observer_msg': "The blade whistles past {target_name}'s ear, close enough to cut hair but nothing else."
+        },
+        {
+            'attacker_msg': "The flat of the shovel slams into empty space where they used to be.",
+            'victim_msg': "The flat of {attacker_name}'s shovel slams into empty space where you used to be.",
+            'observer_msg': "The flat of {attacker_name}'s shovel slams into empty space where {target_name} used to be."
+        },
+        {
+            'attacker_msg': "The handle swipes through air. They duck, roll, vanish from reach.",
+            'victim_msg': "The handle swipes through air. You duck, roll, vanish from reach.",
+            'observer_msg': "The handle swipes through air. {target_name} ducks, rolls, vanishes from reach."
+        },
+        {
+            'attacker_msg': "The heavy swing goes wide. The shovel rebounds off stone.",
+            'victim_msg': "{attacker_name}'s heavy swing goes wide. The shovel rebounds off stone.",
+            'observer_msg': "{attacker_name}'s heavy swing goes wide. The shovel rebounds off stone."
+        },
+        {
+            'attacker_msg': "The shovel clangs off a pipe above their head. Close — but not close enough.",
+            'victim_msg': "The shovel clangs off a pipe above your head. Close — but not close enough.",
+            'observer_msg': "The shovel clangs off a pipe above {target_name}'s head. Close — but not close enough."
+        },
+        {
+            'attacker_msg': "The shovel gouges the floor where they stood a second ago.",
+            'victim_msg': "The shovel gouges the floor where you stood a second ago.",
+            'observer_msg': "The shovel gouges the floor where {target_name} stood a second ago."
+        },
+        {
+            'attacker_msg': "The shovel hits nothing but frustration and the sound of scraping metal.",
+            'victim_msg': "{attacker_name}'s shovel hits nothing but frustration and the sound of scraping metal.",
+            'observer_msg': "{attacker_name}'s shovel hits nothing but frustration and the sound of scraping metal."
+        },
+        {
+            'attacker_msg': "The swing is too high. They duck under and the shovel whistles overhead.",
+            'victim_msg': "The swing is too high. You duck under and the shovel whistles overhead.",
+            'observer_msg': "The swing is too high. {target_name} ducks under and the shovel whistles overhead."
+        },
+        {
+            'attacker_msg': "The swing knocks over a chair. Not a target. Just frustration.",
+            'victim_msg': "{attacker_name}'s swing knocks over a chair. Not you. Just frustration.",
+            'observer_msg': "{attacker_name}'s swing knocks over a chair. Not {target_name}. Just frustration."
+        },
+        {
+            'attacker_msg': "You lunge too far. The shovel skids against tile with a screech.",
+            'victim_msg': "{attacker_name} lunges too far. The shovel skids against tile with a screech.",
+            'observer_msg': "{attacker_name} lunges too far. The shovel skids against tile with a screech."
+        },
+        {
+            'attacker_msg': "You lunge — and miss. The shovel clangs off metal, echoing like disappointment.",
+            'victim_msg': "{attacker_name} lunges — and misses. The shovel clangs off metal, echoing like disappointment.",
+            'observer_msg': "{attacker_name} lunges — and misses. The shovel clangs off metal, echoing like disappointment."
+        },
+        {
+            'attacker_msg': "You overextend and the handle clips a pipe. The noise is ugly — and empty.",
+            'victim_msg': "{attacker_name} overextends and the handle clips a pipe. The noise is ugly — and empty.",
+            'observer_msg': "{attacker_name} overextends and the handle clips a pipe. The noise is ugly — and empty."
+        },
+        {
+            'attacker_msg': "You swing wide. The shovel whistles past with menace but no contact.",
+            'victim_msg': "{attacker_name} swings wide. The shovel whistles past with menace but no contact.",
+            'observer_msg': "{attacker_name} swings wide. The shovel whistles past with menace but no contact."
+        },
+        {
+            'attacker_msg': "You swing, but the shovel glances off a railing. Sparks — no blood.",
+            'victim_msg': "{attacker_name} swings, but the shovel glances off a railing. Sparks — no blood.",
+            'observer_msg': "{attacker_name} swings, but the shovel glances off a railing. Sparks — no blood."
+        },
+        {
+            'attacker_msg': "Your arc is perfect, the timing is not. They dodge like it's luck or prophecy.",
+            'victim_msg': "{attacker_name}'s arc is perfect, the timing is not. You dodge like it's luck or prophecy.",
+            'observer_msg': "{attacker_name}'s arc is perfect, the timing is not. {target_name} dodges like it's luck or prophecy."
+        },
+        {
+            'attacker_msg': "Your blade carves empty air where a head used to be.",
+            'victim_msg': "{attacker_name}'s blade carves empty air where your head used to be.",
+            'observer_msg': "{attacker_name}'s blade carves empty air where {target_name}'s head used to be."
+        },
+        {
+            'attacker_msg': "Your follow-through is flawless. The target is already gone.",
+            'victim_msg': "{attacker_name}'s follow-through is flawless. You're already gone.",
+            'observer_msg': "{attacker_name}'s follow-through is flawless. {target_name} is already gone."
+        },
+        {
+            'attacker_msg': "Your heavy downward swing cracks the pavement. They sidestep like water.",
+            'victim_msg': "{attacker_name}'s heavy downward swing cracks the pavement. You sidestep like water.",
+            'observer_msg': "{attacker_name}'s heavy downward swing cracks the pavement. {target_name} sidesteps like water."
+        },
+        {
+            'attacker_msg': "Your lunge falls short. The shovel scrapes against concrete, leaving only sparks.",
+            'victim_msg': "{attacker_name}'s lunge falls short. The shovel scrapes against concrete, leaving only sparks.",
+            'observer_msg': "{attacker_name}'s lunge falls short. The shovel scrapes against concrete, leaving only sparks."
+        },
+        {
+            'attacker_msg': "Your swing clips the edge of a doorframe. Wood splinters. They escape.",
+            'victim_msg': "{attacker_name}'s swing clips the edge of a doorframe. Wood splinters. You escape.",
+            'observer_msg': "{attacker_name}'s swing clips the edge of a doorframe. Wood splinters. {target_name} escapes."
+        },
+        {
+            'attacker_msg': "Your swing connects with the wall instead of flesh. The impact shudders up your arms.",
+            'victim_msg': "{attacker_name}'s swing connects with the wall instead of your flesh. The impact shudders up their arms.",
+            'observer_msg': "{attacker_name}'s swing connects with the wall instead of {target_name}'s flesh. The impact shudders up their arms."
+        },
+        {
+            'attacker_msg': "Your swing meets nothing but the memory of where they were standing.",
+            'victim_msg': "{attacker_name}'s swing meets nothing but the memory of where you were standing.",
+            'observer_msg': "{attacker_name}'s swing meets nothing but the memory of where {target_name} was standing."
+        },
+        {
+            'attacker_msg': "Your thrust hits air. The momentum carries you forward, off balance.",
+            'victim_msg': "{attacker_name}'s thrust hits air. The momentum carries them forward, off balance.",
+            'observer_msg': "{attacker_name}'s thrust hits air. The momentum carries them forward, off balance."
+        },
+        {
+            'attacker_msg': "Your upward swing misses by inches. They lean back like they're dancing.",
+            'victim_msg': "{attacker_name}'s upward swing misses by inches. You lean back like you're dancing.",
+            'observer_msg': "{attacker_name}'s upward swing misses by inches. {target_name} leans back like they're dancing."
+        },
+        {
+            'attacker_msg': "Your wide arc sweeps through empty space. They're already behind you.",
+            'victim_msg': "{attacker_name}'s wide arc sweeps through empty space. You're already behind them.",
+            'observer_msg': "{attacker_name}'s wide arc sweeps through empty space. {target_name} is already behind them."
+        }
     ],
     'kill': [
-        "A downward slam connects with the neck. The head jerks, then the body drops.",
-        "A full swing smashes into the head. The echo is brief. The result is forever.",
-        "A rising swing caves in the jaw, then the silence. {target} is done.",
-        "A sideways cleave to the head. {target} drops instantly, like the shovel hit the off switch.",
-        "A vertical strike lands on the crown. {target} folds like fabric in a storm.",
-        "One crack to the side of the skull. The impact ends everything that came before.",
-        "One jab under the chin and the edge tears upward. Blood arcs. {target} falls.",
-        "One sharp upward arc crashes into the chin. The head snaps back and never returns.",
-        "Steel crunches into {target}'s temple. What’s left isn’t standing.",
-        "Steel hits spine. {target} collapses like architecture stripped of its load-bearing lie.",
-        "Steel meets face. Face loses. What’s left doesn’t count as breathing.",
-        "The blade drives into the base of the spine. The fall is violent. The twitching, brief.",
-        "The blade embeds in the gut. {attacker} wrenches it sideways. {target} crumples in two.",
-        "The blade lands in the chest with a wet crunch. {target} falls inward, like folding paper soaked in red.",
-        "The edge of the shovel punches into the eye socket. The scream dies with the pressure.",
-        "The edge tears through the temple. {target}'s face goes slack before their legs.",
-        "The flat edge crushes the windpipe. {target} wheezes, chokes, stills.",
-        "The flat smashes into the neck. Bone crumples. {target} doesn't breathe again.",
-        "The handle punches into the base of the neck. The body seizes. Then drops.",
-        "The shovel caves in the side of {target}'s skull. The rest follows gravity.",
-        "The shovel spins once, then lands across the temple. The collapse is immediate — and permanent.",
-        "{attacker} buries the blade into {target}'s skull. It doesn’t come out clean.",
-        "{attacker} buries the shovel in the throat. It gets quiet fast.",
-        "{attacker} drives the blade into the chest and twists. The scream never makes it out.",
-        "{attacker} drives the tool down onto the spine. The twitching stops before the shovel does.",
-        "{attacker} hooks the shovel behind {target}'s knees, yanks, and drives it down across their head.",
-        "{attacker} impales the gut, then twists. {target} crumples with a wet sound.",
-        "{attacker} rams the flat into the throat. {target} drops mid-breath, still clutching.",
-        "{attacker} stomps forward and slams the shovel into the chest. The ribs fold like cheap furniture.",
-        "{attacker} swings underhanded. The flat caves in the jaw. The scream never starts.",
-    ],
+        {
+            'attacker_msg': "A downward slam connects with the neck. The head jerks, then the body drops.",
+            'victim_msg': "A downward slam connects with your neck. Your head jerks, then your body drops.",
+            'observer_msg': "A downward slam connects with {target_name}'s neck. Their head jerks, then the body drops."
+        },
+        {
+            'attacker_msg': "A full swing smashes into the head. The echo is brief. The result is forever.",
+            'victim_msg': "A full swing smashes into your head. The echo is brief. The result is forever.",
+            'observer_msg': "A full swing smashes into {target_name}'s head. The echo is brief. The result is forever."
+        },
+        {
+            'attacker_msg': "A rising swing caves in the jaw, then the silence. They are done.",
+            'victim_msg': "A rising swing caves in your jaw, then the silence. You are done.",
+            'observer_msg': "A rising swing caves in {target_name}'s jaw, then the silence. They are done."
+        },
+        {
+            'attacker_msg': "A sideways cleave to the head. They drop instantly, like the shovel hit the off switch.",
+            'victim_msg': "A sideways cleave to your head. You drop instantly, like the shovel hit the off switch.",
+            'observer_msg': "A sideways cleave to {target_name}'s head. They drop instantly, like the shovel hit the off switch."
+        },
+        {
+            'attacker_msg': "A vertical strike lands on the crown. They fold like fabric in a storm.",
+            'victim_msg': "A vertical strike lands on your crown. You fold like fabric in a storm.",
+            'observer_msg': "A vertical strike lands on {target_name}'s crown. They fold like fabric in a storm."
+        },
+        {
+            'attacker_msg': "One crack to the side of the skull. The impact ends everything that came before.",
+            'victim_msg': "One crack to the side of your skull. The impact ends everything that came before.",
+            'observer_msg': "One crack to the side of {target_name}'s skull. The impact ends everything that came before."
+        },
+        {
+            'attacker_msg': "One jab under the chin and the edge tears upward. Blood arcs. They fall.",
+            'victim_msg': "One jab under your chin and the edge tears upward. Blood arcs. You fall.",
+            'observer_msg': "One jab under {target_name}'s chin and the edge tears upward. Blood arcs. They fall."
+        },
+        {
+            'attacker_msg': "One sharp upward arc crashes into the chin. The head snaps back and never returns.",
+            'victim_msg': "One sharp upward arc crashes into your chin. Your head snaps back and never returns.",
+            'observer_msg': "One sharp upward arc crashes into {target_name}'s chin. Their head snaps back and never returns."
+        },
+        {
+            'attacker_msg': "Steel crunches into their temple. What's left isn't standing.",
+            'victim_msg': "Steel crunches into your temple. What's left isn't standing.",
+            'observer_msg': "Steel crunches into {target_name}'s temple. What's left isn't standing."
+        },
+        {
+            'attacker_msg': "Steel hits spine. They collapse like architecture stripped of its load-bearing lie.",
+            'victim_msg': "Steel hits your spine. You collapse like architecture stripped of its load-bearing lie.",
+            'observer_msg': "Steel hits {target_name}'s spine. They collapse like architecture stripped of its load-bearing lie."
+        },
+        {
+            'attacker_msg': "Steel meets face. Face loses. What's left doesn't count as breathing.",
+            'victim_msg': "Steel meets your face. Your face loses. What's left doesn't count as breathing.",
+            'observer_msg': "Steel meets {target_name}'s face. Their face loses. What's left doesn't count as breathing."
+        },
+        {
+            'attacker_msg': "The blade drives into the base of the spine. The fall is violent. The twitching, brief.",
+            'victim_msg': "The blade drives into the base of your spine. Your fall is violent. The twitching, brief.",
+            'observer_msg': "The blade drives into the base of {target_name}'s spine. Their fall is violent. The twitching, brief."
+        },
+        {
+            'attacker_msg': "The blade embeds in the gut. You wrench it sideways. They crumple in two.",
+            'victim_msg': "The blade embeds in your gut. {attacker_name} wrenches it sideways. You crumple in two.",
+            'observer_msg': "The blade embeds in {target_name}'s gut. {attacker_name} wrenches it sideways. They crumple in two."
+        },
+        {
+            'attacker_msg': "The blade lands in the chest with a wet crunch. They fall inward, like folding paper soaked in red.",
+            'victim_msg': "The blade lands in your chest with a wet crunch. You fall inward, like folding paper soaked in red.",
+            'observer_msg': "The blade lands in {target_name}'s chest with a wet crunch. They fall inward, like folding paper soaked in red."
+        },
+        {
+            'attacker_msg': "The edge of the shovel punches into the eye socket. The scream dies with the pressure.",
+            'victim_msg': "The edge of the shovel punches into your eye socket. Your scream dies with the pressure.",
+            'observer_msg': "The edge of the shovel punches into {target_name}'s eye socket. Their scream dies with the pressure."
+        },
+        {
+            'attacker_msg': "The edge tears through the temple. Their face goes slack before their legs.",
+            'victim_msg': "The edge tears through your temple. Your face goes slack before your legs.",
+            'observer_msg': "The edge tears through {target_name}'s temple. Their face goes slack before their legs."
+        },
+        {
+            'attacker_msg': "The flat edge crushes the windpipe. They wheeze, choke, still.",
+            'victim_msg': "The flat edge crushes your windpipe. You wheeze, choke, still.",
+            'observer_msg': "The flat edge crushes {target_name}'s windpipe. They wheeze, choke, still."
+        },
+        {
+            'attacker_msg': "The flat smashes into the neck. Bone crumples. They don't breathe again.",
+            'victim_msg': "The flat smashes into your neck. Bone crumples. You don't breathe again.",
+            'observer_msg': "The flat smashes into {target_name}'s neck. Bone crumples. They don't breathe again."
+        },
+        {
+            'attacker_msg': "The handle punches into the base of the neck. The body seizes. Then drops.",
+            'victim_msg': "The handle punches into the base of your neck. Your body seizes. Then drops.",
+            'observer_msg': "The handle punches into the base of {target_name}'s neck. Their body seizes. Then drops."
+        },
+        {
+            'attacker_msg': "The shovel caves in the side of their skull. The rest follows gravity.",
+            'victim_msg': "The shovel caves in the side of your skull. The rest follows gravity.",
+            'observer_msg': "The shovel caves in the side of {target_name}'s skull. The rest follows gravity."
+        },
+        {
+            'attacker_msg': "The shovel spins once, then lands across the temple. The collapse is immediate — and permanent.",
+            'victim_msg': "The shovel spins once, then lands across your temple. The collapse is immediate — and permanent.",
+            'observer_msg': "The shovel spins once, then lands across {target_name}'s temple. The collapse is immediate — and permanent."
+        },
+        {
+            'attacker_msg': "You bury the blade into their skull. It doesn't come out clean.",
+            'victim_msg': "{attacker_name} buries the blade into your skull. It doesn't come out clean.",
+            'observer_msg': "{attacker_name} buries the blade into {target_name}'s skull. It doesn't come out clean."
+        },
+        {
+            'attacker_msg': "You bury the shovel in the throat. It gets quiet fast.",
+            'victim_msg': "{attacker_name} buries the shovel in your throat. It gets quiet fast.",
+            'observer_msg': "{attacker_name} buries the shovel in {target_name}'s throat. It gets quiet fast."
+        },
+        {
+            'attacker_msg': "You drive the blade into the chest and twist. The scream never makes it out.",
+            'victim_msg': "{attacker_name} drives the blade into your chest and twists. Your scream never makes it out.",
+            'observer_msg': "{attacker_name} drives the blade into {target_name}'s chest and twists. Their scream never makes it out."
+        },
+        {
+            'attacker_msg': "You drive the tool down onto the spine. The twitching stops before the shovel does.",
+            'victim_msg': "{attacker_name} drives the tool down onto your spine. The twitching stops before the shovel does.",
+            'observer_msg': "{attacker_name} drives the tool down onto {target_name}'s spine. The twitching stops before the shovel does."
+        },
+        {
+            'attacker_msg': "You hook the shovel behind their knees, yank, and drive it down across their head.",
+            'victim_msg': "{attacker_name} hooks the shovel behind your knees, yanks, and drives it down across your head.",
+            'observer_msg': "{attacker_name} hooks the shovel behind {target_name}'s knees, yanks, and drives it down across their head."
+        },
+        {
+            'attacker_msg': "You impale the gut, then twist. They crumple with a wet sound.",
+            'victim_msg': "{attacker_name} impales your gut, then twists. You crumple with a wet sound.",
+            'observer_msg': "{attacker_name} impales {target_name}'s gut, then twists. They crumple with a wet sound."
+        },
+        {
+            'attacker_msg': "You ram the flat into the throat. They drop mid-breath, still clutching.",
+            'victim_msg': "{attacker_name} rams the flat into your throat. You drop mid-breath, still clutching.",
+            'observer_msg': "{attacker_name} rams the flat into {target_name}'s throat. They drop mid-breath, still clutching."
+        },
+        {
+            'attacker_msg': "You stomp forward and slam the shovel into the chest. The ribs fold like cheap furniture.",
+            'victim_msg': "{attacker_name} stomps forward and slams the shovel into your chest. Your ribs fold like cheap furniture.",
+            'observer_msg': "{attacker_name} stomps forward and slams the shovel into {target_name}'s chest. Their ribs fold like cheap furniture."
+        },
+        {
+            'attacker_msg': "You swing underhanded. The flat caves in the jaw. The scream never starts.",
+            'victim_msg': "{attacker_name} swings underhanded. The flat caves in your jaw. Your scream never starts.",
+            'observer_msg': "{attacker_name} swings underhanded. The flat caves in {target_name}'s jaw. Their scream never starts."
+        }
+    ]
 }
