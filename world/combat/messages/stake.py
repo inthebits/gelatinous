@@ -1,130 +1,610 @@
 MESSAGES = {
     'initiate': [
-        "A lazy spin and a sudden stillness. {attacker} is done waiting.",
-        "A sharp inhale and the stake rises. There’s no hesitation in the motion.",
-        "A sharp intake of breath, then movement. The stake doesn’t shake. It knows.",
-        "A twist of the wrist and the stake spins into position. {attacker}'s eyes stay fixed on {target}.",
-        "It’s not elegant, it’s not balanced — but it’s been buried in worse. {attacker} knows how to use it.",
-        "One twitch and the stake’s raised. {attacker}'s body tenses like a spring about to snap.",
-        "The grain is coarse. The point is dark. {attacker} doesn’t need finesse.",
-        "The grain is rough, the point uneven. But it fits {attacker}'s grip like memory.",
-        "The jagged point catches light. So does {attacker}'s eye. This is going to hurt.",
-        "The makeshift weapon swings once in the air. The whistle is promise enough.",
-        "The point gleams, but not from polish — from use. {attacker} makes it gleam again.",
-        "The sharpened wood scrapes against {attacker}'s belt as it’s drawn. This isn’t showtime — it’s a verdict.",
-        "The stake is already red at the tip. {attacker} plans to finish what someone else started.",
-        "The stake scrapes across the wall, carving its presence in the silence.",
-        "The tip is uneven. The angle is perfect. {attacker} sets their stance with grim intent.",
-        "The weapon is barely more than a stick, but {attacker}'s grip says otherwise.",
-        "The weapon is crude, short, unforgiving. So is {attacker}'s stance.",
-        "There’s no balance in the tool — only trust. {attacker} gives it both hands.",
-        "This isn’t for hunting monsters — unless you count {attacker}.",
-        "With no flourish, {attacker} raises the stake like an accusation made real.",
-        "Wood chips under pressure as {attacker} tightens their grip. It holds.",
-        "{attacker} draws the stake slowly, the point gleaming with intent more than polish.",
-        "{attacker} flips the crude stake between fingers, not fancy — just familiar.",
-        "{attacker} grips the sharpened stake like a conviction. The wood is splintered but ready.",
-        "{attacker} grips the stake low, like someone who intends to use it twice.",
-        "{attacker} holds the stake low, almost reverent. The next movement will be the opposite.",
-        "{attacker} levels the point with a steady hand. It shakes — but not from fear.",
-        "{attacker} presses the point into their palm once. The blood drawn isn’t the first.",
-        "{attacker} rolls the stake across their knuckles. The moment it stops — so do doubts.",
-        "{attacker} taps the sharpened end against their boot. It thuds like a countdown.",
+        {
+            'attacker_msg': "A lazy spin and a sudden stillness. You are done waiting.",
+            'victim_msg': "A lazy spin and a sudden stillness. {attacker_name} is done waiting.",
+            'observer_msg': "A lazy spin and a sudden stillness. {attacker_name} is done waiting."
+        },
+        {
+            'attacker_msg': "A sharp inhale and the stake rises. There's no hesitation in the motion.",
+            'victim_msg': "A sharp inhale and the stake rises. There's no hesitation in the motion.",
+            'observer_msg': "A sharp inhale and the stake rises. There's no hesitation in the motion."
+        },
+        {
+            'attacker_msg': "A sharp intake of breath, then movement. The stake doesn't shake. It knows.",
+            'victim_msg': "A sharp intake of breath, then movement. The stake doesn't shake. It knows.",
+            'observer_msg': "A sharp intake of breath, then movement. The stake doesn't shake. It knows."
+        },
+        {
+            'attacker_msg': "A twist of the wrist and the stake spins into position. Your eyes stay fixed on {target_name}.",
+            'victim_msg': "A twist of the wrist and the stake spins into position. {attacker_name}'s eyes stay fixed on you.",
+            'observer_msg': "A twist of the wrist and the stake spins into position. {attacker_name}'s eyes stay fixed on {target_name}."
+        },
+        {
+            'attacker_msg': "It's not elegant, it's not balanced — but it's been buried in worse. You know how to use it.",
+            'victim_msg': "It's not elegant, it's not balanced — but it's been buried in worse. {attacker_name} knows how to use it.",
+            'observer_msg': "It's not elegant, it's not balanced — but it's been buried in worse. {attacker_name} knows how to use it."
+        },
+        {
+            'attacker_msg': "One twitch and the stake's raised. Your body tenses like a spring about to snap.",
+            'victim_msg': "One twitch and the stake's raised. {attacker_name}'s body tenses like a spring about to snap.",
+            'observer_msg': "One twitch and the stake's raised. {attacker_name}'s body tenses like a spring about to snap."
+        },
+        {
+            'attacker_msg': "The grain is coarse. The point is dark. You don't need finesse.",
+            'victim_msg': "The grain is coarse. The point is dark. {attacker_name} doesn't need finesse.",
+            'observer_msg': "The grain is coarse. The point is dark. {attacker_name} doesn't need finesse."
+        },
+        {
+            'attacker_msg': "The grain is rough, the point uneven. But it fits your grip like memory.",
+            'victim_msg': "The grain is rough, the point uneven. But it fits {attacker_name}'s grip like memory.",
+            'observer_msg': "The grain is rough, the point uneven. But it fits {attacker_name}'s grip like memory."
+        },
+        {
+            'attacker_msg': "The jagged point catches light. So does your eye. This is going to hurt.",
+            'victim_msg': "The jagged point catches light. So does {attacker_name}'s eye. This is going to hurt.",
+            'observer_msg': "The jagged point catches light. So does {attacker_name}'s eye. This is going to hurt."
+        },
+        {
+            'attacker_msg': "The makeshift weapon swings once in the air. The whistle is promise enough.",
+            'victim_msg': "The makeshift weapon swings once in the air. The whistle is promise enough.",
+            'observer_msg': "The makeshift weapon swings once in the air. The whistle is promise enough."
+        },
+        {
+            'attacker_msg': "The point gleams, but not from polish — from use. You make it gleam again.",
+            'victim_msg': "The point gleams, but not from polish — from use. {attacker_name} makes it gleam again.",
+            'observer_msg': "The point gleams, but not from polish — from use. {attacker_name} makes it gleam again."
+        },
+        {
+            'attacker_msg': "The sharpened wood scrapes against your belt as it's drawn. This isn't showtime — it's a verdict.",
+            'victim_msg': "The sharpened wood scrapes against {attacker_name}'s belt as it's drawn. This isn't showtime — it's a verdict.",
+            'observer_msg': "The sharpened wood scrapes against {attacker_name}'s belt as it's drawn. This isn't showtime — it's a verdict."
+        },
+        {
+            'attacker_msg': "The stake is already red at the tip. You plan to finish what someone else started.",
+            'victim_msg': "The stake is already red at the tip. {attacker_name} plans to finish what someone else started.",
+            'observer_msg': "The stake is already red at the tip. {attacker_name} plans to finish what someone else started."
+        },
+        {
+            'attacker_msg': "The stake scrapes across the wall, carving its presence in the silence.",
+            'victim_msg': "The stake scrapes across the wall, carving its presence in the silence.",
+            'observer_msg': "The stake scrapes across the wall, carving its presence in the silence."
+        },
+        {
+            'attacker_msg': "The tip is uneven. The angle is perfect. You set your stance with grim intent.",
+            'victim_msg': "The tip is uneven. The angle is perfect. {attacker_name} sets their stance with grim intent.",
+            'observer_msg': "The tip is uneven. The angle is perfect. {attacker_name} sets their stance with grim intent."
+        },
+        {
+            'attacker_msg': "The weapon is barely more than a stick, but your grip says otherwise.",
+            'victim_msg': "The weapon is barely more than a stick, but {attacker_name}'s grip says otherwise.",
+            'observer_msg': "The weapon is barely more than a stick, but {attacker_name}'s grip says otherwise."
+        },
+        {
+            'attacker_msg': "The weapon is crude, short, unforgiving. So is your stance.",
+            'victim_msg': "The weapon is crude, short, unforgiving. So is {attacker_name}'s stance.",
+            'observer_msg': "The weapon is crude, short, unforgiving. So is {attacker_name}'s stance."
+        },
+        {
+            'attacker_msg': "There's no balance in the tool — only trust. You give it both hands.",
+            'victim_msg': "There's no balance in the tool — only trust. {attacker_name} gives it both hands.",
+            'observer_msg': "There's no balance in the tool — only trust. {attacker_name} gives it both hands."
+        },
+        {
+            'attacker_msg': "This isn't for hunting monsters — unless you count yourself.",
+            'victim_msg': "This isn't for hunting monsters — unless you count {attacker_name}.",
+            'observer_msg': "This isn't for hunting monsters — unless you count {attacker_name}."
+        },
+        {
+            'attacker_msg': "With no flourish, you raise the stake like an accusation made real.",
+            'victim_msg': "With no flourish, {attacker_name} raises the stake like an accusation made real.",
+            'observer_msg': "With no flourish, {attacker_name} raises the stake like an accusation made real."
+        },
+        {
+            'attacker_msg': "Wood chips under pressure as you tighten your grip. It holds.",
+            'victim_msg': "Wood chips under pressure as {attacker_name} tightens their grip. It holds.",
+            'observer_msg': "Wood chips under pressure as {attacker_name} tightens their grip. It holds."
+        },
+        {
+            'attacker_msg': "You draw the stake slowly, the point gleaming with intent more than polish.",
+            'victim_msg': "{attacker_name} draws the stake slowly, the point gleaming with intent more than polish.",
+            'observer_msg': "{attacker_name} draws the stake slowly, the point gleaming with intent more than polish."
+        },
+        {
+            'attacker_msg': "You flip the crude stake between fingers, not fancy — just familiar.",
+            'victim_msg': "{attacker_name} flips the crude stake between fingers, not fancy — just familiar.",
+            'observer_msg': "{attacker_name} flips the crude stake between fingers, not fancy — just familiar."
+        },
+        {
+            'attacker_msg': "You grip the sharpened stake like a conviction. The wood is splintered but ready.",
+            'victim_msg': "{attacker_name} grips the sharpened stake like a conviction. The wood is splintered but ready.",
+            'observer_msg': "{attacker_name} grips the sharpened stake like a conviction. The wood is splintered but ready."
+        },
+        {
+            'attacker_msg': "You grip the stake low, like someone who intends to use it twice.",
+            'victim_msg': "{attacker_name} grips the stake low, like someone who intends to use it twice.",
+            'observer_msg': "{attacker_name} grips the stake low, like someone who intends to use it twice."
+        },
+        {
+            'attacker_msg': "You hold the stake low, almost reverent. The next movement will be the opposite.",
+            'victim_msg': "{attacker_name} holds the stake low, almost reverent. The next movement will be the opposite.",
+            'observer_msg': "{attacker_name} holds the stake low, almost reverent. The next movement will be the opposite."
+        },
+        {
+            'attacker_msg': "You level the point with a steady hand. It shakes — but not from fear.",
+            'victim_msg': "{attacker_name} levels the point with a steady hand. It shakes — but not from fear.",
+            'observer_msg': "{attacker_name} levels the point with a steady hand. It shakes — but not from fear."
+        },
+        {
+            'attacker_msg': "You press the point into your palm once. The blood drawn isn't the first.",
+            'victim_msg': "{attacker_name} presses the point into their palm once. The blood drawn isn't the first.",
+            'observer_msg': "{attacker_name} presses the point into their palm once. The blood drawn isn't the first."
+        },
+        {
+            'attacker_msg': "You roll the stake across your knuckles. The moment it stops — so do doubts.",
+            'victim_msg': "{attacker_name} rolls the stake across their knuckles. The moment it stops — so do doubts.",
+            'observer_msg': "{attacker_name} rolls the stake across their knuckles. The moment it stops — so do doubts."
+        },
+        {
+            'attacker_msg': "You tap the sharpened end against your boot. It thuds like a countdown.",
+            'victim_msg': "{attacker_name} taps the sharpened end against their boot. It thuds like a countdown.",
+            'observer_msg': "{attacker_name} taps the sharpened end against their boot. It thuds like a countdown."
+        }
     ],
     'hit': [
-        "A brutal thrust catches {target} in the side. The barked curse is involuntary.",
-        "A downward strike lands in the shoulder blade. {target} reels, howling.",
-        "A forward jab plants the point in {target}'s shoulder. They recoil violently.",
-        "A hook with the stake’s edge tears into the neck — not deep, but loud.",
-        "A quick jab sinks into the soft meat above the hip. {target} shrieks and buckles.",
-        "A quick jab to the ribs. The crack is small. The pain isn’t.",
-        "A savage jab punctures cloth and flesh. {target} doubles over, hand clutching red.",
-        "A strike to the cheek gouges flesh. {target}'s eye wells up — with blood, not tears.",
-        "A thrust splits the side of the neck. Blood fountains in a terrible rhythm.",
-        "One sharp jab to the armpit. {target}'s arm goes limp, so does their resolve.",
-        "One stab buries into the gut. The sound is wet. The response, worse.",
-        "One sweeping stab catches the thigh. The stumble is immediate.",
-        "The point scrapes across the cheek, leaving a ragged red ribbon.",
-        "The point sinks into the soft space between collar and chest. {target} spasms, then drops.",
-        "The shaft is short, but {attacker}'s drive isn't. {target} feels all of it.",
-        "The shaft smashes into the nose. The sound is cartilage breaking and willpower fading.",
-        "The sharpened point wedges between ribs. {target} staggers, breathless.",
-        "The stake drives into the calf. {target} collapses sideways with a scream.",
-        "The stake glances off bone, tears into skin. It's enough to stagger.",
-        "The stake jabs into {target}'s ribs. It doesn't go deep — but it does enough.",
-        "The stake punches into {target}'s forearm. Red spills. So does panic.",
-        "The stake stabs the foot clean through. {target} howls, stuck in place.",
-        "The tip pierces the bicep. {target} curses, voice cracking with pain.",
-        "The wooden tip cracks against the collarbone. Something shifts and doesn't settle right.",
-        "{attacker} drives the stake into the lower back. {target} stiffens and drops.",
-        "{attacker} jabs low and lifts. {target} curls around it, gasping.",
-        "{attacker} jams the stake under the arm. The scream echoes.",
-        "{attacker} slams the stake into the thigh. The scream makes it feel personal.",
-        "{attacker} slashes across the back. The tear is wide, raw, and red.",
-        "{attacker} slashes the stake across {target}'s forearm. Blood beads instantly.",
+        {
+            'attacker_msg': "A brutal thrust catches {target_name} in the side. The barked curse is involuntary.",
+            'victim_msg': "A brutal thrust catches you in the side. The barked curse is involuntary.",
+            'observer_msg': "A brutal thrust catches {target_name} in the side. The barked curse is involuntary."
+        },
+        {
+            'attacker_msg': "A downward strike lands in the shoulder blade. {target_name} reels, howling.",
+            'victim_msg': "A downward strike lands in your shoulder blade. You reel, howling.",
+            'observer_msg': "A downward strike lands in the shoulder blade. {target_name} reels, howling."
+        },
+        {
+            'attacker_msg': "A forward jab plants the point in {target_name}'s shoulder. They recoil violently.",
+            'victim_msg': "A forward jab plants the point in your shoulder. You recoil violently.",
+            'observer_msg': "A forward jab plants the point in {target_name}'s shoulder. They recoil violently."
+        },
+        {
+            'attacker_msg': "A hook with the stake's edge tears into the neck — not deep, but loud.",
+            'victim_msg': "A hook with the stake's edge tears into your neck — not deep, but loud.",
+            'observer_msg': "A hook with the stake's edge tears into the neck — not deep, but loud."
+        },
+        {
+            'attacker_msg': "A quick jab sinks into the soft meat above the hip. {target_name} shrieks and buckles.",
+            'victim_msg': "A quick jab sinks into the soft meat above your hip. You shriek and buckle.",
+            'observer_msg': "A quick jab sinks into the soft meat above the hip. {target_name} shrieks and buckles."
+        },
+        {
+            'attacker_msg': "A quick jab to the ribs. The crack is small. The pain isn't.",
+            'victim_msg': "A quick jab to your ribs. The crack is small. The pain isn't.",
+            'observer_msg': "A quick jab to the ribs. The crack is small. The pain isn't."
+        },
+        {
+            'attacker_msg': "A savage jab punctures cloth and flesh. {target_name} doubles over, hand clutching red.",
+            'victim_msg': "A savage jab punctures cloth and flesh. You double over, hand clutching red.",
+            'observer_msg': "A savage jab punctures cloth and flesh. {target_name} doubles over, hand clutching red."
+        },
+        {
+            'attacker_msg': "A strike to the cheek gouges flesh. {target_name}'s eye wells up — with blood, not tears.",
+            'victim_msg': "A strike to your cheek gouges flesh. Your eye wells up — with blood, not tears.",
+            'observer_msg': "A strike to the cheek gouges flesh. {target_name}'s eye wells up — with blood, not tears."
+        },
+        {
+            'attacker_msg': "A thrust splits the side of the neck. Blood fountains in a terrible rhythm.",
+            'victim_msg': "A thrust splits the side of your neck. Blood fountains in a terrible rhythm.",
+            'observer_msg': "A thrust splits the side of the neck. Blood fountains in a terrible rhythm."
+        },
+        {
+            'attacker_msg': "One sharp jab to the armpit. {target_name}'s arm goes limp, so does their resolve.",
+            'victim_msg': "One sharp jab to your armpit. Your arm goes limp, so does your resolve.",
+            'observer_msg': "One sharp jab to the armpit. {target_name}'s arm goes limp, so does their resolve."
+        },
+        {
+            'attacker_msg': "One stab buries into the gut. The sound is wet. The response, worse.",
+            'victim_msg': "One stab buries into your gut. The sound is wet. The response, worse.",
+            'observer_msg': "One stab buries into the gut. The sound is wet. The response, worse."
+        },
+        {
+            'attacker_msg': "One sweeping stab catches the thigh. The stumble is immediate.",
+            'victim_msg': "One sweeping stab catches your thigh. The stumble is immediate.",
+            'observer_msg': "One sweeping stab catches the thigh. The stumble is immediate."
+        },
+        {
+            'attacker_msg': "The point scrapes across the cheek, leaving a ragged red ribbon.",
+            'victim_msg': "The point scrapes across your cheek, leaving a ragged red ribbon.",
+            'observer_msg': "The point scrapes across the cheek, leaving a ragged red ribbon."
+        },
+        {
+            'attacker_msg': "The point sinks into the soft space between collar and chest. {target_name} spasms, then drops.",
+            'victim_msg': "The point sinks into the soft space between collar and chest. You spasm, then drop.",
+            'observer_msg': "The point sinks into the soft space between collar and chest. {target_name} spasms, then drops."
+        },
+        {
+            'attacker_msg': "The shaft is short, but your drive isn't. {target_name} feels all of it.",
+            'victim_msg': "The shaft is short, but {attacker_name}'s drive isn't. You feel all of it.",
+            'observer_msg': "The shaft is short, but {attacker_name}'s drive isn't. {target_name} feels all of it."
+        },
+        {
+            'attacker_msg': "The shaft smashes into the nose. The sound is cartilage breaking and willpower fading.",
+            'victim_msg': "The shaft smashes into your nose. The sound is cartilage breaking and willpower fading.",
+            'observer_msg': "The shaft smashes into the nose. The sound is cartilage breaking and willpower fading."
+        },
+        {
+            'attacker_msg': "The stake catches {target_name} across the temple. They stagger, seeing stars.",
+            'victim_msg': "The stake catches you across the temple. You stagger, seeing stars.",
+            'observer_msg': "The stake catches {target_name} across the temple. They stagger, seeing stars."
+        },
+        {
+            'attacker_msg': "The stake drives into {target_name}'s kidney. They arch backward, screaming.",
+            'victim_msg': "The stake drives into your kidney. You arch backward, screaming.",
+            'observer_msg': "The stake drives into {target_name}'s kidney. They arch backward, screaming."
+        },
+        {
+            'attacker_msg': "The stake hooks into the soft flesh under the arm. {target_name} writhes, trying to escape.",
+            'victim_msg': "The stake hooks into the soft flesh under your arm. You writhe, trying to escape.",
+            'observer_msg': "The stake hooks into the soft flesh under the arm. {target_name} writhes, trying to escape."
+        },
+        {
+            'attacker_msg': "The tip finds the gap between ribs. {target_name} gasps and clutches their side.",
+            'victim_msg': "The tip finds the gap between your ribs. You gasp and clutch your side.",
+            'observer_msg': "The tip finds the gap between ribs. {target_name} gasps and clutches their side."
+        },
+        {
+            'attacker_msg': "The tip punches through the back of the hand. {target_name} shrieks and jerks away.",
+            'victim_msg': "The tip punches through the back of your hand. You shriek and jerk away.",
+            'observer_msg': "The tip punches through the back of the hand. {target_name} shrieks and jerks away."
+        },
+        {
+            'attacker_msg': "You drive the stake into {target_name}'s thigh. They buckle, blood streaming.",
+            'victim_msg': "{attacker_name} drives the stake into your thigh. You buckle, blood streaming.",
+            'observer_msg': "{attacker_name} drives the stake into {target_name}'s thigh. They buckle, blood streaming."
+        },
+        {
+            'attacker_msg': "You hook the stake around {target_name}'s ankle and twist. They crash down hard.",
+            'victim_msg': "{attacker_name} hooks the stake around your ankle and twists. You crash down hard.",
+            'observer_msg': "{attacker_name} hooks the stake around {target_name}'s ankle and twists. They crash down hard."
+        },
+        {
+            'attacker_msg': "You jab the pointed end into {target_name}'s solar plexus. They double over, retching.",
+            'victim_msg': "{attacker_name} jabs the pointed end into your solar plexus. You double over, retching.",
+            'observer_msg': "{attacker_name} jabs the pointed end into {target_name}'s solar plexus. They double over, retching."
+        },
+        {
+            'attacker_msg': "You slam the stake across {target_name}'s collarbone. It cracks audibly.",
+            'victim_msg': "{attacker_name} slams the stake across your collarbone. It cracks audibly.",
+            'observer_msg': "{attacker_name} slams the stake across {target_name}'s collarbone. It cracks audibly."
+        },
+        {
+            'attacker_msg': "You stab downward into {target_name}'s foot. They howl and hop backward.",
+            'victim_msg': "{attacker_name} stabs downward into your foot. You howl and hop backward.",
+            'observer_msg': "{attacker_name} stabs downward into {target_name}'s foot. They howl and hop backward."
+        },
+        {
+            'attacker_msg': "You strike {target_name} across the jaw with the shaft. Their head snaps sideways.",
+            'victim_msg': "{attacker_name} strikes you across the jaw with the shaft. Your head snaps sideways.",
+            'observer_msg': "{attacker_name} strikes {target_name} across the jaw with the shaft. Their head snaps sideways."
+        },
+        {
+            'attacker_msg': "You thrust the stake into {target_name}'s shoulder blade. They arch forward, screaming.",
+            'victim_msg': "{attacker_name} thrusts the stake into your shoulder blade. You arch forward, screaming.",
+            'observer_msg': "{attacker_name} thrusts the stake into {target_name}'s shoulder blade. They arch forward, screaming."
+        },
+        {
+            'attacker_msg': "Your stake finds the soft spot below {target_name}'s ribs. They crumple with a wheeze.",
+            'victim_msg': "{attacker_name}'s stake finds the soft spot below your ribs. You crumple with a wheeze.",
+            'observer_msg': "{attacker_name}'s stake finds the soft spot below {target_name}'s ribs. They crumple with a wheeze."
+        },
+        {
+            'attacker_msg': "Your stake tears across {target_name}'s cheek. Blood wells up in angry lines.",
+            'victim_msg': "{attacker_name}'s stake tears across your cheek. Blood wells up in angry lines.",
+            'observer_msg': "{attacker_name}'s stake tears across {target_name}'s cheek. Blood wells up in angry lines."
+        }
     ],
     'miss': [
-        "A jab hits a pipe. The clang is sharp and cruel. {attacker} winces.",
-        "A jab skids off a metal panel. Sparks, not blood, fly.",
-        "A low stab hits nothing but shadow. {target} ducks — barely.",
-        "A misjudged lunge drives the stake into a chair leg. Splinters fly.",
-        "A misstep jerks the swing wide. The stake clatters off stone.",
-        "A reckless swing throws {attacker} off balance. The stake slaps the floor.",
-        "One overhand strike splits a crate. {target} watches and plans.",
-        "One thrust pierces a curtain instead of flesh. It tears like regret.",
-        "The arc slashes through air alone. It’s still enough to earn distance.",
-        "The jab glances off a steel rail. Sparks bloom where blood should’ve.",
-        "The jab misses clean. The air hisses in sympathy.",
-        "The jab misses wide. {target} sidesteps like they’ve seen this before.",
-        "The point misses and punches into a wall, wedging with splinters.",
-        "The stake lodges into drywall. The only blood is from {attacker}'s effort.",
-        "The stake punches into a crate instead of flesh. Sawdust bursts like regret.",
-        "The stake tears a tarp instead of skin. Useless noise, dangerous silence.",
-        "The stake whistles past {target}'s cheek. The wind alone is a threat.",
-        "The swing knocks over a lamp. Shadows stretch in silence.",
-        "The swing skims {target}'s shoulder. No mark — this time.",
-        "The thrust glances off armor. No harm — just insult.",
-        "The thrust slices through a coat. Skin’s intact. {attacker}'s patience isn’t.",
-        "The tip snaps against the edge of a shelf. The weapon’s still dangerous — so is the noise.",
-        "The wood knocks over a bucket. It clatters. The silence afterward speaks volumes.",
-        "The wooden point skids along a wall. Scrapes fill the pause.",
-        "The wooden tip crashes into a table edge. It chips and spins out.",
-        "{attacker} jabs, but the point glances off a railing. It hums. {target} escapes.",
-        "{attacker} lunges wide. The stake slams a crate and sticks for a moment.",
-        "{attacker} stabs wide, leaving the stake wedged in furniture. {target} ducks out.",
-        "{attacker} strikes low. The stake cracks against tile, not bone.",
-        "{attacker} swings wildly. The stake hits a pipe. It groans. So does {attacker}.",
+        {
+            'attacker_msg': "A brutal thrust goes wide. {target_name} sidesteps, leaving the stake grasping air.",
+            'victim_msg': "A brutal thrust goes wide. You sidestep, leaving the stake grasping air.",
+            'observer_msg': "A brutal thrust goes wide. {target_name} sidesteps, leaving the stake grasping air."
+        },
+        {
+            'attacker_msg': "A downward jab seeks flesh but finds only empty space. {target_name} has moved.",
+            'victim_msg': "A downward jab seeks flesh but finds only empty space. You have moved.",
+            'observer_msg': "A downward jab seeks flesh but finds only empty space. {target_name} has moved."
+        },
+        {
+            'attacker_msg': "A forward thrust cuts air where {target_name} was standing a moment ago.",
+            'victim_msg': "A forward thrust cuts air where you were standing a moment ago.",
+            'observer_msg': "A forward thrust cuts air where {target_name} was standing a moment ago."
+        },
+        {
+            'attacker_msg': "A hook with the stake's tip finds nothing but wind. {target_name} ducks low.",
+            'victim_msg': "A hook with the stake's tip finds nothing but wind. You duck low.",
+            'observer_msg': "A hook with the stake's tip finds nothing but wind. {target_name} ducks low."
+        },
+        {
+            'attacker_msg': "A jab toward the ribs comes up short. {target_name} leans back just enough.",
+            'victim_msg': "A jab toward your ribs comes up short. You lean back just enough.",
+            'observer_msg': "A jab toward the ribs comes up short. {target_name} leans back just enough."
+        },
+        {
+            'attacker_msg': "A quick thrust seeks the stomach, but {target_name} twists away gracefully.",
+            'victim_msg': "A quick thrust seeks your stomach, but you twist away gracefully.",
+            'observer_msg': "A quick thrust seeks the stomach, but {target_name} twists away gracefully."
+        },
+        {
+            'attacker_msg': "A savage jab aimed at the chest catches only fabric. {target_name} spins away.",
+            'victim_msg': "A savage jab aimed at your chest catches only fabric. You spin away.",
+            'observer_msg': "A savage jab aimed at the chest catches only fabric. {target_name} spins away."
+        },
+        {
+            'attacker_msg': "A strike toward the face meets nothing. {target_name} jerks backward.",
+            'victim_msg': "A strike toward your face meets nothing. You jerk backward.",
+            'observer_msg': "A strike toward the face meets nothing. {target_name} jerks backward."
+        },
+        {
+            'attacker_msg': "A thrust aimed high goes wide. {target_name} dances out of reach.",
+            'victim_msg': "A thrust aimed high goes wide. You dance out of reach.",
+            'observer_msg': "A thrust aimed high goes wide. {target_name} dances out of reach."
+        },
+        {
+            'attacker_msg': "The point seeks flesh but tastes only air. {target_name} has stepped aside.",
+            'victim_msg': "The point seeks flesh but tastes only air. You have stepped aside.",
+            'observer_msg': "The point seeks flesh but tastes only air. {target_name} has stepped aside."
+        },
+        {
+            'attacker_msg': "The stake arcs through empty space. {target_name} weaves away like smoke.",
+            'victim_msg': "The stake arcs through empty space. You weave away like smoke.",
+            'observer_msg': "The stake arcs through empty space. {target_name} weaves away like smoke."
+        },
+        {
+            'attacker_msg': "The stake cuts the air where {target_name}'s head was. They duck at the perfect moment.",
+            'victim_msg': "The stake cuts the air where your head was. You duck at the perfect moment.",
+            'observer_msg': "The stake cuts the air where {target_name}'s head was. They duck at the perfect moment."
+        },
+        {
+            'attacker_msg': "The stake grazes cloth but not skin. {target_name} pulls back, unharmed.",
+            'victim_msg': "The stake grazes cloth but not skin. You pull back, unharmed.",
+            'observer_msg': "The stake grazes cloth but not skin. {target_name} pulls back, unharmed."
+        },
+        {
+            'attacker_msg': "The stake thrusts forward and finds nothing. {target_name} has already shifted away.",
+            'victim_msg': "The stake thrusts forward and finds nothing. You have already shifted away.",
+            'observer_msg': "The stake thrusts forward and finds nothing. {target_name} has already shifted away."
+        },
+        {
+            'attacker_msg': "The stake whistles past {target_name}'s ear. Close, but not close enough.",
+            'victim_msg': "The stake whistles past your ear. Close, but not close enough.",
+            'observer_msg': "The stake whistles past {target_name}'s ear. Close, but not close enough."
+        },
+        {
+            'attacker_msg': "The tip seeks the center of {target_name}'s chest, but they pivot away.",
+            'victim_msg': "The tip seeks the center of your chest, but you pivot away.",
+            'observer_msg': "The tip seeks the center of {target_name}'s chest, but they pivot away."
+        },
+        {
+            'attacker_msg': "You drive the stake forward, but {target_name} slips to the side.",
+            'victim_msg': "{attacker_name} drives the stake forward, but you slip to the side.",
+            'observer_msg': "{attacker_name} drives the stake forward, but {target_name} slips to the side."
+        },
+        {
+            'attacker_msg': "You jab with the pointed end, but {target_name} bends backward, avoiding the strike.",
+            'victim_msg': "{attacker_name} jabs with the pointed end, but you bend backward, avoiding the strike.",
+            'observer_msg': "{attacker_name} jabs with the pointed end, but {target_name} bends backward, avoiding the strike."
+        },
+        {
+            'attacker_msg': "You lash out with the stake, but it passes harmlessly through empty air.",
+            'victim_msg': "{attacker_name} lashes out with the stake, but it passes harmlessly through empty air.",
+            'observer_msg': "{attacker_name} lashes out with the stake, but it passes harmlessly through empty air."
+        },
+        {
+            'attacker_msg': "You stab toward {target_name}'s side, but they twist away at the last second.",
+            'victim_msg': "{attacker_name} stabs toward your side, but you twist away at the last second.",
+            'observer_msg': "{attacker_name} stabs toward {target_name}'s side, but they twist away at the last second."
+        },
+        {
+            'attacker_msg': "You strike downward with the stake, but {target_name} rolls clear.",
+            'victim_msg': "{attacker_name} strikes downward with the stake, but you roll clear.",
+            'observer_msg': "{attacker_name} strikes downward with the stake, but {target_name} rolls clear."
+        },
+        {
+            'attacker_msg': "You swing the stake in a wide arc, but {target_name} ducks under it.",
+            'victim_msg': "{attacker_name} swings the stake in a wide arc, but you duck under it.",
+            'observer_msg': "{attacker_name} swings the stake in a wide arc, but {target_name} ducks under it."
+        },
+        {
+            'attacker_msg': "You thrust hard with the point, but {target_name} sidesteps gracefully.",
+            'victim_msg': "{attacker_name} thrusts hard with the point, but you sidestep gracefully.",
+            'observer_msg': "{attacker_name} thrusts hard with the point, but {target_name} sidesteps gracefully."
+        },
+        {
+            'attacker_msg': "You thrust the stake toward {target_name}'s chest, but they lean back just enough.",
+            'victim_msg': "{attacker_name} thrusts the stake toward your chest, but you lean back just enough.",
+            'observer_msg': "{attacker_name} thrusts the stake toward {target_name}'s chest, but they lean back just enough."
+        },
+        {
+            'attacker_msg': "Your jab seeks {target_name}'s stomach, but they step back, staying safe.",
+            'victim_msg': "{attacker_name}'s jab seeks your stomach, but you step back, staying safe.",
+            'observer_msg': "{attacker_name}'s jab seeks {target_name}'s stomach, but they step back, staying safe."
+        },
+        {
+            'attacker_msg': "Your stake arcs toward {target_name}'s head, but they duck at the perfect moment.",
+            'victim_msg': "{attacker_name}'s stake arcs toward your head, but you duck at the perfect moment.",
+            'observer_msg': "{attacker_name}'s stake arcs toward {target_name}'s head, but they duck at the perfect moment."
+        },
+        {
+            'attacker_msg': "Your stake cuts a deadly path through air, but {target_name} is no longer there.",
+            'victim_msg': "{attacker_name}'s stake cuts a deadly path through air, but you are no longer there.",
+            'observer_msg': "{attacker_name}'s stake cuts a deadly path through air, but {target_name} is no longer there."
+        },
+        {
+            'attacker_msg': "Your stake seeks flesh but finds only the space {target_name} vacated.",
+            'victim_msg': "{attacker_name}'s stake seeks flesh but finds only the space you vacated.",
+            'observer_msg': "{attacker_name}'s stake seeks flesh but finds only the space {target_name} vacated."
+        },
+        {
+            'attacker_msg': "Your thrust aims for {target_name}'s ribs, but they weave away like water.",
+            'victim_msg': "{attacker_name}'s thrust aims for your ribs, but you weave away like water.",
+            'observer_msg': "{attacker_name}'s thrust aims for {target_name}'s ribs, but they weave away like water."
+        },
+        {
+            'attacker_msg': "Your thrust comes swift and sure, but {target_name} is swifter.",
+            'victim_msg': "{attacker_name}'s thrust comes swift and sure, but you are swifter.",
+            'observer_msg': "{attacker_name}'s thrust comes swift and sure, but {target_name} is swifter."
+        }
     ],
     'kill': [
-        "A backhand jab drives the stake into the side of the head. {target} crumples instantly.",
-        "A brutal upward jab pierces the throat. {target} gurgles, spasms, dies.",
-        "A downward stab punches into the skull. The resistance fades. So does everything else.",
-        "A downward thrust cracks through the ribs. {target}'s hands claw at nothing.",
-        "A forceful plunge through the clavicle. {target} tries to scream. Only silence exits.",
-        "A lunge and jab pierce the neck. Arterial spray arcs. So does silence.",
-        "A sharp hook lands at the base of the jaw. The collapse is instant. The silence — respectful.",
-        "A twisting stab opens the gut. The blood pools fast. The regret, faster.",
-        "One lunge, one deep thrust. {target} convulses, folds, and stops trying.",
-        "One lunge, one perfect aim — straight into the face. {target} drops backward, twitchless.",
-        "One savage thrust into the chest. The ribcage doesn’t hold. {target} drops without ceremony.",
-        "The neck gives. The air fills with copper. {target} chokes once — then stills.",
-        "The point pierces clean into the heart. {target}'s breath cuts off like a switch.",
-        "The point punctures beneath the ribs and climbs. {target}'s collapse is slow — and final.",
-        "The sharpened end splits {target}'s sternum. Their eyes go wide, then blank.",
-        "The stake buries deep in the gut. {target} drops, twitching. The end comes slow.",
-        "The stake drives into {target}'s throat. The gurgle ends before the point stops moving.",
-        "The stake goes in and doesn’t come back out. {target} drops like a puppet with no plan.",
-        "The stake plants into the temple. The sound is sickening. The result — still.",
-        "The stake plunges into the chest. {target} gasps once. Then stops.",
-        "The stake slams into the heart. {target} convulses once and drops like a cut wire.",
-        "The tip finds the belly, then climbs. {target} doesn’t make it to the next breath.",
-        "The wood punches through the side of the neck. Arterial spray follows with no warning.",
-        "The wooden tip sinks into the eye. {target} collapses mid-scream.",
-        "{attacker} drives it through the chest. The point exits soaked and sure.",
-        "{attacker} drives the point in, then up. The spine protests — and loses.",
-        "{attacker} drives the stake through the gut and twists. The sound is worse than the sight.",
-        "{attacker} jams the stake into the temple. The eye rolls up before the body falls.",
-        "{attacker} rams the point into the base of the skull. No scream. Just finality.",
-        "{attacker} slams the stake upward under the chin. The twitching stops by the time it hits bone.",
-    ],
+        {
+            'attacker_msg': "A brutal thrust pierces {target_name}'s heart. They drop instantly, stake buried deep.",
+            'victim_msg': "A brutal thrust pierces your heart. You drop instantly, stake buried deep.",
+            'observer_msg': "A brutal thrust pierces {target_name}'s heart. They drop instantly, stake buried deep."
+        },
+        {
+            'attacker_msg': "A downward strike drives the stake through {target_name}'s skull. Death is instant.",
+            'victim_msg': "A downward strike drives the stake through your skull. Death is instant.",
+            'observer_msg': "A downward strike drives the stake through {target_name}'s skull. Death is instant."
+        },
+        {
+            'attacker_msg': "A savage thrust punches through {target_name}'s lung. They drown in their own blood.",
+            'victim_msg': "A savage thrust punches through your lung. You drown in your own blood.",
+            'observer_msg': "A savage thrust punches through {target_name}'s lung. They drown in their own blood."
+        },
+        {
+            'attacker_msg': "A thrust to the base of the skull severs the spine. {target_name} crumples like a broken puppet.",
+            'victim_msg': "A thrust to the base of your skull severs your spine. You crumple like a broken puppet.",
+            'observer_msg': "A thrust to the base of the skull severs the spine. {target_name} crumples like a broken puppet."
+        },
+        {
+            'attacker_msg': "A thrust to the throat crushes the windpipe. {target_name} gurgles once, then goes silent.",
+            'victim_msg': "A thrust to your throat crushes your windpipe. You gurgle once, then go silent.",
+            'observer_msg': "A thrust to the throat crushes the windpipe. {target_name} gurgles once, then goes silent."
+        },
+        {
+            'attacker_msg': "One final stab pierces {target_name}'s kidney. They bleed out in under a minute.",
+            'victim_msg': "One final stab pierces your kidney. You bleed out in under a minute.",
+            'observer_msg': "One final stab pierces {target_name}'s kidney. They bleed out in under a minute."
+        },
+        {
+            'attacker_msg': "The point drives deep into {target_name}'s eye socket. They convulse once, then still.",
+            'victim_msg': "The point drives deep into your eye socket. You convulse once, then still.",
+            'observer_msg': "The point drives deep into {target_name}'s eye socket. They convulse once, then still."
+        },
+        {
+            'attacker_msg': "The point penetrates {target_name}'s temple. They drop like a sack of meat.",
+            'victim_msg': "The point penetrates your temple. You drop like a sack of meat.",
+            'observer_msg': "The point penetrates {target_name}'s temple. They drop like a sack of meat."
+        },
+        {
+            'attacker_msg': "The stake drives through {target_name}'s chest and out their back. Blood spatters the ground.",
+            'victim_msg': "The stake drives through your chest and out your back. Blood spatters the ground.",
+            'observer_msg': "The stake drives through {target_name}'s chest and out their back. Blood spatters the ground."
+        },
+        {
+            'attacker_msg': "The stake finds {target_name}'s jugular. They clutch their throat as life spurts away.",
+            'victim_msg': "The stake finds your jugular. You clutch your throat as life spurts away.",
+            'observer_msg': "The stake finds {target_name}'s jugular. They clutch their throat as life spurts away."
+        },
+        {
+            'attacker_msg': "The stake penetrates {target_name}'s liver. They fold over the weapon and die slowly.",
+            'victim_msg': "The stake penetrates your liver. You fold over the weapon and die slowly.",
+            'observer_msg': "The stake penetrates {target_name}'s liver. They fold over the weapon and die slowly."
+        },
+        {
+            'attacker_msg': "The stake pierces {target_name}'s spine. They collapse, paralyzed and dying.",
+            'victim_msg': "The stake pierces your spine. You collapse, paralyzed and dying.",
+            'observer_msg': "The stake pierces {target_name}'s spine. They collapse, paralyzed and dying."
+        },
+        {
+            'attacker_msg': "The stake punches through {target_name}'s sternum and into their heart. Death is instant.",
+            'victim_msg': "The stake punches through your sternum and into your heart. Death is instant.",
+            'observer_msg': "The stake punches through {target_name}'s sternum and into their heart. Death is instant."
+        },
+        {
+            'attacker_msg': "The tip finds the carotid artery. {target_name} bleeds out in seconds.",
+            'victim_msg': "The tip finds your carotid artery. You bleed out in seconds.",
+            'observer_msg': "The tip finds the carotid artery. {target_name} bleeds out in seconds."
+        },
+        {
+            'attacker_msg': "You drive the stake deep into {target_name}'s abdomen. They die clutching the wound.",
+            'victim_msg': "{attacker_name} drives the stake deep into your abdomen. You die clutching the wound.",
+            'observer_msg': "{attacker_name} drives the stake deep into {target_name}'s abdomen. They die clutching the wound."
+        },
+        {
+            'attacker_msg': "You drive the stake through {target_name}'s ear and into their brain. They twitch once, then still.",
+            'victim_msg': "{attacker_name} drives the stake through your ear and into your brain. You twitch once, then still.",
+            'observer_msg': "{attacker_name} drives the stake through {target_name}'s ear and into their brain. They twitch once, then still."
+        },
+        {
+            'attacker_msg': "You impale {target_name} through the chest. The stake emerges bloody from their back.",
+            'victim_msg': "{attacker_name} impales you through the chest. The stake emerges bloody from your back.",
+            'observer_msg': "{attacker_name} impales {target_name} through the chest. The stake emerges bloody from their back."
+        },
+        {
+            'attacker_msg': "You pierce {target_name}'s lung. They cough up blood, then collapse and die.",
+            'victim_msg': "{attacker_name} pierces your lung. You cough up blood, then collapse and die.",
+            'observer_msg': "{attacker_name} pierces {target_name}'s lung. They cough up blood, then collapse and die."
+        },
+        {
+            'attacker_msg': "You punch the stake through {target_name}'s ribs and into their heart. They die standing.",
+            'victim_msg': "{attacker_name} punches the stake through your ribs and into your heart. You die standing.",
+            'observer_msg': "{attacker_name} punches the stake through {target_name}'s ribs and into their heart. They die standing."
+        },
+        {
+            'attacker_msg': "You slam the stake into {target_name}'s neck, severing the spinal cord. They drop instantly.",
+            'victim_msg': "{attacker_name} slams the stake into your neck, severing your spinal cord. You drop instantly.",
+            'observer_msg': "{attacker_name} slams the stake into {target_name}'s neck, severing the spinal cord. They drop instantly."
+        },
+        {
+            'attacker_msg': "You stab the stake deep into {target_name}'s kidney. They scream once, then die.",
+            'victim_msg': "{attacker_name} stabs the stake deep into your kidney. You scream once, then die.",
+            'observer_msg': "{attacker_name} stabs the stake deep into {target_name}'s kidney. They scream once, then die."
+        },
+        {
+            'attacker_msg': "You thrust the stake into {target_name}'s solar plexus, stopping their heart. Death is instant.",
+            'victim_msg': "{attacker_name} thrusts the stake into your solar plexus, stopping your heart. Death is instant.",
+            'observer_msg': "{attacker_name} thrusts the stake into {target_name}'s solar plexus, stopping their heart. Death is instant."
+        },
+        {
+            'attacker_msg': "You thrust the stake through {target_name}'s eye and into their brain. They convulse, then die.",
+            'victim_msg': "{attacker_name} thrusts the stake through your eye and into your brain. You convulse, then die.",
+            'observer_msg': "{attacker_name} thrusts the stake through {target_name}'s eye and into their brain. They convulse, then die."
+        },
+        {
+            'attacker_msg': "Your final thrust pierces {target_name}'s throat. They gurgle and collapse, drowning in blood.",
+            'victim_msg': "{attacker_name}'s final thrust pierces your throat. You gurgle and collapse, drowning in blood.",
+            'observer_msg': "{attacker_name}'s final thrust pierces {target_name}'s throat. They gurgle and collapse, drowning in blood."
+        },
+        {
+            'attacker_msg': "Your stake finds the gap between {target_name}'s ribs. Their lung collapses instantly.",
+            'victim_msg': "{attacker_name}'s stake finds the gap between your ribs. Your lung collapses instantly.",
+            'observer_msg': "{attacker_name}'s stake finds the gap between {target_name}'s ribs. Their lung collapses instantly."
+        },
+        {
+            'attacker_msg': "Your stake penetrates {target_name}'s liver. They die slowly, bleeding internally.",
+            'victim_msg': "{attacker_name}'s stake penetrates your liver. You die slowly, bleeding internally.",
+            'observer_msg': "{attacker_name}'s stake penetrates {target_name}'s liver. They die slowly, bleeding internally."
+        },
+        {
+            'attacker_msg': "Your stake pierces {target_name}'s abdomen, severing the aorta. They bleed out fast.",
+            'victim_msg': "{attacker_name}'s stake pierces your abdomen, severing the aorta. You bleed out fast.",
+            'observer_msg': "{attacker_name}'s stake pierces {target_name}'s abdomen, severing the aorta. They bleed out fast."
+        },
+        {
+            'attacker_msg': "Your stake punches a hole in {target_name}'s chest. They die gasping for air.",
+            'victim_msg': "{attacker_name}'s stake punches a hole in your chest. You die gasping for air.",
+            'observer_msg': "{attacker_name}'s stake punches a hole in {target_name}'s chest. They die gasping for air."
+        },
+        {
+            'attacker_msg': "Your stake severs {target_name}'s carotid artery. Blood spurts in dying pulses.",
+            'victim_msg': "{attacker_name}'s stake severs your carotid artery. Blood spurts in dying pulses.",
+            'observer_msg': "{attacker_name}'s stake severs {target_name}'s carotid artery. Blood spurts in dying pulses."
+        },
+        {
+            'attacker_msg': "Your thrust drives the stake through {target_name}'s skull and into their brain. Death is instant.",
+            'victim_msg': "{attacker_name}'s thrust drives the stake through your skull and into your brain. Death is instant.",
+            'observer_msg': "{attacker_name}'s thrust drives the stake through {target_name}'s skull and into their brain. Death is instant."
+        }
+    ]
 }
