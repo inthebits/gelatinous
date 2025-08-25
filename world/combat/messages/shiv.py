@@ -1,185 +1,785 @@
 MESSAGES = {
     "initiate": [
-        "{attacker} adjusts their grip like they're tuning an instrument. The shiv hums low, a prelude to something unspeakable.",
-        "No words. Just eye contact and intent, and then the shiv blooms from their palm like a flower grown in ash.",
-        "The moment stretches like gum on hot pavement. {attacker} shifts forward, and the blade follows like instinct.",
-        "The draw isn’t showy—it’s clinical. {attacker} doesn’t revel in it. They’ve simply done this before. Many times.",
-        "{attacker} doesn’t blink as the shiv appears. It's not menace—it’s math. You’re the variable that needs solving.",
-        "You catch a glint in their sleeve too late. By the time your brain processes it, the distance is already closed.",
-        "{attacker} peels back their sleeve like they’re unwrapping something sacred. The shiv slips into view, and it doesn’t glint—it glares.",
-        "You don’t see the draw. One second {attacker} is empty-handed, the next they’re cradling ruin in their palm.",
-        "{attacker} crouches slightly, body weight shifting like a predator before the pounce. The blade appears like it’s been summoned.",
-        "{attacker}'s fingers curl around the hilt with reverence. They’re not holding a weapon—they’re embracing it.",
-        "The way {attacker} produces the shiv makes it feel like a secret being told with teeth. You already know it ends badly.",
-        "There’s a pause, like the world is giving you one last chance to walk away. Then {attacker} breathes out, and the blade begins to move.",
-        "{attacker} breathes in deep, the way some people pray. The shiv is already in their hand, and the moment is already lost.",
-        "{attacker} doesn’t draw the blade—they conjure it. Like violence is their only magic trick, and this is the final act.",
-        "You notice the glint too late. {attacker}'s already moving, and the shiv is carving intent through the stale air.",
-        "The edge winks at you from beneath their sleeve. {attacker}'s smile says it's personal.",
-        "{attacker} leans in like they're going to whisper, but it's the shiv that speaks.",
-        "It isn’t rage behind their eyes—it’s focus. Cold, surgical. The shiv is just how they underline their point.",
-        "{attacker} pulls the shiv with fingers that tremble—not from fear, but anticipation. The room tightens around them like a drumskin. The blade doesn’t hum—it waits. It knows it will be fed soon.",
-        "{attacker} cracks their neck and breathes out slow, as if violence is the only language they ever learned fluently. The shiv is their punctuation. In that flicker of steel, you can almost hear it whisper.",
-        "From under their coat, {attacker} draws the blade like a relic. It doesn’t shine—it absorbs the light, like it’s been promised blood. Some tools are made for work. This one was made for endings.",
-        "No theatrics. {attacker} just steps forward and opens the scene with a flick of steel. It’s not a warning. It’s a promise. The silence around them becomes dense, syrupy. The violence is implied.",
-        "{attacker} tilts their head like they’re listening to something distant. Then the shiv is in their hand, and the silence ends. You feel it, too—that crackle of static before something ruptures.",
-        "The blade isn’t new—it’s *used*, bearing the memory of a dozen exits and none of them clean. {attacker} treats it like an old friend. It’s not just a weapon. It’s a decision already made.",
-        "{attacker} draws the shiv like a memory they wish they could forget. The blade is crude, worn down to jagged metal. Their eyes say they don’t plan to miss. Nothing about this is casual. The weight of the moment stains the air.",
-        "{attacker} moves slow, savoring the moment. The shiv glints like a broken promise in their grip, catching the light—and maybe your reflection. There’s no tremble in their wrist. Just inevitability.",
-        "No ceremony, no flair. {attacker} just steps forward and *makes room* for the shiv to exist in the world again. The tension hisses like gas from a broken pipe—danger waiting to ignite.",
-        "It isn’t pulled—it’s *produced*, as if the shiv had always been part of {attacker}’s anatomy. Violence seems inevitable now, even rehearsed. Their eyes aren’t on the blade—they’re on you. The shiv is just a formality.",
-        "{attacker} doesn’t speak, doesn’t blink. Just steel in hand, tension in the air, and the echo of a thousand bad choices funneling into this moment. Even the shadows seem to step back from what’s about to happen.",
-        "The shiv appears between {attacker}’s fingers like a magician’s trick gone wrong. No applause—only blood in the wings waiting to spill. The weapon seems familiar to them—like they’ve seen this moment before.",
-        "{attacker} palms the shiv like it's a secret they've kept too long. The blade catches the light just enough to make you wonder how many times it’s tasted blood. The blade doesn’t hum—it waits. It knows it will be fed soon.",
-        "{attacker} pulls a jagged shiv from a boot, its edge corroded and wrong. No ceremony, no sound — just intent. In that flicker of steel, you can almost hear it whisper.",
-        "{attacker} doesn’t draw the shiv so much as *produce* it, as if it grew from their hand. {target} probably won’t notice until it’s too late. Some tools are made for work. This one was made for endings.",
-        "The shiv flickers in {attacker}'s grip like a trick of the eye. {target} sees it now — just before the pain. The silence around them becomes dense, syrupy. The violence is implied.",
-        "{attacker} lets the shiv drag across their thigh, carving nothing but fear. {target} knows this isn’t a warning — it’s a promise. You feel it, too—that crackle of static before something ruptures.",
-        "{attacker} mutters something inaudible and steps forward. The shiv’s edge gleams like a stolen tooth in the dark. It’s not just a weapon. It’s a decision already made.",
-        "{attacker} rolls their wrist, and out slides a sliver of rusted cruelty. No flourish — this isn't theater. It's murder. Nothing about this is casual. The weight of the moment stains the air.",
-        "The alley holds its breath as {attacker} reveals the shiv. It's not the sharpness that matters — it's the resolve. There’s no tremble in their wrist. Just inevitability.",
-        "There’s no announcement, no bravado. Just {attacker}, the shiv, and a look that says: *you won’t walk away.* The tension hisses like gas from a broken pipe—danger waiting to ignite."
+        {
+            'attacker_msg': "You adjust your grip like you're tuning an instrument. The shiv hums low, a prelude to something unspeakable.",
+            'victim_msg': "{attacker_name} adjusts their grip like they're tuning an instrument. The shiv hums low, a prelude to something unspeakable.",
+            'observer_msg': "{attacker_name} adjusts their grip like they're tuning an instrument. The shiv hums low, a prelude to something unspeakable."
+        },
+        {
+            'attacker_msg': "No words. Just eye contact and intent, and then the shiv blooms from your palm like a flower grown in ash.",
+            'victim_msg': "No words. Just eye contact and intent, and then the shiv blooms from {attacker_name}'s palm like a flower grown in ash.",
+            'observer_msg': "No words. Just eye contact and intent, and then the shiv blooms from {attacker_name}'s palm like a flower grown in ash."
+        },
+        {
+            'attacker_msg': "The moment stretches like gum on hot pavement. You shift forward, and the blade follows like instinct.",
+            'victim_msg': "The moment stretches like gum on hot pavement. {attacker_name} shifts forward, and the blade follows like instinct.",
+            'observer_msg': "The moment stretches like gum on hot pavement. {attacker_name} shifts forward, and the blade follows like instinct."
+        },
+        {
+            'attacker_msg': "The draw isn't showy—it's clinical. You don't revel in it. You've simply done this before. Many times.",
+            'victim_msg': "The draw isn't showy—it's clinical. {attacker_name} doesn't revel in it. They've simply done this before. Many times.",
+            'observer_msg': "The draw isn't showy—it's clinical. {attacker_name} doesn't revel in it. They've simply done this before. Many times."
+        },
+        {
+            'attacker_msg': "You don't blink as the shiv appears. It's not menace—it's math. {target_name} is the variable that needs solving.",
+            'victim_msg': "{attacker_name} doesn't blink as the shiv appears. It's not menace—it's math. You are the variable that needs solving.",
+            'observer_msg': "{attacker_name} doesn't blink as the shiv appears. It's not menace—it's math. {target_name} is the variable that needs solving."
+        },
+        {
+            'attacker_msg': "{target_name} catches a glint in your sleeve too late. By the time their brain processes it, the distance is already closed.",
+            'victim_msg': "You catch a glint in {attacker_name}'s sleeve too late. By the time your brain processes it, the distance is already closed.",
+            'observer_msg': "{target_name} catches a glint in {attacker_name}'s sleeve too late. By the time {target_name}'s brain processes it, the distance is already closed."
+        },
+        {
+            'attacker_msg': "You peel back your sleeve like you're unwrapping something sacred. The shiv slips into view, and it doesn't glint—it glares.",
+            'victim_msg': "{attacker_name} peels back their sleeve like they're unwrapping something sacred. The shiv slips into view, and it doesn't glint—it glares.",
+            'observer_msg': "{attacker_name} peels back their sleeve like they're unwrapping something sacred. The shiv slips into view, and it doesn't glint—it glares."
+        },
+        {
+            'attacker_msg': "{target_name} doesn't see the draw. One second you are empty-handed, the next you're cradling ruin in your palm.",
+            'victim_msg': "You don't see the draw. One second {attacker_name} is empty-handed, the next they're cradling ruin in their palm.",
+            'observer_msg': "{target_name} doesn't see the draw. One second {attacker_name} is empty-handed, the next they're cradling ruin in their palm."
+        },
+        {
+            'attacker_msg': "You crouch slightly, body weight shifting like a predator before the pounce. The blade appears like it's been summoned.",
+            'victim_msg': "{attacker_name} crouches slightly, body weight shifting like a predator before the pounce. The blade appears like it's been summoned.",
+            'observer_msg': "{attacker_name} crouches slightly, body weight shifting like a predator before the pounce. The blade appears like it's been summoned."
+        },
+        {
+            'attacker_msg': "Your fingers curl around the hilt with reverence. You're not holding a weapon—you're embracing it.",
+            'victim_msg': "{attacker_name}'s fingers curl around the hilt with reverence. They're not holding a weapon—they're embracing it.",
+            'observer_msg': "{attacker_name}'s fingers curl around the hilt with reverence. They're not holding a weapon—they're embracing it."
+        },
+        {
+            'attacker_msg': "The way you produce the shiv makes it feel like a secret being told with teeth. {target_name} already knows it ends badly.",
+            'victim_msg': "The way {attacker_name} produces the shiv makes it feel like a secret being told with teeth. You already know it ends badly.",
+            'observer_msg': "The way {attacker_name} produces the shiv makes it feel like a secret being told with teeth. {target_name} already knows it ends badly."
+        },
+        {
+            'attacker_msg': "There's a pause, like the world is giving {target_name} one last chance to walk away. Then you breathe out, and the blade begins to move.",
+            'victim_msg': "There's a pause, like the world is giving you one last chance to walk away. Then {attacker_name} breathes out, and the blade begins to move.",
+            'observer_msg': "There's a pause, like the world is giving {target_name} one last chance to walk away. Then {attacker_name} breathes out, and the blade begins to move."
+        },
+        {
+            'attacker_msg': "You breathe in deep, the way some people pray. The shiv is already in your hand, and the moment is already lost.",
+            'victim_msg': "{attacker_name} breathes in deep, the way some people pray. The shiv is already in their hand, and the moment is already lost.",
+            'observer_msg': "{attacker_name} breathes in deep, the way some people pray. The shiv is already in their hand, and the moment is already lost."
+        },
+        {
+            'attacker_msg': "You don't draw the blade—you conjure it. Like violence is your only magic trick, and this is the final act.",
+            'victim_msg': "{attacker_name} doesn't draw the blade—they conjure it. Like violence is their only magic trick, and this is the final act.",
+            'observer_msg': "{attacker_name} doesn't draw the blade—they conjure it. Like violence is their only magic trick, and this is the final act."
+        },
+        {
+            'attacker_msg': "{target_name} notices the glint too late. You're already moving, and the shiv is carving intent through the stale air.",
+            'victim_msg': "You notice the glint too late. {attacker_name} is already moving, and the shiv is carving intent through the stale air.",
+            'observer_msg': "{target_name} notices the glint too late. {attacker_name} is already moving, and the shiv is carving intent through the stale air."
+        },
+        {
+            'attacker_msg': "The edge winks at {target_name} from beneath your sleeve. Your smile says it's personal.",
+            'victim_msg': "The edge winks at you from beneath {attacker_name}'s sleeve. Their smile says it's personal.",
+            'observer_msg': "The edge winks at {target_name} from beneath {attacker_name}'s sleeve. {attacker_name}'s smile says it's personal."
+        },
+        {
+            'attacker_msg': "You lean in like you're going to whisper, but it's the shiv that speaks.",
+            'victim_msg': "{attacker_name} leans in like they're going to whisper, but it's the shiv that speaks.",
+            'observer_msg': "{attacker_name} leans in like they're going to whisper, but it's the shiv that speaks."
+        },
+        {
+            'attacker_msg': "It isn't rage behind your eyes—it's focus. Cold, surgical. The shiv is just how you underline your point.",
+            'victim_msg': "It isn't rage behind {attacker_name}'s eyes—it's focus. Cold, surgical. The shiv is just how they underline their point.",
+            'observer_msg': "It isn't rage behind {attacker_name}'s eyes—it's focus. Cold, surgical. The shiv is just how they underline their point."
+        },
+        {
+            'attacker_msg': "You pull the shiv with fingers that tremble—not from fear, but anticipation. The room tightens around you like a drumskin. The blade doesn't hum—it waits. It knows it will be fed soon.",
+            'victim_msg': "{attacker_name} pulls the shiv with fingers that tremble—not from fear, but anticipation. The room tightens around them like a drumskin. The blade doesn't hum—it waits. It knows it will be fed soon.",
+            'observer_msg': "{attacker_name} pulls the shiv with fingers that tremble—not from fear, but anticipation. The room tightens around them like a drumskin. The blade doesn't hum—it waits. It knows it will be fed soon."
+        },
+        {
+            'attacker_msg': "You crack your neck and breathe out slow, as if violence is the only language you ever learned fluently. The shiv is your punctuation. In that flicker of steel, you can almost hear it whisper.",
+            'victim_msg': "{attacker_name} cracks their neck and breathes out slow, as if violence is the only language they ever learned fluently. The shiv is their punctuation. In that flicker of steel, you can almost hear it whisper.",
+            'observer_msg': "{attacker_name} cracks their neck and breathes out slow, as if violence is the only language they ever learned fluently. The shiv is their punctuation. In that flicker of steel, you can almost hear it whisper."
+        },
+        {
+            'attacker_msg': "From under your coat, you draw the blade like a relic. It doesn't shine—it absorbs the light, like it's been promised blood. Some tools are made for work. This one was made for endings.",
+            'victim_msg': "From under their coat, {attacker_name} draws the blade like a relic. It doesn't shine—it absorbs the light, like it's been promised blood. Some tools are made for work. This one was made for endings.",
+            'observer_msg': "From under their coat, {attacker_name} draws the blade like a relic. It doesn't shine—it absorbs the light, like it's been promised blood. Some tools are made for work. This one was made for endings."
+        },
+        {
+            'attacker_msg': "No theatrics. You just step forward and open the scene with a flick of steel. It's not a warning. It's a promise. The silence around you becomes dense, syrupy. The violence is implied.",
+            'victim_msg': "No theatrics. {attacker_name} just steps forward and opens the scene with a flick of steel. It's not a warning. It's a promise. The silence around them becomes dense, syrupy. The violence is implied.",
+            'observer_msg': "No theatrics. {attacker_name} just steps forward and opens the scene with a flick of steel. It's not a warning. It's a promise. The silence around them becomes dense, syrupy. The violence is implied."
+        },
+        {
+            'attacker_msg': "You tilt your head like you're listening to something distant. Then the shiv is in your hand, and the silence ends. You feel it, too—that crackle of static before something ruptures.",
+            'victim_msg': "{attacker_name} tilts their head like they're listening to something distant. Then the shiv is in their hand, and the silence ends. You feel it, too—that crackle of static before something ruptures.",
+            'observer_msg': "{attacker_name} tilts their head like they're listening to something distant. Then the shiv is in their hand, and the silence ends. You feel it, too—that crackle of static before something ruptures."
+        },
+        {
+            'attacker_msg': "The blade isn't new—it's *used*, bearing the memory of a dozen exits and none of them clean. You treat it like an old friend. It's not just a weapon. It's a decision already made.",
+            'victim_msg': "The blade isn't new—it's *used*, bearing the memory of a dozen exits and none of them clean. {attacker_name} treats it like an old friend. It's not just a weapon. It's a decision already made.",
+            'observer_msg': "The blade isn't new—it's *used*, bearing the memory of a dozen exits and none of them clean. {attacker_name} treats it like an old friend. It's not just a weapon. It's a decision already made."
+        },
+        {
+            'attacker_msg': "You draw the shiv like a memory you wish you could forget. The blade is crude, worn down to jagged metal. Your eyes say you don't plan to miss. Nothing about this is casual. The weight of the moment stains the air.",
+            'victim_msg': "{attacker_name} draws the shiv like a memory they wish they could forget. The blade is crude, worn down to jagged metal. Their eyes say they don't plan to miss. Nothing about this is casual. The weight of the moment stains the air.",
+            'observer_msg': "{attacker_name} draws the shiv like a memory they wish they could forget. The blade is crude, worn down to jagged metal. Their eyes say they don't plan to miss. Nothing about this is casual. The weight of the moment stains the air."
+        },
+        {
+            'attacker_msg': "You move slow, savoring the moment. The shiv glints like a broken promise in your grip, catching the light—and maybe {target_name}'s reflection. There's no tremble in your wrist. Just inevitability.",
+            'victim_msg': "{attacker_name} moves slow, savoring the moment. The shiv glints like a broken promise in their grip, catching the light—and maybe your reflection. There's no tremble in their wrist. Just inevitability.",
+            'observer_msg': "{attacker_name} moves slow, savoring the moment. The shiv glints like a broken promise in their grip, catching the light—and maybe {target_name}'s reflection. There's no tremble in their wrist. Just inevitability."
+        },
+        {
+            'attacker_msg': "No ceremony, no flair. You just step forward and *make room* for the shiv to exist in the world again. The tension hisses like gas from a broken pipe—danger waiting to ignite.",
+            'victim_msg': "No ceremony, no flair. {attacker_name} just steps forward and *makes room* for the shiv to exist in the world again. The tension hisses like gas from a broken pipe—danger waiting to ignite.",
+            'observer_msg': "No ceremony, no flair. {attacker_name} just steps forward and *makes room* for the shiv to exist in the world again. The tension hisses like gas from a broken pipe—danger waiting to ignite."
+        },
+        {
+            'attacker_msg': "It isn't pulled—it's *produced*, as if the shiv had always been part of your anatomy. Violence seems inevitable now, even rehearsed. Your eyes aren't on the blade—they're on {target_name}. The shiv is just a formality.",
+            'victim_msg': "It isn't pulled—it's *produced*, as if the shiv had always been part of {attacker_name}'s anatomy. Violence seems inevitable now, even rehearsed. Their eyes aren't on the blade—they're on you. The shiv is just a formality.",
+            'observer_msg': "It isn't pulled—it's *produced*, as if the shiv had always been part of {attacker_name}'s anatomy. Violence seems inevitable now, even rehearsed. Their eyes aren't on the blade—they're on {target_name}. The shiv is just a formality."
+        },
+        {
+            'attacker_msg': "You don't speak, don't blink. Just steel in hand, tension in the air, and the echo of a thousand bad choices funneling into this moment. Even the shadows seem to step back from what's about to happen.",
+            'victim_msg': "{attacker_name} doesn't speak, doesn't blink. Just steel in hand, tension in the air, and the echo of a thousand bad choices funneling into this moment. Even the shadows seem to step back from what's about to happen.",
+            'observer_msg': "{attacker_name} doesn't speak, doesn't blink. Just steel in hand, tension in the air, and the echo of a thousand bad choices funneling into this moment. Even the shadows seem to step back from what's about to happen."
+        },
+        {
+            'attacker_msg': "The shiv appears between your fingers like a magician's trick gone wrong. No applause—only blood in the wings waiting to spill. The weapon seems familiar to you—like you've seen this moment before.",
+            'victim_msg': "The shiv appears between {attacker_name}'s fingers like a magician's trick gone wrong. No applause—only blood in the wings waiting to spill. The weapon seems familiar to them—like they've seen this moment before.",
+            'observer_msg': "The shiv appears between {attacker_name}'s fingers like a magician's trick gone wrong. No applause—only blood in the wings waiting to spill. The weapon seems familiar to them—like they've seen this moment before."
+        }
     ],
-
     "hit": [
-        "The blade enters like a forgotten memory—jagged, familiar, cruel. {target} reacts too late, their body already rewriting itself around the wound.",
-        "A breath, a twitch, a hole. {attacker} doesn't gloat—they just withdraw the blade like a surgeon uninterested in survival.",
-        "It lands in the side of {target}’s neck, not deep enough to kill, but deep enough to hum. The blade vibrates with residual hatred.",
-        "There’s a squelch, a gasp, a moment of disconnect. {target} blinks rapidly, as if trying to stay tethered to now.",
-        "The strike is clean but not kind. Blood jets in a short arc before gravity remembers how it works.",
-        "{attacker} plunges it in like they’re cashing a check. There’s no ceremony, just cold arithmetic.",
-        "The shiv punches through the soft part of {target}'s side with a hiss. The sound it makes is wrong—intimate, surgical, inevitable.",
-        "{attacker} doesn't pull back. They lean in, twisting the blade until {target}'s knees find the floor like they’ve been there before.",
-        "{target} flinches and still the blade finds home. Not deep, not shallow—just *right*. The way a predator knows where to bite.",
-        "It enters with almost no resistance. {target}'s expression shudders between shock and revelation. Like they’re seeing something they can’t unsee.",
-        "The shiv bites down like it’s got its own will. Blood blossoms in slow motion, thick and floral.",
-        "Pain is a second thought. First comes the *sensation*—a hollowing, a rewiring. The body trying to forget the blade even as it welcomes it.",
-        "The shiv digs in with all the grace of a rusted key in a lock. {target} opens in all the wrong ways.",
-        "{attacker} carves a line through {target}'s midsection like they're editing a sentence. The correction is brutal.",
-        "A short jab, almost casual, turns into agony. {target} folds inward, hands already slick with blood.",
-        "{attacker} plunges the blade and pauses, letting the weight of it settle. {target} gasps like they finally understand the rules.",
-        "The shiv punctures fabric and skin and certainty. Everything after feels like a blur of red and regret.",
-        "{attacker} doesn't stab—they *press*. Slow. Relentless. The point enters like a secret meant to ruin someone.",
-        "The blade punches into {target} with the sound of wet cloth tearing. Their eyes widen, and for a second, it’s like they’ve forgotten what a body is made of. Each inch of steel carries memory. This one adds yours to the ledger.",
-        "It’s not the entry that ruins {target}. It’s the twist. {attacker} rotates the blade slow, deliberate, like stirring sugar into coffee. The blood isn’t just red—it’s warm, sticky, insistent. It wants to stay.",
-        "{attacker} jams the shiv in low and pulls it sideways, carving a path through {target}’s ability to stand upright. The air reeks of copper and regret. There’s an intimacy to it. You feel your body betray you, welcoming the blade.",
-        "There’s a crunch as steel meets bone, and {target} stumbles back, hand to their gut. It won’t help. Nothing will. Pain floods in delayed, like bad news down a phone line.",
-        "The blade finds its mark beneath {target}’s ribs. There’s a moment of stillness, like the world needs a second to process what just happened. The room doesn’t change, but the way you fit inside it does.",
-        "The shiv disappears into flesh and comes out howling. {target} clutches the wound, but their hands are shaking too hard to hold anything in. The scent of metal floods your nose—part steel, part self.",
-        "The shiv plunges in deep—no hesitation, no mercy. {target} jerks like a marionette with its strings slashed. Blood spills, thick and unwilling. The blade pulls a sound from you you’ve never made before.",
-        "It isn’t the blade that hurts—it’s the moment after, the silence, the pressure. {attacker} leaves the shiv in just long enough for {target} to remember the shape of it. Everything slows, the moment stretching around the blade like plastic.",
-        "The edge opens {target} like a confession—spilling things that were meant to stay hidden. {attacker} doesn’t flinch. Doesn’t blink. The air pressure shifts as if the room is holding its breath.",
-        "{attacker} lands the blow with surgical cruelty. The shiv disappears into {target}’s gut and comes out baptized. Nothing about this feels accidental. It’s not just pain—it’s history clawing up through your spine.",
-        "{target} tries to step back, but the shiv is already home. The wound bubbles, ugly and wide. {attacker} watches like they’re painting. You drop something—maybe a weapon, maybe your sense of safety.",
-        "You hear it before you see it: the dull thunk of steel hitting wet meat. {target} folds around the wound like a broken hinge. You weren’t ready. No one ever is for this kind of precision.",
-        "{attacker} plunges the shiv into {target}'s side with a sickening crunch. The rust bites deeper than steel, and {target} knows this wound won't heal right. Each inch of steel carries memory. This one adds yours to the ledger.",
-        "The blade kisses {target}'s stomach, then drags. {attacker}'s grip doesn’t shake. They've done this before. The blood isn’t just red—it’s warm, sticky, insistent. It wants to stay.",
-        "Blood splashes across the pavement as {attacker} jerks the shiv from {target}'s shoulder. There’s more iron in the air now than in the weapon itself. There’s an intimacy to it. You feel your body betray you, welcoming the blade.",
-        "{attacker} moves like a ghost, but the shiv is real. It finds flesh — too fast, too precise — and {target} gasps like they just remembered how breathing works. Pain floods in delayed, like bad news down a phone line.",
-        "The strike is low, quick, dirty. {attacker} doesn’t wait to see if {target} screams — the shiv is already pulling back, glinting wet. The room doesn’t change, but the way you fit inside it does.",
-        "Rust flakes off as the shiv slides between {target}'s ribs. {attacker} whispers something, but only the wound hears. The scent of metal floods your nose—part steel, part self.",
-        "There’s no elegance in the hit — just a wet crunch and {target} reeling, clutching at something that won't stay inside. The blade pulls a sound from you you’ve never made before.",
-        "The shiv finds a gap in {target}'s guard like it was drawn there. {attacker} twists. The sound is worse than the scream. Everything slows, the moment stretching around the blade like plastic.",
-        "{attacker} slams the shiv down like a gavel. {target} drops like the verdict was already decided. The air pressure shifts as if the room is holding its breath.",
-        "It’s not the depth of the wound — it’s where {attacker} put it. {target} buckles, air fleeing like it doesn’t want to watch. It’s not just pain—it’s history clawing up through your spine.",
-        "{attacker} doesn’t aim — they *place* the blade, like they’re painting with pain. {target} shudders as the color runs. You drop something—maybe a weapon, maybe your sense of safety.",
-        "The shiv punches through jacket and muscle like a lie through silence. {target} knows they've been opened. You weren’t ready. No one ever is for this kind of precision.",
-        "{attacker} feints with the left and buries the shiv in the space that opened up. {target} folds in on it like a secret. Each inch of steel carries memory. This one adds yours to the ledger.",
-        "Steel would have been kinder. {attacker}'s shiv rips, not cuts — and {target} is the page being torn. The blood isn’t just red—it’s warm, sticky, insistent. It wants to stay.",
-        "There’s no art to it. Just {attacker}, the shiv, and {target} trying to hold in what’s already gone. There’s an intimacy to it. You feel your body betray you, welcoming the blade.",
-        "The blade barely sinks in, but the look on {attacker}'s face says they’ll go deeper next time. Pain floods in delayed, like bad news down a phone line.",
-        "{attacker} jams the shiv into {target}'s thigh. Mobility is a privilege — and it just got revoked. The room doesn’t change, but the way you fit inside it does.",
-        "{target} jerks back too late. The shiv glances off a rib, scraping like a memory that won't leave. The scent of metal floods your nose—part steel, part self.",
-        "A gout of blood arcs out as {attacker} yanks the blade free. {target} drops something — maybe hope. The blade pulls a sound from you you’ve never made before."
+        {
+            'attacker_msg': "You twist the shiv between ribs like you're winding a music box. {target_name}'s breath hitches in quarter-notes.",
+            'victim_msg': "{attacker_name} twists the shiv between your ribs like they're winding a music box. Your breath hitches in quarter-notes.",
+            'observer_msg': "{attacker_name} twists the shiv between {target_name}'s ribs like they're winding a music box. {target_name}'s breath hitches in quarter-notes."
+        },
+        {
+            'attacker_msg': "The blade slides between {target_name}'s ribs with a wet whisper, finding home in the spaces between heartbeats.",
+            'victim_msg': "The blade slides between your ribs with a wet whisper, finding home in the spaces between heartbeats.",
+            'observer_msg': "The blade slides between {target_name}'s ribs with a wet whisper, finding home in the spaces between heartbeats."
+        },
+        {
+            'attacker_msg': "Your thrust doesn't scream—it murmurs. The shiv parts flesh like curtains, and {target_name} stumbles into the dark behind them.",
+            'victim_msg': "{attacker_name}'s thrust doesn't scream—it murmurs. The shiv parts flesh like curtains, and you stumble into the dark behind them.",
+            'observer_msg': "{attacker_name}'s thrust doesn't scream—it murmurs. The shiv parts flesh like curtains, and {target_name} stumbles into the dark behind them."
+        },
+        {
+            'attacker_msg': "You feel {target_name}'s pulse through the blade, rapid and fading like morse code tapping out a surrender.",
+            'victim_msg': "You feel {attacker_name} feeling your pulse through the blade, rapid and fading like morse code tapping out a surrender.",
+            'observer_msg': "{attacker_name} feels {target_name}'s pulse through the blade, rapid and fading like morse code tapping out a surrender."
+        },
+        {
+            'attacker_msg': "The shiv kisses {target_name}'s ribs with rust and intent. Blood blooms around the entry like ink in water.",
+            'victim_msg': "The shiv kisses your ribs with rust and intent. Blood blooms around the entry like ink in water.",
+            'observer_msg': "The shiv kisses {target_name}'s ribs with rust and intent. Blood blooms around the entry like ink in water."
+        },
+        {
+            'attacker_msg': "Slick. Quick. The blade finds its mark between {target_name}'s fourth and fifth ribs, and their exhale becomes a question they can't finish asking.",
+            'victim_msg': "Slick. Quick. The blade finds its mark between your fourth and fifth ribs, and your exhale becomes a question you can't finish asking.",
+            'observer_msg': "Slick. Quick. The blade finds its mark between {target_name}'s fourth and fifth ribs, and their exhale becomes a question they can't finish asking."
+        },
+        {
+            'attacker_msg': "You don't stab—you *punctuate*. The shiv slides home with a wet sigh, and {target_name}'s eyes go wide like they're reading the punchline to a joke they don't get.",
+            'victim_msg': "{attacker_name} doesn't stab—they *punctuate*. The shiv slides home with a wet sigh, and your eyes go wide like you're reading the punchline to a joke you don't get.",
+            'observer_msg': "{attacker_name} doesn't stab—they *punctuate*. The shiv slides home with a wet sigh, and {target_name}'s eyes go wide like they're reading the punchline to a joke they don't get."
+        },
+        {
+            'attacker_msg': "The metal finds flesh with surgical precision. {target_name} gasps like they're drowning in air too thick to breathe.",
+            'victim_msg': "The metal finds flesh with surgical precision. You gasp like you're drowning in air too thick to breathe.",
+            'observer_msg': "The metal finds flesh with surgical precision. {target_name} gasps like they're drowning in air too thick to breathe."
+        },
+        {
+            'attacker_msg': "Your wrist flicks, and the shiv disappears into {target_name}'s side. For a moment, it's like the blade was never there—until the red starts to show.",
+            'victim_msg': "{attacker_name}'s wrist flicks, and the shiv disappears into your side. For a moment, it's like the blade was never there—until the red starts to show.",
+            'observer_msg': "{attacker_name}'s wrist flicks, and the shiv disappears into {target_name}'s side. For a moment, it's like the blade was never there—until the red starts to show."
+        },
+        {
+            'attacker_msg': "The blade parts skin like a zipper being pulled too fast. {target_name}'s mouth opens, but no sound comes—just the metallic taste of surprise.",
+            'victim_msg': "The blade parts skin like a zipper being pulled too fast. Your mouth opens, but no sound comes—just the metallic taste of surprise.",
+            'observer_msg': "The blade parts skin like a zipper being pulled too fast. {target_name}'s mouth opens, but no sound comes—just the metallic taste of surprise."
+        },
+        {
+            'attacker_msg': "You slide the shiv up under {target_name}'s ribcage like you're picking a lock. The tumblers fall into place with a wet click.",
+            'victim_msg': "{attacker_name} slides the shiv up under your ribcage like they're picking a lock. The tumblers fall into place with a wet click.",
+            'observer_msg': "{attacker_name} slides the shiv up under {target_name}'s ribcage like they're picking a lock. The tumblers fall into place with a wet click."
+        },
+        {
+            'attacker_msg': "Steel meets flesh meets bone in a symphony of wet percussion. {target_name}'s knees buckle like they're genuflecting before something dark.",
+            'victim_msg': "Steel meets flesh meets bone in a symphony of wet percussion. Your knees buckle like you're genuflecting before something dark.",
+            'observer_msg': "Steel meets flesh meets bone in a symphony of wet percussion. {target_name}'s knees buckle like they're genuflecting before something dark."
+        },
+        {
+            'attacker_msg': "The shiv finds the soft spot below {target_name}'s sternum and whispers its way deeper. Their eyes flutter like they're trying to wake up from a dream they can't escape.",
+            'victim_msg': "The shiv finds the soft spot below your sternum and whispers its way deeper. Your eyes flutter like you're trying to wake up from a dream you can't escape.",
+            'observer_msg': "The shiv finds the soft spot below {target_name}'s sternum and whispers its way deeper. Their eyes flutter like they're trying to wake up from a dream they can't escape."
+        },
+        {
+            'attacker_msg': "You feel the resistance give way as the blade pierces {target_name}'s lung. Their breath becomes shallow, urgent—like they're trying to fill a bag with holes.",
+            'victim_msg': "You feel the resistance give way as the blade pierces your lung. Your breath becomes shallow, urgent—like you're trying to fill a bag with holes.",
+            'observer_msg': "You feel the resistance give way as the blade pierces {target_name}'s lung. Their breath becomes shallow, urgent—like they're trying to fill a bag with holes."
+        },
+        {
+            'attacker_msg': "The thrust is intimate, almost tender. You guide the shiv between {target_name}'s ribs like you're tucking them into bed. Forever.",
+            'victim_msg': "The thrust is intimate, almost tender. {attacker_name} guides the shiv between your ribs like they're tucking you into bed. Forever.",
+            'observer_msg': "The thrust is intimate, almost tender. {attacker_name} guides the shiv between {target_name}'s ribs like they're tucking them into bed. Forever."
+        },
+        {
+            'attacker_msg': "You twist the blade like you're adjusting a screw, and {target_name}'s body tightens around it. Their mouth shapes words that never come.",
+            'victim_msg': "{attacker_name} twists the blade like they're adjusting a screw, and your body tightens around it. Your mouth shapes words that never come.",
+            'observer_msg': "{attacker_name} twists the blade like they're adjusting a screw, and {target_name}'s body tightens around it. Their mouth shapes words that never come."
+        },
+        {
+            'attacker_msg': "The shiv slides in smooth as silk, but pulls back rough as concrete. {target_name}'s eyes widen like they're seeing the end of the world for the first time.",
+            'victim_msg': "The shiv slides in smooth as silk, but pulls back rough as concrete. Your eyes widen like you're seeing the end of the world for the first time.",
+            'observer_msg': "The shiv slides in smooth as silk, but pulls back rough as concrete. {target_name}'s eyes widen like they're seeing the end of the world for the first time."
+        },
+        {
+            'attacker_msg': "The blade bites deep, finding nerve clusters you didn't know existed. {target_name} jerks like they've been struck by lightning made of ice.",
+            'victim_msg': "The blade bites deep, finding nerve clusters you didn't know existed. You jerk like you've been struck by lightning made of ice.",
+            'observer_msg': "The blade bites deep, finding nerve clusters {target_name} didn't know existed. {target_name} jerks like they've been struck by lightning made of ice."
+        },
+        {
+            'attacker_msg': "You feel {target_name}'s heartbeat through the hilt—fast, then slower, like a song winding down. The shiv drinks deep.",
+            'victim_msg': "You feel {attacker_name} feeling your heartbeat through the hilt—fast, then slower, like a song winding down. The shiv drinks deep.",
+            'observer_msg': "{attacker_name} feels {target_name}'s heartbeat through the hilt—fast, then slower, like a song winding down. The shiv drinks deep."
+        },
+        {
+            'attacker_msg': "The tip finds the gap between {target_name}'s ribs like water finding a crack in pavement. Their breath becomes a wheeze, then a whisper, then a secret they're afraid to tell.",
+            'victim_msg': "The tip finds the gap between your ribs like water finding a crack in pavement. Your breath becomes a wheeze, then a whisper, then a secret you're afraid to tell.",
+            'observer_msg': "The tip finds the gap between {target_name}'s ribs like water finding a crack in pavement. Their breath becomes a wheeze, then a whisper, then a secret they're afraid to tell."
+        },
+        {
+            'attacker_msg': "You slide the shiv home and hold it there, feeling {target_name}'s life leak out around the edges. Their eyes search yours for something that isn't there anymore.",
+            'victim_msg': "{attacker_name} slides the shiv home and holds it there, feeling your life leak out around the edges. Your eyes search theirs for something that isn't there anymore.",
+            'observer_msg': "{attacker_name} slides the shiv home and holds it there, feeling {target_name}'s life leak out around the edges. {target_name}'s eyes search {attacker_name}'s for something that isn't there anymore."
+        },
+        {
+            'attacker_msg': "The blade punches through {target_name}'s ribs with a sound like breaking kindling. They stumble, clutching at air that suddenly feels too thin to breathe.",
+            'victim_msg': "The blade punches through your ribs with a sound like breaking kindling. You stumble, clutching at air that suddenly feels too thin to breathe.",
+            'observer_msg': "The blade punches through {target_name}'s ribs with a sound like breaking kindling. {target_name} stumbles, clutching at air that suddenly feels too thin to breathe."
+        },
+        {
+            'attacker_msg': "The shiv parts flesh like a curtain being drawn back. Behind it, {target_name} sees darkness deeper than they knew existed. You help them step inside.",
+            'victim_msg': "The shiv parts flesh like a curtain being drawn back. Behind it, you see darkness deeper than you knew existed. {attacker_name} helps you step inside.",
+            'observer_msg': "The shiv parts flesh like a curtain being drawn back. Behind it, {target_name} sees darkness deeper than they knew existed. {attacker_name} helps them step inside."
+        },
+        {
+            'attacker_msg': "Your thrust is precise, clinical. The blade finds the space between {target_name}'s third and fourth ribs like it was always meant to be there. Their expression shifts from confusion to understanding to acceptance in three heartbeats.",
+            'victim_msg': "{attacker_name}'s thrust is precise, clinical. The blade finds the space between your third and fourth ribs like it was always meant to be there. Your expression shifts from confusion to understanding to acceptance in three heartbeats.",
+            'observer_msg': "{attacker_name}'s thrust is precise, clinical. The blade finds the space between {target_name}'s third and fourth ribs like it was always meant to be there. {target_name}'s expression shifts from confusion to understanding to acceptance in three heartbeats."
+        },
+        {
+            'attacker_msg': "The shiv disappears into {target_name}'s torso with a sound like tearing silk. You feel the hilt grow warm in your palm as their body heat transfers through the steel.",
+            'victim_msg': "The shiv disappears into your torso with a sound like tearing silk. You feel the hilt grow warm in {attacker_name}'s palm as your body heat transfers through the steel.",
+            'observer_msg': "The shiv disappears into {target_name}'s torso with a sound like tearing silk. The hilt grows warm in {attacker_name}'s palm as {target_name}'s body heat transfers through the steel."
+        },
+        {
+            'attacker_msg': "You guide the blade up under {target_name}'s ribs with surgical precision. They gasp, and the sound is hollow—like air escaping from a punctured tire.",
+            'victim_msg': "{attacker_name} guides the blade up under your ribs with surgical precision. You gasp, and the sound is hollow—like air escaping from a punctured tire.",
+            'observer_msg': "{attacker_name} guides the blade up under {target_name}'s ribs with surgical precision. {target_name} gasps, and the sound is hollow—like air escaping from a punctured tire."
+        },
+        {
+            'attacker_msg': "The metal finds meat with a wet sound that's almost musical. {target_name}'s knees buckle, and they look at you with eyes that are already going somewhere else.",
+            'victim_msg': "The metal finds meat with a wet sound that's almost musical. Your knees buckle, and you look at {attacker_name} with eyes that are already going somewhere else.",
+            'observer_msg': "The metal finds meat with a wet sound that's almost musical. {target_name}'s knees buckle, and they look at {attacker_name} with eyes that are already going somewhere else."
+        },
+        {
+            'attacker_msg': "You feel the shiv slide between {target_name}'s ribs like a key finding its lock. Their breath stutters, and for a moment, they're more question than person.",
+            'victim_msg': "You feel the shiv slide between your ribs like a key finding its lock. Your breath stutters, and for a moment, you're more question than person.",
+            'observer_msg': "The shiv slides between {target_name}'s ribs like a key finding its lock. Their breath stutters, and for a moment, they're more question than person."
+        },
+        {
+            'attacker_msg': "The blade parts {target_name}'s flesh with a sound like ripping fabric. They clutch at the wound, but their hands can't hold what's already spilling out.",
+            'victim_msg': "The blade parts your flesh with a sound like ripping fabric. You clutch at the wound, but your hands can't hold what's already spilling out.",
+            'observer_msg': "The blade parts {target_name}'s flesh with a sound like ripping fabric. {target_name} clutches at the wound, but their hands can't hold what's already spilling out."
+        },
+        {
+            'attacker_msg': "You twist the shiv with the patience of someone unwrapping a gift. {target_name}'s eyes flutter, and their lips move around words that dissolve before they can speak them.",
+            'victim_msg': "{attacker_name} twists the shiv with the patience of someone unwrapping a gift. Your eyes flutter, and your lips move around words that dissolve before you can speak them.",
+            'observer_msg': "{attacker_name} twists the shiv with the patience of someone unwrapping a gift. {target_name}'s eyes flutter, and their lips move around words that dissolve before they can speak them."
+        },
+        {
+            'attacker_msg': "The thrust is intimate, precise. You slide the blade up under {target_name}'s sternum like you're threading a needle, and they exhale once—a long, slow leak of everything they used to be.",
+            'victim_msg': "The thrust is intimate, precise. {attacker_name} slides the blade up under your sternum like they're threading a needle, and you exhale once—a long, slow leak of everything you used to be.",
+            'observer_msg': "The thrust is intimate, precise. {attacker_name} slides the blade up under {target_name}'s sternum like they're threading a needle, and {target_name} exhales once—a long, slow leak of everything they used to be."
+        },
+        {
+            'attacker_msg': "Steel finds flesh finds bone with a wet percussion that echoes in your chest. {target_name} staggers, and their shadow seems to separate from their body.",
+            'victim_msg': "Steel finds flesh finds bone with a wet percussion that echoes in your chest. You stagger, and your shadow seems to separate from your body.",
+            'observer_msg': "Steel finds flesh finds bone with a wet percussion that echoes in the air. {target_name} staggers, and their shadow seems to separate from their body."
+        },
+        {
+            'attacker_msg': "You slide the shiv between {target_name}'s ribs with the tenderness of someone planting seeds. Their breath becomes shallow, urgent—like they're drowning in inches of water.",
+            'victim_msg': "{attacker_name} slides the shiv between your ribs with the tenderness of someone planting seeds. Your breath becomes shallow, urgent—like you're drowning in inches of water.",
+            'observer_msg': "{attacker_name} slides the shiv between {target_name}'s ribs with the tenderness of someone planting seeds. {target_name}'s breath becomes shallow, urgent—like they're drowning in inches of water."
+        },
+        {
+            'attacker_msg': "The blade punches through {target_name}'s side with a sound like tearing canvas. They look down at the wound with the detached curiosity of someone examining a map to a place they've never been.",
+            'victim_msg': "The blade punches through your side with a sound like tearing canvas. You look down at the wound with the detached curiosity of someone examining a map to a place you've never been.",
+            'observer_msg': "The blade punches through {target_name}'s side with a sound like tearing canvas. {target_name} looks down at the wound with the detached curiosity of someone examining a map to a place they've never been."
+        },
+        {
+            'attacker_msg': "You feel the resistance give way as the shiv finds the soft space below {target_name}'s ribcage. Their eyes widen, and for a moment, they look like they're trying to remember something important they've forgotten.",
+            'victim_msg': "You feel the resistance give way as the shiv finds the soft space below your ribcage. Your eyes widen, and for a moment, you look like you're trying to remember something important you've forgotten.",
+            'observer_msg': "The resistance gives way as the shiv finds the soft space below {target_name}'s ribcage. {target_name}'s eyes widen, and for a moment, they look like they're trying to remember something important they've forgotten."
+        },
+        {
+            'attacker_msg': "The shiv slides home with a wet whisper, and {target_name}'s breath catches like they've been struck by lightning. You feel their pulse through the hilt—rapid, then slower, then gone.",
+            'victim_msg': "The shiv slides home with a wet whisper, and your breath catches like you've been struck by lightning. You feel {attacker_name} feeling your pulse through the hilt—rapid, then slower, then gone.",
+            'observer_msg': "The shiv slides home with a wet whisper, and {target_name}'s breath catches like they've been struck by lightning. {attacker_name} feels their pulse through the hilt—rapid, then slower, then gone."
+        },
+        {
+            'attacker_msg': "You guide the blade between {target_name}'s ribs with the precision of someone threading a needle in dim light. They exhale once, long and slow, like they're letting go of something heavy they've been carrying for years.",
+            'victim_msg': "{attacker_name} guides the blade between your ribs with the precision of someone threading a needle in dim light. You exhale once, long and slow, like you're letting go of something heavy you've been carrying for years.",
+            'observer_msg': "{attacker_name} guides the blade between {target_name}'s ribs with the precision of someone threading a needle in dim light. {target_name} exhales once, long and slow, like they're letting go of something heavy they've been carrying for years."
+        },
+        {
+            'attacker_msg': "The tip finds {target_name}'s lung with surgical precision, and their breath becomes a wheeze, then a whisper, then nothing at all. You hold the hilt steady as their life drains away around the edges.",
+            'victim_msg': "The tip finds your lung with surgical precision, and your breath becomes a wheeze, then a whisper, then nothing at all. {attacker_name} holds the hilt steady as your life drains away around the edges.",
+            'observer_msg': "The tip finds {target_name}'s lung with surgical precision, and their breath becomes a wheeze, then a whisper, then nothing at all. {attacker_name} holds the hilt steady as {target_name}'s life drains away around the edges."
+        },
+        {
+            'attacker_msg': "You slide the shiv up under {target_name}'s sternum with the tenderness of someone tucking a child into bed. They look at you with eyes that are already somewhere else, and their lips move around a word they can't quite form.",
+            'victim_msg': "{attacker_name} slides the shiv up under your sternum with the tenderness of someone tucking a child into bed. You look at them with eyes that are already somewhere else, and your lips move around a word you can't quite form.",
+            'observer_msg': "{attacker_name} slides the shiv up under {target_name}'s sternum with the tenderness of someone tucking a child into bed. {target_name} looks at them with eyes that are already somewhere else, and their lips move around a word they can't quite form."
+        },
+        {
+            'attacker_msg': "The blade disappears into {target_name}'s torso with a sound like breaking glass wrapped in silk. You feel their heartbeat through the steel—fast, then slower, then gone.",
+            'victim_msg': "The blade disappears into your torso with a sound like breaking glass wrapped in silk. You feel {attacker_name} feeling your heartbeat through the steel—fast, then slower, then gone.",
+            'observer_msg': "The blade disappears into {target_name}'s torso with a sound like breaking glass wrapped in silk. {attacker_name} feels their heartbeat through the steel—fast, then slower, then gone."
+        },
+        {
+            'attacker_msg': "You twist the shiv with the patience of someone solving a puzzle. {target_name} gasps, and the sound is hollow—like air escaping from somewhere deep and secret.",
+            'victim_msg': "{attacker_name} twists the shiv with the patience of someone solving a puzzle. You gasp, and the sound is hollow—like air escaping from somewhere deep and secret.",
+            'observer_msg': "{attacker_name} twists the shiv with the patience of someone solving a puzzle. {target_name} gasps, and the sound is hollow—like air escaping from somewhere deep and secret."
+        }
     ],
-
     "miss": [
-        "The blade misses, but just barely. You feel it in the way the room stiffens, like breath held too long.",
-        "{attacker} moves like they’ve done this in dreams, but dreams don’t fight back. {target} slips sideways, heart pounding.",
-        "The swing is wide, theatrical almost—but behind it is history. And behind that, something worse.",
-        "A blur of motion, a blur of metal. The cut never lands, but fear digs in anyway.",
-        "It whistles past {target}'s hip, parting fabric, ambition, and maybe fate.",
-        "Even in failure, the move paints tension across the scene. {attacker} pulls back, and the shiv looks hungry.",
-        "The strike is fast—too fast. But {target} drops low, the blade carving only wind and consequence.",
-        "You can hear the swing whistle by, a sound sharp enough to cut thought. {target} barely blinks, but their spine stays intact.",
-        "{attacker}'s motion is smooth, practiced, almost elegant. But elegance doesn’t kill unless it connects.",
-        "{target} reels back, feet slipping slightly, heart pounding. The shiv missed, but just barely enough to haunt them.",
-        "The slash is wide, too wide. It carves a scar into the atmosphere, and {attacker}'s expression tightens.",
-        "Steel arcs out and returns empty. The air is heavier now, like even it understands how close that was.",
-        "The shiv slashes empty space, but the air winces. {target} does too.",
-        "It whistles past {target}'s throat, and the sound it makes is almost curious. Like it meant to connect.",
-        "{attacker} overextends, just barely. {target}'s shoulder twists out of reach by a breath and a prayer.",
-        "The blade flicks too soon, and {target} stumbles backwards, wide-eyed. The message was still received.",
-        "It doesn’t land, but the attempt leaves its own scar. Fear finds purchase where the steel didn’t.",
-        "The lunge is violent and imperfect. The only thing {attacker} wounds is the moment.",
-        "{attacker} strikes with the desperation of a cornered animal, but {target} reads it like déjà vu and slips just out of range. But even a miss cuts the air. It leaves tension behind.",
-        "The shiv slices through space, the edge catching only coat threads and bad intentions. {target} lets out a breath they didn’t know they were holding. The follow-through is too smooth to be accidental.",
-        "{attacker} feints left, lunges right, and still the blade hits nothing but stale air. The dance continues. Your skin remembers how close it came. So does your heart.",
-        "Steel flashes but lands wide. The failure hangs heavy between them—brief, but loud in its implications. It’s a warning shot with no kindness behind it.",
-        "The lunge is beautiful—graceful, even. But it’s wasted. {target} isn't there anymore. The blade doesn’t land, but the message does.",
-        "A flicker of movement, a glint of metal, and then—nothing. The moment collapses, the wound never lands. The floor trembles under the sudden shift in momentum.",
-        "The blade carves air, slicing the moment but not the flesh. {attacker} doesn’t seem bothered—this is a dance, and they know all the steps. You feel the draft the blade makes, colder than it should be.",
-        "{target} stumbles just out of reach, the shiv singing past their ribs. Close enough to share breath, but not enough to share blood. A whisper of air across your throat reminds you how fragile you are.",
-        "A flick of silver arcs wide, missing {target} by a breath. {attacker} just grins—this isn’t over, not even close. Even the miss sounds wet. Like the future was almost altered.",
-        "{attacker} lunges but the shiv meets only clothing, maybe pride. {target} escapes intact—for now. The attacker recalibrates. This was just the first swing.",
-        "The shiv bites wind, not flesh. Still, the weight of that moment lingers in the room like a second shadow. The walls seem to echo with the scrape of potential.",
-        "No contact—just tension. {attacker} recalibrates, the shiv twitching like it’s hungry and confused by the lack of blood. Everyone watching knows this isn’t over. It just began.",
-        "{attacker}'s blade whistles through the space {target} just vacated. A close call — the kind that ends in blood next time. But even a miss cuts the air. It leaves tension behind.",
-        "{target} catches the movement and sidesteps. The shiv misses, but just barely. That rust-stink is still in the air. The follow-through is too smooth to be accidental.",
-        "A grunt, a twitch, a slip — {attacker}'s jab goes wide and {target} stumbles back, heart racing. Your skin remembers how close it came. So does your heart.",
-        "{attacker} lunges, but {target} twists. The shiv finds only jacket — and even then, it leaves a scar. It’s a warning shot with no kindness behind it.",
-        "{attacker} overcommits, blade flashing past {target}'s ear. The wind from it is colder than the night. The blade doesn’t land, but the message does.",
-        "The shiv strikes the wall instead with a metal-on-brick scream. {target} knows how close that was. The floor trembles under the sudden shift in momentum.",
-        "{attacker} slices at the dark and finds more dark. {target} isn't where they were supposed to be. You feel the draft the blade makes, colder than it should be.",
-        "The blade gleams, then glances off {target}'s boot, skittering away. {attacker} curses — quietly, urgently. A whisper of air across your throat reminds you how fragile you are.",
-        "{attacker} lunges, but {target} ducks. It’s not pretty, but it works. Even the miss sounds wet. Like the future was almost altered.",
-        "The alley echoes with a grunt and nothing else. {attacker} missed. {target} doesn't plan to let them try again. The attacker recalibrates. This was just the first swing.",
-        "Rust flakes fall like confetti. The shiv missed. The tension didn’t. The walls seem to echo with the scrape of potential.",
-        "{attacker}'s strike is sharp — just not sharp enough. {target} sways out of reach. Everyone watching knows this isn’t over. It just began.",
-        "A moment too slow. The blade sings through empty air. {target} is already behind them. But even a miss cuts the air. It leaves tension behind.",
-        "{target} blocks the stab with a clumsy elbow. It hurts — but it beats the alternative. The follow-through is too smooth to be accidental.",
-        "{attacker} snarls, blade arcing uselessly. {target} isn't where they used to be. Your skin remembers how close it came. So does your heart."
+        {
+            'attacker_msg': "Your thrust slides past {target_name} like smoke through fingers. The shiv tastes only air, hungry and unsatisfied.",
+            'victim_msg': "{attacker_name}'s thrust slides past you like smoke through fingers. The shiv tastes only air, hungry and unsatisfied.",
+            'observer_msg': "{attacker_name}'s thrust slides past {target_name} like smoke through fingers. The shiv tastes only air, hungry and unsatisfied."
+        },
+        {
+            'attacker_msg': "The blade whispers past {target_name}'s ribs, close enough to count their heartbeats. Next time, you think. Next time.",
+            'victim_msg': "The blade whispers past your ribs, close enough to count your heartbeats. Next time, you think {attacker_name} thinks. Next time.",
+            'observer_msg': "The blade whispers past {target_name}'s ribs, close enough to count their heartbeats. Next time, {attacker_name} seems to think. Next time."
+        },
+        {
+            'attacker_msg': "{target_name} twists away at the last second, and your shiv cuts only shadow. The moment hangs in the air like smoke.",
+            'victim_msg': "You twist away at the last second, and {attacker_name}'s shiv cuts only shadow. The moment hangs in the air like smoke.",
+            'observer_msg': "{target_name} twists away at the last second, and {attacker_name}'s shiv cuts only shadow. The moment hangs in the air like smoke."
+        },
+        {
+            'attacker_msg': "The shiv slides past {target_name} like water around a stone. Your breath hisses between your teeth—frustration given voice.",
+            'victim_msg': "The shiv slides past you like water around a stone. {attacker_name}'s breath hisses between their teeth—frustration given voice.",
+            'observer_msg': "The shiv slides past {target_name} like water around a stone. {attacker_name}'s breath hisses between their teeth—frustration given voice."
+        },
+        {
+            'attacker_msg': "You thrust, but {target_name} isn't where they were a heartbeat ago. The blade tastes only the ghost of opportunity.",
+            'victim_msg': "{attacker_name} thrusts, but you aren't where you were a heartbeat ago. The blade tastes only the ghost of opportunity.",
+            'observer_msg': "{attacker_name} thrusts, but {target_name} isn't where they were a heartbeat ago. The blade tastes only the ghost of opportunity."
+        },
+        {
+            'attacker_msg': "The shiv cuts air instead of flesh, and the silence that follows is heavier than blood. {target_name} dances just out of reach.",
+            'victim_msg': "The shiv cuts air instead of flesh, and the silence that follows is heavier than blood. You dance just out of reach.",
+            'observer_msg': "The shiv cuts air instead of flesh, and the silence that follows is heavier than blood. {target_name} dances just out of reach."
+        },
+        {
+            'attacker_msg': "Your strike goes wide, and the shiv finds only the memory of where {target_name} used to be. The blade trembles with need.",
+            'victim_msg': "{attacker_name}'s strike goes wide, and the shiv finds only the memory of where you used to be. The blade trembles with need.",
+            'observer_msg': "{attacker_name}'s strike goes wide, and the shiv finds only the memory of where {target_name} used to be. The blade trembles with need."
+        },
+        {
+            'attacker_msg': "{target_name} sidesteps your thrust like they're avoiding a puddle. The blade whispers promises it can't keep to empty air.",
+            'victim_msg': "You sidestep {attacker_name}'s thrust like you're avoiding a puddle. The blade whispers promises it can't keep to empty air.",
+            'observer_msg': "{target_name} sidesteps {attacker_name}'s thrust like they're avoiding a puddle. The blade whispers promises it can't keep to empty air."
+        },
+        {
+            'attacker_msg': "The shiv parts the air where {target_name} isn't anymore, leaving only the taste of missed opportunities and the echo of what might have been.",
+            'victim_msg': "The shiv parts the air where you aren't anymore, leaving only the taste of missed opportunities and the echo of what might have been.",
+            'observer_msg': "The shiv parts the air where {target_name} isn't anymore, leaving only the taste of missed opportunities and the echo of what might have been."
+        },
+        {
+            'attacker_msg': "Your thrust is true, but {target_name} is smoke—there and not there and somewhere else entirely. The blade finds only disappointment.",
+            'victim_msg': "{attacker_name}'s thrust is true, but you are smoke—there and not there and somewhere else entirely. The blade finds only disappointment.",
+            'observer_msg': "{attacker_name}'s thrust is true, but {target_name} is smoke—there and not there and somewhere else entirely. The blade finds only disappointment."
+        },
+        {
+            'attacker_msg': "The shiv slides past {target_name} like it's cutting through water. Your eyes narrow—calculation replacing instinct.",
+            'victim_msg': "The shiv slides past you like it's cutting through water. {attacker_name}'s eyes narrow—calculation replacing instinct.",
+            'observer_msg': "The shiv slides past {target_name} like it's cutting through water. {attacker_name}'s eyes narrow—calculation replacing instinct."
+        },
+        {
+            'attacker_msg': "{target_name} leans back just enough, and your blade tastes only the phantom of flesh. The miss hangs between you like unfinished business.",
+            'victim_msg': "You lean back just enough, and {attacker_name}'s blade tastes only the phantom of flesh. The miss hangs between you like unfinished business.",
+            'observer_msg': "{target_name} leans back just enough, and {attacker_name}'s blade tastes only the phantom of flesh. The miss hangs between them like unfinished business."
+        },
+        {
+            'attacker_msg': "You slice through the space {target_name} occupied a moment ago. The shiv trembles in your grip, frustrated by the absence of contact.",
+            'victim_msg': "{attacker_name} slices through the space you occupied a moment ago. The shiv trembles in their grip, frustrated by the absence of contact.",
+            'observer_msg': "{attacker_name} slices through the space {target_name} occupied a moment ago. The shiv trembles in {attacker_name}'s grip, frustrated by the absence of contact."
+        },
+        {
+            'attacker_msg': "The blade whispers past {target_name}'s throat, close enough to fog with their breath. Almost. Almost is the cruelest word.",
+            'victim_msg': "The blade whispers past your throat, close enough to fog with your breath. Almost. Almost is the cruelest word.",
+            'observer_msg': "The blade whispers past {target_name}'s throat, close enough to fog with their breath. Almost. Almost is the cruelest word."
+        },
+        {
+            'attacker_msg': "{target_name} flows around your strike like water around a rock. The shiv finds only empty space and the echo of possibility.",
+            'victim_msg': "You flow around {attacker_name}'s strike like water around a rock. The shiv finds only empty space and the echo of possibility.",
+            'observer_msg': "{target_name} flows around {attacker_name}'s strike like water around a rock. The shiv finds only empty space and the echo of possibility."
+        },
+        {
+            'attacker_msg': "Your thrust goes high, and the shiv cuts through air thick with missed opportunity. {target_name} is already somewhere else.",
+            'victim_msg': "{attacker_name}'s thrust goes high, and the shiv cuts through air thick with missed opportunity. You are already somewhere else.",
+            'observer_msg': "{attacker_name}'s thrust goes high, and the shiv cuts through air thick with missed opportunity. {target_name} is already somewhere else."
+        },
+        {
+            'attacker_msg': "The blade parts the air where {target_name} should have been. Your teeth grind against the taste of frustration.",
+            'victim_msg': "The blade parts the air where you should have been. {attacker_name}'s teeth grind against the taste of frustration.",
+            'observer_msg': "The blade parts the air where {target_name} should have been. {attacker_name}'s teeth grind against the taste of frustration."
+        },
+        {
+            'attacker_msg': "{target_name} ducks under your swing, and the shiv tastes only the memory of contact. The moment stretches like taffy.",
+            'victim_msg': "You duck under {attacker_name}'s swing, and the shiv tastes only the memory of contact. The moment stretches like taffy.",
+            'observer_msg': "{target_name} ducks under {attacker_name}'s swing, and the shiv tastes only the memory of contact. The moment stretches like taffy."
+        },
+        {
+            'attacker_msg': "Your strike slides past {target_name} like a ghost through a wall. The blade trembles with unfulfilled hunger.",
+            'victim_msg': "{attacker_name}'s strike slides past you like a ghost through a wall. The blade trembles with unfulfilled hunger.",
+            'observer_msg': "{attacker_name}'s strike slides past {target_name} like a ghost through a wall. The blade trembles with unfulfilled hunger."
+        },
+        {
+            'attacker_msg': "The shiv whispers through empty air where {target_name} used to be. Your breathing becomes sharp, measured—patience wearing thin.",
+            'victim_msg': "The shiv whispers through empty air where you used to be. {attacker_name}'s breathing becomes sharp, measured—patience wearing thin.",
+            'observer_msg': "The shiv whispers through empty air where {target_name} used to be. {attacker_name}'s breathing becomes sharp, measured—patience wearing thin."
+        },
+        {
+            'attacker_msg': "{target_name} slips your thrust like smoke through fingers. The blade finds only disappointment and the taste of what could have been.",
+            'victim_msg': "You slip {attacker_name}'s thrust like smoke through fingers. The blade finds only disappointment and the taste of what could have been.",
+            'observer_msg': "{target_name} slips {attacker_name}'s thrust like smoke through fingers. The blade finds only disappointment and the taste of what could have been."
+        },
+        {
+            'attacker_msg': "The shiv cuts a line through the air, but {target_name} is already gone—existing in the spaces between seconds. Your eyes track movement that isn't there anymore.",
+            'victim_msg': "The shiv cuts a line through the air, but you are already gone—existing in the spaces between seconds. {attacker_name}'s eyes track movement that isn't there anymore.",
+            'observer_msg': "The shiv cuts a line through the air, but {target_name} is already gone—existing in the spaces between seconds. {attacker_name}'s eyes track movement that isn't there anymore."
+        },
+        {
+            'attacker_msg': "You thrust where {target_name} was, not where they are. The blade tastes only the phantom of flesh, leaving you holding hunger shaped like steel.",
+            'victim_msg': "{attacker_name} thrusts where you were, not where you are. The blade tastes only the phantom of flesh, leaving them holding hunger shaped like steel.",
+            'observer_msg': "{attacker_name} thrusts where {target_name} was, not where they are. The blade tastes only the phantom of flesh, leaving {attacker_name} holding hunger shaped like steel."
+        },
+        {
+            'attacker_msg': "The shiv slides past {target_name} like water off glass. Your knuckles whiten around the grip—control slipping like everything else.",
+            'victim_msg': "The shiv slides past you like water off glass. {attacker_name}'s knuckles whiten around the grip—control slipping like everything else.",
+            'observer_msg': "The shiv slides past {target_name} like water off glass. {attacker_name}'s knuckles whiten around the grip—control slipping like everything else."
+        },
+        {
+            'attacker_msg': "{target_name} moves like liquid mercury, and your blade finds only the ghost of possibility. The silence afterward feels heavier than blood.",
+            'victim_msg': "You move like liquid mercury, and {attacker_name}'s blade finds only the ghost of possibility. The silence afterward feels heavier than blood.",
+            'observer_msg': "{target_name} moves like liquid mercury, and {attacker_name}'s blade finds only the ghost of possibility. The silence afterward feels heavier than blood."
+        },
+        {
+            'attacker_msg': "Your thrust goes wide, and the shiv parts air that tastes of missed opportunities. {target_name} is already three steps ahead of your intentions.",
+            'victim_msg': "{attacker_name}'s thrust goes wide, and the shiv parts air that tastes of missed opportunities. You are already three steps ahead of their intentions.",
+            'observer_msg': "{attacker_name}'s thrust goes wide, and the shiv parts air that tastes of missed opportunities. {target_name} is already three steps ahead of {attacker_name}'s intentions."
+        },
+        {
+            'attacker_msg': "The blade whispers past {target_name}'s ribs, close enough to steal warmth from their skin. Your jaw tightens—proximity is not contact.",
+            'victim_msg': "The blade whispers past your ribs, close enough to steal warmth from your skin. {attacker_name}'s jaw tightens—proximity is not contact.",
+            'observer_msg': "The blade whispers past {target_name}'s ribs, close enough to steal warmth from their skin. {attacker_name}'s jaw tightens—proximity is not contact."
+        },
+        {
+            'attacker_msg': "{target_name} weaves through your strike like smoke through a screen door. The shiv finds only empty space and the echo of what might have been violence.",
+            'victim_msg': "You weave through {attacker_name}'s strike like smoke through a screen door. The shiv finds only empty space and the echo of what might have been violence.",
+            'observer_msg': "{target_name} weaves through {attacker_name}'s strike like smoke through a screen door. The shiv finds only empty space and the echo of what might have been violence."
+        },
+        {
+            'attacker_msg': "You slice through the shadow {target_name} left behind. The blade trembles in your grip like a tuning fork struck against disappointment.",
+            'victim_msg': "{attacker_name} slices through the shadow you left behind. The blade trembles in their grip like a tuning fork struck against disappointment.",
+            'observer_msg': "{attacker_name} slices through the shadow {target_name} left behind. The blade trembles in {attacker_name}'s grip like a tuning fork struck against disappointment."
+        },
+        {
+            'attacker_msg': "The shiv parts the air where {target_name} should have been, leaving only the taste of almosts and the weight of unfinished sentences.",
+            'victim_msg': "The shiv parts the air where you should have been, leaving only the taste of almosts and the weight of unfinished sentences.",
+            'observer_msg': "The shiv parts the air where {target_name} should have been, leaving only the taste of almosts and the weight of unfinished sentences."
+        },
+        {
+            'attacker_msg': "{target_name} slips your thrust like oil through fingers. Your breathing becomes sharp, focused—mathematics replacing emotion.",
+            'victim_msg': "You slip {attacker_name}'s thrust like oil through fingers. Their breathing becomes sharp, focused—mathematics replacing emotion.",
+            'observer_msg': "{target_name} slips {attacker_name}'s thrust like oil through fingers. {attacker_name}'s breathing becomes sharp, focused—mathematics replacing emotion."
+        },
+        {
+            'attacker_msg': "The blade whispers through empty air, tasting only the phantom of flesh. {target_name} exists in the spaces between your intentions.",
+            'victim_msg': "The blade whispers through empty air, tasting only the phantom of flesh. You exist in the spaces between {attacker_name}'s intentions.",
+            'observer_msg': "The blade whispers through empty air, tasting only the phantom of flesh. {target_name} exists in the spaces between {attacker_name}'s intentions."
+        },
+        {
+            'attacker_msg': "Your strike slides past {target_name} like rain down a window. The shiv finds only disappointment shaped like opportunity.",
+            'victim_msg': "{attacker_name}'s strike slides past you like rain down a window. The shiv finds only disappointment shaped like opportunity.",
+            'observer_msg': "{attacker_name}'s strike slides past {target_name} like rain down a window. The shiv finds only disappointment shaped like opportunity."
+        },
+        {
+            'attacker_msg': "{target_name} moves like water finding the path of least resistance, and your blade cuts only the memory of contact. The moment hangs suspended like dust in sunlight.",
+            'victim_msg': "You move like water finding the path of least resistance, and {attacker_name}'s blade cuts only the memory of contact. The moment hangs suspended like dust in sunlight.",
+            'observer_msg': "{target_name} moves like water finding the path of least resistance, and {attacker_name}'s blade cuts only the memory of contact. The moment hangs suspended like dust in sunlight."
+        },
+        {
+            'attacker_msg': "The shiv tastes only air where {target_name} used to be standing. Your eyes narrow—recalculation becoming necessity.",
+            'victim_msg': "The shiv tastes only air where you used to be standing. {attacker_name}'s eyes narrow—recalculation becoming necessity.",
+            'observer_msg': "The shiv tastes only air where {target_name} used to be standing. {attacker_name}'s eyes narrow—recalculation becoming necessity."
+        },
+        {
+            'attacker_msg': "You thrust through the space {target_name} occupied a heartbeat ago. The blade finds only the ghost of possibility and the weight of missed connections.",
+            'victim_msg': "{attacker_name} thrusts through the space you occupied a heartbeat ago. The blade finds only the ghost of possibility and the weight of missed connections.",
+            'observer_msg': "{attacker_name} thrusts through the space {target_name} occupied a heartbeat ago. The blade finds only the ghost of possibility and the weight of missed connections."
+        },
+        {
+            'attacker_msg': "The shiv parts the air like a curtain, but {target_name} has already slipped behind the scenery. Your grip tightens—patience becoming a liability.",
+            'victim_msg': "The shiv parts the air like a curtain, but you have already slipped behind the scenery. {attacker_name}'s grip tightens—patience becoming a liability.",
+            'observer_msg': "The shiv parts the air like a curtain, but {target_name} has already slipped behind the scenery. {attacker_name}'s grip tightens—patience becoming a liability."
+        },
+        {
+            'attacker_msg': "{target_name} flows around your strike like smoke through a broken window. The blade finds only emptiness and the taste of unfulfilled promises.",
+            'victim_msg': "You flow around {attacker_name}'s strike like smoke through a broken window. The blade finds only emptiness and the taste of unfulfilled promises.",
+            'observer_msg': "{target_name} flows around {attacker_name}'s strike like smoke through a broken window. The blade finds only emptiness and the taste of unfulfilled promises."
+        },
+        {
+            'attacker_msg': "Your thrust slides past {target_name} like a secret that can't find anyone to tell it to. The shiv trembles with hunger that won't be fed.",
+            'victim_msg': "{attacker_name}'s thrust slides past you like a secret that can't find anyone to tell it to. The shiv trembles with hunger that won't be fed.",
+            'observer_msg': "{attacker_name}'s thrust slides past {target_name} like a secret that can't find anyone to tell it to. The shiv trembles with hunger that won't be fed."
+        },
+        {
+            'attacker_msg': "The blade whispers through the space where {target_name} should have been, leaving only the echo of intentions and the taste of almost.",
+            'victim_msg': "The blade whispers through the space where you should have been, leaving only the echo of intentions and the taste of almost.",
+            'observer_msg': "The blade whispers through the space where {target_name} should have been, leaving only the echo of intentions and the taste of almost."
+        },
+        {
+            'attacker_msg': "{target_name} sidesteps your strike like they're avoiding a puddle of regret. The shiv finds only the disappointment of missed opportunity.",
+            'victim_msg': "You sidestep {attacker_name}'s strike like you're avoiding a puddle of regret. The shiv finds only the disappointment of missed opportunity.",
+            'observer_msg': "{target_name} sidesteps {attacker_name}'s strike like they're avoiding a puddle of regret. The shiv finds only the disappointment of missed opportunity."
+        },
+        {
+            'attacker_msg': "You slice through the phantom of {target_name}'s presence, and the blade finds only the weight of what isn't there. The miss tastes like copper and failure.",
+            'victim_msg': "{attacker_name} slices through the phantom of your presence, and the blade finds only the weight of what isn't there. The miss tastes like copper and failure.",
+            'observer_msg': "{attacker_name} slices through the phantom of {target_name}'s presence, and the blade finds only the weight of what isn't there. The miss tastes like copper and failure."
+        },
+        {
+            'attacker_msg': "The shiv parts air that's still warm from {target_name}'s passage. Your eyes track movement that's already become memory.",
+            'victim_msg': "The shiv parts air that's still warm from your passage. {attacker_name}'s eyes track movement that's already become memory.",
+            'observer_msg': "The shiv parts air that's still warm from {target_name}'s passage. {attacker_name}'s eyes track movement that's already become memory."
+        },
+        {
+            'attacker_msg': "{target_name} moves like liquid shadow, and your blade finds only the spaces between certainties. The moment stretches like wire under tension.",
+            'victim_msg': "You move like liquid shadow, and {attacker_name}'s blade finds only the spaces between certainties. The moment stretches like wire under tension.",
+            'observer_msg': "{target_name} moves like liquid shadow, and {attacker_name}'s blade finds only the spaces between certainties. The moment stretches like wire under tension."
+        },
+        {
+            'attacker_msg': "Your thrust goes wide, and the shiv tastes only the bitterness of proximity without contact. {target_name} exists in the margins of your intention.",
+            'victim_msg': "{attacker_name}'s thrust goes wide, and the shiv tastes only the bitterness of proximity without contact. You exist in the margins of their intention.",
+            'observer_msg': "{attacker_name}'s thrust goes wide, and the shiv tastes only the bitterness of proximity without contact. {target_name} exists in the margins of {attacker_name}'s intention."
+        }
     ],
-
     "kill": [
-        "The blade enters under the chin and never stops. {target} makes a sound like static before their legs give way.",
-        "{attacker} doesn't hesitate. They bury the shiv like they're planting something dark. {target} crumples, already forgotten.",
-        "You can hear the gurgle all the way across the room. {target} slumps, leaking heat and meaning.",
-        "{attacker} drives the blade home and twists with finality. {target} twitches like an unplugged machine.",
-        "The strike is ugly, terminal. {target} folds in on themselves like a bad idea realized too late.",
-        "Blood hits the floor in heavy drops. {target} doesn't even scream—just collapses like the scene’s over.",
-        "{attacker} slides the blade in slow, deliberate. {target} stiffens, then slackens, like a puppet whose strings were pulled too tight, then cut.",
-        "The final wound doesn’t bleed—it sighs. {target} exhales one last time, body folding like an apology never spoken.",
-        "It doesn’t matter how many times you’ve seen it. The death still lands like a punch to the ribs. {target} is gone, eyes open, chest still.",
-        "A flick of the wrist, a shift of weight, and the world unravels for {target}. They fall as though something gave up inside them.",
-        "There is no flourish. Just a shove, a twist, and silence that settles like dust over fresh blood.",
-        "{attacker} doesn’t hesitate. They carve {target} down like a line being crossed, and when it’s over, there’s nothing left to question.",
-        "{attacker} steps in, buries the shiv, and holds it there. {target} sags against them like a confession. Then drops.",
-        "There’s a finality in how the blade lands—an ending more than a strike. {target} doesn't fall. They vanish.",
-        "{attacker} drives the blade up beneath the ribs, lifting slightly. {target}'s legs kick once, twice, then nothing.",
-        "Blood leaps from the wound like it's been waiting. {target} watches it happen in silence before their knees give out.",
-        "{attacker} doesn't even look angry—just *resolved*. {target} dies to punctuation, not passion.",
-        "The shiv does its job. The light in {target}'s eyes skips like a bad tape, then cuts out completely.",
-        "The blade kisses {target} one last time, deep and fatal. Their knees buckle as if the world itself just gave out beneath them. The sound isn’t a scream. It’s a silence that sucks the heat from the room.",
-        "It’s not clean, but it’s final. The shiv goes in and stays for a second, like it’s savoring the moment. {target} crumples without ceremony. The way they fall is final—there’s no poetry, just absence.",
-        "{attacker} stabs and doesn’t stop. The blade saws, slips, sinks until {target} stops twitching. The floor will remember this. Blood pools, thick as oil. It carries the heat of a life just ended.",
-        "A choke, a gurgle, and then silence. {target} falls in a heap that doesn’t resemble a person anymore. {attacker} steps over them like refuse. You can hear their last breath leaking out like a dying radiator.",
-        "The wound is almost elegant, a single red bloom on a ruined canvas. {attacker} watches as {target} folds, the light going out behind their eyes. There’s a slump, a twitch, and then the kind of stillness you can’t fake.",
-        "No screaming. Just wet breath and blood tapping out a rhythm on the tile. {attacker} breathes in deep. It smells like victory. The light in their eyes doesn’t fade—it *cuts out*, like a bad signal.",
-        "The blade finds something vital. {target} gurgles, then collapses, a puppet cut from its strings. {attacker} steps back like they’re admiring their signature. You smell it—ozone and something underneath. Something human.",
-        "It’s not a fight anymore. It’s an ending. The shiv disappears into {target} and when it leaves, so does the light in their eyes. The blade exits slower than it entered, dragging time with it.",
-        "{attacker} buries the shiv up to the hilt. {target} spasms once, then stills, their blood spreading out like spilled ink on a floor full of bad decisions. No one says anything. There’s nothing to say that won’t rot in the throat.",
-        "No scream. No theatrics. Just a wet sound, a sudden sag, and the unmistakable smell of someone being deleted from existence. It wasn’t murder. It was maintenance.",
-        "{attacker} drives the shiv in with practiced rhythm, like they’ve done this a hundred times and plan to do it a hundred more. {target} doesn't even get a last word. Even the shiv seems quieter now, like it’s tasted satisfaction.",
-        "The shiv enters and something in {target} leaves—something permanent. What’s left falls in on itself like a building condemned. The world shifts half a degree, like reality updated itself post-mortem.",
-        "The shiv goes in. It stays for a moment — just long enough to whisper something only {attacker} can hear. Then it’s out. {target} isn't. The sound isn’t a scream. It’s a silence that sucks the heat from the room.",
-        "There’s no scream — just a wet choke and a collapse. {attacker} doesn’t flinch. The shiv is already vanishing. The way they fall is final—there’s no poetry, just absence.",
-        "{attacker} sinks the blade deep and holds it there. {target} spasms, then stills. The alley is silent. Blood pools, thick as oil. It carries the heat of a life just ended.",
-        "Blood patters to the ground like rain. {attacker} wipes the shiv on {target}'s shirt and steps back. You can hear their last breath leaking out like a dying radiator.",
-        "The final blow isn’t fast — it’s precise. Surgical. {attacker} makes sure {target} remembers it all the way down. There’s a slump, a twitch, and then the kind of stillness you can’t fake.",
-        "One last twist. {target} folds in on themselves, leaking everything they were. {attacker} exhales. The light in their eyes doesn’t fade—it *cuts out*, like a bad signal.",
-        "The shiv enters like punctuation. The sentence {target} was trying to say ends there. You smell it—ozone and something underneath. Something human.",
-        "{attacker} grips the back of {target}'s neck and drives the blade home. It's intimate. Ugly. Final. The blade exits slower than it entered, dragging time with it.",
-        "{target} drops before the blood even hits the ground. {attacker} just watches. No one says anything. There’s nothing to say that won’t rot in the throat."
+        {
+            'attacker_msg': "The shiv finds {target_name}'s heart with the precision of a key finding its lock. They exhale once, long and slow, and the light goes out of their eyes like candles in a sudden wind.",
+            'victim_msg': "The shiv finds your heart with the precision of a key finding its lock. You exhale once, long and slow, and the light goes out of your eyes like candles in a sudden wind.",
+            'observer_msg': "The shiv finds {target_name}'s heart with the precision of a key finding its lock. {target_name} exhales once, long and slow, and the light goes out of their eyes like candles in a sudden wind."
+        },
+        {
+            'attacker_msg': "You slide the blade up under {target_name}'s ribs with surgical precision. They look at you with eyes that are already somewhere else, and then they aren't looking at anything at all.",
+            'victim_msg': "{attacker_name} slides the blade up under your ribs with surgical precision. You look at them with eyes that are already somewhere else, and then you aren't looking at anything at all.",
+            'observer_msg': "{attacker_name} slides the blade up under {target_name}'s ribs with surgical precision. {target_name} looks at them with eyes that are already somewhere else, and then they aren't looking at anything at all."
+        },
+        {
+            'attacker_msg': "The shiv parts {target_name}'s flesh like water, finding the space between heartbeats and staying there. They crumple like paper in rain, all structure suddenly gone.",
+            'victim_msg': "The shiv parts your flesh like water, finding the space between heartbeats and staying there. You crumple like paper in rain, all structure suddenly gone.",
+            'observer_msg': "The shiv parts {target_name}'s flesh like water, finding the space between heartbeats and staying there. {target_name} crumples like paper in rain, all structure suddenly gone."
+        },
+        {
+            'attacker_msg': "You feel {target_name}'s life leak out around the blade like secrets through cracked lips. Their knees buckle, and they fold into the shape of surrender.",
+            'victim_msg': "You feel your life leak out around the blade like secrets through cracked lips. Your knees buckle, and you fold into the shape of surrender.",
+            'observer_msg': "{attacker_name} feels {target_name}'s life leak out around the blade like secrets through cracked lips. {target_name}'s knees buckle, and they fold into the shape of surrender."
+        },
+        {
+            'attacker_msg': "The blade finds {target_name}'s lung with intimate precision. Their breath becomes a wheeze, then a whisper, then nothing. They collapse like a building whose foundation has been cut away.",
+            'victim_msg': "The blade finds your lung with intimate precision. Your breath becomes a wheeze, then a whisper, then nothing. You collapse like a building whose foundation has been cut away.",
+            'observer_msg': "The blade finds {target_name}'s lung with intimate precision. Their breath becomes a wheeze, then a whisper, then nothing. {target_name} collapses like a building whose foundation has been cut away."
+        },
+        {
+            'attacker_msg': "You twist the shiv like you're turning off a tap, and {target_name}'s life spills out around your fingers. They look at you with fading eyes that still hold questions they'll never get to ask.",
+            'victim_msg': "{attacker_name} twists the shiv like they're turning off a tap, and your life spills out around their fingers. You look at them with fading eyes that still hold questions you'll never get to ask.",
+            'observer_msg': "{attacker_name} twists the shiv like they're turning off a tap, and {target_name}'s life spills out around their fingers. {target_name} looks at them with fading eyes that still hold questions they'll never get to ask."
+        },
+        {
+            'attacker_msg': "The shiv slides between {target_name}'s ribs like a lover's promise. They exhale once, sharp and surprised, and then the sound fades like an echo in an empty room.",
+            'victim_msg': "The shiv slides between your ribs like a lover's promise. You exhale once, sharp and surprised, and then the sound fades like an echo in an empty room.",
+            'observer_msg': "The shiv slides between {target_name}'s ribs like a lover's promise. {target_name} exhales once, sharp and surprised, and then the sound fades like an echo in an empty room."
+        },
+        {
+            'attacker_msg': "You feel {target_name}'s heartbeat through the steel, rapid and urgent, then slower, then gone. They sink to the ground like they're genuflecting before death itself.",
+            'victim_msg': "You feel {attacker_name} feeling your heartbeat through the steel, rapid and urgent, then slower, then gone. You sink to the ground like you're genuflecting before death itself.",
+            'observer_msg': "{attacker_name} feels {target_name}'s heartbeat through the steel, rapid and urgent, then slower, then gone. {target_name} sinks to the ground like they're genuflecting before death itself."
+        },
+        {
+            'attacker_msg': "The blade finds the soft space below {target_name}'s sternum and whispers its way to their heart. They look down at the growing red stain with the detached curiosity of someone reading their own obituary.",
+            'victim_msg': "The blade finds the soft space below your sternum and whispers its way to your heart. You look down at the growing red stain with the detached curiosity of someone reading their own obituary.",
+            'observer_msg': "The blade finds the soft space below {target_name}'s sternum and whispers its way to their heart. {target_name} looks down at the growing red stain with the detached curiosity of someone reading their own obituary."
+        },
+        {
+            'attacker_msg': "You slide the shiv home with the tenderness of someone tucking a child into bed. {target_name}'s eyes flutter once, twice, then go still as pond water on windless day.",
+            'victim_msg': "{attacker_name} slides the shiv home with the tenderness of someone tucking a child into bed. Your eyes flutter once, twice, then go still as pond water on windless day.",
+            'observer_msg': "{attacker_name} slides the shiv home with the tenderness of someone tucking a child into bed. {target_name}'s eyes flutter once, twice, then go still as pond water on windless day."
+        },
+        {
+            'attacker_msg': "The shiv parts {target_name}'s ribs like curtains, and behind them you find the darkness they've been hiding. They collapse into it gratefully, like coming home.",
+            'victim_msg': "The shiv parts your ribs like curtains, and behind them {attacker_name} finds the darkness you've been hiding. You collapse into it gratefully, like coming home.",
+            'observer_msg': "The shiv parts {target_name}'s ribs like curtains, and behind them {attacker_name} finds the darkness they've been hiding. {target_name} collapses into it gratefully, like coming home."
+        },
+        {
+            'attacker_msg': "You twist the blade with surgical precision, and {target_name}'s life unravels like a sweater with a pulled thread. They fold to the ground as if gravity has finally remembered them.",
+            'victim_msg': "{attacker_name} twists the blade with surgical precision, and your life unravels like a sweater with a pulled thread. You fold to the ground as if gravity has finally remembered you.",
+            'observer_msg': "{attacker_name} twists the blade with surgical precision, and {target_name}'s life unravels like a sweater with a pulled thread. {target_name} folds to the ground as if gravity has finally remembered them."
+        },
+        {
+            'attacker_msg': "The shiv finds {target_name}'s heart with the inevitability of water finding the sea. They breathe out once, long and slow, and the sound carries everything they'll never say again.",
+            'victim_msg': "The shiv finds your heart with the inevitability of water finding the sea. You breathe out once, long and slow, and the sound carries everything you'll never say again.",
+            'observer_msg': "The shiv finds {target_name}'s heart with the inevitability of water finding the sea. {target_name} breathes out once, long and slow, and the sound carries everything they'll never say again."
+        },
+        {
+            'attacker_msg': "You feel the resistance give way as the blade punctures {target_name}'s lung. They gasp like fish on dry land, and then the gasping stops, and the silence is complete.",
+            'victim_msg': "You feel the resistance give way as the blade punctures your lung. You gasp like fish on dry land, and then the gasping stops, and the silence is complete.",
+            'observer_msg': "The resistance gives way as the blade punctures {target_name}'s lung. {target_name} gasps like fish on dry land, and then the gasping stops, and the silence is complete."
+        },
+        {
+            'attacker_msg': "The shiv disappears into {target_name}'s chest with a sound like tearing silk. They look at you with eyes that are already going somewhere else, and then they arrive.",
+            'victim_msg': "The shiv disappears into your chest with a sound like tearing silk. You look at {attacker_name} with eyes that are already going somewhere else, and then you arrive.",
+            'observer_msg': "The shiv disappears into {target_name}'s chest with a sound like tearing silk. {target_name} looks at {attacker_name} with eyes that are already going somewhere else, and then they arrive."
+        },
+        {
+            'attacker_msg': "You guide the blade between {target_name}'s fourth and fifth ribs like threading a needle in dim light. They exhale in syllables that spell surrender, and then there are no more words.",
+            'victim_msg': "{attacker_name} guides the blade between your fourth and fifth ribs like threading a needle in dim light. You exhale in syllables that spell surrender, and then there are no more words.",
+            'observer_msg': "{attacker_name} guides the blade between {target_name}'s fourth and fifth ribs like threading a needle in dim light. {target_name} exhales in syllables that spell surrender, and then there are no more words."
+        },
+        {
+            'attacker_msg': "The shiv finds the space between {target_name}'s heartbeats and stays there. They crumple like origami in rain, all their careful folds coming undone at once.",
+            'victim_msg': "The shiv finds the space between your heartbeats and stays there. You crumple like origami in rain, all your careful folds coming undone at once.",
+            'observer_msg': "The shiv finds the space between {target_name}'s heartbeats and stays there. {target_name} crumples like origami in rain, all their careful folds coming undone at once."
+        },
+        {
+            'attacker_msg': "You slide the blade up under {target_name}'s sternum with the precision of someone unlocking a door. They look at you with eyes that say they understand the joke, and then the laughter dies in their throat.",
+            'victim_msg': "{attacker_name} slides the blade up under your sternum with the precision of someone unlocking a door. You look at them with eyes that say you understand the joke, and then the laughter dies in your throat.",
+            'observer_msg': "{attacker_name} slides the blade up under {target_name}'s sternum with the precision of someone unlocking a door. {target_name} looks at them with eyes that say they understand the joke, and then the laughter dies in their throat."
+        },
+        {
+            'attacker_msg': "The shiv parts {target_name}'s flesh like water, and behind it you find the silence they've been carrying. They sink into it like stones into a still pond.",
+            'victim_msg': "The shiv parts your flesh like water, and behind it {attacker_name} finds the silence you've been carrying. You sink into it like stones into a still pond.",
+            'observer_msg': "The shiv parts {target_name}'s flesh like water, and behind it {attacker_name} finds the silence they've been carrying. {target_name} sinks into it like stones into a still pond."
+        },
+        {
+            'attacker_msg': "You feel {target_name}'s pulse through the hilt, rapid and frightened, then slower, then gone entirely. They fold to the ground as if they're genuflecting before something vast and dark.",
+            'victim_msg': "You feel {attacker_name} feeling your pulse through the hilt, rapid and frightened, then slower, then gone entirely. You fold to the ground as if you're genuflecting before something vast and dark.",
+            'observer_msg': "{attacker_name} feels {target_name}'s pulse through the hilt, rapid and frightened, then slower, then gone entirely. {target_name} folds to the ground as if they're genuflecting before something vast and dark."
+        },
+        {
+            'attacker_msg': "The blade finds {target_name}'s lung with surgical precision. Their breath becomes shallow, urgent, then stops entirely, like a song that's forgotten its next note.",
+            'victim_msg': "The blade finds your lung with surgical precision. Your breath becomes shallow, urgent, then stops entirely, like a song that's forgotten its next note.",
+            'observer_msg': "The blade finds {target_name}'s lung with surgical precision. Their breath becomes shallow, urgent, then stops entirely, like a song that's forgotten its next note."
+        },
+        {
+            'attacker_msg': "You twist the shiv with the patience of someone solving a puzzle, and {target_name}'s life comes apart in your hands. They look at you with eyes that are already cataloguing their regrets.",
+            'victim_msg': "{attacker_name} twists the shiv with the patience of someone solving a puzzle, and your life comes apart in their hands. You look at them with eyes that are already cataloguing your regrets.",
+            'observer_msg': "{attacker_name} twists the shiv with the patience of someone solving a puzzle, and {target_name}'s life comes apart in their hands. {target_name} looks at them with eyes that are already cataloguing their regrets."
+        },
+        {
+            'attacker_msg': "The shiv slides between {target_name}'s ribs like it belongs there, finding home in the spaces between certainties. They exhale everything they'll never say again.",
+            'victim_msg': "The shiv slides between your ribs like it belongs there, finding home in the spaces between certainties. You exhale everything you'll never say again.",
+            'observer_msg': "The shiv slides between {target_name}'s ribs like it belongs there, finding home in the spaces between certainties. {target_name} exhales everything they'll never say again."
+        },
+        {
+            'attacker_msg': "You guide the blade to {target_name}'s heart with the tenderness of someone delivering a letter. They read it with their eyes, and understanding arrives just before the darkness.",
+            'victim_msg': "{attacker_name} guides the blade to your heart with the tenderness of someone delivering a letter. You read it with your eyes, and understanding arrives just before the darkness.",
+            'observer_msg': "{attacker_name} guides the blade to {target_name}'s heart with the tenderness of someone delivering a letter. {target_name} reads it with their eyes, and understanding arrives just before the darkness."
+        },
+        {
+            'attacker_msg': "The shiv finds the soft space below {target_name}'s ribs and whispers its way deeper. They collapse like a marionette whose strings have been cut all at once.",
+            'victim_msg': "The shiv finds the soft space below your ribs and whispers its way deeper. You collapse like a marionette whose strings have been cut all at once.",
+            'observer_msg': "The shiv finds the soft space below {target_name}'s ribs and whispers its way deeper. {target_name} collapses like a marionette whose strings have been cut all at once."
+        },
+        {
+            'attacker_msg': "You feel {target_name}'s heartbeat through the steel, desperate and rapid, then slower, then quiet as snow falling on abandoned streets. They sink to their knees like they're praying to gravity.",
+            'victim_msg': "You feel {attacker_name} feeling your heartbeat through the steel, desperate and rapid, then slower, then quiet as snow falling on abandoned streets. You sink to your knees like you're praying to gravity.",
+            'observer_msg': "{attacker_name} feels {target_name}'s heartbeat through the steel, desperate and rapid, then slower, then quiet as snow falling on abandoned streets. {target_name} sinks to their knees like they're praying to gravity."
+        },
+        {
+            'attacker_msg': "The blade parts {target_name}'s flesh with a sound like secrets being told to empty rooms. They look at you with eyes that hold all the words they'll never get to say, and then the words fade to whispers, and the whispers fade to silence.",
+            'victim_msg': "The blade parts your flesh with a sound like secrets being told to empty rooms. You look at {attacker_name} with eyes that hold all the words you'll never get to say, and then the words fade to whispers, and the whispers fade to silence.",
+            'observer_msg': "The blade parts {target_name}'s flesh with a sound like secrets being told to empty rooms. {target_name} looks at {attacker_name} with eyes that hold all the words they'll never get to say, and then the words fade to whispers, and the whispers fade to silence."
+        },
+        {
+            'attacker_msg': "You slide the shiv up under {target_name}'s ribcage like picking a lock to a door you've opened before. They exhale in broken syllables that spell regret, and then there's nothing left to spell.",
+            'victim_msg': "{attacker_name} slides the shiv up under your ribcage like picking a lock to a door they've opened before. You exhale in broken syllables that spell regret, and then there's nothing left to spell.",
+            'observer_msg': "{attacker_name} slides the shiv up under {target_name}'s ribcage like picking a lock to a door they've opened before. {target_name} exhales in broken syllables that spell regret, and then there's nothing left to spell."
+        },
+        {
+            'attacker_msg': "The shiv finds {target_name}'s heart with the inevitability of water finding cracks in concrete. They crumple like paper in rain, all their careful structure dissolving at once.",
+            'victim_msg': "The shiv finds your heart with the inevitability of water finding cracks in concrete. You crumple like paper in rain, all your careful structure dissolving at once.",
+            'observer_msg': "The shiv finds {target_name}'s heart with the inevitability of water finding cracks in concrete. {target_name} crumples like paper in rain, all their careful structure dissolving at once."
+        },
+        {
+            'attacker_msg': "You twist the blade with surgical precision, and {target_name}'s life unravels like thread pulled from cloth. They look at you with eyes that are already reading the punchline to a joke they don't want to understand.",
+            'victim_msg': "{attacker_name} twists the blade with surgical precision, and your life unravels like thread pulled from cloth. You look at them with eyes that are already reading the punchline to a joke you don't want to understand.",
+            'observer_msg': "{attacker_name} twists the blade with surgical precision, and {target_name}'s life unravels like thread pulled from cloth. {target_name} looks at them with eyes that are already reading the punchline to a joke they don't want to understand."
+        },
+        {
+            'attacker_msg': "The shiv parts {target_name}'s ribs like curtains being drawn back, and behind them you find the darkness they've been hiding from. They step into it like coming home after a long, hard day.",
+            'victim_msg': "The shiv parts your ribs like curtains being drawn back, and behind them {attacker_name} finds the darkness you've been hiding from. You step into it like coming home after a long, hard day.",
+            'observer_msg': "The shiv parts {target_name}'s ribs like curtains being drawn back, and behind them {attacker_name} finds the darkness they've been hiding from. {target_name} steps into it like coming home after a long, hard day."
+        },
+        {
+            'attacker_msg': "You feel {target_name}'s pulse through the hilt, rapid and frightened, then slower, then gone like echoes in an empty cathedral. They collapse as if they're genuflecting before something too vast to comprehend.",
+            'victim_msg': "You feel {attacker_name} feeling your pulse through the hilt, rapid and frightened, then slower, then gone like echoes in an empty cathedral. You collapse as if you're genuflecting before something too vast to comprehend.",
+            'observer_msg': "{attacker_name} feels {target_name}'s pulse through the hilt, rapid and frightened, then slower, then gone like echoes in an empty cathedral. {target_name} collapses as if they're genuflecting before something too vast to comprehend."
+        },
+        {
+            'attacker_msg': "The blade finds the space between {target_name}'s heartbeats and makes itself at home. They exhale once, long and slow, and the sound carries all the stories they'll never get to finish telling.",
+            'victim_msg': "The blade finds the space between your heartbeats and makes itself at home. You exhale once, long and slow, and the sound carries all the stories you'll never get to finish telling.",
+            'observer_msg': "The blade finds the space between {target_name}'s heartbeats and makes itself at home. {target_name} exhales once, long and slow, and the sound carries all the stories they'll never get to finish telling."
+        },
+        {
+            'attacker_msg': "You slide the shiv home with the precision of someone threading a needle in perfect darkness. {target_name} looks at you with eyes that are already somewhere else, somewhere quiet and far away from the sound of breaking.",
+            'victim_msg': "{attacker_name} slides the shiv home with the precision of someone threading a needle in perfect darkness. You look at them with eyes that are already somewhere else, somewhere quiet and far away from the sound of breaking.",
+            'observer_msg': "{attacker_name} slides the shiv home with the precision of someone threading a needle in perfect darkness. {target_name} looks at them with eyes that are already somewhere else, somewhere quiet and far away from the sound of breaking."
+        },
+        {
+            'attacker_msg': "The shiv finds {target_name}'s lung with intimate precision. Their breath becomes shallow, urgent, then stops entirely, like a song that's forgotten how to continue. They fold to the ground as if gravity has finally won an argument they've been having their entire life.",
+            'victim_msg': "The shiv finds your lung with intimate precision. Your breath becomes shallow, urgent, then stops entirely, like a song that's forgotten how to continue. You fold to the ground as if gravity has finally won an argument you've been having your entire life.",
+            'observer_msg': "The shiv finds {target_name}'s lung with intimate precision. Their breath becomes shallow, urgent, then stops entirely, like a song that's forgotten how to continue. {target_name} folds to the ground as if gravity has finally won an argument they've been having their entire life."
+        },
+        {
+            'attacker_msg': "You twist the blade like turning a page in a book you've read before, and {target_name}'s story comes to its inevitable conclusion. They look at you with eyes that hold all their unfinished sentences, and then the sentences dissolve into silence.",
+            'victim_msg': "{attacker_name} twists the blade like turning a page in a book they've read before, and your story comes to its inevitable conclusion. You look at them with eyes that hold all your unfinished sentences, and then the sentences dissolve into silence.",
+            'observer_msg': "{attacker_name} twists the blade like turning a page in a book they've read before, and {target_name}'s story comes to its inevitable conclusion. {target_name} looks at them with eyes that hold all their unfinished sentences, and then the sentences dissolve into silence."
+        },
+        {
+            'attacker_msg': "The shiv disappears into {target_name}'s chest with a sound like silk tearing in slow motion. They exhale everything they are and everything they might have been, and then there's nothing left to exhale.",
+            'victim_msg': "The shiv disappears into your chest with a sound like silk tearing in slow motion. You exhale everything you are and everything you might have been, and then there's nothing left to exhale.",
+            'observer_msg': "The shiv disappears into {target_name}'s chest with a sound like silk tearing in slow motion. {target_name} exhales everything they are and everything they might have been, and then there's nothing left to exhale."
+        },
+        {
+            'attacker_msg': "You feel {target_name}'s heartbeat through the steel, desperate and rapid, then slower, then quiet as prayer in an empty church. They sink to their knees like they're finally surrendering to something they can't name.",
+            'victim_msg': "You feel {attacker_name} feeling your heartbeat through the steel, desperate and rapid, then slower, then quiet as prayer in an empty church. You sink to your knees like you're finally surrendering to something you can't name.",
+            'observer_msg': "{attacker_name} feels {target_name}'s heartbeat through the steel, desperate and rapid, then slower, then quiet as prayer in an empty church. {target_name} sinks to their knees like they're finally surrendering to something they can't name."
+        },
+        {
+            'attacker_msg': "The blade parts {target_name}'s flesh like a curtain being drawn back for the final act. They look at you with eyes that are already applauding their own performance, and then the theater goes dark.",
+            'victim_msg': "The blade parts your flesh like a curtain being drawn back for the final act. You look at {attacker_name} with eyes that are already applauding your own performance, and then the theater goes dark.",
+            'observer_msg': "The blade parts {target_name}'s flesh like a curtain being drawn back for the final act. {target_name} looks at {attacker_name} with eyes that are already applauding their own performance, and then the theater goes dark."
+        }
     ]
 }
