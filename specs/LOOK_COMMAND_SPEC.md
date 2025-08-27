@@ -4,9 +4,9 @@
 
 The enhanced look command system assembles rich, dynamic environmental descriptions through component-based sensory integration. The system builds upon the existing `return_appearance` method, combining sensory categories with modular description components that automatically assemble into cohesive room narratives.
 
-## Implementation Progress: 11/12 Features Complete (92%)
+## Implementation Progress: 12/13 Features Complete (92%)
 
-**✅ Completed Systems (11):**
+**✅ Completed Systems (12):**
 1. Character Placement System
 2. Room Section Spacing  
 3. Natural Language Items
@@ -18,9 +18,10 @@ The enhanced look command system assembles rich, dynamic environmental descripti
 9. Crowd System (4 intensity levels)
 10. Adjacent Room Character Visibility
 11. Exit Examination Enhancement
+12. Directional Look Character Display Enhancement
 
 **🚧 Pending Implementation (1):**
-12. Ambient Message System (future enhancement)
+13. Ambient Message System (future enhancement)
 
 ## Current Implementation Status
 
@@ -99,6 +100,13 @@ The street continues to the west (w) and east (e).
 - **Sensory Contributions**: Objects use `sensory_contributions` dict for rich integration
 - **Fallback System**: `integration_desc` and `integration_fallback` for simple integration
 - **Enhanced Object Display**: Objects woven into narrative instead of listed separately
+
+### 8. Directional Look Character Display Enhancement
+- **Crowd-Aware Descriptions**: Character displays adapt based on destination room crowd levels
+- **Atmospheric Integration**: Weather context and stylized descriptions matching noir aesthetic
+- **Dynamic Presentation**: Characters presented with crowd context rather than generic format
+- **Natural Directional Flow**: Proper directional phrasing with crowd-appropriate language
+- **Scaling Format**: Graceful handling of any number of characters with proper grammar
 
 ## Current Implementation
 
@@ -203,7 +211,42 @@ The street continues to the west (w) and east (e).
 - **Aiming System Integration**: Respects combat focus limitations preventing exit examination
 - **Room Type System**: Utilizes existing room.type AttributeProperty for street analysis
 
-### 12. Ambient Message System (🚧)
+### 12. Directional Look Character Display Enhancement ✅
+- **Crowd-Aware Character Descriptions**: Character displays in directional looks adapt based on destination room crowd levels
+- **Weather Integration**: Weather context appears in directional descriptions ("Through the gentle snowfall, the street stretches westward...")
+- **Stylized Descriptions**: Atmospheric descriptions matching game's noir aesthetic
+- **Dynamic Character Presentation**: Characters presented with crowd context rather than generic "standing here" format
+- **Natural Language Flow**: Proper directional phrasing ("To the west you see..." / "To the north you can see...")
+
+**Crowd Level Integration:**
+- **Heavy/Packed Crowds (Level 3+)**: "To the west you can see a bustling crowd of people going about their business, amidst them John Wilson."
+- **Moderate Crowds (Level 2)**: "To the west you see figures moving through the urban maze, among them Juan and Maria."
+- **Sparse Crowds (Level 1)**: "To the west you catch glimpses of movement in the shadows, including Juan."
+- **Empty Areas (Level 0)**: "To the west you see Juan."
+
+**Technical Implementation:**
+- Integrated with existing crowd system via `crowd_system.calculate_crowd_level()`
+- Weather context integration through exit weather system
+- Directional context detection using exit key analysis
+- Graceful scaling for any number of characters with proper grammar
+- Maintains existing character display functionality while enhancing atmospheric presentation
+
+**Example Outputs:**
+```
+# Heavy crowd with weather:
+"Through the gentle snowfall, the street stretches westward through the urban canyon, where scattered streetlight illuminates the continuing path between deteriorating storefronts. You can see a bustling crowd of people going about their business, amidst them Janice Burns and Dean Keith."
+
+# Moderate crowd, no weather:
+"The street stretches eastward through the urban canyon, where scattered streetlight illuminates the continuing path between deteriorating storefronts. You see figures moving through the urban maze, among them Sterling Hobbs and Charlene Fisk."
+
+# Sparse crowd:
+"To the north you catch glimpses of movement in the shadows, including Maria Santos."
+
+# Empty area:
+"To the south you see Juan Rodriguez."
+```
+
+### 13. Ambient Message System (🚧)
 - **Periodic Atmospheric Messages**: Random yet informed frequency ambient messages
 - **Contextual Integration**: Messages draw from contributing room factors (weather, crowd, etc.)
 - **Dynamic Environmental Feedback**: Continuous atmospheric presence without player action
