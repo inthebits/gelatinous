@@ -261,6 +261,128 @@ SHURIKEN = {
 }
 
 # =============================================================================
+# RANGED WEAPON PROTOTYPES (firearms and projectile weapons)
+# =============================================================================
+
+# Base ranged weapon
+RANGED_WEAPON_BASE = {
+    "prototype_key": "ranged_weapon_base",
+    "key": "ranged weapon",
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A weapon designed for ranged combat.",
+    "tags": [
+        ("weapon", "type"),
+        ("ranged", "category"),
+        ("item", "general")
+    ],
+    "attrs": [
+        ("is_ranged", True),  # Ranged weapons
+        ("hands_required", 2),  # Most firearms require two hands
+        ("deflection_bonus", 0.0),  # Base deflection capability
+    ]
+}
+
+# Light pistol (existing message type)
+LIGHT_PISTOL = {
+    "prototype_parent": "RANGED_WEAPON_BASE",
+    "key": "light pistol",
+    "aliases": ["pistol", "handgun", "9mm"],
+    "desc": "A compact semi-automatic pistol. Lightweight and easy to conceal, perfect for close-quarters combat.",
+    "damage": 12,
+    "attrs": [
+        ("weapon_type", "light_pistol"),
+        ("hands_required", 1),  # Pistols can be fired one-handed
+    ]
+}
+
+# Heavy pistol (existing message type) 
+HEAVY_PISTOL = {
+    "prototype_parent": "RANGED_WEAPON_BASE",
+    "key": "heavy pistol",
+    "aliases": ["magnum", ".44", "revolver"],
+    "desc": "A powerful heavy-caliber pistol. This hand cannon delivers devastating stopping power with thunderous reports.",
+    "damage": 18,
+    "attrs": [
+        ("weapon_type", "heavy_pistol"),
+        ("hands_required", 1),  # Can be fired one-handed but difficult
+    ]
+}
+
+# Pump-action shotgun (existing message type)
+PUMP_SHOTGUN = {
+    "prototype_parent": "RANGED_WEAPON_BASE", 
+    "key": "pump-action shotgun",
+    "aliases": ["shotgun", "pump", "scattergun"],
+    "desc": "A reliable pump-action shotgun. The distinctive *chk-chk* of the pump action strikes fear into enemies at close range.",
+    "damage": 20,
+    "attrs": [
+        ("weapon_type", "pump-action_shotgun"),
+    ]
+}
+
+# Break-action shotgun (existing message type)
+BREAK_SHOTGUN = {
+    "prototype_parent": "RANGED_WEAPON_BASE",
+    "key": "break-action shotgun", 
+    "aliases": ["double-barrel", "sawed-off", "coach gun"],
+    "desc": "A classic break-action double-barrel shotgun. Simple, reliable, and devastatingly effective at close range.",
+    "damage": 25,
+    "attrs": [
+        ("weapon_type", "break-action_shotgun"),
+    ]
+}
+
+# Bolt-action rifle (existing message type)
+BOLT_RIFLE = {
+    "prototype_parent": "RANGED_WEAPON_BASE",
+    "key": "bolt-action rifle",
+    "aliases": ["rifle", "sniper", "bolt-action"],
+    "desc": "A precision bolt-action rifle. Excellent accuracy and range make this ideal for long-distance engagements.",
+    "damage": 22,
+    "attrs": [
+        ("weapon_type", "bolt-action_rifle"),
+    ]
+}
+
+# Anti-material rifle (existing message type)  
+ANTI_MATERIAL_RIFLE = {
+    "prototype_parent": "RANGED_WEAPON_BASE",
+    "key": "anti-material rifle",
+    "aliases": ["AMR", "sniper rifle", ".50 cal"],
+    "desc": "A massive anti-material rifle chambered in .50 BMG. This beast can punch through armor, vehicles, and walls with devastating effect.",
+    "damage": 35,
+    "attrs": [
+        ("weapon_type", "anti-material_rifle"),
+        ("hands_required", 2),  # Requires bipod/support
+    ]
+}
+
+# Assault rifle (if you have assault rifle messages)
+ASSAULT_RIFLE = {
+    "prototype_parent": "RANGED_WEAPON_BASE",
+    "key": "assault rifle", 
+    "aliases": ["rifle", "AR", "automatic"],
+    "desc": "A modern selective-fire assault rifle. Versatile and deadly, with both semi-auto and full-auto capabilities.",
+    "damage": 15,
+    "attrs": [
+        ("weapon_type", "assault_rifle"),  # May need to create message file
+    ]
+}
+
+# SMG/Submachine gun
+SMG = {
+    "prototype_parent": "RANGED_WEAPON_BASE",
+    "key": "submachine gun",
+    "aliases": ["SMG", "machine pistol", "auto"],
+    "desc": "A compact submachine gun. High rate of fire and manageable recoil make it perfect for close-quarters combat.",
+    "damage": 10,
+    "attrs": [
+        ("weapon_type", "smg"),  # May need to create message file
+        ("hands_required", 1),  # Can be fired one-handed
+    ]
+}
+
+# =============================================================================
 # UTILITY OBJECT PROTOTYPES (for non-combat throwing)
 # =============================================================================
 
