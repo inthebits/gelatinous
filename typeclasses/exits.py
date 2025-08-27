@@ -43,26 +43,17 @@ class Exit(DefaultExit):
         if alias and alias not in self.aliases.all():
             self.aliases.add(alias)
 
-    def get_extra_display_name_info(self, looker=None, **kwargs):
+    def return_appearance(self, looker, **kwargs):
         """
-        Override to prevent the (#id) suffix from being added to exit names.
-        This is what's called by the default get_display_name to add the ID number.
+        Override the entire appearance method to show only the destination's atmospheric description.
+        This is called when someone does 'look w' - instead of showing exit info, show destination room cleanly.
         """
-        return ""
-
-    def get_display_name(self, looker=None, **kwargs):
-        """
-        Override to completely hide the exit name when looking at exits.
-        Returns empty string so 'look w' doesn't show 'west' header.
-        """
-        return ""
-
-    def get_display_desc(self, looker=None, **kwargs):
-        """
-        Override to completely hide the exit description when looking at exits.
-        Returns empty string so 'look w' doesn't show description or extra formatting.
-        """
-        return ""
+        if self.destination:
+            # Get just the description of the destination room, nothing else
+            return self.destination.get_display_desc(looker, **kwargs)
+        else:
+            # Fallback if no destination
+            return "You see nothing in that direction."
 
     def at_traverse(self, traversing_object, target_location):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
