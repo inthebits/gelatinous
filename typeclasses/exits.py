@@ -45,15 +45,10 @@ class Exit(DefaultExit):
 
     def return_appearance(self, looker, **kwargs):
         """
-        Override the entire appearance method to show only the destination's atmospheric description.
-        This is called when someone does 'look w' - instead of showing exit info, show destination room cleanly.
+        This is called when someone does 'look w' - show the sophisticated exit examination.
+        Uses our own get_display_desc method which includes weather, crowd, and character integration.
         """
-        if self.destination:
-            # Get just the description of the destination room, nothing else
-            return self.destination.get_display_desc(looker, **kwargs)
-        else:
-            # Fallback if no destination
-            return "You see nothing in that direction."
+        return self.get_display_desc(looker, **kwargs)
 
     def at_traverse(self, traversing_object, target_location):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
