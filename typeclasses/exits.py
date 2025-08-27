@@ -534,16 +534,10 @@ class Exit(DefaultExit):
             # Get current weather status
             current_weather = weather_system.get_current_weather()
             
-            # Debug: log weather state for troubleshooting
-            # This can be removed once weather context is working
-            if hasattr(self, 'location') and self.location:
-                from evennia.utils import logger
-                logger.log_info(f"EXIT_WEATHER_DEBUG: Exit {self.key} weather={current_weather}, room_outside={room_is_outside}, dest_outside={dest_is_outside}")
-            
             # Simple weather context phrases for exit descriptions
             weather_contexts = {
-                # Clear/mild weather - add some context for testing
-                'clear': "Through the morning air",  # Temporary test context
+                # Clear/mild weather
+                'clear': "",  # No weather context needed for clear conditions
                 
                 # Rain variants
                 'rain': "Through the steady rain",
@@ -578,13 +572,9 @@ class Exit(DefaultExit):
             
         except ImportError as e:
             # Weather system not available
-            from evennia.utils import logger
-            logger.log_warn(f"EXIT_WEATHER_IMPORT_ERROR: {e}")
             return ""
         except Exception as e:
             # Any other error - fail gracefully
-            from evennia.utils import logger
-            logger.log_warn(f"EXIT_WEATHER_ERROR: {e}")
             return ""
         
     def _get_directional_atmospheric(self, looker):
@@ -622,6 +612,7 @@ class Exit(DefaultExit):
         """
         Get character display from destination room (where the exit leads to).
         Shows characters in the destination location following standard appearance patterns.
+        Uses crowd-aware formatting for more immersive descriptions.
         
         Args:
             looker: Character examining the exit
@@ -644,14 +635,53 @@ class Exit(DefaultExit):
         # Format character names
         char_names = [char.get_display_name(looker) for char in destination_characters]
         
-        if len(char_names) == 1:
-            return f"{char_names[0]} is standing here."
-        elif len(char_names) == 2:
-            return f"{char_names[0]} and {char_names[1]} are standing here."
-        else:
-            # Handle 3+ characters
-            all_but_last = ", ".join(char_names[:-1])
-            return f"{all_but_last}, and {char_names[-1]} are standing here."
+        # Get crowd level from destination room for contextual descriptions
+        try:
+            from world.crowd import crowd_system
+            crowd_level = crowd_system.calculate_crowd_level(destination_room)
+        except (ImportError, AttributeError):
+            crowd_level = 0
+        
+        # Get directional context for the description
+        direction = self.key.lower()
+        direction_phrase = f"To the {direction}" if direction in ['north', 'south', 'east', 'west'] else f"{direction.capitalize()}"
+        
+        # Format character display based on crowd level and character count
+        if crowd_level >= 3:  # heavy/packed crowd
+            if len(char_names) == 1:
+                return f"{direction_phrase} you can see a bustling crowd of people going about their business, amidst them {char_names[0]}."
+            elif len(char_names) == 2:
+                return f"{direction_phrase} you can see a bustling crowd of people going about their business, amidst them {char_names[0]} and {char_names[1]}."
+            else:
+                all_but_last = ", ".join(char_names[:-1])
+                return f"{direction_phrase} you can see a bustling crowd of people going about their business, amidst them {all_but_last}, and {char_names[-1]}."
+        
+        elif crowd_level >= 2:  # moderate crowd
+            if len(char_names) == 1:
+                return f"{direction_phrase} you see figures moving through the urban maze, among them {char_names[0]}."
+            elif len(char_names) == 2:
+                return f"{direction_phrase} you see figures moving through the urban maze, among them {char_names[0]} and {char_names[1]}."
+            else:
+                all_but_last = ", ".join(char_names[:-1])
+                return f"{direction_phrase} you see figures moving through the urban maze, among them {all_but_last}, and {char_names[-1]}."
+        
+        elif crowd_level >= 1:  # sparse crowd
+            if len(char_names) == 1:
+                return f"{direction_phrase} you catch glimpses of movement in the shadows, including {char_names[0]}."
+            elif len(char_names) == 2:
+                return f"{direction_phrase} you catch glimpses of movement in the shadows, including {char_names[0]} and {char_names[1]}."
+            else:
+                all_but_last = ", ".join(char_names[:-1])
+                return f"{direction_phrase} you catch glimpses of movement in the shadows, including {all_but_last}, and {char_names[-1]}."
+        
+        else:  # no crowd (level 0)
+            if len(char_names) == 1:
+                return f"{direction_phrase} you see {char_names[0]}."
+            elif len(char_names) == 2:
+                return f"{direction_phrase} you see {char_names[0]} and {char_names[1]}."
+            else:
+                all_but_last = ", ".join(char_names[:-1])
+                return f"{direction_phrase} you see {all_but_last}, and {char_names[-1]}."
 
     def _clear_aim_override_place_on_move(self, mover, target):
         """
