@@ -354,6 +354,263 @@ class Exit(DefaultExit):
         # Check for auto-defuse opportunities after entering new room
         check_auto_defuse(traversing_object)
 
+    def get_display_desc(self, looker, **kwargs):
+        """
+        Enhanced exit description system providing atmospheric descriptions 
+        instead of generic "This is an exit." message.
+        
+        Analyzes exit properties and destination context to generate immersive
+        descriptions that complement the directional looking system.
+        
+        Args:
+            looker: Character examining the exit
+            **kwargs: Additional parameters
+            
+        Returns:
+            str: Formatted exit description with atmospheric context and character display
+        """
+        # Check aiming restrictions - aiming characters cannot examine exits (focus limitation)
+        if hasattr(looker, 'ndb') and getattr(looker.ndb, "aiming_at", None):
+            looker.msg("|rYou cannot examine exits while aiming - your focus is locked on your target.|n")
+            return ""
+        
+        if hasattr(looker, 'ndb') and getattr(looker.ndb, "aiming_direction", None):
+            looker.msg("|rYou cannot examine exits while aiming - your focus is locked on the direction you're watching.|n")
+            return ""
+        
+        # Build description components
+        description_parts = []
+        
+        # Start with custom description if set (priority over atmospheric defaults)
+        custom_desc = self.db.desc
+        if custom_desc:
+            description_parts.append(custom_desc.strip())
+        
+        # Generate atmospheric description based on exit analysis
+        atmospheric_desc = self._get_atmospheric_description(looker)
+        if atmospheric_desc:
+            description_parts.append(atmospheric_desc)
+        
+        # Combine descriptions
+        if not description_parts:
+            # Fallback to prevent empty description
+            description_parts.append("A passageway leading elsewhere.")
+        
+        base_description = " ".join(description_parts)
+        
+        # Add character display from current room (following standard appearance patterns)
+        character_display = self._get_exit_character_display(looker)
+        
+        # Combine all components
+        full_description = base_description
+        if character_display:
+            full_description += f" {character_display}"
+            
+        return full_description
+        
+    def _get_atmospheric_description(self, looker):
+        """
+        Generate atmospheric description based on exit properties and destination analysis.
+        Includes weather integration for enhanced atmospheric context.
+        
+        Args:
+            looker: Character examining the exit
+            
+        Returns:
+            str: Atmospheric description or empty string
+        """
+        # Check for edge/gap exits first (specialized descriptions)
+        is_edge = getattr(self.db, "is_edge", False)
+        is_gap = getattr(self.db, "is_gap", False)
+        
+        if is_edge and is_gap:
+            return "A jagged gap torn in reality, requiring a leap of faith to cross."
+        elif is_edge:
+            return "A precarious edge where solid ground gives way to open space below."
+        elif is_gap:
+            return "A treacherous gap that demands careful timing to traverse safely."
+            
+        # Check for sky room destinations
+        destination = self.destination
+        if destination and getattr(destination, 'is_sky_room', False):
+            return "The opening leads into open air, where gravity makes the rules."
+        
+        # Analyze destination for street context (with weather integration)
+        street_context = self._analyze_street_context()
+        if street_context:
+            return street_context
+            
+        # Generate directional atmospheric defaults (with weather integration)
+        directional_desc = self._get_directional_atmospheric(looker)
+        if directional_desc:
+            return directional_desc
+            
+        # Fallback atmospheric description
+        return "The passage stretches into shadows and uncertainty."
+        
+    def _analyze_street_context(self):
+        """
+        Analyze destination room type and exit count for street-specific descriptions.
+        Includes weather integration for enhanced atmospheric context.
+        
+        Returns:
+            str: Street context description or empty string
+        """
+        destination = self.destination
+        if not destination:
+            return ""
+            
+        # Check if destination is a street-type room
+        dest_type = getattr(destination, 'type', None)
+        if dest_type != 'street':
+            return ""
+            
+        # Analyze destination exit count to determine street type
+        dest_exits = destination.exits
+        if not dest_exits:
+            return ""
+            
+        # Count street exits to determine intersection type
+        street_exit_count = sum(1 for e in dest_exits 
+                              if e.destination and hasattr(e.destination, 'type') 
+                              and e.destination.type == 'street')
+        
+        direction = self.key.lower()
+        
+        # Get weather context for enhanced descriptions
+        weather_context = self._get_weather_context()
+        
+        if street_exit_count <= 1:
+            # Dead-end street
+            base_desc = f"The street {direction}ward leads to a dead-end, where urban decay reaches its terminus."
+        elif street_exit_count == 2:
+            # Continuing street (matches spec example)
+            base_desc = f"The street stretches {direction}ward through the urban canyon, where scattered streetlight illuminates the continuing path between deteriorating storefronts."
+        else:
+            # Intersection
+            base_desc = f"The street {direction}ward opens into a bustling intersection, where multiple paths converge in the city's concrete maze."
+        
+        # Integrate weather context if available
+        if weather_context:
+            return f"{weather_context}, {base_desc.lower()}"
+        else:
+            return base_desc
+            
+    def _get_weather_context(self):
+        """
+        Get weather context for exit descriptions.
+        Integrates with the existing weather system if available.
+        
+        Returns:
+            str: Weather context string or empty string
+        """
+        try:
+            # Check if current room is outside (weather affects exits to outside areas)
+            current_room = self.location
+            destination = self.destination
+            
+            # Only add weather context if going to/from outside areas
+            room_is_outside = getattr(current_room, 'outside', False) if current_room else False
+            dest_is_outside = getattr(destination, 'outside', False) if destination else False
+            
+            if not (room_is_outside or dest_is_outside):
+                return ""
+                
+            # Try to get weather system instance
+            from world.weather.weather_system import WeatherSystem
+            from world.weather.time_system import get_current_time_period
+            
+            weather_system = WeatherSystem()
+            current_weather = weather_system.get_current_weather()
+            time_period = get_current_time_period()
+            
+            # Simple weather context phrases for exit descriptions
+            weather_contexts = {
+                'rain': "Through the steady rain",
+                'light_rain': "Through the gentle rain", 
+                'torrential_rain': "Through the torrential downpour",
+                'fog': "Through the thick fog",
+                'heavy_fog': "Through the impenetrable fog",
+                'clear': "",  # No weather context needed for clear conditions
+                'overcast': "Under the overcast sky",
+                'windy': "Against the strong wind"
+            }
+            
+            return weather_contexts.get(current_weather, "")
+            
+        except ImportError:
+            # Weather system not available
+            return ""
+        except Exception:
+            # Any other error - fail gracefully
+            return ""
+        
+    def _get_directional_atmospheric(self, looker):
+        """
+        Generate atmospheric descriptions based on cardinal direction.
+        Provides noir-aesthetic defaults matching the game's atmosphere.
+        
+        Args:
+            looker: Character examining the exit
+            
+        Returns:
+            str: Directional atmospheric description
+        """
+        direction = self.key.lower()
+        
+        # Directional atmospheric themes (noir/urban decay aesthetic)
+        directional_themes = {
+            'north': "Northward lies deeper shadow, where the city's forgotten corners harbor their secrets.",
+            'south': "To the south, urban decay spreads like a stain across crumbling infrastructure.",
+            'east': "Eastward, the passage leads through crumbling architecture toward distant uncertainty.",
+            'west': "The western route disappears into ruins and the weight of abandoned dreams.",
+            'northeast': "The northeastern path winds through industrial decay and forgotten machinery.",
+            'northwest': "Northwest leads through deteriorating structures toward darker territories.",
+            'southeast': "The southeastern route stretches through urban blight and weathered concrete.",
+            'southwest': "Southwest lies a passage through rust-stained metal and cracked pavement.",
+            'up': "The upward path climbs through layers of the city's vertical labyrinth.",
+            'down': "Downward leads deeper into the city's underground arteries and hidden spaces.",
+            'in': "The entrance leads inward to sheltered spaces away from the street's harsh realities.",
+            'out': "The exit leads outward to where the open street awaits with all its dangers."
+        }
+        
+        return directional_themes.get(direction, "")
+        
+    def _get_exit_character_display(self, looker):
+        """
+        Get character display from current room (not destination room).
+        Shows other characters in the current location following standard appearance patterns.
+        
+        Args:
+            looker: Character examining the exit
+            
+        Returns:
+            str: Character display string or empty string
+        """
+        current_room = looker.location
+        if not current_room:
+            return ""
+            
+        # Get other characters in current room (excluding looker)
+        other_characters = [char for char in current_room.contents 
+                          if char.is_typeclass("typeclasses.characters.Character") 
+                          and char != looker]
+                          
+        if not other_characters:
+            return ""
+            
+        # Format character names
+        char_names = [char.get_display_name(looker) for char in other_characters]
+        
+        if len(char_names) == 1:
+            return f"{char_names[0]} is standing here."
+        elif len(char_names) == 2:
+            return f"{char_names[0]} and {char_names[1]} are standing here."
+        else:
+            # Handle 3+ characters
+            all_but_last = ", ".join(char_names[:-1])
+            return f"{all_but_last}, and {char_names[-1]} are standing here."
+
     def _clear_aim_override_place_on_move(self, mover, target):
         """
         Clear override_place for aiming when someone moves, handling mutual showdown cleanup.
