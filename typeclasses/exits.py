@@ -523,24 +523,49 @@ class Exit(DefaultExit):
             if not (room_is_outside or dest_is_outside):
                 return ""
                 
-            # Try to get weather system instance
-            from world.weather.weather_system import WeatherSystem
-            from world.weather.time_system import get_current_time_period
+            # Use the same weather system as rooms
+            from world.weather import weather_system
             
-            weather_system = WeatherSystem()
+            # Get weather contributions for the current room or destination
+            weather_room = current_room if room_is_outside else destination
+            if not weather_room:
+                return ""
+                
+            # Get current weather status
             current_weather = weather_system.get_current_weather()
-            time_period = get_current_time_period()
             
             # Simple weather context phrases for exit descriptions
             weather_contexts = {
+                # Clear/mild weather
+                'clear': "",  # No weather context needed for clear conditions
+                
+                # Rain variants
                 'rain': "Through the steady rain",
                 'light_rain': "Through the gentle rain", 
                 'torrential_rain': "Through the torrential downpour",
+                'foggy_rain': "Through the misty rain",
+                'rainy_thunderstorm': "Through the thunderous downpour",
+                'tox_rain': "Through the toxic rainfall",
+                
+                # Fog variants
                 'fog': "Through the thick fog",
                 'heavy_fog': "Through the impenetrable fog",
-                'clear': "",  # No weather context needed for clear conditions
+                'blind_fog': "Through the blinding fog",
+                
+                # Snow variants
+                'soft_snow': "Through the gentle snowfall",
+                'hard_snow': "Through the driving snow",
+                'blizzard': "Through the raging blizzard",
+                
+                # Storm variants
+                'dry_thunderstorm': "Under the ominous storm clouds",
+                'flashstorm': "Through the violent storm",
+                'sandstorm': "Through the swirling sand",
+                
+                # Atmospheric conditions
                 'overcast': "Under the overcast sky",
-                'windy': "Against the strong wind"
+                'windy': "Against the strong wind",
+                'gray_pall': "Through the gray pall"
             }
             
             return weather_contexts.get(current_weather, "")
