@@ -43,12 +43,12 @@ class Exit(DefaultExit):
         if alias and alias not in self.aliases.all():
             self.aliases.add(alias)
 
-    def get_display_name(self, looker, **kwargs):
+    def get_extra_display_name_info(self, looker=None, **kwargs):
         """
-        Override to remove ID number from exit display when looking at exits.
-        Just returns the exit key without the (#id) suffix.
+        Override to prevent the (#id) suffix from being added to exit names.
+        This is what's called by the default get_display_name to add the ID number.
         """
-        return self.key
+        return ""
 
     def at_traverse(self, traversing_object, target_location):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
