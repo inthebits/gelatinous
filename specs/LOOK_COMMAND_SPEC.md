@@ -4,7 +4,7 @@
 
 The enhanced look command system assembles rich, dynamic environmental descriptions through component-based sensory integration. The system builds upon the existing `return_appearance` method, combining sensory categories with modular description components that automatically assemble into cohesive room narratives.
 
-## Implementation Progress: 10/11 Features Complete (91%)
+## Implementation Progress: 10/12 Features Complete (83%)
 
 **✅ Completed Systems (10):**
 1. Character Placement System
@@ -18,8 +18,9 @@ The enhanced look command system assembles rich, dynamic environmental descripti
 9. Crowd System (4 intensity levels)
 10. Adjacent Room Character Visibility
 
-**🚧 Pending Implementation (1):**
-11. Ambient Message System (future enhancement)
+**🚧 Pending Implementation (2):**
+11. Exit Examination Enhancement (immediate priority)
+12. Ambient Message System (future enhancement)
 
 ## Current Implementation Status
 
@@ -174,7 +175,87 @@ The street continues to the west (w) and east (e).
 - Integration into `get_display_characters()` method following established patterns
 - Natural language output matching existing "You see X" formatting
 
-### 11. Ambient Message System (🚧)
+### 11. Exit Examination Enhancement (🚧)
+- **Atmospheric Exit Descriptions**: Replace generic "This is an exit." with immersive descriptions
+- **Contextual Analysis**: Analyze destination properties, exit types, and directional context
+- **Integration with Existing Systems**: Complement directional looking and room exit displays
+- **Fallback Support**: Maintain custom descriptions when set via `@desc`
+
+**Problem Statement:**
+Currently, examining an exit directly (e.g., "look e", "look east") returns the generic Evennia default: "This is an exit." This breaks immersion in rooms with rich atmospheric descriptions. This is distinct from directional looking, which already provides rich descriptions of adjacent areas.
+
+**Existing Directional Looking System (Already Implemented):**
+Demonstrates perfect thematic brevity - atmospheric context + practical information:
+```
+> look east
+Through the steady rain to the east you see a light flow of people going 
+about their business, amidst them Bartlomiej Obrien.
+[Weather context] + [Crowd density] + [Specific characters]
+
+> look west  
+To the west you can clearly see a bustling crowd of people going about 
+their business, amidst them Captain Kirk.
+[Visibility] + [Crowd intensity] + [Named character]
+
+> look south
+To the south you see Wallace.
+[Minimal case - no weather/crowd when not applicable]
+```
+
+**Design Pattern to Follow:**
+Your directional looking efficiently layers information when applicable:
+1. **Atmospheric Context**: Weather conditions affecting visibility (when present)
+2. **Crowd Density**: "light flow" vs "bustling crowd" - tactical awareness (when present)
+3. **Specific Intelligence**: Named characters
+4. **Brevity**: Complete picture in 1-2 sentences, minimal when appropriate
+
+**Current Exit Examination Problem:**
+```
+> look e
+east(#18)  
+This is an exit.
+```
+
+**Target Enhanced Exit Examination:**
+```
+> look e
+east(#18)
+Through the steady rain, the street stretches eastward through the urban canyon, where scattered streetlight illuminates the continuing path between deteriorating storefronts. Captain Kirk and Dean Keith are standing here.
+```
+
+**Implementation Approach:**
+- Override `get_display_desc()` method in Exit class following weather system patterns
+- Analyze exit properties (is_edge, is_gap) for specialized descriptions  
+- Examine destination room type and exit count for street context (dead-end, intersection, etc.)
+- Provide directional atmospheric defaults matching game's noir aesthetic
+- Maintain existing custom description functionality as priority
+- **Custom Description Append**: Allow `@desc exit = <custom>` to prepend thematic description to atmospheric description
+- Include character display in current room (following standard appearance pattern)
+- Respect aiming restrictions - aiming characters cannot examine exits (focus limitation)
+
+**Contextual Description Categories:**
+1. **Edge/Gap Exits**: "A jagged gap torn in reality, requiring a leap of faith to cross."
+2. **Sky Room Destinations**: "The opening leads into open air, where gravity makes the rules."  
+3. **Street Context Analysis**: Analyze destination exit count for intersection/dead-end descriptions
+4. **Directional Defaults**: North → shadow, South → decay, East → crumbling, West → ruins, etc.
+5. **Fallback**: Generic but atmospheric description for unusual cases
+
+**Display Components:**
+- **Exit Name & ID**: Standard format "east(#18)"
+- **Atmospheric Description**: Context-aware exit description  
+- **Character Display**: Show other characters in current room using standard formatting
+- **Aiming Restriction**: Block exit examination if character is aiming (maintain combat focus)
+
+**Integration Points:**
+- **Distinct from Directional Looking**: Exit examination focuses on the passage itself, while directional looking shows adjacent room contents (crowds, characters, vehicles)
+- **Complementary Systems**: "look east" shows what's beyond, "look e" describes the exit passage
+- Works with Smart Exit System (room exit display formatting)  
+- Follows established atmospheric contribution patterns from weather/crowd systems
+- Maintains compatibility with edge/gap jump mechanics
+- Integrates with aiming system restrictions (tactical focus enforcement)
+- **Character Display**: Shows characters in current room (like standard room appearance)
+
+### 12. Ambient Message System (🚧)
 - **Periodic Atmospheric Messages**: Random yet informed frequency ambient messages
 - **Contextual Integration**: Messages draw from contributing room factors (weather, crowd, etc.)
 - **Dynamic Environmental Feedback**: Continuous atmospheric presence without player action
