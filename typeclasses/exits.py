@@ -50,6 +50,13 @@ class Exit(DefaultExit):
         """
         return ""
 
+    def get_display_name(self, looker=None, **kwargs):
+        """
+        Override to completely hide the exit name when looking at exits.
+        Returns empty string so 'look w' doesn't show 'west' header.
+        """
+        return ""
+
     def at_traverse(self, traversing_object, target_location):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
