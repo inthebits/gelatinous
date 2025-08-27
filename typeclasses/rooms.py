@@ -108,7 +108,8 @@ class Room(ObjectParent, DefaultRoom):
             # If we found the exit and it has a destination, return that room's appearance
             if exit_obj and exit_obj.destination:
                 aimed_room = exit_obj.destination
-                return aimed_room.return_appearance(looker, **kwargs)
+                # Call the parent's return_appearance directly to avoid aiming recursion
+                return super(Room, aimed_room).return_appearance(looker, **kwargs)
         
         # Normal room appearance (not aiming)
         # Get the base description from the parent class
