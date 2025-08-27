@@ -373,7 +373,12 @@ class CmdAim(Command):
                 # Clear override_place and check for mutual showdown cleanup
                 self._clear_aim_override_place(caller, current_target)
                 
-                caller.msg(f"You stop aiming at {current_target.key}.")
+                # Get weapon name for better messaging
+                hands = getattr(caller, "hands", {})
+                weapon = next((item for hand, item in hands.items() if item), None)
+                weapon_name = weapon.key if weapon else "weapon"
+                
+                caller.msg(f"You stop aiming at {current_target.key} and lower your {weapon_name}.")
                 current_target.msg(f"{caller.key} stops aiming at you.")
                 splattercast.msg(f"AIM_STOP: {caller.key} stopped aiming at {current_target.key}.")
             
@@ -385,7 +390,25 @@ class CmdAim(Command):
                 if not current_target:
                     caller.override_place = ""
                 
-                caller.msg(f"You stop aiming {current_direction}.")
+                # Get weapon name for better messaging
+                hands = getattr(caller, "hands", {})
+                weapon = next((item for hand, item in hands.items() if item), None)
+                weapon_name = weapon.key if weapon else "weapon"
+                
+                # Try to get the actual exit name from the direction
+                exit_obj = caller.search(current_direction, location=caller.location, quiet=True)
+                if exit_obj and hasattr(exit_obj[0], 'destination') and exit_obj[0].destination:
+                    exit_name = exit_obj[0].key
+                else:
+                    # Fallback to direction mapping for non-exit directions
+                    direction_map = {
+                        "n": "north", "s": "south", "e": "east", "w": "west",
+                        "ne": "northeast", "nw": "northwest", "se": "southeast", "sw": "southwest",
+                        "u": "up", "d": "down", "in": "in", "out": "out"
+                    }
+                    exit_name = direction_map.get(current_direction.lower(), current_direction)
+                
+                caller.msg(f"You stop aiming to the {exit_name} and lower your {weapon_name}.")
                 splattercast.msg(f"AIM_STOP: {caller.key} stopped aiming {current_direction}.")
             
             return        # Clear any existing aim first
@@ -477,7 +500,15 @@ class CmdAim(Command):
                 test_direction = getattr(caller.ndb, "aiming_direction", None)
                 splattercast.msg(f"AIM_DEBUG: Immediate test retrieval: '{test_direction}'")
                 
-                caller.msg(f"You take careful aim {direction}.")
+                # Get held weapon for better messaging
+                hands = getattr(caller, "hands", {})
+                weapon = next((item for hand, item in hands.items() if item), None)
+                weapon_name = weapon.key if weapon else "weapon"
+                
+                # Use the exit's actual name instead of hardcoded direction mapping
+                exit_name = target.key if target else direction
+                
+                caller.msg(f"You raise your {weapon_name}, taking careful aim to the {exit_name}.")
                 caller.location.msg_contents(
                     f"{caller.key} takes careful aim {direction}.",
                     exclude=[caller]
@@ -508,8 +539,12 @@ class CmdAim(Command):
             # Set override_place and check for mutual showdown
             self._set_aim_override_place(caller, target)
 
-            # Send messages
-            caller.msg(f"You carefully aim at {target.key}.")
+            # Send messages - get weapon name for better messaging
+            hands = getattr(caller, "hands", {})
+            weapon = next((item for hand, item in hands.items() if item), None)
+            weapon_name = weapon.key if weapon else "weapon"
+            
+            caller.msg(f"You raise your {weapon_name}, taking careful aim at {target.key}.")
             target.msg(f"|r{caller.key} is aiming at you! You feel locked in place.|n")
             caller.location.msg_contents(
                 f"{caller.key} takes careful aim at {target.key}.",
@@ -571,7 +606,26 @@ class CmdAim(Command):
                 test_direction = getattr(caller.ndb, "aiming_direction", None)
                 splattercast.msg(f"AIM_DEBUG: Immediate test retrieval: '{test_direction}'")
                 
-                caller.msg(f"You take careful aim {direction}.")
+                # Get held weapon for better messaging
+                hands = getattr(caller, "hands", {})
+                weapon = next((item for hand, item in hands.items() if item), None)
+                weapon_name = weapon.key if weapon else "weapon"
+                
+                # For this path, we don't have a target object since it's a fallback direction aim
+                # Try to find the exit to get its name
+                exit_obj = caller.search(direction, location=caller.location, quiet=True)
+                if exit_obj and hasattr(exit_obj[0], 'destination') and exit_obj[0].destination:
+                    exit_name = exit_obj[0].key
+                else:
+                    # Fallback to direction mapping for non-exit directions
+                    direction_map = {
+                        "n": "north", "s": "south", "e": "east", "w": "west",
+                        "ne": "northeast", "nw": "northwest", "se": "southeast", "sw": "southwest",
+                        "u": "up", "d": "down", "in": "in", "out": "out"
+                    }
+                    exit_name = direction_map.get(direction.lower(), direction)
+                
+                caller.msg(f"You raise your {weapon_name}, taking careful aim to the {exit_name}.")
                 caller.location.msg_contents(
                     f"{caller.key} takes careful aim {direction}.",
                     exclude=[caller]

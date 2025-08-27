@@ -373,7 +373,12 @@ class CmdStop(Command):
                 # Clear override_place and handle mutual showdown cleanup
                 self._clear_aim_override_place_on_stop(caller, aiming_target)
                 
-                caller.msg(f"You stop aiming at {aiming_target.key}.")
+                # Get weapon name for better messaging
+                hands = getattr(caller, "hands", {})
+                weapon = next((item for hand, item in hands.items() if item), None)
+                weapon_name = weapon.key if weapon else "weapon"
+                
+                caller.msg(f"You stop aiming at {aiming_target.key} and lower your {weapon_name}.")
                 aiming_target.msg(f"{caller.key} stops aiming at you.")
                 
             # Clear direction aiming
@@ -384,7 +389,25 @@ class CmdStop(Command):
                 if not aiming_target:
                     caller.override_place = ""
                 
-                caller.msg(f"You stop aiming {aiming_direction}.")
+                # Get weapon name for better messaging
+                hands = getattr(caller, "hands", {})
+                weapon = next((item for hand, item in hands.items() if item), None)
+                weapon_name = weapon.key if weapon else "weapon"
+                
+                # Try to get the actual exit name from the direction
+                exit_obj = caller.search(aiming_direction, location=caller.location, quiet=True)
+                if exit_obj and hasattr(exit_obj[0], 'destination') and exit_obj[0].destination:
+                    exit_name = exit_obj[0].key
+                else:
+                    # Fallback to direction mapping for non-exit directions
+                    direction_map = {
+                        "n": "north", "s": "south", "e": "east", "w": "west",
+                        "ne": "northeast", "nw": "northwest", "se": "southeast", "sw": "southwest",
+                        "u": "up", "d": "down", "in": "in", "out": "out"
+                    }
+                    exit_name = direction_map.get(aiming_direction.lower(), aiming_direction)
+                
+                caller.msg(f"You stop aiming to the {exit_name} and lower your {weapon_name}.")
                 
         elif args == "attacking" or args == "attack":
             handler = getattr(caller.ndb, "combat_handler", None)

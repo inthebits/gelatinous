@@ -129,7 +129,13 @@ class Exit(DefaultExit):
                 if hasattr(old_aim_target, "ndb") and getattr(old_aim_target.ndb, "aimed_at_by", None) == traversing_object:
                     del old_aim_target.ndb.aimed_at_by
                     old_aim_target.msg(f"{traversing_object.key} stops aiming at you as they move.")
-                traversing_object.msg(f"You stop aiming at {old_aim_target.key} as you move.")
+                
+                # Get weapon name for better messaging
+                hands = getattr(traversing_object, "hands", {})
+                weapon = next((item for hand, item in hands.items() if item), None)
+                weapon_name = weapon.key if weapon else "weapon"
+                
+                traversing_object.msg(f"You stop aiming at {old_aim_target.key} and lower your {weapon_name} as you move.")
                 
                 # Clear override_place and handle mutual showdown cleanup
                 self._clear_aim_override_place_on_move(traversing_object, old_aim_target)
@@ -139,7 +145,26 @@ class Exit(DefaultExit):
             old_aim_direction = getattr(traversing_object.ndb, "aiming_direction", None)
             if old_aim_direction:
                 del traversing_object.ndb.aiming_direction
-                traversing_object.msg(f"You stop aiming {old_aim_direction} as you move.")
+                
+                # Get weapon name for better messaging
+                hands = getattr(traversing_object, "hands", {})
+                weapon = next((item for hand, item in hands.items() if item), None)
+                weapon_name = weapon.key if weapon else "weapon"
+                
+                # Try to get the actual exit name from the direction
+                exit_obj = traversing_object.location.search(old_aim_direction, quiet=True)
+                if exit_obj and hasattr(exit_obj[0], 'destination') and exit_obj[0].destination:
+                    exit_name = exit_obj[0].key
+                else:
+                    # Fallback to direction mapping for non-exit directions
+                    direction_map = {
+                        "n": "north", "s": "south", "e": "east", "w": "west",
+                        "ne": "northeast", "nw": "northwest", "se": "southeast", "sw": "southwest",
+                        "u": "up", "d": "down", "in": "in", "out": "out"
+                    }
+                    exit_name = direction_map.get(old_aim_direction.lower(), old_aim_direction)
+                
+                traversing_object.msg(f"You stop aiming to the {exit_name} and lower your {weapon_name} as you move.")
                 
                 # Clear directional aim override_place
                 traversing_object.override_place = ""
