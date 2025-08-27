@@ -534,10 +534,16 @@ class Exit(DefaultExit):
             # Get current weather status
             current_weather = weather_system.get_current_weather()
             
+            # Debug: log weather state for troubleshooting
+            # This can be removed once weather context is working
+            if hasattr(self, 'location') and self.location:
+                from evennia.utils import logger
+                logger.log_info(f"EXIT_WEATHER_DEBUG: Exit {self.key} weather={current_weather}, room_outside={room_is_outside}, dest_outside={dest_is_outside}")
+            
             # Simple weather context phrases for exit descriptions
             weather_contexts = {
-                # Clear/mild weather
-                'clear': "",  # No weather context needed for clear conditions
+                # Clear/mild weather - add some context for testing
+                'clear': "Through the morning air",  # Temporary test context
                 
                 # Rain variants
                 'rain': "Through the steady rain",
@@ -570,11 +576,15 @@ class Exit(DefaultExit):
             
             return weather_contexts.get(current_weather, "")
             
-        except ImportError:
+        except ImportError as e:
             # Weather system not available
+            from evennia.utils import logger
+            logger.log_warn(f"EXIT_WEATHER_IMPORT_ERROR: {e}")
             return ""
-        except Exception:
+        except Exception as e:
             # Any other error - fail gracefully
+            from evennia.utils import logger
+            logger.log_warn(f"EXIT_WEATHER_ERROR: {e}")
             return ""
         
     def _get_directional_atmospheric(self, looker):
