@@ -378,11 +378,11 @@ class Exit(DefaultExit):
         """
         # Check aiming restrictions - aiming characters cannot examine exits (focus limitation)
         if hasattr(looker, 'ndb') and getattr(looker.ndb, "aiming_at", None):
-            looker.msg("|rYou cannot examine exits while aiming - your focus is locked on your target.|n")
+            looker.msg("You cannot see any further.")
             return ""
         
         if hasattr(looker, 'ndb') and getattr(looker.ndb, "aiming_direction", None):
-            looker.msg("|rYou cannot examine exits while aiming - your focus is locked on the direction you're watching.|n")
+            looker.msg("You cannot see any further.")
             return ""
         
         # Build description components
