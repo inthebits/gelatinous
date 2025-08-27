@@ -89,7 +89,29 @@ class Room(ObjectParent, DefaultRoom):
 
         Enhanced to show flying objects during throw mechanics and 
         integrate @integrate objects and weather into the room description.
+        
+        Also supports aiming system: When looker is aiming in a direction,
+        shows the complete appearance of the aimed room instead of current room.
         """
+        # Check if looker is aiming in a direction - if so, show aimed room appearance
+        aiming_direction = getattr(looker.ndb, "aiming_direction", None) if hasattr(looker, 'ndb') else None
+        
+        if aiming_direction:
+            # Find the exit for the aimed direction
+            exit_obj = None
+            for ex in self.exits:
+                current_exit_aliases_lower = [alias.lower() for alias in (ex.aliases.all() if hasattr(ex.aliases, "all") else [])]
+                if ex.key.lower() == aiming_direction.lower() or aiming_direction.lower() in current_exit_aliases_lower:
+                    exit_obj = ex
+                    break
+            
+            # If we found the exit and it has a destination, return that room's appearance
+            if exit_obj and exit_obj.destination:
+                aimed_room = exit_obj.destination
+                # Recursively call return_appearance on the aimed room
+                return aimed_room.return_appearance(looker, **kwargs)
+        
+        # Normal room appearance (not aiming)
         # Get the base description from the parent class
         appearance = super().return_appearance(looker, **kwargs)
         
