@@ -578,8 +578,8 @@ class Exit(DefaultExit):
         
     def _get_exit_character_display(self, looker):
         """
-        Get character display from current room (not destination room).
-        Shows other characters in the current location following standard appearance patterns.
+        Get character display from destination room (where the exit leads to).
+        Shows characters in the destination location following standard appearance patterns.
         
         Args:
             looker: Character examining the exit
@@ -587,20 +587,20 @@ class Exit(DefaultExit):
         Returns:
             str: Character display string or empty string
         """
-        current_room = looker.location
-        if not current_room:
+        destination_room = self.destination
+        if not destination_room:
             return ""
             
-        # Get other characters in current room (excluding looker)
-        other_characters = [char for char in current_room.contents 
-                          if char.is_typeclass("typeclasses.characters.Character") 
-                          and char != looker]
+        # Get characters in destination room (excluding looker if they're somehow there)
+        destination_characters = [char for char in destination_room.contents 
+                                if char.is_typeclass("typeclasses.characters.Character") 
+                                and char != looker]
                           
-        if not other_characters:
+        if not destination_characters:
             return ""
             
         # Format character names
-        char_names = [char.get_display_name(looker) for char in other_characters]
+        char_names = [char.get_display_name(looker) for char in destination_characters]
         
         if len(char_names) == 1:
             return f"{char_names[0]} is standing here."
