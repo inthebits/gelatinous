@@ -411,12 +411,14 @@ class CmdAim(Command):
                 caller.msg(f"You stop aiming to the {exit_name} and lower your {weapon_name}.")
                 splattercast.msg(f"AIM_STOP: {caller.key} stopped aiming {current_direction}.")
             
-            return        # Clear any existing aim first
+            return
+        
+        # Check current aiming state for transition detection
+        current_aiming_direction = getattr(caller.ndb, "aiming_direction", None)
+        
+        # Clear any existing aim first
         current_target = getattr(caller.ndb, "aiming_at", None)
         current_direction = getattr(caller.ndb, "aiming_direction", None)
-        
-        # Store direction info for transition detection later
-        previous_direction = current_direction
         
         if current_target:
             if hasattr(current_target, "ndb") and hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
@@ -427,7 +429,6 @@ class CmdAim(Command):
             current_target.msg(f"{caller.key} stops aiming at you.")
             
         if current_direction:
-            splattercast.msg(f"AIM_DEBUG: Clearing existing aiming_direction '{current_direction}' for {caller.key}")
             delattr(caller.ndb, "aiming_direction")
             # Clear directional aim override_place
             caller.override_place = ""
@@ -456,7 +457,6 @@ class CmdAim(Command):
         if target and hasattr(target, 'key'):
             # Check if the "target" is actually an exit - if so, treat as direction aiming
             if hasattr(target, 'destination') and target.destination:
-                splattercast.msg(f"AIM_DEBUG: Found object is an exit, treating as direction aiming")
                 # This is an exit, treat as direction aiming instead of target aiming
                 direction = args.strip().lower()
                 
@@ -471,7 +471,7 @@ class CmdAim(Command):
                     current_target.msg(f"{caller.key} stops aiming at you.")
                     
                 # Check if we're switching between directions (for enhanced messaging)
-                is_switching_directions = current_direction and current_direction != direction
+                is_switching_directions = current_aiming_direction and current_aiming_direction != direction
                 
                 if current_direction:
                     splattercast.msg(f"AIM_DEBUG: Clearing existing aiming_direction '{current_direction}' for {caller.key}")
@@ -516,6 +516,7 @@ class CmdAim(Command):
                 
                 # Enhanced messaging for direction transitions
                 if is_switching_directions:
+                    splattercast.msg(f"AIM_DEBUG: PATH1 - previous_direction='{current_direction}', new direction='{direction}', is_switching={is_switching_directions}")
                     import random
                     swivel_messages = [
                         f"You smoothly pivot your {weapon_name}, tracking your aim to the {exit_name}.",
@@ -674,7 +675,7 @@ class CmdAim(Command):
                     exit_name = direction_map.get(direction.lower(), direction)
                 
                 # Enhanced messaging for direction transitions
-                is_switching_directions = previous_direction and previous_direction != direction
+                is_switching_directions = current_aiming_direction and current_aiming_direction != direction
                 if is_switching_directions:
                     import random
                     swivel_messages = [
