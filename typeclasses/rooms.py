@@ -148,6 +148,67 @@ class Room(ObjectParent, DefaultRoom):
             appearance = '\n'.join(lines)
         
         return appearance
+
+    def search_for_target(self, looker, searchdata, return_candidates_only=False, **kwargs):
+        """
+        Enhanced search that respects aiming direction for world interpretation.
+        
+        When looker is aiming in a direction, creates a unified search space
+        across both current room and aimed room. This allows ordinal numbers
+        to work correctly across the combined space (e.g., "3rd sword" finds
+        the 3rd sword across both rooms).
+        
+        Args:
+            looker: The character performing the search
+            searchdata: What to search for (string)
+            return_candidates_only: If True, return just the candidate list 
+                                  instead of performing the search
+            **kwargs: Additional search parameters
+            
+        Returns:
+            Search result object(s), None if not found, or candidate list if return_candidates_only=True
+        """
+        # Check if looker is aiming in a direction
+        aiming_direction = getattr(looker.ndb, "aiming_direction", None) if hasattr(looker, 'ndb') else None
+        
+        if aiming_direction:
+            # Find the exit for the aimed direction (same logic as return_appearance)
+            exit_obj = None
+            for ex in self.exits:
+                current_exit_aliases_lower = [alias.lower() for alias in (ex.aliases.all() if hasattr(ex.aliases, "all") else [])]
+                if ex.key.lower() == aiming_direction.lower() or aiming_direction.lower() in current_exit_aliases_lower:
+                    exit_obj = ex
+                    break
+            
+            # If we found the exit and it has a destination, create unified search space
+            if exit_obj and exit_obj.destination:
+                aimed_room = exit_obj.destination
+                
+                # Combine candidates from both rooms for unified ordinal numbering
+                current_candidates = list(self.contents)
+                aimed_candidates = list(aimed_room.contents)
+                combined_candidates = current_candidates + aimed_candidates
+                
+                # Remove the looker from candidates (they shouldn't find themselves)
+                if looker in combined_candidates:
+                    combined_candidates.remove(looker)
+                
+                # Return just candidates if requested
+                if return_candidates_only:
+                    return combined_candidates
+                
+                # Search using combined candidate pool
+                return looker.search(searchdata, candidates=combined_candidates, quiet=True, **kwargs)
+        
+        # Not aiming or invalid aim - use standard room search
+        # Remove the looker from candidates
+        candidates = [obj for obj in self.contents if obj != looker]
+        
+        # Return just candidates if requested
+        if return_candidates_only:
+            return candidates
+            
+        return looker.search(searchdata, candidates=candidates, quiet=True, **kwargs)
     
     def get_integrated_objects_content(self, looker):
         """

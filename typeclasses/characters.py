@@ -99,6 +99,43 @@ class Character(ObjectParent, DefaultCharacter):
         """
         return self.hp <= 0
 
+    def get_search_candidates(self, searchdata, **kwargs):
+        """
+        Override to include aimed-at room contents when aiming.
+        
+        This is called by the search method to determine what objects
+        are available to search through. When aiming at a direction,
+        this includes both current room and aimed-room contents.
+        
+        Args:
+            searchdata (str): The search criterion
+            **kwargs: Same as passed to search method
+            
+        Returns:
+            list: Objects that can be searched through
+        """
+        # Get the default candidates first
+        candidates = super().get_search_candidates(searchdata, **kwargs)
+        
+        # If we have default candidates and we're aiming, enhance them
+        if candidates is not None and hasattr(self.ndb, 'aiming_direction'):
+            try:
+                # Use the room's search_for_target method to get unified candidates
+                # This leverages the existing vetted aiming logic
+                unified_candidates = self.location.search_for_target(
+                    self, searchdata, return_candidates_only=True
+                )
+                if unified_candidates:
+                    # Use the unified candidates instead of default ones
+                    # This maintains ordinal support and all existing logic
+                    candidates = unified_candidates
+            except (AttributeError, TypeError):
+                # If anything goes wrong, fall back to default candidates
+                # This ensures we never break normal searching
+                pass
+        
+        return candidates
+
     def at_death(self):
         """
         Handles what happens when this character dies.
