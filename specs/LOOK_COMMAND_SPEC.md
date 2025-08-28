@@ -993,8 +993,15 @@ def return_appearance(self, looker, **kwargs):
 
 ### Targeted Look Commands  
 - `look <character>` - Detailed character examination
-- `look <object>` - Detailed object examination
+- `look <object>` - Detailed object examination  
 - `examine <target>` - Deep examination with interaction hints
+
+**🎯 Aiming Integration Enhancement:**
+- When aiming in a direction, targeted look commands search both current room AND aimed-at room
+- Unified ordinal numbering across both spaces ("2nd goblin" finds 2nd goblin whether in current or aimed room)
+- Implemented via `Character.get_search_candidates()` override using Evennia's designed hook points
+- Universal system affects ALL commands using `caller.search()`, not just look commands
+- Maintains backward compatibility when not aiming
 
 ### Sensory Focus Commands
 - `listen` - Focus on auditory information
@@ -1012,6 +1019,7 @@ def return_appearance(self, looker, **kwargs):
 - Character status affects perception
 - Weapon visibility based on wielded items
 - Proximity system affects character positioning
+- **Universal Aiming Search**: All commands automatically search aimed-at rooms when aiming (look, get, attack, etc.)
 
 ### Inventory System Integration
 - Held items affect available interactions
