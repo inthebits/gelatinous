@@ -415,6 +415,9 @@ class CmdAim(Command):
         current_target = getattr(caller.ndb, "aiming_at", None)
         current_direction = getattr(caller.ndb, "aiming_direction", None)
         
+        # Store direction info for transition detection later
+        previous_direction = current_direction
+        
         if current_target:
             if hasattr(current_target, "ndb") and hasattr(current_target.ndb, "aimed_at_by") and getattr(current_target.ndb, "aimed_at_by") == caller:
                 delattr(current_target.ndb, "aimed_at_by")
@@ -467,6 +470,9 @@ class CmdAim(Command):
                     delattr(caller.ndb, "aiming_at")
                     current_target.msg(f"{caller.key} stops aiming at you.")
                     
+                # Check if we're switching between directions (for enhanced messaging)
+                is_switching_directions = current_direction and current_direction != direction
+                
                 if current_direction:
                     splattercast.msg(f"AIM_DEBUG: Clearing existing aiming_direction '{current_direction}' for {caller.key}")
                     delattr(caller.ndb, "aiming_direction")
@@ -508,11 +514,53 @@ class CmdAim(Command):
                 # Use the exit's actual name instead of hardcoded direction mapping
                 exit_name = target.key if target else direction
                 
-                caller.msg(f"You raise your {weapon_name}, taking careful aim to the {exit_name}.")
-                caller.location.msg_contents(
-                    f"{caller.key} takes careful aim {direction}.",
-                    exclude=[caller]
-                )
+                # Enhanced messaging for direction transitions
+                if is_switching_directions:
+                    import random
+                    swivel_messages = [
+                        f"You smoothly pivot your {weapon_name}, tracking your aim to the {exit_name}.",
+                        f"You swivel your {weapon_name} with practiced precision, realigning toward the {exit_name}.",
+                        f"You sweep your {weapon_name} across in a fluid arc, settling your sights on the {exit_name}.",
+                        f"You adjust your stance and redirect your {weapon_name} toward the {exit_name}.",
+                        f"You shift your aim with tactical awareness, training your {weapon_name} on the {exit_name}."
+                    ]
+                    
+                    room_swivel_messages = [
+                        f"{caller.key} smoothly pivots their {weapon_name} toward the {exit_name}.",
+                        f"{caller.key} swivels their {weapon_name} with practiced precision toward the {exit_name}.",
+                        f"{caller.key} sweeps their {weapon_name} in a fluid arc toward the {exit_name}.",
+                        f"{caller.key} adjusts their stance, redirecting their {weapon_name} toward the {exit_name}.",
+                        f"{caller.key} shifts their {weapon_name} with tactical awareness toward the {exit_name}."
+                    ]
+                    
+                    caller.msg(random.choice(swivel_messages))
+                    caller.location.msg_contents(
+                        random.choice(room_swivel_messages),
+                        exclude=[caller]
+                    )
+                else:
+                    import random
+                    raise_messages = [
+                        f"You raise your {weapon_name}, taking careful aim to the {exit_name}.",
+                        f"You bring up your {weapon_name}, steadying your sights on the {exit_name}.",
+                        f"You shoulder your {weapon_name}, drawing a careful bead on the {exit_name}.",
+                        f"You lift your {weapon_name} with deliberate focus, targeting the {exit_name}.",
+                        f"You level your {weapon_name}, centering your aim on the {exit_name}."
+                    ]
+                    
+                    room_raise_messages = [
+                        f"{caller.key} takes careful aim with their {weapon_name} toward the {exit_name}.",
+                        f"{caller.key} raises their {weapon_name}, focusing on the {exit_name}.",
+                        f"{caller.key} shoulders their {weapon_name}, targeting the {exit_name}.",
+                        f"{caller.key} brings up their {weapon_name} with deliberate focus toward the {exit_name}.",
+                        f"{caller.key} levels their {weapon_name}, aiming at the {exit_name}."
+                    ]
+                    
+                    caller.msg(random.choice(raise_messages))
+                    caller.location.msg_contents(
+                        random.choice(room_raise_messages),
+                        exclude=[caller]
+                    )
                 
                 splattercast.msg(f"AIM_DIRECTION: {caller.key} is now aiming {direction}.")
                 return
@@ -625,11 +673,54 @@ class CmdAim(Command):
                     }
                     exit_name = direction_map.get(direction.lower(), direction)
                 
-                caller.msg(f"You raise your {weapon_name}, taking careful aim to the {exit_name}.")
-                caller.location.msg_contents(
-                    f"{caller.key} takes careful aim {direction}.",
-                    exclude=[caller]
-                )
+                # Enhanced messaging for direction transitions
+                is_switching_directions = previous_direction and previous_direction != direction
+                if is_switching_directions:
+                    import random
+                    swivel_messages = [
+                        f"You smoothly pivot your {weapon_name}, tracking your aim to the {exit_name}.",
+                        f"You swivel your {weapon_name} with practiced precision, realigning toward the {exit_name}.",
+                        f"You sweep your {weapon_name} across in a fluid arc, settling your sights on the {exit_name}.",
+                        f"You adjust your stance and redirect your {weapon_name} toward the {exit_name}.",
+                        f"You shift your aim with tactical awareness, training your {weapon_name} on the {exit_name}."
+                    ]
+                    
+                    room_swivel_messages = [
+                        f"{caller.key} smoothly pivots their {weapon_name} toward the {exit_name}.",
+                        f"{caller.key} swivels their {weapon_name} with practiced precision toward the {exit_name}.",
+                        f"{caller.key} sweeps their {weapon_name} in a fluid arc toward the {exit_name}.",
+                        f"{caller.key} adjusts their stance, redirecting their {weapon_name} toward the {exit_name}.",
+                        f"{caller.key} shifts their {weapon_name} with tactical awareness toward the {exit_name}."
+                    ]
+                    
+                    caller.msg(random.choice(swivel_messages))
+                    caller.location.msg_contents(
+                        random.choice(room_swivel_messages),
+                        exclude=[caller]
+                    )
+                else:
+                    import random
+                    raise_messages = [
+                        f"You raise your {weapon_name}, taking careful aim to the {exit_name}.",
+                        f"You bring up your {weapon_name}, steadying your sights on the {exit_name}.",
+                        f"You shoulder your {weapon_name}, drawing a careful bead on the {exit_name}.",
+                        f"You lift your {weapon_name} with deliberate focus, targeting the {exit_name}.",
+                        f"You level your {weapon_name}, centering your aim on the {exit_name}."
+                    ]
+                    
+                    room_raise_messages = [
+                        f"{caller.key} takes careful aim with their {weapon_name} toward the {exit_name}.",
+                        f"{caller.key} raises their {weapon_name}, focusing on the {exit_name}.",
+                        f"{caller.key} shoulders their {weapon_name}, targeting the {exit_name}.",
+                        f"{caller.key} brings up their {weapon_name} with deliberate focus toward the {exit_name}.",
+                        f"{caller.key} levels their {weapon_name}, aiming at the {exit_name}."
+                    ]
+                    
+                    caller.msg(random.choice(raise_messages))
+                    caller.location.msg_contents(
+                        random.choice(room_raise_messages),
+                        exclude=[caller]
+                    )
                 
                 splattercast.msg(f"AIM_DIRECTION: {caller.key} is now aiming {direction}.")
                 
