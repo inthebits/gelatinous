@@ -76,7 +76,7 @@ class CmdLongdesc(MuxCommand):
         target_char = None
         remaining_args = args
 
-        if caller.check_permstring(PERM_BUILDER):
+        if caller.locks.check_lockstring(caller, f"dummy:perm({PERM_BUILDER}) or perm_above({PERM_BUILDER})"):
             # Staff can target other characters
             parts = args.split(None, 1)
             if len(parts) >= 1:
@@ -172,7 +172,7 @@ class CmdLongdesc(MuxCommand):
         target_char = None
         location = args
 
-        if caller.check_permstring(PERM_BUILDER):
+        if caller.locks.check_lockstring(caller, f"dummy:perm({PERM_BUILDER}) or perm_above({PERM_BUILDER})"):
             parts = args.split(None, 1)
             if len(parts) >= 1:
                 # Use quiet=True to prevent "Could not find" messages
