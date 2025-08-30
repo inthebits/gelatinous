@@ -532,9 +532,10 @@ class Character(ObjectParent, DefaultCharacter):
                         descriptions.append((location, desc))
                         added_clothing_items.add(clothing_item)
             else:
-                # Location not covered - use character's longdesc if set
+                # Location not covered - use character's longdesc if set with template variable processing
                 if location in longdescs and longdescs[location]:
-                    descriptions.append((location, longdescs[location]))
+                    processed_desc = self._process_description_variables(longdescs[location], looker)
+                    descriptions.append((location, processed_desc))
         
         # Add any extended anatomy not in default order (clothing or longdesc)
         all_locations = set(longdescs.keys()) | set(coverage_map.keys())
@@ -550,8 +551,9 @@ class Character(ObjectParent, DefaultCharacter):
                             descriptions.append((location, desc))
                             added_clothing_items.add(clothing_item)
                 elif location in longdescs and longdescs[location]:
-                    # Extended location with longdesc
-                    descriptions.append((location, longdescs[location]))
+                    # Extended location with longdesc - apply template variable processing
+                    processed_desc = self._process_description_variables(longdescs[location], looker)
+                    descriptions.append((location, processed_desc))
         
         return descriptions
 
