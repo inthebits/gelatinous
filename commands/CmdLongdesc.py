@@ -61,13 +61,25 @@ class CmdLongdesc(Command):
         if not switches:
             switches = []
 
+        # Also check raw input for switches as backup
+        raw_input = getattr(self, 'raw', '')
+        if '/list' in raw_input:
+            switches.append('list')
+        if '/clear' in raw_input:
+            switches.append('clear')
+
         # Handle switches
         if "list" in switches:
             self._handle_list_locations(caller)
             return
 
         if "clear" in switches:
-            self._handle_clear(caller, args)
+            # For /clear, args should be everything after the switch
+            if '/clear' in raw_input:
+                clear_args = raw_input.split('/clear', 1)[1].strip()
+                self._handle_clear(caller, clear_args)
+            else:
+                self._handle_clear(caller, args)
             return
 
         # Parse arguments for main command
