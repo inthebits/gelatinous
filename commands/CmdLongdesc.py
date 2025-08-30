@@ -91,56 +91,38 @@ class CmdLongdesc(Command):
             # Staff can target other characters
             parts = args.split(None, 1)
             if len(parts) >= 1:
-                # Debug: let's see what's happening
-                caller.msg(f"DEBUG: Trying to find character '{parts[0]}'")
-                
                 # Try different search approaches
                 potential_target = caller.search(parts[0], global_search=True, quiet=True)
-                caller.msg(f"DEBUG: Global search result: {potential_target}")
                 
                 if not potential_target:
                     # Try searching without global_search
                     potential_target = caller.search(parts[0], quiet=True)
-                    caller.msg(f"DEBUG: Local search result: {potential_target}")
                 
                 if not potential_target:
                     # Try searching in the same location as the caller
                     if caller.location:
                         potential_target = caller.location.search(parts[0], quiet=True)
-                        caller.msg(f"DEBUG: Location search result: {potential_target}")
                         
                         # If not found in location, try searching the location's contents more broadly
                         if not potential_target:
                             for obj in caller.location.contents:
                                 if obj.key.lower() == parts[0].lower():
                                     potential_target = obj
-                                    caller.msg(f"DEBUG: Manual location search found: {potential_target}")
                                     break
                 
                 if potential_target:
-                    caller.msg(f"DEBUG: Found object, checking if it's a Character...")
-                    caller.msg(f"DEBUG: Object type: {type(potential_target)}")
-                    
                     # If it's a list, get the first item
                     if isinstance(potential_target, list):
                         if potential_target:
                             actual_target = potential_target[0]
-                            caller.msg(f"DEBUG: Got first item from list: {actual_target}, type: {type(actual_target)}")
                         else:
                             actual_target = None
                     else:
                         actual_target = potential_target
                     
                     if actual_target and inherits_from(actual_target, "typeclasses.characters.Character"):
-                        caller.msg(f"DEBUG: Success! Targeting {actual_target}")
                         target_char = actual_target
                         remaining_args = parts[1] if len(parts) > 1 else ""
-                    else:
-                        caller.msg(f"DEBUG: Object is not a Character or is None")
-                else:
-                    caller.msg(f"DEBUG: No object found with that name")
-        else:
-            caller.msg("DEBUG: Permission check failed - not staff")
 
         if not target_char:
             target_char = caller
