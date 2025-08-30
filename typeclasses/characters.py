@@ -502,4 +502,25 @@ class Character(ObjectParent, DefaultCharacter):
         Returns:
             str: Complete character appearance with longdescs
         """
-        return self.get_longdesc_appearance(looker, **kwargs)
+        # Get Evennia's default character appearance first
+        # This handles all the built-in functionality like search resolution, permissions, etc.
+        default_appearance = super().return_appearance(looker, **kwargs)
+        
+        # If we don't have longdesc initialized or available, just return default
+        if self.longdesc is None:
+            try:
+                from world.combat.constants import DEFAULT_LONGDESC_LOCATIONS
+                self.longdesc = DEFAULT_LONGDESC_LOCATIONS.copy()
+            except ImportError:
+                return default_appearance
+        
+        # Get our enhanced longdesc appearance
+        longdesc_appearance = self.get_longdesc_appearance(looker, **kwargs)
+        
+        # If longdesc appearance is the same as base desc, return default appearance
+        # Otherwise return our enhanced version
+        base_desc = self.db.desc or ""
+        if longdesc_appearance == base_desc:
+            return default_appearance
+        else:
+            return longdesc_appearance
