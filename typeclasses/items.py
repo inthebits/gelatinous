@@ -1,6 +1,28 @@
 from evennia import DefaultObject, AttributeProperty
 from world.combat.constants import DEFAULT_CLOTHING_LAYER
 
+# ANSI Color definitions for clothing descriptions
+COLOR_DEFINITIONS = {
+    # Standard colors
+    "black": "|k",        # Black
+    "red": "|r",          # Red
+    "green": "|g",        # Green
+    "yellow": "|y",       # Yellow
+    "blue": "|b",         # Blue
+    "magenta": "|m",      # Magenta
+    "cyan": "|c",         # Cyan
+    "white": "|w",        # White
+    # Bright colors
+    "bright_black": "|K", # Dark Gray
+    "bright_red": "|R",   # Bright Red
+    "bright_green": "|G", # Bright Green
+    "bright_yellow": "|Y",# Bright Yellow
+    "bright_blue": "|B",  # Bright Blue
+    "bright_magenta": "|M", # Bright Magenta
+    "bright_cyan": "|C",  # Bright Cyan
+    "bright_white": "|W", # Bright White
+}
+
 class Item(DefaultObject):
     """
     A general-purpose item. In Gelatinous Monster, all items are
@@ -21,6 +43,14 @@ class Item(DefaultObject):
     # Clothing-specific description that appears when worn (base state)
     # Empty string = not clothing, populated = worn description
     worn_desc = AttributeProperty("", autocreate=True)
+    
+    # ANSI color definition for this item
+    # Used for atmospheric descriptions and visual immersion
+    color = AttributeProperty("", autocreate=True)
+    
+    # Material type for this item (for future armor/crafting systems)
+    # Examples: "leather", "steel", "silk", "kevlar", "titanium"
+    material = AttributeProperty("", autocreate=True)
     
     # Layer priority for stacking items (higher = outer layer)
     layer = AttributeProperty(DEFAULT_CLOTHING_LAYER, autocreate=True)
@@ -133,6 +163,54 @@ class Item(DefaultObject):
     def get_available_style_properties(self):
         """Get all available style properties and their states"""
         return {prop: list(states.keys()) for prop, states in self.style_configs.items()}
+
+    def get_current_worn_desc_with_perspective(self, looker=None, from_obj=None):
+        """
+        Get the current worn description with $pron() processing and color integration.
+        
+        Args:
+            looker: The character doing the looking (for perspective)
+            from_obj: The object being looked at (wearer, for $pron() context)
+            
+        Returns:
+            str: Processed description with pronouns and colors
+        """
+        if not self.worn_desc:
+            return ""
+            
+        # Get current style configuration
+        current_desc = self.get_current_worn_desc()
+        
+        # Process color placeholders
+        colored_desc = self._process_color_codes(current_desc)
+        
+        # Return the description with $pron() tags intact
+        # Evennia will process $pron() tags automatically when the message is sent
+        return colored_desc
+    
+    def _process_color_codes(self, text):
+        """
+        Process color placeholder codes in text.
+        
+        Args:
+            text (str): Text with color placeholders like {color}word|n
+            
+        Returns:
+            str: Text with color placeholders replaced with ANSI codes
+        """
+        if not text:
+            return text
+            
+        # Get color value
+        color = self.color or ""
+        
+        # Replace color placeholder
+        if color and "{color}" in text:
+            color_code = COLOR_DEFINITIONS.get(color, "")
+            processed = text.replace("{color}", color_code)
+            return processed
+        
+        return text
 
     def at_object_creation(self):
         """
