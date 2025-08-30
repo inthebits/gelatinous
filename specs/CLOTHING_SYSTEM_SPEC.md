@@ -236,6 +236,18 @@ Each clothing item has two descriptions:
 #### Example Integration
 **Note**: Clothing descriptions integrate with the existing longdesc paragraph formatting system, using the same smart breaking logic and anatomical region awareness.
 
+**Inventory Integration:**
+```
+> inventory
+You are carrying:
+a black leather jacket (worn, sleeves rolled)
+a weathered tricorn hat (worn)  
+a steel dagger
+some copper coins
+a worn leather pouch
+```
+
+**Appearance Display:**
 ```
 # Character without clothing
 Sterling Hobbs(#216)
@@ -283,14 +295,17 @@ remove all
 ```
 
 #### `worn` / `outfit`
-**Purpose**: List all currently worn items  
+**Purpose**: List all currently worn items with their current style states  
 **Syntax**: `worn` or `outfit`  
-**Display**: Shows items grouped by layer and location
-
-#### `wardrobe`
-**Purpose**: List all wearable items in inventory  
-**Syntax**: `wardrobe`  
-**Display**: Shows wearable items with basic coverage info
+**Display**: Shows items grouped by layer and location, including current style properties
+**Example Output**:
+```
+You are currently wearing:
+  Head: a weathered tricorn hat
+  Torso: a black leather jacket (sleeves rolled, unzipped)
+  Legs: dark leather pants
+  Feet: sturdy leather boots (laced tight)
+```
 
 ### Style Commands
 
@@ -381,8 +396,10 @@ style_configs = AttributeProperty({}, autocreate=True)       # Style variations 
 
 ### With Inventory System
 - **Wearable detection**: Items with `coverage` property are wearable
-- **Inventory display**: Show worn status in inventory listings
+- **Worn item display**: Inventory command shows `(worn)` indicator for equipped items
+- **Style state display**: Worn items can optionally show current style state in inventory
 - **Transfer rules**: Can't drop worn items, must remove first
+- **Unified interface**: Players use standard `inventory` command to see all items including worn status
 
 ### With Combat System
 - **Armor integration**: Clothing can provide damage reduction
