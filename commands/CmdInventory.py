@@ -212,9 +212,9 @@ class CmdInventory(Command):
                 item_name = item.get_display_name(caller)
                 style_states = self._get_style_state_display(item)
                 if style_states:
-                    lines.append(f"  {item_name} (worn, {style_states})")
+                    lines.append(f"  {item_name} ({style_states})")
                 else:
-                    lines.append(f"  {item_name} (worn)")
+                    lines.append(f"  {item_name}")
             lines.append("")
 
         # Carried (not wielded or worn)
