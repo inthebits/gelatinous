@@ -175,6 +175,16 @@ class Character(ObjectParent, DefaultCharacter):
         category="appearance",
         autocreate=True
     )
+    
+    # CLOTHING SYSTEM
+    # Storage for worn clothing items organized by body location
+    worn_items = AttributeProperty({}, category="clothing", autocreate=True)
+    # Structure: {
+    #     "chest": [jacket_obj, shirt_obj],  # Ordered by layer (outer first)
+    #     "head": [hat_obj],
+    #     "left_hand": [glove_obj],
+    #     "right_hand": [glove_obj]
+    # }
 
     def wield_item(self, item, hand="right"):
         hands = self.hands
@@ -308,6 +318,120 @@ class Character(ObjectParent, DefaultCharacter):
                 target.override_place = ""
 
     # ===================================================================
+    # CLOTHING SYSTEM METHODS
+    # ===================================================================
+    
+    def wear_item(self, item):
+        """Wear a clothing item, handling layer conflicts and coverage"""
+        # Validate item is wearable
+        if not item.is_wearable():
+            return False, "That item can't be worn."
+        
+        # Validate item is in inventory
+        if item.location != self:
+            return False, "You're not carrying that item."
+        
+        # Get item's current coverage (accounting for style states)
+        item_coverage = item.get_current_coverage()
+        
+        # Check for layer conflicts and build worn_items structure
+        if not self.worn_items:
+            self.worn_items = {}
+        
+        for location in item_coverage:
+            if location not in self.worn_items:
+                self.worn_items[location] = []
+            
+            # Add item to location, maintaining layer order (outer first)
+            location_items = self.worn_items[location]
+            
+            # Find insertion point based on layer
+            insert_index = 0
+            for i, worn_item in enumerate(location_items):
+                if item.layer <= worn_item.layer:
+                    insert_index = i + 1
+                else:
+                    break
+            
+            location_items.insert(insert_index, item)
+        
+        return True, f"You put on {item.key}."
+    
+    def remove_item(self, item):
+        """Remove worn clothing item"""
+        # Validate item is worn
+        if not self.is_item_worn(item):
+            return False, "You're not wearing that item."
+        
+        # Remove from all worn_items locations
+        if self.worn_items:
+            for location, items in self.worn_items.items():
+                if item in items:
+                    items.remove(item)
+                    # Clean up empty lists
+                    if not items:
+                        del self.worn_items[location]
+        
+        return True, f"You remove {item.key}."
+    
+    def is_item_worn(self, item):
+        """Check if a specific item is currently worn"""
+        if not self.worn_items:
+            return False
+        
+        for items in self.worn_items.values():
+            if item in items:
+                return True
+        return False
+    
+    def get_worn_items(self, location=None):
+        """Get worn items, optionally filtered by location"""
+        if not self.worn_items:
+            return []
+        
+        if location:
+            return self.worn_items.get(location, [])
+        
+        # Return all worn items
+        all_items = []
+        for items in self.worn_items.values():
+            all_items.extend(items)
+        return all_items
+    
+    def is_location_covered(self, location):
+        """Check if body location is covered by clothing"""
+        if not self.worn_items:
+            return False
+        
+        return bool(self.worn_items.get(location, []))
+    
+    def get_coverage_description(self, location):
+        """Get clothing description for covered location"""
+        if not self.worn_items or location not in self.worn_items:
+            return None
+        
+        # Get outermost (first) item for this location
+        items = self.worn_items[location]
+        if not items:
+            return None
+        
+        outermost_item = items[0]
+        return outermost_item.get_current_worn_desc()
+    
+    def _build_clothing_coverage_map(self):
+        """Map each body location to outermost covering clothing item."""
+        coverage = {}
+        if not self.worn_items:
+            return coverage
+        
+        for location, items in self.worn_items.items():
+            if items:
+                # First item is outermost due to layer ordering
+                coverage[location] = items[0]
+        
+        return coverage
+
+    # ===================================================================
     # LONGDESC APPEARANCE SYSTEM
     # ===================================================================
 
@@ -321,49 +445,65 @@ class Character(ObjectParent, DefaultCharacter):
         # Get base description
         base_desc = self.db.desc or ""
         
-        # Get visible longdescs in anatomical order
-        visible_longdescs = self._get_visible_longdescs(looker)
+        # Get visible body descriptions (longdesc + clothing integration)
+        visible_body_descriptions = self._get_visible_body_descriptions(looker)
         
-        if not visible_longdescs:
+        if not visible_body_descriptions:
             return base_desc
         
         # Combine with smart paragraph formatting
-        formatted_longdescs = self._format_longdescs_with_paragraphs(visible_longdescs)
+        formatted_body_descriptions = self._format_longdescs_with_paragraphs(visible_body_descriptions)
         
-        # Combine base description with longdescs
+        # Combine base description with body descriptions
         if base_desc:
-            return f"{base_desc}\n\n{formatted_longdescs}"
+            return f"{base_desc}\n\n{formatted_body_descriptions}"
         else:
-            return formatted_longdescs
+            return formatted_body_descriptions
 
-    def _get_visible_longdescs(self, looker=None):
+    def _get_visible_body_descriptions(self, looker=None):
         """
-        Gets all visible longdesc descriptions in anatomical order.
+        Get all visible descriptions, integrating clothing with existing longdesc system.
         
         Args:
-            looker: Character looking (for future clothing coverage)
+            looker: Character looking (for future permission checks)
             
         Returns:
             list: List of (location, description) tuples in anatomical order
         """
         from world.combat.constants import ANATOMICAL_DISPLAY_ORDER
         
+        descriptions = []
+        coverage_map = self._build_clothing_coverage_map()
         longdescs = self.longdesc or {}
-        visible_descriptions = []
         
         # Process in anatomical order
         for location in ANATOMICAL_DISPLAY_ORDER:
-            if location in longdescs and longdescs[location]:
-                # TODO: Check clothing coverage here in future
-                # if not self._is_location_covered(location, looker):
-                visible_descriptions.append((location, longdescs[location]))
+            if location in coverage_map:
+                # Location covered by clothing - use outermost item's current worn_desc
+                clothing_item = coverage_map[location]
+                desc = clothing_item.get_current_worn_desc()
+                if desc:
+                    descriptions.append((location, desc))
+            else:
+                # Location not covered - use character's longdesc if set
+                if location in longdescs and longdescs[location]:
+                    descriptions.append((location, longdescs[location]))
         
-        # Add any extended anatomy not in default order
-        for location, description in longdescs.items():
-            if description and location not in ANATOMICAL_DISPLAY_ORDER:
-                visible_descriptions.append((location, description))
+        # Add any extended anatomy not in default order (clothing or longdesc)
+        all_locations = set(longdescs.keys()) | set(coverage_map.keys())
+        for location in all_locations:
+            if location not in ANATOMICAL_DISPLAY_ORDER:
+                if location in coverage_map:
+                    # Extended location with clothing
+                    clothing_item = coverage_map[location]
+                    desc = clothing_item.get_current_worn_desc()
+                    if desc:
+                        descriptions.append((location, desc))
+                elif location in longdescs and longdescs[location]:
+                    # Extended location with longdesc
+                    descriptions.append((location, longdescs[location]))
         
-        return visible_descriptions
+        return descriptions
 
     def _format_longdescs_with_paragraphs(self, longdesc_list):
         """

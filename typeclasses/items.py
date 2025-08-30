@@ -1,11 +1,142 @@
-from evennia import DefaultObject
+from evennia import DefaultObject, AttributeProperty
+from world.combat.constants import DEFAULT_CLOTHING_LAYER
 
 class Item(DefaultObject):
     """
     A general-purpose item. In Gelatinous Monster, all items are
     potential weapons. This typeclass ensures that all objects have
     basic combat-relevant properties.
+    
+    Items become wearable clothing by setting coverage and worn_desc attributes.
     """
+    
+    # ===================================================================
+    # CLOTHING SYSTEM ATTRIBUTES
+    # ===================================================================
+    
+    # Coverage definition - which body locations this item covers (base state)
+    # Empty list = not wearable, populated list = clothing item
+    coverage = AttributeProperty([], autocreate=True)
+    
+    # Clothing-specific description that appears when worn (base state)
+    # Empty string = not clothing, populated = worn description
+    worn_desc = AttributeProperty("", autocreate=True)
+    
+    # Layer priority for stacking items (higher = outer layer)
+    layer = AttributeProperty(DEFAULT_CLOTHING_LAYER, autocreate=True)
+    
+    # Multiple style properties for combination states
+    style_properties = AttributeProperty({}, autocreate=True)
+    # Structure: {"adjustable": "rolled", "closure": "zipped"}
+    
+    # Style configurations defining all possible combinations
+    style_configs = AttributeProperty({}, autocreate=True)
+    # Structure: {
+    #     "adjustable": {
+    #         "rolled": {"coverage_mod": [...], "desc_mod": "with sleeves rolled up"},
+    #         "normal": {"coverage_mod": [], "desc_mod": ""}
+    #     },
+    #     "closure": {
+    #         "zipped": {"coverage_mod": [...], "desc_mod": "zipped tight"},
+    #         "unzipped": {"coverage_mod": [...], "desc_mod": "hanging open"}
+    #     }
+    # }
+    
+    # ===================================================================
+    # CLOTHING SYSTEM METHODS
+    # ===================================================================
+    
+    def is_wearable(self):
+        """Check if this item can be worn as clothing"""
+        return bool(self.coverage) and bool(self.worn_desc)
+    
+    def get_current_coverage(self):
+        """Get coverage for current combination of style states"""
+        coverage = list(self.coverage)  # Start with base coverage
+        
+        if not self.style_configs or not self.style_properties:
+            return coverage
+        
+        # Apply modifications from each active style property in deterministic order
+        for property_name in sorted(self.style_properties.keys()):
+            property_state = self.style_properties[property_name]
+            
+            if property_name in self.style_configs:
+                property_config = self.style_configs[property_name]
+                if property_state in property_config:
+                    state_config = property_config[property_state]
+                    coverage_mod = state_config.get("coverage_mod", [])
+                    
+                    # Apply coverage modifications
+                    for mod in coverage_mod:
+                        if mod.startswith("+"):
+                            # Add location if not already covered
+                            location = mod[1:]
+                            if location not in coverage:
+                                coverage.append(location)
+                        elif mod.startswith("-"):
+                            # Remove location if currently covered
+                            location = mod[1:]
+                            if location in coverage:
+                                coverage.remove(location)
+        
+        return coverage
+    
+    def get_current_worn_desc(self):
+        """Get worn description incorporating all active style states"""
+        if not self.style_configs or not self.style_properties:
+            return f"{self.worn_desc}." if self.worn_desc else ""
+        
+        # For multi-property items, we need to handle combinations
+        # Priority order: check properties in sorted order, use first non-empty desc_mod
+        for property_name in sorted(self.style_properties.keys()):
+            property_state = self.style_properties[property_name]
+            
+            if property_name in self.style_configs:
+                property_config = self.style_configs[property_name]
+                if property_state in property_config:
+                    state_config = property_config[property_state]
+                    desc_mod = state_config.get("desc_mod", "").strip()
+                    if desc_mod:
+                        # First non-empty desc_mod wins - this allows for sophisticated combinations
+                        return f"{desc_mod}." if not desc_mod.endswith('.') else desc_mod
+        
+        # No active desc_mod found, use base worn_desc
+        return f"{self.worn_desc}." if self.worn_desc else ""
+    
+    def can_style_property_to(self, property_name, state_name):
+        """Check if item can transition specific property to given state"""
+        if property_name not in self.style_configs:
+            return False
+        if state_name not in self.style_configs[property_name]:
+            return False
+        
+        # Validate meaningful transition
+        config = self.style_configs[property_name][state_name]
+        has_coverage_change = bool(config.get("coverage_mod", []))
+        has_desc_change = bool(config.get("desc_mod", "").strip())
+        
+        return has_coverage_change and has_desc_change
+    
+    def set_style_property(self, property_name, state_name):
+        """Set specific style property to given state with validation"""
+        if not self.can_style_property_to(property_name, state_name):
+            return False
+        
+        if not self.style_properties:
+            self.style_properties = {}
+        
+        self.style_properties[property_name] = state_name
+        return True
+    
+    def get_style_property(self, property_name):
+        """Get current state of specific style property"""
+        from world.combat.constants import STYLE_STATE_NORMAL
+        return self.style_properties.get(property_name, STYLE_STATE_NORMAL)
+    
+    def get_available_style_properties(self):
+        """Get all available style properties and their states"""
+        return {prop: list(states.keys()) for prop, states in self.style_configs.items()}
 
     def at_object_creation(self):
         """

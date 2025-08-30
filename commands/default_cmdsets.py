@@ -19,6 +19,7 @@ from evennia import default_cmds
 from commands import CmdCharacter
 from commands import CmdInventory
 from commands import CmdAdmin
+from commands import CmdClothing
 from commands.CmdSpawnMob import CmdSpawnMob
 from commands.CmdAdmin import CmdHeal, CmdPeace, CmdTestDeathCurtain, CmdWeather
 from commands.combat.cmdset_combat import CombatCmdSet
@@ -89,6 +90,12 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         
         # Add longdesc system command
         self.add(CmdLongdesc())
+        
+        # Add clothing system commands
+        self.add(CmdClothing.CmdWear())
+        self.add(CmdClothing.CmdRemove())
+        self.add(CmdClothing.CmdRollUp())
+        self.add(CmdClothing.CmdZip())
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """

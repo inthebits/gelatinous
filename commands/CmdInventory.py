@@ -189,17 +189,35 @@ class CmdInventory(Command):
         caller = self.caller
         items = caller.contents
         hands = caller.hands
+        
+        # Get worn items
+        worn_items = caller.get_worn_items() if hasattr(caller, 'get_worn_items') else []
 
         held_items = set(item for item in hands.values() if item)
-        inventory_items = [obj for obj in items if obj not in held_items]
+        worn_items_set = set(worn_items)
+        inventory_items = [obj for obj in items if obj not in held_items and obj not in worn_items_set]
 
-        if not inventory_items and all(v is None for v in hands.values()):
-            caller.msg("You aren't carrying or holding anything.")
+        if not inventory_items and all(v is None for v in hands.values()) and not worn_items:
+            caller.msg("You aren't carrying, holding, or wearing anything.")
             return
 
         lines = []
 
-        # Carried (not wielded)
+        # Worn items (with style states)
+        if worn_items:
+            lines.append("|wWearing:|n")
+            
+            # Show worn items with style states
+            for item in worn_items:
+                item_name = item.get_display_name(caller)
+                style_states = self._get_style_state_display(item)
+                if style_states:
+                    lines.append(f"  {item_name} (worn, {style_states})")
+                else:
+                    lines.append(f"  {item_name} (worn)")
+            lines.append("")
+
+        # Carried (not wielded or worn)
         if inventory_items:
             lines.append("|wCarrying:|n")
             
@@ -229,6 +247,28 @@ class CmdInventory(Command):
                 lines.append(f"Nothing is in your {hand.lower()} hand.")
 
         caller.msg("\n".join(lines))
+    
+    def _get_style_state_display(self, item):
+        """Get display string for non-default style states"""
+        if not hasattr(item, 'style_properties') or not item.style_properties:
+            return ""
+        
+        from world.combat.constants import STYLE_STATE_NORMAL
+        
+        # Collect non-default style states
+        non_default_states = []
+        for property_name, state in item.style_properties.items():
+            if state != STYLE_STATE_NORMAL:
+                if property_name == "adjustable" and state == "rolled":
+                    non_default_states.append("rolled up")
+                elif property_name == "closure" and state == "unzipped":
+                    non_default_states.append("unzipped")
+                elif property_name == "closure" and state == "zipped":
+                    # Only show "zipped" if it's explicitly a non-default state
+                    # (some items might default to unzipped)
+                    non_default_states.append("zipped")
+        
+        return ", ".join(non_default_states)
 
 from evennia import Command
 

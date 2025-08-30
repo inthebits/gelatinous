@@ -82,6 +82,44 @@ ANATOMICAL_REGIONS = {
 }
 
 # ===================================================================
+# CLOTHING SYSTEM CONSTANTS  
+# ===================================================================
+
+# Clothing uses same body locations as longdesc system for consistency
+CLOTHING_LOCATIONS = VALID_LONGDESC_LOCATIONS
+
+# Default clothing layer assignments
+DEFAULT_CLOTHING_LAYER = 2
+
+# Layer categories for intuitive layering
+CLOTHING_LAYERS = {
+    1: "Undergarments",    # underwear, undershirts
+    2: "Base clothing",    # shirts, pants, dresses  
+    3: "Outer wear",       # jackets, coats, robes
+    4: "Accessories",      # belts, jewelry
+    5: "Outerwear"         # cloaks, heavy coats
+}
+
+# Example coverage definitions for common clothing types
+SHIRT_COVERAGE = ["chest", "back", "abdomen"]
+PANTS_COVERAGE = ["groin", "left_thigh", "right_thigh"] 
+JACKET_COVERAGE = ["chest", "back", "abdomen", "left_arm", "right_arm"]
+GLOVES_COVERAGE = ["left_hand", "right_hand"]
+BOOTS_COVERAGE = ["left_foot", "right_foot"]
+HAT_COVERAGE = ["head"]
+FULL_ROBE_COVERAGE = ["chest", "back", "abdomen", "groin", "left_arm", "right_arm", "left_thigh", "right_thigh"]
+
+# Style property names (generic for flexibility)
+STYLE_ADJUSTABLE = "adjustable"  # rollup/unroll commands
+STYLE_CLOSURE = "closure"        # zip/unzip commands
+
+# Default style states
+STYLE_STATE_NORMAL = "normal"
+STYLE_STATE_ROLLED = "rolled"
+STYLE_STATE_ZIPPED = "zipped"
+STYLE_STATE_UNZIPPED = "unzipped"
+
+# ===================================================================
 # CHANNELS & LOGGING
 # ===================================================================
 

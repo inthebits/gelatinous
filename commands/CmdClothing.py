@@ -1,0 +1,324 @@
+# Clothing System Commands
+#
+# Complete clothing management system including:
+# - CmdWear/CmdRemove: Basic wear/remove functionality
+# - CmdRollUp/CmdUnroll: Adjustable clothing features
+# - CmdZip/CmdUnzip: Closure management
+#
+from evennia import Command
+
+class CmdWear(Command):
+    """
+    Wear a clothing item from your inventory.
+
+    Usage:
+        wear <item>
+
+    Examples:
+        wear jacket
+        wear leather boots
+        wear 2nd shirt
+    """
+
+    key = "wear"
+    aliases = []
+    locks = "cmd:all()"
+    help_category = "Inventory"
+
+    def func(self):
+        caller = self.caller
+        
+        if not self.args:
+            caller.msg("Wear what?")
+            return
+        
+        # Find the item in inventory
+        item = caller.search(self.args.strip(), location=caller, quiet=True)
+        if not item:
+            caller.msg(f"You don't have '{self.args.strip()}'.")
+            return
+        
+        # Use first match if multiple found
+        if isinstance(item, list):
+            item = item[0]
+        
+        # Check if item is wearable
+        if not item.is_wearable():
+            caller.msg(f"You can't wear {item.key}.")
+            return
+        
+        # Check if already worn
+        if caller.is_item_worn(item):
+            caller.msg(f"You're already wearing {item.key}.")
+            return
+        
+        # Attempt to wear the item
+        success, message = caller.wear_item(item)
+        caller.msg(message)
+        
+        if success:
+            # Message to room
+            caller.location.msg_contents(
+                f"{caller.get_display_name(None)} puts on {item.key}.",
+                exclude=caller
+            )
+
+
+class CmdRemove(Command):
+    """
+    Remove a worn clothing item.
+
+    Usage:
+        remove <item>
+        unwear <item>
+        remove all
+
+    Examples:
+        remove jacket
+        unwear boots
+        remove all
+    """
+
+    key = "remove"
+    aliases = ["unwear"]
+    locks = "cmd:all()"
+    help_category = "Inventory"
+
+    def func(self):
+        caller = self.caller
+        
+        if not self.args:
+            caller.msg("Remove what?")
+            return
+        
+        args = self.args.strip().lower()
+        
+        # Handle "remove all"
+        if args == "all":
+            worn_items = caller.get_worn_items()
+            if not worn_items:
+                caller.msg("You're not wearing anything.")
+                return
+            
+            removed_items = []
+            for item in worn_items:
+                success, message = caller.remove_item(item)
+                if success:
+                    removed_items.append(item.key)
+            
+            if removed_items:
+                caller.msg(f"You remove: {', '.join(removed_items)}")
+                caller.location.msg_contents(
+                    f"{caller.get_display_name(None)} removes several items.",
+                    exclude=caller
+                )
+            else:
+                caller.msg("You couldn't remove anything.")
+            return
+        
+        # Find worn item by name
+        worn_items = caller.get_worn_items()
+        item = None
+        
+        # Search through worn items
+        for worn_item in worn_items:
+            if args in worn_item.key.lower():
+                item = worn_item
+                break
+        
+        if not item:
+            caller.msg(f"You're not wearing '{self.args.strip()}'.")
+            return
+        
+        # Remove the item
+        success, message = caller.remove_item(item)
+        caller.msg(message)
+        
+        if success:
+            # Message to room
+            caller.location.msg_contents(
+                f"{caller.get_display_name(None)} removes {item.key}.",
+                exclude=caller
+            )
+
+
+class CmdRollUp(Command):
+    """
+    Roll up sleeves or similar adjustable clothing features.
+
+    Usage:
+        rollup <item>
+        unroll <item>
+
+    Examples:
+        rollup shirt
+        unroll sleeves
+        rollup jacket
+    """
+
+    key = "rollup"
+    aliases = ["unroll"]
+    locks = "cmd:all()"
+    help_category = "Inventory"
+
+    def func(self):
+        caller = self.caller
+        
+        if not self.args:
+            caller.msg("Roll up what?")
+            return
+        
+        # Find worn item
+        worn_items = caller.get_worn_items()
+        item = None
+        
+        args = self.args.strip().lower()
+        for worn_item in worn_items:
+            if args in worn_item.key.lower():
+                item = worn_item
+                break
+        
+        if not item:
+            caller.msg(f"You're not wearing '{self.args.strip()}'.")
+            return
+        
+        # Determine target state based on command
+        from world.combat.constants import STYLE_ADJUSTABLE, STYLE_STATE_ROLLED, STYLE_STATE_NORMAL
+        
+        if self.cmdstring.lower() == "rollup":
+            target_state = STYLE_STATE_ROLLED
+            action = "roll up"
+        else:  # unroll
+            target_state = STYLE_STATE_NORMAL
+            action = "unroll"
+        
+        # Check if item supports adjustable property
+        if STYLE_ADJUSTABLE not in item.style_configs:
+            caller.msg(f"The {item.key} doesn't have anything to {action}.")
+            return
+        
+        # Check if already in target state
+        current_state = item.get_style_property(STYLE_ADJUSTABLE)
+        if current_state == target_state:
+            if target_state == STYLE_STATE_ROLLED:
+                caller.msg(f"The {item.key} is already rolled up.")
+            else:
+                caller.msg(f"The {item.key} is already unrolled.")
+            return
+        
+        # Check if transition is valid (has both coverage and desc changes)
+        if not item.can_style_property_to(STYLE_ADJUSTABLE, target_state):
+            caller.msg(f"That wouldn't change anything about the {item.key}.")
+            return
+        
+        # Apply the style change
+        success = item.set_style_property(STYLE_ADJUSTABLE, target_state)
+        
+        if success:
+            if target_state == STYLE_STATE_ROLLED:
+                caller.msg(f"You roll up the {item.key}.")
+                caller.location.msg_contents(
+                    f"{caller.get_display_name(None)} rolls up {item.key}.",
+                    exclude=caller
+                )
+            else:
+                caller.msg(f"You unroll the {item.key}.")
+                caller.location.msg_contents(
+                    f"{caller.get_display_name(None)} unrolls {item.key}.",
+                    exclude=caller
+                )
+        else:
+            caller.msg(f"You can't {action} the {item.key}.")
+
+
+class CmdZip(Command):
+    """
+    Zip or unzip clothing items with closures.
+
+    Usage:
+        zip <item>
+        unzip <item>
+
+    Examples:
+        zip jacket
+        unzip boots
+        zip up coat
+    """
+
+    key = "zip"
+    aliases = ["unzip"]
+    locks = "cmd:all()"
+    help_category = "Inventory"
+
+    def func(self):
+        caller = self.caller
+        
+        if not self.args:
+            caller.msg("Zip what?")
+            return
+        
+        # Find worn item
+        worn_items = caller.get_worn_items()
+        item = None
+        
+        args = self.args.strip().lower()
+        # Handle "zip up" as just "zip"
+        if args.startswith("up "):
+            args = args[3:]
+        
+        for worn_item in worn_items:
+            if args in worn_item.key.lower():
+                item = worn_item
+                break
+        
+        if not item:
+            caller.msg(f"You're not wearing '{self.args.strip()}'.")
+            return
+        
+        # Determine target state based on command
+        from world.combat.constants import STYLE_CLOSURE, STYLE_STATE_ZIPPED, STYLE_STATE_UNZIPPED
+        
+        if self.cmdstring.lower() == "zip":
+            target_state = STYLE_STATE_ZIPPED
+            action = "zip up"
+        else:  # unzip
+            target_state = STYLE_STATE_UNZIPPED
+            action = "unzip"
+        
+        # Check if item supports closure property
+        if STYLE_CLOSURE not in item.style_configs:
+            caller.msg(f"The {item.key} doesn't have a zipper.")
+            return
+        
+        # Check if already in target state
+        current_state = item.get_style_property(STYLE_CLOSURE)
+        if current_state == target_state:
+            if target_state == STYLE_STATE_ZIPPED:
+                caller.msg(f"The {item.key} is already zipped up.")
+            else:
+                caller.msg(f"The {item.key} is already unzipped.")
+            return
+        
+        # Check if transition is valid (has both coverage and desc changes)
+        if not item.can_style_property_to(STYLE_CLOSURE, target_state):
+            caller.msg(f"That wouldn't change anything about the {item.key}.")
+            return
+        
+        # Apply the style change
+        success = item.set_style_property(STYLE_CLOSURE, target_state)
+        
+        if success:
+            if target_state == STYLE_STATE_ZIPPED:
+                caller.msg(f"You zip up the {item.key}.")
+                caller.location.msg_contents(
+                    f"{caller.get_display_name(None)} zips up {item.key}.",
+                    exclude=caller
+                )
+            else:
+                caller.msg(f"You unzip the {item.key}.")
+                caller.location.msg_contents(
+                    f"{caller.get_display_name(None)} unzips {item.key}.",
+                    exclude=caller
+                )
+        else:
+            caller.msg(f"You can't {action} the {item.key}.")

@@ -458,3 +458,132 @@ SOLVENT_CAN = {
         ("item", "general")
     ]
 }
+
+# =============================================================================
+# CLOTHING SYSTEM PROTOTYPES
+# =============================================================================
+
+# Epic coder socks with dynamic styling capabilities
+CODER_SOCKS = {
+    "prototype_key": "CODER_SOCKS",
+    "key": "rainbow coding socks",
+    "aliases": ["socks", "coding socks", "rainbow socks"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "These magnificent thigh-high socks feature a gradient rainbow pattern with tiny pixelated hearts and coffee cups. The fabric shimmers with an almost magical quality, and they seem to pulse gently with RGB lighting effects. Every serious coder knows these provide +10 to programming ability.",
+    "attrs": [
+        # Basic clothing attributes
+        ("coverage", ["left_foot", "right_foot", "left_shin", "right_shin", "left_thigh", "right_thigh"]),
+        ("worn_desc", "rainbow-striped coding socks that stretch up to mid-thigh, pulsing with soft RGB lighting"),
+        ("layer", 1),  # Undergarment layer
+        
+        # Style configuration for incredible transformation power
+        ("style_configs", {
+            "adjustable": {
+                "normal": {
+                    "coverage_mod": [],
+                    "desc_mod": ""  # Use base worn_desc
+                },
+                "rolled": {
+                    "coverage_mod": ["-left_thigh", "-right_thigh"],  # Rolled down to knee-high
+                    "desc_mod": "rainbow-striped coding socks rolled down to knee-high, RGB patterns dancing around the calves"
+                }
+            },
+            "closure": {
+                "zipped": {
+                    "coverage_mod": [],
+                    "desc_mod": "rainbow-striped coding socks with LED strips blazing in full spectrum glory, practically humming with computational power"
+                },
+                "unzipped": {
+                    "coverage_mod": [],
+                    "desc_mod": "rainbow-striped coding socks in subtle mode, their RGB patterns dimmed to a gentle ambient glow"
+                }
+            }
+        }),
+        
+        # Initial style state - full power mode!
+        ("style_properties", {
+            "adjustable": "normal",  # Full thigh-high
+            "closure": "zipped"      # LEDs on full blast
+        }),
+        
+        # Combat stats (because everything is a weapon)
+        ("damage", 1),
+        ("weapon_type", "style"), 
+        ("hands_required", 0),  # Feet weapons!
+        
+        # Special coder attributes
+        ("programming_bonus", 10),
+        ("caffeine_efficiency", 1.5),
+        ("debugging_power", "enhanced"),
+        ("impostor_syndrome_resistance", "maximum")
+    ],
+    "tags": [
+        ("clothing", "type"),
+        ("socks", "category"), 
+        ("coder_gear", "specialty"),
+        ("rgb", "feature"),
+        ("legendary", "rarity")
+    ]
+}
+
+# Stylish developer hoodie with hood functionality
+DEV_HOODIE = {
+    "prototype_key": "DEV_HOODIE", 
+    "key": "black developer hoodie",
+    "aliases": ["hoodie", "dev hoodie", "black hoodie"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A jet-black hoodie with 'rm -rf /' printed in small, ominous green text on the chest. The fabric is impossibly soft, and the hood seems designed to cast perfect dramatic shadows. Tiny LED threads are woven throughout, creating a subtle matrix-like pattern when activated.",
+    "attrs": [
+        # Clothing attributes
+        ("coverage", ["chest", "back", "abdomen", "left_arm", "right_arm"]),
+        ("worn_desc", "a black developer hoodie with cryptic green text"),
+        ("layer", 2),  # Base clothing
+        
+        # Advanced styling - hood and LED modes
+        ("style_configs", {
+            "adjustable": {
+                "normal": {
+                    "coverage_mod": [],
+                    "desc_mod": ""
+                },
+                "rolled": {
+                    "coverage_mod": ["+head"],  # Hood up adds head coverage
+                    "desc_mod": "a black developer hoodie with the hood up, casting mysterious shadows across the face while green text glows ominously on the chest"
+                }
+            },
+            "closure": {
+                "zipped": {
+                    "coverage_mod": [],
+                    "desc_mod": "a black developer hoodie with LED matrix patterns flowing across the fabric like cascading code"
+                },
+                "unzipped": {
+                    "coverage_mod": ["-chest"],  # Unzipped shows what's underneath
+                    "desc_mod": "a black developer hoodie hanging open casually, revealing whatever lies beneath while 'rm -rf /' glows menacingly"
+                }
+            }
+        }),
+        
+        ("style_properties", {
+            "adjustable": "normal",    # Hood down initially  
+            "closure": "unzipped"      # Casual mode
+        }),
+        
+        # Stats
+        ("damage", 3),
+        ("weapon_type", "intimidation"),
+        ("hands_required", 0),
+        
+        # Special dev powers
+        ("focus_enhancement", "significant"),
+        ("coffee_stain_resistance", "maximum"),
+        ("meeting_avoidance", "+5"),
+        ("late_night_coding_comfort", "legendary")
+    ],
+    "tags": [
+        ("clothing", "type"),
+        ("hoodie", "category"),
+        ("developer_gear", "specialty"), 
+        ("led", "feature"),
+        ("epic", "rarity")
+    ]
+}
