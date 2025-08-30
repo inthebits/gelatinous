@@ -37,20 +37,25 @@ Clothing uses the exact same body location constants as longdesc:
 
 ### Wearable Item Class
 ```python
-class Clothing(Item):
+# Items become clothing simply by having coverage and worn_desc populated
+# All functionality implemented in base Item class via AttributeProperty
+
+class Item(DefaultObject):
     """
-    Wearable clothing item with coverage and appearance properties.
-    Extends base Item class with wear/remove functionality.
+    Base item class with optional clothing capabilities.
+    Items become wearable when coverage and worn_desc are set.
     """
     
     # Coverage definition - which body locations this item covers (base state)
+    # Empty list = not wearable, populated list = clothing item
     coverage = AttributeProperty([], autocreate=True)
     
     # Clothing-specific description that appears when worn (base state)
+    # Empty string = not clothing, populated = worn description
     worn_desc = AttributeProperty("", autocreate=True)
     
     # Layer priority for stacking items (higher = outer layer)
-    layer = AttributeProperty(1, autocreate=True)
+    layer = AttributeProperty(2, autocreate=True)
     
     # Multiple style properties for combination states
     style_properties = AttributeProperty({}, autocreate=True)
@@ -68,6 +73,10 @@ class Clothing(Item):
     #         "unzipped": {"coverage_mod": [...], "desc_mod": "hanging open"}
     #     }
     # }
+    
+    def is_wearable(self):
+        """Check if this item can be worn as clothing"""
+        return bool(self.coverage) and bool(self.worn_desc)
 ```
 
 ### Coverage System Design
@@ -240,12 +249,19 @@ Each clothing item has two descriptions:
 ```
 > inventory
 You are carrying:
-a black leather jacket (worn, sleeves rolled)
+a black leather jacket (worn, rolled up, unzipped)
 a weathered tricorn hat (worn)  
 a steel dagger
 some copper coins
 a worn leather pouch
+
+# Other examples:
+a denim jacket (worn, unzipped)
+a cotton shirt (worn, rolled up)  
+leather boots (worn)
 ```
+
+**Default State Convention**: Items showing only `(worn)` are in their default state with all style properties set to "normal" (e.g., zipped and unrolled). Only non-default style states are displayed, keeping the interface clean while providing complete information.
 
 **Appearance Display:**
 ```
@@ -294,19 +310,6 @@ unwear boots
 remove all
 ```
 
-#### `worn` / `outfit`
-**Purpose**: List all currently worn items with their current style states  
-**Syntax**: `worn` or `outfit`  
-**Display**: Shows items grouped by layer and location, including current style properties
-**Example Output**:
-```
-You are currently wearing:
-  Head: a weathered tricorn hat
-  Torso: a black leather jacket (sleeves rolled, unzipped)
-  Legs: dark leather pants
-  Feet: sturdy leather boots (laced tight)
-```
-
 ### Style Commands
 
 #### `rollup <item>` / `unroll <item>`
@@ -334,7 +337,6 @@ Following longdesc pattern, staff can manage clothing on other characters using 
 ```
 @wear <character> <item>     - Force wear item on character
 @remove <character> <item>   - Force remove item from character
-@worn <character>           - View character's worn items
 ```
 
 ## Coverage and Visibility Logic
@@ -397,7 +399,8 @@ style_configs = AttributeProperty({}, autocreate=True)       # Style variations 
 ### With Inventory System
 - **Wearable detection**: Items with `coverage` property are wearable
 - **Worn item display**: Inventory command shows `(worn)` indicator for equipped items
-- **Style state display**: Worn items can optionally show current style state in inventory
+- **Style state display**: Worn items show current style states: `(worn, rolled up, unzipped)`
+- **Comprehensive status**: Players see full clothing configuration at a glance in inventory
 - **Transfer rules**: Can't drop worn items, must remove first
 - **Unified interface**: Players use standard `inventory` command to see all items including worn status
 
@@ -408,20 +411,20 @@ style_configs = AttributeProperty({}, autocreate=True)       # Style variations 
 
 ## Technical Implementation
 
-### Clothing Class Hierarchy
+### Clothing Detection Pattern
+Instead of separate clothing classes, wearable items are identified by the presence of clothing-specific attributes:
+
 ```python
-class Clothing(Item):
-    """Base wearable item with coverage and appearance"""
-    
-class Shirt(Clothing):
-    """Torso covering clothing"""
-    
-class Pants(Clothing):
-    """Leg covering clothing"""
-    
-class Accessory(Clothing):
-    """Jewelry, belts, small items"""
+def is_wearable(item):
+    """Check if an item is wearable clothing"""
+    return hasattr(item, 'coverage') and bool(item.coverage)
+
+def is_clothing_worn(item):
+    """Check if a clothing item is currently worn"""
+    return hasattr(item, 'worn_desc') and bool(item.location and hasattr(item.location, 'worn_items'))
 ```
+
+All clothing functionality is implemented directly in the base `Item` class via AttributeProperty fields. Items become "clothing" simply by having `coverage` and `worn_desc` populated.
 
 ### Core Methods
 
@@ -443,7 +446,7 @@ def get_coverage_description(self, location):
     """Get clothing description for covered location"""
 ```
 
-#### Clothing Methods
+#### Item Methods (Clothing Functionality)
 ```python
 def can_wear_on(self, character):
     """Check if this item can be worn by character (anatomy validation)"""
@@ -684,7 +687,7 @@ The shirt doesn't have a zipper.
 ## Testing Requirements
 
 ### Unit Tests 📋 PENDING IMPLEMENTATION
-- Command parsing and validation (wear, remove, worn commands)
+- Command parsing and validation (wear, remove commands)
 - Coverage calculation and layer resolution
 - Clothing item creation and property validation
 - Integration with character appearance system
@@ -704,7 +707,7 @@ The shirt doesn't have a zipper.
 ## Implementation Checklist
 
 ### Phase 1: Core Infrastructure 📋 PENDING
-- [ ] Create Clothing typeclass in `typeclasses/items.py`
+- [ ] Add clothing attributes to base `Item` class in `typeclasses/items.py`
 - [ ] Add clothing constants to `world/combat/constants.py`
 - [ ] Implement Character methods for wearing/removing items
 - [ ] Create basic `wear` and `remove` commands
