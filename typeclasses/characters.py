@@ -61,6 +61,11 @@ class Character(ObjectParent, DefaultCharacter):
         self.hp_max = 10 + (grit_value * 2)
         self.hp = self.hp_max  # Start at full health
 
+        # Initialize longdesc system with default anatomy
+        from world.combat.constants import DEFAULT_LONGDESC_LOCATIONS
+        if not self.longdesc:
+            self.longdesc = DEFAULT_LONGDESC_LOCATIONS.copy()
+
 # Mortality Management  
     def take_damage(self, amount):
         """
@@ -154,6 +159,14 @@ class Character(ObjectParent, DefaultCharacter):
     hands = AttributeProperty(
         {"left": None, "right": None},
         category="equipment",
+        autocreate=True
+    )
+
+    # LONGDESC SYSTEM
+    # Detailed body part descriptions: anatomy source of truth
+    longdesc = AttributeProperty(
+        None,  # Will be set to copy of DEFAULT_LONGDESC_LOCATIONS in at_object_creation
+        category="appearance",
         autocreate=True
     )
 
@@ -287,7 +300,206 @@ class Character(ObjectParent, DefaultCharacter):
             else:
                 # Target isn't aiming at anyone, clear their place too
                 target.override_place = ""
+
+    # ===================================================================
+    # LONGDESC APPEARANCE SYSTEM
+    # ===================================================================
+
+    def get_longdesc_appearance(self, looker=None, **kwargs):
+        """
+        Builds and returns the character's longdesc appearance.
+        
+        Returns:
+            str: Formatted appearance with base description + longdescs
+        """
+        # Get base description
+        base_desc = self.db.desc or ""
+        
+        # Get visible longdescs in anatomical order
+        visible_longdescs = self._get_visible_longdescs(looker)
+        
+        if not visible_longdescs:
+            return base_desc
+        
+        # Combine with smart paragraph formatting
+        formatted_longdescs = self._format_longdescs_with_paragraphs(visible_longdescs)
+        
+        # Combine base description with longdescs
+        if base_desc:
+            return f"{base_desc}\n\n{formatted_longdescs}"
         else:
-            # Normal aiming cleanup
-            if hasattr(self, 'override_place'):
-                self.override_place = ""
+            return formatted_longdescs
+
+    def _get_visible_longdescs(self, looker=None):
+        """
+        Gets all visible longdesc descriptions in anatomical order.
+        
+        Args:
+            looker: Character looking (for future clothing coverage)
+            
+        Returns:
+            list: List of (location, description) tuples in anatomical order
+        """
+        from world.combat.constants import ANATOMICAL_DISPLAY_ORDER
+        
+        longdescs = self.longdesc or {}
+        visible_descriptions = []
+        
+        # Process in anatomical order
+        for location in ANATOMICAL_DISPLAY_ORDER:
+            if location in longdescs and longdescs[location]:
+                # TODO: Check clothing coverage here in future
+                # if not self._is_location_covered(location, looker):
+                visible_descriptions.append((location, longdescs[location]))
+        
+        # Add any extended anatomy not in default order
+        for location, description in longdescs.items():
+            if description and location not in ANATOMICAL_DISPLAY_ORDER:
+                visible_descriptions.append((location, description))
+        
+        return visible_descriptions
+
+    def _format_longdescs_with_paragraphs(self, longdesc_list):
+        """
+        Formats longdesc descriptions with smart paragraph breaks.
+        
+        Args:
+            longdesc_list: List of (location, description) tuples
+            
+        Returns:
+            str: Formatted description with paragraph breaks
+        """
+        from world.combat.constants import (
+            PARAGRAPH_BREAK_THRESHOLD, 
+            ANATOMICAL_REGIONS,
+            REGION_BREAK_PRIORITY
+        )
+        
+        if not longdesc_list:
+            return ""
+        
+        paragraphs = []
+        current_paragraph = []
+        current_char_count = 0
+        current_region = None
+        
+        for location, description in longdesc_list:
+            # Determine which anatomical region this location belongs to
+            location_region = self._get_anatomical_region(location)
+            
+            # Check if we should break for a new paragraph
+            should_break = False
+            
+            if REGION_BREAK_PRIORITY and current_region and location_region != current_region:
+                # Region changed - check if we should break
+                if current_char_count >= PARAGRAPH_BREAK_THRESHOLD * 0.7:  # 70% threshold for region breaks
+                    should_break = True
+            elif current_char_count + len(description) > PARAGRAPH_BREAK_THRESHOLD:
+                # Would exceed threshold - break now
+                should_break = True
+            
+            if should_break and current_paragraph:
+                # Finish current paragraph and start new one
+                paragraphs.append(" ".join(current_paragraph))
+                current_paragraph = []
+                current_char_count = 0
+            
+            # Add description to current paragraph
+            current_paragraph.append(description)
+            current_char_count += len(description) + 1  # +1 for space
+            current_region = location_region
+        
+        # Add final paragraph
+        if current_paragraph:
+            paragraphs.append(" ".join(current_paragraph))
+        
+        return "\n\n".join(paragraphs)
+
+    def _get_anatomical_region(self, location):
+        """
+        Determines which anatomical region a location belongs to.
+        
+        Args:
+            location: Body location string
+            
+        Returns:
+            str: Region name or 'extended' for non-standard anatomy
+        """
+        from world.combat.constants import ANATOMICAL_REGIONS
+        
+        for region_name, locations in ANATOMICAL_REGIONS.items():
+            if location in locations:
+                return region_name
+        return "extended"
+
+    def has_location(self, location):
+        """
+        Checks if this character has a specific body location.
+        
+        Args:
+            location: Body location to check
+            
+        Returns:
+            bool: True if character has this location
+        """
+        longdescs = self.longdesc or {}
+        return location in longdescs
+
+    def get_available_locations(self):
+        """
+        Gets list of all body locations this character has.
+        
+        Returns:
+            list: List of available body location names
+        """
+        longdescs = self.longdesc or {}
+        return list(longdescs.keys())
+
+    def set_longdesc(self, location, description):
+        """
+        Sets a longdesc for a specific location.
+        
+        Args:
+            location: Body location
+            description: Description text (None to clear)
+            
+        Returns:
+            bool: True if successful, False if location invalid
+        """
+        if not self.has_location(location):
+            return False
+        
+        longdescs = self.longdesc or {}
+        longdescs[location] = description
+        self.longdesc = longdescs
+        return True
+
+    def get_longdesc(self, location):
+        """
+        Gets longdesc for a specific location.
+        
+        Args:
+            location: Body location
+            
+        Returns:
+            str or None: Description text or None if unset/invalid
+        """
+        if not self.has_location(location):
+            return None
+        
+        longdescs = self.longdesc or {}
+        return longdescs.get(location)
+
+    def return_appearance(self, looker, **kwargs):
+        """
+        This method is called when someone looks at this character.
+        Integrates longdesc system with Evennia's look command.
+        
+        Args:
+            looker: Character doing the looking
+            **kwargs: Additional parameters
+            
+        Returns:
+            str: Complete character appearance with longdescs
+        """
+        return self.get_longdesc_appearance(looker, **kwargs)

@@ -25,6 +25,7 @@ from commands.combat.cmdset_combat import CombatCmdSet
 from commands.combat.special_actions import CmdAim, CmdGrapple
 from commands.CmdThrow import CmdThrow, CmdPull, CmdCatch, CmdRig, CmdDefuse
 from commands.CmdGraffiti import CmdGraffiti, CmdPress
+from commands.CmdLongdesc import CmdLongdesc
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
     The `CharacterCmdSet` contains general in-game commands like `look`,
@@ -85,6 +86,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         # Add graffiti system commands
         self.add(CmdGraffiti())
         self.add(CmdPress())
+        
+        # Add longdesc system command
+        self.add(CmdLongdesc())
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """

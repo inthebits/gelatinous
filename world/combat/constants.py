@@ -35,6 +35,53 @@ DEFAULT_WEAPON_TYPE = "unarmed"
 FALLBACK_WEAPON_NAME = "your fists"
 
 # ===================================================================
+# LONGDESC SYSTEM CONSTANTS
+# ===================================================================
+
+# Default human anatomy (auto-created on character creation)
+DEFAULT_LONGDESC_LOCATIONS = {
+    "head": None, "face": None, "left_eye": None, "right_eye": None, 
+    "left_ear": None, "right_ear": None, "neck": None,
+    "chest": None, "back": None, "abdomen": None, "groin": None,
+    "left_arm": None, "right_arm": None, "left_hand": None, "right_hand": None,
+    "left_thigh": None, "right_thigh": None, "left_shin": None, "right_shin": None,
+    "left_foot": None, "right_foot": None
+}
+
+# Practical limit for total body locations per character
+MAX_LONGDESC_LOCATIONS = 50  # Very high, accommodates extensive modifications
+
+# Individual description character limit
+MAX_DESCRIPTION_LENGTH = 1000  # Generous limit, allows detailed descriptions
+
+# Paragraph formatting thresholds
+PARAGRAPH_BREAK_THRESHOLD = 400  # Characters before automatic paragraph break
+REGION_BREAK_PRIORITY = True     # Prefer breaking between anatomical regions
+
+# Valid location validation set (expandable)
+VALID_LONGDESC_LOCATIONS = set(DEFAULT_LONGDESC_LOCATIONS.keys())
+
+# Anatomical display order (head to toe)
+ANATOMICAL_DISPLAY_ORDER = [
+    # Head region
+    "head", "face", "left_eye", "right_eye", "left_ear", "right_ear", "neck",
+    # Torso region  
+    "chest", "back", "abdomen", "groin",
+    # Arm region
+    "left_arm", "right_arm", "left_hand", "right_hand",
+    # Leg region
+    "left_thigh", "right_thigh", "left_shin", "right_shin", "left_foot", "right_foot"
+]
+
+# Anatomical regions for paragraph breaking
+ANATOMICAL_REGIONS = {
+    "head_region": ["head", "face", "left_eye", "right_eye", "left_ear", "right_ear", "neck"],
+    "torso_region": ["chest", "back", "abdomen", "groin"],
+    "arm_region": ["left_arm", "right_arm", "left_hand", "right_hand"],
+    "leg_region": ["left_thigh", "right_thigh", "left_shin", "right_shin", "left_foot", "right_foot"]
+}
+
+# ===================================================================
 # CHANNELS & LOGGING
 # ===================================================================
 
