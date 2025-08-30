@@ -120,12 +120,23 @@ class CmdLongdesc(Command):
                 if potential_target:
                     caller.msg(f"DEBUG: Found object, checking if it's a Character...")
                     caller.msg(f"DEBUG: Object type: {type(potential_target)}")
-                    if inherits_from(potential_target, "typeclasses.characters.Character"):
-                        caller.msg(f"DEBUG: Success! Targeting {potential_target}")
-                        target_char = potential_target
+                    
+                    # If it's a list, get the first item
+                    if isinstance(potential_target, list):
+                        if potential_target:
+                            actual_target = potential_target[0]
+                            caller.msg(f"DEBUG: Got first item from list: {actual_target}, type: {type(actual_target)}")
+                        else:
+                            actual_target = None
+                    else:
+                        actual_target = potential_target
+                    
+                    if actual_target and inherits_from(actual_target, "typeclasses.characters.Character"):
+                        caller.msg(f"DEBUG: Success! Targeting {actual_target}")
+                        target_char = actual_target
                         remaining_args = parts[1] if len(parts) > 1 else ""
                     else:
-                        caller.msg(f"DEBUG: Object is not a Character")
+                        caller.msg(f"DEBUG: Object is not a Character or is None")
                 else:
                     caller.msg(f"DEBUG: No object found with that name")
         else:
