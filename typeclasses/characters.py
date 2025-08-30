@@ -660,11 +660,11 @@ class Character(ObjectParent, DefaultCharacter):
             except ImportError:
                 return default_appearance
         
-        # Get visible longdescs in anatomical order
-        visible_longdescs = self._get_visible_longdescs(looker)
+        # Get visible body descriptions (longdesc + clothing integration)
+        visible_body_descriptions = self._get_visible_body_descriptions(looker)
         
-        if not visible_longdescs:
-            # No longdescs to show, return default
+        if not visible_body_descriptions:
+            # No body descriptions to show, return default
             return default_appearance
         
         # Split default appearance to extract header and description parts
@@ -678,11 +678,11 @@ class Character(ObjectParent, DefaultCharacter):
         # Everything after the first line is the description
         base_desc = '\n'.join(lines[1:]).strip() if len(lines) > 1 else ""
         
-        # Format longdescs with smart paragraph breaks
-        formatted_longdescs = self._format_longdescs_with_paragraphs(visible_longdescs)
+        # Format body descriptions with smart paragraph breaks
+        formatted_body_descriptions = self._format_longdescs_with_paragraphs(visible_body_descriptions)
         
-        # Combine: header + base_desc + longdescs
+        # Combine: header + base_desc + body descriptions
         if base_desc:
-            return f"{header}\n{base_desc}\n\n{formatted_longdescs}"
+            return f"{header}\n{base_desc}\n\n{formatted_body_descriptions}"
         else:
-            return f"{header}\n{formatted_longdescs}"
+            return f"{header}\n{formatted_body_descriptions}"
