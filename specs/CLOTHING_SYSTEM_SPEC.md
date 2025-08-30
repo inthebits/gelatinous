@@ -117,7 +117,7 @@ Clothing items support primary and secondary color attributes for enhanced visua
 ```python
 # Color definitions using Evennia ANSI constants
 COLOR_DEFINITIONS = {
-    "black": "|k",        # Black
+    "black": "|x",        # Black
     "red": "|r",          # Red  
     "green": "|g",        # Green
     "yellow": "|y",       # Yellow

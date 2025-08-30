@@ -4,7 +4,7 @@ from world.combat.constants import DEFAULT_CLOTHING_LAYER
 # ANSI Color definitions for clothing descriptions
 COLOR_DEFINITIONS = {
     # Standard colors
-    "black": "|k",        # Black
+    "black": "|x",        # Black
     "red": "|r",          # Red
     "green": "|g",        # Green
     "yellow": "|y",       # Yellow
