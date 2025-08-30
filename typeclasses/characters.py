@@ -520,13 +520,29 @@ class Character(ObjectParent, DefaultCharacter):
             except ImportError:
                 return default_appearance
         
-        # Get our enhanced longdesc appearance
-        longdesc_appearance = self.get_longdesc_appearance(looker, **kwargs)
+        # Get visible longdescs in anatomical order
+        visible_longdescs = self._get_visible_longdescs(looker)
         
-        # If longdesc appearance is the same as base desc, return default appearance
-        # Otherwise return our enhanced version
-        base_desc = self.db.desc or ""
-        if longdesc_appearance == base_desc:
+        if not visible_longdescs:
+            # No longdescs to show, return default
             return default_appearance
+        
+        # Split default appearance to extract header and description parts
+        lines = default_appearance.split('\n')
+        if not lines:
+            return default_appearance
+            
+        # First line is typically the character name/header
+        header = lines[0]
+        
+        # Everything after the first line is the description
+        base_desc = '\n'.join(lines[1:]).strip() if len(lines) > 1 else ""
+        
+        # Format longdescs with smart paragraph breaks
+        formatted_longdescs = self._format_longdescs_with_paragraphs(visible_longdescs)
+        
+        # Combine: header + base_desc + longdescs
+        if base_desc:
+            return f"{header}\n{base_desc}\n\n{formatted_longdescs}"
         else:
-            return longdesc_appearance
+            return f"{header}\n{formatted_longdescs}"
