@@ -111,12 +111,8 @@ class Item(DefaultObject):
         if state_name not in self.style_configs[property_name]:
             return False
         
-        # Validate meaningful transition
-        config = self.style_configs[property_name][state_name]
-        has_coverage_change = bool(config.get("coverage_mod", []))
-        has_desc_change = bool(config.get("desc_mod", "").strip())
-        
-        return has_coverage_change and has_desc_change
+        # Always allow transitions to valid states - the validation is structural, not functional
+        return True
     
     def set_style_property(self, property_name, state_name):
         """Set specific style property to given state with validation"""
