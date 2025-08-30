@@ -18,6 +18,8 @@ The Clothing System extends the longdesc foundation to provide wearable items th
 4. **Shared Location Constants**: Uses the same body location system as longdesc for consistency
 5. **Appearance Integration**: Seamlessly integrates with existing character appearance system
 6. **Roleplay Enhancement**: Style commands provide intuitive roleplay interactions with meaningful feedback
+7. **Pronoun Integration**: All clothing descriptions use Evennia's `$pron()` system for perspective handling
+8. **Color Immersion**: ANSI color integration for enhanced visual immersion and atmospheric descriptions
 
 ## Integration with Longdesc System
 
@@ -52,7 +54,16 @@ class Item(DefaultObject):
     
     # Clothing-specific description that appears when worn (base state)
     # Empty string = not clothing, populated = worn description
+    # USES $pron() for perspective-aware descriptions
     worn_desc = AttributeProperty("", autocreate=True)
+    
+    # ANSI color definition for this item
+    # Used for atmospheric descriptions and visual immersion
+    color = AttributeProperty("", autocreate=True)
+    
+    # Material type for this item (for future armor/crafting systems)
+    # Examples: "leather", "steel", "silk", "kevlar", "titanium"
+    material = AttributeProperty("", autocreate=True)
     
     # Layer priority for stacking items (higher = outer layer)
     layer = AttributeProperty(2, autocreate=True)
@@ -77,6 +88,96 @@ class Item(DefaultObject):
     def is_wearable(self):
         """Check if this item can be worn as clothing"""
         return bool(self.coverage) and bool(self.worn_desc)
+```
+
+### Coverage System Design
+
+## Enhanced Features
+
+### Pronoun Integration with $pron() System
+All clothing descriptions now integrate with Evennia's `$pron()` system for proper perspective handling:
+
+```python
+# Example clothing descriptions with $pron() integration
+HOODIE_WORN_DESC = "A menacing black developer hoodie that clings to $pron(their) frame like digital shadow incarnate, command-line text pulsing ominously across the chest"
+
+JEANS_WORN_DESC = "Battle-tested denim jeans that cling to $pron(their) form with urban authority, $pron(their) faded indigo surface scarred by countless encounters"
+
+BOOTS_WORN_DESC = "Imposing black leather combat boots laced with military precision, $pron(their) steel-reinforced toes speaking of $pron(their) owner's serious intent"
+```
+
+**Perspective Examples:**
+```python
+# You see (looking at yourself):
+"A menacing black hoodie that clings to your frame like digital shadow incarnate"
+
+# Others see (looking at Alice, female):
+"A menacing black hoodie that clings to her frame like digital shadow incarnate" 
+
+# Others see (looking at Sam, nonbinary):
+"A menacing black hoodie that clings to their frame like digital shadow incarnate"
+```
+
+### ANSI Color System Integration
+Clothing items support primary and secondary color attributes for enhanced visual immersion:
+
+```python
+# Color definitions using Evennia ANSI constants
+COLOR_DEFINITIONS = {
+    "black": "|k",        # Black
+    "red": "|r",          # Red  
+    "green": "|g",        # Green
+    "yellow": "|y",       # Yellow
+    "blue": "|b",         # Blue
+    "magenta": "|m",      # Magenta
+    "cyan": "|c",         # Cyan
+    "white": "|w",        # White
+    # Bright colors
+    "bright_black": "|K", # Dark Gray
+    "bright_red": "|R",   # Bright Red
+    "bright_green": "|G", # Bright Green
+    "bright_yellow": "|Y",# Bright Yellow
+    "bright_blue": "|B",  # Bright Blue
+    "bright_magenta": "|M", # Bright Magenta
+    "bright_cyan": "|C",  # Bright Cyan
+    "bright_white": "|W", # Bright White
+}
+
+# Example colored clothing prototypes
+DEVELOPER_HOODIE = {
+    "worn_desc": "A menacing {color}black|n developer hoodie that clings to $pron(their) frame like digital shadow incarnate, command-line text pulsing ominously across $pron(their) chest",
+    "color": "black",
+    "material": "cotton",
+}
+
+BLUE_JEANS = {
+    "worn_desc": "Battle-tested {color}denim|n jeans that cling to $pron(their) form with urban authority, $pron(their) faded indigo surface scarred by countless encounters", 
+    "color": "blue",
+    "material": "denim",
+}
+```
+
+### Color and Material Enhanced Descriptions
+Clothing descriptions can dynamically incorporate color and material information for future use:
+
+```python
+def get_colored_description(self):
+    """Return description with ANSI color codes applied"""
+    desc = self.worn_desc
+    
+    # Replace color placeholders with actual ANSI codes
+    if self.color:
+        color_ansi = COLOR_DEFINITIONS.get(self.color, "")
+        desc = desc.replace("{color}", color_ansi)
+    
+    return desc
+
+# Example usage in prototypes:
+RAINBOW_SOCKS = {
+    "worn_desc": "Wildly vibrant rainbow socks that shimmer with {color}prismatic brilliance|n across $pron(their) feet",
+    "color": "bright_magenta",
+    "material": "synthetic",
+}
 ```
 
 ### Coverage System Design
@@ -581,21 +682,75 @@ def _build_clothing_coverage_map(self):
     return coverage
 
 def return_appearance(self, looker, **kwargs):
-    """Enhanced appearance integrating clothing with existing formatting."""
+    """Enhanced appearance integrating clothing with existing formatting and $pron() system."""
     # Get base header (name, description, etc.)
     string = self._get_appearance_header(looker, **kwargs)
     
-    # Build combined clothing + longdesc descriptions
-    body_descriptions = self._get_visible_body_descriptions()
+    # Build combined clothing + longdesc descriptions with pronoun perspective
+    body_descriptions = self._get_visible_body_descriptions(looker)
     
     if body_descriptions:
-        # Feed into existing paragraph formatting system
-        formatted_body = self._format_longdescs_with_paragraphs(body_descriptions)
+        # Feed into existing paragraph formatting system with $pron() processing
+        formatted_body = self._format_longdescs_with_paragraphs(body_descriptions, looker)
         string += f"\n{formatted_body}"
     
     # Continue with rest of appearance (inventory, etc.)
     return string + self._get_appearance_footer(looker, **kwargs)
+
+def _get_visible_body_descriptions(self, looker=None):
+    """Get all visible descriptions with pronoun perspective handling."""
+    descriptions = []
+    coverage_map = self._build_clothing_coverage_map()
+    
+    for location in LONGDESC_LOCATIONS:
+        if location in coverage_map:
+            # Location covered by clothing - use current worn_desc with $pron() processing
+            clothing_item = coverage_map[location]
+            desc = clothing_item.get_current_worn_desc_with_perspective(looker, from_obj=self)
+            if desc:
+                descriptions.append(desc)
+        else:
+            # Location not covered - use character's longdesc
+            desc = self.longdescs.get(location)
+            if desc:
+                # Process longdescs through $pron() system too for consistency
+                processed_desc = self._process_description_pronouns(desc, looker)
+                descriptions.append(processed_desc)
+    
+    return descriptions
 ```
+
+## Enhanced Item Methods
+
+### Pronoun and Color Processing
+```python
+def get_current_worn_desc_with_perspective(self, looker=None, from_obj=None):
+    """Get current worn description with $pron() and color processing"""
+    # Get base description (considering current style state)
+    desc = self.get_current_worn_desc()
+    
+    # Process color placeholders
+    desc = self._process_color_codes(desc)
+    
+    # Process $pron() tags with perspective
+    if looker and from_obj:
+        from evennia.utils.funcparser import FuncParser
+        parser = FuncParser(desc)
+        desc = parser.parse(caller=from_obj, receiver=looker)
+    
+    return desc
+
+def _process_color_codes(self, description):
+    """Replace color placeholders with ANSI codes"""
+    if not description:
+        return description
+        
+    # Replace color placeholder
+    if self.color and "{color}" in description:
+        color_code = COLOR_DEFINITIONS.get(self.color, "")
+        description = description.replace("{color}", color_code)
+        
+    return description
 
 ## Command Implementation
 
@@ -758,3 +913,169 @@ The shirt doesn't have a zipper.
 - Clear feedback on wear/remove actions and conflicts
 - Logical layering behavior that matches real-world expectations
 - Seamless integration with existing appearance and description systems
+
+---
+
+## Enhanced Prototype Examples
+
+### Developer Hoodie with $pron() and Color Integration
+```python
+DEVELOPER_HOODIE = {
+    "prototype_key": "DEVELOPER_HOODIE",
+    "key": "black developer hoodie",
+    "aliases": ["hoodie", "sweatshirt"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A menacing black developer hoodie with command-line text across the chest.",
+    
+    "attrs": [
+        ("category", "clothing"),
+        ("worn_desc", "A menacing {color}black|n developer hoodie that clings to $pron(their) frame like digital shadow incarnate, green command-line text pulsing ominously across $pron(their) chest while forbidden terminal incantations glow with quiet menace"),
+        ("coverage", ["chest", "back", "abdomen", "left_arm", "right_arm"]),
+        ("layer", 3),
+        ("color", "black"),
+        ("material", "cotton"),
+        
+        ("style_configs", {
+            "adjustable": {
+                "normal": {
+                    "coverage_mod": [],
+                    "desc_mod": ""
+                },
+                "rolled": {
+                    "coverage_mod": ["+head"],
+                    "desc_mod": "A menacing {color}black|n developer hoodie with the hood pulled up like digital shadow incarnate, casting $pron(their) face into mysterious darkness while green command-line text pulses ominously across $pron(their) chest"
+                }
+            },
+            "closure": {
+                "zipped": {
+                    "coverage_mod": [],
+                    "desc_mod": "A menacing {color}black|n developer hoodie zipped tight against the digital cold, LED matrix patterns cascading across the fabric like endless streams of compiled consciousness"
+                },
+                "unzipped": {
+                    "coverage_mod": ["-chest"],
+                    "desc_mod": "A menacing {color}black|n developer hoodie hanging open in calculated carelessness, revealing whatever lies beneath while $pron(their) forbidden command-line incantations pulse with green malevolence"
+                }
+            }
+        }),
+        
+        ("style_properties", {
+            "adjustable": "normal",
+            "closure": "unzipped"
+        })
+    ],
+}
+```
+
+### Enhanced Blue Jeans with Pronoun Integration
+```python
+BLUE_JEANS = {
+    "prototype_key": "BLUE_JEANS", 
+    "key": "blue jeans",
+    "aliases": ["jeans", "pants", "denim"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "Classic medium-wash blue jeans with a comfortable fit.",
+    
+    "attrs": [
+        ("category", "clothing"),
+        ("worn_desc", "Battle-tested {color}denim|n jeans that cling to $pron(their) form with urban authority, $pron(their) faded indigo surface scarred by countless encounters with concrete and circumstance"),
+        ("coverage", ["groin", "left_thigh", "right_thigh", "left_shin", "right_shin"]),
+        ("layer", 2),
+        ("color", "blue"),
+        ("material", "denim"),
+        
+        ("style_configs", {
+            "adjustable": {
+                "normal": {
+                    "coverage_mod": [],
+                    "desc_mod": ""
+                },
+                "rolled": {
+                    "coverage_mod": ["-left_shin", "-right_shin"],
+                    "desc_mod": "Battle-tested {color}denim|n jeans with cuffs deliberately rolled up to mid-calf in street-smart defiance, exposing $pron(their) scarred ankles and the promise of swift movement"
+                }
+            },
+            "closure": {
+                "zipped": {
+                    "coverage_mod": [],
+                    "desc_mod": ""
+                },
+                "unzipped": {
+                    "coverage_mod": ["-groin"],
+                    "desc_mod": "Battle-tested {color}denim|n jeans hanging loose with dangerous nonchalance, $pron(their) undone fly creating a calculated statement of rebellion"
+                }
+            }
+        }),
+        
+        ("style_properties", {
+            "adjustable": "normal", 
+            "closure": "zipped"
+        })
+    ],
+}
+```
+
+### Combat Boots with Color and Perspective
+```python
+COMBAT_BOOTS = {
+    "prototype_key": "COMBAT_BOOTS",
+    "key": "black leather combat boots", 
+    "aliases": ["boots", "combat boots"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "Heavy-duty black leather combat boots with steel-reinforced toes.",
+    
+    "attrs": [
+        ("category", "clothing"),
+        ("worn_desc", "Imposing {color}black leather|n combat boots laced with military precision, $pron(their) steel-reinforced toes and deep-tread soles speaking of $pron(their) owner's serious intent while weathered leather tells stories of urban warfare"),
+        ("coverage", ["left_foot", "right_foot", "left_shin", "right_shin"]),
+        ("layer", 2),
+        ("color", "black"),
+        ("material", "leather"),
+        
+        ("style_configs", {
+            "closure": {
+                "zipped": {  # Laced tight
+                    "coverage_mod": [],
+                    "desc_mod": ""
+                },
+                "unzipped": {  # Laces loose
+                    "coverage_mod": ["-left_shin", "-right_shin"],
+                    "desc_mod": "Imposing {color}black leather|n combat boots with speed-laces hanging in deliberate disarray, $pron(their) unlaced tongues flopping open to reveal glimpses of tactical readiness beneath the facade of casual indifference"
+                }
+            }
+        }),
+        
+        ("style_properties", {
+            "closure": "zipped"
+        })
+    ],
+}
+```
+
+## Implementation Status: Enhanced Features
+
+### Phase 1: $pron() Integration ✅
+- [x] Base clothing descriptions support `$pron()` system
+- [x] Style descriptions integrate with pronoun perspective handling  
+- [x] Character appearance system processes `$pron()` tags correctly
+- [x] All prototype examples updated with pronoun integration
+
+### Phase 2: Color & Material System Implementation 🔄
+- [ ] `color` and `material` AttributeProperty added to Item class
+- [ ] Color placeholder processing in `_process_color_codes()` method
+- [ ] `get_current_worn_desc_with_perspective()` method enhancement
+- [ ] Color-enhanced prototype examples in `world/prototypes.py`
+- [ ] ANSI color constants integration
+- [ ] Material attribute ready for future armor/crafting systems
+
+### Phase 3: Testing & Refinement 🔄
+- [ ] Test pronoun perspective with different character genders
+- [ ] Test color placeholder replacement in descriptions
+- [ ] Verify color + pronoun integration works together
+- [ ] Update existing clothing prototypes with enhanced features
+- [ ] Performance testing with complex styled + colored clothing
+- [ ] Validate material attribute for future armor/crafting integration
+
+---
+
+**Document Status**: Enhanced with `$pron()` integration, streamlined single-color system, and material attribute for future extensibility
+**Next Steps**: Implement Phase 2 color & material system enhancements in codebase
