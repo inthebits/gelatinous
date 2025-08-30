@@ -196,6 +196,10 @@ class Character(ObjectParent, DefaultCharacter):
 
         if item.location != self:
             return "You're not carrying that item."
+        
+        # Check if item is currently worn
+        if hasattr(self, 'is_item_worn') and self.is_item_worn(item):
+            return "You can't wield something you're wearing. Remove it first."
 
         hands[hand] = item
         item.location = None
@@ -331,6 +335,13 @@ class Character(ObjectParent, DefaultCharacter):
         if item.location != self:
             return False, "You're not carrying that item."
         
+        # Auto-unwield if currently held
+        hands = getattr(self, 'hands', {})
+        for hand, held_item in hands.items():
+            if held_item == item:
+                hands[hand] = None
+                break
+        
         # Get item's current coverage (accounting for style states)
         item_coverage = item.get_current_coverage()
         
@@ -392,10 +403,14 @@ class Character(ObjectParent, DefaultCharacter):
         if location:
             return self.worn_items.get(location, [])
         
-        # Return all worn items
+        # Return all worn items (deduplicated since items can cover multiple locations)
+        seen_items = set()
         all_items = []
         for items in self.worn_items.values():
-            all_items.extend(items)
+            for item in items:
+                if item not in seen_items:
+                    seen_items.add(item)
+                    all_items.append(item)
         return all_items
     
     def is_location_covered(self, location):

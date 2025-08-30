@@ -298,6 +298,11 @@ class CmdDrop(Command):
         if not obj:
             caller.msg("You aren't carrying or holding that.")
             return
+        
+        # Check if item is currently worn
+        if hasattr(caller, 'is_item_worn') and caller.is_item_worn(obj):
+            caller.msg("You can't drop something you're wearing. Remove it first.")
+            return
 
         # If it's wielded, remove it from the hand
         was_wielded = False
