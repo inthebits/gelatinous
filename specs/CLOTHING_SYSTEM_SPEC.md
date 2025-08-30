@@ -3,8 +3,9 @@
 ## Implementation Status: CORE COMPLETE ✅
 
 **Design Phase**: Comprehensive specification completed with dynamic styling system  
-**Implementation Status**: Core functionality implemented - ready for testing and advanced features  
-**Documentation Status**: Complete specification with Phase 1 & 2 implementation complete
+**Implementation Status**: Core functionality implemented and tested - ready for advanced features  
+**Documentation Status**: Complete specification with corrected FuncParser understanding  
+**Testing Status**: Basic clothing system verified working in game environment
 
 ## Overview
 
@@ -94,29 +95,21 @@ class Item(DefaultObject):
 
 ## Enhanced Features
 
-### Pronoun Integration with $pron() System
-All clothing descriptions now integrate with Evennia's `$pron()` system for proper perspective handling:
+### Perspective-Aware Descriptions (NOT using $pron())
+**Important**: After testing, we discovered that `$pron()` functions are **NOT available in prototypes**. They only work in `msg_contents()` calls during runtime messaging.
+
+Instead, clothing descriptions use static pronouns and rely on the Item class methods for perspective handling:
 
 ```python
-# Example clothing descriptions with $pron() integration
-HOODIE_WORN_DESC = "A menacing black developer hoodie that clings to $pron(their) frame like digital shadow incarnate, command-line text pulsing ominously across the chest"
+# Correct approach - static descriptions in prototypes
+HOODIE_WORN_DESC = "A menacing black developer hoodie that clings to their frame like digital shadow incarnate, command-line text pulsing ominously across the chest"
 
-JEANS_WORN_DESC = "Battle-tested denim jeans that cling to $pron(their) form with urban authority, $pron(their) faded indigo surface scarred by countless encounters"
+JEANS_WORN_DESC = "Battle-tested denim jeans that cling to their form with urban authority, the faded indigo surface scarred by countless encounters"
 
-BOOTS_WORN_DESC = "Imposing black leather combat boots laced with military precision, $pron(their) steel-reinforced toes speaking of $pron(their) owner's serious intent"
+BOOTS_WORN_DESC = "Imposing black leather combat boots laced with military precision, steel-reinforced toes speaking of serious intent"
 ```
 
-**Perspective Examples:**
-```python
-# You see (looking at yourself):
-"A menacing black hoodie that clings to your frame like digital shadow incarnate"
-
-# Others see (looking at Alice, female):
-"A menacing black hoodie that clings to her frame like digital shadow incarnate" 
-
-# Others see (looking at Sam, nonbinary):
-"A menacing black hoodie that clings to their frame like digital shadow incarnate"
-```
+**Perspective handling** occurs in the `get_current_worn_desc_with_perspective()` method in the Item class, not in the prototype definitions.
 
 ### ANSI Color System Integration
 Clothing items support primary and secondary color attributes for enhanced visual immersion:
@@ -929,7 +922,7 @@ DEVELOPER_HOODIE = {
     
     "attrs": [
         ("category", "clothing"),
-        ("worn_desc", "A menacing {color}black|n developer hoodie that clings to $pron(their) frame like digital shadow incarnate, green command-line text pulsing ominously across $pron(their) chest while forbidden terminal incantations glow with quiet menace"),
+        ("worn_desc", "A menacing {color}black|n developer hoodie that clings to their frame like digital shadow incarnate, green command-line text pulsing ominously across their chest while forbidden terminal incantations glow with quiet menace"),
         ("coverage", ["chest", "back", "abdomen", "left_arm", "right_arm"]),
         ("layer", 3),
         ("color", "black"),
@@ -943,7 +936,7 @@ DEVELOPER_HOODIE = {
                 },
                 "rolled": {
                     "coverage_mod": ["+head"],
-                    "desc_mod": "A menacing {color}black|n developer hoodie with the hood pulled up like digital shadow incarnate, casting $pron(their) face into mysterious darkness while green command-line text pulses ominously across $pron(their) chest"
+                    "desc_mod": "A menacing {color}black|n developer hoodie with the hood pulled up like digital shadow incarnate, casting their face into mysterious darkness while green command-line text pulses ominously across their chest"
                 }
             },
             "closure": {
@@ -953,7 +946,7 @@ DEVELOPER_HOODIE = {
                 },
                 "unzipped": {
                     "coverage_mod": ["-chest"],
-                    "desc_mod": "A menacing {color}black|n developer hoodie hanging open in calculated carelessness, revealing whatever lies beneath while $pron(their) forbidden command-line incantations pulse with green malevolence"
+                    "desc_mod": "A menacing {color}black|n developer hoodie hanging open in calculated carelessness, revealing whatever lies beneath while their forbidden command-line incantations pulse with green malevolence"
                 }
             }
         }),
@@ -977,7 +970,7 @@ BLUE_JEANS = {
     
     "attrs": [
         ("category", "clothing"),
-        ("worn_desc", "Battle-tested {color}denim|n jeans that cling to $pron(their) form with urban authority, $pron(their) faded indigo surface scarred by countless encounters with concrete and circumstance"),
+        ("worn_desc", "Battle-tested {color}denim|n jeans that cling to their form with urban authority, their faded indigo surface scarred by countless encounters with concrete and circumstance"),
         ("coverage", ["groin", "left_thigh", "right_thigh", "left_shin", "right_shin"]),
         ("layer", 2),
         ("color", "blue"),
@@ -991,7 +984,7 @@ BLUE_JEANS = {
                 },
                 "rolled": {
                     "coverage_mod": ["-left_shin", "-right_shin"],
-                    "desc_mod": "Battle-tested {color}denim|n jeans with cuffs deliberately rolled up to mid-calf in street-smart defiance, exposing $pron(their) scarred ankles and the promise of swift movement"
+                    "desc_mod": "Battle-tested {color}denim|n jeans with cuffs deliberately rolled up to mid-calf in street-smart defiance, exposing their scarred ankles and the promise of swift movement"
                 }
             },
             "closure": {
@@ -1001,7 +994,7 @@ BLUE_JEANS = {
                 },
                 "unzipped": {
                     "coverage_mod": ["-groin"],
-                    "desc_mod": "Battle-tested {color}denim|n jeans hanging loose with dangerous nonchalance, $pron(their) undone fly creating a calculated statement of rebellion"
+                    "desc_mod": "Battle-tested {color}denim|n jeans hanging loose with dangerous nonchalance, their undone fly creating a calculated statement of rebellion"
                 }
             }
         }),
@@ -1025,7 +1018,7 @@ COMBAT_BOOTS = {
     
     "attrs": [
         ("category", "clothing"),
-        ("worn_desc", "Imposing {color}black leather|n combat boots laced with military precision, $pron(their) steel-reinforced toes and deep-tread soles speaking of $pron(their) owner's serious intent while weathered leather tells stories of urban warfare"),
+        ("worn_desc", "Imposing {color}black leather|n combat boots laced with military precision, their steel-reinforced toes and deep-tread soles speaking of their owner's serious intent while weathered leather tells stories of urban warfare"),
         ("coverage", ["left_foot", "right_foot", "left_shin", "right_shin"]),
         ("layer", 2),
         ("color", "black"),
@@ -1039,7 +1032,7 @@ COMBAT_BOOTS = {
                 },
                 "unzipped": {  # Laces loose
                     "coverage_mod": ["-left_shin", "-right_shin"],
-                    "desc_mod": "Imposing {color}black leather|n combat boots with speed-laces hanging in deliberate disarray, $pron(their) unlaced tongues flopping open to reveal glimpses of tactical readiness beneath the facade of casual indifference"
+                    "desc_mod": "Imposing {color}black leather|n combat boots with speed-laces hanging in deliberate disarray, their unlaced tongues flopping open to reveal glimpses of tactical readiness beneath the facade of casual indifference"
                 }
             }
         }),
@@ -1053,12 +1046,12 @@ COMBAT_BOOTS = {
 
 ## Implementation Status: Enhanced Features
 
-### Phase 1: $pron() Integration ✅
-- [x] Base clothing descriptions **designed** to support `$pron()` system 
-- [x] Style descriptions **designed** to integrate with pronoun perspective handling  
-- [x] Character appearance system **implementation** processes `$pron()` tags correctly
-- [x] `get_current_worn_desc_with_perspective()` method **implemented** in Item class
-- [x] All prototype examples updated with pronoun integration patterns
+### Phase 1: Perspective-Aware Descriptions ✅ COMPLETED (Without $pron())
+- [x] Base clothing descriptions **implemented** with static pronouns in prototypes 
+- [x] Style descriptions **implemented** without `$pron()` tags (not available in prototypes)
+- [x] Character appearance system **implemented** with proper perspective handling in methods
+- [x] `get_current_worn_desc_with_perspective()` method **implemented** in Item class for future enhancement
+- [x] All prototype examples **corrected** to use static descriptions
 
 ### Phase 2: Color & Material System Implementation ✅
 - [x] `color` and `material` AttributeProperty added to Item class

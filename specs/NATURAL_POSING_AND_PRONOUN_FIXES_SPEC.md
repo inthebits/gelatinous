@@ -4,6 +4,56 @@
 
 This specification outlines the integration of Evennia's built-in `$pron()` system into our existing codebase to replace hardcoded pronouns with dynamic, gender-aware alternatives. This will improve inclusivity, grammatical correctness, and maintainability.
 
+## Important: `$pron()` System Limitations
+
+**Key Discovery**: After implementation testing, we learned that `$pron()` functions have specific limitations:
+
+### Where `$pron()` Works
+- **msg_contents() calls** - when sending messages to multiple recipients
+- **Runtime messaging** - emotes, combat messages, social actions
+- **Actor-stance descriptions** - where different players see different text
+
+### Where `$pron()` Does NOT Work
+- **Prototype definitions** - `$pron()` is not available in prototype `attrs`
+- **Static item descriptions** - stored `desc` attributes
+- **AttributeProperty values** - any stored attribute values
+
+### Available Functions by Context
+```python
+# Available in prototypes (limited set):
+from evennia.utils.funcparser import FUNCPARSER_CALLABLES
+from evennia.utils.funcparser import SEARCHING_CALLABLES
+# Examples: $eval, $toint, $random, $clr, $search, $protkey
+
+# Available in msg_contents() (full set):
+from evennia.utils.funcparser import ACTOR_STANCE_CALLABLES  
+# Examples: $pron, $You, $conj - requires caller/receiver context
+
+# $pron() requires special kwargs:
+parser.parse(string, caller=<obj>, receiver=<obj>, mapping={'key': <obj>, ...})
+```
+
+### Correct Implementation Patterns
+```python
+# CORRECT: Use $pron() in runtime messaging
+def send_emote_message(self, actor, message):
+    # This works - runtime messaging with proper context
+    actor.location.msg_contents(
+        f"$You() $conj(lean) against the wall, $pron(your) eyes scanning the area.",
+        from_obj=actor
+    )
+
+# INCORRECT: Use $pron() in prototypes
+CLOTHING_ITEM = {
+    "worn_desc": "A jacket that clings to $pron(their) frame",  # This fails!
+}
+
+# CORRECT: Use static descriptions in prototypes
+CLOTHING_ITEM = {
+    "worn_desc": "A jacket that clings to their frame",  # Static "their" works
+}
+```
+
 ## ### Future Considerations
 
 ### Emote System Integration
@@ -445,20 +495,28 @@ class CmdGender(Command):
 "victim_msg": "{attacker_name} loads their weapon with practiced efficiency."
 ```
 
-**After:**
+**After (Correct Usage):**
 ```python  
-"victim_msg": "{attacker_name} loads $pron(their, attacker) weapon with practiced efficiency."
+"victim_msg": "$You(attacker) $conj(load, attacker) $pron(their, attacker) weapon with practiced efficiency."
 ```
 
-#### Clothing Descriptions
-**Before:**
+**Note**: Combat messages are sent via `msg_contents()` which supports `$pron()` system.
+
+#### Clothing Descriptions (Static Approach)
+**Current Implementation (Correct):**
 ```python
 "worn_desc": "Battle-tested jeans that show their urban scars"
 ```
 
-**After:**
+**Why Not `$pron()`**: Clothing descriptions are stored in prototypes where `$pron()` is not available. The static "their" approach works well for atmospheric descriptions.
+
+#### Emote System (Dynamic Approach)
+**Implementation Target:**
 ```python
-"worn_desc": "Battle-tested jeans that show $pron(their) urban scars"
+# Player input: .lean back against the wall
+# Processed message with $pron() for perspective:
+msg = "$You() $conj(lean) back against the wall, $pron(your) eyes scanning the area."
+actor.location.msg_contents(msg, from_obj=actor)
 ```
 
 #### General Messaging
@@ -496,59 +554,66 @@ class CmdGender(Command):
 **Estimated Time: 4-6 hours**
 
 **Tasks:**
-1. Update all combat message files to use `$pron()`
-2. Test combat messages with different character genders
-3. Verify message clarity and grammatical correctness
-4. Update combat message format documentation
+1. Update combat message files to use `$pron()` in `msg_contents()` calls
+2. Ensure proper context (caller/receiver) is provided to combat messages
+3. Test combat messages with different character genders
+4. Verify message clarity and grammatical correctness
+5. Update combat message format documentation
 
 **Files Modified:**
-- `world/combat/messages/*.py` (all weapon message files)
+- Combat message sending functions (not the message data files)
 - Combat message format specification
 
 **Acceptance Criteria:**
-- All combat messages use `$pron()` instead of hardcoded pronouns
+- All combat messages sent via `msg_contents()` can use `$pron()` system
 - Messages display correctly for all supported genders
 - No grammatical errors or awkward phrasing
 
-#### Phase 3: Clothing System Integration
+**Note**: Focus on the message sending mechanism, not the stored message strings.
+
+#### Phase 3: Static Description Consistency
 **Priority: Medium**
-**Estimated Time: 2-3 hours**
+**Estimated Time: 1-2 hours**
 
 **Tasks:**
-1. Update clothing `worn_desc` and `desc_mod` strings
-2. Test clothing descriptions with various character genders
-3. Ensure style system compatibility with `$pron()`
-4. Update clothing prototype documentation
+1. Audit existing static descriptions (clothing, items, rooms) for pronoun consistency
+2. Standardize on "their" for atmospheric descriptions where perspective isn't needed
+3. Document static vs. dynamic description approach
+4. Update style guide for future content creation
 
 **Files Modified:**
-- `world/prototypes.py`
-- `typeclasses/items.py` (if dynamic descriptions)
+- `world/prototypes.py` (review existing descriptions)
+- Style guide documentation
 
 **Acceptance Criteria:**
-- Clothing descriptions use appropriate pronouns
-- Style changes (rolled/unrolled, etc.) maintain pronoun consistency
-- All clothing prototypes updated
+- Consistent pronoun usage in static descriptions
+- Clear guidelines for when to use static vs. dynamic pronouns
+- All existing descriptions reviewed and standardized
 
-#### Phase 4: Social Systems Integration  
-**Priority: Medium**
-**Estimated Time: 3-4 hours**
+**Note**: This phase accepts that static descriptions use "their" and focuses on consistency rather than `$pron()` conversion.
+
+#### Phase 4: Natural First-Person Posing System  
+**Priority: High**
+**Estimated Time: 6-8 hours**
 
 **Tasks:**
-1. Create emote system with `$pron()` integration
-2. Update character placement commands (@look_place, @temp_place) to use pronouns
-3. Implement social action templates with dynamic pronouns
-4. Test emote system with various character genders
+1. Create natural `.` pose command with first-person input parsing
+2. Implement first-person to `$pron()` conversion system
+3. Integrate with character placement commands (@look_place, @temp_place)
+4. Add emote templates that work with `$pron()` system
+5. Test comprehensive pose system with various character genders
 
 **Files Modified:**
-- `commands/CmdSocial.py` (new emote system)
+- `commands/CmdSocial.py` (new pose system)
 - `commands/CmdCharacter.py` (placement command updates)
 - `commands/default_cmdsets.py`
 
 **Acceptance Criteria:**
-- Emote system supports all gender pronouns automatically
+- Natural `.lean back against the wall` syntax works
+- First-person input automatically converts to proper `$pron()` format
 - Character placement descriptions use appropriate pronouns
-- Social actions display correctly for all participants
-- Pre-built emote templates work with `$pron()` system
+- Players can write intuitively while system handles perspective
+- All gender pronouns display correctly for all participants
 
 #### Phase 5: Developer Guidelines
 **Priority: Medium**
@@ -652,15 +717,15 @@ class TestPronounSystem(BaseEvenniaTest):
 
 ### Rollout Plan
 1. **Week 1**: Phase 1 - Character system foundation
-2. **Week 2**: Phase 2 - Combat message retrofit (fix integration gaps)
-3. **Week 3**: Phase 3 - Clothing system integration (fix integration gaps)
-4. **Week 4**: Phase 4 - Natural first-person posing system
+2. **Week 2**: Phase 2 - Combat message system (enable `$pron()` in messaging)
+3. **Week 3**: Phase 3 - Static description consistency audit
+4. **Week 4**: Phase 4 - Natural first-person posing system implementation
 5. **Week 5**: Phase 5 - Guidelines and comprehensive audit
 
 ### Focus Areas
-**Primary Focus**: Fix existing `$pron()` integration gaps in combat and clothing systems
-**Secondary Focus**: Implement natural first-person posing with `.` command
-**Foundation**: Establish proper character gender system for future identity/disguise systems
+**Primary Focus**: Implement natural first-person posing with proper `$pron()` integration
+**Secondary Focus**: Enable `$pron()` in combat messaging system where appropriate
+**Foundation**: Establish proper character gender system and static description standards
 
 ### Backwards Compatibility
 - Existing characters with `sex` attribute will automatically work
@@ -676,17 +741,18 @@ class TestPronounSystem(BaseEvenniaTest):
 ## Success Metrics
 
 ### Technical Metrics
-- [ ] 100% of combat messages use `$pron()` system (fix integration gaps)
-- [ ] 100% of clothing descriptions use `$pron()` system (fix integration gaps)
+- [ ] Character gender system connects existing `sex` attribute to Evennia's pronoun system
 - [ ] Natural first-person posing system implemented with `.` command
-- [ ] Character gender system connects existing `sex` attribute to `$pron()`
-- [ ] Zero hardcoded pronouns in new content (enforced by reviews)
+- [ ] Combat messaging system properly supports `$pron()` where applicable  
+- [ ] Static descriptions consistently use appropriate neutral pronouns
+- [ ] Zero inappropriate `$pron()` usage in prototypes or static content
 - [ ] Foundation ready for future identity/disguise systems
 
 ### Player Experience Metrics
-- [ ] Players can successfully set their preferred pronouns
-- [ ] Combat and clothing messages display grammatically correct pronouns
-- [ ] Natural posing system works seamlessly across all gender identities
+- [ ] Players can successfully set their preferred pronouns with `@gender`
+- [ ] Natural posing with `.lean back` syntax works intuitively
+- [ ] Combat and social messages display grammatically correct pronouns
+- [ ] Posing system works seamlessly across all gender identities
 - [ ] No player reports of incorrect pronoun usage
 - [ ] Smooth foundation for future roleplay enhancement systems
 
@@ -699,12 +765,12 @@ class TestPronounSystem(BaseEvenniaTest):
 4. **Localization**: Support for non-English pronoun systems
 
 ### Integration Opportunities
-1. **Natural First-Person Posing**: Core `.` command system for intuitive roleplay
-2. **Combat Message Fixes**: Replace hardcoded "their" with proper `$pron()` usage  
-3. **Clothing Description Fixes**: Update atmospheric descriptions to use `$pron()`
-4. **Character Placement Enhancement**: Integrate posing with @look_place/@temp_place
+1. **Natural First-Person Posing**: Core `.` command system for intuitive roleplay (PRIMARY FOCUS)
+2. **Combat Message Enhancement**: Enable `$pron()` in combat messaging where contextually appropriate
+3. **Static Description Standards**: Consistent neutral pronoun usage in prototypes and stored descriptions  
+4. **Character Placement Enhancement**: Integrate posing with @look_place/@temp_place using `$pron()` system
 5. **Identity System Foundation**: Prepare gender system for future disguise mechanics
-6. **Admin Tools**: Admin commands that reference players by pronoun
+6. **Admin Tools**: Admin commands that reference players by pronoun (using `$pron()` in messages)
 
 ## Implementation Notes
 
