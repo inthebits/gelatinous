@@ -80,7 +80,7 @@ class CmdLongdesc(MuxCommand):
             # Staff can target other characters
             parts = args.split(None, 1)
             if len(parts) >= 1:
-                potential_target = caller.search(parts[0], global_search=True)
+                potential_target = caller.search(parts[0], global_search=True, quiet=True)
                 if potential_target and inherits_from(potential_target, "typeclasses.characters.Character"):
                     target_char = potential_target
                     remaining_args = parts[1] if len(parts) > 1 else ""
@@ -175,7 +175,8 @@ class CmdLongdesc(MuxCommand):
         if caller.check_permstring(PERM_BUILDER):
             parts = args.split(None, 1)
             if len(parts) >= 1:
-                potential_target = caller.search(parts[0], global_search=True)
+                # Use quiet=True to prevent "Could not find" messages
+                potential_target = caller.search(parts[0], global_search=True, quiet=True)
                 if potential_target and inherits_from(potential_target, "typeclasses.characters.Character"):
                     target_char = potential_target
                     location = parts[1] if len(parts) > 1 else ""
