@@ -4,7 +4,7 @@ Long Description System Commands
 Commands for setting and managing detailed character body part descriptions.
 """
 
-from evennia import Command
+from evennia.commands.default.muxcommand import MuxCommand
 from evennia.utils.utils import inherits_from
 from world.combat.constants import (
     MAX_DESCRIPTION_LENGTH,
@@ -13,7 +13,7 @@ from world.combat.constants import (
 )
 
 
-class CmdLongdesc(Command):
+class CmdLongdesc(MuxCommand):
     """
     Set or view detailed descriptions for your character's body parts.
 
@@ -55,18 +55,7 @@ class CmdLongdesc(Command):
         """Execute the longdesc command."""
         caller = self.caller
         args = self.args.strip()
-        
-        # Handle switches with defensive programming
-        switches = getattr(self, 'switches', [])
-        if not switches:
-            switches = []
-
-        # Also check raw input for switches as backup
-        raw_input = getattr(self, 'raw', '')
-        if '/list' in raw_input:
-            switches.append('list')
-        if '/clear' in raw_input:
-            switches.append('clear')
+        switches = self.switches
 
         # Handle switches
         if "list" in switches:
@@ -74,12 +63,7 @@ class CmdLongdesc(Command):
             return
 
         if "clear" in switches:
-            # For /clear, args should be everything after the switch
-            if '/clear' in raw_input:
-                clear_args = raw_input.split('/clear', 1)[1].strip()
-                self._handle_clear(caller, clear_args)
-            else:
-                self._handle_clear(caller, args)
+            self._handle_clear(caller, args)
             return
 
         # Parse arguments for main command
