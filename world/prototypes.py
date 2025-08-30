@@ -462,6 +462,27 @@ SOLVENT_CAN = {
 # =============================================================================
 # CLOTHING SYSTEM PROTOTYPES
 # =============================================================================
+"""
+Clothing System Implementation Notes:
+
+Phase 1 & 2 COMPLETE: Core infrastructure with dynamic styling and appearance integration
+- Attribute-based clothing detection (coverage, layer, worn_desc)
+- Multi-property styling system (adjustable + closure combinations)
+- Coverage-based visibility masking of longdesc locations
+- Inventory integration showing style states
+
+FUTURE EXPANSION POSSIBILITIES:
+- Phase 3: Advanced layer conflict resolution, staff targeting commands
+- Material Physics: Durability, weather resistance, cleaning requirements
+- Fashion Systems: NPC reactions based on clothing combinations/appropriateness
+- Condition Tracking: Wear states, stains, damage affecting appearance/stats
+- Social Mechanics: Dress codes, cultural clothing significance
+- Seasonal Systems: Temperature comfort, weather protection
+- Economic Integration: Clothing value, fashion trends affecting prices
+- Magical Clothing: Enchantments, transformation items, stat bonuses
+
+Current prototypes are proof-of-concept focusing on core mechanics.
+"""
 
 # Epic coder socks with dynamic styling capabilities
 CODER_SOCKS = {
@@ -504,26 +525,13 @@ CODER_SOCKS = {
         ("style_properties", {
             "adjustable": "normal",  # Full thigh-high
             "closure": "zipped"      # LEDs on full blast
-        }),
+        })
         
-        # Combat stats (because everything is a weapon)
-        ("damage", 1),
-        ("weapon_type", "style"), 
-        ("hands_required", 0),  # Feet weapons!
-        
-        # Special coder attributes
-        ("programming_bonus", 10),
-        ("caffeine_efficiency", 1.5),
-        ("debugging_power", "enhanced"),
-        ("impostor_syndrome_resistance", "maximum")
+        # Future: combat stats for style-based intimidation, coder stat bonuses
+        # Future tags: material properties, rarity systems, specialty gear recognition
     ],
-    "tags": [
-        ("clothing", "type"),
-        ("socks", "category"), 
-        ("coder_gear", "specialty"),
-        ("rgb", "feature"),
-        ("legendary", "rarity")
-    ]
+    # Future: tags for NPC coder recognition, RGB lighting systems, legendary item mechanics  
+    # "tags": [("clothing", "type"), ("socks", "category"), ("coder_gear", "specialty")]
 }
 
 # Stylish developer hoodie with hood functionality
@@ -566,24 +574,95 @@ DEV_HOODIE = {
         ("style_properties", {
             "adjustable": "normal",    # Hood down initially  
             "closure": "unzipped"      # Casual mode
+        })
+        
+        # Future: intimidation mechanics, focus bonuses, developer culture systems
+        # Future tags: LED features, professional gear, meeting avoidance mechanics
+    ],
+    # Future: tags for developer NPC interactions, LED systems, professional contexts
+    # "tags": [("clothing", "type"), ("hoodie", "category"), ("developer_gear", "specialty")]
+}
+
+# Classic blue jeans with functional styling
+BLUE_JEANS = {
+    "prototype_key": "BLUE_JEANS",
+    "key": "blue jeans",
+    "aliases": ["jeans", "pants", "denim"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A classic pair of medium-wash blue jeans with a comfortable fit. The denim is soft from years of wear, with subtle fading at the knees and pockets. Five-pocket styling with sturdy copper rivets at stress points.",
+    
+    "attrs": [
+        ("category", "clothing"),
+        ("worn_desc", "well-worn blue jeans that fit comfortably"),
+        ("coverage", ["groin", "left_thigh", "right_thigh", "left_shin", "right_shin"]),
+        ("layer", 2),
+        
+        ("style_definitions", {
+            "adjustable": {
+                "normal": {
+                    "desc_mod": "well-worn blue jeans with legs at full length"
+                },
+                "rolled": {
+                    "coverage_mod": ["-left_shin", "-right_shin"],
+                    "desc_mod": "well-worn blue jeans with the cuffs rolled up to mid-calf, showing off the ankles"
+                }
+            },
+            "closure": {
+                "zipped": {
+                    "desc_mod": "well-worn blue jeans with the fly properly zipped"
+                },
+                "unzipped": {
+                    "coverage_mod": ["-groin"],
+                    "desc_mod": "well-worn blue jeans with the fly hanging open carelessly"
+                }
+            }
         }),
         
-        # Stats
-        ("damage", 3),
-        ("weapon_type", "intimidation"),
-        ("hands_required", 0),
+        ("style_properties", {
+            "adjustable": "normal",
+            "closure": "zipped"
+        })
         
-        # Special dev powers
-        ("focus_enhancement", "significant"),
-        ("coffee_stain_resistance", "maximum"),
-        ("meeting_avoidance", "+5"),
-        ("late_night_coding_comfort", "legendary")
+        # Future: durability/wear system, comfort affects stats, style bonuses
+        # Future tags: material properties, fashion categories, condition tracking
     ],
-    "tags": [
-        ("clothing", "type"),
-        ("hoodie", "category"),
-        ("developer_gear", "specialty"), 
-        ("led", "feature"),
-        ("epic", "rarity")
-    ]
+    # Future: tags for material physics, fashion systems, NPC reactions
+    # "tags": [("clothing", "type"), ("pants", "category"), ("denim", "material")]
+}
+
+# Simple cotton t-shirt 
+COTTON_TSHIRT = {
+    "prototype_key": "COTTON_TSHIRT",
+    "key": "white cotton t-shirt",
+    "aliases": ["shirt", "t-shirt", "tshirt", "tee"],
+    "typeclass": "typeclasses.items.Item", 
+    "desc": "A simple white cotton t-shirt with a classic crew neck. The fabric is soft and breathable, perfect for everyday wear. The shoulders and hem show the clean lines of quality construction.",
+    
+    "attrs": [
+        ("category", "clothing"),
+        ("worn_desc", "a simple white cotton t-shirt"),
+        ("coverage", ["chest", "back", "abdomen"]),
+        ("layer", 2),
+        
+        ("style_definitions", {
+            "adjustable": {
+                "normal": {
+                    "desc_mod": "a simple white cotton t-shirt hanging normally"
+                },
+                "rolled": {
+                    "coverage_mod": ["-abdomen"],
+                    "desc_mod": "a simple white cotton t-shirt with the bottom rolled up, exposing the midriff"
+                }
+            }
+        }),
+        
+        ("style_properties", {
+            "adjustable": "normal"
+        })
+        
+        # Future: fabric physics, stain resistance, NPC fashion reactions  
+        # Future tags: material breathability, wash cycles, social contexts
+    ],
+    # Future: tags for clothing care systems, fashion mechanics, NPC interactions
+    # "tags": [("clothing", "type"), ("shirt", "category"), ("cotton", "material")]
 }
