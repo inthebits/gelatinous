@@ -476,14 +476,21 @@ class Character(ObjectParent, DefaultCharacter):
         coverage_map = self._build_clothing_coverage_map()
         longdescs = self.longdesc or {}
         
+        # Track which clothing items we've already added to avoid duplicates
+        added_clothing_items = set()
+        
         # Process in anatomical order
         for location in ANATOMICAL_DISPLAY_ORDER:
             if location in coverage_map:
                 # Location covered by clothing - use outermost item's current worn_desc
                 clothing_item = coverage_map[location]
-                desc = clothing_item.get_current_worn_desc()
-                if desc:
-                    descriptions.append((location, desc))
+                
+                # Only add each clothing item once, regardless of how many locations it covers
+                if clothing_item not in added_clothing_items:
+                    desc = clothing_item.get_current_worn_desc()
+                    if desc:
+                        descriptions.append((location, desc))
+                        added_clothing_items.add(clothing_item)
             else:
                 # Location not covered - use character's longdesc if set
                 if location in longdescs and longdescs[location]:
@@ -496,9 +503,11 @@ class Character(ObjectParent, DefaultCharacter):
                 if location in coverage_map:
                     # Extended location with clothing
                     clothing_item = coverage_map[location]
-                    desc = clothing_item.get_current_worn_desc()
-                    if desc:
-                        descriptions.append((location, desc))
+                    if clothing_item not in added_clothing_items:
+                        desc = clothing_item.get_current_worn_desc()
+                        if desc:
+                            descriptions.append((location, desc))
+                            added_clothing_items.add(clothing_item)
                 elif location in longdescs and longdescs[location]:
                     # Extended location with longdesc
                     descriptions.append((location, longdescs[location]))
