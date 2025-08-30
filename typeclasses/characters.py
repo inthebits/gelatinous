@@ -34,6 +34,30 @@ class Character(ObjectParent, DefaultCharacter):
     motorics = AttributeProperty(1, category='stat', autocreate=True)
     sex = AttributeProperty("ambiguous", category="biology", autocreate=True)
 
+    @property
+    def gender(self):
+        """
+        Maps the existing sex attribute to Evennia's pronoun system.
+        Returns a string suitable for use with $pron() functions.
+        
+        Maps:
+        - "male", "man", "masculine" -> "male"
+        - "female", "woman", "feminine" -> "female"  
+        - "ambiguous", "neutral", "non-binary", "they" -> "neutral"
+        - default -> "neutral"
+        """
+        sex_value = (self.sex or "ambiguous").lower().strip()
+        
+        # Male mappings
+        if sex_value in ("male", "man", "masculine", "m"):
+            return "male"
+        # Female mappings
+        elif sex_value in ("female", "woman", "feminine", "f"):
+            return "female"
+        # Neutral/ambiguous mappings (default)
+        else:
+            return "neutral"
+
 # Possession Identifier
     def is_possessed(self):
         """
@@ -709,6 +733,107 @@ class Character(ObjectParent, DefaultCharacter):
         
         # Combine: header + base_desc + body descriptions
         if base_desc:
-            return f"{header}\n{base_desc}\n\n{formatted_body_descriptions}"
+            # Process template variables for perspective-aware descriptions
+            processed_base_desc = self._process_description_variables(base_desc, looker)
+            return f"{header}\n{processed_base_desc}\n\n{formatted_body_descriptions}"
         else:
             return f"{header}\n{formatted_body_descriptions}"
+
+    def _process_description_variables(self, desc, looker):
+        """
+        Process template variables in descriptions for perspective-aware text.
+        
+        This enables template variables like {observer_pronoun_possessive} in 
+        character descriptions that get substituted based on who's looking.
+        
+        Args:
+            desc (str): Description text with potential template variables
+            looker (Character): Who is looking at this character
+            
+        Returns:
+            str: Description with variables substituted
+        """
+        if not desc or not looker:
+            return desc
+            
+        # Map of available template variables based on perspective
+        is_self = (looker == self)
+        
+        # Get pronoun information for this character
+        gender_mapping = {
+            'male': 'male',
+            'female': 'female', 
+            'neutral': 'plural',
+            'nonbinary': 'plural',
+            'other': 'plural'
+        }
+        
+        character_gender = gender_mapping.get(self.gender, 'plural')
+        
+        # Template variable mapping
+        variables = {
+            # Subject pronouns: he/she/they (when looking at others) or "you" (when looking at self)
+            'observer_pronoun_subject': 'you' if is_self else self._get_pronoun('subject', character_gender),
+            
+            # Object pronouns: him/her/them (when looking at others) or "you" (when looking at self)
+            'observer_pronoun_object': 'you' if is_self else self._get_pronoun('object', character_gender),
+            
+            # Possessive pronouns: his/her/their (when looking at others) or "your" (when looking at self)  
+            'observer_pronoun_possessive': 'your' if is_self else self._get_pronoun('possessive', character_gender),
+            
+            # Possessive absolute: his/hers/theirs (when looking at others) or "yours" (when looking at self)
+            'observer_pronoun_possessive_absolute': 'yours' if is_self else self._get_pronoun('possessive_absolute', character_gender),
+            
+            # Reflexive: himself/herself/themselves (when looking at others) or "yourself" (when looking at self)
+            'observer_pronoun_reflexive': 'yourself' if is_self else self._get_pronoun('reflexive', character_gender),
+            
+            # Character name (use "you" when looking at self, otherwise character name)
+            'observer_character_name': 'you' if is_self else self.get_display_name(looker),
+            
+            # Character name possessive (use "your" when looking at self, otherwise "Alice's")
+            'observer_character_name_possessive': 'your' if is_self else f"{self.get_display_name(looker)}'s"
+        }
+        
+        # Substitute all variables in the description
+        try:
+            return desc.format(**variables)
+        except (KeyError, ValueError):
+            # If there are template errors, return original description
+            return desc
+    
+    def _get_pronoun(self, pronoun_type, gender):
+        """
+        Get specific pronoun based on gender and type.
+        
+        Args:
+            pronoun_type (str): Type of pronoun (subject, object, possessive, etc.)
+            gender (str): Gender identifier (male, female, plural)
+            
+        Returns:
+            str: Appropriate pronoun
+        """
+        pronouns = {
+            'male': {
+                'subject': 'he',
+                'object': 'him', 
+                'possessive': 'his',
+                'possessive_absolute': 'his',
+                'reflexive': 'himself'
+            },
+            'female': {
+                'subject': 'she',
+                'object': 'her',
+                'possessive': 'her', 
+                'possessive_absolute': 'hers',
+                'reflexive': 'herself'
+            },
+            'plural': {  # Used for they/them, nonbinary, neutral, other
+                'subject': 'they',
+                'object': 'them',
+                'possessive': 'their',
+                'possessive_absolute': 'theirs', 
+                'reflexive': 'themselves'
+            }
+        }
+        
+        return pronouns.get(gender, pronouns['plural']).get(pronoun_type, 'they')

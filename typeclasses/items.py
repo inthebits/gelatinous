@@ -166,11 +166,11 @@ class Item(DefaultObject):
 
     def get_current_worn_desc_with_perspective(self, looker=None, from_obj=None):
         """
-        Get the current worn description with $pron() processing and color integration.
+        Get the current worn description with template variable processing and color integration.
         
         Args:
             looker: The character doing the looking (for perspective)
-            from_obj: The object being looked at (wearer, for $pron() context)
+            from_obj: The object being looked at (wearer, for template variable context)
             
         Returns:
             str: Processed description with pronouns and colors
@@ -184,8 +184,11 @@ class Item(DefaultObject):
         # Process color placeholders
         colored_desc = self._process_color_codes(current_desc)
         
-        # Return the description with $pron() tags intact
-        # Evennia will process $pron() tags automatically when the message is sent
+        # Process template variables if we have perspective context
+        if looker and from_obj and hasattr(from_obj, '_process_description_variables'):
+            return from_obj._process_description_variables(colored_desc, looker)
+        
+        # Fallback: return without template processing
         return colored_desc
     
     def _process_color_codes(self, text):

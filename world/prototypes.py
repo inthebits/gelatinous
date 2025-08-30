@@ -546,7 +546,7 @@ DEV_HOODIE = {
     "attrs": [
         # Clothing attributes
         ("coverage", ["chest", "back", "abdomen", "left_arm", "right_arm"]),
-        ("worn_desc", "A menacing {color}black|n developer hoodie draped loose and open, the cryptic green 'rm -rf /' text glowing with malevolent promise while embedded LED threads create subtle data-stream patterns across their fabric"),
+        ("worn_desc", "A menacing {color}black|n developer hoodie draped loose and open, the cryptic green 'rm -rf /' text glowing with malevolent promise while embedded LED threads create subtle data-stream patterns across {observer_pronoun_possessive} fabric"),
         ("layer", 2),  # Base clothing
         ("color", "black"),
         ("material", "cotton"),
@@ -560,7 +560,7 @@ DEV_HOODIE = {
                 },
                 "rolled": {
                     "coverage_mod": ["+head"],  # Hood up adds head coverage
-                    "desc_mod": "A menacing {color}black|n developer hoodie with the hood pulled up like digital shadow incarnate, casting their face into mysterious darkness while green command-line text pulses ominously across their chest like a hacker's heartbeat"
+                    "desc_mod": "A menacing {color}black|n developer hoodie with the hood pulled up like digital shadow incarnate, casting {observer_pronoun_possessive} face into mysterious darkness while green command-line text pulses ominously across {observer_pronoun_possessive} chest like a hacker's heartbeat"
                 }
             },
             "closure": {
@@ -570,7 +570,7 @@ DEV_HOODIE = {
                 },
                 "unzipped": {
                     "coverage_mod": ["-chest"],  # Unzipped shows what's underneath
-                    "desc_mod": "A menacing {color}black|n developer hoodie hanging open in calculated carelessness, revealing whatever lies beneath while their forbidden command-line incantation pulses with green malevolence against the darkness"
+                    "desc_mod": "A menacing {color}black|n developer hoodie hanging open in calculated carelessness, revealing whatever lies beneath while {observer_pronoun_possessive} forbidden command-line incantation pulses with green malevolence against the darkness"
                 }
             }
         }),
