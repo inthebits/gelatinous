@@ -233,20 +233,24 @@ class CmdRollUp(Command):
 
 class CmdZip(Command):
     """
-    Zip or unzip clothing items with closures.
+    Zip, unzip, button, or unbutton clothing items with closures.
 
     Usage:
         zip <item>
         unzip <item>
+        button <item>
+        unbutton <item>
 
     Examples:
         zip jacket
         unzip boots
+        button shirt
+        unbutton coat
         zip up coat
     """
 
     key = "zip"
-    aliases = ["unzip"]
+    aliases = ["unzip", "button", "unbutton"]
     locks = "cmd:all()"
     help_category = "Inventory"
 
@@ -278,25 +282,37 @@ class CmdZip(Command):
         # Determine target state based on command
         from world.combat.constants import STYLE_CLOSURE, STYLE_STATE_ZIPPED, STYLE_STATE_UNZIPPED
         
-        if self.cmdstring.lower() == "zip":
+        cmd = self.cmdstring.lower()
+        if cmd in ["zip", "button"]:
             target_state = STYLE_STATE_ZIPPED
-            action = "zip up"
-        else:  # unzip
+            action = "zip up" if cmd == "zip" else "button up"
+            action_past = "zipped up" if cmd == "zip" else "buttoned up"
+        else:  # unzip, unbutton
             target_state = STYLE_STATE_UNZIPPED
-            action = "unzip"
+            action = "unzip" if cmd == "unzip" else "unbutton"
+            action_past = "unzipped" if cmd == "unzip" else "unbuttoned"
         
         # Check if item supports closure property
         if STYLE_CLOSURE not in item.style_configs:
-            caller.msg(f"The {item.key} doesn't have a zipper.")
+            if cmd in ["zip", "unzip"]:
+                caller.msg(f"The {item.key} doesn't have a zipper.")
+            else:  # button, unbutton
+                caller.msg(f"The {item.key} doesn't have buttons.")
             return
         
         # Check if already in target state
         current_state = item.get_style_property(STYLE_CLOSURE)
         if current_state == target_state:
             if target_state == STYLE_STATE_ZIPPED:
-                caller.msg(f"The {item.key} is already zipped up.")
-            else:
-                caller.msg(f"The {item.key} is already unzipped.")
+                if cmd == "zip":
+                    caller.msg(f"The {item.key} is already zipped up.")
+                else:  # button
+                    caller.msg(f"The {item.key} is already buttoned up.")
+            else:  # UNZIPPED
+                if cmd == "unzip":
+                    caller.msg(f"The {item.key} is already unzipped.")
+                else:  # unbutton
+                    caller.msg(f"The {item.key} is already unbuttoned.")
             return
         
         # Check if transition is valid (has both coverage and desc changes)
@@ -308,17 +324,10 @@ class CmdZip(Command):
         success = item.set_style_property(STYLE_CLOSURE, target_state)
         
         if success:
-            if target_state == STYLE_STATE_ZIPPED:
-                caller.msg(f"You zip up the {item.key}.")
-                caller.location.msg_contents(
-                    f"{caller.get_display_name(None)} zips up {item.key}.",
-                    exclude=caller
-                )
-            else:
-                caller.msg(f"You unzip the {item.key}.")
-                caller.location.msg_contents(
-                    f"{caller.get_display_name(None)} unzips {item.key}.",
-                    exclude=caller
-                )
+            caller.msg(f"You {action} the {item.key}.")
+            caller.location.msg_contents(
+                f"{caller.get_display_name(None)} {action_past} {item.key}.",
+                exclude=caller
+            )
         else:
             caller.msg(f"You can't {action} the {item.key}.")
