@@ -122,8 +122,14 @@ class Character(ObjectParent, DefaultCharacter):
         # Get the default candidates first
         candidates = super().get_search_candidates(searchdata, **kwargs)
         
-        # If we have default candidates and we're aiming, enhance them
-        if candidates is not None and hasattr(self.ndb, 'aiming_direction'):
+        # Don't interfere with self-lookup or basic character functionality
+        # Only enhance when specifically aiming at a direction
+        aiming_direction = getattr(self.ndb, 'aiming_direction', None) if hasattr(self, 'ndb') else None
+        
+        if (candidates is not None and 
+            aiming_direction and 
+            self.location and
+            hasattr(self.location, 'search_for_target')):  # Make sure the room supports this
             try:
                 # Use the room's search_for_target method to get unified candidates
                 # This leverages the existing vetted aiming logic
