@@ -55,7 +55,11 @@ class CmdLongdesc(Command):
         """Execute the longdesc command."""
         caller = self.caller
         args = self.args.strip()
-        switches = self.switches
+        
+        # Handle switches with defensive programming
+        switches = getattr(self, 'switches', [])
+        if not switches:
+            switches = []
 
         # Handle switches
         if "list" in switches:
