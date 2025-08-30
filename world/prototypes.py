@@ -597,10 +597,11 @@ BLUE_JEANS = {
         ("coverage", ["groin", "left_thigh", "right_thigh", "left_shin", "right_shin"]),
         ("layer", 2),
         
-        ("style_definitions", {
+        ("style_configs", {
             "adjustable": {
                 "normal": {
-                    "desc_mod": "well-worn blue jeans with legs at full length"
+                    "coverage_mod": [],
+                    "desc_mod": ""  # Use base worn_desc
                 },
                 "rolled": {
                     "coverage_mod": ["-left_shin", "-right_shin"],
@@ -609,7 +610,8 @@ BLUE_JEANS = {
             },
             "closure": {
                 "zipped": {
-                    "desc_mod": "well-worn blue jeans with the fly properly zipped"
+                    "coverage_mod": [],
+                    "desc_mod": ""  # Use base worn_desc
                 },
                 "unzipped": {
                     "coverage_mod": ["-groin"],
@@ -644,10 +646,11 @@ COTTON_TSHIRT = {
         ("coverage", ["chest", "back", "abdomen"]),
         ("layer", 2),
         
-        ("style_definitions", {
+        ("style_configs", {
             "adjustable": {
                 "normal": {
-                    "desc_mod": "a simple white cotton t-shirt hanging normally"
+                    "coverage_mod": [],
+                    "desc_mod": ""  # Use base worn_desc
                 },
                 "rolled": {
                     "coverage_mod": ["-abdomen"],
