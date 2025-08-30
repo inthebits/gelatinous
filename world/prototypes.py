@@ -494,7 +494,7 @@ CODER_SOCKS = {
     "attrs": [
         # Basic clothing attributes
         ("coverage", ["left_foot", "right_foot", "left_shin", "right_shin", "left_thigh", "right_thigh"]),
-        ("worn_desc", "Electric {color}rainbow|n coding socks stretching up {observer_pronoun_possessive} thighs, {observer_pronoun_possessive} prismatic patterns pulsing with soft bioluminescent threads that seem to respond to neural activity"),
+        ("worn_desc", "Electric {color}rainbow|n coding socks stretching up {their} thighs, {their} prismatic patterns pulsing with soft bioluminescent threads that seem to respond to neural activity"),
         ("layer", 1),  # Undergarment layer
         ("color", "bright_magenta"),
         ("material", "synthetic"),
@@ -508,17 +508,17 @@ CODER_SOCKS = {
                 },
                 "rolled": {
                     "coverage_mod": ["-left_thigh", "-right_thigh"],  # Rolled down to knee-high
-                    "desc_mod": "Electric {color}rainbow|n coding socks bunched down around {observer_pronoun_possessive} knees, {observer_pronoun_possessive} compressed RGB fibers creating intense aurora-like cascades that paint the calves in shifting spectral light"
+                    "desc_mod": "Electric {color}rainbow|n coding socks bunched down around {their} knees, {their} compressed RGB fibers creating intense aurora-like cascades that paint the calves in shifting spectral light"
                 }
             },
             "closure": {
                 "zipped": {
                     "coverage_mod": [],
-                    "desc_mod": "Electric {color}rainbow|n coding socks stretching up {observer_pronoun_possessive} thighs, {observer_pronoun_possessive} LED matrices blazing at maximum intensity like fiber-optic constellations mapping the topology of pure computational ecstasy"
+                    "desc_mod": "Electric {color}rainbow|n coding socks stretching up {their} thighs, {their} LED matrices blazing at maximum intensity like fiber-optic constellations mapping the topology of pure computational ecstasy"
                 },
                 "unzipped": {
                     "coverage_mod": [],
-                    "desc_mod": "Electric {color}rainbow|n coding socks stretching up {observer_pronoun_possessive} thighs, {observer_pronoun_possessive} bioluminescent patterns dimmed to a gentle ambient pulse that whispers of late-night debugging sessions and caffeine dreams"
+                    "desc_mod": "Electric {color}rainbow|n coding socks stretching up {their} thighs, {their} bioluminescent patterns dimmed to a gentle ambient pulse that whispers of late-night debugging sessions and caffeine dreams"
                 }
             }
         }),
@@ -546,7 +546,7 @@ DEV_HOODIE = {
     "attrs": [
         # Clothing attributes
         ("coverage", ["chest", "back", "abdomen", "left_arm", "right_arm"]),
-        ("worn_desc", "A menacing {color}black|n developer hoodie draped loose and open, the cryptic green 'rm -rf /' text glowing with malevolent promise while embedded LED threads create subtle data-stream patterns across {observer_pronoun_possessive} fabric"),
+        ("worn_desc", "A menacing {color}black|n developer hoodie draped loose and open, the cryptic green 'rm -rf /' text glowing with malevolent promise while embedded LED threads create subtle data-stream patterns across {their} fabric"),
         ("layer", 2),  # Base clothing
         ("color", "black"),
         ("material", "cotton"),
@@ -560,7 +560,7 @@ DEV_HOODIE = {
                 },
                 "rolled": {
                     "coverage_mod": ["+head"],  # Hood up adds head coverage
-                    "desc_mod": "A menacing {color}black|n developer hoodie with the hood pulled up like digital shadow incarnate, casting {observer_pronoun_possessive} face into mysterious darkness while green command-line text pulses ominously across {observer_pronoun_possessive} chest like a hacker's heartbeat"
+                    "desc_mod": "A menacing {color}black|n developer hoodie with the hood pulled up like digital shadow incarnate, casting {their} face into mysterious darkness while green command-line text pulses ominously across {their} chest like a hacker's heartbeat"
                 }
             },
             "closure": {
@@ -570,7 +570,7 @@ DEV_HOODIE = {
                 },
                 "unzipped": {
                     "coverage_mod": ["-chest"],  # Unzipped shows what's underneath
-                    "desc_mod": "A menacing {color}black|n developer hoodie hanging open in calculated carelessness, revealing whatever lies beneath while {observer_pronoun_possessive} forbidden command-line incantation pulses with green malevolence against the darkness"
+                    "desc_mod": "A menacing {color}black|n developer hoodie hanging open in calculated carelessness, revealing whatever lies beneath while {their} forbidden command-line incantation pulses with green malevolence against the darkness"
                 }
             }
         }),
@@ -597,7 +597,7 @@ BLUE_JEANS = {
     
     "attrs": [
         ("category", "clothing"),
-        ("worn_desc", "Battle-tested {color}denim|n jeans that cling to {observer_pronoun_possessive} form with urban authority, {observer_pronoun_possessive} faded indigo surface scarred by countless encounters with concrete and circumstance"),
+        ("worn_desc", "Battle-tested {color}denim|n jeans that cling to {their} form with urban authority, {their} faded indigo surface scarred by countless encounters with concrete and circumstance"),
         ("coverage", ["groin", "left_thigh", "right_thigh", "left_shin", "right_shin"]),
         ("layer", 2),
         ("color", "blue"),
@@ -611,7 +611,7 @@ BLUE_JEANS = {
                 },
                 "rolled": {
                     "coverage_mod": ["-left_shin", "-right_shin"],
-                    "desc_mod": "Battle-tested {color}denim|n jeans with cuffs deliberately rolled up to mid-calf in street-smart defiance, exposing {observer_pronoun_possessive} scarred ankles and the promise of swift movement when the situation demands it"
+                    "desc_mod": "Battle-tested {color}denim|n jeans with cuffs deliberately rolled up to mid-calf in street-smart defiance, exposing {their} scarred ankles and the promise of swift movement when the situation demands it"
                 }
             },
             "closure": {
@@ -621,7 +621,7 @@ BLUE_JEANS = {
                 },
                 "unzipped": {
                     "coverage_mod": ["-groin"],
-                    "desc_mod": "Battle-tested {color}denim|n jeans hanging loose with dangerous nonchalance, {observer_pronoun_possessive} undone fly creating a calculated statement of rebellion against the oppressive tyranny of proper dress codes"
+                    "desc_mod": "Battle-tested {color}denim|n jeans hanging loose with dangerous nonchalance, {their} undone fly creating a calculated statement of rebellion against the oppressive tyranny of proper dress codes"
                 }
             }
         }),
@@ -648,7 +648,7 @@ COTTON_TSHIRT = {
     
     "attrs": [
         ("category", "clothing"),
-        ("worn_desc", "A deceptively simple {color}white|n cotton t-shirt that seems to absorb and reflect the ambient light of {observer_pronoun_possessive} urban environment, its clean lines and perfect fit suggesting either careful maintenance or recent acquisition"),
+        ("worn_desc", "A deceptively simple {color}white|n cotton t-shirt that seems to absorb and reflect the ambient light of {their} urban environment, its clean lines and perfect fit suggesting either careful maintenance or recent acquisition"),
         ("coverage", ["chest", "back", "abdomen"]),
         ("layer", 2),
         ("color", "white"),
@@ -662,7 +662,7 @@ COTTON_TSHIRT = {
                 },
                 "rolled": {
                     "coverage_mod": ["-abdomen"],
-                    "desc_mod": "A deceptively simple {color}white|n cotton t-shirt deliberately rolled up at the hem to expose {observer_pronoun_possessive} midriff, the casual gesture somehow managing to convey both vulnerability and confident defiance of conventional modesty"
+                    "desc_mod": "A deceptively simple {color}white|n cotton t-shirt deliberately rolled up at the hem to expose {their} midriff, the casual gesture somehow managing to convey both vulnerability and confident defiance of conventional modesty"
                 }
             }
         }),
@@ -688,7 +688,7 @@ COMBAT_BOOTS = {
     
     "attrs": [
         ("category", "clothing"),
-        ("worn_desc", "Imposing {color}black leather|n combat boots laced with military precision, {observer_pronoun_possessive} steel-reinforced toes and deep-tread soles speaking of {observer_pronoun_possessive} owner's serious intent while weathered leather tells stories of urban warfare and late-night foot chases"),
+        ("worn_desc", "Imposing {color}black leather|n combat boots laced with military precision, {their} steel-reinforced toes and deep-tread soles speaking of {their} owner's serious intent while weathered leather tells stories of urban warfare and late-night foot chases"),
         ("coverage", ["left_foot", "right_foot", "left_shin", "right_shin"]),
         ("layer", 2),
         ("color", "black"),
@@ -702,7 +702,7 @@ COMBAT_BOOTS = {
                 },
                 "unzipped": {
                     "coverage_mod": ["-left_shin", "-right_shin"],
-                    "desc_mod": "Imposing {color}black leather|n combat boots with speed-laces hanging in deliberate disarray, {observer_pronoun_possessive} unlaced tongues flopping open to reveal glimpses of tactical readiness beneath the facade of casual indifference"
+                    "desc_mod": "Imposing {color}black leather|n combat boots with speed-laces hanging in deliberate disarray, {their} unlaced tongues flopping open to reveal glimpses of tactical readiness beneath the facade of casual indifference"
                 }
             }
         }),

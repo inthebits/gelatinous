@@ -743,8 +743,7 @@ class Character(ObjectParent, DefaultCharacter):
         """
         Process template variables in descriptions for perspective-aware text.
         
-        This enables template variables like {observer_pronoun_possessive} in 
-        character descriptions that get substituted based on who's looking.
+        Uses simple template variables like {their}, {they}, {name} similar to {color}.
         
         Args:
             desc (str): Description text with potential template variables
@@ -770,27 +769,30 @@ class Character(ObjectParent, DefaultCharacter):
         
         character_gender = gender_mapping.get(self.gender, 'plural')
         
-        # Template variable mapping
+        # Simple template variable mapping (like {color})
         variables = {
-            # Subject pronouns: he/she/they (when looking at others) or "you" (when looking at self)
-            'observer_pronoun_subject': 'you' if is_self else self._get_pronoun('subject', character_gender),
+            # Most common - possessive pronouns
+            'their': 'your' if is_self else self._get_pronoun('possessive', character_gender),
             
-            # Object pronouns: him/her/them (when looking at others) or "you" (when looking at self)
-            'observer_pronoun_object': 'you' if is_self else self._get_pronoun('object', character_gender),
+            # Subject and object pronouns  
+            'they': 'you' if is_self else self._get_pronoun('subject', character_gender),
+            'them': 'you' if is_self else self._get_pronoun('object', character_gender),
             
-            # Possessive pronouns: his/her/their (when looking at others) or "your" (when looking at self)  
+            # Possessive absolute and reflexive (less common)
+            'theirs': 'yours' if is_self else self._get_pronoun('possessive_absolute', character_gender),
+            'themselves': 'yourself' if is_self else self._get_pronoun('reflexive', character_gender),
+            
+            # Character names
+            'name': 'you' if is_self else self.get_display_name(looker),
+            "name's": 'your' if is_self else f"{self.get_display_name(looker)}'s",
+            
+            # Legacy support for existing verbose names (can be removed later)
             'observer_pronoun_possessive': 'your' if is_self else self._get_pronoun('possessive', character_gender),
-            
-            # Possessive absolute: his/hers/theirs (when looking at others) or "yours" (when looking at self)
+            'observer_pronoun_subject': 'you' if is_self else self._get_pronoun('subject', character_gender),
+            'observer_pronoun_object': 'you' if is_self else self._get_pronoun('object', character_gender),
             'observer_pronoun_possessive_absolute': 'yours' if is_self else self._get_pronoun('possessive_absolute', character_gender),
-            
-            # Reflexive: himself/herself/themselves (when looking at others) or "yourself" (when looking at self)
             'observer_pronoun_reflexive': 'yourself' if is_self else self._get_pronoun('reflexive', character_gender),
-            
-            # Character name (use "you" when looking at self, otherwise character name)
             'observer_character_name': 'you' if is_self else self.get_display_name(looker),
-            
-            # Character name possessive (use "your" when looking at self, otherwise "Alice's")
             'observer_character_name_possessive': 'your' if is_self else f"{self.get_display_name(looker)}'s"
         }
         
