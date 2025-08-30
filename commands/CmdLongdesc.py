@@ -80,10 +80,23 @@ class CmdLongdesc(MuxCommand):
             # Staff can target other characters
             parts = args.split(None, 1)
             if len(parts) >= 1:
+                # Debug: let's see what's happening
+                caller.msg(f"DEBUG: Trying to find character '{parts[0]}'")
                 potential_target = caller.search(parts[0], global_search=True, quiet=True)
-                if potential_target and inherits_from(potential_target, "typeclasses.characters.Character"):
-                    target_char = potential_target
-                    remaining_args = parts[1] if len(parts) > 1 else ""
+                caller.msg(f"DEBUG: Search result: {potential_target}")
+                if potential_target:
+                    caller.msg(f"DEBUG: Found object, checking if it's a Character...")
+                    caller.msg(f"DEBUG: Object type: {type(potential_target)}")
+                    if inherits_from(potential_target, "typeclasses.characters.Character"):
+                        caller.msg(f"DEBUG: Success! Targeting {potential_target}")
+                        target_char = potential_target
+                        remaining_args = parts[1] if len(parts) > 1 else ""
+                    else:
+                        caller.msg(f"DEBUG: Object is not a Character")
+                else:
+                    caller.msg(f"DEBUG: No object found with that name")
+        else:
+            caller.msg("DEBUG: Permission check failed - not staff")
 
         if not target_char:
             target_char = caller
