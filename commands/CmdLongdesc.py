@@ -4,7 +4,7 @@ Long Description System Commands
 Commands for setting and managing detailed character body part descriptions.
 """
 
-from evennia.commands.default.muxcommand import MuxCommand
+from evennia import Command
 from evennia.utils.utils import inherits_from
 from world.combat.constants import (
     MAX_DESCRIPTION_LENGTH,
@@ -13,7 +13,7 @@ from world.combat.constants import (
 )
 
 
-class CmdLongdesc(MuxCommand):
+class CmdLongdesc(Command):
     """
     Set or view detailed descriptions for your character's body parts.
 
@@ -54,8 +54,19 @@ class CmdLongdesc(MuxCommand):
     def func(self):
         """Execute the longdesc command."""
         caller = self.caller
-        args = self.args.strip()
-        switches = self.switches
+        raw_args = self.args.strip()
+        
+        # Parse switches manually since we're not using MuxCommand
+        switches = []
+        args = raw_args
+        
+        if raw_args.startswith('/'):
+            # Find the end of switches
+            parts = raw_args[1:].split(None, 1)
+            if parts:
+                switch_part = parts[0]
+                args = parts[1] if len(parts) > 1 else ""
+                switches = [s.lower() for s in switch_part.split('/') if s]
 
         # Handle switches
         if "list" in switches:
@@ -82,8 +93,30 @@ class CmdLongdesc(MuxCommand):
             if len(parts) >= 1:
                 # Debug: let's see what's happening
                 caller.msg(f"DEBUG: Trying to find character '{parts[0]}'")
+                
+                # Try different search approaches
                 potential_target = caller.search(parts[0], global_search=True, quiet=True)
-                caller.msg(f"DEBUG: Search result: {potential_target}")
+                caller.msg(f"DEBUG: Global search result: {potential_target}")
+                
+                if not potential_target:
+                    # Try searching without global_search
+                    potential_target = caller.search(parts[0], quiet=True)
+                    caller.msg(f"DEBUG: Local search result: {potential_target}")
+                
+                if not potential_target:
+                    # Try searching in the same location as the caller
+                    if caller.location:
+                        potential_target = caller.location.search(parts[0], quiet=True)
+                        caller.msg(f"DEBUG: Location search result: {potential_target}")
+                        
+                        # If not found in location, try searching the location's contents more broadly
+                        if not potential_target:
+                            for obj in caller.location.contents:
+                                if obj.key.lower() == parts[0].lower():
+                                    potential_target = obj
+                                    caller.msg(f"DEBUG: Manual location search found: {potential_target}")
+                                    break
+                
                 if potential_target:
                     caller.msg(f"DEBUG: Found object, checking if it's a Character...")
                     caller.msg(f"DEBUG: Object type: {type(potential_target)}")
