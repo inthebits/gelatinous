@@ -691,55 +691,61 @@ class Character(ObjectParent, DefaultCharacter):
     def return_appearance(self, looker, **kwargs):
         """
         This method is called when someone looks at this character.
-        Integrates longdesc system with Evennia's look command.
+        Returns a clean character appearance with name, description, longdesc+clothing, and held items.
         
         Args:
             looker: Character doing the looking
             **kwargs: Additional parameters
             
         Returns:
-            str: Complete character appearance with longdescs
+            str: Complete character appearance in clean format
         """
-        # Get Evennia's default character appearance first
-        # This handles all the built-in functionality like search resolution, permissions, etc.
-        default_appearance = super().return_appearance(looker, **kwargs)
+        # Build appearance components
+        parts = []
         
-        # If we don't have longdesc initialized or available, just return default
+        # 1. Character name (header)
+        parts.append(self.get_display_name(looker))
+        
+        # 2. Main description (if exists)
+        if self.db.desc:
+            processed_desc = self._process_description_variables(self.db.desc, looker, force_third_person=True)
+            parts.append(processed_desc)
+        
+        # 3. Longdesc + clothing integration
         if self.longdesc is None:
             try:
                 from world.combat.constants import DEFAULT_LONGDESC_LOCATIONS
                 self.longdesc = DEFAULT_LONGDESC_LOCATIONS.copy()
             except ImportError:
-                return default_appearance
+                pass
         
-        # Get visible body descriptions (longdesc + clothing integration)
         visible_body_descriptions = self._get_visible_body_descriptions(looker)
+        if visible_body_descriptions:
+            formatted_body_descriptions = self._format_longdescs_with_paragraphs(visible_body_descriptions)
+            parts.append(formatted_body_descriptions)
         
-        if not visible_body_descriptions:
-            # No body descriptions to show, return default
-            return default_appearance
+        # 4. Held items section
+        held_items = [obj for obj in self.contents if obj.location == self and not obj.db.worn]
+        if held_items:
+            held_names = [obj.get_display_name(looker) for obj in held_items]
+            if len(held_names) == 1:
+                held_text = f"{self.get_display_name(looker)} is holding {held_names[0]}."
+            elif len(held_names) == 2:
+                held_text = f"{self.get_display_name(looker)} is holding {held_names[0]} and {held_names[1]}."
+            else:
+                # Multiple items: "item1, item2, and item3"
+                held_text = f"{self.get_display_name(looker)} is holding {', '.join(held_names[:-1])}, and {held_names[-1]}."
+            parts.append(held_text)
         
-        # Split default appearance to extract header and description parts
-        lines = default_appearance.split('\n')
-        if not lines:
-            return default_appearance
-            
-        # First line is typically the character name/header
-        header = lines[0]
+        # 5. Staff-only inventory dump (comprehensive debug info)
+        if looker.check_permstring("Builder"):
+            all_contents = [obj for obj in self.contents if obj.location == self]
+            if all_contents:
+                content_names = [f"{obj.get_display_name(looker)} [{obj.dbref}]" for obj in all_contents]
+                parts.append(f"|wYou see:|n {', '.join(content_names)}")
         
-        # Everything after the first line is the description
-        base_desc = '\n'.join(lines[1:]).strip() if len(lines) > 1 else ""
-        
-        # Format body descriptions with smart paragraph breaks
-        formatted_body_descriptions = self._format_longdescs_with_paragraphs(visible_body_descriptions)
-        
-        # Combine: header + base_desc + body descriptions
-        if base_desc:
-            # Process template variables for perspective-aware descriptions (force 3rd person)
-            processed_base_desc = self._process_description_variables(base_desc, looker, force_third_person=True)
-            return f"{header}\n{processed_base_desc}\n\n{formatted_body_descriptions}"
-        else:
-            return f"{header}\n{formatted_body_descriptions}"
+        # Join all parts with appropriate spacing
+        return '\n\n'.join(parts)
 
     def _process_description_variables(self, desc, looker, force_third_person=False):
         """
