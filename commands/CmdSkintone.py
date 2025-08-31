@@ -101,7 +101,7 @@ class CmdSkintone(Command):
         goth_tones = ["porcelain", "ivory", "ash", "cool", "warm"]
         for tone in goth_tones:
             color_code = SKINTONE_PALETTE[tone]
-            preview = f"|{color_code}Sample text|n"
+            preview = f"{color_code}Sample text|n"
             caller.msg(f"  {tone:<10} - {preview}")
         
         caller.msg("")
@@ -111,7 +111,7 @@ class CmdSkintone(Command):
         natural_tones = ["fair", "light", "medium", "olive", "tan", "brown", "dark", "deep"]
         for tone in natural_tones:
             color_code = SKINTONE_PALETTE[tone]
-            preview = f"|{color_code}Sample text|n"
+            preview = f"{color_code}Sample text|n"
             caller.msg(f"  {tone:<10} - {preview}")
             
         caller.msg("")

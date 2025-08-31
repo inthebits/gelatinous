@@ -835,7 +835,7 @@ class Character(ObjectParent, DefaultCharacter):
             color_code = SKINTONE_PALETTE.get(skintone)
             if color_code:
                 # Wrap the entire processed description in the skintone color
-                processed_desc = f"|{color_code}{processed_desc}|n"
+                processed_desc = f"{color_code}{processed_desc}|n"
                 
         return processed_desc
     
