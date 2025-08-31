@@ -126,21 +126,21 @@ STYLE_STATE_UNZIPPED = "unzipped"
 # Skintone palette mapping descriptive names to xterm256 color codes
 SKINTONE_PALETTE = {
     # Goth/Pale spectrum - using more standard xterm256 codes
-    "porcelain": "|231|",   # Very bright white (standard xterm 231)
-    "ivory": "|255|",       # Bright white (standard xterm 255) 
-    "ash": "|249|",         # Light grey (standard xterm 249)
-    "cool": "|188|",        # Light blue-grey (standard xterm 188)
-    "warm": "|224|",        # Light peach (standard xterm 224)
+    "porcelain": "|231",   # Very bright white (standard xterm 231)
+    "ivory": "|255",       # Bright white (standard xterm 255) 
+    "ash": "|249",         # Light grey (standard xterm 249)
+    "cool": "|188",        # Light blue-grey (standard xterm 188)
+    "warm": "|224",        # Light peach (standard xterm 224)
     
     # Natural range - using proven codes
-    "fair": "|223|",        # Light peachy (xterm 223)
-    "light": "|216|",       # Warm light (xterm 216)  
-    "medium": "|180|",      # Golden tan (xterm 180)
-    "olive": "|173|",       # Olive/neutral (xterm 173)
-    "tan": "|137|",         # Medium-dark warm brown (xterm 137)
-    "brown": "|94|",        # Rich brown (xterm 94)
-    "dark": "|52|",         # Deep brown (xterm 52) 
-    "deep": "|88|",         # Deep reddish-brown (xterm 88)
+    "fair": "|223",        # Light peachy (xterm 223)
+    "light": "|216",       # Warm light (xterm 216)  
+    "medium": "|180",      # Golden tan (xterm 180)
+    "olive": "|173",       # Olive/neutral (xterm 173)
+    "tan": "|137",         # Medium-dark warm brown (xterm 137)
+    "brown": "|094",       # Rich brown (xterm 94)
+    "dark": "|052",        # Deep brown (xterm 52) 
+    "deep": "|088",        # Deep reddish-brown (xterm 88)
 }
 
 # Valid skintone names for validation
