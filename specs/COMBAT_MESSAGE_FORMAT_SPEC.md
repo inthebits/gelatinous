@@ -9,8 +9,8 @@ This specification defines the standardized format for combat messages across al
 
 ### Format Status by File Type:
 - ✅ **Already Converted**: `anti-material_rifle.py`, `unarmed.py`, `grapple.py`
-- 🔄 **Needs Refactoring**: ~80 weapon message files (knife.py, chainsaw.py, meat_hook.py, etc.)
-- ⚠️ **Special Cases**: `grapple.py` (extended phases), `unarmed.py` (base template)
+- ✅ **Refactoring Complete**: ~80 weapon message files converted to new format
+- ✅ **Special Cases Handled**: `grapple.py` (extended phases), `unarmed.py` (base template)
 
 ### Existing Content Quality:
 - **Rich, atmospheric messages** with visceral descriptions
