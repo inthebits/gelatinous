@@ -137,7 +137,6 @@ SKINTONE_PALETTE = {
     "olive": "|320",       # Olive undertone (3,2,0)
     "brown": "|210",       # Brown (2,1,0)
     "rich": "|310",        # Rich brown (3,1,0)
-    "dark": "|220",        # Dark brown (2,2,0)
 }
 
 # Valid skintone names for validation

@@ -97,7 +97,7 @@ class CmdSkintone(Command):
         caller.msg("")
         
         # All tones in order
-        all_tones = ["porcelain", "pale", "fair", "light", "golden", "tan", "olive", "brown", "rich", "dark"]
+        all_tones = ["porcelain", "pale", "fair", "light", "golden", "tan", "olive", "brown", "rich"]
         for tone in all_tones:
             color_code = SKINTONE_PALETTE[tone]
             caller.msg("  " + tone.ljust(10) + " - " + color_code + "Sample text|n")
