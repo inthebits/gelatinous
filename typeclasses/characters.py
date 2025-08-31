@@ -838,8 +838,58 @@ class Character(ObjectParent, DefaultCharacter):
         except (KeyError, ValueError):
             # If there are template errors, use original description
             processed_desc = desc
+            
+        # Apply automatic skin coloring if skintone is set
+        if skintone:
+            processed_desc = self._apply_skin_coloring(processed_desc, skintone)
                 
         return processed_desc
+    
+    def _apply_skin_coloring(self, text, skintone):
+        """
+        Automatically detect and color skin-related terms in text.
+        
+        Args:
+            text (str): The processed longdesc text
+            skintone (str): The character's skintone setting
+            
+        Returns:
+            str: Text with skin terms appropriately colored
+        """
+        import re
+        from world.combat.constants import SKINTONE_PALETTE
+        
+        color_code = SKINTONE_PALETTE.get(skintone)
+        if not color_code:
+            return text
+            
+        # Define skin-related patterns to automatically color
+        skin_patterns = [
+            # Direct skin mentions
+            r'\b(skin)\b',
+            r'\b(complexion)\b',
+            r'\b(flesh)\b',
+            
+            # Skin color descriptors + skin
+            r'\b(pale|fair|light|dark|bronze|golden|tan|olive|brown|ebony|ivory|porcelain)\s+(skin|complexion|flesh)\b',
+            
+            # Body parts that show skin tone
+            r'\b(face|cheeks?|forehead|chin|neck|throat|arms?|hands?|fingers?|chest|shoulders?)\b(?=\s+(?:that|which)\s+(?:is|are|show|display))',
+            
+            # Skin texture descriptors
+            r'\b(weathered|smooth|rough|scarred|unblemished|sun-kissed)\s+(skin|complexion|flesh)\b',
+        ]
+        
+        # Apply coloring to matched patterns
+        colored_text = text
+        for pattern in skin_patterns:
+            def colorize_match(match):
+                return f"{color_code}{match.group()}{reset_code}"
+                
+            reset_code = "|n"
+            colored_text = re.sub(pattern, colorize_match, colored_text, flags=re.IGNORECASE)
+            
+        return colored_text
     
     def _get_pronoun(self, pronoun_type, gender):
         """
