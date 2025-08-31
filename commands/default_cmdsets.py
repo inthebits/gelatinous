@@ -26,8 +26,7 @@ from commands.combat.cmdset_combat import CombatCmdSet
 from commands.combat.special_actions import CmdAim, CmdGrapple
 from commands.CmdThrow import CmdThrow, CmdPull, CmdCatch, CmdRig, CmdDefuse
 from commands.CmdGraffiti import CmdGraffiti, CmdPress
-from commands.CmdCharacter import CmdLongdesc
-from commands.CmdSkintone import CmdSkintone
+from commands.CmdCharacter import CmdLongdesc, CmdSkintone
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
     The `CharacterCmdSet` contains general in-game commands like `look`,
