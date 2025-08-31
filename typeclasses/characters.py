@@ -725,7 +725,7 @@ class Character(ObjectParent, DefaultCharacter):
             parts.append(formatted_body_descriptions)
         
         # 3. Wielded items section (using hands system)
-        hands = self.db.hands or {'left': None, 'right': None}
+        hands = self.attributes.get('hands', category='equipment') or {'left': None, 'right': None}
         wielded_items = [item for item in hands.values() if item is not None]
         
         if wielded_items:
