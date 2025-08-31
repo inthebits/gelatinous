@@ -822,20 +822,22 @@ class Character(ObjectParent, DefaultCharacter):
         }
         
         # Substitute all variables in the description
+        # Add skintone color variable for use in templates
+        skintone = getattr(self.db, 'skintone', None)
+        if skintone:
+            from world.combat.constants import SKINTONE_PALETTE
+            color_code = SKINTONE_PALETTE.get(skintone, "")
+            variables['skin_color'] = color_code
+            variables['skin_reset'] = "|n"
+        else:
+            variables['skin_color'] = ""
+            variables['skin_reset'] = ""
+        
         try:
             processed_desc = desc.format(**variables)
         except (KeyError, ValueError):
             # If there are template errors, use original description
             processed_desc = desc
-            
-        # Apply skintone coloring if set
-        skintone = getattr(self.db, 'skintone', None)
-        if skintone:
-            from world.combat.constants import SKINTONE_PALETTE
-            color_code = SKINTONE_PALETTE.get(skintone)
-            if color_code:
-                # Wrap the entire processed description in the skintone color
-                processed_desc = f"{color_code}{processed_desc}|n"
                 
         return processed_desc
     

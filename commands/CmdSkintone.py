@@ -114,7 +114,7 @@ class CmdSkintone(Command):
             
         target.db.skintone = tone
         color_code = SKINTONE_PALETTE[tone]
-        preview = color_code + "Sample longdesc text|n"
+        preview = color_code + tone + "|n"
         
         if target == caller:
             caller.msg(f"Set your skintone to: {tone}")
