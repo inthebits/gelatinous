@@ -253,20 +253,29 @@ class CmdInventory(Command):
         if not hasattr(item, 'style_properties') or not item.style_properties:
             return ""
         
-        from world.combat.constants import STYLE_STATE_NORMAL
+        if not hasattr(item, 'style_configs') or not item.style_configs:
+            return ""
         
-        # Collect non-default style states
+        # Collect non-default style states by comparing to item's style_configs
         non_default_states = []
-        for property_name, state in item.style_properties.items():
-            if state != STYLE_STATE_NORMAL:
-                if property_name == "adjustable" and state == "rolled":
-                    non_default_states.append("rolled up")
-                elif property_name == "closure" and state == "unzipped":
-                    non_default_states.append("unzipped")
-                elif property_name == "closure" and state == "zipped":
-                    # Only show "zipped" if it's explicitly a non-default state
-                    # (some items might default to unzipped)
-                    non_default_states.append("zipped")
+        for property_name, current_state in item.style_properties.items():
+            if property_name in item.style_configs:
+                # Find what the default state should be for this property
+                # by looking for the state with empty coverage_mod and desc_mod
+                default_state = None
+                for state_name, config in item.style_configs[property_name].items():
+                    if (config.get("coverage_mod", []) == [] and 
+                        config.get("desc_mod", "") == ""):
+                        default_state = state_name
+                        break
+                
+                # If we found a default state and current state is different, show it
+                if default_state and current_state != default_state:
+                    if property_name == "adjustable" and current_state == "rolled":
+                        non_default_states.append("rolled up")
+                    elif property_name == "closure" and current_state == "unzipped":
+                        non_default_states.append("unzipped")
+                    # Add other non-default states as needed
         
         return ", ".join(non_default_states)
 
