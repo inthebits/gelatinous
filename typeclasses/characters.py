@@ -33,6 +33,9 @@ class Character(ObjectParent, DefaultCharacter):
     intellect = AttributeProperty(1, category='stat', autocreate=True)
     motorics = AttributeProperty(1, category='stat', autocreate=True)
     sex = AttributeProperty("ambiguous", category="biology", autocreate=True)
+    
+    # Appearance attributes - stored in db but no auto-creation for optional features
+    # skintone is set via @skintone command and stored as db.skintone
 
     @property
     def gender(self):
@@ -820,10 +823,21 @@ class Character(ObjectParent, DefaultCharacter):
         
         # Substitute all variables in the description
         try:
-            return desc.format(**variables)
+            processed_desc = desc.format(**variables)
         except (KeyError, ValueError):
-            # If there are template errors, return original description
-            return desc
+            # If there are template errors, use original description
+            processed_desc = desc
+            
+        # Apply skintone coloring if set
+        skintone = getattr(self.db, 'skintone', None)
+        if skintone:
+            from world.combat.constants import SKINTONE_PALETTE
+            color_code = SKINTONE_PALETTE.get(skintone)
+            if color_code:
+                # Wrap the entire processed description in the skintone color
+                processed_desc = f"|{color_code}{processed_desc}|n"
+                
+        return processed_desc
     
     def _get_pronoun(self, pronoun_type, gender):
         """

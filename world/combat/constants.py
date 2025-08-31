@@ -120,6 +120,33 @@ STYLE_STATE_ZIPPED = "zipped"
 STYLE_STATE_UNZIPPED = "unzipped"
 
 # ===================================================================
+# SKINTONE SYSTEM
+# ===================================================================
+
+# Skintone palette mapping descriptive names to xterm256 color codes
+SKINTONE_PALETTE = {
+    # Goth/Pale spectrum
+    "porcelain": "255",   # Stark white, ethereal
+    "ivory": "254",       # Classic goth pale
+    "ash": "252",         # Cool grey undertones
+    "cool": "188",        # Bluish pale undertones
+    "warm": "224",        # Peachy pale undertones
+    
+    # Natural range
+    "fair": "223",        # Light peachy
+    "light": "216",       # Warm light
+    "medium": "180",      # Golden tan
+    "olive": "173",       # Olive/neutral undertones
+    "tan": "137",         # Medium-dark warm brown
+    "brown": "94",        # Rich brown
+    "dark": "52",         # Deep brown
+    "deep": "88",         # Deep reddish-brown undertones
+}
+
+# Valid skintone names for validation
+VALID_SKINTONES = set(SKINTONE_PALETTE.keys())
+
+# ===================================================================
 # CHANNELS & LOGGING
 # ===================================================================
 
