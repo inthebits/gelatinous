@@ -704,6 +704,9 @@ class Character(ObjectParent, DefaultCharacter):
         Returns:
             str: Complete character appearance in clean format
         """
+        # Debug: Make sure this method is being called
+        print(f"DEBUG: return_appearance called for {self.name}, looker: {looker.name}")
+        
         # Build appearance components
         parts = []
         
@@ -802,6 +805,7 @@ class Character(ObjectParent, DefaultCharacter):
             # Possessive absolute and reflexive (less common, lowercase)
             'theirs': 'yours' if is_self else self._get_pronoun('possessive_absolute', character_gender),
             'themselves': 'yourself' if is_self else self._get_pronoun('reflexive', character_gender),
+            'themself': 'yourself' if is_self else self._get_pronoun('reflexive', character_gender),  # Alternative form
             
             # Capitalized versions for sentence starts
             'Their': 'Your' if is_self else self._get_pronoun('possessive', character_gender).capitalize(),
@@ -809,6 +813,7 @@ class Character(ObjectParent, DefaultCharacter):
             'Them': 'You' if is_self else self._get_pronoun('object', character_gender).capitalize(),
             'Theirs': 'Yours' if is_self else self._get_pronoun('possessive_absolute', character_gender).capitalize(),
             'Themselves': 'Yourself' if is_self else self._get_pronoun('reflexive', character_gender).capitalize(),
+            'Themself': 'Yourself' if is_self else self._get_pronoun('reflexive', character_gender).capitalize(),  # Alternative form
             
             # Character names
             'name': 'you' if is_self else self.get_display_name(looker),
@@ -827,9 +832,13 @@ class Character(ObjectParent, DefaultCharacter):
         # Substitute all variables in the description
         try:
             processed_desc = desc.format(**variables)
-        except (KeyError, ValueError):
-            # If there are template errors, use original description
+        except (KeyError, ValueError) as e:
+            # If there are template errors, use original description and log the issue
             processed_desc = desc
+            # Debug: Log the error (remove this later)
+            print(f"Template processing error in _process_description_variables: {e}")
+            print(f"Description: {desc[:100]}...")  # First 100 chars
+            print(f"Variables available: {list(variables.keys())}")
             
         # Apply skintone coloring only if requested (for longdescs only)
         if apply_skintone:
