@@ -100,10 +100,10 @@ class CmdSkintone(Command):
         caller.msg("Test: |010This should be green|n")
         caller.msg("")
         
-        # Goth/Pale section
-        caller.msg("|cGoth/Pale Spectrum:|n")
-        goth_tones = ["porcelain", "ivory", "ash", "cool", "warm"]
-        for tone in goth_tones:
+        # Pale section
+        caller.msg("|cPale Spectrum:|n")
+        pale_tones = ["porcelain", "pale", "fair"]
+        for tone in pale_tones:
             color_code = SKINTONE_PALETTE[tone]
             # Use direct string concatenation instead of f-strings
             caller.msg("  " + tone.ljust(10) + " - " + color_code + "Sample text|n")
@@ -112,7 +112,7 @@ class CmdSkintone(Command):
         
         # Natural section  
         caller.msg("|yNatural Range:|n")
-        natural_tones = ["fair", "light", "medium", "olive", "tan", "brown", "dark", "deep"]
+        natural_tones = ["light", "golden", "tan", "olive", "brown", "rich", "ebony"]
         for tone in natural_tones:
             color_code = SKINTONE_PALETTE[tone]
             # Use direct string concatenation instead of f-strings

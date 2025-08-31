@@ -125,22 +125,19 @@ STYLE_STATE_UNZIPPED = "unzipped"
 
 # Skintone palette mapping descriptive names to xterm256 color codes  
 SKINTONE_PALETTE = {
-    # Test with exact colors from Evennia's color command output
+    # Pale spectrum - realistic pale tones
     "porcelain": "|555",   # Pure white (5,5,5)
-    "ivory": "|544",       # Off-white (5,4,4) 
-    "ash": "|333",         # Light grey (3,3,3)
-    "cool": "|334",        # Cool grey with blue (3,3,4)
-    "warm": "|443",        # Warm grey with yellow (4,4,3)
+    "pale": "|543",        # Very pale with slight warmth (5,4,3) 
+    "fair": "|531",        # Fair peachy tone (5,3,1)
     
     # Natural skin tone range
-    "fair": "|531",        # Light peach (5,3,1)
-    "light": "|521",       # Light tan (5,2,1)  
-    "medium": "|420",      # Medium tan (4,2,0)
+    "light": "|521",       # Light peach tone (5,2,1)  
+    "golden": "|420",      # Golden tone (4,2,0)
+    "tan": "|410",         # Tan (4,1,0)
     "olive": "|320",       # Olive undertone (3,2,0)
-    "tan": "|310",         # Tan brown (3,1,0)
     "brown": "|210",       # Brown (2,1,0)
-    "dark": "|200",        # Dark brown (2,0,0) 
-    "deep": "|100",        # Deep brown (1,0,0)
+    "rich": "|310",        # Rich brown (3,1,0)
+    "ebony": "|200",       # Deep ebony (2,0,0)
 }
 
 # Valid skintone names for validation
