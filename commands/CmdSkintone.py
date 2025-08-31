@@ -114,15 +114,13 @@ class CmdSkintone(Command):
             
         target.db.skintone = tone
         color_code = SKINTONE_PALETTE[tone]
-        preview = color_code + tone + "|n"
+        colored_tone = color_code + tone + "|n"
         
         if target == caller:
-            caller.msg(f"Set your skintone to: {tone}")
-            caller.msg(f"Preview: {preview}")
+            caller.msg(f"Set your skintone to: {colored_tone}")
         else:
-            caller.msg(f"Set {target.name}'s skintone to: {tone}")
-            caller.msg(f"Preview: {preview}")
-            target.msg(f"{caller.name} has set your skintone to: {tone}")
+            caller.msg(f"Set {target.name}'s skintone to: {colored_tone}")
+            target.msg(f"{caller.name} has set your skintone to: {colored_tone}")
 
     def _clear_skintone(self, caller, target):
         """Clear skintone from target character"""
