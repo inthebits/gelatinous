@@ -717,9 +717,8 @@ class CmdSkintone(Command):
         if skintone:
             color_code = SKINTONE_PALETTE.get(skintone, "")
             if color_code:
-                colored_preview = f"|{color_code}Sample longdesc text in {skintone} tone|n"
-                caller.msg(f"Your current skintone is: {skintone}")
-                caller.msg(f"Preview: {colored_preview}")
+                colored_skintone = f"{color_code}{skintone}|n"
+                caller.msg(f"Your current skintone is: {colored_skintone}")
             else:
                 caller.msg(f"Your current skintone is: {skintone} (invalid)")
         else:
@@ -734,7 +733,7 @@ class CmdSkintone(Command):
         all_tones = ["porcelain", "pale", "fair", "light", "golden", "tan", "olive", "brown", "rich"]
         for tone in all_tones:
             color_code = SKINTONE_PALETTE[tone]
-            caller.msg("  " + tone.ljust(10) + " - " + color_code + "Sample text|n")
+            caller.msg("  " + tone.ljust(10) + " - " + f"{color_code}Sample text|n")
             
         caller.msg("")
         caller.msg("Use: |w@skintone <tone>|n to set your skintone")
