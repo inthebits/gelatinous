@@ -125,14 +125,14 @@ STYLE_STATE_UNZIPPED = "unzipped"
 
 # Skintone palette mapping descriptive names to xterm256 color codes
 SKINTONE_PALETTE = {
-    # Goth/Pale spectrum - using more standard xterm256 codes
-    "porcelain": "|231",   # Very bright white (standard xterm 231)
-    "ivory": "|255",       # Bright white (standard xterm 255) 
-    "ash": "|249",         # Light grey (standard xterm 249)
-    "cool": "|188",        # Light blue-grey (standard xterm 188)
-    "warm": "|224",        # Light peach (standard xterm 224)
+    # Goth/Pale spectrum - using proper 3-digit xterm256 format
+    "porcelain": "|231",   # Very bright white (xterm 231)
+    "ivory": "|255",       # Bright white (xterm 255) 
+    "ash": "|249",         # Light grey (xterm 249)
+    "cool": "|188",        # Light blue-grey (xterm 188)
+    "warm": "|224",        # Light peach (xterm 224)
     
-    # Natural range - using proven codes
+    # Natural range - using proper 3-digit xterm256 format
     "fair": "|223",        # Light peachy (xterm 223)
     "light": "|216",       # Warm light (xterm 216)  
     "medium": "|180",      # Golden tan (xterm 180)
