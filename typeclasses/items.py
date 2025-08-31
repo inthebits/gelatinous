@@ -186,7 +186,7 @@ class Item(DefaultObject):
         
         # Process template variables if we have perspective context
         if looker and from_obj and hasattr(from_obj, '_process_description_variables'):
-            return from_obj._process_description_variables(colored_desc, looker)
+            return from_obj._process_description_variables(colored_desc, looker, force_third_person=True)
         
         # Fallback: return without template processing
         return colored_desc
