@@ -691,7 +691,7 @@ class Character(ObjectParent, DefaultCharacter):
     def return_appearance(self, looker, **kwargs):
         """
         This method is called when someone looks at this character.
-        Returns a clean character appearance with name, description, longdesc+clothing, and held items.
+        Returns a clean character appearance with name, description, longdesc+clothing, and wielded items.
         
         Args:
             looker: Character doing the looking
@@ -703,15 +703,15 @@ class Character(ObjectParent, DefaultCharacter):
         # Build appearance components
         parts = []
         
-        # 1. Character name (header)
-        parts.append(self.get_display_name(looker))
-        
-        # 2. Main description (if exists)
+        # 1. Character name (header) + main description (no blank line between)
+        name_and_desc = [self.get_display_name(looker)]
         if self.db.desc:
             processed_desc = self._process_description_variables(self.db.desc, looker, force_third_person=True)
-            parts.append(processed_desc)
+            name_and_desc.append(processed_desc)
         
-        # 3. Longdesc + clothing integration
+        parts.append('\n'.join(name_and_desc))
+        
+        # 2. Longdesc + clothing integration (uses automatic paragraph parsing)
         if self.longdesc is None:
             try:
                 from world.combat.constants import DEFAULT_LONGDESC_LOCATIONS
@@ -724,27 +724,29 @@ class Character(ObjectParent, DefaultCharacter):
             formatted_body_descriptions = self._format_longdescs_with_paragraphs(visible_body_descriptions)
             parts.append(formatted_body_descriptions)
         
-        # 4. Held items section
-        held_items = [obj for obj in self.contents if obj.location == self and not obj.db.worn]
-        if held_items:
-            held_names = [obj.get_display_name(looker) for obj in held_items]
-            if len(held_names) == 1:
-                held_text = f"{self.get_display_name(looker)} is holding {held_names[0]}."
-            elif len(held_names) == 2:
-                held_text = f"{self.get_display_name(looker)} is holding {held_names[0]} and {held_names[1]}."
+        # 3. Wielded items section (using hands system)
+        hands = self.db.hands or {'left': None, 'right': None}
+        wielded_items = [item for item in hands.values() if item is not None]
+        
+        if wielded_items:
+            wielded_names = [obj.get_display_name(looker) for obj in wielded_items]
+            if len(wielded_names) == 1:
+                wielded_text = f"{self.get_display_name(looker)} is holding {wielded_names[0]}."
+            elif len(wielded_names) == 2:
+                wielded_text = f"{self.get_display_name(looker)} is holding {wielded_names[0]} and {wielded_names[1]}."
             else:
                 # Multiple items: "item1, item2, and item3"
-                held_text = f"{self.get_display_name(looker)} is holding {', '.join(held_names[:-1])}, and {held_names[-1]}."
-            parts.append(held_text)
+                wielded_text = f"{self.get_display_name(looker)} is holding {', '.join(wielded_names[:-1])}, and {wielded_names[-1]}."
+            parts.append(wielded_text)
         
-        # 5. Staff-only inventory dump (comprehensive debug info)
+        # 4. Staff-only comprehensive inventory (with explicit admin messaging)
         if looker.check_permstring("Builder"):
             all_contents = [obj for obj in self.contents if obj.location == self]
             if all_contents:
                 content_names = [f"{obj.get_display_name(looker)} [{obj.dbref}]" for obj in all_contents]
-                parts.append(f"|wYou see:|n {', '.join(content_names)}")
+                parts.append(f"|wWith your administrative visibility, you see:|n {', '.join(content_names)}")
         
-        # Join all parts with appropriate spacing
+        # Join all parts with appropriate spacing (blank lines between major sections)
         return '\n\n'.join(parts)
 
     def _process_description_variables(self, desc, looker, force_third_person=False):
