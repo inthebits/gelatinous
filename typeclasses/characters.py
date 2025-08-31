@@ -773,16 +773,23 @@ class Character(ObjectParent, DefaultCharacter):
         
         # Simple template variable mapping (like {color})
         variables = {
-            # Most common - possessive pronouns
+            # Most common - possessive pronouns (lowercase)
             'their': 'your' if is_self else self._get_pronoun('possessive', character_gender),
             
-            # Subject and object pronouns  
+            # Subject and object pronouns (lowercase)
             'they': 'you' if is_self else self._get_pronoun('subject', character_gender),
             'them': 'you' if is_self else self._get_pronoun('object', character_gender),
             
-            # Possessive absolute and reflexive (less common)
+            # Possessive absolute and reflexive (less common, lowercase)
             'theirs': 'yours' if is_self else self._get_pronoun('possessive_absolute', character_gender),
             'themselves': 'yourself' if is_self else self._get_pronoun('reflexive', character_gender),
+            
+            # Capitalized versions for sentence starts
+            'Their': 'Your' if is_self else self._get_pronoun('possessive', character_gender).capitalize(),
+            'They': 'You' if is_self else self._get_pronoun('subject', character_gender).capitalize(),
+            'Them': 'You' if is_self else self._get_pronoun('object', character_gender).capitalize(),
+            'Theirs': 'Yours' if is_self else self._get_pronoun('possessive_absolute', character_gender).capitalize(),
+            'Themselves': 'Yourself' if is_self else self._get_pronoun('reflexive', character_gender).capitalize(),
             
             # Character names
             'name': 'you' if is_self else self.get_display_name(looker),
