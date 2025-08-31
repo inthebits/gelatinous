@@ -534,7 +534,7 @@ class Character(ObjectParent, DefaultCharacter):
             else:
                 # Location not covered - use character's longdesc if set with template variable processing
                 if location in longdescs and longdescs[location]:
-                    processed_desc = self._process_description_variables(longdescs[location], looker)
+                    processed_desc = self._process_description_variables(longdescs[location], looker, force_third_person=True)
                     descriptions.append((location, processed_desc))
         
         # Add any extended anatomy not in default order (clothing or longdesc)
@@ -552,7 +552,7 @@ class Character(ObjectParent, DefaultCharacter):
                             added_clothing_items.add(clothing_item)
                 elif location in longdescs and longdescs[location]:
                     # Extended location with longdesc - apply template variable processing
-                    processed_desc = self._process_description_variables(longdescs[location], looker)
+                    processed_desc = self._process_description_variables(longdescs[location], looker, force_third_person=True)
                     descriptions.append((location, processed_desc))
         
         return descriptions
@@ -735,13 +735,13 @@ class Character(ObjectParent, DefaultCharacter):
         
         # Combine: header + base_desc + body descriptions
         if base_desc:
-            # Process template variables for perspective-aware descriptions
-            processed_base_desc = self._process_description_variables(base_desc, looker)
+            # Process template variables for perspective-aware descriptions (force 3rd person)
+            processed_base_desc = self._process_description_variables(base_desc, looker, force_third_person=True)
             return f"{header}\n{processed_base_desc}\n\n{formatted_body_descriptions}"
         else:
             return f"{header}\n{formatted_body_descriptions}"
 
-    def _process_description_variables(self, desc, looker):
+    def _process_description_variables(self, desc, looker, force_third_person=False):
         """
         Process template variables in descriptions for perspective-aware text.
         
@@ -750,6 +750,7 @@ class Character(ObjectParent, DefaultCharacter):
         Args:
             desc (str): Description text with potential template variables
             looker (Character): Who is looking at this character
+            force_third_person (bool): If True, always use 3rd person pronouns
             
         Returns:
             str: Description with variables substituted
@@ -758,7 +759,7 @@ class Character(ObjectParent, DefaultCharacter):
             return desc
             
         # Map of available template variables based on perspective
-        is_self = (looker == self)
+        is_self = (looker == self) and not force_third_person
         
         # Get pronoun information for this character
         gender_mapping = {
