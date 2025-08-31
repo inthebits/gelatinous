@@ -96,26 +96,10 @@ class CmdSkintone(Command):
         caller.msg("|wAvailable Skintones:|n")
         caller.msg("")
         
-        # Test with known working color first
-        caller.msg("Test: |010This should be green|n")
-        caller.msg("")
-        
-        # Pale section
-        caller.msg("|cPale Spectrum:|n")
-        pale_tones = ["porcelain", "pale", "fair"]
-        for tone in pale_tones:
+        # All tones in order
+        all_tones = ["porcelain", "pale", "fair", "light", "golden", "tan", "olive", "brown", "rich", "dark"]
+        for tone in all_tones:
             color_code = SKINTONE_PALETTE[tone]
-            # Use direct string concatenation instead of f-strings
-            caller.msg("  " + tone.ljust(10) + " - " + color_code + "Sample text|n")
-        
-        caller.msg("")
-        
-        # Natural section  
-        caller.msg("|yNatural Range:|n")
-        natural_tones = ["light", "golden", "tan", "olive", "brown", "rich", "ebony"]
-        for tone in natural_tones:
-            color_code = SKINTONE_PALETTE[tone]
-            # Use direct string concatenation instead of f-strings
             caller.msg("  " + tone.ljust(10) + " - " + color_code + "Sample text|n")
             
         caller.msg("")
