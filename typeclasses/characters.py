@@ -731,13 +731,17 @@ class Character(ObjectParent, DefaultCharacter):
         if wielded_items:
             wielded_names = [obj.get_display_name(looker) for obj in wielded_items]
             if len(wielded_names) == 1:
-                wielded_text = f"{self.get_display_name(looker)} is holding {wielded_names[0]}."
+                wielded_text = f"{self.get_display_name(looker)} is holding a {wielded_names[0]}."
             elif len(wielded_names) == 2:
-                wielded_text = f"{self.get_display_name(looker)} is holding {wielded_names[0]} and {wielded_names[1]}."
+                wielded_text = f"{self.get_display_name(looker)} is holding a {wielded_names[0]} and a {wielded_names[1]}."
             else:
-                # Multiple items: "item1, item2, and item3"
-                wielded_text = f"{self.get_display_name(looker)} is holding {', '.join(wielded_names[:-1])}, and {wielded_names[-1]}."
+                # Multiple items: "a item1, a item2, and a item3"
+                wielded_with_articles = [f"a {name}" for name in wielded_names]
+                wielded_text = f"{self.get_display_name(looker)} is holding {', '.join(wielded_with_articles[:-1])}, and {wielded_with_articles[-1]}."
             parts.append(wielded_text)
+        else:
+            # Show explicitly when hands are empty
+            parts.append(f"{self.get_display_name(looker)} is holding nothing.")
         
         # 4. Staff-only comprehensive inventory (with explicit admin messaging)
         if looker.check_permstring("Builder"):
