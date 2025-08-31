@@ -537,7 +537,8 @@ class Character(ObjectParent, DefaultCharacter):
             else:
                 # Location not covered - use character's longdesc if set with template variable processing
                 if location in longdescs and longdescs[location]:
-                    processed_desc = self._process_description_variables(longdescs[location], looker, force_third_person=True)
+                    # Longdesc should have skintone applied
+                    processed_desc = self._process_description_variables(longdescs[location], looker, force_third_person=True, apply_skintone=True)
                     descriptions.append((location, processed_desc))
         
         # Add any extended anatomy not in default order (clothing or longdesc)
@@ -554,8 +555,8 @@ class Character(ObjectParent, DefaultCharacter):
                             descriptions.append((location, desc))
                             added_clothing_items.add(clothing_item)
                 elif location in longdescs and longdescs[location]:
-                    # Extended location with longdesc - apply template variable processing
-                    processed_desc = self._process_description_variables(longdescs[location], looker, force_third_person=True)
+                    # Extended location with longdesc - apply template variable processing and skintone
+                    processed_desc = self._process_description_variables(longdescs[location], looker, force_third_person=True, apply_skintone=True)
                     descriptions.append((location, processed_desc))
         
         return descriptions
@@ -709,7 +710,8 @@ class Character(ObjectParent, DefaultCharacter):
         # 1. Character name (header) + main description (no blank line between)
         name_and_desc = [self.get_display_name(looker)]
         if self.db.desc:
-            processed_desc = self._process_description_variables(self.db.desc, looker, force_third_person=True)
+            # Initial description should NOT have skintone applied
+            processed_desc = self._process_description_variables(self.db.desc, looker, force_third_person=True, apply_skintone=False)
             name_and_desc.append(processed_desc)
         
         parts.append('\n'.join(name_and_desc))
@@ -756,7 +758,7 @@ class Character(ObjectParent, DefaultCharacter):
         # Join all parts with appropriate spacing (blank lines between major sections)
         return '\n\n'.join(parts)
 
-    def _process_description_variables(self, desc, looker, force_third_person=False):
+    def _process_description_variables(self, desc, looker, force_third_person=False, apply_skintone=False):
         """
         Process template variables in descriptions for perspective-aware text.
         
@@ -766,6 +768,7 @@ class Character(ObjectParent, DefaultCharacter):
             desc (str): Description text with potential template variables
             looker (Character): Who is looking at this character
             force_third_person (bool): If True, always use 3rd person pronouns
+            apply_skintone (bool): If True, apply skintone coloring (for longdescs only)
             
         Returns:
             str: Description with variables substituted
@@ -828,15 +831,16 @@ class Character(ObjectParent, DefaultCharacter):
             # If there are template errors, use original description
             processed_desc = desc
             
-        # Apply skintone coloring to entire longdesc if set
-        # Clothing will appear normal through the clothing system
-        skintone = getattr(self.db, 'skintone', None)
-        if skintone:
-            from world.combat.constants import SKINTONE_PALETTE
-            color_code = SKINTONE_PALETTE.get(skintone)
-            if color_code:
-                # Wrap the entire processed description in the skintone color
-                processed_desc = f"{color_code}{processed_desc}|n"
+        # Apply skintone coloring only if requested (for longdescs only)
+        if apply_skintone:
+            skintone = getattr(self.db, 'skintone', None)
+            if skintone:
+                from world.combat.constants import SKINTONE_PALETTE
+                color_code = SKINTONE_PALETTE.get(skintone)
+                if color_code:
+                    # Wrap the entire processed description in the skintone color
+                    # Reset color at end to prevent bleeding
+                    processed_desc = f"{color_code}{processed_desc}|n"
                 
         return processed_desc
     
