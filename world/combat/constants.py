@@ -123,24 +123,24 @@ STYLE_STATE_UNZIPPED = "unzipped"
 # SKINTONE SYSTEM
 # ===================================================================
 
-# Skintone palette mapping descriptive names to xterm256 color codes
+# Skintone palette mapping descriptive names to xterm256 color codes  
 SKINTONE_PALETTE = {
-    # Goth/Pale spectrum - using proper 3-digit xterm256 format
-    "porcelain": "|231",   # Very bright white (xterm 231)
-    "ivory": "|255",       # Bright white (xterm 255) 
-    "ash": "|249",         # Light grey (xterm 249)
-    "cool": "|188",        # Light blue-grey (xterm 188)
-    "warm": "|224",        # Light peach (xterm 224)
+    # Test with exact colors from Evennia's color command output
+    "porcelain": "|555",   # Pure white (5,5,5)
+    "ivory": "|544",       # Off-white (5,4,4) 
+    "ash": "|333",         # Light grey (3,3,3)
+    "cool": "|334",        # Cool grey with blue (3,3,4)
+    "warm": "|443",        # Warm grey with yellow (4,4,3)
     
-    # Natural range - using proper 3-digit xterm256 format
-    "fair": "|223",        # Light peachy (xterm 223)
-    "light": "|216",       # Warm light (xterm 216)  
-    "medium": "|180",      # Golden tan (xterm 180)
-    "olive": "|173",       # Olive/neutral (xterm 173)
-    "tan": "|137",         # Medium-dark warm brown (xterm 137)
-    "brown": "|094",       # Rich brown (xterm 94)
-    "dark": "|052",        # Deep brown (xterm 52) 
-    "deep": "|088",        # Deep reddish-brown (xterm 88)
+    # Natural skin tone range
+    "fair": "|531",        # Light peach (5,3,1)
+    "light": "|521",       # Light tan (5,2,1)  
+    "medium": "|420",      # Medium tan (4,2,0)
+    "olive": "|320",       # Olive undertone (3,2,0)
+    "tan": "|310",         # Tan brown (3,1,0)
+    "brown": "|210",       # Brown (2,1,0)
+    "dark": "|200",        # Dark brown (2,0,0) 
+    "deep": "|100",        # Deep brown (1,0,0)
 }
 
 # Valid skintone names for validation

@@ -96,13 +96,17 @@ class CmdSkintone(Command):
         caller.msg("|wAvailable Skintones:|n")
         caller.msg("")
         
+        # Test with known working color first
+        caller.msg("Test: |010This should be green|n")
+        caller.msg("")
+        
         # Goth/Pale section
         caller.msg("|cGoth/Pale Spectrum:|n")
         goth_tones = ["porcelain", "ivory", "ash", "cool", "warm"]
         for tone in goth_tones:
             color_code = SKINTONE_PALETTE[tone]
-            preview = f"{color_code}Sample text|n"
-            caller.msg(f"  {tone:<10} - {preview}")
+            # Use direct string concatenation instead of f-strings
+            caller.msg("  " + tone.ljust(10) + " - " + color_code + "Sample text|n")
         
         caller.msg("")
         
@@ -111,8 +115,8 @@ class CmdSkintone(Command):
         natural_tones = ["fair", "light", "medium", "olive", "tan", "brown", "dark", "deep"]
         for tone in natural_tones:
             color_code = SKINTONE_PALETTE[tone]
-            preview = f"{color_code}Sample text|n"
-            caller.msg(f"  {tone:<10} - {preview}")
+            # Use direct string concatenation instead of f-strings
+            caller.msg("  " + tone.ljust(10) + " - " + color_code + "Sample text|n")
             
         caller.msg("")
         caller.msg("Use: |w@skintone <tone>|n to set your skintone")
