@@ -125,22 +125,22 @@ STYLE_STATE_UNZIPPED = "unzipped"
 
 # Skintone palette mapping descriptive names to xterm256 color codes
 SKINTONE_PALETTE = {
-    # Goth/Pale spectrum
-    "porcelain": "255",   # Stark white, ethereal
-    "ivory": "254",       # Classic goth pale
-    "ash": "252",         # Cool grey undertones
-    "cool": "188",        # Bluish pale undertones
-    "warm": "224",        # Peachy pale undertones
+    # Goth/Pale spectrum - using more standard xterm256 codes
+    "porcelain": "231",   # Very bright white (standard xterm 231)
+    "ivory": "255",       # Bright white (standard xterm 255) 
+    "ash": "249",         # Light grey (standard xterm 249)
+    "cool": "188",        # Light blue-grey (standard xterm 188)
+    "warm": "224",        # Light peach (standard xterm 224)
     
-    # Natural range
-    "fair": "223",        # Light peachy
-    "light": "216",       # Warm light
-    "medium": "180",      # Golden tan
-    "olive": "173",       # Olive/neutral undertones
-    "tan": "137",         # Medium-dark warm brown
-    "brown": "94",        # Rich brown
-    "dark": "52",         # Deep brown
-    "deep": "88",         # Deep reddish-brown undertones
+    # Natural range - using proven codes
+    "fair": "223",        # Light peachy (xterm 223)
+    "light": "216",       # Warm light (xterm 216)  
+    "medium": "180",      # Golden tan (xterm 180)
+    "olive": "173",       # Olive/neutral (xterm 173)
+    "tan": "137",         # Medium-dark warm brown (xterm 137)
+    "brown": "94",        # Rich brown (xterm 94)
+    "dark": "52",         # Deep brown (xterm 52) 
+    "deep": "88",         # Deep reddish-brown (xterm 88)
 }
 
 # Valid skintone names for validation
