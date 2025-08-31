@@ -166,41 +166,78 @@ Staff targeting uses a comprehensive search system that:
 
 ## Integration with Look System
 
-### Character Appearance Display
-When a player executes `look <character>`, the system displays:
+### Character Appearance Display (REDESIGNED ✅)
+When a player executes `look <character>`, the system displays a clean, sectioned format:
 
-1. **Base Description**: Character's main description (from Character.db.desc)
-2. **Line Break**: Visual separation between base description and longdescs
-3. **Visible Longdescs**: All longdescs for uncovered body parts (head-to-toe anatomical order)
-4. **Equipment/Clothing**: Future integration point
-5. **Status Effects**: Future integration point (injuries, modifications)
+1. **Character Name + Base Description**: Name and main description on consecutive lines (no blank line between)
+2. **Longdesc + Clothing Integration**: Detailed body part descriptions with clothing
+3. **Wielded Items Display**: Natural language listing of held items via hands system
+4. **Staff Administrative Info**: Comprehensive inventory for Builder+ permissions
 
-#### Smart Paragraph Formatting
+#### New Clean Format Example:
+```
+CharacterName
+Base character description appears here immediately after the name with no blank line between.
+
+First paragraph of longdesc and clothing descriptions, automatically formatted based on anatomical regions and character thresholds for natural reading flow.
+
+Second paragraph continues with additional body descriptions and worn items, maintaining smart paragraph breaks between anatomical regions when appropriate.
+
+CharacterName is holding a weapon and an item.
+
+With your administrative visibility, you see: item1 [#123], item2 [#456], weapon [#789], clothing [#012]
+```
+
+#### Template Variable System Enhancement ✅
+- **Case Sensitivity Support**: Both {They}/{their} and {they}/{their} work properly
+- **Third-Person Consistency**: All descriptions use consistent third-person perspective regardless of viewer
+- **Pronoun Processing**: Based on character's `sex[biology]` attribute with he/him/his, she/her/hers, they/them/their support
+- **Grammar Correction**: Eliminates awkward constructions like "You carries himself"
+
+#### Wielded Items Integration ✅
+- **Hands System Integration**: Uses `hands[equipment]` attribute to determine wielded items
+- **Natural Language Display**: "drek is holding a light pistol" with proper grammar
+- **Multiple Items Support**: "holding a knife, a pistol, and a grenade" with correct articles
+- **Empty Hands Display**: "drek is holding nothing" for transparency
+- **Combat Readiness**: Immediate visibility of character's weapon state
+
+#### Administrative Features ✅
+- **Enhanced Staff Visibility**: "With your administrative visibility, you see:" instead of generic "You see:"
+- **Comprehensive Inventory**: Shows all character contents with dbrefs for debugging
+- **Permission-Based**: Only visible to Builder+ permissions via `check_permstring("Builder")`
+- **Redundancy Acceptable**: Wielded items appear in both sections for complete admin information
+
+#### Smart Paragraph Formatting ✅
 - **Automatic line breaks**: System adds paragraph breaks when combined longdescs exceed character threshold
-- **Readable flow**: Prevents wall-of-text appearance for verbose descriptions
-- **Threshold-based**: Configurable character count triggers paragraph separation
+- **Readable flow**: Prevents wall-of-text appearance for verbose descriptions  
+- **Threshold-based**: Configurable character count triggers paragraph separation (400 characters)
 - **Anatomical grouping**: Line breaks respect anatomical regions when possible
+- **Region-aware breaking**: 70% threshold for natural anatomical transitions
+- **Clothing integration**: Clothing descriptions participate in paragraph formatting system
 
-#### Display Order (Anatomical Head-to-Toe)
+#### Display Order (Anatomical Head-to-Toe) ✅
 1. **Head region**: head, face, left_eye, right_eye, left_ear, right_ear, neck
 2. **Torso region**: chest, back, abdomen, groin  
 3. **Arm region**: left_arm, right_arm, left_hand, right_hand
 4. **Leg region**: left_thigh, right_thigh, left_shin, right_shin, left_foot, right_foot
 5. **Extended appendages**: tail, wings, tentacles (in order of creation/numbering)
 
-#### Paragraph Break Logic
+**Current Implementation**: Uses `_format_longdescs_with_paragraphs()` method with smart breaking logic and anatomical region awareness for natural paragraph flow.
+
+#### Paragraph Break Logic ✅  
 - **Character counting**: System tracks cumulative character count as it builds description
 - **Smart breaking**: When threshold reached, insert paragraph break before next anatomical region
 - **Region respect**: Avoid breaking within anatomical regions when possible
 - **Overflow handling**: If single region exceeds threshold, break at most logical location within region
 - **Coverage integration**: Only visible descriptions (body longdescs + clothing longdescs) count toward thresholds
 - **Writer freedom**: No forced connecting words or narrative structure - writers control their own style
+- **Constants-driven**: Uses `PARAGRAPH_BREAK_THRESHOLD`, `REGION_BREAK_PRIORITY`, and `ANATOMICAL_REGIONS` for fine-tuning
 
-### Visibility Rules
-- **Default**: All body locations are visible
-- **Future Coverage**: Clothing/equipment will hide covered locations
-- **Unset Locations**: No description shown (invisible)
-- **Override System**: Equipment/injuries can override or supplement longdescs
+### Visibility Rules ✅
+- **Default**: All body locations are visible unless covered by clothing
+- **Clothing Coverage**: Worn items hide covered locations and display their own descriptions instead
+- **Unset Locations**: Body parts without longdesc descriptions remain invisible
+- **Template Processing**: All visible descriptions processed for third-person perspective consistency
 
 ## Data Storage
 
@@ -353,23 +390,28 @@ longdesc = AttributeProperty(
 
 ### Integration Tests ✅ COMPLETED
 - ✅ **Character creation with longdesc defaults** - AttributeProperty auto-creation working
-- ✅ **Look command integration** - Character appearance display functional
-- ✅ **Permission system integration** - Evennia lock system properly integrated
-- ✅ **Switch parsing** - Manual switch handling working with base Command class
-- ✅ **Multi-character targeting** - Staff can modify other characters' longdescs
+- ✅ **Character appearance system redesign** - Clean sectioned format implemented and tested
+- ✅ **Template variable processing** - Case sensitivity support and third-person consistency working
+- ✅ **Wielded items display** - Hands system integration with natural language output tested
+- ✅ **Permission system integration** - Enhanced admin visibility messaging tested
+- ✅ **Paragraph formatting system** - Smart breaking with anatomical regions tested and validated
+- ✅ **Clothing integration** - Coverage-based visibility with longdesc hiding tested
 
-### Integration Tests 🧪 PENDING IN-GAME VALIDATION  
-- 🧪 **Look command integration** - `return_appearance()` override implemented, testing pending
-- 🧪 **Character appearance assembly** - Full assembly logic implemented, testing pending
-- 🧪 **Multi-layer description building** - Paragraph formatting implemented, testing pending
-- 🧪 **Performance under load** - Optimized for Evennia scale, live testing pending
+### Integration Tests 🧪 PENDING IN-GAME VALIDATION
+- 🧪 **Advanced longdesc combinations** - Complex multi-region descriptions with extensive clothing combinations pending broader testing
+- 🧪 **Performance under heavy load** - Optimized for Evennia scale, stress testing with many simultaneous descriptions pending
+- 🧪 **Extended anatomy support** - Non-standard anatomies (wings, tails, etc.) implementation validated but broader testing pending
 
 ### User Acceptance Tests ✅ COMPLETED  
 - ✅ **Player workflow validation** - Complete command interface tested and working
 - ✅ **Description setting/viewing** - All CRUD operations tested and functional
-- ✅ **Integration with existing systems** - Character system integration working
+- ✅ **Character appearance redesign** - Clean sectioned format tested with positive user experience
+- ✅ **Template variable processing** - Case sensitivity and perspective consistency tested and working
+- ✅ **Wielded items display** - Natural language presentation with proper grammar tested
+- ✅ **Integration with existing systems** - Character, clothing, and hands systems integration working
 - ✅ **Error message clarity** - Comprehensive user feedback tested and clear
 - ✅ **Staff targeting functionality** - Permission-based targeting tested and working
+- ✅ **Administrative visibility** - Enhanced staff inventory display tested and functional
 
 ## Migration Strategy
 
