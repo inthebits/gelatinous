@@ -101,10 +101,41 @@ The persistence of Earth time in space is driven by three critical practical nec
 
 ## Implementation Status
 
-- **Current**: TIME_FACTOR = 2.0 (Evennia default)
-- **Proposed**: TIME_FACTOR = 1.0 (real-time TST alignment)
-- **Infrastructure**: Existing weather/time system ready for TST integration
-- **Dependencies**: No breaking changes required for TST implementation
+### Current Configuration
+- **TIME_FACTOR**: 2.0 (Evennia default - game time runs twice as fast as real time)
+- **TIME_GAME_EPOCH**: None (uses server start time as epoch)  
+- **TIME_IGNORE_DOWNTIMES**: False (game time pauses during server downtime)
+- **Location**: These settings belong in `server/conf/settings.py`
+
+### Proposed TST Implementation
+```python
+# In server/conf/settings.py
+TIME_FACTOR = 1.0              # Real-time sync (1:1 ratio with real world)
+TIME_GAME_EPOCH = None         # Keep current epoch handling
+TIME_IGNORE_DOWNTIMES = True   # Maintain continuity during downtime
+```
+
+### Integration Points
+- **Infrastructure**: Existing weather/time system in `world/weather/time_system.py` ready for TST
+- **Dependencies**: No breaking changes - only adjustment to time flow rate
+- **Validation**: Use `@time` command to verify synchronization after implementation
+
+### Implementation Steps
+1. **Edit Configuration**: Add/modify settings in `server/conf/settings.py`:
+   ```python
+   # Real-time Terran Standard Time synchronization
+   TIME_FACTOR = 1.0
+   TIME_IGNORE_DOWNTIMES = True
+   ```
+
+2. **Server Restart**: Execute `@shutdown` followed by server restart to apply new time factor
+
+3. **Verification**: Use `@time` command to confirm:
+   - Game time now matches real time (1:1 ratio)
+   - Time continues during server downtime
+   - Weather system integration remains functional
+
+4. **Documentation**: Update any time-dependent systems that assumed 2x speed factor
 
 ---
 
