@@ -1,0 +1,757 @@
+# Medical System Specification
+
+## Overview
+
+The Gelatinous Monster medical system creates tactical medical gameplay that emphasizes realistic injury consequences and meaningful medical choices through detailed anatomical damage modeling and field medical tools.
+
+## Design Philosophy
+
+### Core Principles
+- **Anatomical Realism**: Injuries affect specific body parts and organs with logical consequences
+- **Tactical Medicine**: Medical tools have specific purposes and limited effectiveness  
+- **Consequence-Driven**: Injuries create meaningful gameplay effects, not just HP reduction
+- **Resource Management**: Medical supplies are valuable and consumable
+- **Skill-Based**: Medical treatment success depends on character abilities
+
+### Integration with Existing Systems
+- **Longdesc System**: Medical conditions visible in character descriptions
+- **Combat System**: Damage targeting specific anatomical locations
+- **G.R.I.M. Stats**: Medical skill primarily based on Intellect (3/4 weight), with Motorics for surgical precision (1/4 weight)
+- **Clothing System**: Armor/clothing affects injury locations and severity
+
+## Current Health System Foundation
+
+### Existing Components
+```python
+# LEGACY HP SYSTEM - TO BE REPLACED
+# Characters currently have (will be deprecated):
+hp = AttributeProperty(10, category='health')
+hp_max = AttributeProperty(10, category='health') 
+hp_max = 10 + (grit * 2)  # Dynamic max HP based on Grit
+
+# Death mechanics (will be replaced by vital system failure):
+def is_dead(self): return self.hp <= 0
+def take_damage(self, amount): # Basic damage application
+def apply_damage(character, damage_amount): # Combat integration
+
+# NEW SYSTEM: Character health determined by anatomical/organ integrity
+# Death occurs when vital systems (consciousness, blood_pumping, breathing) fail
+```
+
+### Anatomical Foundation (Dynamic Integration)
+```python
+# UNIFIED ANATOMY SYSTEM DESIGN:
+# 1. Character typeclasses define both longdesc anatomy AND organ mappings
+# 2. Medical system adapts to whatever anatomy exists on character
+# 3. Creature-type templates provide standard organ-to-location mappings
+# 4. NO FALLBACK RULES - all organ-to-location mappings must be explicit per typeclass
+
+# Example: Human character (default)
+DEFAULT_LONGDESC_LOCATIONS = {
+    "head": None, "face": None, "left_eye": None, "right_eye": None,
+    "chest": None, "back": None, "abdomen": None, "groin": None,
+    "left_arm": None, "right_arm": None, "left_hand": None, "right_hand": None,
+    "left_thigh": None, "right_thigh": None, "left_shin": None, "right_shin": None,
+    "left_foot": None, "right_foot": None
+}
+
+# Example: Tentacle monster character 
+TENTACLE_MONSTER_LOCATIONS = {
+    "core_mass": None, "feeding_maw": None, "sensory_cluster": None,
+    "tentacle_1": None, "tentacle_2": None, "tentacle_3": None, "tentacle_4": None
+}
+
+# Organ mapping defined per character type via creature templates
+```
+
+## Medical System Architecture
+
+### Organ/Subsystem Model
+
+#### Core Subsystems
+```python
+BODY_CAPACITIES = {
+    # Vital Capacities - Loss causes death
+    "consciousness": {
+        "organs": ["brain"],
+        "modifiers": ["pain", "blood_pumping", "breathing", "blood_filtration"],
+        "fatal_threshold": 0.0,
+        "formula": "brain_efficiency * pain_modifier * blood_pump_modifier * breathing_modifier * blood_filt_modifier"
+    },
+    "blood_pumping": {
+        "organs": ["heart"],
+        "fatal_threshold": 0.0,
+        "directly_fatal": True,
+        "affects": ["consciousness", "moving"]
+    },
+    "breathing": {
+        "organs": ["left_lung", "right_lung"],
+        "fatal_threshold": 0.0,  # Death if both lungs lost
+        "organ_contribution": 0.5,  # Each lung contributes 50%
+        "affects": ["consciousness", "moving"]
+    },
+    "digestion": {
+        "organs": ["liver", "stomach"],
+        "liver_contribution": 1.0,   # Liver is primary, stomach is 50%
+        "stomach_contribution": 0.5,
+        "fatal_threshold": 0.0  # Death if liver lost
+    },
+    
+    # Functional Capacities - Loss reduces effectiveness but not fatal
+    "sight": {
+        "organs": ["left_eye", "right_eye"],
+        "organ_contribution": 0.5,  # Each eye contributes 50% 
+        "affects": ["shooting_accuracy", "melee_hit_chance", "work_speed"],
+        "total_loss_penalty": "blindness"
+    },
+    "hearing": {
+        "organs": ["left_ear", "right_ear"],
+        "organ_contribution": 0.5,
+        "affects": ["trade_price_improvement"],
+        "total_loss_penalty": "deafness"
+    },
+    "moving": {
+        "organs": ["spine", "pelvis", "left_leg", "right_leg", "left_foot", "right_foot"],
+        "spine_contribution": 1.0,    # Spine damage = paralysis
+        "pelvis_contribution": 1.0,   # Essential for walking
+        "leg_contribution": 0.5,      # Each leg contributes 50%
+        "foot_contribution": 0.04,    # Each foot contributes 4%
+        "incapacitation_threshold": 0.15,  # Below 15% = cannot move
+        "affects": ["movement_speed"]
+    },
+    "manipulation": {
+        "organs": ["left_shoulder", "right_shoulder", "left_arm", "right_arm", 
+                  "left_hand", "right_hand", "fingers"],
+        "shoulder_contribution": "major",     # Each shoulder = major contribution
+        "arm_contribution": "major",          # Each arm = major contribution 
+        "hand_contribution": "moderate",      # Each hand = moderate contribution
+        "finger_contribution": "minor",       # Each finger = minor contribution
+        "affects": ["work_speed", "melee_accuracy"]
+        # NOTE: Exact percentages to be calculated during implementation
+    },
+    "talking": {
+        "organs": ["jaw", "tongue"],
+        "affects": ["social_impact"],
+        "total_loss_effects": ["cannot_negotiate", "social_penalty"]
+    },
+    "eating": {
+        "organs": ["jaw", "tongue"],
+        "jaw_primary": True,
+        "affects": ["nutrition_efficiency"]
+    },
+    "blood_filtration": {
+        "organs": ["left_kidney", "right_kidney"],
+        "organ_contribution": 0.5,  # Each kidney contributes 50%
+        "affects": ["disease_resistance", "consciousness"],
+        "total_loss_fatal": True
+    }
+}
+```
+
+#### Individual Organs
+```python
+# NOTE: Hit chances use relative descriptors - exact percentages to be balanced during implementation
+# HIT CHANCE DESCRIPTORS: 
+#   very_rare = <1%, rare = 1-3%, uncommon = 3-10%, common = 10%+, guaranteed = always hit
+# CONTRIBUTION DESCRIPTORS:
+#   total = 100%, major = 40-60%, moderate = 10-40%, minor = 1-10%
+# IMPLEMENTATION NOTE: Full organ property complexity maintained - review template before implementation
+# HIERARCHY SYSTEM: Hit containers (body locations) → damage redirects to contents (organs/systems)
+# EXAMPLE: Hit chest → damage goes to heart/lungs, hit head → damage goes to brain/eyes
+
+ORGANS = {
+    # HEAD CONTAINER → ORGANS INSIDE
+    "brain": {
+        "container": "head", "max_hp": 10, "hit_weight": "very_rare",
+        "vital": True, "capacity": "consciousness", "contribution": "total",
+        "special": "damage_always_scars", "can_scar": True, "can_heal": False
+    },
+    "left_eye": {
+        "container": "head", "max_hp": 10, "hit_weight": "rare",
+        "capacity": "sight", "contribution": "major", "disfiguring_if_lost": True,
+        "damage_always_scars": True, "vulnerable_to_blunt": False
+    },
+    "right_eye": {
+        "container": "head", "max_hp": 10, "hit_weight": "rare",
+        "capacity": "sight", "contribution": "major", "disfiguring_if_lost": True,
+        "damage_always_scars": True, "vulnerable_to_blunt": False
+    },
+    "left_ear": {
+        "container": "head", "max_hp": 12, "hit_weight": "rare",
+        "capacity": "hearing", "contribution": "major", "disfiguring_if_lost": True
+    },
+    "right_ear": {
+        "container": "head", "max_hp": 12, "hit_weight": "rare",
+        "capacity": "hearing", "contribution": "major", "disfiguring_if_lost": True
+    },
+    "tongue": {
+        "container": "head", "max_hp": 20, "hit_weight": "rare",
+        "capacities": ["talking", "eating"], "talking_contribution": "major",
+        "eating_contribution": "major", "disfiguring_if_lost": True
+    },
+    "jaw": {
+        "container": "head", "max_hp": 10, "hit_weight": "very_rare",
+        "capacities": ["talking", "eating"], "talking_contribution": "major",
+        "eating_contribution": "moderate", "disfiguring_if_lost": True, "can_scar": False
+    },
+
+    # CHEST CONTAINER → VITAL ORGANS INSIDE  
+    "heart": {
+        "container": "chest", "max_hp": 15, "hit_weight": "uncommon",
+        "vital": True, "capacity": "blood_pumping", "contribution": "total",
+        "can_be_harvested": True, "can_be_replaced": True
+    },
+    "left_lung": {
+        "container": "chest", "max_hp": 20, "hit_weight": "uncommon",
+        "capacity": "breathing", "contribution": "major", "can_be_harvested": False,
+        "backup_available": True  # Can survive with one lung
+    },
+    "right_lung": {
+        "container": "chest", "max_hp": 20, "hit_weight": "uncommon",
+        "capacity": "breathing", "contribution": "major", "can_be_harvested": False,
+        "backup_available": True
+    },
+
+    # ABDOMEN CONTAINER → DIGESTIVE/FILTER ORGANS INSIDE
+    "liver": {
+        "container": "abdomen", "max_hp": 20, "hit_weight": "uncommon",
+        "vital": True, "capacity": "digestion", "contribution": "total",
+        "can_be_harvested": True, "can_be_replaced": True
+    },
+    "left_kidney": {
+        "container": "abdomen", "max_hp": 15, "hit_weight": "uncommon",
+        "capacity": "blood_filtration", "contribution": "major",
+        "can_be_harvested": True, "backup_available": True
+    },
+    "right_kidney": {
+        "container": "abdomen", "max_hp": 15, "hit_weight": "uncommon",
+        "capacity": "blood_filtration", "contribution": "major",
+        "can_be_harvested": True, "backup_available": True
+    },
+    "stomach": {
+        "container": "abdomen", "max_hp": 20, "hit_weight": "uncommon",
+        "capacity": "digestion", "contribution": "moderate", "vital": False,
+        "can_survive_loss": True
+    },
+
+    # BACK CONTAINER → STRUCTURAL ORGANS INSIDE
+    "spine": {
+        "container": "back", "max_hp": 25, "hit_weight": "uncommon",
+        "capacity": "moving", "contribution": "total", "cannot_be_destroyed": True,
+        "causes_pain_when_damaged": True, "paralysis_if_destroyed": True
+    },
+
+    # ARM CONTAINERS → MANIPULATION ORGANS INSIDE
+    "left_arm_system": {
+        "container": "left_arm", "max_hp": 30, "hit_weight": "common",
+        "capacity": "manipulation", "contribution": "major", "can_be_destroyed": True
+    },
+    "right_arm_system": {
+        "container": "right_arm", "max_hp": 30, "hit_weight": "common",
+        "capacity": "manipulation", "contribution": "major", "can_be_destroyed": True
+    },
+
+    # HAND CONTAINERS → FINE MANIPULATION ORGANS INSIDE
+    "left_hand_system": {
+        "container": "left_hand", "max_hp": 20, "hit_weight": "uncommon",
+        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True
+    },
+    "right_hand_system": {
+        "container": "right_hand", "max_hp": 20, "hit_weight": "uncommon",
+        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True
+    },
+
+    # LEG CONTAINERS → MOVEMENT ORGANS INSIDE
+    "left_leg_system": {
+        "container": "left_thigh", "max_hp": 30, "hit_weight": "common",
+        "capacity": "moving", "contribution": "major", "can_be_destroyed": True
+    },
+    "right_leg_system": {
+        "container": "right_thigh", "max_hp": 30, "hit_weight": "common", 
+        "capacity": "moving", "contribution": "major", "can_be_destroyed": True
+    },
+
+    # FOOT CONTAINERS → BALANCE/MOBILITY ORGANS INSIDE
+    "left_foot_system": {
+        "container": "left_foot", "max_hp": 25, "hit_weight": "uncommon",
+        "capacity": "moving", "contribution": "minor", "can_be_destroyed": True
+    },
+    "right_foot_system": {
+        "container": "right_foot", "max_hp": 25, "hit_weight": "uncommon",
+        "capacity": "moving", "contribution": "minor", "can_be_destroyed": True
+    }
+```
+
+### Medical Conditions
+
+#### Injury Types
+```python
+# NOTE: All injury complexity implemented as values - exact mechanics to be balanced during implementation
+INJURY_TYPES = {
+    "cut": {
+        "pain_per_damage": "low",
+        "bleed_rate": "moderate", 
+        "infection_chance": "low",
+        "scar_chance": "low",
+        "healing_time": "moderate",
+        "treatment_difficulty": "easy",
+        "description": "Clean cuts from blades or sharp objects"
+    },
+    "burn": {
+        "pain_per_damage": "high",
+        "bleed_rate": "minimal",
+        "infection_chance": "high", 
+        "scar_chance": "high",
+        "healing_time": "slow",
+        "treatment_difficulty": "moderate",
+        "permanent_damage_chance": "moderate",
+        "description": "Fire, heat, or chemical burns"
+    },
+    "blunt": {
+        "pain_per_damage": "moderate",
+        "bleed_rate": "minimal",
+        "fracture_chance": "moderate",
+        "internal_damage_chance": "high",
+        "healing_time": "slow",
+        "treatment_difficulty": "easy",
+        "description": "Crushing, impact, or bludgeoning damage"
+    },
+    "bullet": {
+        "pain_per_damage": "moderate", 
+        "bleed_rate": "severe",
+        "penetration_chance": "high",
+        "fragmentation_chance": "low",
+        "infection_chance": "moderate",
+        "healing_time": "slow",
+        "treatment_difficulty": "hard",
+        "description": "Projectile wounds from firearms"
+    },
+    "stab": {
+        "pain_per_damage": "low",
+        "bleed_rate": "severe",
+        "organ_damage_chance": "high",
+        "infection_chance": "moderate", 
+        "healing_time": "moderate",
+        "treatment_difficulty": "moderate",
+        "description": "Deep puncture wounds from thrusting weapons"
+    },
+    "laceration": {
+        "pain_per_damage": "high",
+        "bleed_rate": "high",
+        "infection_chance": "high",
+        "scar_chance": "very_high", 
+        "healing_time": "slow",
+        "treatment_difficulty": "hard",
+        "description": "Ragged tears from claws, shrapnel, or serrated weapons"
+    },
+    "frostbite": {
+        "pain_per_damage": "very_high",
+        "bleed_rate": "none",
+        "infection_chance": "high",
+        "permanent_damage_chance": "high",
+        "healing_time": "very_slow",
+        "treatment_difficulty": "hard", 
+        "amputation_risk": "moderate",
+        "description": "Cold damage causing tissue death"
+    }
+}
+```
+
+#### Pain System
+```python
+# NOTE: Pain system uses descriptive thresholds - exact formulas to be balanced during implementation
+PAIN_SYSTEM = {
+    "calculation": {
+        "base_formula": "sum(injury_severity * pain_per_damage_rating)",
+        "creature_size_modifier": True,    # Large creatures have reduced pain sensitivity
+        "pain_tolerance_modifier": True,   # Drug effects, traits, training modify pain
+        "adrenaline_modifier": True        # Combat/stress can temporarily reduce pain
+    },
+    
+    "pain_levels": {
+        # Descriptive pain levels with gameplay effects
+        "none": {
+            "threshold": "0%", "mood_penalty": 0, "consciousness_penalty": "none",
+            "description": "no discomfort", "gameplay_effects": []
+        },
+        "minor": {
+            "threshold": "1-10%", "mood_penalty": "slight", "consciousness_penalty": "none", 
+            "description": "a little discomfort", "gameplay_effects": []
+        },
+        "moderate": {
+            "threshold": "10-25%", "mood_penalty": "noticeable", "consciousness_penalty": "minimal",
+            "description": "distracting pain", "gameplay_effects": ["concentration_penalty"]
+        },
+        "severe": {
+            "threshold": "25-50%", "mood_penalty": "significant", "consciousness_penalty": "moderate",
+            "description": "intense pain", "gameplay_effects": ["action_penalties", "focus_loss"]
+        },
+        "extreme": {
+            "threshold": "50-80%", "mood_penalty": "major", "consciousness_penalty": "severe", 
+            "description": "excruciating agony", "gameplay_effects": ["severe_penalties", "periodic_stunning"]
+        },
+        "unbearable": {
+            "threshold": "80%+", "mood_penalty": "overwhelming", "consciousness_penalty": "critical",
+            "description": "mind-shattering torture", "gameplay_effects": ["unconsciousness_risk", "shock"]
+        }
+    },
+    
+    "consciousness_interaction": {
+        # Consciousness is single value affected by multiple factors
+        "pain_contribution": "moderate_to_severe",     # Pain reduces consciousness
+        "blood_loss_contribution": "severe",           # Blood loss majorly reduces consciousness  
+        "organ_damage_contribution": "varies_by_organ", # Brain damage = direct consciousness loss
+        "cumulative_effects": True,                    # All factors stack
+        "unconscious_threshold": "30% consciousness",
+        "death_threshold": "0% consciousness"
+    }
+}
+```
+
+#### Blood System
+```python
+BLOOD_SYSTEM = {
+    "blood_as_resource": {
+        "tracked_like_pain": True,
+        "max_blood": "100% (varies by creature size)",
+        "current_blood": "percentage of maximum", 
+        "blood_loss_per_round": "sum of all bleeding wounds",
+        "consciousness_impact": "severe at <60% blood"
+    },
+    
+    "blood_loss_effects": {
+        "90-100%": {"status": "healthy", "consciousness_penalty": "none"},
+        "70-90%": {"status": "light_blood_loss", "consciousness_penalty": "minimal"},
+        "50-70%": {"status": "moderate_blood_loss", "consciousness_penalty": "moderate"},
+        "30-50%": {"status": "severe_blood_loss", "consciousness_penalty": "major"},
+        "10-30%": {"status": "critical_blood_loss", "consciousness_penalty": "severe"},
+        "0-10%": {"status": "exsanguination", "consciousness_penalty": "unconscious"}
+    }
+}
+```
+
+#### Status Effects (Medical Conditions)
+```python
+MEDICAL_CONDITIONS = {
+    "bleeding": {
+        "description": "Contributes to blood loss per round - multiple wounds stack",
+        "severity_levels": {
+            "minor": {"blood_loss_per_round": "1%", "visible": "small bloodstains"},
+            "moderate": {"blood_loss_per_round": "3%", "visible": "steady bleeding"}, 
+            "severe": {"blood_loss_per_round": "8%", "visible": "heavy blood loss"},
+            "arterial": {"blood_loss_per_round": "15%", "visible": "spurting blood"}
+        },
+        "stacking": "multiple_wounds_add_blood_loss",
+        "treatments": {
+            "basic_bandage": {"success_rate": "moderate", "requirements": ["bandage"], "stops": ["minor", "moderate"]},
+            "surgical_kit": {"success_rate": "high", "requirements": ["surgical_kit", "medical_skill"], "stops": ["all_levels"]},
+            "blood_bag": {"success_rate": "guaranteed", "requirements": ["blood_bag"], "restores": "blood_volume"}
+        },
+        "progression": "stable_until_treated"
+    },
+    "infection": {
+        "description": "Develops over time from untreated wounds",
+        "severity_levels": {
+            "minor": {"pain_increase": "slight", "healing_slowdown": "moderate"},
+            "major": {"pain_increase": "significant", "system_effects": "fever_weakness"}
+        },
+        "treatments": {
+            "basic_cleaning": {"success_rate": "moderate", "requirements": ["basic_supplies"], "stat_requirement": "intellect_1"},
+            "surgical_kit": {"success_rate": "high", "requirements": ["surgical_kit"], "stat_requirement": "intellect_2_motorics_1"}
+        },
+        "failure_consequences": "chronic_infection_permanent_pain"
+    },
+    
+    "fracture": {
+        "description": "Broken bones affecting limb function",
+        "effects": {
+            "limb_unusable": True,
+            "constant_pain": "moderate",
+            "movement_impaired": "if_leg_affected"
+        },
+        "treatments": {
+            "splint": {"success_rate": "moderate", "requirements": ["splint"], "stat_requirement": "intellect_1"},
+            "surgical_kit": {"success_rate": "high", "requirements": ["surgical_kit"], "stat_requirement": "intellect_3_motorics_2"}
+        },
+        "failure_consequences": "permanent_limp_reduced_capacity"
+    }
+            "spreading": {"pain": 0.08, "fever": True, "stat_penalties": {"grit": -1}},
+            "systemic": {"pain": 0.15, "sepsis_risk": 0.20, "stat_penalties": {"all": -2}}
+        },
+        "treatments": ["surgical_kit", "disinfectant", "antibiotics"],
+        "environmental_factors": ["cleanliness", "humidity", "wound_care"],
+        "mortality_risk": {"localized": 0.0, "spreading": 0.05, "systemic": 0.25}
+    }
+}
+```
+
+## Field Medical Tools
+
+### Medical Equipment
+
+#### Blood Bag
+```python
+BLOOD_BAG = {
+    "name": "Blood Bag",
+    "uses": 1,
+    "time_to_use": "3 rounds",
+    "effects": {
+        "restores_blood": "25% of maximum",
+        "stops_bleeding": "minor_to_moderate",
+        "reduces_shock": True
+    },
+    "stat_requirement": "intellect >= 2",  # Basic medical knowledge needed
+    "success_formula": "(intellect * 0.75) + (motorics * 0.25)",
+    "failure_consequences": "infection_risk_scar_tissue",
+    "description": "Emergency blood transfusion kit"
+}
+```
+
+#### Painkiller
+```python
+PAINKILLER = {
+    "name": "Painkiller",
+    "uses": 1,
+    "time_to_use": "1 round",
+    "effects": {
+        "reduces_pain": "significant_temporary",
+        "temporary_stat_boost": {"grit": +1},
+        "duration": "10 rounds"
+    },
+    "side_effects": "dulled_awareness_after_effect",
+    "stat_requirement": None,  # Anyone can inject
+    "failure_consequences": "overdose_risk_addiction_chance",
+    "description": "Military-grade analgesic injection"
+}
+```
+
+#### Splint
+```python
+SPLINT = {
+    "name": "Splint",
+    "uses": 1,
+    "time_to_use": "2 rounds", 
+    "effects": {
+        "stabilizes_fractures": True,
+        "restores_partial_function": 0.5,  # 50% functionality
+        "prevents_further_damage": True
+    },
+    "targets": ["fracture_arm", "fracture_leg"],
+    "skill_requirement": "intellect >= 1",
+    "failure_effects": ["improper_healing", "increased_pain"],
+    "description": "Emergency immobilization device for broken bones"
+}
+```
+
+#### Surgical Kit
+```python
+SURGICAL_KIT = {
+    "name": "Surgical Kit", 
+    "uses": 3,  # Multiple procedures
+    "time_to_use": "5 rounds",  # Lengthy procedure
+    "effects": {
+        "repairs_organs": True,
+        "stops_internal_bleeding": True,
+        "removes_foreign_objects": True,
+        "restores_function": 0.8  # 80% restoration
+    },
+    "skill_requirement": "intellect >= 4",  # High skill needed
+    "failure_effects": ["organ_damage", "massive_bleeding", "death"],
+    "success_modifiers": {
+        "sterile_environment": +2,
+        "assistant_present": +1,
+        "time_pressure": -3
+    },
+    "description": "Portable surgical suite with micro-instruments and nano-sutures"
+}
+```
+
+### Medical Tool Interactions
+
+### Treatment Effectiveness (Simplified)
+```python
+# Simple tool appropriateness for conditions
+TOOL_APPROPRIATENESS = {
+    "bleeding": {
+        "blood_bag": "highly_effective",
+        "surgical_kit": "effective", 
+        "splint": "ineffective",
+        "painkiller": "counter_productive"
+    },
+    "fracture": {
+        "splint": "highly_effective",
+        "surgical_kit": "effective_but_complex",
+        "blood_bag": "ineffective",
+        "painkiller": "helps_with_pain_only"
+    },
+    "infection": {
+        "surgical_kit": "effective_with_cleaning",
+        "blood_bag": "ineffective",
+        "splint": "ineffective", 
+        "painkiller": "ineffective"
+    }
+    # Note: Exact effectiveness mechanics to be determined during implementation
+}
+```
+
+## Medical Skill System
+
+### G.R.I.M. Integration (Current Implementation)
+- **Intellect (75%)**: Medical knowledge, diagnosis ability, understanding of anatomy and treatment
+- **Motorics (25%)**: Steady hands for precise procedures, dexterity with medical tools
+
+### G.R.I.M. Integration (Future Potential)  
+- **Grit**: Pain tolerance during self-treatment, ability to work while injured
+- **Resonance**: Bedside manner, patient stabilization, calming effect on others
+
+### Medical Treatment Formula
+```python
+medical_effectiveness = (intellect * 0.75) + (motorics * 0.25)
+treatment_success = d20_roll + medical_effectiveness vs difficulty_threshold
+```
+
+### Medical Actions
+
+#### Diagnosis
+```python
+def diagnose_patient(medic, patient):
+    """
+    Determine what medical conditions affect the patient.
+    Success reveals hidden conditions and treatment requirements.
+    """
+    intellect_roll = roll_d20() + medic.intellect
+    difficulty = {
+        "obvious_injuries": 8,    # Visible wounds
+        "internal_injuries": 14,  # Requires examination  
+        "systemic_conditions": 18 # Hidden organ damage
+    }
+```
+
+#### Treatment Application
+```python
+def apply_medical_treatment(medic, patient, tool, condition):
+    """
+    Use medical tool to treat specific condition.
+    Success based on G.R.I.M. stats and tool appropriateness.
+    """
+    medical_skill = (medic.intellect * 0.75) + (medic.motorics * 0.25)
+    base_roll = roll_d20() + medical_skill
+    tool_appropriateness = TOOL_APPROPRIATENESS[condition][tool.type]
+    
+    # Environmental factors: Not implemented yet - focus on core mechanics first
+    success_threshold = condition.difficulty  # Modified by tool appropriateness
+```
+
+## Integration Points
+
+### Combat System Integration
+
+#### Damage Location Targeting
+```python
+def apply_anatomical_damage(character, damage, location):
+    """
+    Apply damage to specific body part, affecting relevant organs/systems.
+    """
+    # Determine which organs/systems are affected
+    affected_systems = get_systems_for_location(location)
+    
+    # Distribute damage across systems
+    for system in affected_systems:
+        system_damage = calculate_system_damage(damage, system)
+        apply_system_damage(character, system, system_damage)
+        
+    # Check for immediate effects
+    check_critical_system_failure(character, affected_systems)
+```
+
+#### Weapon-Specific Injury Patterns
+```python
+WEAPON_INJURY_PATTERNS = {
+    "blade": {"primary": "laceration", "secondary": "organ_damage"},
+    "blunt": {"primary": "fracture", "secondary": "internal_bleeding"}, 
+    "projectile": {"primary": "organ_damage", "secondary": "internal_bleeding"},
+    "explosive": {"primary": "multiple_trauma", "secondary": "burns"}
+}
+```
+
+### Longdesc System Integration
+
+#### Medical Condition Visibility (Automatic Longdesc Appending)
+```python
+MEDICAL_DESCRIPTIONS = {
+    "bleeding": {
+        "obvious": "blood soaking through their clothing",
+        "severe": "leaving a trail of blood behind them",
+        "critical": "pale and trembling from blood loss"
+    },
+    "fracture_arm": {
+        "splinted": "their arm held in a makeshift splint",
+        "unsplinted": "cradling their obviously broken arm"
+    },
+    "vision_impaired": {
+        "partial": "squinting as if having trouble seeing",
+        "severe": "feeling around carefully with their hands"
+    }
+    # These descriptions automatically append to character longdesc when conditions are present
+}
+```
+
+## Implementation Phases
+
+### Phase 1: Foundation (Organ System)
+- [ ] Expand character health model beyond simple HP
+- [ ] Add organ/subsystem tracking to Character class
+- [ ] Implement medical condition status effects
+- [ ] Basic injury-to-organ damage mapping
+
+### Phase 2: Medical Tools
+- [ ] Create medical item classes (BloodBag, Painkiller, etc.)
+- [ ] Implement medical treatment commands and mechanics
+- [ ] Add G.R.I.M.-based treatment success/failure
+- [ ] Tool appropriateness system
+
+### Phase 3: Combat Integration
+- [ ] Location-based damage system in combat
+- [ ] Weapon-specific injury patterns
+- [ ] Critical injury immediate effects
+- [ ] Medical emergency scenarios
+
+### Phase 4: Advanced Systems
+- [ ] Long-term healing and recovery
+- [ ] Infection and complication systems
+- [ ] Prosthetics and permanent disabilities
+- [ ] Advanced surgical procedures
+
+## Example Medical Scenarios
+
+### Combat Medic Scenario
+```
+During combat, Alice takes a blade hit to the chest (internal damage to lungs).
+She develops "punctured_lung" condition - breathing difficulty, gradual HP loss.
+Bob, with high Intellect, diagnoses the condition successfully.
+He uses Surgical Kit (requiring 5 rounds of uninterrupted work) to repair the lung.
+Success: Alice's breathing stabilizes, HP loss stops.
+Failure: Alice develops "pneumothorax" - more severe breathing failure.
+```
+
+### Field Medicine Scenario  
+```
+Charlie has a fractured arm from explosion damage.
+Without treatment: arm is unusable, constant pain penalties.
+Dana applies Splint: requires Intellect roll, takes 2 rounds.
+Success: arm partially functional (50%), pain reduced.
+Later, Surgical Kit can provide full repair (80% function restored).
+```
+
+### Resource Management Scenario
+```
+Multiple wounded characters, limited medical supplies.
+Player must choose: use Blood Bag on critically wounded ally, or save it?
+Painkiller: give to heavily injured fighter to keep them combat-effective?
+Surgical Kit: attempt difficult organ repair, or save uses for emergencies?
+```
+
+---
+
+*"In space, a medical emergency doesn't wait for convenient timing. Every blood bag, every splint, every steady hand could mean the difference between coming home or floating in the void."*
+- Dr. Sarah Chen, Frontier Medical Corps, 2387 TST
