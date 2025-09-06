@@ -84,9 +84,6 @@ class CmdHeal(Command):
                 caller.msg(f"|rNo character found with dbref #{target_name}.|n")
                 return
             char = char[0]
-            if not hasattr(char, "hp") or not hasattr(char, "hp_max"):
-                caller.msg(f"|r{char.key} does not have HP stats.|n")
-                return
             targets = [char]
             target_desc = char.key
         else:
@@ -96,9 +93,6 @@ class CmdHeal(Command):
                 caller.msg(f"|rNo character named '{target_name}' found.|n")
                 return
             target = matches[0]
-            if not hasattr(target, "hp") or not hasattr(target, "hp_max"):
-                caller.msg(f"|r{target.key} does not have HP stats.|n")
-                return
             targets = [target]
             target_desc = target.key
 

@@ -989,18 +989,18 @@ class CmdJump(Command):
                     
                     # Cruel damage distribution
                     from world.combat.utils import apply_damage
-                    victim_hp_before = getattr(grappled_victim, 'hp', 10)
-                    apply_damage(grappled_victim, blast_damage * 2)  # Victim takes double damage
-                    victim_hp_after = getattr(grappled_victim, 'hp', 0)
+                    victim_alive_before = not grappled_victim.is_dead()
+                    apply_damage(grappled_victim, blast_damage * 2, location="torso", injury_type="explosion")  # Victim takes double damage
+                    victim_alive_after = not grappled_victim.is_dead()
                     
                     # Hero damage - currently set to 0 for maximum cruelty (adjustable)
                     hero_damage_multiplier = 0.0  # Change this to increase hero damage if desired
                     hero_damage = int(blast_damage * hero_damage_multiplier)
                     if hero_damage > 0:
-                        apply_damage(self.caller, hero_damage)
+                        apply_damage(self.caller, hero_damage, location="torso", injury_type="explosion")
                     
                     # Check if victim died and add guilt messaging
-                    if victim_hp_after <= 0 and victim_hp_before > 0:
+                    if not victim_alive_after and victim_alive_before:
                         self.caller.msg(f"|RYour 'heroic' sacrifice just killed {grappled_victim.key}... some hero you are.|n")
                         splattercast.msg(f"JUMP_SACRIFICE_VICTIM_DEATH: {grappled_victim.key} died from blast shield damage caused by {self.caller.key}")
                     
@@ -1754,10 +1754,13 @@ class CmdJump(Command):
                     del actual_grappled_victim.ndb.bodyshield_grappler
                 
                 # Handle grapple relationship after fall
-                victim_alive = getattr(actual_grappled_victim, 'hp', 10) > 0
-                grappler_alive = getattr(self.caller, 'hp', 10) > 0
+                victim_alive = not actual_grappled_victim.is_dead()
+                grappler_alive = not self.caller.is_dead()
                 
-                splattercast.msg(f"JUMP_EDGE_SURVIVAL_CHECK: {self.caller.key} HP={getattr(self.caller, 'hp', 10)} alive={grappler_alive}, {actual_grappled_victim.key} HP={getattr(actual_grappled_victim, 'hp', 10)} alive={victim_alive}")
+                victim_status = "dead" if actual_grappled_victim.is_dead() else "unconscious" if hasattr(actual_grappled_victim, 'medical_state') and actual_grappled_victim.medical_state and actual_grappled_victim.medical_state.is_unconscious() else "alive"
+                grappler_status = "dead" if self.caller.is_dead() else "unconscious" if hasattr(self.caller, 'medical_state') and self.caller.medical_state and self.caller.medical_state.is_unconscious() else "alive"
+                
+                splattercast.msg(f"JUMP_EDGE_SURVIVAL_CHECK: {self.caller.key} status={grappler_status} alive={grappler_alive}, {actual_grappled_victim.key} status={victim_status} alive={victim_alive}")
                 
                 if victim_alive and grappler_alive:
                     try:

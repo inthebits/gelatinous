@@ -1187,7 +1187,7 @@ class CombatHandler(DefaultScript):
                 damage += weapon_damage
             
             # Apply damage and check if target died
-            target_died = target.take_damage(damage)
+            target_died = target.take_damage(damage, location="torso", injury_type="combat")
             
             # Determine weapon type for messages
             weapon_type = "unarmed"
