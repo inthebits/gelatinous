@@ -717,3 +717,164 @@ COMBAT_BOOTS = {
     # Future: tags for combat systems, material physics, professional contexts  
     # "tags": [("clothing", "type"), ("boots", "category"), ("leather", "material")]
 }
+
+
+# =============================================================================
+# MEDICAL ITEM PROTOTYPES
+# =============================================================================
+
+# IV Blood Bag - Emergency blood transfusion
+BLOOD_BAG = {
+    "key": "blood bag",
+    "typeclass": "typeclasses.items.Item",
+    "aliases": ["iv", "blood", "transfusion"],
+    "desc": "A sterile IV blood bag with attached tubing for emergency transfusion. Contains 500ml of universal donor blood.",
+    "tags": [("medical_item", "item_type")],
+    "attrs": [
+        ("medical_type", "blood_restoration"),
+        ("uses_left", 1),
+        ("max_uses", 1),
+        ("stat_requirement", 1),
+        ("application_time", 1),
+        ("effectiveness", {
+            "bleeding": 9,        # Excellent for severe bleeding
+            "blood_loss": 10,     # Perfect for blood restoration
+            "shock": 7,          # Good for shock treatment
+            "organ_damage": 3,   # Limited help for organs
+        })
+    ],
+}
+
+# Injectable Painkiller - Multi-dose pain management
+PAINKILLER = {
+    "key": "painkiller",
+    "typeclass": "typeclasses.items.Item",
+    "aliases": ["syringe", "morphine", "pain meds"],
+    "desc": "A medical syringe containing powerful analgesic medication. Multiple doses available.",
+    "tags": [("medical_item", "item_type")],
+    "attrs": [
+        ("medical_type", "pain_relief"),
+        ("uses_left", 3),
+        ("max_uses", 3),
+        ("stat_requirement", 0),
+        ("application_time", 1),
+        ("effectiveness", {
+            "pain": 9,           # Excellent pain relief
+            "shock": 6,          # Moderate shock treatment
+            "bleeding": 2,       # Minimal bleeding help
+            "fracture": 4,       # Some fracture pain relief
+        })
+    ],
+}
+
+# Gauze Bandages - Multi-use wound dressing
+GAUZE_BANDAGES = {
+    "key": "gauze bandages",
+    "typeclass": "typeclasses.items.Item",
+    "aliases": ["gauze", "bandages", "dressing"],
+    "desc": "Sterile gauze bandages for wound dressing and bleeding control. Multiple applications available.",
+    "tags": [("medical_item", "item_type")],
+    "attrs": [
+        ("medical_type", "wound_care"),
+        ("uses_left", 5),
+        ("max_uses", 5),
+        ("stat_requirement", 0),
+        ("application_time", 1),
+        ("effectiveness", {
+            "bleeding": 7,       # Very good bleeding control
+            "infection": 8,      # Excellent infection prevention  
+            "wound_healing": 6,  # Good wound protection
+            "pain": 3,           # Minimal pain relief
+        })
+    ],
+}
+
+# Medical Splint - Single-use bone stabilization
+SPLINT = {
+    "key": "medical splint",
+    "typeclass": "typeclasses.items.Item",
+    "aliases": ["splint", "brace"],
+    "desc": "A universal medical splint that adapts to immobilize fractured appendages. Works on arms, legs, tentacles, wings, and other limbs.",
+    "tags": [("medical_item", "item_type")],
+    "attrs": [
+        ("medical_type", "fracture_treatment"),
+        ("uses_left", 1),
+        ("max_uses", 1),
+        ("stat_requirement", 2),
+        ("application_time", 2),
+        ("effectiveness", {
+            "fracture": 8,       # Excellent fracture stabilization
+            "pain": 4,           # Some pain relief
+            "mobility": 6,       # Restores some movement
+            "bleeding": 2,       # Minimal bleeding help
+        })
+    ],
+}
+
+# Surgical Kit - Advanced multi-use medical tools
+SURGICAL_KIT = {
+    "key": "surgical kit",
+    "typeclass": "typeclasses.items.Item",
+    "aliases": ["surgery", "medical kit", "scalpel"],
+    "desc": "A comprehensive surgical kit containing scalpels, sutures, clamps, and other advanced medical tools. Requires significant medical training.",
+    "tags": [("medical_item", "item_type")],
+    "attrs": [
+        ("medical_type", "surgical_treatment"),
+        ("uses_left", 10),
+        ("max_uses", 10),
+        ("stat_requirement", 3),
+        ("application_time", 3),
+        ("effectiveness", {
+            "organ_damage": 10,  # Perfect for internal injuries
+            "internal_bleeding": 9, # Excellent for internal bleeding
+            "complex_wounds": 8, # Very good for complex injuries
+            "infection": 7,      # Good sterile procedures
+            "pain": 5,           # Moderate pain management
+        })
+    ],
+}
+
+# Emergency Stimpak - Rapid healing injection
+STIMPAK = {
+    "key": "stimpak",
+    "typeclass": "typeclasses.items.Item",
+    "aliases": ["stim", "healing injection"],
+    "desc": "An emergency medical stimulant that accelerates natural healing processes. Single-use auto-injector.",
+    "tags": [("medical_item", "item_type")],
+    "attrs": [
+        ("medical_type", "healing_acceleration"),
+        ("uses_left", 1),
+        ("max_uses", 1),
+        ("stat_requirement", 1),
+        ("application_time", 1),
+        ("effectiveness", {
+            "wound_healing": 8,  # Excellent healing boost
+            "bleeding": 6,       # Good bleeding control
+            "pain": 7,           # Very good pain relief
+            "organ_damage": 4,   # Limited organ help
+            "fatigue": 9,        # Excellent energy restoration
+        })
+    ],
+}
+
+# Antiseptic Spray - Infection prevention
+ANTISEPTIC = {
+    "key": "antiseptic spray",
+    "typeclass": "typeclasses.items.Item",
+    "aliases": ["antiseptic", "disinfectant", "spray"],
+    "desc": "Medical-grade antiseptic spray for wound cleaning and infection prevention. Multiple applications per bottle.",
+    "tags": [("medical_item", "item_type")],
+    "attrs": [
+        ("medical_type", "antiseptic"),
+        ("uses_left", 8),
+        ("max_uses", 8),
+        ("stat_requirement", 0),
+        ("application_time", 1),
+        ("effectiveness", {
+            "infection": 9,      # Excellent infection prevention
+            "wound_healing": 5,  # Moderate healing assistance
+            "bleeding": 3,       # Minimal bleeding help
+            "pain": 2,           # Slight pain relief
+        })
+    ],
+}

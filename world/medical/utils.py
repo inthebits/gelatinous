@@ -288,3 +288,244 @@ def load_medical_state(character):
         # Initialize new medical state if none exists
         initialize_character_medical_state(character)
         return False
+
+
+# =============================================================================
+# MEDICAL ITEM UTILITIES
+# =============================================================================
+
+def is_medical_item(item):
+    """Check if an item is a medical item."""
+    return item.tags.has("medical_item", category="item_type")
+
+
+def get_medical_type(item):
+    """Get the medical type of an item."""
+    return item.attributes.get("medical_type", "")
+
+
+def can_be_used(item):
+    """Check if this medical item can still be used."""
+    if not is_medical_item(item):
+        return False
+    
+    uses_left = item.attributes.get("uses_left", 1)
+    return uses_left > 0
+
+
+def use_item(item):
+    """Use the item, reducing uses left."""
+    if not is_medical_item(item):
+        return False
+        
+    uses_left = item.attributes.get("uses_left", 1)
+    if uses_left > 0:
+        item.attributes.add("uses_left", uses_left - 1)
+        return True
+    return False
+
+
+def get_stat_requirement(item):
+    """Get the stat requirement for using this item."""
+    return item.attributes.get("stat_requirement", 0)
+
+
+def get_effectiveness(item, condition_type):
+    """Get item effectiveness for a specific condition."""
+    effectiveness = item.attributes.get("effectiveness", {})
+    return effectiveness.get(condition_type, 5)  # Default 5/10
+
+
+def calculate_treatment_success(item, user, target, condition_type):
+    """
+    Calculate treatment success based on user's medical skill and item effectiveness.
+    
+    Args:
+        item: Medical item being used
+        user: Character using the item
+        target: Character being treated
+        condition_type: Type of condition being treated
+        
+    Returns:
+        dict: Contains roll, medical_skill, total, difficulty, success_level
+    """
+    import random
+    
+    # Get user's medical skill (based on Intellect)
+    user_intellect = getattr(user, 'intellect', 1)
+    medical_skill = user_intellect * 2  # Convert intellect to medical skill
+    
+    # Get item effectiveness for this condition
+    effectiveness = get_effectiveness(item, condition_type)
+    
+    # Calculate difficulty (higher effectiveness = easier treatment)
+    base_difficulty = 15
+    difficulty = base_difficulty - effectiveness
+    
+    # Roll dice (3d6)
+    roll = sum(random.randint(1, 6) for _ in range(3))
+    total = roll + medical_skill
+    
+    # Determine success level
+    if total >= difficulty + 5:
+        success_level = "success"
+    elif total >= difficulty:
+        success_level = "partial_success"
+    else:
+        success_level = "failure"
+        
+    return {
+        "roll": roll,
+        "medical_skill": medical_skill,
+        "total": total,
+        "difficulty": difficulty,
+        "success_level": success_level
+    }
+
+
+def apply_medical_effects(item, user, target, **kwargs):
+    """
+    Apply the medical item's effects to the target.
+    
+    This handles the core medical treatment logic.
+    """
+    medical_type = get_medical_type(item)
+    
+    if not hasattr(target, 'medical_state'):
+        return "Target has no medical state to treat."
+    
+    medical_state = target.medical_state
+    
+    # Basic effect application based on medical type
+    if medical_type == "blood_restoration":
+        # Restore blood volume
+        old_volume = medical_state.blood_volume
+        medical_state.blood_volume = min(100.0, old_volume + 25.0)
+        
+        # Reduce bleeding
+        bleeding_conditions = [c for c in medical_state.conditions 
+                             if c.condition_type == "bleeding"]
+        for condition in bleeding_conditions[:2]:  # Reduce up to 2 bleeding conditions
+            condition.severity = max(0, condition.severity - 3)
+            if condition.severity <= 0:
+                medical_state.conditions.remove(condition)
+        
+        return f"Blood transfusion successful! Blood volume increased from {old_volume:.1f} to {medical_state.blood_volume:.1f}."
+        
+    elif medical_type == "pain_relief":
+        # Reduce pain conditions
+        pain_conditions = [c for c in medical_state.conditions 
+                         if c.condition_type == "pain"]
+        for condition in pain_conditions[:3]:  # Reduce multiple pain sources
+            condition.severity = max(0, condition.severity - 2)
+            if condition.severity <= 0:
+                medical_state.conditions.remove(condition)
+        
+        return "Painkiller administered. Pain significantly reduced."
+        
+    elif medical_type == "wound_care":
+        # Bandaging effects
+        bleeding_conditions = [c for c in medical_state.conditions 
+                             if c.condition_type == "bleeding"]
+        for condition in bleeding_conditions[:1]:  # Stop one source of bleeding
+            condition.severity = max(0, condition.severity - 2)
+            if condition.severity <= 0:
+                medical_state.conditions.remove(condition)
+        
+        return "Wounds properly bandaged. Bleeding controlled."
+        
+    elif medical_type == "fracture_treatment":
+        # Splint effects
+        fracture_conditions = [c for c in medical_state.conditions 
+                             if c.condition_type == "fracture"]
+        for condition in fracture_conditions[:1]:  # Stabilize one fracture
+            condition.severity = max(0, condition.severity - 4)
+            if condition.severity <= 0:
+                medical_state.conditions.remove(condition)
+        
+        return "Fracture stabilized with splint. Mobility partially restored."
+        
+    elif medical_type == "surgical_treatment":
+        # Surgical intervention
+        organ_conditions = [c for c in medical_state.conditions 
+                          if c.condition_type == "organ_damage"]
+        for condition in organ_conditions[:1]:  # Repair one organ
+            condition.severity = max(0, condition.severity - 5)
+            if condition.severity <= 0:
+                medical_state.conditions.remove(condition)
+        
+        return "Surgical procedure completed. Internal injuries treated."
+    
+    elif medical_type == "healing_acceleration":
+        # Stimpak effects - general healing boost
+        all_conditions = medical_state.conditions[:]
+        healed_count = 0
+        for condition in all_conditions[:3]:  # Heal up to 3 conditions
+            condition.severity = max(0, condition.severity - 1)
+            if condition.severity <= 0:
+                medical_state.conditions.remove(condition)
+                healed_count += 1
+        
+        return f"Stimpak administered. Rapid healing activated - {healed_count} conditions improved."
+    
+    elif medical_type == "antiseptic":
+        # Infection prevention and wound cleaning
+        infection_conditions = [c for c in medical_state.conditions 
+                              if c.condition_type == "infection"]
+        for condition in infection_conditions[:2]:  # Clear multiple infections
+            condition.severity = max(0, condition.severity - 3)
+            if condition.severity <= 0:
+                medical_state.conditions.remove(condition)
+        
+        return "Antiseptic applied. Infections cleared and wounds sterilized."
+    
+    return f"Applied {medical_type.replace('_', ' ')} treatment."
+
+
+def get_medical_item_info(item, viewer):
+    """
+    Get formatted information about a medical item.
+    
+    Returns a string with detailed medical item information.
+    """
+    if not is_medical_item(item):
+        return f"{item.get_display_name(viewer)} is not a medical item."
+    
+    info = [
+        f"|w{item.get_display_name(viewer).upper()}|n",
+        "=" * 50
+    ]
+    
+    # Basic info
+    medical_type = get_medical_type(item)
+    info.append(f"Type: {medical_type.replace('_', ' ').title()}")
+    info.append(f"Description: {item.db.desc or 'No description.'}")
+    
+    # Usage info
+    uses_left = item.attributes.get("uses_left", "∞")
+    max_uses = item.attributes.get("max_uses", "∞")
+    info.append(f"Uses remaining: {uses_left}/{max_uses}")
+    
+    # Requirements
+    stat_req = get_stat_requirement(item)
+    if stat_req > 0:
+        info.append(f"Intellect requirement: {stat_req}")
+    else:
+        info.append("No skill requirements")
+        
+    # Effectiveness
+    effectiveness = item.attributes.get("effectiveness", {})
+    if effectiveness:
+        info.append("Effectiveness ratings:")
+        for condition, rating in effectiveness.items():
+            info.append(f"  {condition.replace('_', ' ').title()}: {rating}/10")
+            
+    # Special properties
+    if not can_be_used(item):
+        info.append("|rThis item is empty or used up.|n")
+        
+    application_time = item.attributes.get("application_time", 1)
+    if application_time > 1:
+        info.append(f"Application time: {application_time} rounds")
+        
+    return "\n".join(info)
