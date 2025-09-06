@@ -138,8 +138,8 @@ class CmdHeal(Command):
                 if medical_state.conditions:
                     caller.msg(f"|cAvailable conditions for {target.key}:|n")
                     condition_types = {}
-                    for condition_key, condition_data in medical_state.conditions.items():
-                        cond_type = condition_data.get('type', 'unknown')
+                    for condition in medical_state.conditions:
+                        cond_type = condition.type
                         if cond_type not in condition_types:
                             condition_types[cond_type] = 0
                         condition_types[cond_type] += 1
@@ -175,9 +175,9 @@ class CmdHeal(Command):
             elif condition_type:
                 # Find conditions of the specified type
                 matching_conditions = []
-                for condition_key, condition_data in medical_state.conditions.items():
-                    if condition_data.get('type', '').lower() == condition_type:
-                        matching_conditions.append(condition_key)
+                for condition in medical_state.conditions:
+                    if condition.type.lower() == condition_type:
+                        matching_conditions.append(condition)
                 
                 if not matching_conditions:
                     caller.msg(f"|y{target.key} has no {condition_type} conditions.|n")
@@ -202,19 +202,20 @@ class CmdHeal(Command):
                 conditions_removed = 0
                 
                 # Remove conditions (least severe first)
+                severity_order = {"minor": 1, "moderate": 2, "severe": 3, "critical": 4}
                 while conditions_removed < conditions_to_heal and medical_state.conditions:
                     # Find least severe condition
-                    least_severe_key = None
+                    least_severe_condition = None
                     least_severity = float('inf')
                     
-                    for condition_key, condition_data in medical_state.conditions.items():
-                        severity = condition_data.get('severity', 1)
-                        if severity < least_severity:
-                            least_severity = severity
-                            least_severe_key = condition_key
+                    for condition in medical_state.conditions:
+                        severity_value = severity_order.get(condition.severity, 0)
+                        if severity_value < least_severity:
+                            least_severity = severity_value
+                            least_severe_condition = condition
                     
-                    if least_severe_key:
-                        medical_state.conditions.pop(least_severe_key)
+                    if least_severe_condition:
+                        medical_state.conditions.remove(least_severe_condition)
                         conditions_removed += 1
                     else:
                         break
