@@ -1103,6 +1103,9 @@ class CombatHandler(DefaultScript):
                     if not hasattr(target.ndb, NDB_PROXIMITY):
                         setattr(target.ndb, NDB_PROXIMITY, set())
                     target_proximity = getattr(target.ndb, NDB_PROXIMITY, set())
+                    if not target_proximity:  # Handle case where attribute exists but is None/empty
+                        setattr(target.ndb, NDB_PROXIMITY, set())
+                        target_proximity = set()
                     target_proximity.add(attacker)
                     setattr(target.ndb, NDB_PROXIMITY, target_proximity)
                     splattercast.msg(f"PROXIMITY_RESTORE: {attacker.key} and {target.key} proximity restored after reload.")
