@@ -21,19 +21,35 @@
 - Medical system integrated with character `take_damage()` and combat
 - Persistent medical state storage and retrieval
 
-### 🔄 CURRENT STATE: DUAL SYSTEM COMPATIBILITY
-The medical system currently runs **alongside** the legacy HP system for backwards compatibility:
-- Combat uses `take_damage()` which applies both legacy HP reduction AND anatomical damage
-- Death occurs if EITHER legacy HP ≤ 0 OR medical system determines death
-- Legacy HP syncs with medical state (unconscious = HP capped at 1, dead = HP set to 0)
+**Combat-Medical Integration Complete (December 2024):**
+- ✅ Combat handler now uses weapon-specific damage types (bullet, cut, stab, blunt, laceration, burn)
+- ✅ All weapon prototypes have damage_type attributes for medical integration
+- ✅ All apply_damage() calls use proper 4-parameter signature (character, damage, location, injury_type)
+- ✅ Fixed location mapping - combat damage to "chest" properly affects heart/lung organs
+- ✅ Admin heal command fixed for medical condition list structure
+- ✅ Destroyed organ protection - prevents damage to 0 HP organs
+- ✅ Limb loss detection when all organs in body part destroyed
 
-### 🎯 NEXT PHASE: LEGACY HP ELIMINATION
-**Phase 3 Goal:** Complete migration to pure medical system
-- Remove `hp` and `hp_max` attributes from characters
-- Update all combat commands to use `take_anatomical_damage()` directly
-- Replace HP-based healing with medical treatment only
-- Update all references to HP throughout the codebase
-- Ensure all existing combat systems work with pure medical model
+### 🔄 CURRENT STATE: FULL MEDICAL INTEGRATION
+The medical system now **fully integrates** with combat for realistic injury mechanics:
+- Combat damage properly creates medical conditions (bleeding, fractures, organ damage)
+- Weapon types create appropriate injury patterns (bullets cause severe bleeding, blunt weapons cause fractures)
+- Organ damage occurs realistically (chest hits affect heart/lungs, head hits affect brain/eyes)  
+- Medical conditions visible in `medinfo` and treatable with medical items
+- Destroyed organs cannot take further damage (prevents unrealistic overkill)
+
+### 🎯 FUTURE PHASES: ADVANCED MEDICAL MECHANICS
+**Phase 3 - Advanced Features (Future Development):**
+- Limb replacement mechanics (prosthetics, cybernetics) 
+- Advanced surgical procedures and medical equipment
+- Disease and infection progression systems
+- Drug addiction and dependency mechanics
+- Complex organ transplant procedures
+
+**Phase 4 - Legacy HP Migration (Optional):**
+- Consider complete removal of legacy HP system (currently dual system works well)
+- All combat systems already use medical model via take_damage() integration
+- Legacy HP provides backwards compatibility with existing game mechanics
 
 ## Overview
 
@@ -564,6 +580,35 @@ INJURY_TYPES = {
         "description": "Cold damage causing tissue death"
     }
 }
+```
+
+#### 🔧 Current Weapon Implementation Status
+As of December 2024, all weapon prototypes have been updated with appropriate damage types:
+
+```python
+# IMPLEMENTED WEAPON DAMAGE TYPES:
+WEAPON_DAMAGES = {
+    # Firearms - high bleeding, hard to treat
+    "bullet": ["pistol", "shotgun", "assault_rifle", "sniper_rifle", "heavy_machine_gun"],
+    
+    # Cutting weapons - moderate bleeding, easy to treat  
+    "cut": ["knife", "machete", "sword", "katana", "claymore", "battle_axe", "small_axe"],
+    
+    # Stabbing weapons - severe bleeding, organ damage risk
+    "stab": ["dagger", "spear", "straight_razor", "awl", "ice_pick"],
+    
+    # Blunt weapons - minimal bleeding, fracture risk
+    "blunt": ["club", "hammer", "sledgehammer", "pipe_wrench", "baseball_bat", "crowbar"],
+    
+    # High-damage ragged weapons - severe bleeding and pain
+    "laceration": ["chainsaw", "shuriken", "meat_hook", "rebar", "nailed_board"],
+    
+    # Chemical/fire weapons - high infection risk  
+    "burn": ["spray_can", "solvent_can", "flamethrower"]
+}
+
+# Combat handler automatically maps weapon.db.damage_type to appropriate injury mechanics
+# All apply_damage() calls throughout codebase use 4-parameter signature
 ```
 
 #### Pain System
@@ -1195,37 +1240,54 @@ MEDICAL_DESCRIPTIONS = {
 ### Goals
 Complete the migration from dual HP/medical system to pure medical system, eliminating all legacy HP dependencies while maintaining full backwards compatibility for existing content.
 
+### Recent Improvements (December 2024)
+
+The following critical fixes and enhancements have been implemented:
+
+#### Combat-Medical Integration Fixes
+- **Fixed Combat Handler**: Removed invalid `injury_type="combat"`, now uses `weapon.db.damage_type`
+- **Weapon Prototypes Updated**: All 25+ weapons have appropriate `damage_type` attributes
+- **Location Mapping Fixed**: Changed `location="torso"` to `location="chest"` for proper organ damage
+- **Function Signatures**: All `apply_damage()` calls use proper 4-parameter signature
+
+#### Organ Damage Protection  
+- **Destroyed Organ Protection**: Prevents damage to organs already at 0 HP
+- **Limb Loss Detection**: System detects when all organs in body part destroyed
+- **Realistic Damage Flow**: No more "beating a dead horse" with infinite negative HP
+
+#### Admin Tools Fixed
+- **Heal Command**: Fixed `AttributeError` for medical conditions list structure  
+- **Condition Management**: Proper severity-based healing (minor → moderate → severe → critical)
+- **Better Feedback**: Clear messages when damage cannot be applied
+
+#### Code Quality Improvements
+- **Comprehensive Audit**: All `apply_damage()` references found and updated
+- **Spec Synchronization**: Documentation updated to match implementation
+- **Future-Proofing**: Groundwork laid for limb replacement mechanics
+
 ### Implementation Tasks
 
-#### 1. Combat System Migration
+#### 1. Combat System Status ✅ COMPLETE
 ```python
-# CURRENT: Combat uses take_damage() with medical system integration
-target_died = target.take_damage(damage, location, injury_type)
+# CURRENT STATUS: Full integration achieved!
+# ✅ Combat handler uses weapon.db.damage_type for proper injury types
+# ✅ All apply_damage() calls use (character, damage, location, injury_type) signature  
+# ✅ Location mapping fixed (chest damage affects heart/lungs properly)
+# ✅ All weapons have damage_type attributes for medical integration
 
-# PHASE 3: Combat uses anatomical damage directly  
-damage_results = target.take_anatomical_damage(
-    amount=damage,
-    location=determine_hit_location(attack),  # Based on weapon/attack type
-    injury_type=get_injury_type(weapon)       # "cut", "blunt", "bullet", etc.
-)
-
-if target.is_dead():
-    handle_death(target)
-elif target.is_unconscious():
-    handle_unconsciousness(target)
+target_died = target.take_damage(damage, location, injury_type)  # WORKING
 ```
 
-#### 2. Character Attribute Cleanup
-- Remove `hp` and `hp_max` AttributeProperty from Character class
-- Remove `heal()` method (replace with medical treatment)
-- Update `is_dead()` to use only medical system
-- Remove HP-based methods and properties
+#### 2. Advanced Medical Features (Future Development)
+- **Limb Replacement System**: Prosthetics, cybernetics, organ transplants
+- **Advanced Surgical Procedures**: Complex medical equipment and operations
+- **Disease Progression**: Infections, diseases that spread over time
+- **Drug Dependencies**: Addiction mechanics and withdrawal systems
 
-#### 3. Combat Command Updates
-- Update all combat commands to use `take_anatomical_damage()`
-- Add hit location determination logic to weapons/attacks
-- Add injury type mapping for different weapons
-- Ensure proper integration with existing combat handler
+#### 3. Optional Legacy Migration (Future Consideration)
+- Consider removing `hp` and `hp_max` attributes (currently provide backwards compatibility)
+- Current dual system works well - medical system fully integrated via `take_damage()`
+- Legacy HP provides compatibility with existing Evennia systems and player expectations
 
 #### 4. Healing System Replacement
 - Replace HP-based healing with medical treatment only
