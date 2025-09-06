@@ -222,6 +222,7 @@ class Item(DefaultObject):
         # Core combat attributes
         self.db.damage = 1  # Minimal default damage
         self.db.weapon_type = "melee"  # Most objects default to melee weapons
+        self.db.damage_type = "blunt"  # Default medical system injury type
 
         # Optional future expansion
         self.db.hands_required = 1  # Assume one-handed for now
@@ -262,6 +263,7 @@ class SprayCanItem(Item):
         # Combat properties for spray can as weapon
         self.db.damage = 2  # Slightly better than default item
         self.db.weapon_type = "spraycan"  # Specific weapon type for combat messages
+        self.db.damage_type = "burn"  # Chemical burns from spray paint/solvent
         
     def get_display_name(self, looker, **kwargs):
         """
@@ -376,6 +378,7 @@ class SolventCanItem(Item):
         # Combat properties for solvent can as weapon
         self.db.damage = 2  # Same as spray can
         self.db.weapon_type = "spraycan"  # Same weapon type as spray can
+        self.db.damage_type = "burn"  # Chemical burns from solvent
         
     def get_display_name(self, looker, **kwargs):
         """

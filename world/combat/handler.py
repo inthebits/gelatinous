@@ -1056,7 +1056,7 @@ class CombatHandler(DefaultScript):
 
     def _determine_injury_type(self, weapon):
         """
-        Determine the injury type based on weapon type for medical system integration.
+        Determine the injury type based on weapon's damage_type attribute.
         
         Args:
             weapon: The weapon object being used (or None for unarmed)
@@ -1067,46 +1067,9 @@ class CombatHandler(DefaultScript):
         if not weapon:
             return "blunt"  # Unarmed attacks are blunt trauma
         
-        # Get weapon type if available
-        weapon_type = "melee"  # Default
-        if hasattr(weapon, 'db') and hasattr(weapon.db, 'weapon_type'):
-            weapon_type = weapon.db.weapon_type
-        
-        # Map weapon types to injury types
-        weapon_to_injury_map = {
-            "pistol": "bullet",
-            "rifle": "bullet", 
-            "shotgun": "bullet",
-            "submachine_gun": "bullet",
-            "assault_rifle": "bullet",
-            "sniper_rifle": "bullet",
-            "firearm": "bullet",  # Generic firearm
-            
-            "knife": "stab",
-            "dagger": "stab", 
-            "sword": "cut",
-            "blade": "cut",
-            "axe": "cut",
-            "machete": "cut",
-            
-            "chainsaw": "laceration",
-            "saw": "laceration",
-            "claws": "laceration",
-            
-            "club": "blunt",
-            "bat": "blunt", 
-            "hammer": "blunt",
-            "mace": "blunt",
-            "staff": "blunt",
-            "pipe": "blunt",
-            
-            "flamethrower": "burn",
-            "molotov": "burn",
-            "torch": "burn"
-        }
-        
-        # Return mapped injury type or default to blunt
-        return weapon_to_injury_map.get(weapon_type, "blunt")
+        # Get damage_type from weapon, default to "blunt" if not specified
+        damage_type = getattr(weapon.db, 'damage_type', 'blunt')
+        return damage_type
 
     def _process_attack(self, attacker, target, attacker_entry, combatants_list):
         """

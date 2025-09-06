@@ -145,6 +145,7 @@ SWORD = {
     "desc": "A well-balanced sword. Good for both combat and deflecting projectiles.",
     "damage": 10,
     "weapon_type": "long_sword",  # Using existing message type
+    "damage_type": "cut",  # Medical system injury type
 }
 
 # Baseball bat (enhanced deflection)
@@ -156,6 +157,7 @@ BASEBALL_BAT = {
     "damage": 8,
     "deflection_bonus": 0.30,  # +6 to deflection threshold (0.30 * 20)
     "weapon_type": "baseball_bat",  # Using existing message type
+    "damage_type": "blunt",  # Medical system injury type
 }
 
 # Staff (good deflection)
@@ -167,6 +169,7 @@ STAFF = {
     "damage": 7,
     "deflection_bonus": 0.10,  # +2 to deflection threshold (0.10 * 20)
     "weapon_type": "staff",  # Using existing message type
+    "damage_type": "blunt",  # Medical system injury type
 }
 
 # Tennis Racket (excellent deflection!)
@@ -178,6 +181,7 @@ TENNIS_RACKET = {
     "damage": 5,  # Lower damage but amazing deflection
     "deflection_bonus": 0.50,  # +10 to deflection threshold (0.50 * 20) - BEST deflection weapon!
     "weapon_type": "tennis_racket",
+    "damage_type": "blunt",  # Medical system injury type
     "hands": 1,
 }
 
@@ -190,6 +194,7 @@ DAGGER = {
     "damage": 6,
     "deflection_bonus": -0.05,  # -1 to deflection threshold (penalty)
     "weapon_type": "knife",  # Using existing message type
+    "damage_type": "stab",  # Medical system injury type
 }
 
 # Chainsaw (devastating damage, no deflection)
@@ -201,6 +206,7 @@ CHAINSAW = {
     "damage": 25,  # Extremely high damage
     "deflection_bonus": -0.50,  # -10 to deflection threshold (major penalty - chainsaws are terrible for defense)
     "weapon_type": "chainsaw",  # Using our newly converted message type
+    "damage_type": "laceration",  # Medical system injury type
 }
 
 # =============================================================================
@@ -233,6 +239,7 @@ THROWING_KNIFE = {
     "damage": 8,
     "attrs": [
         ("weapon_type", "throwing_knife"),
+        ("damage_type", "stab"),  # Medical system injury type
     ]
 }
 
@@ -245,6 +252,7 @@ THROWING_AXE = {
     "damage": 12,
     "attrs": [
         ("weapon_type", "throwing_axe"),
+        ("damage_type", "cut"),  # Medical system injury type
     ]
 }
 
@@ -257,6 +265,7 @@ SHURIKEN = {
     "damage": 6,
     "attrs": [
         ("weapon_type", "shuriken"),
+        ("damage_type", "laceration"),  # Medical system injury type
     ]
 }
 
@@ -291,6 +300,7 @@ LIGHT_PISTOL = {
     "damage": 12,
     "attrs": [
         ("weapon_type", "light_pistol"),
+        ("damage_type", "bullet"),  # Medical system injury type
         ("hands_required", 1),  # Pistols can be fired one-handed
     ]
 }
@@ -304,6 +314,7 @@ HEAVY_PISTOL = {
     "damage": 18,
     "attrs": [
         ("weapon_type", "heavy_pistol"),
+        ("damage_type", "bullet"),  # Medical system injury type
         ("hands_required", 1),  # Can be fired one-handed but difficult
     ]
 }
@@ -317,6 +328,7 @@ PUMP_SHOTGUN = {
     "damage": 20,
     "attrs": [
         ("weapon_type", "pump-action_shotgun"),
+        ("damage_type", "bullet"),  # Medical system injury type
     ]
 }
 
@@ -329,6 +341,7 @@ BREAK_SHOTGUN = {
     "damage": 25,
     "attrs": [
         ("weapon_type", "break-action_shotgun"),
+        ("damage_type", "bullet"),  # Medical system injury type
     ]
 }
 
@@ -341,6 +354,7 @@ BOLT_RIFLE = {
     "damage": 22,
     "attrs": [
         ("weapon_type", "bolt-action_rifle"),
+        ("damage_type", "bullet"),  # Medical system injury type
     ]
 }
 
@@ -353,6 +367,7 @@ ANTI_MATERIAL_RIFLE = {
     "damage": 35,
     "attrs": [
         ("weapon_type", "anti-material_rifle"),
+        ("damage_type", "bullet"),  # Medical system injury type
         ("hands_required", 2),  # Requires bipod/support
     ]
 }
@@ -366,6 +381,7 @@ ASSAULT_RIFLE = {
     "damage": 15,
     "attrs": [
         ("weapon_type", "assault_rifle"),  # May need to create message file
+        ("damage_type", "bullet"),  # Medical system injury type
     ]
 }
 
@@ -378,6 +394,7 @@ SMG = {
     "damage": 10,
     "attrs": [
         ("weapon_type", "smg"),  # May need to create message file
+        ("damage_type", "bullet"),  # Medical system injury type
         ("hands_required", 1),  # Can be fired one-handed
     ]
 }
@@ -428,6 +445,7 @@ SPRAYPAINT_CAN = {
         ("aerosol_contents", "spraypaint"),
         ("damage", 2),
         ("weapon_type", "spraycan"),
+        ("damage_type", "burn"),  # Medical system injury type - chemical burn
         ("hands_required", 1)
     ],
     "tags": [
@@ -450,6 +468,7 @@ SOLVENT_CAN = {
         ("aerosol_contents", "solvent"),
         ("damage", 2),
         ("weapon_type", "spraycan"), 
+        ("damage_type", "burn"),  # Medical system injury type - chemical burn
         ("hands_required", 1)
     ],
     "tags": [
