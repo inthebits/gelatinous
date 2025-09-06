@@ -61,6 +61,7 @@ EXPLOSIVE_BASE = {
     "pin_pulled": False,
     "chain_trigger": True,
     "dud_chance": 0.05,  # 5% chance to fail
+    "damage_type": "laceration",  # Fragmentation/shrapnel wounds
 }
 
 # Standard fragmentation grenade
@@ -104,6 +105,7 @@ FLASHBANG = {
     "fuse_time": 6,
     "blast_damage": 5,  # Minimal damage, mainly stunning
     "dud_chance": 0.10,  # 10% dud chance
+    "damage_type": "blunt",  # Concussion/pressure wave damage
 }
 
 # Smoke grenade (minimal damage)
@@ -115,6 +117,7 @@ SMOKE_GRENADE = {
     "fuse_time": 4,
     "blast_damage": 2,  # Very low damage
     "dud_chance": 0.15,  # Higher dud chance
+    "damage_type": "burn",  # Chemical irritation from smoke
 }
 
 # =============================================================================

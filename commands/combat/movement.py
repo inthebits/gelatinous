@@ -990,14 +990,15 @@ class CmdJump(Command):
                     # Cruel damage distribution
                     from world.combat.utils import apply_damage
                     victim_alive_before = not grappled_victim.is_dead()
-                    apply_damage(grappled_victim, blast_damage * 2, location="torso", injury_type="explosion")  # Victim takes double damage
+                    explosive_damage_type = getattr(explosive.db, "damage_type", "laceration")
+                    apply_damage(grappled_victim, blast_damage * 2, location="torso", injury_type=explosive_damage_type)  # Victim takes double damage from shrapnel
                     victim_alive_after = not grappled_victim.is_dead()
                     
                     # Hero damage - currently set to 0 for maximum cruelty (adjustable)
                     hero_damage_multiplier = 0.0  # Change this to increase hero damage if desired
                     hero_damage = int(blast_damage * hero_damage_multiplier)
                     if hero_damage > 0:
-                        apply_damage(self.caller, hero_damage, location="torso", injury_type="explosion")
+                        apply_damage(self.caller, hero_damage, location="torso", injury_type=explosive_damage_type)
                     
                     # Check if victim died and add guilt messaging
                     if not victim_alive_after and victim_alive_before:
@@ -1008,7 +1009,8 @@ class CmdJump(Command):
                 else:
                     # Standard heroic sacrifice: hero takes ALL damage, others protected
                     from world.combat.utils import apply_damage
-                    apply_damage(self.caller, blast_damage)
+                    explosive_damage_type = getattr(explosive.db, "damage_type", "laceration")
+                    apply_damage(self.caller, blast_damage, location="torso", injury_type=explosive_damage_type)
                     splattercast.msg(f"JUMP_SACRIFICE_HEROIC: {self.caller.key} absorbed {blast_damage} damage, protecting all others")
                 
                 # Move caller to explosive's location and inherit ALL its proximity relationships
@@ -1166,8 +1168,8 @@ class CmdJump(Command):
                 grappler_damage = max(1, int(base_damage * 0.3))  # Grappler takes 30% due to bodyshield
                 
                 from world.combat.utils import apply_damage
-                apply_damage(grappled_victim, victim_damage)
-                apply_damage(self.caller, grappler_damage)
+                apply_damage(grappled_victim, victim_damage, location="torso", injury_type="blunt")
+                apply_damage(self.caller, grappler_damage, location="torso", injury_type="blunt")
                 
                 self.caller.msg(f"|gYou use {grappled_victim.key} to cushion your fall! You take {grappler_damage} damage while they absorb the impact.|n")
                 grappled_victim.msg(f"|r{self.caller.key} uses you as a bodyshield during the fall! You take {victim_damage} damage!|n")
@@ -1176,7 +1178,7 @@ class CmdJump(Command):
                 # Normal fall damage without bodyshield
                 base_damage = getattr(exit_obj.db, "fall_damage", 8)
                 from world.combat.utils import apply_damage
-                apply_damage(self.caller, base_damage)
+                apply_damage(self.caller, base_damage, location="torso", injury_type="blunt")
                 self.caller.msg(f"|rYou land hard and take {base_damage} damage from the fall!|n")
             
             # Clear combat state if fleeing via edge
@@ -1521,7 +1523,7 @@ class CmdJump(Command):
                 
                 # Apply fall damage
                 from world.combat.utils import apply_damage
-                apply_damage(self.caller, actual_fall_damage)
+                apply_damage(self.caller, actual_fall_damage, location="torso", injury_type="blunt")
                 
                 # Clear combat state (fell out of combat)
                 handler = getattr(self.caller.ndb, "combat_handler", None)
@@ -1548,7 +1550,7 @@ class CmdJump(Command):
         fall_damage = getattr(exit_obj.db, "fall_damage", 8)  # Default moderate damage
         
         from world.combat.utils import apply_damage
-        apply_damage(self.caller, fall_damage)
+        apply_damage(self.caller, fall_damage, location="torso", injury_type="blunt")
         
         # Skip turn due to failed attempt
         setattr(self.caller.ndb, NDB_SKIP_ROUND, True)
@@ -1728,8 +1730,8 @@ class CmdJump(Command):
                     grappler_damage = max(1, int(actual_fall_damage * 0.25))  # Grappler takes 25% due to bodyshield
                     
                     from world.combat.utils import apply_damage
-                    apply_damage(actual_grappled_victim, victim_damage)
-                    apply_damage(self.caller, grappler_damage)
+                    apply_damage(actual_grappled_victim, victim_damage, location="torso", injury_type="blunt")
+                    apply_damage(self.caller, grappler_damage, location="torso", injury_type="blunt")
                     
                     self.caller.msg(f"|gYou use {actual_grappled_victim.key} to cushion your landing! You take {grappler_damage} damage while they absorb most of the impact.|n")
                     actual_grappled_victim.msg(f"|r{self.caller.key} uses you as a bodyshield during the landing! You take {victim_damage} damage from being crushed beneath them!|n")
@@ -1740,8 +1742,8 @@ class CmdJump(Command):
                     grappler_damage = max(1, int(actual_fall_damage * 0.5))  # Grappler takes 50% due to bodyshield
                     
                     from world.combat.utils import apply_damage
-                    apply_damage(actual_grappled_victim, victim_damage)
-                    apply_damage(self.caller, grappler_damage)
+                    apply_damage(actual_grappled_victim, victim_damage, location="torso", injury_type="blunt")
+                    apply_damage(self.caller, grappler_damage, location="torso", injury_type="blunt")
                     
                     self.caller.msg(f"|rYou crash hard but {actual_grappled_victim.key} cushions your impact! You take {grappler_damage} damage while they are crushed beneath you!|n")
                     actual_grappled_victim.msg(f"|R{self.caller.key} uses you as a human cushion during the devastating crash! You take {victim_damage} damage from being crushed!|n")
@@ -1820,7 +1822,7 @@ class CmdJump(Command):
                     reduced_damage = max(1, actual_fall_damage // 3)  # Much less damage on success
                     if reduced_damage > 1:
                         from world.combat.utils import apply_damage
-                        apply_damage(self.caller, reduced_damage)
+                        apply_damage(self.caller, reduced_damage, location="torso", injury_type="blunt")
                         self.caller.msg(f"|gYou land gracefully but still feel the impact! You take {reduced_damage} damage from the controlled landing.|n")
                         splattercast.msg(f"JUMP_EDGE_SUCCESS_DAMAGE: {self.caller.key} landed successfully, took {reduced_damage} controlled fall damage")
                     else:
@@ -1829,7 +1831,7 @@ class CmdJump(Command):
                 else:
                     # Failed landing - full damage
                     from world.combat.utils import apply_damage
-                    apply_damage(self.caller, actual_fall_damage)
+                    apply_damage(self.caller, actual_fall_damage, location="torso", injury_type="blunt")
                     self.caller.msg(f"|rYou crash hard into the ground after falling {actual_fall_distance} {'story' if actual_fall_distance == 1 else 'stories'}! You take {actual_fall_damage} damage!|n")
                     splattercast.msg(f"JUMP_EDGE_CRASH: {self.caller.key} crashed after {actual_fall_distance} story fall, took {actual_fall_damage} damage")
             
