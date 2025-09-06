@@ -20,6 +20,7 @@ from commands import CmdCharacter
 from commands import CmdInventory
 from commands import CmdAdmin
 from commands import CmdClothing
+from commands import CmdMedical
 from commands.CmdSpawnMob import CmdSpawnMob
 from commands.CmdAdmin import CmdHeal, CmdPeace, CmdTestDeathCurtain, CmdWeather
 from commands.combat.cmdset_combat import CombatCmdSet
@@ -98,6 +99,12 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdClothing.CmdWear())
         self.add(CmdClothing.CmdRemove())
         self.add(CmdClothing.CmdRollUp())
+        
+        # Add medical system commands
+        self.add(CmdMedical.CmdMedical())
+        self.add(CmdMedical.CmdDamageTest())
+        self.add(CmdMedical.CmdHealTest())
+        self.add(CmdMedical.CmdMedicalInfo())
         self.add(CmdClothing.CmdZip())
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

@@ -93,28 +93,101 @@ class Character(ObjectParent, DefaultCharacter):
         if not self.longdesc:
             self.longdesc = DEFAULT_LONGDESC_LOCATIONS.copy()
 
-# Mortality Management  
-    def take_damage(self, amount):
-        """
-        Reduces current HP by `amount`.
-        Triggers death if HP falls to zero or below.
+        # Initialize medical system
+        self._initialize_medical_state()
+
+    def _initialize_medical_state(self):
+        """Initialize the character's medical state."""
+        from world.medical.utils import initialize_character_medical_state
+        initialize_character_medical_state(self)
+
+    @property
+    def medical_state(self):
+        """Get the character's medical state, loading from db if needed."""
+        if not hasattr(self, '_medical_state') or self._medical_state is None:
+            from world.medical.utils import load_medical_state
+            load_medical_state(self)
+        return self._medical_state
         
-        Returns True if the character died from this damage.
+    @medical_state.setter
+    def medical_state(self, value):
+        """Set the character's medical state."""
+        self._medical_state = value
+        
+    def save_medical_state(self):
+        """Save medical state to database."""
+        from world.medical.utils import save_medical_state
+        save_medical_state(self)
+
+# Mortality Management  
+    def take_damage(self, amount, location="chest", injury_type="generic"):
+        """
+        Reduces current HP by `amount` and applies anatomical damage.
+        Triggers death if vital organs are destroyed or HP falls to zero.
+        
+        Args:
+            amount (int): Damage amount
+            location (str): Body location hit (defaults to chest)
+            injury_type (str): Type of injury for medical system
+        
+        Returns:
+            bool: True if the character died from this damage.
         """
         if not isinstance(amount, int) or amount <= 0:
             return False  # Ignore bad inputs
 
+        # Apply damage to legacy HP system (for backwards compatibility)
         self.hp = max(self.hp - amount, 0)
-        # This is where descriptive indicator of how damaged you are would go.
-        # self.msg(f"|rYou take {amount} damage!|n")
 
-        # Return death status but don't trigger death processing yet
-        # This allows the caller to handle death at the appropriate time
-        return self.is_dead()
+        # Apply anatomical damage through medical system
+        from world.medical.utils import apply_anatomical_damage
+        damage_results = apply_anatomical_damage(self, amount, location, injury_type)
+        
+        # Save medical state after damage
+        self.save_medical_state()
+        
+        # Check for death from medical system
+        medical_death = self.medical_state.is_dead()
+        legacy_death = self.hp <= 0
+        
+        return medical_death or legacy_death
+
+    def take_anatomical_damage(self, amount, location, injury_type="generic"):
+        """
+        Apply damage to a specific body location with injury type.
+        
+        This is the new preferred method for applying damage that integrates
+        fully with the medical system.
+        
+        Args:
+            amount (int): Damage amount
+            location (str): Body location (head, chest, left_arm, etc.)
+            injury_type (str): Type of injury (cut, blunt, bullet, etc.)
+            
+        Returns:
+            dict: Detailed results of damage application
+        """
+        from world.medical.utils import apply_anatomical_damage
+        damage_results = apply_anatomical_damage(self, amount, location, injury_type)
+        
+        # Update legacy HP based on overall health
+        # This maintains compatibility with existing systems
+        if self.medical_state.is_dead():
+            self.hp = 0
+        elif self.medical_state.is_unconscious():
+            self.hp = min(self.hp, 1)  # Very low but not dead
+            
+        # Save medical state
+        self.save_medical_state()
+        
+        return damage_results
 
     def heal(self, amount):
         """
         Restores HP by `amount`, without exceeding hp_max.
+        
+        Note: This only affects legacy HP. For medical healing,
+        use heal_medical_condition() or medical tools.
         """
         if not isinstance(amount, int) or amount <= 0:
             return  # Ignore bad inputs
@@ -127,9 +200,56 @@ class Character(ObjectParent, DefaultCharacter):
 
     def is_dead(self):
         """
-        Returns True if HP is 0 or lower.
+        Returns True if character should be considered dead.
+        
+        Checks both legacy HP system and medical system for death conditions.
         """
-        return self.hp <= 0
+        legacy_dead = self.hp <= 0
+        
+        # Check medical system if available
+        if hasattr(self, 'medical_state') and self.medical_state:
+            medical_dead = self.medical_state.is_dead()
+            return legacy_dead or medical_dead
+        
+        return legacy_dead
+        
+    def is_unconscious(self):
+        """
+        Returns True if character is unconscious.
+        
+        Uses medical system to determine unconsciousness from injuries,
+        blood loss, or pain.
+        """
+        if hasattr(self, 'medical_state') and self.medical_state:
+            return self.medical_state.is_unconscious()
+        return False
+        
+    def get_medical_status(self):
+        """
+        Get a detailed medical status report.
+        
+        Returns:
+            str: Human-readable medical status
+        """
+        from world.medical.utils import get_medical_status_summary
+        return get_medical_status_summary(self)
+        
+    def add_medical_condition(self, condition_type, location=None, severity="minor", **kwargs):
+        """
+        Add a medical condition to this character.
+        
+        Args:
+            condition_type (str): Type of condition (bleeding, fracture, etc.)
+            location (str, optional): Body location affected
+            severity (str): Severity level
+            **kwargs: Additional condition properties
+            
+        Returns:
+            MedicalCondition: The added condition
+        """
+        condition = self.medical_state.add_condition(condition_type, location, severity, **kwargs)
+        self.save_medical_state()
+        return condition
 
     def get_search_candidates(self, searchdata, **kwargs):
         """
