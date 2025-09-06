@@ -105,7 +105,6 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         # Add medical system commands
         self.add(CmdMedical.CmdMedical())
         self.add(CmdMedical.CmdDamageTest())
-        self.add(CmdMedical.CmdHealTest())
         self.add(CmdMedical.CmdMedicalInfo())
         
         # Add consumption method commands
