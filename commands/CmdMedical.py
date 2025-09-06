@@ -103,7 +103,7 @@ class CmdDamageTest(Command):
         injury_type = args[2] if len(args) > 2 else "generic"
         
         # Apply damage
-        results = caller.take_anatomical_damage(damage_amount, location, injury_type)
+        results = caller.take_damage_detailed(damage_amount, location, injury_type)
         
         # Show results
         caller.msg(f"|rYou take {damage_amount} {injury_type} damage to your {location}!|n")
