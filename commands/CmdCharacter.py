@@ -10,6 +10,7 @@ from world.combat.constants import (
     VALID_LONGDESC_LOCATIONS,
     SKINTONE_PALETTE, VALID_SKINTONES
 )
+from world.medical.utils import get_medical_status_description
 
 class CmdStats(Command):
     """
@@ -46,20 +47,14 @@ class CmdStats(Command):
         intellect = target.intellect
         motorics = target.motorics
         
-        # Get medical status instead of HP
+        # Get medical status using medical terminology
         if hasattr(target, 'medical_state') and target.medical_state:
-            medical_state = target.medical_state
-            if medical_state.is_dead():
-                vitals_display = "DECEASED"
-            elif medical_state.is_unconscious():
-                vitals_display = "UNCONSCIOUS"
-            elif medical_state.conditions:
-                injury_count = len(medical_state.conditions)
-                vitals_display = f"{injury_count} INJURIES"
-            else:
-                vitals_display = "HEALTHY"
+            status_text, color_code = get_medical_status_description(target.medical_state)
+            vitals_display = f"{color_code}{status_text}"
+            vitals_reset = COLOR_SUCCESS
         else:
             vitals_display = "NO DATA"
+            vitals_reset = ""
 
         # Fixed format to exactly 48 visible characters per row
         string = f"""{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * 48}{BOX_TOP_RIGHT}{COLOR_NORMAL}
@@ -73,7 +68,7 @@ class CmdStats(Command):
 {COLOR_SUCCESS}{BOX_VERTICAL}         Intellect:  {intellect:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}         Motorics:   {motorics:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Vitals:     {vitals_display[:7]:>7}                    {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Vitals:     {vitals_display:<12}{vitals_reset}                   {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * 48}{BOX_TEE_UP}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL} Notes:                                         {BOX_VERTICAL}{COLOR_NORMAL}

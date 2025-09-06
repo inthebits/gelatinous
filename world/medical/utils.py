@@ -558,3 +558,48 @@ def get_medical_item_info(item, viewer):
         info.append(f"Application time: {application_time} rounds")
         
     return "\n".join(info)
+
+
+def get_medical_status_description(medical_state):
+    """
+    Get a descriptive medical status based on character's medical state.
+    
+    Args:
+        medical_state: Character's medical state object
+        
+    Returns:
+        tuple: (status_text, color_code) - medical status and appropriate color
+    """
+    if medical_state.is_dead():
+        return ("DECEASED", "|r")
+    
+    if medical_state.is_unconscious():
+        return ("UNCONSCIOUS", "|R")
+    
+    # Get vital signs
+    blood_level = getattr(medical_state, 'blood_level', 100.0)
+    pain_level = getattr(medical_state, 'pain_level', 0.0)
+    consciousness = getattr(medical_state, 'consciousness', 100.0)
+    condition_count = len(medical_state.conditions) if medical_state.conditions else 0
+    
+    # Check for critical conditions
+    if blood_level < 30 or consciousness < 40:
+        return ("CRITICAL", "|r")
+    
+    # Check for serious conditions  
+    if blood_level < 60 or pain_level > 60 or consciousness < 70:
+        return ("SERIOUS", "|y")
+        
+    # Check for stable with injuries
+    if condition_count > 0:
+        if blood_level < 80 or pain_level > 30:
+            return ("INJURED", "|y")
+        else:
+            return ("STABLE", "|g")
+    
+    # Perfect health
+    if blood_level >= 95 and pain_level <= 5 and consciousness >= 95:
+        return ("OPTIMAL", "|g")
+    
+    # Good health with minor issues
+    return ("HEALTHY", "|g")
