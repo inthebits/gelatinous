@@ -190,8 +190,8 @@ hp_max = 10 + (grit * 2)  # Dynamic max HP based on Grit  # TO BE REMOVED
 def heal(self, amount):  # Replace with medical treatment only
 def is_dead(self): return self.hp <= 0  # Replace with medical_state.is_dead()
 
-# Combat integration still uses legacy system:
-target.take_damage(damage)  # Currently does BOTH systems
+# Combat integration now uses medical system:
+target.take_damage(damage, location, injury_type)  # Uses medical system with proper injury types
 # Phase 3: Replace with target.take_anatomical_damage(damage, location, injury_type)
 ```
 
@@ -1199,8 +1199,8 @@ Complete the migration from dual HP/medical system to pure medical system, elimi
 
 #### 1. Combat System Migration
 ```python
-# CURRENT: Combat uses take_damage() with dual systems
-target_died = target.take_damage(damage)
+# CURRENT: Combat uses take_damage() with medical system integration
+target_died = target.take_damage(damage, location, injury_type)
 
 # PHASE 3: Combat uses anatomical damage directly  
 damage_results = target.take_anatomical_damage(

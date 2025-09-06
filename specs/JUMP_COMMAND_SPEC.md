@@ -126,7 +126,8 @@ def jump_on_explosive(caller, explosive):
     
     # Hero takes all damage
     hero_damage = explosive.db.blast_damage + 10  # heroic bonus damage
-    apply_damage(caller, hero_damage)
+    explosive_damage_type = getattr(explosive.db, "damage_type", "laceration")
+    apply_damage(caller, hero_damage, location="torso", injury_type=explosive_damage_type)
     
     # Cancel normal explosion
     cancel_explosive_timer(explosive)
