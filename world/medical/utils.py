@@ -102,9 +102,13 @@ def apply_anatomical_damage(character, damage_amount, location, injury_type="gen
     Returns:
         dict: Results of damage application
     """
-    if not hasattr(character, 'medical_state') or character.medical_state is None:
-        # Initialize medical state if it doesn't exist
-        character.medical_state = MedicalState(character)
+    # Ensure medical state exists - access property to trigger initialization
+    try:
+        medical_state = character.medical_state
+    except AttributeError:
+        # Initialize medical state if character doesn't have the property
+        initialize_character_medical_state(character)
+        medical_state = character.medical_state
         
     medical_state = character.medical_state
     
@@ -191,7 +195,12 @@ def get_medical_status_summary(character):
     Returns:
         str: Medical status description
     """
-    if not hasattr(character, 'medical_state') or character.medical_state is None:
+    try:
+        medical_state = character.medical_state
+    except AttributeError:
+        return "No medical information available."
+        
+    if medical_state is None:
         return "No medical information available."
         
     medical_state = character.medical_state
@@ -239,11 +248,11 @@ def initialize_character_medical_state(character):
     Args:
         character: Character object to initialize
     """
-    if not hasattr(character, 'medical_state') or character.medical_state is None:
-        character.medical_state = MedicalState(character)
+    if not hasattr(character, '_medical_state') or character._medical_state is None:
+        character._medical_state = MedicalState(character)
         
         # Store in db for persistence
-        character.db.medical_state = character.medical_state.to_dict()
+        character.db.medical_state = character._medical_state.to_dict()
 
 
 def save_medical_state(character):
@@ -253,8 +262,12 @@ def save_medical_state(character):
     Args:
         character: Character with medical state to save
     """
-    if hasattr(character, 'medical_state') and character.medical_state is not None:
-        character.db.medical_state = character.medical_state.to_dict()
+    try:
+        medical_state = character.medical_state
+        if medical_state is not None:
+            character.db.medical_state = medical_state.to_dict()
+    except AttributeError:
+        pass  # Character doesn't have medical state
 
 
 def load_medical_state(character):
@@ -269,7 +282,7 @@ def load_medical_state(character):
     """
     medical_data = character.db.medical_state
     if medical_data:
-        character.medical_state = MedicalState.from_dict(medical_data, character)
+        character._medical_state = MedicalState.from_dict(medical_data, character)
         return True
     else:
         # Initialize new medical state if none exists

@@ -44,7 +44,12 @@ class CmdMedical(Command):
             is_self = (target == caller)
             
         # Check if target has medical state
-        if not hasattr(target, 'medical_state'):
+        try:
+            medical_state = target.medical_state
+            if medical_state is None:
+                caller.msg(f"{target.get_display_name(caller)} has no medical information available.")
+                return
+        except AttributeError:
             caller.msg(f"{target.get_display_name(caller)} has no medical information available.")
             return
             
@@ -147,7 +152,12 @@ class CmdHealTest(Command):
         """Execute the heal test command."""
         caller = self.caller
         
-        if not hasattr(caller, 'medical_state'):
+        try:
+            medical_state = caller.medical_state
+            if medical_state is None:
+                caller.msg("No medical state to heal.")
+                return
+        except AttributeError:
             caller.msg("No medical state to heal.")
             return
             
@@ -223,7 +233,12 @@ class CmdMedicalInfo(Command):
         caller = self.caller
         args = self.args.strip().lower()
         
-        if not hasattr(caller, 'medical_state'):
+        try:
+            medical_state = caller.medical_state
+            if medical_state is None:
+                caller.msg("No medical information available.")
+                return
+        except AttributeError:
             caller.msg("No medical information available.")
             return
             

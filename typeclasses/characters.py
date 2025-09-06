@@ -207,9 +207,13 @@ class Character(ObjectParent, DefaultCharacter):
         legacy_dead = self.hp <= 0
         
         # Check medical system if available
-        if hasattr(self, 'medical_state') and self.medical_state:
-            medical_dead = self.medical_state.is_dead()
-            return legacy_dead or medical_dead
+        try:
+            medical_state = self.medical_state
+            if medical_state:
+                medical_dead = medical_state.is_dead()
+                return legacy_dead or medical_dead
+        except AttributeError:
+            pass  # Medical system not available
         
         return legacy_dead
         
@@ -220,8 +224,12 @@ class Character(ObjectParent, DefaultCharacter):
         Uses medical system to determine unconsciousness from injuries,
         blood loss, or pain.
         """
-        if hasattr(self, 'medical_state') and self.medical_state:
-            return self.medical_state.is_unconscious()
+        try:
+            medical_state = self.medical_state
+            if medical_state:
+                return medical_state.is_unconscious()
+        except AttributeError:
+            pass  # Medical system not available
         return False
         
     def get_medical_status(self):
