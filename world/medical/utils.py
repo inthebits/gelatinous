@@ -48,13 +48,15 @@ def calculate_hit_weights_for_location(location):
     return hit_weights
 
 
-def distribute_damage_to_organs(location, total_damage, injury_type="generic"):
+def distribute_damage_to_organs(location, total_damage, medical_state, injury_type="generic"):
     """
     Distribute damage across organs in a body location based on hit weights.
+    Only distributes damage to organs that aren't already destroyed.
     
     Args:
         location (str): Body location hit
         total_damage (int): Total damage to distribute
+        medical_state: Character's medical state to check organ status
         injury_type (str): Type of injury
         
     Returns:
@@ -63,9 +65,21 @@ def distribute_damage_to_organs(location, total_damage, injury_type="generic"):
     organs = get_organ_by_body_location(location)
     if not organs:
         return {}
+    
+    # Filter out destroyed organs - can't damage what's already destroyed
+    functional_organs = []
+    for organ_name in organs:
+        organ = medical_state.get_organ(organ_name)
+        if not organ.is_destroyed():
+            functional_organs.append(organ_name)
+    
+    # If all organs in this location are destroyed, no damage can be applied
+    if not functional_organs:
+        return {}
         
     hit_weights = calculate_hit_weights_for_location(location)
-    total_weight = sum(hit_weights.values())
+    # Recalculate total weight using only functional organs
+    total_weight = sum(hit_weights.get(organ_name, 0) for organ_name in functional_organs)
     
     if total_weight == 0:
         return {}
@@ -73,16 +87,16 @@ def distribute_damage_to_organs(location, total_damage, injury_type="generic"):
     damage_distribution = {}
     remaining_damage = total_damage
     
-    # Distribute damage proportionally based on hit weights
-    for organ_name in organs[:-1]:  # All but last organ
+    # Distribute damage proportionally based on hit weights (functional organs only)
+    for organ_name in functional_organs[:-1]:  # All but last functional organ
         organ_weight = hit_weights.get(organ_name, 0)
         organ_damage = int((organ_weight / total_weight) * total_damage)
         damage_distribution[organ_name] = organ_damage
         remaining_damage -= organ_damage
         
-    # Give remaining damage to last organ to ensure total is preserved
-    if organs:
-        damage_distribution[organs[-1]] = remaining_damage
+    # Give remaining damage to last functional organ to ensure total is preserved
+    if functional_organs:
+        damage_distribution[functional_organs[-1]] = remaining_damage
         
     return damage_distribution
 
@@ -112,8 +126,23 @@ def apply_anatomical_damage(character, damage_amount, location, injury_type="gen
         
     medical_state = character.medical_state
     
-    # Distribute damage to organs in the location
-    damage_distribution = distribute_damage_to_organs(location, damage_amount, injury_type)
+    # Distribute damage to organs in the location (only to functional organs)
+    damage_distribution = distribute_damage_to_organs(location, damage_amount, medical_state, injury_type)
+    
+    # Check if all organs in this location are destroyed (potential limb loss)
+    if not damage_distribution:
+        organs_in_location = get_organ_by_body_location(location)
+        if organs_in_location:
+            # All organs destroyed - this represents total destruction of body part
+            return {
+                "organs_damaged": [],
+                "organs_destroyed": [],
+                "conditions_added": [],
+                "total_damage": 0,  # No damage applied since everything is already destroyed
+                "location": location,
+                "limb_lost": True,  # Flag for future limb loss mechanics
+                "message": f"No damage applied - all organs in {location} are already destroyed"
+            }
     
     results = {
         "organs_damaged": [],

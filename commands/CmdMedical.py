@@ -105,6 +105,11 @@ class CmdDamageTest(Command):
         # Apply damage
         results = caller.take_damage_detailed(damage_amount, location, injury_type)
         
+        # Check if damage was prevented due to destroyed limb
+        if results.get("limb_lost"):
+            caller.msg(f"|y{results.get('message', 'No damage applied - location already destroyed')}|n")
+            return
+        
         # Show results
         caller.msg(f"|rYou take {damage_amount} {injury_type} damage to your {location}!|n")
         
