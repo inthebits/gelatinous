@@ -11,16 +11,21 @@ class CmdHeal(Command):
 
     Usage:
         @heal <target> [= <amount>]
+        @heal <target> [= <condition_type>]
+        @heal <target> [= <condition_type> <amount>]
         @heal here [= <amount>]
         @heal <room #> [= <amount>]
     
     Without amount: Completely heal target (remove all medical conditions)
     With amount: Heal a specific number of medical conditions (least severe first)
+    With condition_type: Heal only specific types of conditions
     
     Examples:
         @heal bob - Completely heal bob
+        @heal bob = bleeding - Heal all bleeding conditions
+        @heal bob = fracture 2 - Heal 2 fracture conditions
         @heal here = 3 - Heal 3 conditions from everyone here
-        @heal #123 - Fully heal everyone in room #123
+        @heal bob = list - Show available condition types to heal
     """
 
     key = "@heal"
@@ -31,21 +36,43 @@ class CmdHeal(Command):
         caller = self.caller
 
         if not self.args:
-            caller.msg("|rUsage: @heal <target|here|room #> [= <amount>]|n")
+            caller.msg("|rUsage: @heal <target|here|room #> [= <amount|condition_type|list>]|n")
             return
 
         parts = self.args.split("=", 1)
         target_name = parts[0].strip()
         amount = None
+        condition_type = None
 
         if len(parts) > 1:
-            try:
-                amount = int(parts[1].strip())
-                if amount < 0:
-                    caller.msg("|rAmount must be zero or positive.|n")
+            heal_args = parts[1].strip().split()
+            
+            if len(heal_args) == 1:
+                arg = heal_args[0]
+                if arg == "list":
+                    # Special case for listing conditions
+                    condition_type = "list"
+                elif arg.isdigit():
+                    amount = int(arg)
+                    if amount < 0:
+                        caller.msg("|rAmount must be zero or positive.|n")
+                        return
+                else:
+                    # It's a condition type
+                    condition_type = arg.lower()
+            elif len(heal_args) == 2:
+                # condition_type + amount
+                condition_type = heal_args[0].lower()
+                try:
+                    amount = int(heal_args[1])
+                    if amount < 0:
+                        caller.msg("|rAmount must be zero or positive.|n")
+                        return
+                except ValueError:
+                    caller.msg("|rAmount must be an integer.|n")
                     return
-            except ValueError:
-                caller.msg("|rAmount must be an integer.|n")
+            else:
+                caller.msg("|rToo many arguments. Usage: @heal <target> [= <amount|condition_type|condition_type amount>]|n")
                 return
 
         targets = []
@@ -103,13 +130,29 @@ class CmdHeal(Command):
                 caller.msg(f"|r{target.key} has no medical system to heal.|n")
                 continue
             
-            # Get current condition count
-            conditions_before = len(target.medical_state.conditions)
+            medical_state = target.medical_state
+            conditions_before = len(medical_state.conditions)
             
-            # Full heal - complete medical restoration
-            if amount is None:
-                medical_state = target.medical_state
-                
+            # Handle "list" command to show available conditions
+            if condition_type == "list":
+                if medical_state.conditions:
+                    caller.msg(f"|cAvailable conditions for {target.key}:|n")
+                    condition_types = {}
+                    for condition_key, condition_data in medical_state.conditions.items():
+                        cond_type = condition_data.get('type', 'unknown')
+                        if cond_type not in condition_types:
+                            condition_types[cond_type] = 0
+                        condition_types[cond_type] += 1
+                    
+                    for cond_type, count in condition_types.items():
+                        caller.msg(f"  {cond_type}: {count} condition(s)")
+                    caller.msg(f"Usage: @heal {target.key} = <condition_type> [amount]")
+                else:
+                    caller.msg(f"|g{target.key} has no medical conditions.|n")
+                continue
+            
+            # Full heal without condition type - complete medical restoration
+            if amount is None and condition_type is None:
                 # Clear all conditions
                 medical_state.conditions.clear()
                 
@@ -127,24 +170,60 @@ class CmdHeal(Command):
                 
                 target.save_medical_state()
                 caller.msg(f"|g{target.key} fully healed - cleared all {conditions_before} conditions, healed {organs_healed} organs, and restored vital signs.|n")
-            else:
-                # Partial heal - heal a limited number of conditions
-                conditions_to_heal = min(amount, conditions_before)
-                for _ in range(conditions_to_heal):
-                    if target.medical_state.conditions:
-                        # Remove the least severe condition first
-                        condition = min(target.medical_state.conditions.values(), 
-                                      key=lambda c: c.get('severity', 1))
-                        target.medical_state.conditions.pop(next(
-                            k for k, v in target.medical_state.conditions.items() 
-                            if v == condition), None)
+                
+            # Condition-type specific healing
+            elif condition_type:
+                # Find conditions of the specified type
+                matching_conditions = []
+                for condition_key, condition_data in medical_state.conditions.items():
+                    if condition_data.get('type', '').lower() == condition_type:
+                        matching_conditions.append(condition_key)
+                
+                if not matching_conditions:
+                    caller.msg(f"|y{target.key} has no {condition_type} conditions.|n")
+                    continue
+                
+                # Heal specific number or all of this type
+                conditions_to_heal = amount if amount is not None else len(matching_conditions)
+                conditions_to_heal = min(conditions_to_heal, len(matching_conditions))
+                
+                # Remove the conditions
+                for i in range(conditions_to_heal):
+                    if matching_conditions:
+                        condition_key = matching_conditions.pop(0)
+                        medical_state.conditions.pop(condition_key, None)
                 
                 target.save_medical_state()
-                conditions_after = len(target.medical_state.conditions)
-                healed_count = conditions_before - conditions_after
-                caller.msg(f"|g{target.key} healed {healed_count} conditions ({conditions_after} remaining).|n")
+                caller.msg(f"|g{target.key} healed {conditions_to_heal} {condition_type} condition(s).|n")
+                
+            # Partial heal - heal N conditions (any type)
+            else:
+                conditions_to_heal = min(amount, conditions_before)
+                conditions_removed = 0
+                
+                # Remove conditions (least severe first)
+                while conditions_removed < conditions_to_heal and medical_state.conditions:
+                    # Find least severe condition
+                    least_severe_key = None
+                    least_severity = float('inf')
+                    
+                    for condition_key, condition_data in medical_state.conditions.items():
+                        severity = condition_data.get('severity', 1)
+                        if severity < least_severity:
+                            least_severity = severity
+                            least_severe_key = condition_key
+                    
+                    if least_severe_key:
+                        medical_state.conditions.pop(least_severe_key)
+                        conditions_removed += 1
+                    else:
+                        break
+                
+                target.save_medical_state()
+                conditions_after = len(medical_state.conditions)
+                caller.msg(f"|g{target.key} healed {conditions_removed} conditions ({conditions_after} remaining).|n")
 
-        if len(targets) > 1:
+        if len(targets) > 1 and condition_type != "list":
             caller.msg(f"|gHealed {len(targets)} targets in {target_desc}.|n")
 
 class CmdPeace(Command):

@@ -128,89 +128,6 @@ class CmdDamageTest(Command):
             caller.msg("|Y*** YOU ARE UNCONSCIOUS ***|n")
 
 
-class CmdHealTest(Command):
-    """
-    Test command for healing medical conditions.
-    
-    Usage:
-        healtest [condition_type]
-        healtest all
-    
-    Examples:
-        healtest bleeding
-        healtest fracture
-        healtest all
-    
-    This command is for testing medical healing during development.
-    """
-    
-    key = "healtest"
-    help_category = "Medical"
-    locks = "cmd:perm(Builder)"
-    
-    def func(self):
-        """Execute the heal test command."""
-        caller = self.caller
-        
-        try:
-            medical_state = caller.medical_state
-            if medical_state is None:
-                caller.msg("No medical state to heal.")
-                return
-        except AttributeError:
-            caller.msg("No medical state to heal.")
-            return
-            
-        medical_state = caller.medical_state
-        
-        if not self.args:
-            # Show available conditions to heal
-            if medical_state.conditions:
-                caller.msg("Available conditions to heal:")
-                for i, condition in enumerate(medical_state.conditions):
-                    location_str = f" ({condition.location})" if condition.location else ""
-                    caller.msg(f"  {i+1}. {condition.type} ({condition.severity}){location_str}")
-                caller.msg("Usage: healtest <condition_type> or healtest all")
-            else:
-                caller.msg("No conditions to heal.")
-            return
-            
-        args = self.args.strip().lower()
-        
-        if args == "all":
-            # Heal all conditions
-            condition_count = len(medical_state.conditions)
-            medical_state.conditions.clear()
-            
-            # Restore all organs to full health
-            for organ in medical_state.organs.values():
-                organ.current_hp = organ.max_hp
-                
-            # Restore vital signs
-            medical_state.blood_level = 100.0
-            medical_state.pain_level = 0.0
-            medical_state.consciousness = 100.0
-            
-            # Medical system now handles all health - no HP needed
-            
-            caller.save_medical_state()
-            caller.msg(f"|gHealed all {condition_count} conditions and restored organs to full health.|n")
-            
-        else:
-            # Heal specific condition type
-            conditions_to_remove = [c for c in medical_state.conditions if c.type == args]
-            
-            if not conditions_to_remove:
-                caller.msg(f"No {args} conditions found.")
-                return
-                
-            for condition in conditions_to_remove:
-                medical_state.remove_condition(condition)
-                
-            caller.save_medical_state()
-            caller.msg(f"|gHealed {len(conditions_to_remove)} {args} condition(s).|n")
-
-
 class CmdMedicalInfo(Command):
     """
     Display detailed information about the medical system.
@@ -358,5 +275,4 @@ class MedicalCmdSet(default_cmds.CharacterCmdSet):
         super().at_cmdset_creation()
         self.add(CmdMedical())
         self.add(CmdDamageTest())
-        self.add(CmdHealTest())
         self.add(CmdMedicalInfo())
