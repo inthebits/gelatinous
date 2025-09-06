@@ -68,7 +68,7 @@ class CmdStats(Command):
 {COLOR_SUCCESS}{BOX_VERTICAL}         Intellect:  {intellect:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}         Motorics:   {motorics:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Vitals:     {vitals_color}{vitals_display:<12}{COLOR_SUCCESS}                {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Vitals:     {vitals_color}{vitals_display:>12}{COLOR_SUCCESS}               {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * 48}{BOX_TEE_UP}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL} Notes:                                         {BOX_VERTICAL}{COLOR_NORMAL}
