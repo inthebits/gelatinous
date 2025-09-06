@@ -128,12 +128,37 @@ class Character(ObjectParent, DefaultCharacter):
             injury_type (str): Type of injury (cut, blunt, bullet, etc.)
             
         Returns:
-            dict: Detailed results of damage application
+            bool: True if character died from this damage, False otherwise
+            
+        Note: For detailed damage results, use take_damage_detailed() method.
+        """
+        if not isinstance(amount, int) or amount <= 0:
+            return False
+
+        # Apply anatomical damage through medical system
+        from world.medical.utils import apply_anatomical_damage
+        damage_results = apply_anatomical_damage(self, amount, location, injury_type)
+        
+        # Save medical state after damage
+        self.save_medical_state()
+        
+        # Return death status for combat system compatibility
+        return self.is_dead()
+    
+    def take_damage_detailed(self, amount, location="chest", injury_type="generic"):
+        """
+        Apply damage and return detailed results.
+        
+        Same as take_damage() but returns the full medical system results
+        instead of just death status.
+        
+        Returns:
+            dict: Detailed results including organs damaged, conditions added, etc.
         """
         if not isinstance(amount, int) or amount <= 0:
             return {"error": "Invalid damage amount"}
 
-        # Apply anatomical damage through medical system
+        # Apply anatomical damage through medical system  
         from world.medical.utils import apply_anatomical_damage
         damage_results = apply_anatomical_damage(self, amount, location, injury_type)
         
