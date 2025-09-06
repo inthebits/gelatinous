@@ -1045,7 +1045,14 @@ class CombatHandler(DefaultScript):
             # Check proximity for melee attacks
             if not hasattr(attacker.ndb, NDB_PROXIMITY):
                 setattr(attacker.ndb, NDB_PROXIMITY, set())
-            if target not in getattr(attacker.ndb, NDB_PROXIMITY):
+            
+            # Get proximity set with fallback to empty set
+            proximity_set = getattr(attacker.ndb, NDB_PROXIMITY, set())
+            if not proximity_set:  # Handle case where attribute exists but is None/empty
+                setattr(attacker.ndb, NDB_PROXIMITY, set())
+                proximity_set = set()
+                
+            if target not in proximity_set:
                 attacker.msg(f"You need to be in melee proximity with {target.key} to attack them. Try advancing or charging.")
                 splattercast.msg(f"ATTACK_FAIL (PROXIMITY): {attacker.key} not in proximity with {target.key}.")
                 return
