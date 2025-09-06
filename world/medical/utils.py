@@ -404,7 +404,7 @@ def apply_medical_effects(item, user, target, **kwargs):
         
         # Reduce bleeding
         bleeding_conditions = [c for c in medical_state.conditions 
-                             if c.condition_type == "bleeding"]
+                             if c.type == "bleeding"]
         for condition in bleeding_conditions[:2]:  # Reduce up to 2 bleeding conditions
             condition.severity = max(0, condition.severity - 3)
             if condition.severity <= 0:
@@ -415,7 +415,7 @@ def apply_medical_effects(item, user, target, **kwargs):
     elif medical_type == "pain_relief":
         # Reduce pain conditions
         pain_conditions = [c for c in medical_state.conditions 
-                         if c.condition_type == "pain"]
+                         if c.type == "pain"]
         for condition in pain_conditions[:3]:  # Reduce multiple pain sources
             condition.severity = max(0, condition.severity - 2)
             if condition.severity <= 0:
@@ -426,7 +426,7 @@ def apply_medical_effects(item, user, target, **kwargs):
     elif medical_type == "wound_care":
         # Bandaging effects
         bleeding_conditions = [c for c in medical_state.conditions 
-                             if c.condition_type == "bleeding"]
+                             if c.type == "bleeding"]
         for condition in bleeding_conditions[:1]:  # Stop one source of bleeding
             condition.severity = max(0, condition.severity - 2)
             if condition.severity <= 0:
@@ -437,7 +437,7 @@ def apply_medical_effects(item, user, target, **kwargs):
     elif medical_type == "fracture_treatment":
         # Splint effects
         fracture_conditions = [c for c in medical_state.conditions 
-                             if c.condition_type == "fracture"]
+                             if c.type == "fracture"]
         for condition in fracture_conditions[:1]:  # Stabilize one fracture
             condition.severity = max(0, condition.severity - 4)
             if condition.severity <= 0:
@@ -448,7 +448,7 @@ def apply_medical_effects(item, user, target, **kwargs):
     elif medical_type == "surgical_treatment":
         # Surgical intervention
         organ_conditions = [c for c in medical_state.conditions 
-                          if c.condition_type == "organ_damage"]
+                          if c.type == "organ_damage"]
         for condition in organ_conditions[:1]:  # Repair one organ
             condition.severity = max(0, condition.severity - 5)
             if condition.severity <= 0:
@@ -471,7 +471,7 @@ def apply_medical_effects(item, user, target, **kwargs):
     elif medical_type == "antiseptic":
         # Infection prevention and wound cleaning
         infection_conditions = [c for c in medical_state.conditions 
-                              if c.condition_type == "infection"]
+                              if c.type == "infection"]
         for condition in infection_conditions[:2]:  # Clear multiple infections
             condition.severity = max(0, condition.severity - 3)
             if condition.severity <= 0:
