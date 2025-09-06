@@ -50,11 +50,11 @@ class CmdStats(Command):
         # Get medical status using medical terminology
         if hasattr(target, 'medical_state') and target.medical_state:
             status_text, color_code = get_medical_status_description(target.medical_state)
-            vitals_display = f"{color_code}{status_text}"
-            vitals_reset = COLOR_SUCCESS
+            vitals_display = status_text
+            vitals_color = color_code
         else:
             vitals_display = "NO DATA"
-            vitals_reset = ""
+            vitals_color = ""
 
         # Fixed format to exactly 48 visible characters per row
         string = f"""{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * 48}{BOX_TOP_RIGHT}{COLOR_NORMAL}
@@ -68,7 +68,7 @@ class CmdStats(Command):
 {COLOR_SUCCESS}{BOX_VERTICAL}         Intellect:  {intellect:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}         Motorics:   {motorics:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Vitals:     {vitals_display:<12}{vitals_reset}                   {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Vitals:     {vitals_color}{vitals_display:<12}{COLOR_SUCCESS}                {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * 48}{BOX_TEE_UP}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL} Notes:                                         {BOX_VERTICAL}{COLOR_NORMAL}
