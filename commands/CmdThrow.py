@@ -197,7 +197,7 @@ class CmdThrow(Command):
                 # Apply damage to caller
                 blast_damage = getattr(obj.db, DB_BLAST_DAMAGE, 10)
                 damage_type = getattr(obj.db, 'damage_type', 'laceration')  # Default to shrapnel
-                apply_damage(self.caller, blast_damage, location="torso", injury_type=damage_type)
+                apply_damage(self.caller, blast_damage, location="chest", injury_type=damage_type)
                 obj.delete()
                 return False
         
@@ -673,7 +673,7 @@ class CmdThrow(Command):
                 total_damage = random.randint(1, 6) + base_damage
                 damage_type = getattr(weapon.db, 'damage_type', 'blunt')  # Get weapon damage type
                 
-                apply_damage(target, total_damage, location="torso", injury_type=damage_type)
+                apply_damage(target, total_damage, location="chest", injury_type=damage_type)
                 
                 target.msg(MSG_THROW_WEAPON_HIT.format(weapon=weapon.key, target=target.key))
                 thrower.msg(f"Your {weapon.key} strikes {target.key}!")
@@ -1208,7 +1208,7 @@ class CmdPull(Command):
                     if character != holder and hasattr(character, 'msg'):
                         reduced_damage = blast_damage // 2  # Half damage due to body shielding
                         damage_type = getattr(grenade.db, 'damage_type', 'laceration')
-                        apply_damage(character, reduced_damage, location="torso", injury_type=damage_type)
+                        apply_damage(character, reduced_damage, location="chest", injury_type=damage_type)
                         character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
                         
             else:
@@ -1236,7 +1236,7 @@ class CmdPull(Command):
                         
                         if final_damage > 0:
                             damage_type = getattr(grenade.db, 'damage_type', 'laceration')
-                            apply_damage(character, final_damage, location="torso", injury_type=damage_type)
+                            apply_damage(character, final_damage, location="chest", injury_type=damage_type)
                             character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
                             if character.location:
                                 character.location.msg_contents(
@@ -1676,7 +1676,7 @@ def check_rigged_grenade(character, exit_obj):
             
             if trigger_damage > 0:
                 damage_type = getattr(rigged_grenade.db, 'damage_type', 'laceration')
-                apply_damage(character, trigger_damage, location="torso", injury_type=damage_type)
+                apply_damage(character, trigger_damage, location="chest", injury_type=damage_type)
                 character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
                 if character.location:
                     character.location.msg_contents(
@@ -1693,7 +1693,7 @@ def check_rigged_grenade(character, exit_obj):
                     
                     if final_damage > 0:
                         damage_type = getattr(rigged_grenade.db, 'damage_type', 'laceration')
-                        apply_damage(other_character, final_damage, location="torso", injury_type=damage_type)
+                        apply_damage(other_character, final_damage, location="chest", injury_type=damage_type)
                         other_character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
                         if other_character.location:
                             other_character.location.msg_contents(
@@ -1937,7 +1937,7 @@ def explode_standalone_grenade(grenade):
                 if character != holder and hasattr(character, 'msg'):
                     reduced_damage = blast_damage // 2  # Half damage due to body shielding
                     damage_type = getattr(grenade.db, 'damage_type', 'laceration')
-                    apply_damage(character, reduced_damage, location="torso", injury_type=damage_type)
+                    apply_damage(character, reduced_damage, location="chest", injury_type=damage_type)
                     character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
                     
         else:
@@ -1972,7 +1972,7 @@ def explode_standalone_grenade(grenade):
                     
                     if final_damage > 0:
                         damage_type = getattr(grenade.db, 'damage_type', 'laceration')
-                        apply_damage(character, final_damage, location="torso", injury_type=damage_type)
+                        apply_damage(character, final_damage, location="chest", injury_type=damage_type)
                         character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
                         if character.location:
                             character.location.msg_contents(
@@ -2223,7 +2223,7 @@ def trigger_auto_defuse_explosion(grenade):
                 
                 if final_damage > 0:
                     damage_type = getattr(grenade.db, 'damage_type', 'laceration')
-                    apply_damage(character, final_damage, location="torso", injury_type=damage_type)
+                    apply_damage(character, final_damage, location="chest", injury_type=damage_type)
                     character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
                     if character.location:
                         character.location.msg_contents(
@@ -2704,7 +2704,7 @@ class CmdDefuse(Command):
                     
                     if final_damage > 0:
                         damage_type = getattr(grenade.db, 'damage_type', 'laceration')
-                        apply_damage(character, final_damage, location="torso", injury_type=damage_type)
+                        apply_damage(character, final_damage, location="chest", injury_type=damage_type)
                         character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
                         if character.location:
                             character.location.msg_contents(
