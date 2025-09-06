@@ -106,11 +106,27 @@ class CmdHeal(Command):
             # Get current condition count
             conditions_before = len(target.medical_state.conditions)
             
-            # Full heal - clear all medical conditions
+            # Full heal - complete medical restoration
             if amount is None:
-                target.medical_state.conditions.clear()
+                medical_state = target.medical_state
+                
+                # Clear all conditions
+                medical_state.conditions.clear()
+                
+                # Restore all organs to full health
+                organs_healed = 0
+                for organ in medical_state.organs.values():
+                    if organ.current_hp < organ.max_hp:
+                        organ.current_hp = organ.max_hp
+                        organs_healed += 1
+                
+                # Restore vital signs
+                medical_state.blood_level = 100.0
+                medical_state.pain_level = 0.0
+                medical_state.consciousness = 100.0
+                
                 target.save_medical_state()
-                caller.msg(f"|g{target.key} fully healed - cleared all {conditions_before} medical conditions.|n")
+                caller.msg(f"|g{target.key} fully healed - cleared all {conditions_before} conditions, healed {organs_healed} organs, and restored vital signs.|n")
             else:
                 # Partial heal - heal a limited number of conditions
                 conditions_to_heal = min(amount, conditions_before)
