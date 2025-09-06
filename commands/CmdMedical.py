@@ -191,8 +191,7 @@ class CmdHealTest(Command):
             medical_state.pain_level = 0.0
             medical_state.consciousness = 100.0
             
-            # Update HP
-            caller.hp = caller.hp_max
+            # Medical system now handles all health - no HP needed
             
             caller.save_medical_state()
             caller.msg(f"|gHealed all {condition_count} conditions and restored organs to full health.|n")

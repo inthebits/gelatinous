@@ -7,14 +7,20 @@ from world.weather.weather_messages import WEATHER_INTENSITY
 
 class CmdHeal(Command):
     """
-    Instantly heal a target character, mob, or everyone in a location.
+    Instantly heal a target character using the medical system.
 
     Usage:
         @heal <target> [= <amount>]
         @heal here [= <amount>]
         @heal <room #> [= <amount>]
-
-    If no amount is provided, HP is fully restored to max.
+    
+    Without amount: Completely heal target (remove all medical conditions)
+    With amount: Heal a specific number of medical conditions (least severe first)
+    
+    Examples:
+        @heal bob - Completely heal bob
+        @heal here = 3 - Heal 3 conditions from everyone here
+        @heal #123 - Fully heal everyone in room #123
     """
 
     key = "@heal"
@@ -96,16 +102,37 @@ class CmdHeal(Command):
             targets = [target]
             target_desc = target.key
 
-        # Heal all targets
+        # Heal all targets using medical system
         for target in targets:
-            old_hp = target.hp
+            # Check if target has medical system
+            if not hasattr(target, 'medical_state') or not target.medical_state:
+                caller.msg(f"|r{target.key} has no medical system to heal.|n")
+                continue
+            
+            # Get current condition count
+            conditions_before = len(target.medical_state.conditions)
+            
+            # Full heal - clear all medical conditions
             if amount is None:
-                target.hp = target.hp_max
-                caller.msg(f"|g{target.key} fully healed from {old_hp} to {target.hp_max} HP.|n")
+                target.medical_state.conditions.clear()
+                target.medical_state.save()
+                caller.msg(f"|g{target.key} fully healed - cleared all {conditions_before} medical conditions.|n")
             else:
-                new_hp = min(target.hp + amount, target.hp_max)
-                target.hp = new_hp
-                caller.msg(f"|g{target.key} healed from {old_hp} to {new_hp} HP.|n")
+                # Partial heal - heal a limited number of conditions
+                conditions_to_heal = min(amount, conditions_before)
+                for _ in range(conditions_to_heal):
+                    if target.medical_state.conditions:
+                        # Remove the least severe condition first
+                        condition = min(target.medical_state.conditions.values(), 
+                                      key=lambda c: c.get('severity', 1))
+                        target.medical_state.conditions.pop(next(
+                            k for k, v in target.medical_state.conditions.items() 
+                            if v == condition), None)
+                
+                target.medical_state.save()
+                conditions_after = len(target.medical_state.conditions)
+                healed_count = conditions_before - conditions_after
+                caller.msg(f"|g{target.key} healed {healed_count} conditions ({conditions_after} remaining).|n")
 
         if len(targets) > 1:
             caller.msg(f"|gHealed {len(targets)} targets in {target_desc}.|n")

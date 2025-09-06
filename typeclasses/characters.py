@@ -68,9 +68,9 @@ class Character(ObjectParent, DefaultCharacter):
         """
         return bool(self.sessions.all())
 
-# Health Points
-    hp = AttributeProperty(10, category='health', autocreate=True)
-    hp_max = AttributeProperty(10, category='health', autocreate=True)
+# Health Points - REMOVED in Phase 3: Pure Medical System
+    # Legacy HP system eliminated - health now managed entirely by medical system
+    # Death/unconsciousness determined by organ functionality and medical conditions
 
 # Character Placement Descriptions
     look_place = AttributeProperty("standing here.", category='description', autocreate=True)
@@ -83,17 +83,12 @@ class Character(ObjectParent, DefaultCharacter):
         """
         super().at_object_creation()
 
-        # Set dynamic hp_max based on grit
-        grit_value = self.grit or 1
-        self.hp_max = 10 + (grit_value * 2)
-        self.hp = self.hp_max  # Start at full health
-
         # Initialize longdesc system with default anatomy
         from world.combat.constants import DEFAULT_LONGDESC_LOCATIONS
         if not self.longdesc:
             self.longdesc = DEFAULT_LONGDESC_LOCATIONS.copy()
 
-        # Initialize medical system
+        # Initialize medical system - replaces legacy HP system
         self._initialize_medical_state()
 
     def _initialize_medical_state(self):
@@ -122,42 +117,10 @@ class Character(ObjectParent, DefaultCharacter):
 # Mortality Management  
     def take_damage(self, amount, location="chest", injury_type="generic"):
         """
-        Reduces current HP by `amount` and applies anatomical damage.
-        Triggers death if vital organs are destroyed or HP falls to zero.
-        
-        Args:
-            amount (int): Damage amount
-            location (str): Body location hit (defaults to chest)
-            injury_type (str): Type of injury for medical system
-        
-        Returns:
-            bool: True if the character died from this damage.
-        """
-        if not isinstance(amount, int) or amount <= 0:
-            return False  # Ignore bad inputs
-
-        # Apply damage to legacy HP system (for backwards compatibility)
-        self.hp = max(self.hp - amount, 0)
-
-        # Apply anatomical damage through medical system
-        from world.medical.utils import apply_anatomical_damage
-        damage_results = apply_anatomical_damage(self, amount, location, injury_type)
-        
-        # Save medical state after damage
-        self.save_medical_state()
-        
-        # Check for death from medical system
-        medical_death = self.medical_state.is_dead()
-        legacy_death = self.hp <= 0
-        
-        return medical_death or legacy_death
-
-    def take_anatomical_damage(self, amount, location, injury_type="generic"):
-        """
         Apply damage to a specific body location with injury type.
         
-        This is the new preferred method for applying damage that integrates
-        fully with the medical system.
+        This is the primary damage method using the pure medical system.
+        Replaces the old dual HP/medical approach.
         
         Args:
             amount (int): Damage amount
@@ -167,55 +130,34 @@ class Character(ObjectParent, DefaultCharacter):
         Returns:
             dict: Detailed results of damage application
         """
+        if not isinstance(amount, int) or amount <= 0:
+            return {"error": "Invalid damage amount"}
+
+        # Apply anatomical damage through medical system
         from world.medical.utils import apply_anatomical_damage
         damage_results = apply_anatomical_damage(self, amount, location, injury_type)
         
-        # Update legacy HP based on overall health
-        # This maintains compatibility with existing systems
-        if self.medical_state.is_dead():
-            self.hp = 0
-        elif self.medical_state.is_unconscious():
-            self.hp = min(self.hp, 1)  # Very low but not dead
-            
-        # Save medical state
+        # Save medical state after damage
         self.save_medical_state()
         
         return damage_results
 
-    def heal(self, amount):
-        """
-        Restores HP by `amount`, without exceeding hp_max.
-        
-        Note: This only affects legacy HP. For medical healing,
-        use heal_medical_condition() or medical tools.
-        """
-        if not isinstance(amount, int) or amount <= 0:
-            return  # Ignore bad inputs
-
-        new_hp = min(self.hp + amount, self.hp_max)
-        healed = new_hp - self.hp
-        self.hp = new_hp
-
-        self.msg(f"|gYou recover {healed} health.|n")
-
+    # Legacy method take_anatomical_damage removed - functionality merged into take_damage()
+    
     def is_dead(self):
         """
         Returns True if character should be considered dead.
         
-        Checks both legacy HP system and medical system for death conditions.
+        Uses pure medical system - death from vital organ failure or blood loss.
         """
-        legacy_dead = self.hp <= 0
-        
-        # Check medical system if available
         try:
             medical_state = self.medical_state
             if medical_state:
-                medical_dead = medical_state.is_dead()
-                return legacy_dead or medical_dead
+                return medical_state.is_dead()
         except AttributeError:
-            pass  # Medical system not available
+            pass  # Medical system not available - character is alive
         
-        return legacy_dead
+        return False
         
     def is_unconscious(self):
         """

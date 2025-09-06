@@ -1055,45 +1055,60 @@ def send_grenade_shield_messages(grappler, victim):
         grappler.location.msg_contents(observer_msg, exclude=[grappler, victim])
 
 
-def apply_damage(character, damage_amount):
+def apply_damage(character, damage_amount, location="chest", injury_type="generic"):
     """
-    Apply damage to a character, handling health reduction and death.
+    Apply damage to a character using the medical system.
     
     Args:
         character: The character object to damage
         damage_amount (int): Amount of damage to apply
+        location (str): Body location hit (chest, head, etc.)
+        injury_type (str): Type of injury (cut, blunt, bullet, etc.)
+        
+    Returns:
+        dict: Damage results from medical system
     """
-    if not hasattr(character, 'hp'):
-        # Character has no HP system, skip damage
-        return
+    if not hasattr(character, 'take_damage'):
+        # Character has no damage system, skip damage
+        debug_broadcast(f"Character {character.key} has no damage system", "DAMAGE", "WARNING")
+        return {"error": "No damage system"}
     
-    current_hp = getattr(character, 'hp', 10)
-    new_hp = max(0, current_hp - damage_amount)
+    # Apply damage through medical system
+    damage_results = character.take_damage(damage_amount, location, injury_type)
     
-    character.hp = new_hp
-    
-    debug_broadcast(f"Applied {damage_amount} damage to {character.key}: {current_hp} -> {new_hp} HP", 
+    debug_broadcast(f"Applied {damage_amount} {injury_type} damage to {character.key}'s {location}", 
                    "DAMAGE", "SUCCESS")
     
     # Handle death/unconsciousness
-    if new_hp <= 0:
-        handle_character_death(character)
+    if character.is_dead():
+        handle_character_death(character, death=True)
+    elif character.is_unconscious():
+        handle_character_death(character, death=False)
+        
+    return damage_results
 
 
-def handle_character_death(character):
+def handle_character_death(character, death=False):
     """
-    Handle character death/unconsciousness.
+    Handle character death or unconsciousness.
     
     Args:
-        character: The character who has reached 0 HP
+        character: The character who has died or become unconscious
+        death (bool): True for death, False for unconsciousness
     """
-    # For now, simple unconsciousness message
-    character.msg("|rYou collapse, unconscious!|n")
-    if character.location:
-        character.location.msg_contents(
-            f"|r{character.key} collapses, unconscious!|n",
-            exclude=character
-        )
-    
-    debug_broadcast(f"{character.key} reached 0 HP and collapsed", 
-                   "DAMAGE", "SUCCESS")
+    if death:
+        character.msg("|RYou have died from your injuries!|n")
+        if character.location:
+            character.location.msg_contents(
+                f"|R{character.key} dies from their injuries!|n",
+                exclude=character
+            )
+        debug_broadcast(f"{character.key} died from medical injuries", "DAMAGE", "SUCCESS")
+    else:
+        character.msg("|rYou collapse, unconscious from your injuries!|n")
+        if character.location:
+            character.location.msg_contents(
+                f"|r{character.key} collapses, unconscious!|n",
+                exclude=character
+            )
+        debug_broadcast(f"{character.key} became unconscious from medical injuries", "DAMAGE", "SUCCESS")

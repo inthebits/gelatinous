@@ -45,7 +45,21 @@ class CmdStats(Command):
         resonance = target.resonance
         intellect = target.intellect
         motorics = target.motorics
-        vitals_display = f"{target.hp}/{target.hp_max}"
+        
+        # Get medical status instead of HP
+        if hasattr(target, 'medical_state') and target.medical_state:
+            medical_state = target.medical_state
+            if medical_state.is_dead():
+                vitals_display = "DECEASED"
+            elif medical_state.is_unconscious():
+                vitals_display = "UNCONSCIOUS"
+            elif medical_state.conditions:
+                injury_count = len(medical_state.conditions)
+                vitals_display = f"{injury_count} INJURIES"
+            else:
+                vitals_display = "HEALTHY"
+        else:
+            vitals_display = "NO DATA"
 
         # Fixed format to exactly 48 visible characters per row
         string = f"""{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * 48}{BOX_TOP_RIGHT}{COLOR_NORMAL}
