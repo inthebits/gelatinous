@@ -109,7 +109,7 @@ class CmdHeal(Command):
             # Full heal - clear all medical conditions
             if amount is None:
                 target.medical_state.conditions.clear()
-                target.medical_state.save()
+                target.save_medical_state()
                 caller.msg(f"|g{target.key} fully healed - cleared all {conditions_before} medical conditions.|n")
             else:
                 # Partial heal - heal a limited number of conditions
@@ -123,7 +123,7 @@ class CmdHeal(Command):
                             k for k, v in target.medical_state.conditions.items() 
                             if v == condition), None)
                 
-                target.medical_state.save()
+                target.save_medical_state()
                 conditions_after = len(target.medical_state.conditions)
                 healed_count = conditions_before - conditions_after
                 caller.msg(f"|g{target.key} healed {healed_count} conditions ({conditions_after} remaining).|n")
