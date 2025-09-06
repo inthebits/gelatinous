@@ -19,6 +19,38 @@ The Gelatinous Monster medical system creates tactical medical gameplay that emp
 - **G.R.I.M. Stats**: Medical skill primarily based on Intellect (3/4 weight), with Motorics for surgical precision (1/4 weight)
 - **Clothing System**: Armor/clothing affects injury locations and severity
 
+## CONFIGURATION CONSTANTS
+
+*All numerical values use constants for easy balance modification during implementation:*
+
+```python
+# Death/Unconsciousness Thresholds  
+BLOOD_LOSS_DEATH_THRESHOLD = 85        # Placeholder - needs balancing
+CONSCIOUSNESS_UNCONSCIOUS_THRESHOLD = 30  # Placeholder - needs balancing
+
+# Hit Weight Distribution (combat handler integration)
+HIT_WEIGHT_VERY_RARE = 2              # Brain, spinal cord
+HIT_WEIGHT_RARE = 8                   # Eyes, ears, jaw, neck  
+HIT_WEIGHT_UNCOMMON = 15              # Heart, lungs, organs, hands
+HIT_WEIGHT_COMMON = 25                # Arms, legs, major limbs
+
+# Pain/Consciousness Modifiers
+PAIN_UNCONSCIOUS_THRESHOLD = 80       # High pain causes unconsciousness
+PAIN_CONSCIOUSNESS_MODIFIER = 0.5     # How much pain affects consciousness
+
+# Treatment Success Modifiers  
+BASE_TREATMENT_SUCCESS = 50           # Base % before stat modifiers
+STAT_MODIFIER_SCALING = 5             # Points per stat level
+TOOL_EFFECTIVENESS_SCALING = 10       # Effectiveness points per tool quality
+
+# Medical Resource Constants
+BANDAGE_EFFECTIVENESS = 15            # HP healed per bandage
+SURGERY_BASE_DIFFICULTY = 75          # Base difficulty for surgery
+INFECTION_CHANCE_BASE = 10            # Base infection chance %
+```
+
+*NOTE: All values are speculative/unbalanced - constants make modification easy*
+
 ## Current Health System Foundation
 
 ### Existing Components
@@ -45,6 +77,13 @@ def apply_damage(character, damage_amount): # Combat integration
 # 2. Medical system adapts to whatever anatomy exists on character
 # 3. Creature-type templates provide standard organ-to-location mappings
 # 4. NO FALLBACK RULES - all organ-to-location mappings must be explicit per typeclass
+# 5. UNIVERSAL INJURY TYPES - fractures, bleeding, infections work on any anatomy
+
+# CROSS-SPECIES FRACTURE COMPATIBILITY:
+# - Human: left_arm, right_arm, left_leg, right_leg can be fractured
+# - Tentacle Monster: tentacle_1, tentacle_2, tentacle_3, tentacle_4 can be fractured  
+# - Spider Creature: leg_1, leg_2, leg_3, leg_4, leg_5, leg_6, leg_7, leg_8 can be fractured
+# Same splint mechanics work universally across all appendage types
 
 # Example: Human character (default)
 DEFAULT_LONGDESC_LOCATIONS = {
@@ -71,18 +110,20 @@ TENTACLE_MONSTER_LOCATIONS = {
 #### Core Subsystems
 ```python
 BODY_CAPACITIES = {
-    # Vital Capacities - Loss causes death
+    # Vital Capacities - Loss causes death or unconsciousness
     "consciousness": {
         "organs": ["brain"],
         "modifiers": ["pain", "blood_pumping", "breathing", "blood_filtration"],
-        "fatal_threshold": 0.0,
-        "formula": "brain_efficiency * pain_modifier * blood_pump_modifier * breathing_modifier * blood_filt_modifier"
+        "unconscious_threshold": CONSCIOUSNESS_UNCONSCIOUS_THRESHOLD,  # Flag: is_unconscious = True
+        "effect": "unconscious_flag",  # Treated as flag for now
+        "description": "Difference between functioning PC and unconscious state"
     },
     "blood_pumping": {
         "organs": ["heart"],
         "fatal_threshold": 0.0,
         "directly_fatal": True,
-        "affects": ["consciousness", "moving"]
+        "affects": ["consciousness", "moving"],
+        "description": "Circulation of blood through body - zero equals death"
     },
     "breathing": {
         "organs": ["left_lung", "right_lung"],
@@ -95,6 +136,14 @@ BODY_CAPACITIES = {
         "liver_contribution": 1.0,   # Liver is primary, stomach is 50%
         "stomach_contribution": 0.5,
         "fatal_threshold": 0.0  # Death if liver lost
+    },
+    
+    # Blood Loss System
+    "blood_loss": {
+        "source": "bleeding_injuries",
+        "fatal_threshold": BLOOD_LOSS_DEATH_THRESHOLD,
+        "directly_fatal": True,
+        "description": "Blood loss kills - exact threshold uses constants"
     },
     
     # Functional Capacities - Loss reduces effectiveness but not fatal
@@ -282,6 +331,41 @@ ORGANS = {
     }
 ```
 
+## CORE MECHANICS CLARIFICATION
+
+### Organ Damage System
+- **Organs have HP**: Each organ has max_hp (see ORGANS definition above)  
+- **Damage reduces HP**: Incoming damage reduces current HP from max_hp
+- **Destruction at 0 HP**: When organ HP reaches 0, organ is destroyed/non-functional
+- **Death conditions**: Destruction of vital organs (heart, both lungs, liver) = death
+- **Paired organ logic**: Both kidneys/lungs destroyed = death, single destruction = reduced function
+
+### Hit Distribution Formula  
+*NOTE: Formula will be based on attack roll/success from combat handler*
+```python
+# Hit weight distribution (placeholder - needs combat handler integration)
+HIT_WEIGHTS = {
+    "very_rare": HIT_WEIGHT_VERY_RARE,      # Brain, spinal cord - use constants
+    "rare": HIT_WEIGHT_RARE,                # Eyes, ears, jaw, neck
+    "uncommon": HIT_WEIGHT_UNCOMMON,        # Heart, lungs, organs, hands
+    "common": HIT_WEIGHT_COMMON             # Arms, legs, major limbs
+}
+```
+
+### Death vs Unconsciousness vs Functionality
+- **Blood loss kills**: Tracked separately, reaches fatal threshold = death
+- **Blood pumping = 0**: Death (heart destroyed/stopped)
+- **Consciousness**: Flag system (is_unconscious = True/False), not death
+- **Functionality**: Reduced stats/capabilities, but character remains conscious
+
+### Constants for Balance
+*All numerical thresholds use constants for easy modification:*
+- CONSCIOUSNESS_UNCONSCIOUS_THRESHOLD  
+- BLOOD_LOSS_DEATH_THRESHOLD
+- HIT_WEIGHT_* values
+- PAIN_MODIFIER_*
+- All treatment success rates and failure penalties
+
 ### Medical Conditions
 
 #### Injury Types
@@ -463,17 +547,23 @@ MEDICAL_CONDITIONS = {
     },
     
     "fracture": {
-        "description": "Broken bones affecting limb function",
+        "description": "Universal injury type - can affect any appendage regardless of species",
+        "affected_anatomy": "any_moveable_appendage",  # arms, legs, tentacles, wings, tails, etc.
         "effects": {
-            "limb_unusable": True,
-            "constant_pain": "moderate",
-            "movement_impaired": "if_leg_affected"
+            "appendage_unusable": True,
+            "constant_pain": "moderate", 
+            "movement_impaired": "if_locomotion_appendage"
+        },
+        "examples": {
+            "human": "left_arm_fractured, right_leg_fractured",
+            "tentacle_monster": "tentacle_2_fractured, tentacle_5_fractured",
+            "spider": "leg_3_fractured, leg_7_fractured"
         },
         "treatments": {
             "splint": {"success_rate": "moderate", "requirements": ["splint"], "stat_requirement": "intellect_1"},
             "surgical_kit": {"success_rate": "high", "requirements": ["surgical_kit"], "stat_requirement": "intellect_3_motorics_2"}
         },
-        "failure_consequences": "permanent_limp_reduced_capacity"
+        "failure_consequences": "permanent_reduced_function_chronic_pain"
     }
             "spreading": {"pain": 0.08, "fever": True, "stat_penalties": {"grit": -1}},
             "systemic": {"pain": 0.15, "sepsis_risk": 0.20, "stat_penalties": {"all": -2}}
@@ -525,6 +615,24 @@ PAINKILLER = {
 }
 ```
 
+#### Gauze/Bandages
+```python
+GAUZE = {
+    "name": "Gauze Bandages",
+    "uses": 3,  # Multiple applications
+    "time_to_use": "2 rounds",
+    "effects": {
+        "stops_bleeding": "minor_to_moderate",
+        "prevents_infection": "basic_protection",
+        "stabilizes_wounds": True
+    },
+    "stat_requirement": "intellect >= 1",  # Basic first aid knowledge
+    "success_formula": "(intellect * 0.75) + (motorics * 0.25)",
+    "failure_consequences": "incomplete_bleeding_control_infection_risk",
+    "description": "Sterile bandages and gauze pads for wound care"
+}
+```
+
 #### Splint
 ```python
 SPLINT = {
@@ -533,13 +641,21 @@ SPLINT = {
     "time_to_use": "2 rounds", 
     "effects": {
         "stabilizes_fractures": True,
-        "restores_partial_function": 0.5,  # 50% functionality
-        "prevents_further_damage": True
+        "restores_partial_function": "50%_of_normal",
+        "prevents_further_damage": True,
+        "reduces_pain": "moderate"
     },
-    "targets": ["fracture_arm", "fracture_leg"],
-    "skill_requirement": "intellect >= 1",
-    "failure_effects": ["improper_healing", "increased_pain"],
-    "description": "Emergency immobilization device for broken bones"
+    "targets": "any_fractured_appendage",  # Universal - works on arms, legs, tentacles, wings, etc.
+    "cross_species_examples": {
+        "human": "left_arm, right_leg, left_hand",
+        "tentacle_monster": "tentacle_1, tentacle_3, tentacle_7", 
+        "spider": "leg_2, leg_5, leg_8",
+        "winged_creature": "left_wing, right_wing"
+    },
+    "stat_requirement": "intellect >= 1",
+    "success_formula": "(intellect * 0.75) + (motorics * 0.25)",
+    "failure_consequences": "improper_healing_permanent_reduced_function",
+    "description": "Universal immobilization device - adapts to any appendage type"
 }
 ```
 
@@ -555,7 +671,7 @@ SURGICAL_KIT = {
         "removes_foreign_objects": True,
         "restores_function": 0.8  # 80% restoration
     },
-    "skill_requirement": "intellect >= 4",  # High skill needed
+    "stat_requirement": "intellect >= 4",  # High stat needed
     "failure_effects": ["organ_damage", "massive_bleeding", "death"],
     "success_modifiers": {
         "sterile_environment": +2,
@@ -573,19 +689,22 @@ SURGICAL_KIT = {
 # Simple tool appropriateness for conditions
 TOOL_APPROPRIATENESS = {
     "bleeding": {
-        "blood_bag": "highly_effective",
-        "surgical_kit": "effective", 
+        "gauze": "highly_effective_for_minor_moderate",
+        "blood_bag": "restores_blood_volume_only",
+        "surgical_kit": "effective_for_severe_internal", 
         "splint": "ineffective",
         "painkiller": "counter_productive"
     },
     "fracture": {
         "splint": "highly_effective",
         "surgical_kit": "effective_but_complex",
+        "gauze": "ineffective",
         "blood_bag": "ineffective",
         "painkiller": "helps_with_pain_only"
     },
     "infection": {
         "surgical_kit": "effective_with_cleaning",
+        "gauze": "basic_prevention_only",
         "blood_bag": "ineffective",
         "splint": "ineffective", 
         "painkiller": "ineffective"
