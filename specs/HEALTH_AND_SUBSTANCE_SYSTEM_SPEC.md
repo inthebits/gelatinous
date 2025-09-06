@@ -1,8 +1,8 @@
-# Medical System Specification
+# Health and Substance System Specification
 
 ## Overview
 
-The Gelatinous Monster medical system creates tactical medical gameplay that emphasizes realistic injury consequences and meaningful medical choices through detailed anatomical damage modeling and field medical tools.
+The Gelatinous Monster health and substance system creates tactical medical gameplay that emphasizes realistic injury consequences and meaningful substance interaction choices through detailed anatomical damage modeling, field medical tools, and comprehensive consumption methods.
 
 ## Design Philosophy
 
@@ -47,6 +47,15 @@ TOOL_EFFECTIVENESS_SCALING = 10       # Effectiveness points per tool quality
 BANDAGE_EFFECTIVENESS = 15            # HP healed per bandage
 SURGERY_BASE_DIFFICULTY = 75          # Base difficulty for surgery
 INFECTION_CHANCE_BASE = 10            # Base infection chance %
+
+# Medical Treatment Success Constants (Added for Phase 2)
+MEDICAL_TREATMENT_BASE_DIFFICULTY = 12  # Base d20 target for medical treatments
+PARTIAL_SUCCESS_MARGIN = 3            # How close to success counts as partial
+TOOL_EFFECTIVENESS_MODIFIERS = {      # Modifier table - tool appropriateness
+    # Example: {"blood_bag": {"bleeding": -2, "fracture": +5}, ...}
+    # Negative = easier, Positive = harder
+    "placeholder": "to_be_defined_in_phase_2"
+}
 ```
 
 *NOTE: All values are speculative/unbalanced - constants make modification easy*
@@ -682,6 +691,217 @@ SURGICAL_KIT = {
 }
 ```
 
+## Consumption Method System
+
+### Overview
+The medical system serves as the foundation for a broader consumable substance system that encompasses both medical treatments and recreational substances. All consumable items utilize natural language commands that reflect realistic delivery methods.
+
+### Core Philosophy
+- **Realistic Delivery Methods**: Commands reflect how substances are actually consumed in reality
+- **Universal System**: Medical items, drugs, and other consumables use the same underlying mechanics
+- **Self-Administration & Third-Party**: Items can be used on oneself or administered to others
+- **Natural Language**: Commands use familiar terminology (inject, apply, eat, drink, smoke, inhale, etc.)
+
+### Consumption Commands
+
+#### Primary Consumption Methods
+```python
+CONSUMPTION_METHODS = {
+    # Injectable substances
+    "inject": {
+        "aliases": ["inject", "shot", "jab"],
+        "self_syntax": "inject <item>",
+        "other_syntax": "inject <item> <target>",
+        "examples": ["inject painkiller", "inject stimpak Alice"],
+        "time_required": "1-2 rounds",
+        "stat_requirements": "varies by substance",
+        "applicable_to": ["painkillers", "stimpaks", "adrenal boosters", "toxins", "vaccines"]
+    },
+    
+    # Topical applications
+    "apply": {
+        "aliases": ["apply", "rub", "spread"],
+        "self_syntax": "apply <item>",
+        "other_syntax": "apply <item> to <target>",
+        "examples": ["apply burn gel", "apply antiseptic to Bob's wound"],
+        "time_required": "1-3 rounds",
+        "stat_requirements": "basic motorics for precise application",
+        "applicable_to": ["burn gel", "antiseptic", "healing salves", "contact toxins", "medicated patches"]
+    },
+    
+    # Oral consumption - solids
+    "eat": {
+        "aliases": ["eat", "consume", "swallow"],
+        "self_syntax": "eat <item>",
+        "other_syntax": "feed <item> to <target>",
+        "examples": ["eat ration bar", "feed medicine to Charlie"],
+        "time_required": "1 round",
+        "stat_requirements": None,
+        "applicable_to": ["pills", "tablets", "food", "edible drugs", "emergency rations"]
+    },
+    
+    # Oral consumption - liquids
+    "drink": {
+        "aliases": ["drink", "sip", "gulp"],
+        "self_syntax": "drink <item>",
+        "other_syntax": "give <item> to <target> to drink",
+        "examples": ["drink medical brew", "give water to Dana"],
+        "time_required": "1 round",
+        "stat_requirements": None,
+        "applicable_to": ["liquid medicines", "water", "alcohol", "liquid drugs", "nutritional drinks"]
+    },
+    
+    # Inhalation methods
+    "inhale": {
+        "aliases": ["inhale", "huff", "breathe"],
+        "self_syntax": "inhale <item>",
+        "other_syntax": "help <target> inhale <item>",
+        "examples": ["inhale oxygen", "inhale anesthetic gas"],
+        "time_required": "1-2 rounds",
+        "stat_requirements": "conscious target required",
+        "applicable_to": ["inhalers", "oxygen tanks", "anesthetic gases", "vaporized drugs"]
+    },
+    
+    # Smoking/burning consumption
+    "smoke": {
+        "aliases": ["smoke", "light", "burn"],
+        "self_syntax": "smoke <item>",
+        "other_syntax": "help <target> smoke <item>",
+        "examples": ["smoke medicinal herb", "smoke pain-relief cigarette"],
+        "time_required": "3-5 rounds",
+        "stat_requirements": "fire source required",
+        "applicable_to": ["medicinal herbs", "cigarettes", "pipes", "combustible drugs"]
+    }
+}
+```
+
+#### Special Consumption Cases
+```python
+SPECIAL_CONSUMPTION_METHODS = {
+    # Suppository/rectal administration (boof)
+    "boof": {
+        "aliases": ["boof", "insert"],
+        "self_syntax": "boof <item>",
+        "other_syntax": "administer <item> to <target>",
+        "examples": ["boof suppository", "administer rectal medication to patient"],
+        "time_required": "2-3 rounds",
+        "stat_requirements": "medical knowledge for third-party administration",
+        "applicable_to": ["suppositories", "rectal medications", "emergency drugs"],
+        "privacy_considerations": "requires consent for third-party administration"
+    },
+    
+    # Combination methods
+    "bandage": {
+        "aliases": ["bandage", "wrap", "dress"],
+        "self_syntax": "bandage <body_part> with <item>",
+        "other_syntax": "bandage <target>'s <body_part> with <item>",
+        "examples": ["bandage arm with gauze", "bandage Alice's leg with medicated bandage"],
+        "time_required": "2-3 rounds",
+        "stat_requirements": "basic first aid knowledge",
+        "applicable_to": ["gauze", "bandages", "medicated wraps", "splints"]
+    }
+}
+```
+
+### Administration Mechanics
+
+#### Self-Administration vs Third-Party
+```python
+def administer_substance(administrator, target, substance, method):
+    """
+    Universal substance administration system.
+    Handles both self-administration and third-party scenarios.
+    """
+    is_self_admin = (administrator == target)
+    
+    # Base requirements
+    base_requirements = substance.consumption_requirements
+    method_modifiers = CONSUMPTION_METHODS[method]
+    
+    if is_self_admin:
+        # Self-administration: simpler, faster, more private
+        difficulty_modifier = 0
+        time_modifier = 1.0
+        consent_required = False
+    else:
+        # Third-party administration: more complex, requires consent/cooperation
+        difficulty_modifier = +2  # Slightly harder
+        time_modifier = 1.2       # Takes 20% longer
+        consent_required = True
+        
+        # Check consciousness/cooperation of target
+        if not target.conscious and method not in ["inject", "apply", "bandage"]:
+            return "target_unconscious_method_inappropriate"
+    
+    # Calculate success based on administrator's stats
+    admin_skill = calculate_medical_skill(administrator)
+    success_chance = admin_skill + base_requirements + difficulty_modifier
+    
+    return execute_consumption(administrator, target, substance, method, success_chance)
+```
+
+#### Medical vs Recreational Substances
+```python
+SUBSTANCE_CATEGORIES = {
+    "medical": {
+        "priority": "healing",
+        "side_effects": "minimal_therapeutic",
+        "legal_status": "regulated_legal",
+        "examples": ["painkillers", "antibiotics", "blood_bags", "burn_gel"]
+    },
+    "recreational": {
+        "priority": "psychological_effect", 
+        "side_effects": "varied_unpredictable",
+        "legal_status": "varies_by_jurisdiction",
+        "examples": ["alcohol", "stimulants", "hallucinogens", "depressants"]
+    },
+    "performance": {
+        "priority": "stat_enhancement",
+        "side_effects": "temporary_crash",
+        "legal_status": "controlled_military",
+        "examples": ["combat_stims", "focus_enhancers", "strength_boosters"]
+    },
+    "toxic": {
+        "priority": "harm",
+        "side_effects": "damage_death",
+        "legal_status": "restricted_illegal",
+        "examples": ["poisons", "nerve_agents", "corrosives"]
+    }
+}
+```
+
+### Command Integration Examples
+
+#### Medical Scenarios
+```
+> inject painkiller
+You inject the painkiller into your arm. The sharp pain in your chest begins to fade.
+
+> apply burn gel to Alice
+You carefully apply the cooling gel to Alice's burned arm. She winces but looks relieved.
+
+> bandage Bob's leg with gauze  
+You wrap Bob's wounded leg with sterile gauze, stemming the bleeding.
+```
+
+#### Cross-Category Usage
+```
+> drink whiskey
+You take a swig of whiskey. The alcohol burns as it goes down, dulling the edge of your pain.
+
+> smoke medicinal herb
+You light the dried herb and inhale deeply. Your breathing becomes easier and the pain subsides.
+
+> inhale stimpak vapor
+You breathe in the aerosolized stimpak. Energy surges through your body as your wounds begin to close.
+```
+
+### Implementation Notes
+- **Unified Backend**: All consumption methods use the same core mechanics with method-specific modifiers
+- **Natural Language**: Commands reflect real-world familiarity with consumption methods
+- **Scalability**: System supports easy addition of new substances and consumption methods
+- **Medical Foundation**: Medical system provides the underlying health/condition framework for all substances
+
 ### Medical Tool Interactions
 
 ### Treatment Effectiveness (Simplified)
@@ -755,10 +975,21 @@ def apply_medical_treatment(medic, patient, tool, condition):
     """
     medical_skill = (medic.intellect * 0.75) + (medic.motorics * 0.25)
     base_roll = roll_d20() + medical_skill
-    tool_appropriateness = TOOL_APPROPRIATENESS[condition][tool.type]
     
-    # Environmental factors: Not implemented yet - focus on core mechanics first
-    success_threshold = condition.difficulty  # Modified by tool appropriateness
+    # Tool appropriateness modifies difficulty
+    base_difficulty = MEDICAL_TREATMENT_BASE_DIFFICULTY  # Constant for balance
+    tool_modifier = TOOL_EFFECTIVENESS_MODIFIERS[tool.type][condition.type]  # Constant table
+    actual_difficulty = base_difficulty + tool_modifier
+    
+    # Success determination
+    if base_roll >= actual_difficulty:
+        return "success"
+    elif base_roll >= (actual_difficulty - PARTIAL_SUCCESS_MARGIN):  # Constant
+        return "partial_success" 
+    else:
+        return "failure"
+    
+    # NOTE: All difficulty values use constants for easy balance adjustment
 ```
 
 ## Integration Points
@@ -812,28 +1043,109 @@ MEDICAL_DESCRIPTIONS = {
         "severe": "feeling around carefully with their hands"
     }
     # These descriptions automatically append to character longdesc when conditions are present
+    # NOTE: Longdesc system is already designed to support this - implementation will use existing append hooks
 }
 ```
 
+### Integration Implementation Notes
+- **Longdesc Appending**: Will interface with existing longdesc system's append functionality
+- **Condition Detection**: Medical conditions stored in `character.db.medical_conditions` will trigger appropriate descriptions
+- **Priority System**: More severe conditions override less severe ones for the same body part
+
+## Implementation Architecture
+
+### Core Design Decisions
+
+#### State Persistence Strategy
+- **Pattern**: Use `character.db` entries following the combat handler persistence model
+- **Benefits**: Survives disconnections, server restarts, and maintains treatment timers
+- **Implementation**: Medical state, ongoing treatments, and substance effects stored in persistent database attributes
+- **Consistency**: Mid-treatment interruptions handled gracefully with state recovery on reconnection
+
+#### Organ Template System  
+- **Approach**: Dictionary-based organ mapping system in character typeclasses
+- **Template Storage**: Pre-generated organ templates for each creature type (human, tentacle_monster, spider, etc.)
+- **Dynamic Creation**: Templates support dynamic character creation with varied anatomy
+- **Inspiration**: Similar to existing systems like "Mr. Hands" location mapping
+- **Flexibility**: New creature types easily added via typeclass definitions
+
+#### Command Architecture
+- **Structure**: Separate command classes for each consumption method (`InjectCommand`, `ApplyCommand`, etc.)
+- **Shared Logic**: Common handler/utility classes for substance effects and medical calculations
+- **Aliases**: Evennia's native command-level alias system (e.g., `inhale`/`huff` aliases)
+- **Best Practices**: Follows Evennia command architecture patterns for maintainability
+
+#### NPC Integration
+- **Consistency**: NPCs use identical medical modeling and typeclasses as player characters
+- **Benefits**: NPCs can be meaningfully injured, treated, and interact with substance system
+- **Complexity**: Avoids maintaining separate/simplified systems for NPCs
+- **Gameplay**: Enables realistic medical scenarios with NPC patients and medics
+
+#### Substance Interaction System (Long-term)
+- **Toxicity Framework**: Substances contribute to cumulative toxicity levels
+- **Stacking Effects**: Multiple substances with interaction modifiers and duration overlaps
+- **Metabolic Modeling**: Clearance rates and effectiveness curves over time
+- **Complexity Scaling**: Start simple, evolve into detailed pharmacological interactions
+
+#### Performance Considerations
+- **Lazy Loading**: Inactive/resolved medical conditions cleaned up automatically
+- **Template Caching**: Organ templates cached at typeclass level for performance
+- **State Optimization**: Medical state only tracks active conditions and damaged organs
+
 ## Implementation Phases
 
-### Phase 1: Foundation (Organ System)
+### Phase 1: Foundation (Organ System & Data Persistence)
 - [ ] Expand character health model beyond simple HP
 - [ ] Add organ/subsystem tracking to Character class
 - [ ] Implement medical condition status effects
 - [ ] Basic injury-to-organ damage mapping
+- [ ] **Medical data persistence**: Store medical state in `character.db` for session persistence
 
-### Phase 2: Medical Tools
+#### Data Storage Architecture
+```python
+# Character medical state stored persistently in character.db
+character.db.medical_state = {
+    "organs": {
+        "brain": {"current_hp": 8, "max_hp": 10, "conditions": []},
+        "heart": {"current_hp": 15, "max_hp": 15, "conditions": []},
+        # ... all organs
+    },
+    "conditions": [
+        {"type": "fracture", "location": "left_arm", "severity": "moderate", "treated": False},
+        {"type": "bleeding", "location": "chest", "severity": "minor", "rate": 1}
+    ],
+    "blood_level": 85,  # Percentage of normal blood volume
+    "pain_level": 23,   # Current pain accumulation
+    "consciousness": 78 # Current consciousness level
+}
+
+# Ongoing treatments/timers: Use Evennia's built-in timer system
+# - Short term (rounds): Use delayed calls for bandaging, injections
+# - Long term (days): Use Scripts for healing, recovery, infections
+```
+
+*Note: Ongoing treatment timers will use Evennia's timer/script system for persistence across server restarts*
+
+### Phase 2: Medical Tools & Consumption Method Commands
 - [ ] Create medical item classes (BloodBag, Painkiller, etc.)
-- [ ] Implement medical treatment commands and mechanics
-- [ ] Add G.R.I.M.-based treatment success/failure
-- [ ] Tool appropriateness system
+- [ ] **Implement consumption method commands**: `inject`, `apply`, `eat`, `drink`, `inhale`, `smoke`, `bandage`
+- [ ] **Self-administration & third-party administration mechanics**
+- [ ] **Unified consumable substance system**: Foundation for medical items, drugs, and other consumables
+- [ ] Add G.R.I.M.-based treatment success/failure with method-specific modifiers
+- [ ] Tool appropriateness system integrated with consumption methods
+- [ ] **Command Integration**: Natural language consumption commands interface with substance effects and patient conditions
 
-### Phase 3: Combat Integration
+*Note: Consumption method system serves as foundation for broader drug/substance system beyond medical items*
+
+### Phase 3: Combat Integration & Stat Penalties
 - [ ] Location-based damage system in combat
-- [ ] Weapon-specific injury patterns
+- [ ] Weapon-specific injury patterns  
 - [ ] Critical injury immediate effects
+- [ ] **Pain/injury penalties affecting dice rolls**: Unified with existing stat calculation systems
+- [ ] **Medical condition modifiers**: Integration with combat, skill checks, and other game mechanics
 - [ ] Medical emergency scenarios
+
+*Note: Penalty mechanics will be unified with existing stat vs health calculations*
 
 ### Phase 4: Advanced Systems
 - [ ] Long-term healing and recovery
