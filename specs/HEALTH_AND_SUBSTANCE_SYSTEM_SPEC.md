@@ -724,6 +724,45 @@ MEDICAL_CONDITIONS = {
     }
     ```
     
+    #### Script-Based Progression Timer
+    ```python
+    MEDICAL_PROGRESSION_SYSTEM = {
+        "timing_mechanism": {
+            "interval": "2-3 combat rounds",
+            "real_time": "approximately 4-6 seconds per progression tick",
+            "rationale": "Balances urgency with player reaction time and server performance"
+        },
+        
+        "revised_bleeding_duration": {
+            "severe_bleeding_8": "16-24 combat rounds total (8-12 minutes)",
+            "moderate_bleeding_3": "6-9 combat rounds total (3-4.5 minutes)",
+            "minor_bleeding_1": "2-3 combat rounds total (1-1.5 minutes)",
+            "survivability": "Much more manageable while maintaining urgency"
+        },
+        
+        "script_triggers": {
+            "combat_start": "Activate medical progression if bleeding conditions exist",
+            "combat_end": "Continue script until all bleeding stops naturally or treated",
+            "medical_treatment": "Interrupt/modify script based on treatment success",
+            "character_movement": "Script follows character between locations",
+            "logout_persistence": "Script pauses/resumes with character login state"
+        },
+        
+        "evennia_integration": {
+            "script_class": "MedicalProgressionScript",
+            "script_attachment": "character_with_bleeding_conditions",
+            "database_updates": "Batch condition updates every progression tick",
+            "cleanup": "Auto-remove script when no progressive conditions remain"
+        },
+        
+        "performance_considerations": {
+            "batched_updates": "Update all character conditions in single database write",
+            "conditional_activation": "Script only runs when needed (bleeding/poison/burn active)",
+            "resource_efficiency": "2-3 round intervals prevent excessive server load"
+        }
+    }
+    ```
+    
     #### Multi-Location Treatment
     ```python
     TREATMENT_MECHANICS = {
