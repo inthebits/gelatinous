@@ -138,12 +138,13 @@ class CmdMedicalInfo(Command):
     Display detailed information about the medical system.
     
     Usage:
-        medinfo
-        medinfo organs
-        medinfo conditions
-        medinfo capacities
+        medinfo [target]
+        medinfo [target] organs
+        medinfo [target] conditions
+        medinfo [target] capacities
     
     Shows information about organ health, body capacities, and medical conditions.
+    If no target is specified, shows your own medical information.
     """
     
     key = "medinfo"
@@ -152,31 +153,55 @@ class CmdMedicalInfo(Command):
     def func(self):
         """Execute the medical info command."""
         caller = self.caller
-        args = self.args.strip().lower()
+        args = self.args.strip()
         
+        # Parse arguments to separate target from info type
+        if not args:
+            target = caller
+            info_type = "summary"
+        else:
+            # Split arguments
+            parts = args.split()
+            if len(parts) == 1:
+                # Could be either target or info type
+                search_result = caller.search(parts[0], quiet=True)
+                if search_result:
+                    target = search_result
+                    info_type = "summary"
+                else:
+                    # Not a valid target, treat as info type
+                    target = caller
+                    info_type = parts[0].lower()
+            else:
+                # Two parts: target and info type
+                target = caller.search(parts[0])
+                if not target:
+                    return
+                info_type = parts[1].lower()
+        
+        # Check if target has medical state
         try:
-            medical_state = caller.medical_state
+            medical_state = target.medical_state
             if medical_state is None:
-                caller.msg("No medical information available.")
+                caller.msg(f"{target.get_display_name(caller)} has no medical information available.")
                 return
         except AttributeError:
-            caller.msg("No medical information available.")
+            caller.msg(f"{target.get_display_name(caller)} has no medical information available.")
             return
             
-        medical_state = caller.medical_state
-        
-        if not args or args == "summary":
-            self._show_summary(caller, medical_state)
-        elif args == "organs":
-            self._show_organs(caller, medical_state)
-        elif args == "conditions":
-            self._show_conditions(caller, medical_state)
-        elif args == "capacities":
-            self._show_capacities(caller, medical_state)
+        # Show appropriate information
+        if not info_type or info_type == "summary":
+            self._show_summary(caller, target, medical_state)
+        elif info_type == "organs":
+            self._show_organs(caller, target, medical_state)
+        elif info_type == "conditions":
+            self._show_conditions(caller, target, medical_state)
+        elif info_type == "capacities":
+            self._show_capacities(caller, target, medical_state)
         else:
             caller.msg("Available options: summary, organs, conditions, capacities")
             
-    def _show_summary(self, caller, medical_state):
+    def _show_summary(self, caller, target, medical_state):
         """Show summary view."""
         table = EvTable("Status", "Value", border="cells")
         
@@ -194,9 +219,11 @@ class CmdMedicalInfo(Command):
         table.add_row("Damaged Organs", str(damaged_organs))
         table.add_row("Active Conditions", str(len(medical_state.conditions)))
         
-        caller.msg(f"|cMedical Summary:|n\n{table}")
+        # Show whose information this is
+        target_name = "Your" if target == caller else f"{target.get_display_name(caller)}'s"
+        caller.msg(f"|c{target_name} Medical Summary:|n\n{table}")
         
-    def _show_organs(self, caller, medical_state):
+    def _show_organs(self, caller, target, medical_state):
         """Show detailed organ information."""
         table = EvTable("Organ", "HP", "Status", "Location", border="cells")
         
@@ -214,12 +241,14 @@ class CmdMedicalInfo(Command):
                 
             table.add_row(organ_name.replace('_', ' ').title(), hp_str, status, organ.container)
             
-        caller.msg(f"|cOrgan Status:|n\n{table}")
+        target_name = "Your" if target == caller else f"{target.get_display_name(caller)}'s"
+        caller.msg(f"|c{target_name} Organ Status:|n\n{table}")
         
-    def _show_conditions(self, caller, medical_state):
+    def _show_conditions(self, caller, target, medical_state):
         """Show detailed condition information."""
         if not medical_state.conditions:
-            caller.msg("No active medical conditions.")
+            target_name = "You have" if target == caller else f"{target.get_display_name(caller)} has"
+            caller.msg(f"{target_name} no active medical conditions.")
             return
             
         table = EvTable("Condition", "Location", "Severity", "Treated", border="cells")
@@ -235,9 +264,10 @@ class CmdMedicalInfo(Command):
                 treated_str
             )
             
-        caller.msg(f"|cActive Conditions:|n\n{table}")
+        target_name = "Your" if target == caller else f"{target.get_display_name(caller)}'s"  
+        caller.msg(f"|c{target_name} Active Conditions:|n\n{table}")
         
-    def _show_capacities(self, caller, medical_state):
+    def _show_capacities(self, caller, target, medical_state):
         """Show body capacity information."""
         from world.medical.constants import BODY_CAPACITIES
         
@@ -262,7 +292,8 @@ class CmdMedicalInfo(Command):
                 status
             )
             
-        caller.msg(f"|cBody Capacities:|n\n{table}")
+        target_name = "Your" if target == caller else f"{target.get_display_name(caller)}'s"
+        caller.msg(f"|c{target_name} Body Capacities:|n\n{table}")
 
 
 # Add commands to default command set
