@@ -131,23 +131,19 @@ BODY_CAPACITIES = {
     },
     "moving": {
         "organs": ["spine", "pelvis", "left_femur", "right_femur", "left_tibia", "right_tibia", 
-                  "left_fibula", "right_fibula", "left_metatarsals", "right_metatarsals"],
+                  "left_metatarsals", "right_metatarsals"],
         "spine_contribution": 1.0,    # Spine damage = paralysis
         "pelvis_contribution": 1.0,   # Essential for walking
         "femur_contribution": 0.4,    # Each femur contributes 40%
-        "tibia_contribution": 0.3,    # Each tibia contributes 30%
-        "fibula_contribution": 0.1,   # Each fibula contributes 10%
-        "metatarsal_contribution": 0.05,  # Each foot contributes 5%
+        "tibia_contribution": 0.4,    # Each tibia contributes 40%
+        "metatarsal_contribution": 0.1,  # Each foot contributes 10%
         "incapacitation_threshold": 0.15,  # Below 15% = cannot move
         "affects": ["movement_speed"]
     },
     "manipulation": {
-        "organs": ["left_humerus", "right_humerus", "left_radius", "right_radius", 
-                  "left_ulna", "right_ulna", "left_metacarpals", "right_metacarpals"],
-        "humerus_contribution": 0.3,     # Each humerus contributes 30%
-        "radius_contribution": 0.2,      # Each radius contributes 20%
-        "ulna_contribution": 0.2,        # Each ulna contributes 20%
-        "metacarpal_contribution": 0.15, # Each hand contributes 15%
+        "organs": ["left_humerus", "right_humerus", "left_metacarpals", "right_metacarpals"],
+        "humerus_contribution": 0.4,     # Each humerus contributes 40%
+        "metacarpal_contribution": 0.2,  # Each hand contributes 20%
         "affects": ["work_speed", "melee_accuracy"]
     },
     "talking": {
@@ -266,26 +262,6 @@ ORGANS = {
         "capacity": "manipulation", "contribution": "major", "can_be_destroyed": True,
         "fracture_vulnerable": True, "bone_type": "long_bone"
     },
-    "left_radius": {
-        "container": "left_arm", "max_hp": 20, "hit_weight": "common",
-        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True,
-        "fracture_vulnerable": True, "bone_type": "long_bone"
-    },
-    "right_radius": {
-        "container": "right_arm", "max_hp": 20, "hit_weight": "common",
-        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True,
-        "fracture_vulnerable": True, "bone_type": "long_bone"
-    },
-    "left_ulna": {
-        "container": "left_arm", "max_hp": 20, "hit_weight": "common",
-        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True,
-        "fracture_vulnerable": True, "bone_type": "long_bone"
-    },
-    "right_ulna": {
-        "container": "right_arm", "max_hp": 20, "hit_weight": "common",
-        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True,
-        "fracture_vulnerable": True, "bone_type": "long_bone"
-    },
 
     # HAND BONES → FINE MANIPULATION STRUCTURES
     "left_metacarpals": {
@@ -318,16 +294,6 @@ ORGANS = {
     "right_tibia": {
         "container": "right_shin", "max_hp": 25, "hit_weight": "common",
         "capacity": "moving", "contribution": "major", "can_be_destroyed": True,
-        "fracture_vulnerable": True, "bone_type": "long_bone"
-    },
-    "left_fibula": {
-        "container": "left_shin", "max_hp": 20, "hit_weight": "common",
-        "capacity": "moving", "contribution": "minor", "can_be_destroyed": True,
-        "fracture_vulnerable": True, "bone_type": "long_bone"
-    },
-    "right_fibula": {
-        "container": "right_shin", "max_hp": 20, "hit_weight": "common",
-        "capacity": "moving", "contribution": "minor", "can_be_destroyed": True,
         "fracture_vulnerable": True, "bone_type": "long_bone"
     },
 

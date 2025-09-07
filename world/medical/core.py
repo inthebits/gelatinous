@@ -364,7 +364,7 @@ class MedicalState:
             
             # Check for bone-specific contributions (e.g., femur_contribution, humerus_contribution)
             bone_type = organ_name.split('_')[-1]  # Get bone name (femur, humerus, etc.)
-            if bone_type in ['femur', 'tibia', 'fibula', 'humerus', 'radius', 'ulna']:
+            if bone_type in ['femur', 'tibia', 'humerus']:
                 bone_contribution_key = f"{bone_type}_contribution"
             elif 'metacarpals' in organ_name:
                 bone_contribution_key = "metacarpal_contribution"
