@@ -272,7 +272,7 @@ class MedicalState:
         # Vital signs
         self.blood_level = 100.0  # Percentage of normal blood volume
         self.pain_level = 0.0     # Current pain accumulation
-        self.consciousness = 100.0  # Current consciousness level
+        self.consciousness = 1.0  # Current consciousness level (0.0 to 1.0)
         
         # Cache for expensive calculations
         self._capacity_cache = {}
@@ -499,6 +499,14 @@ class MedicalState:
         # Restore vital signs
         medical_state.blood_level = data.get("blood_level", 100.0)
         medical_state.pain_level = data.get("pain_level", 0.0)
-        medical_state.consciousness = data.get("consciousness", 100.0)
+        
+        # Handle consciousness migration: old data stored as percentage (100.0), new as decimal (1.0)
+        consciousness_value = data.get("consciousness", 1.0)
+        if consciousness_value > 1.0:
+            # Old percentage format, convert to decimal
+            medical_state.consciousness = consciousness_value / 100.0
+        else:
+            # New decimal format
+            medical_state.consciousness = consciousness_value
         
         return medical_state
