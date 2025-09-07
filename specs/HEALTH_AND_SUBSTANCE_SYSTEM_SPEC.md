@@ -38,6 +38,24 @@ The medical system now **fully integrates** with combat for realistic injury mec
 - Medical conditions visible in `medinfo` and treatable with medical items
 - Destroyed organs cannot take further damage (prevents unrealistic overkill)
 
+### 🏗️ MEDICAL SYSTEM ARCHITECTURE
+**Organ Naming and Container System:**
+- **Individual Organs** (vital/complex): `brain`, `heart`, `liver`, `left_eye`, etc.
+- **System Organs** (limbs/appendages): `left_arm_system`, `left_hand_system`, `left_leg_system`, etc.
+- **Container Hierarchy**: Organs exist within body location containers (`head`, `chest`, `left_arm`, etc.)
+
+**Critical Integration Point:**
+- `ORGANS` constants define available organs with their containers
+- `BODY_CAPACITIES` must reference organs that exist in `ORGANS` 
+- **Auto-creation Gap**: `get_organ()` creates undefined organs with `container="unknown"`
+- **Solution**: BODY_CAPACITIES uses system organ names (e.g., `left_hand_system` not `left_hand`)
+
+**Capacity Calculation Flow:**
+1. Medical state initialized with organs from `ORGANS.keys()`
+2. Body capacity calculation references `BODY_CAPACITIES[capacity]["organs"]`
+3. Each referenced organ must exist in `ORGANS` or gets auto-created with "unknown" container
+4. System organs provide proper container mapping for `medinfo` display
+
 ### 🎯 FUTURE PHASES: ADVANCED MEDICAL MECHANICS
 **Phase 3 - Advanced Features (Future Development):**
 - Limb replacement mechanics (prosthetics, cybernetics) 
