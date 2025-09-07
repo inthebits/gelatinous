@@ -23,6 +23,7 @@ from commands import CmdClothing
 from commands import CmdMedical
 from commands import CmdConsumption
 from commands import CmdMedicalItems
+from commands import CmdMedicalAdmin
 from commands.CmdSpawnMob import CmdSpawnMob
 from commands.CmdAdmin import CmdHeal, CmdPeace, CmdTestDeathCurtain, CmdWeather
 from commands.combat.cmdset_combat import CombatCmdSet
@@ -106,6 +107,11 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdMedical.CmdMedical())
         self.add(CmdMedical.CmdDamageTest())
         self.add(CmdMedical.CmdMedicalInfo())
+        
+        # Add medical administration commands
+        self.add(CmdMedicalAdmin.CmdResetMedicalStates())
+        self.add(CmdMedicalAdmin.CmdMedicalMigration())
+        self.add(CmdMedicalAdmin.CmdMedicalAudit())
         
         # Add consumption method commands
         self.add(CmdConsumption.CmdInject())
