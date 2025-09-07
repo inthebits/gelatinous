@@ -703,6 +703,170 @@ MEDICAL_CONDITIONS = {
         },
         "progression": "stable_until_treated"
     },
+    
+    ### Progressive Condition System
+    
+    **Core Mechanic: Conditions degrade naturally over time while stacking cumulatively**
+    
+    #### Progressive Bleeding Degradation
+    ```python
+    PROGRESSIVE_BLEEDING = {
+        "mechanism": "each_round_reduces_severity_by_1",
+        "examples": {
+            "severe_bleeding_8": "Round 1: 8% → Round 2: 7% → Round 3: 6% → ... → Round 8: 1% → Round 9: stops",
+            "moderate_bleeding_3": "Round 1: 3% → Round 2: 2% → Round 3: 1% → Round 4: stops",
+            "minor_bleeding_1": "Round 1: 1% → Round 2: stops"
+        },
+        "cumulative_effect": {
+            "description": "Multiple wounds stack their current bleeding rates",
+            "example": "Chest severe (6%) + arm moderate (2%) + leg minor (1%) = 9% total blood loss that round"
+        }
+    }
+    ```
+    
+    #### Multi-Location Treatment
+    ```python
+    TREATMENT_MECHANICS = {
+        "bandages": {
+            "effect": "treats_multiple_wounds_per_application",
+            "typical_coverage": "2-3_bleeding_sources_per_bandage",
+            "requires": "medical_skill_check_for_effectiveness"
+        },
+        "tourniquets": {
+            "effect": "stops_bleeding_in_specific_limb_completely",
+            "limitation": "location_specific_only"
+        },
+        "surgical_intervention": {
+            "effect": "treats_severe_bleeding_sources",
+            "requires": "high_medical_skill_proper_tools"
+        }
+    }
+    ```
+    
+    #### Extensible Condition Framework
+    ```python
+    PROGRESSIVE_CONDITIONS = {
+        "toxic_gas_exposure": {
+            "initial_damage": "15_poison_per_round",
+            "degradation": "14 → 13 → 12 → ... until cleared",
+            "cumulative": "multiple_exposures_stack: first(10/round) + second(8/round) = 18/round total"
+        },
+        "fire_damage": {
+            "initial_damage": "20_burn_per_round",
+            "degradation": "19 → 18 → 17 → ... until stopped",
+            "immediate_remedy": "stop_drop_roll removes condition entirely",
+            "cumulative": "multiple_fire_sources_compound"
+        },
+        "radiation_exposure": {
+            "initial_damage": "variable_based_on_exposure_level",
+            "degradation": "slow_reduction_over_hours_days",
+            "cumulative": "radiation_sickness_compounds_exponentially"
+        }
+    }
+    ```
+    
+    #### Game Design Benefits
+    ```python
+    PROGRESSIVE_SYSTEM_ADVANTAGES = {
+        "urgency": "conditions_worsen_before_improving_naturally",
+        "tactical_depth": "multiple_wounds_require_multiple_treatments",
+        "resource_management": "medical_supplies_become_precious_strategic_resource",
+        "realistic_progression": "injuries_naturally_degrade_over_time",
+        "scalable_difficulty": "environmental_hazards_use_same_framework"
+    }
+    ```
+    
+    #### Dynamic Medical Status Messaging
+    ```python
+    BLEEDING_STATUS_MESSAGES = {
+        "self_awareness": {
+            "multiple_severe": "Blood runs. Fast.",
+            "single_severe": "Your {location} leaks. Badly.",
+            "multiple_moderate": "Three holes. Three problems.",
+            "single_moderate": "Your {location} drips steadily.",
+            "multiple_minor": "Small cuts. They add up.",
+            "single_minor": "A nick on your {location}.",
+            "deteriorating": "It's getting worse.",
+            "improving": "Slowing down. Maybe."
+        },
+        
+        "observer_messages": {
+            "multiple_severe": "{character_name} is leaking from everywhere.",
+            "single_severe": "{character_name}'s {location} won't stop.",
+            "multiple_moderate": "{character_name} has problems. Several.",
+            "single_moderate": "{character_name}'s {location} drips.",
+            "multiple_minor": "{character_name} is nicked up.",
+            "single_minor": "{character_name} has a small cut on their {location}.",
+            "deteriorating": "{character_name} is getting worse.",
+            "improving": "{character_name}'s bleeding slows."
+        },
+        
+        "medical_status_integration": {
+            "stats_display": "Vitals: CRITICAL",
+            "medinfo_alerts": "Multiple bleeding sources active",
+            "room_descriptions": "Derek is here, bleeding.",
+            "combat_status": "Derek fights. Blood follows."
+        }
+    }
+    ```
+    
+    #### Blood Loss Progression Messaging
+    ```python
+    BLOOD_LOSS_STAGES = {
+        "90-100%": {
+            "self": "You feel fine.",
+            "observer": "{name} looks steady."
+        },
+        "70-89%": {
+            "self": "Getting light.",
+            "observer": "{name} is pale."
+        },
+        "50-69%": {
+            "self": "The world tilts.",
+            "observer": "{name} sways slightly."
+        },
+        "30-49%": {
+            "self": "Cold creeps in.",
+            "observer": "{name} is very pale. Shaking."
+        },
+        "15-29%": {
+            "self": "Vision narrows. Darkness at the edges.",
+            "observer": "{name} can barely stand."
+        },
+        "0-14%": {
+            "self": "Everything fades.",
+            "observer": "{name} is unconscious. Dying."
+        }
+    }
+    ```
+    
+    #### Real-Time Medical Updates
+    ```python
+    MEDICAL_EVENT_MESSAGING = {
+        "round_updates": {
+            "bleeding_worsens": "Your {location} opens wider.",
+            "bleeding_slows": "Your {location} clots slightly.",
+            "multiple_sources": "Blood from your {location1}. Your {location2}. Your {location3}.",
+            "treatment_needed": "This won't stop on its own."
+        },
+        
+        "status_changes": {
+            "healthy_to_injured": "Something's wrong.",
+            "injured_to_serious": "Getting bad.",
+            "serious_to_critical": "Very bad.",
+            "critical_stabilizing": "Maybe stabilizing.",
+            "recovery_progress": "Slowly improving."
+        },
+        
+        "environmental_integration": {
+            "room_entry": "Derek enters. Blood trails behind.",
+            "examination": "Derek bleeds from chest, arm, leg.",
+            "unconscious_bleeding": "Derek lies still. Blood pools.",
+            "combat_ongoing": "Derek fights on. Bleeds on."
+        }
+    }
+    ```
+    
     "infection": {
         "description": "Develops over time from untreated wounds",
         "severity_levels": {
