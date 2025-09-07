@@ -130,7 +130,7 @@ BODY_CAPACITIES = {
         "total_loss_penalty": "deafness"
     },
     "moving": {
-        "organs": ["spine", "pelvis", "left_leg", "right_leg", "left_foot", "right_foot"],
+        "organs": ["spine", "pelvis", "left_leg_system", "right_leg_system", "left_foot_system", "right_foot_system"],
         "spine_contribution": 1.0,    # Spine damage = paralysis
         "pelvis_contribution": 1.0,   # Essential for walking
         "leg_contribution": 0.5,      # Each leg contributes 50%
@@ -139,8 +139,7 @@ BODY_CAPACITIES = {
         "affects": ["movement_speed"]
     },
     "manipulation": {
-        "organs": ["left_shoulder", "right_shoulder", "left_arm", "right_arm", 
-                  "left_hand", "right_hand"],
+        "organs": ["left_arm_system", "right_arm_system", "left_hand_system", "right_hand_system"],
         "shoulder_contribution": "major",
         "arm_contribution": "major",
         "hand_contribution": "moderate",
@@ -289,6 +288,12 @@ ORGANS = {
     "right_foot_system": {
         "container": "right_foot", "max_hp": 25, "hit_weight": "uncommon",
         "capacity": "moving", "contribution": "minor", "can_be_destroyed": True
+    },
+
+    # STRUCTURAL ORGANS FOR MOVEMENT
+    "pelvis": {
+        "container": "abdomen", "max_hp": 25, "hit_weight": "uncommon",
+        "capacity": "moving", "contribution": "total", "vital": True
     }
 }
 
