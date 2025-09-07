@@ -221,7 +221,7 @@ class CmdMedicalInfo(Command):
         # Vital signs
         table.add_row("Blood Level", f"{medical_state.blood_level:.1f}%")
         table.add_row("Pain Level", f"{medical_state.pain_level:.1f}")
-        table.add_row("Consciousness", f"{medical_state.consciousness:.1f}%")
+        table.add_row("Consciousness", f"{medical_state.consciousness * 100:.1f}%")
         
         # Counts
         damaged_organs = sum(1 for organ in medical_state.organs.values() if organ.current_hp < organ.max_hp)
