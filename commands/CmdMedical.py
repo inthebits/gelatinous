@@ -165,7 +165,7 @@ class CmdMedicalInfo(Command):
             if len(parts) == 1:
                 # Could be either target or info type
                 search_result = caller.search(parts[0], quiet=True)
-                if search_result:
+                if search_result and not isinstance(search_result, list):
                     target = search_result
                     info_type = "summary"
                 else:
@@ -177,7 +177,16 @@ class CmdMedicalInfo(Command):
                 target = caller.search(parts[0])
                 if not target:
                     return
+                # Handle case where search returns a list (multiple matches)
+                if isinstance(target, list):
+                    caller.msg(f"Multiple matches for '{parts[0]}'. Please be more specific.")
+                    return
                 info_type = parts[1].lower()
+        
+        # Additional safety check to ensure target is not a list
+        if isinstance(target, list):
+            caller.msg("Target search returned multiple results. Please be more specific.")
+            return
         
         # Check if target has medical state
         try:
