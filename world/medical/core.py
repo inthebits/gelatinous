@@ -359,12 +359,29 @@ class MedicalState:
             organ = self.get_organ(organ_name)
             organ_functionality = organ.get_functionality_percentage()
             
-            # Get contribution level
-            contribution_key = organ.data.get(f"{capacity_name}_contribution", organ.contribution)
-            if isinstance(contribution_key, str):
-                contribution_value = CONTRIBUTION_VALUES.get(contribution_key, 0.05)
+            # Get contribution level - check for bone-specific contributions first
+            contribution_value = None
+            
+            # Check for bone-specific contributions (e.g., femur_contribution, humerus_contribution)
+            bone_type = organ_name.split('_')[-1]  # Get bone name (femur, humerus, etc.)
+            if bone_type in ['femur', 'tibia', 'fibula', 'humerus', 'radius', 'ulna']:
+                bone_contribution_key = f"{bone_type}_contribution"
+            elif 'metacarpals' in organ_name:
+                bone_contribution_key = "metacarpal_contribution"
+            elif 'metatarsals' in organ_name:
+                bone_contribution_key = "metatarsal_contribution"
             else:
-                contribution_value = float(contribution_key)
+                bone_contribution_key = None
+                
+            if bone_contribution_key and bone_contribution_key in capacity_data:
+                contribution_value = capacity_data[bone_contribution_key]
+            else:
+                # Fall back to organ's defined contribution or generic lookup
+                contribution_key = organ.data.get(f"{capacity_name}_contribution", organ.contribution)
+                if isinstance(contribution_key, str):
+                    contribution_value = CONTRIBUTION_VALUES.get(contribution_key, 0.05)
+                else:
+                    contribution_value = float(contribution_key)
                 
             total_capacity += organ_functionality * contribution_value
             

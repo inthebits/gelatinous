@@ -130,19 +130,24 @@ BODY_CAPACITIES = {
         "total_loss_penalty": "deafness"
     },
     "moving": {
-        "organs": ["spine", "pelvis", "left_leg_system", "right_leg_system", "left_foot_system", "right_foot_system"],
+        "organs": ["spine", "pelvis", "left_femur", "right_femur", "left_tibia", "right_tibia", 
+                  "left_fibula", "right_fibula", "left_metatarsals", "right_metatarsals"],
         "spine_contribution": 1.0,    # Spine damage = paralysis
         "pelvis_contribution": 1.0,   # Essential for walking
-        "leg_contribution": 0.5,      # Each leg contributes 50%
-        "foot_contribution": 0.04,    # Each foot contributes 4%
+        "femur_contribution": 0.4,    # Each femur contributes 40%
+        "tibia_contribution": 0.3,    # Each tibia contributes 30%
+        "fibula_contribution": 0.1,   # Each fibula contributes 10%
+        "metatarsal_contribution": 0.05,  # Each foot contributes 5%
         "incapacitation_threshold": 0.15,  # Below 15% = cannot move
         "affects": ["movement_speed"]
     },
     "manipulation": {
-        "organs": ["left_arm_system", "right_arm_system", "left_hand_system", "right_hand_system"],
-        "shoulder_contribution": "major",
-        "arm_contribution": "major",
-        "hand_contribution": "moderate",
+        "organs": ["left_humerus", "right_humerus", "left_radius", "right_radius", 
+                  "left_ulna", "right_ulna", "left_metacarpals", "right_metacarpals"],
+        "humerus_contribution": 0.3,     # Each humerus contributes 30%
+        "radius_contribution": 0.2,      # Each radius contributes 20%
+        "ulna_contribution": 0.2,        # Each ulna contributes 20%
+        "metacarpal_contribution": 0.15, # Each hand contributes 15%
         "affects": ["work_speed", "melee_accuracy"]
     },
     "talking": {
@@ -250,44 +255,92 @@ ORGANS = {
         "causes_pain_when_damaged": True, "paralysis_if_destroyed": True
     },
 
-    # ARM CONTAINERS → MANIPULATION ORGANS INSIDE
-    "left_arm_system": {
-        "container": "left_arm", "max_hp": 30, "hit_weight": "common",
-        "capacity": "manipulation", "contribution": "major", "can_be_destroyed": True
+    # ARM BONES → MANIPULATION STRUCTURES
+    "left_humerus": {
+        "container": "left_arm", "max_hp": 25, "hit_weight": "common",
+        "capacity": "manipulation", "contribution": "major", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "long_bone"
     },
-    "right_arm_system": {
-        "container": "right_arm", "max_hp": 30, "hit_weight": "common",
-        "capacity": "manipulation", "contribution": "major", "can_be_destroyed": True
+    "right_humerus": {
+        "container": "right_arm", "max_hp": 25, "hit_weight": "common",
+        "capacity": "manipulation", "contribution": "major", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "long_bone"
+    },
+    "left_radius": {
+        "container": "left_arm", "max_hp": 20, "hit_weight": "common",
+        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "long_bone"
+    },
+    "right_radius": {
+        "container": "right_arm", "max_hp": 20, "hit_weight": "common",
+        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "long_bone"
+    },
+    "left_ulna": {
+        "container": "left_arm", "max_hp": 20, "hit_weight": "common",
+        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "long_bone"
+    },
+    "right_ulna": {
+        "container": "right_arm", "max_hp": 20, "hit_weight": "common",
+        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "long_bone"
     },
 
-    # HAND CONTAINERS → FINE MANIPULATION ORGANS INSIDE
-    "left_hand_system": {
-        "container": "left_hand", "max_hp": 20, "hit_weight": "uncommon",
-        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True
+    # HAND BONES → FINE MANIPULATION STRUCTURES
+    "left_metacarpals": {
+        "container": "left_hand", "max_hp": 15, "hit_weight": "uncommon",
+        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "small_bones"
     },
-    "right_hand_system": {
-        "container": "right_hand", "max_hp": 20, "hit_weight": "uncommon",
-        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True
+    "right_metacarpals": {
+        "container": "right_hand", "max_hp": 15, "hit_weight": "uncommon",
+        "capacity": "manipulation", "contribution": "moderate", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "small_bones"
     },
 
-    # LEG CONTAINERS → MOVEMENT ORGANS INSIDE
-    "left_leg_system": {
+    # LEG BONES → MOVEMENT STRUCTURES
+    "left_femur": {
         "container": "left_thigh", "max_hp": 30, "hit_weight": "common",
-        "capacity": "moving", "contribution": "major", "can_be_destroyed": True
+        "capacity": "moving", "contribution": "major", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "long_bone"
     },
-    "right_leg_system": {
+    "right_femur": {
         "container": "right_thigh", "max_hp": 30, "hit_weight": "common", 
-        "capacity": "moving", "contribution": "major", "can_be_destroyed": True
+        "capacity": "moving", "contribution": "major", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "long_bone"
+    },
+    "left_tibia": {
+        "container": "left_shin", "max_hp": 25, "hit_weight": "common",
+        "capacity": "moving", "contribution": "major", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "long_bone"
+    },
+    "right_tibia": {
+        "container": "right_shin", "max_hp": 25, "hit_weight": "common",
+        "capacity": "moving", "contribution": "major", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "long_bone"
+    },
+    "left_fibula": {
+        "container": "left_shin", "max_hp": 20, "hit_weight": "common",
+        "capacity": "moving", "contribution": "minor", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "long_bone"
+    },
+    "right_fibula": {
+        "container": "right_shin", "max_hp": 20, "hit_weight": "common",
+        "capacity": "moving", "contribution": "minor", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "long_bone"
     },
 
-    # FOOT CONTAINERS → BALANCE/MOBILITY ORGANS INSIDE
-    "left_foot_system": {
-        "container": "left_foot", "max_hp": 25, "hit_weight": "uncommon",
-        "capacity": "moving", "contribution": "minor", "can_be_destroyed": True
+    # FOOT BONES → BALANCE/MOBILITY STRUCTURES
+    "left_metatarsals": {
+        "container": "left_foot", "max_hp": 20, "hit_weight": "uncommon",
+        "capacity": "moving", "contribution": "minor", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "small_bones"
     },
-    "right_foot_system": {
-        "container": "right_foot", "max_hp": 25, "hit_weight": "uncommon",
-        "capacity": "moving", "contribution": "minor", "can_be_destroyed": True
+    "right_metatarsals": {
+        "container": "right_foot", "max_hp": 20, "hit_weight": "uncommon",
+        "capacity": "moving", "contribution": "minor", "can_be_destroyed": True,
+        "fracture_vulnerable": True, "bone_type": "small_bones"
     },
 
     # STRUCTURAL ORGANS FOR MOVEMENT
