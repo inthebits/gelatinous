@@ -1664,7 +1664,213 @@ character.db.medical_state = {
 
 *Note: Consumption method system serves as foundation for broader drug/substance system beyond medical items*
 
-### Phase 3: Combat Integration & Stat Penalties
+### Phase 3: Tactical Hit Location & Armor Integration
+- [ ] **Smart hit location system** based on attack success margin
+- [ ] **Organ density-based targeting** - vital organ areas harder to hit precisely
+- [ ] **Armor protection layers** - clothing/armor reduces damage to protected organs  
+- [ ] **Armor damage system** - protective gear degrades from absorbing hits
+- [ ] **Weapon penetration mechanics** - different weapons vs different armor types
+- [ ] **Critical hit amplification** - exceptional attacks can bypass armor or hit vital organs directly
+
+#### Hit Location Mechanics
+```python
+# Attack success determines hit precision
+attack_roll = d20 + attacker_skill
+defense_roll = d20 + defender_skill
+success_margin = attack_roll - defense_roll
+
+if success_margin >= 15:  # Exceptional success
+    target_location = attacker_chooses_location()  # Deliberate targeting
+elif success_margin >= 5:   # Good success  
+    target_location = weighted_random(prefer_large_areas=True)  # Chest, torso likely
+else:  # Marginal success
+    target_location = weighted_random(prefer_extremities=True)  # Arms, legs likely
+
+# Organ targeting within location based on hit precision
+organs_in_location = get_organs_by_location(target_location)
+if success_margin >= 10:
+    # Can target specific vital organs
+    target_organ = weighted_random(organs_in_location, allow_vital=True)
+else:
+    # Random organ in location, bias away from vital organs
+    target_organ = weighted_random(organs_in_location, avoid_vital=True)
+```
+
+#### Armor Integration System
+```python
+# Layered protection check
+worn_items = character.get_worn_items_for_location(hit_location)
+protection_layers = []
+
+for item in worn_items:
+    if item.armor_rating and protects_location(item, hit_location):
+        protection_layers.append({
+            'item': item,
+            'armor_rating': item.armor_rating,
+            'armor_type': item.armor_type,  # 'leather', 'kevlar', 'plate', etc.
+            'condition': item.condition      # 100% = perfect, 0% = destroyed
+        })
+
+# Calculate damage reduction
+total_protection = 0
+penetrating_damage = initial_damage
+
+for layer in protection_layers:
+    # Weapon vs armor type effectiveness
+    penetration = get_penetration_value(weapon_type, layer['armor_type'])
+    effective_armor = layer['armor_rating'] * (layer['condition'] / 100.0)
+    
+    damage_stopped = min(penetrating_damage, effective_armor * (1.0 - penetration))
+    penetrating_damage -= damage_stopped
+    
+    # Damage the armor
+    armor_damage = calculate_armor_damage(damage_stopped, weapon_type)
+    layer['item'].take_armor_damage(armor_damage)
+    
+    if penetrating_damage <= 0:
+        break  # Completely stopped by armor
+
+# Apply remaining damage to organs
+if penetrating_damage > 0:
+    target_organ.take_damage(penetrating_damage, injury_type)
+```
+
+#### Weapon vs Armor Matrix
+```python
+PENETRATION_VALUES = {
+    # weapon_type: { armor_type: penetration_percentage }
+    'bullet': {
+        'cloth': 0.95,      # Bullets easily penetrate cloth
+        'leather': 0.80,    # Some protection vs bullets
+        'kevlar': 0.30,     # Designed to stop bullets
+        'plate': 0.60       # Depends on caliber vs thickness
+    },
+    'stab': {
+        'cloth': 0.90,      # Knives cut through cloth
+        'leather': 0.50,    # Leather provides good stab protection
+        'kevlar': 0.70,     # Kevlar weak vs stabbing
+        'plate': 0.20       # Plate excellent vs stabs
+    },
+    'cut': {
+        'cloth': 0.85,      # Slashing cuts cloth easily  
+        'leather': 0.60,    # Moderate protection
+        'kevlar': 0.40,     # Good vs cuts
+        'plate': 0.15       # Excellent protection
+    },
+    'blunt': {
+        'cloth': 0.95,      # No protection vs blunt force
+        'leather': 0.80,    # Minimal padding
+        'kevlar': 0.70,     # Some cushioning
+        'plate': 0.30       # Distributes impact well
+    }
+}
+```
+
+#### Integration with Existing Combat System
+The tactical hit location system builds on the existing combat architecture:
+
+**Current State**: Combat system calls `target.take_anatomical_damage(damage, "chest", injury_type)`
+- All hits currently default to "chest" location
+- Damage is distributed among chest organs (heart, lungs) by hit weights
+
+**Phase 3 Enhancement**: 
+```python
+# In combat handler, replace current location targeting:
+# OLD: target.take_anatomical_damage(damage, "chest", weapon.damage_type)
+
+# NEW: Smart location targeting
+attack_success_margin = attacker_roll - defender_roll  
+hit_location = calculate_hit_location(attack_success_margin, attacker_intent)
+final_damage = apply_armor_protection(damage, hit_location, target, weapon)
+target.take_anatomical_damage(final_damage, hit_location, weapon.damage_type)
+```
+
+**Combat Command Integration**:
+```python
+# Enhanced attack commands with targeting options
+> attack bandit             # Normal attack (success determines location)  
+> attack bandit head        # Deliberate headshot (harder roll, -4 penalty)
+> attack bandit center      # Aim for center mass (+2 bonus, chest/abdomen)
+> attack bandit limbs       # Target extremities (+1 bonus, arms/legs only)
+```
+
+**Clothing/Armor System Integration**:
+- Extends existing `clothing.py` system with armor ratings
+- Uses current wear/remove mechanics  
+- Builds on location-based coverage already in clothing system
+
+#### Location Difficulty Modifiers
+```python
+HIT_LOCATION_DIFFICULTY = {
+    # Higher values = harder to hit precisely
+    'head': {
+        'difficulty': 8,     # Small target, vital organs
+        'organs': ['brain', 'left_eye', 'right_eye'],
+        'vital_density': 'very_high'
+    },
+    'chest': {
+        'difficulty': 4,     # Large target, but vital organs
+        'organs': ['heart', 'left_lung', 'right_lung'],  
+        'vital_density': 'high'
+    },
+    'abdomen': {
+        'difficulty': 5,     # Medium target, some vital organs
+        'organs': ['liver', 'stomach', 'left_kidney', 'right_kidney'],
+        'vital_density': 'medium'
+    },
+    'left_arm': {
+        'difficulty': 2,     # Easier to hit, no vital organs
+        'organs': ['left_humerus', 'left_metacarpals'],
+        'vital_density': 'none'
+    },
+    'right_leg': {
+        'difficulty': 3,     # Large target, structural bones only
+        'organs': ['right_femur', 'right_tibia', 'right_metatarsals'],
+        'vital_density': 'none'  
+    }
+}
+```
+
+#### Technical Implementation Plan
+**Phase 3.1: Hit Location System**
+1. Create `world/combat/hit_location.py` module
+2. Add `calculate_hit_location(success_margin, targeting_intent)` function
+3. Define location difficulty constants and organ targeting weights
+4. Update combat handler to use smart location targeting
+
+**Phase 3.2: Armor Protection Layer** 
+1. Extend `typeclasses/items.py` with armor properties:
+   ```python
+   # Add to clothing items
+   armor_rating = 0         # Protection points
+   armor_type = "none"      # 'leather', 'kevlar', 'plate', etc.
+   max_condition = 100      # Durability when new
+   current_condition = 100  # Current condition (damaged = less protection)
+   protects_locations = []  # ['chest', 'abdomen'] etc.
+   ```
+
+2. Create `world/medical/armor_system.py` module:
+   ```python
+   def apply_armor_protection(damage, location, character, weapon):
+       """Calculate damage after armor protection"""
+       
+   def damage_armor(item, damage_amount, weapon_type):
+       """Apply wear and tear to protective equipment"""
+   ```
+
+**Phase 3.3: Integration Points**
+1. Update `world/combat/handler.py` damage application
+2. Extend weapon definitions with penetration characteristics  
+3. Add armor condition display to clothing commands
+4. Create armor repair mechanics (future: crafting system integration)
+
+**Phase 3.4: Balancing and Testing**
+1. Define penetration values through combat testing
+2. Balance armor degradation rates vs availability
+3. Tune hit location probabilities for tactical depth vs playability
+4. Test integration with existing medical condition system
+
+### Phase 4: Combat Integration & Stat Penalties
 - [ ] Location-based damage system in combat
 - [ ] Weapon-specific injury patterns  
 - [ ] Critical injury immediate effects
@@ -1674,13 +1880,55 @@ character.db.medical_state = {
 
 *Note: Penalty mechanics will be unified with existing stat vs health calculations*
 
-### Phase 4: Advanced Systems
+### Phase 5: Advanced Systems
 - [ ] Long-term healing and recovery
 - [ ] Infection and complication systems
 - [ ] Prosthetics and permanent disabilities
 - [ ] Advanced surgical procedures
 
 ## Example Medical Scenarios
+
+### Tactical Combat Scenario (Phase 3)
+```
+Alice attacks Bob with a pistol. 
+Attack roll: 18, Defense roll: 12 → Success margin: 6
+
+Hit Location Calculation:
+- Success margin 6 = "good success"  
+- Weighted random favors large areas → chest selected
+- Organs in chest: heart, left_lung, right_lung
+- Success margin 6 < 10 → bias away from vital organs → right_lung targeted
+
+Armor Check:
+Bob wears: Kevlar vest (armor_rating: 15, condition: 85%, type: 'kevlar')
+- Bullet vs kevlar penetration: 30%
+- Effective armor: 15 × 0.85 = 12.75
+- Damage stopped: 8 points (from 12 bullet damage)
+- Penetrating damage: 4 points
+- Kevlar vest takes 2 armor damage (now 83% condition)
+
+Result:
+- Bob's right_lung takes 4 bullet damage
+- Develops "punctured_lung" condition (minor bleeding)
+- Kevlar vest damaged but still functional
+- Bob suffers breathing penalty (-1 to physical rolls)
+```
+
+### Armor Degradation Scenario
+```
+Charlie's leather jacket (condition: 60%) gets hit by knife attack.
+- Stab vs leather penetration: 50%
+- Effective armor: 8 × 0.60 = 4.8 protection
+- Damage: 10 stab → 5 penetrates, 5 stopped
+- Leather takes 3 armor damage
+- New condition: 45% (getting worn down)
+
+After several more hits:
+- Leather condition drops to 20%
+- Protection now only 1.6 points
+- Next hit will likely penetrate fully
+- Charlie needs to repair or replace armor
+```
 
 ### Combat Medic Scenario
 ```
