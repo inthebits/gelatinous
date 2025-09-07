@@ -5,12 +5,14 @@ This document describes the Phase 1 implementation of the Gelatinous Monster Hea
 ## What's Implemented
 
 ### Core Medical System Foundation
+- ✅ **Individual Bone Anatomy**: Hospital-grade anatomical accuracy with specific bones (humerus, femur, tibia, metacarpals, metatarsals)
 - ✅ **Organ System**: Individual organs with HP, functionality, and anatomical mapping
-- ✅ **Body Capacities**: Vital and functional capacities affected by organ health
+- ✅ **Body Capacities**: Vital and functional capacities affected by organ health with bone-specific contributions
 - ✅ **Medical Conditions**: Status effects like bleeding, fractures, infections
 - ✅ **Medical State**: Complete medical tracking with persistence
 - ✅ **Vital Signs**: Blood level, pain level, consciousness tracking
 - ✅ **Anatomical Damage**: Location-based damage with organ targeting
+- ✅ **Migration Tools**: Administrative commands for updating existing characters to new anatomy
 
 ### Character Integration
 - ✅ **Medical State Persistence**: Stored in `character.db.medical_state`
@@ -24,6 +26,8 @@ This document describes the Phase 1 implementation of the Gelatinous Monster Hea
 - ✅ `medinfo [organs|conditions|capacities]` - Detailed medical information
 - ✅ `damagetest <amount> [location] [injury_type]` - Test damage application
 - ✅ `healtest [condition|all]` - Test healing (development command)
+- ✅ `@resetmedical [character|confirm all]` - Reset character medical states (admin)
+- ✅ `@medaudit` - Comprehensive medical system diagnostics (admin)
 
 ## System Architecture
 
@@ -50,6 +54,11 @@ character.db.medical_state = {
 Organs contribute to body capacities that affect character function:
 - **Vital**: `consciousness`, `blood_pumping`, `breathing`, `digestion`
 - **Functional**: `sight`, `hearing`, `moving`, `manipulation`, `talking`
+
+Individual bones provide specific capacity contributions:
+- **Long Bones**: Femur and tibia each contribute 40% to moving capacity
+- **Arm Bones**: Humerus contributes 40% to manipulation capacity
+- **Hand/Foot Bones**: Metacarpals (20%) and metatarsals (10%) for fine motor functions
 
 ### Death Conditions
 Character dies if:
@@ -102,6 +111,8 @@ Organ Status:
 │ Heart              │11/15│ Damaged         │ chest    │
 │ Left Lung          │15/20│ Damaged         │ chest    │
 │ Right Lung         │20/20│ Healthy         │ chest    │
+│ Left Humerus       │12/15│ Damaged         │ left_arm │
+│ Right Femur        │18/20│ Damaged         │ right_leg│
 └────────────────────┴─────┴─────────────────┴──────────┘
 ```
 
@@ -124,6 +135,28 @@ Armor and clothing affect:
 - Which body locations can be hit
 - Damage reduction to organs
 - Medical treatment accessibility
+
+## Migration and Administration
+
+### Character Migration
+For existing characters that were created before the individual bone system:
+
+```
+# Reset a single character's medical state to current anatomy
+> @resetmedical PlayerName
+
+# Reset ALL characters to use individual bones (use with caution)
+> @resetmedical confirm all
+
+# Audit the medical system for inconsistencies
+> @medaudit
+```
+
+The migration process:
+1. Updates character medical states to use individual bones (humerus, femur, etc.)
+2. Replaces old "system" organs with anatomically accurate bone structure
+3. Preserves existing conditions and damage where possible
+4. Provides safety confirmation for mass updates
 
 ## Testing
 
