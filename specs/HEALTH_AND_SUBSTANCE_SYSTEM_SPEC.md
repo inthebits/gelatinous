@@ -29,32 +29,76 @@
 - ✅ Admin heal command fixed for medical condition list structure
 - ✅ Destroyed organ protection - prevents damage to 0 HP organs
 - ✅ Limb loss detection when all organs in body part destroyed
+- ✅ **Individual bone anatomy system** - hospital-grade anatomical accuracy
+- ✅ **Organ naming consistency** - eliminated "unknown" container issues
+- ✅ **Enhanced medinfo diagnostics** - comprehensive medical status reporting
+- ✅ **Medical system migration tools** - administrative commands for mass updates
 
-### 🔄 CURRENT STATE: FULL MEDICAL INTEGRATION
-The medical system now **fully integrates** with combat for realistic injury mechanics:
+### 🔄 CURRENT STATE: ANATOMICALLY ACCURATE MEDICAL SYSTEM
+The medical system now features **hospital-grade anatomical accuracy** with individual bone structures:
 - Combat damage properly creates medical conditions (bleeding, fractures, organ damage)
 - Weapon types create appropriate injury patterns (bullets cause severe bleeding, blunt weapons cause fractures)
 - Organ damage occurs realistically (chest hits affect heart/lungs, head hits affect brain/eyes)  
 - Medical conditions visible in `medinfo` and treatable with medical items
 - Destroyed organs cannot take further damage (prevents unrealistic overkill)
+- **Individual bone anatomy** with realistic fracture mechanics
+
+### 🦴 ANATOMICAL BONE SYSTEM (December 2024)
+**Individual Bone Structure:**
+- **Arms:** `left/right_humerus` (main arm bones) → 40% manipulation each
+- **Hands:** `left/right_metacarpals` (hand bones) → 20% manipulation each  
+- **Thighs:** `left/right_femur` (thigh bones) → 40% movement each
+- **Shins:** `left/right_tibia` (shin bones) → 40% movement each
+- **Feet:** `left/right_metatarsals` (foot bones) → 10% movement each
+
+**Medical Benefits:**
+- Realistic fractures (can break humerus without affecting other bones)
+- Proper orthopedic injury patterns (blunt trauma to leg can fracture femur)
+- Anatomically accurate damage distribution
+- Enhanced surgical/treatment targeting
+- One bone per body location for clean display
 
 ### 🏗️ MEDICAL SYSTEM ARCHITECTURE
-**Organ Naming and Container System:**
+**Organ Classification System:**
 - **Individual Organs** (vital/complex): `brain`, `heart`, `liver`, `left_eye`, etc.
-- **System Organs** (limbs/appendages): `left_arm_system`, `left_hand_system`, `left_leg_system`, etc.
+- **Individual Bones** (structural): `left_humerus`, `left_femur`, `left_tibia`, etc.
 - **Container Hierarchy**: Organs exist within body location containers (`head`, `chest`, `left_arm`, etc.)
 
-**Critical Integration Point:**
-- `ORGANS` constants define available organs with their containers
+**Critical Integration Points:**
+- `ORGANS` constants define available organs with their containers and properties
 - `BODY_CAPACITIES` must reference organs that exist in `ORGANS` 
 - **Auto-creation Gap**: `get_organ()` creates undefined organs with `container="unknown"`
-- **Solution**: BODY_CAPACITIES uses system organ names (e.g., `left_hand_system` not `left_hand`)
+- **Solution**: All capacity calculations use properly defined organ names
 
 **Capacity Calculation Flow:**
 1. Medical state initialized with organs from `ORGANS.keys()`
 2. Body capacity calculation references `BODY_CAPACITIES[capacity]["organs"]`
 3. Each referenced organ must exist in `ORGANS` or gets auto-created with "unknown" container
-4. System organs provide proper container mapping for `medinfo` display
+4. Bone-specific contributions (femur_contribution, humerus_contribution) provide balanced capacity totals
+
+**Enhanced Medical Commands:**
+- `medinfo [target] [organs|conditions|capacities|summary]` - Comprehensive medical diagnostics
+- `@resetmedical <character>` - Reset medical states after system updates
+- `@medaudit [details]` - Audit medical system health across all characters
+
+### 🔧 MEDICAL SYSTEM MIGRATION TOOLS
+**Administrative Commands (Builder+):**
+- `@resetmedical confirm all` - Mass reset all character medical states
+- `@resetmedical <character>` - Reset individual character medical state
+- `@medaudit` - Quick overview of medical system health across game
+- `@medaudit details` - Detailed character-by-character medical state analysis
+
+**Migration Workflow:**
+1. `@medaudit` - Assess current medical state distribution
+2. `@resetmedical confirm all` - Clean slate migration (recommended)
+3. Characters automatically receive current medical structure on next access
+4. `@medaudit` - Verify successful migration to new structure
+
+**Use Cases:**
+- Medical system updates (new organs, changed mechanics)
+- Server maintenance and cleanup
+- Development testing and debugging
+- Version migration between game updates
 
 ### 🎯 FUTURE PHASES: ADVANCED MEDICAL MECHANICS
 **Phase 3 - Advanced Features (Future Development):**
