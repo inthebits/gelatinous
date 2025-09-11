@@ -48,6 +48,62 @@ def calculate_hit_weights_for_location(location):
     return hit_weights
 
 
+def select_hit_location(character):
+    """
+    Dynamically select a hit location based on character's anatomy and organ hit weights.
+    
+    Args:
+        character: Character object with anatomy structure
+        
+    Returns:
+        str: Selected body location (e.g., "chest", "head", "left_arm")
+    """
+    import random
+    
+    # Get all available body locations from character's anatomy
+    if not hasattr(character, 'anatomy') or not character.anatomy:
+        # Fallback to chest if no anatomy defined
+        return "chest"
+    
+    available_locations = list(character.anatomy.keys())
+    if not available_locations:
+        return "chest"
+    
+    # Calculate total hit weights for each body location
+    location_weights = {}
+    
+    for location in available_locations:
+        # Get all organs in this location and sum their hit weights
+        organs = get_organ_by_body_location(location)
+        total_weight = 0
+        
+        for organ_name in organs:
+            organ_data = ORGANS.get(organ_name, {})
+            weight_category = organ_data.get("hit_weight", "common")
+            weight_value = HIT_WEIGHTS.get(weight_category, HIT_WEIGHTS["common"])
+            total_weight += weight_value
+            
+        # Use a minimum weight to ensure all locations are possible targets
+        location_weights[location] = max(total_weight, 1)
+    
+    # Perform weighted random selection
+    total_weight = sum(location_weights.values())
+    if total_weight == 0:
+        return "chest"  # Fallback
+        
+    # Generate random number and select location
+    rand_value = random.randint(1, total_weight)
+    cumulative_weight = 0
+    
+    for location, weight in location_weights.items():
+        cumulative_weight += weight
+        if rand_value <= cumulative_weight:
+            return location
+            
+    # Fallback (should never reach here, but safety first)
+    return available_locations[0]
+
+
 def distribute_damage_to_organs(location, total_damage, medical_state, injury_type="generic"):
     """
     Distribute damage across organs in a body location based on hit weights.

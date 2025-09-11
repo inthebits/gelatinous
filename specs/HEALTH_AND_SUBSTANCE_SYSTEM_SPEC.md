@@ -1769,26 +1769,52 @@ character.db.medical_state = {
 
 *Note: Phase 2 consumption method system provides foundation for broader drug/substance system expansion*
 
-### Phase 2.3: Combat Message Integration - 🔲 PLANNED
-Advanced combat integration to leverage medical system's anatomical precision for enhanced role-play immersion.
+### Phase 2.3: Combat Message Integration - 🔲 READY FOR IMPLEMENTATION
+Advanced combat integration leveraging the existing anatomical hit weight system for dynamic hit location targeting.
 
-#### Combat Message Hit Location Support
-- **{hit_location} variable**: Combat message system enhanced to support hit_location variable
-- **Dynamic location passing**: `apply_damage(location="chest")` parameter passed to combat messages
-- **Three-layer targeting**: Messages can reference longdesc locations, organ containers, or specific organs
-- **Anatomical precision**: Combat messages gain hospital-grade anatomical accuracy
-- **RP enhancement**: Players see exactly where attacks land based on character's actual anatomy
+#### Existing Foundation
+The system already includes a complete hit weight foundation:
+
+**Hit Weight System** (world/medical/constants.py):
+- Organ hit weight categories: very_rare (2), rare (8), uncommon (15), common (25)
+- Complete ORGANS dictionary with hit_weight properties for all body parts
+- HIT_WEIGHTS mapping for weighted random selection
+
+**Hit Location Calculation** (world/medical/utils.py):
+- `calculate_hit_weights_for_location()` function fully implemented
+- Weighted random selection based on organ hit_weight values
+- Integration with three-layer anatomy system
+
+**Current Combat Handler** (world/combat/handler.py):
+- Uses hardcoded `location="chest"` in attack resolution (~line 1210)
+- Success margin calculation already functional
+- Ready for dynamic hit location integration
 
 #### Implementation Requirements
+Replace hardcoded hit location with dynamic calculation:
+
 ```python
+# In combat handler attack resolution
+from world.medical.utils import calculate_hit_weights_for_location
+
+# Instead of: location="chest"
+available_locations = list(defender.anatomy.keys())
+location = calculate_hit_weights_for_location(available_locations, defender.anatomy)
+
 # Combat message system enhancement
 message_vars = {
-    'hit_location': location,  # Passed from apply_damage()
+    'hit_location': location,  # Now dynamically calculated
     'attacker': attacker.name,
     'defender': defender.name,
     # ... existing combat message variables
 }
 ```
+
+#### Technical Integration
+- **Dynamic Hit Location**: Replace hardcoded "chest" with weighted random selection
+- **Anatomical Accuracy**: Hit locations determined by actual organ hit_weight properties
+- **Message System Ready**: {hit_location} variable already supported in combat messages
+- **Foundation Complete**: All underlying systems functional, requires only handler integration
 
 ### Phase 2.4: Longdesc Wound Integration - 🔲 PLANNED
 Dynamic wound descriptions that append to character longdesc based on medical state and treatment status.

@@ -17,6 +17,7 @@ from evennia import DefaultScript, create_script, search_object
 from random import randint
 from evennia.utils.utils import delay
 from world.combat.messages import get_combat_message
+from world.medical.utils import select_hit_location
 from evennia.comms.models import ChannelDB
 import traceback
 
@@ -1206,8 +1207,11 @@ class CombatHandler(DefaultScript):
             # Determine injury type based on weapon
             injury_type = self._determine_injury_type(weapon)
             
+            # Select hit location dynamically based on target's anatomy
+            hit_location = select_hit_location(target)
+            
             # Apply damage and check if target died
-            target_died = target.take_damage(damage, location="chest", injury_type=injury_type)
+            target_died = target.take_damage(damage, location=hit_location, injury_type=injury_type)
             
             # Determine weapon type for messages
             weapon_type = "unarmed"
@@ -1215,7 +1219,7 @@ class CombatHandler(DefaultScript):
                 weapon_type = weapon.db.weapon_type
             
             # Get hit messages from the message system
-            hit_messages = get_combat_message(weapon_type, "hit", attacker=attacker, target=target, item=weapon, damage=damage)
+            hit_messages = get_combat_message(weapon_type, "hit", attacker=attacker, target=target, item=weapon, damage=damage, hit_location=hit_location)
             
             # Send messages
             attacker.msg(hit_messages["attacker_msg"])
@@ -1230,7 +1234,7 @@ class CombatHandler(DefaultScript):
                 target.at_death()
                 
                 # Get kill messages from the message system
-                kill_messages = get_combat_message(weapon_type, "kill", attacker=attacker, target=target, item=weapon, damage=damage)
+                kill_messages = get_combat_message(weapon_type, "kill", attacker=attacker, target=target, item=weapon, damage=damage, hit_location=hit_location)
                 
                 # Note: target.at_death() already sent death messages, so we only send kill messages if needed
                 # target.msg(kill_messages["victim_msg"])  # Skip - death already handled
