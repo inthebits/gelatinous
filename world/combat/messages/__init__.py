@@ -89,6 +89,10 @@ def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None
         "phase": phase,          # Pass phase itself if templates need it
         **kwargs                 # e.g., damage, any other custom placeholders
     }
+    
+    # Format hit_location to replace underscores with spaces for readability
+    if "hit_location" in format_kwargs:
+        format_kwargs["hit_location"] = format_kwargs["hit_location"].replace("_", " ")
 
     final_messages = {}
     # Define which phases should be colored red for "successful hits"
