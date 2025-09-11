@@ -53,19 +53,19 @@ def select_hit_location(character):
     Dynamically select a hit location based on character's anatomy and organ hit weights.
     
     Args:
-        character: Character object with anatomy structure
+        character: Character object with longdesc anatomy structure
         
     Returns:
         str: Selected body location (e.g., "chest", "head", "left_arm")
     """
     import random
     
-    # Get all available body locations from character's anatomy
-    if not hasattr(character, 'anatomy') or not character.anatomy:
-        # Fallback to chest if no anatomy defined
+    # Get all available body locations from character's longdesc
+    if not hasattr(character, 'longdesc') or not character.longdesc:
+        # Fallback to chest if no longdesc defined
         return "chest"
     
-    available_locations = list(character.anatomy.keys())
+    available_locations = list(character.longdesc.keys())
     if not available_locations:
         return "chest"
     
