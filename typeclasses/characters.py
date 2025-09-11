@@ -198,6 +198,59 @@ class Character(ObjectParent, DefaultCharacter):
         except AttributeError:
             pass  # Medical system not available
         return False
+
+    def debug_death_analysis(self):
+        """
+        Debug method to show detailed cause of death analysis.
+        Returns comprehensive information about why character died or current vital status.
+        """
+        try:
+            medical_state = self.medical_state
+            if not medical_state:
+                return "No medical state available"
+            
+            from world.medical.constants import BLOOD_LOSS_DEATH_THRESHOLD
+            
+            # Check vital organ capacities
+            blood_pumping = medical_state.calculate_body_capacity("blood_pumping")
+            breathing = medical_state.calculate_body_capacity("breathing") 
+            digestion = medical_state.calculate_body_capacity("digestion")
+            consciousness = medical_state.calculate_body_capacity("consciousness")
+            
+            # Check blood level
+            blood_level = medical_state.blood_level
+            blood_loss_fatal = blood_level <= (100.0 - BLOOD_LOSS_DEATH_THRESHOLD)
+            
+            # Build analysis
+            analysis = [
+                f"=== DEATH ANALYSIS FOR {self.key} ===",
+                f"Blood Pumping Capacity: {blood_pumping:.1%} {'FATAL' if blood_pumping <= 0 else 'OK'}",
+                f"Breathing Capacity: {breathing:.1%} {'FATAL' if breathing <= 0 else 'OK'}",
+                f"Digestion Capacity: {digestion:.1%} {'FATAL' if digestion <= 0 else 'OK'}",
+                f"Consciousness: {consciousness:.1%} {'UNCONSCIOUS' if consciousness < 0.3 else 'CONSCIOUS'}",
+                f"Blood Level: {blood_level:.1f}% {'FATAL BLOOD LOSS' if blood_loss_fatal else 'OK'}",
+                f"Pain Level: {medical_state.pain_level:.1f}",
+                f"Overall Status: {'DEAD' if self.is_dead() else 'ALIVE'}"
+            ]
+            
+            # If dead, identify primary cause
+            if self.is_dead():
+                causes = []
+                if blood_pumping <= 0:
+                    causes.append("HEART FAILURE")
+                if breathing <= 0:
+                    causes.append("RESPIRATORY FAILURE") 
+                if digestion <= 0:
+                    causes.append("LIVER FAILURE")
+                if blood_loss_fatal:
+                    causes.append("BLOOD LOSS")
+                
+                analysis.append(f"Primary Cause(s): {', '.join(causes)}")
+            
+            return "\n".join(analysis)
+            
+        except Exception as e:
+            return f"Error in death analysis: {e}"
         
     def get_medical_status(self):
         """
