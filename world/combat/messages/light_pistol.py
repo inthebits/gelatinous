@@ -153,29 +153,29 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A sharp *CRACK* as your pistol fires, the bullet striking {target_name}'s arm with a painful thud, a brass casing ejecting.",
-            'victim_msg': "A sharp *CRACK* as {attacker_name}'s pistol fires, the bullet striking your arm with a painful thud, a brass casing ejecting.",
-            'observer_msg': "A sharp *CRACK* as {attacker_name}'s pistol fires, the bullet striking {target_name}'s arm with a painful thud, a brass casing ejecting."
+            'attacker_msg': "A sharp *CRACK* as your pistol fires, the bullet striking {target_name}'s {hit_location} with a painful thud, a brass casing ejecting.",
+            'victim_msg': "A sharp *CRACK* as {attacker_name}'s pistol fires, the bullet striking your {hit_location} with a painful thud, a brass casing ejecting.",
+            'observer_msg': "A sharp *CRACK* as {attacker_name}'s pistol fires, the bullet striking {target_name}'s {hit_location} with a painful thud, a brass casing ejecting."
         },
         {
-            'attacker_msg': "The pistol barks, and a 9mm slug tears into {target_name}'s leg, making them cry out and stumble as the slide cycles.",
-            'victim_msg': "The pistol barks, and a 9mm slug tears into your leg, making you cry out and stumble as the slide cycles.",
-            'observer_msg': "The pistol barks, and a 9mm slug tears into {target_name}'s leg, making them cry out and stumble as the slide cycles."
+            'attacker_msg': "The pistol barks, and a 9mm slug tears into {target_name}'s {hit_location}, making them cry out and stumble as the slide cycles.",
+            'victim_msg': "The pistol barks, and a 9mm slug tears into your {hit_location}, making you cry out and stumble as the slide cycles.",
+            'observer_msg': "The pistol barks, and a 9mm slug tears into {target_name}'s {hit_location}, making them cry out and stumble as the slide cycles."
         },
         {
-            'attacker_msg': "Your pistol shot hits {target_name}'s shoulder, the impact spinning them slightly, a spent casing arcing away.",
-            'victim_msg': "{attacker_name}'s pistol shot hits your shoulder, the impact spinning you slightly, a spent casing arcing away.",
-            'observer_msg': "{attacker_name}'s pistol shot hits {target_name}'s shoulder, the impact spinning them slightly, a spent casing arcing away."
+            'attacker_msg': "Your pistol shot hits {target_name}'s {hit_location}, the impact spinning them slightly, a spent casing arcing away.",
+            'victim_msg': "{attacker_name}'s pistol shot hits your {hit_location}, the impact spinning you slightly, a spent casing arcing away.",
+            'observer_msg': "{attacker_name}'s pistol shot hits {target_name}'s {hit_location}, the impact spinning them slightly, a spent casing arcing away."
         },
         {
-            'attacker_msg': "Lead meets flesh as the bullet from your pistol slams into {target_name}'s side, punching through clothing with a sharp report.",
-            'victim_msg': "Lead meets flesh as the bullet from {attacker_name}'s pistol slams into your side, punching through clothing with a sharp report.",
-            'observer_msg': "Lead meets flesh as the bullet from {attacker_name}'s pistol slams into {target_name}'s side, punching through clothing with a sharp report."
+            'attacker_msg': "Lead meets flesh as the bullet from your pistol slams into {target_name}'s {hit_location}, punching through clothing with a sharp report.",
+            'victim_msg': "Lead meets flesh as the bullet from {attacker_name}'s pistol slams into your {hit_location}, punching through clothing with a sharp report.",
+            'observer_msg': "Lead meets flesh as the bullet from {attacker_name}'s pistol slams into {target_name}'s {hit_location}, punching through clothing with a sharp report."
         },
         {
-            'attacker_msg': "The pistol's bullet strikes {target_name}'s thigh, the force of the impact staggering them as you prepare another shot.",
-            'victim_msg': "The pistol's bullet strikes your thigh, the force of the impact staggering you as {attacker_name} prepares another shot.",
-            'observer_msg': "The pistol's bullet strikes {target_name}'s thigh, the force of the impact staggering them as {attacker_name} prepares another shot."
+            'attacker_msg': "The pistol's bullet strikes {target_name}'s {hit_location}, the force of the impact staggering them as you prepare another shot.",
+            'victim_msg': "The pistol's bullet strikes your {hit_location}, the force of the impact staggering you as {attacker_name} prepares another shot.",
+            'observer_msg': "The pistol's bullet strikes {target_name}'s {hit_location}, the force of the impact staggering them as {attacker_name} prepares another shot."
         },
         {
             'attacker_msg': "Your accurate shot with the pistol leaves a bleeding, neat hole in {target_name}, another casing flipping through the air.",
@@ -183,9 +183,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s accurate shot with the pistol leaves a bleeding, neat hole in {target_name}, another casing flipping through the air."
         },
         {
-            'attacker_msg': "A direct hit! The pistol's bullet smashes into {target_name}'s chest, driving the air from their lungs with a sharp *crack*.",
-            'victim_msg': "A direct hit! The pistol's bullet smashes into your chest, driving the air from your lungs with a sharp *crack*.",
-            'observer_msg': "A direct hit! The pistol's bullet smashes into {target_name}'s chest, driving the air from their lungs with a sharp *crack*."
+            'attacker_msg': "A direct hit! The pistol's bullet smashes into {target_name}'s {hit_location}, driving the air from their lungs with a sharp *crack*.",
+            'victim_msg': "A direct hit! The pistol's bullet smashes into your {hit_location}, driving the air from your lungs with a sharp *crack*.",
+            'observer_msg': "A direct hit! The pistol's bullet smashes into {target_name}'s {hit_location}, driving the air from their lungs with a sharp *crack*."
         },
         {
             'attacker_msg': "The pistol's projectile punches into {target_name}, its impact marked by a spray of blood and the glint of an ejected shell.",
@@ -198,19 +198,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s pistol fires, and {target_name} is struck hard, the bullet doing its grim work as the slide slams forward again."
         },
         {
-            'attacker_msg': "With a deafening *CRACK-CRACK*, two bullets from your pistol hit {target_name}'s abdomen, doubling them over.",
-            'victim_msg': "With a deafening *CRACK-CRACK*, two bullets from {attacker_name}'s pistol hit your abdomen, doubling you over.",
-            'observer_msg': "With a deafening *CRACK-CRACK*, two bullets from {attacker_name}'s pistol hit {target_name}'s abdomen, doubling them over."
+            'attacker_msg': "With a deafening *CRACK-CRACK*, two bullets from your pistol hit {target_name}'s {hit_location}, doubling them over.",
+            'victim_msg': "With a deafening *CRACK-CRACK*, two bullets from {attacker_name}'s pistol hit your {hit_location}, doubling you over.",
+            'observer_msg': "With a deafening *CRACK-CRACK*, two bullets from {attacker_name}'s pistol hit {target_name}'s {hit_location}, doubling them over."
         },
         {
-            'attacker_msg': "The pistol scores a painful hit, the bullet tearing through muscle and sinew in {target_name}'s arm, a hot casing landing nearby.",
-            'victim_msg': "The pistol scores a painful hit, the bullet tearing through muscle and sinew in your arm, a hot casing landing nearby.",
-            'observer_msg': "The pistol scores a painful hit, the bullet tearing through muscle and sinew in {target_name}'s arm, a hot casing landing nearby."
+            'attacker_msg': "The pistol scores a painful hit, the bullet tearing through muscle and sinew in {target_name}'s {hit_location}, a hot casing landing nearby.",
+            'victim_msg': "The pistol scores a painful hit, the bullet tearing through muscle and sinew in your {hit_location}, a hot casing landing nearby.",
+            'observer_msg': "The pistol scores a painful hit, the bullet tearing through muscle and sinew in {target_name}'s {hit_location}, a hot casing landing nearby."
         },
         {
-            'attacker_msg': "Your well-aimed shot from the pistol strikes {target_name}'s hip, the impact jarring them as the slide locks back on an empty magazine.",
-            'victim_msg': "{attacker_name}'s well-aimed shot from the pistol strikes your hip, the impact jarring you as the slide locks back on an empty magazine.",
-            'observer_msg': "{attacker_name}'s well-aimed shot from the pistol strikes {target_name}'s hip, the impact jarring them as the slide locks back on an empty magazine."
+            'attacker_msg': "Your well-aimed shot from the pistol strikes {target_name}'s {hit_location}, the impact jarring them as the slide locks back on an empty magazine.",
+            'victim_msg': "{attacker_name}'s well-aimed shot from the pistol strikes your {hit_location}, the impact jarring you as the slide locks back on an empty magazine.",
+            'observer_msg': "{attacker_name}'s well-aimed shot from the pistol strikes {target_name}'s {hit_location}, the impact jarring them as the slide locks back on an empty magazine."
         },
         {
             'attacker_msg': "A sharp crack and a gout of blood as the pistol's bullet finds its mark on {target_name}, you quickly reacquiring.",
@@ -228,19 +228,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s pistol bullet slams into {target_name}, the impact knocking them back a step, another casing spinning away."
         },
         {
-            'attacker_msg': "A shot from the pistol hits {target_name}'s hand, mangling it and making them drop whatever they held, the slide cycling smoothly.",
-            'victim_msg': "A shot from the pistol hits your hand, mangling it and making you drop whatever you held, the slide cycling smoothly.",
-            'observer_msg': "A shot from the pistol hits {target_name}'s hand, mangling it and making them drop whatever they held, the slide cycling smoothly."
+            'attacker_msg': "A shot from the pistol hits {target_name}'s {hit_location}, mangling it and making them drop whatever they held, the slide cycling smoothly.",
+            'victim_msg': "A shot from the pistol hits your {hit_location}, mangling it and making you drop whatever you held, the slide cycling smoothly.",
+            'observer_msg': "A shot from the pistol hits {target_name}'s {hit_location}, mangling it and making them drop whatever they held, the slide cycling smoothly."
         },
         {
-            'attacker_msg': "The pistol's bullet makes solid contact with {target_name}'s torso, the shockwave of impact visible as you line up another shot.",
-            'victim_msg': "The pistol's bullet makes solid contact with your torso, the shockwave of impact visible as {attacker_name} lines up another shot.",
-            'observer_msg': "The pistol's bullet makes solid contact with {target_name}'s torso, the shockwave of impact visible as {attacker_name} lines up another shot."
+            'attacker_msg': "The pistol's bullet makes solid contact with {target_name}'s {hit_location}, the shockwave of impact visible as you line up another shot.",
+            'victim_msg': "The pistol's bullet makes solid contact with your {hit_location}, the shockwave of impact visible as {attacker_name} lines up another shot.",
+            'observer_msg': "The pistol's bullet makes solid contact with {target_name}'s {hit_location}, the shockwave of impact visible as {attacker_name} lines up another shot."
         },
         {
-            'attacker_msg': "Your pistol projectile finds its mark, delivering a painful, debilitating wound to {target_name}'s leg, brass glinting on the ground.",
-            'victim_msg': "{attacker_name}'s pistol projectile finds its mark, delivering a painful, debilitating wound to your leg, brass glinting on the ground.",
-            'observer_msg': "{attacker_name}'s pistol projectile finds its mark, delivering a painful, debilitating wound to {target_name}'s leg, brass glinting on the ground."
+            'attacker_msg': "Your pistol projectile finds its mark, delivering a painful, debilitating wound to {target_name}'s {hit_location}, brass glinting on the ground.",
+            'victim_msg': "{attacker_name}'s pistol projectile finds its mark, delivering a painful, debilitating wound to your {hit_location}, brass glinting on the ground.",
+            'observer_msg': "{attacker_name}'s pistol projectile finds its mark, delivering a painful, debilitating wound to {target_name}'s {hit_location}, brass glinting on the ground."
         },
         {
             'attacker_msg': "Even a glancing blow from the pistol's bullet tears a nasty furrow in {target_name}'s skin, the shot echoing.",
@@ -258,14 +258,14 @@ MESSAGES = {
             'observer_msg': "The pistol's sharp report is followed by {target_name}'s cry as the bullet embeds itself deeply, the slide already chambering another round."
         },
         {
-            'attacker_msg': "Your shot is true, the pistol's bullet striking {target_name} squarely in the gut, a quick follow-up already on its way.",
-            'victim_msg': "{attacker_name}'s shot is true, the pistol's bullet striking you squarely in the gut, a quick follow-up already on its way.",
-            'observer_msg': "{attacker_name}'s shot is true, the pistol's bullet striking {target_name} squarely in the gut, a quick follow-up already on its way."
+            'attacker_msg': "Your shot is true, the pistol's bullet striking {target_name} squarely in the {hit_location}, a quick follow-up already on its way.",
+            'victim_msg': "{attacker_name}'s shot is true, the pistol's bullet striking you squarely in the {hit_location}, a quick follow-up already on its way.",
+            'observer_msg': "{attacker_name}'s shot is true, the pistol's bullet striking {target_name} squarely in the {hit_location}, a quick follow-up already on its way."
         },
         {
-            'attacker_msg': "A close-range burst from your pistol tears multiple horrific wounds in {target_name}'s side.",
-            'victim_msg': "A close-range burst from {attacker_name}'s pistol tears multiple horrific wounds in your side.",
-            'observer_msg': "A close-range burst from {attacker_name}'s pistol tears multiple horrific wounds in {target_name}'s side."
+            'attacker_msg': "A close-range burst from your pistol tears multiple horrific wounds in {target_name}'s {hit_location}.",
+            'victim_msg': "A close-range burst from {attacker_name}'s pistol tears multiple horrific wounds in your {hit_location}.",
+            'observer_msg': "A close-range burst from {attacker_name}'s pistol tears multiple horrific wounds in {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "The pistol proves brutally effective as you land another solid hit on {target_name}, the action cycling flawlessly.",
@@ -278,19 +278,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s pistol bullet makes impact, leaving another bleeding puncture in {target_name}'s defenses, spent brass littering the area."
         },
         {
-            'attacker_msg': "A painful thud as the bullet from your pistol strikes {target_name}'s ribs, likely breaking them, the shot sharp and clear.",
-            'victim_msg': "A painful thud as the bullet from {attacker_name}'s pistol strikes your ribs, likely breaking them, the shot sharp and clear.",
-            'observer_msg': "A painful thud as the bullet from {attacker_name}'s pistol strikes {target_name}'s ribs, likely breaking them, the shot sharp and clear."
+            'attacker_msg': "A painful thud as the bullet from your pistol strikes {target_name}'s {hit_location}, likely breaking them, the shot sharp and clear.",
+            'victim_msg': "A painful thud as the bullet from {attacker_name}'s pistol strikes your {hit_location}, likely breaking them, the shot sharp and clear.",
+            'observer_msg': "A painful thud as the bullet from {attacker_name}'s pistol strikes {target_name}'s {hit_location}, likely breaking them, the shot sharp and clear."
         },
         {
-            'attacker_msg': "The projectile from your pistol hits {target_name}'s collarbone, shattering it with a sickening crack, another casing ejected.",
-            'victim_msg': "The projectile from {attacker_name}'s pistol hits your collarbone, shattering it with a sickening crack, another casing ejected.",
-            'observer_msg': "The projectile from {attacker_name}'s pistol hits {target_name}'s collarbone, shattering it with a sickening crack, another casing ejected."
+            'attacker_msg': "The projectile from your pistol hits {target_name}'s {hit_location}, shattering it with a sickening crack, another casing ejected.",
+            'victim_msg': "The projectile from {attacker_name}'s pistol hits your {hit_location}, shattering it with a sickening crack, another casing ejected.",
+            'observer_msg': "The projectile from {attacker_name}'s pistol hits {target_name}'s {hit_location}, shattering it with a sickening crack, another casing ejected."
         },
         {
-            'attacker_msg': "Your pistol delivers another brutal, penetrating impact to {target_name}'s torso, the shots coming in quick succession.",
-            'victim_msg': "{attacker_name}'s pistol delivers another brutal, penetrating impact to your torso, the shots coming in quick succession.",
-            'observer_msg': "{attacker_name}'s pistol delivers another brutal, penetrating impact to {target_name}'s torso, the shots coming in quick succession."
+            'attacker_msg': "Your pistol delivers another brutal, penetrating impact to {target_name}'s {hit_location}, the shots coming in quick succession.",
+            'victim_msg': "{attacker_name}'s pistol delivers another brutal, penetrating impact to your {hit_location}, the shots coming in quick succession.",
+            'observer_msg': "{attacker_name}'s pistol delivers another brutal, penetrating impact to {target_name}'s {hit_location}, the shots coming in quick succession."
         },
         {
             'attacker_msg': "A well-placed shot from the pistol leaves {target_name} momentarily stunned, gasping from a fresh bullet wound as the slide moves.",
