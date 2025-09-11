@@ -1769,7 +1769,7 @@ character.db.medical_state = {
 
 *Note: Phase 2 consumption method system provides foundation for broader drug/substance system expansion*
 
-### Phase 2.3: Combat Message Integration - 🔲 READY FOR IMPLEMENTATION
+### Phase 2.3: Combat Message Integration - ✅ COMPLETED
 Advanced combat integration leveraging the existing anatomical hit weight system for dynamic hit location targeting.
 
 #### Existing Foundation
@@ -1871,6 +1871,41 @@ def update_wound_descriptions(character):
 - **Infected**: "His right thigh bears an angry, swollen wound oozing yellowish discharge."
 - **Scarred**: "A pale scar crosses his right thigh, marking old trauma."
 - **Clean**: *(No description - wound healed completely)*
+
+#### Wound Complexity & Foreign Objects
+Medical conditions can track embedded foreign objects and surgical complexity for realistic triage scenarios:
+
+**Embedded Objects**:
+- Bullets lodged in tissue requiring surgical removal
+- Through-and-through wounds with clean trajectories  
+- Glass shards, shrapnel, or blade fragments embedded in flesh
+- Knives/blades stabilized in place to prevent fatal bleeding
+
+**Surgical Complexity Levels**:
+- **Low**: Field-treatable wounds, simple foreign object removal
+- **Moderate**: Requires medical facility, embedded objects in muscle
+- **High**: Complex trajectories, multiple fragments, imaging required
+- **Critical**: Near vital organs, specialist surgeon required
+
+**Triage Implications**:
+- Field medics can stabilize but not fully treat complex wounds
+- Embedded objects may require careful surgical extraction
+- Some objects must remain in place until proper surgery available
+- Treatment descriptions reflect wound complexity and intervention level
+
+**Example Conditions**:
+```python
+# Through-and-through bullet wound (field treatable)
+MedicalCondition("gunshot", "arm", "moderate", foreign_object=None, exit_wound=True)
+
+# Embedded bullet requiring surgery  
+MedicalCondition("gunshot", "chest", "severe", foreign_object="9mm bullet", 
+                embedded=True, surgical_complexity="critical")
+
+# Stabilized blade (do not remove)
+MedicalCondition("stab_wound", "abdomen", "critical", foreign_object="knife blade",
+                stabilized=True, notes="DO NOT REMOVE - may be blocking major bleeding")
+```
 
 *Note: Wound descriptions integrate seamlessly with existing three-layer anatomy system*
 
