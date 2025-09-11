@@ -132,6 +132,89 @@ The Gelatinous Monster health and substance system creates tactical medical game
 - **G.R.I.M. Stats**: Medical skill primarily based on Intellect (3/4 weight), with Motorics for surgical precision (1/4 weight)
 - **Clothing System**: Armor/clothing affects injury locations and severity
 
+## ANATOMICAL SYSTEM ARCHITECTURE
+
+### Dynamic Hit Location Targeting
+The medical system implements **dynamic anatomy** where each character's hit-targetable locations are determined by their individual body structure, not static tables.
+
+#### **Three-Layer Architecture**
+```python
+# Layer 1: Longdesc Locations (Character Description System)
+character.longdesc = {
+    "head": "scarred from battle",     # Exists with description
+    "left_arm": None,                  # Exists but no description set  
+    "chest": "muscular torso",         # Exists with description
+    # "right_leg" not in dict = location doesn't exist on this character
+}
+
+# Layer 2: Organ Container Mapping (Medical Constants)
+ORGANS = {
+    "brain": {"container": "head", "max_hp": 10, "vital": True},
+    "left_humerus": {"container": "left_arm", "max_hp": 25, "vital": False},
+    "heart": {"container": "chest", "max_hp": 15, "vital": True},
+}
+
+# Layer 3: Character Medical State (Runtime Organ Tracking)
+character.medical_state.organs = {
+    "brain": Organ(current_hp=10, max_hp=10),        # Functional
+    "left_humerus": Organ(current_hp=0, max_hp=25),  # Destroyed but present
+    "heart": Organ(current_hp=8, max_hp=15),         # Damaged but functional
+}
+```
+
+#### **Hit Location Resolution Logic**
+```python
+def determine_valid_hit_locations(character):
+    """
+    Dynamic hit location discovery based on character's actual anatomy.
+    
+    Returns locations that:
+    1. Exist in character's longdesc system (even if description is None)  
+    2. Contain at least one functional (non-destroyed) organ
+    """
+    valid_locations = []
+    
+    for location_name in character.longdesc.keys():  # Layer 1: Available locations
+        organs_in_location = get_organ_by_body_location(location_name)  # Layer 2: Organ mapping
+        
+        # Layer 3: Check for functional organs
+        has_functional_organs = any(
+            not character.medical_state.organs[organ_name].is_destroyed()
+            for organ_name in organs_in_location
+            if organ_name in character.medical_state.organs
+        )
+        
+        if has_functional_organs:
+            valid_locations.append(location_name)
+    
+    return valid_locations
+```
+
+#### **Key Architectural Benefits**
+- **Species Flexibility**: Spider characters automatically get different hit locations based on their longdesc anatomy
+- **Injury Progression**: Lost limbs automatically become invalid targets (no functional organs)
+- **Prosthetic Integration**: New artificial limbs add new hit locations with their own organ mappings
+- **Medical History**: Destroyed organs remain tracked (HP=0) for healing/replacement possibilities
+- **Mr. Hands Compatibility**: Custom anatomy modifications work seamlessly with existing hit targeting
+
+#### **Organ Lifecycle States**
+```python
+# Organs exist in one of these states:
+ORGAN_FUNCTIONAL = "current_hp > 0"     # Can be targeted and damaged
+ORGAN_DESTROYED = "current_hp = 0"      # Cannot be damaged further, doesn't contribute to capacities
+ORGAN_MISSING = "not in medical_state"  # Removed/never existed (rare, for extreme modifications)
+
+# Hit targeting only considers locations with FUNCTIONAL organs
+# Destroyed organs remain in medical state for potential healing/replacement
+```
+
+### Character Anatomy Customization
+Characters can have varied anatomy through:
+1. **Species Templates**: Different creature types get different default organs/locations
+2. **Injury Loss**: Destroyed organs stop contributing to hit targeting for that location
+3. **Prosthetic Addition**: New locations and organs can be dynamically added
+4. **Mr. Hands Integration**: Custom body modifications extend the longdesc + organ system
+
 ## CONFIGURATION CONSTANTS
 
 *All numerical values use constants for easy balance modification during implementation:*
@@ -1685,6 +1768,85 @@ character.db.medical_state = {
 - ✅ **Success calculation**: `(intellect * 0.75) + (motorics * 0.25)` formula implemented
 
 *Note: Phase 2 consumption method system provides foundation for broader drug/substance system expansion*
+
+### Phase 2.3: Combat Message Integration - 🔲 PLANNED
+Advanced combat integration to leverage medical system's anatomical precision for enhanced role-play immersion.
+
+#### Combat Message Hit Location Support
+- **{hit_location} variable**: Combat message system enhanced to support hit_location variable
+- **Dynamic location passing**: `apply_damage(location="chest")` parameter passed to combat messages
+- **Three-layer targeting**: Messages can reference longdesc locations, organ containers, or specific organs
+- **Anatomical precision**: Combat messages gain hospital-grade anatomical accuracy
+- **RP enhancement**: Players see exactly where attacks land based on character's actual anatomy
+
+#### Implementation Requirements
+```python
+# Combat message system enhancement
+message_vars = {
+    'hit_location': location,  # Passed from apply_damage()
+    'attacker': attacker.name,
+    'defender': defender.name,
+    # ... existing combat message variables
+}
+```
+
+### Phase 2.4: Longdesc Wound Integration - 🔲 PLANNED
+Dynamic wound descriptions that append to character longdesc based on medical state and treatment status.
+
+#### Wound Description Lifecycle
+Medical conditions dynamically modify character appearance through longdesc integration:
+
+**Fresh Wounds**:
+- Bleeding, swelling, immediate trauma descriptions
+- Severity-based intensity: minor cuts vs. gaping wounds
+- Location-specific descriptions: "blood seeping from his left shoulder"
+
+**Treated Wounds**:
+- Bandaged, sutured, or medicated wound descriptions
+- Treatment method visible: "neatly bandaged forearm" vs. "crude field dressing"
+- Treatment quality affects description detail
+
+**Healing Wounds**:
+- Scabbing, bruising progression, reduced severity
+- Time-based healing stages with evolving descriptions
+- Natural recovery process visualization
+
+**Infected Wounds**:
+- Redness, swelling, discharge descriptions
+- Progressive severity if untreated
+- Visual cues for medical intervention need
+
+**Scarred Wounds**:
+- Permanent marking system for significant traumas
+- Scar tissue descriptions based on original injury
+- Character history preservation through appearance
+
+**Clean Recovery**:
+- Minor wounds heal completely without scarring
+- Successful treatment prevents permanent marking
+- Medical skill affects scarring probability
+
+#### Longdesc Integration Architecture
+```python
+# Dynamic wound description system
+def update_wound_descriptions(character):
+    """Append wound descriptions to longdesc locations"""
+    for location, organs in character.anatomy.items():
+        wounds = get_wounds_for_location(location)
+        if wounds:
+            location_desc = generate_wound_description(wounds)
+            character.longdesc[location] += f" {location_desc}"
+```
+
+#### Treatment Stage Descriptions
+- **Fresh**: "A deep gash runs across his right thigh, blood still flowing."
+- **Treated**: "His right thigh shows a neatly sutured wound with clean bandaging."
+- **Healing**: "A healing cut marks his right thigh, scabbed but still tender."
+- **Infected**: "His right thigh bears an angry, swollen wound oozing yellowish discharge."
+- **Scarred**: "A pale scar crosses his right thigh, marking old trauma."
+- **Clean**: *(No description - wound healed completely)*
+
+*Note: Wound descriptions integrate seamlessly with existing three-layer anatomy system*
 
 ### Phase 2.5: Extended Consumption Methods - 🔲 PLANNED
 - [ ] **Additional consumption commands**: `inhale`, `smoke`, `huff` with aliasing
