@@ -31,7 +31,7 @@ def _condition_tick_callback(condition_id):
         TICKER_HANDLER.remove(
             interval=60,  # Default medical interval
             callback=_condition_tick_callback,
-            idstring=condition_id
+            idstring=f"medical_{condition_id}"
         )
         splattercast.msg(f"MEDICAL_TICK: Condition {condition_id} not in registry, stopping ticker")
         return
@@ -132,8 +132,8 @@ class MedicalCondition:
         TICKER_HANDLER.add(
             self.tick_interval,  # interval
             _condition_tick_callback,  # callback
-            self.ticker_id,  # args - passed to callback
-            idstring=self.ticker_id,  # idstring for identification
+            self.ticker_id,  # args - passed to callback as first argument
+            idstring=f"medical_{self.ticker_id}",  # unique idstring for identification
             persistent=True  # persistent across reboots
         )
         splattercast.msg(f"CONDITION_START: Ticker added to TICKER_HANDLER for {self.ticker_id}")
@@ -153,7 +153,7 @@ class MedicalCondition:
             TICKER_HANDLER.remove(
                 interval=self.tick_interval,
                 callback=_condition_tick_callback,
-                idstring=self.ticker_id
+                idstring=f"medical_{self.ticker_id}"
             )
             self.ticker_id = None
             
