@@ -2,7 +2,7 @@
 
 ## Implementation Status
 
-### ✅ COMPLETED (Phase 1 & 2)
+### ✅ COMPLETED (Phase 1, 2 & 3)
 **Medical Foundation Complete:**
 - Complete anatomical damage system (15 body regions + 6 organs)
 - Medical conditions with severity tracking (bleeding, fractures, pain, etc.)
@@ -35,6 +35,12 @@
 - ✅ **Medical system migration tools** - administrative commands for mass updates
 - ✅ **Two-stage precision targeting system** - success margin + skill-based organ targeting
 - ✅ **Single organ damage model** - focused wounds replace damage spreading
+
+**Pure Medical System Complete (December 2024):**
+- ✅ **Legacy HP completely eliminated** - no backwards compatibility layer needed
+- ✅ **100% medical-based health** - death/unconsciousness based purely on organ function
+- ✅ **No HP attributes** - character health entirely managed by medical system
+- ✅ **Simplified architecture** - single system for all health management
 
 ### 🔄 CURRENT STATE: PRECISION ANATOMICAL COMBAT SYSTEM
 The medical system now features **hospital-grade anatomical accuracy** with **skill-based precision targeting**:
@@ -104,18 +110,17 @@ The medical system now features **hospital-grade anatomical accuracy** with **sk
 - Development testing and debugging
 - Version migration between game updates
 
-### 🎯 FUTURE PHASES: ADVANCED MEDICAL MECHANICS
+### 🎯 NEXT PRIORITIES: ENHANCED MEDICAL MECHANICS
+**Phase 2.5 - Complete Consumption System (Immediate Priority):**
+- Missing consumption commands: `inhale/smoke` for inhalers, gases, medicinal herbs
+- Completes the natural language consumption method system
+
 **Phase 3 - Advanced Features (Future Development):**
 - Limb replacement mechanics (prosthetics, cybernetics) 
 - Advanced surgical procedures and medical equipment
 - Disease and infection progression systems
 - Drug addiction and dependency mechanics
 - Complex organ transplant procedures
-
-**Phase 4 - Legacy HP Migration (Optional):**
-- Consider complete removal of legacy HP system (currently dual system works well)
-- All combat systems already use medical model via take_damage() integration
-- Legacy HP provides backwards compatibility with existing game mechanics
 
 ## Overview
 
@@ -300,28 +305,12 @@ class Character:
         """Access persistent medical state"""
         
     def take_damage(self, amount, location="chest", injury_type="generic"):
-        """Integrated damage system - applies to BOTH systems"""
-        # Legacy HP (backwards compatibility)
-        self.hp = max(self.hp - amount, 0)
-        
-        # New anatomical damage
+        """Pure medical system damage - the only health system"""
         from world.medical.utils import apply_anatomical_damage
         damage_results = apply_anatomical_damage(self, amount, location, injury_type)
         
-        # Death from EITHER system
-        return self.medical_state.is_dead() or self.hp <= 0
-    
-    def take_anatomical_damage(self, amount, location, injury_type="generic"):
-        """Pure medical system damage (preferred method)"""
-        damage_results = apply_anatomical_damage(self, amount, location, injury_type)
-        
-        # Sync legacy HP with medical state
-        if self.medical_state.is_dead():
-            self.hp = 0
-        elif self.medical_state.is_unconscious():
-            self.hp = min(self.hp, 1)
-            
-        return damage_results
+        # Death/unconsciousness determined purely by medical state
+        return self.medical_state.is_dead()
 
 # MEDICAL TOOLS SYSTEM (IMPLEMENTED)
 # Uses Evennia's attribute-based approach with regular Item typeclass
@@ -342,22 +331,6 @@ is_medical_item(item)           # Check if item is medical
 can_be_used(item)              # Check if item has uses left  
 get_medical_type(item)         # Get medical type
 apply_medical_effects(...)     # Apply treatment effects
-```
-
-### 🔄 Legacy HP System (TO BE DEPRECATED)
-```python
-# CURRENT LEGACY SYSTEM - MARKED FOR REMOVAL IN PHASE 3
-hp = AttributeProperty(10, category='health')           # TO BE REMOVED
-hp_max = AttributeProperty(10, category='health')       # TO BE REMOVED
-hp_max = 10 + (grit * 2)  # Dynamic max HP based on Grit  # TO BE REMOVED
-
-# Legacy methods that will be removed:
-def heal(self, amount):  # Replace with medical treatment only
-def is_dead(self): return self.hp <= 0  # Replace with medical_state.is_dead()
-
-# Combat integration now uses medical system:
-target.take_damage(damage, location, injury_type)  # Uses medical system with proper injury types
-# Phase 3: Replace with target.take_anatomical_damage(damage, location, injury_type)
 ```
 
 ### Anatomical Foundation (Dynamic Integration)
@@ -1587,104 +1560,7 @@ MEDICAL_DESCRIPTIONS = {
 
 ---
 
-## Phase 3 Roadmap: Legacy HP System Elimination
-
-### Goals
-Complete the migration from dual HP/medical system to pure medical system, eliminating all legacy HP dependencies while maintaining full backwards compatibility for existing content.
-
-### Recent Improvements (December 2024)
-
-The following critical fixes and enhancements have been implemented:
-
-#### Combat-Medical Integration Fixes
-- **Fixed Combat Handler**: Removed invalid `injury_type="combat"`, now uses `weapon.db.damage_type`
-- **Weapon Prototypes Updated**: All 25+ weapons have appropriate `damage_type` attributes
-- **Location Mapping Fixed**: Changed `location="torso"` to `location="chest"` for proper organ damage
-- **Function Signatures**: All `apply_damage()` calls use proper 4-parameter signature
-
-#### Organ Damage Protection  
-- **Destroyed Organ Protection**: Prevents damage to organs already at 0 HP
-- **Limb Loss Detection**: System detects when all organs in body part destroyed
-- **Realistic Damage Flow**: No more "beating a dead horse" with infinite negative HP
-
-#### Admin Tools Fixed
-- **Heal Command**: Fixed `AttributeError` for medical conditions list structure  
-- **Condition Management**: Proper severity-based healing (minor → moderate → severe → critical)
-- **Better Feedback**: Clear messages when damage cannot be applied
-
-#### Code Quality Improvements
-- **Comprehensive Audit**: All `apply_damage()` references found and updated
-- **Spec Synchronization**: Documentation updated to match implementation
-- **Future-Proofing**: Groundwork laid for limb replacement mechanics
-
-### Implementation Tasks
-
-#### 1. Combat System Status ✅ COMPLETE
-```python
-# CURRENT STATUS: Full integration achieved!
-# ✅ Combat handler uses weapon.db.damage_type for proper injury types
-# ✅ All apply_damage() calls use (character, damage, location, injury_type) signature  
-# ✅ Location mapping fixed (chest damage affects heart/lungs properly)
-# ✅ All weapons have damage_type attributes for medical integration
-
-target_died = target.take_damage(damage, location, injury_type)  # WORKING
-```
-
-#### 2. Advanced Medical Features (Future Development)
-- **Limb Replacement System**: Prosthetics, cybernetics, organ transplants
-- **Advanced Surgical Procedures**: Complex medical equipment and operations
-- **Disease Progression**: Infections, diseases that spread over time
-- **Drug Dependencies**: Addiction mechanics and withdrawal systems
-
-#### 3. Optional Legacy Migration (Future Consideration)
-- Consider removing `hp` and `hp_max` attributes (currently provide backwards compatibility)
-- Current dual system works well - medical system fully integrated via `take_damage()`
-- Legacy HP provides compatibility with existing Evennia systems and player expectations
-
-#### 4. Healing System Replacement
-- Replace HP-based healing with medical treatment only
-- Convert any existing healing items to medical prototypes
-- Update rest/recovery mechanics to work with medical system
-- Ensure medical treatment provides equivalent healing power
-
-#### 5. UI/Display Updates
-- Replace HP displays with medical status summaries
-- Update character sheets to show medical state instead of HP
-- Add medical condition displays to relevant interfaces
-- Ensure backwards compatibility for HP-checking scripts
-
-#### 6. Testing & Validation
-- Comprehensive testing of all combat scenarios
-- Verify death/unconsciousness mechanics work correctly
-- Test medical treatment effectiveness
-- Validate performance with pure medical system
-
-### Benefits of Pure Medical System
-- **Realistic Damage:** Location-specific injuries with logical consequences
-- **Tactical Combat:** Players must consider where to aim and what weapons to use
-- **Medical Gameplay:** Injuries require specific treatment types and skills
-- **Immersive Roleplay:** Detailed injury descriptions enhance narrative depth
-- **Strategic Resource Management:** Medical supplies become critically important
-
-### Migration Strategy
-1. **Gradual Rollout:** Implement changes incrementally to minimize disruption
-2. **Extensive Testing:** Test each component thoroughly before removing legacy code
-3. **Community Communication:** Inform players about changes and new medical mechanics
-4. **Documentation Updates:** Update all player-facing documentation and help files
-5. **Backwards Compatibility:** Ensure existing combat content continues to work
-
-### Success Metrics
-- [ ] All combat commands use anatomical damage system
-- [ ] No references to legacy HP system remain in codebase
-- [ ] Medical treatment provides complete healing functionality
-- [ ] Performance is equivalent or better than legacy system
-- [ ] Player experience is enhanced with richer medical gameplay
-
-This completes the evolution from traditional HP-based health to a sophisticated medical simulation system that enhances both tactical combat and roleplay opportunities.
-
----
-
-*This specification reflects the current implemented state (Phase 1 & 2 complete) and provides the roadmap for completing the medical system migration in Phase 3.*
+*This specification reflects the current implemented state (Phase 1, 2 & 3 complete) with pure medical system architecture.*
 - **Shared Logic**: Common handler/utility classes for substance effects and medical calculations
 - **Aliases**: Evennia's native command-level alias system (e.g., `inhale`/`huff` aliases)
 - **Best Practices**: Follows Evennia command architecture patterns for maintainability
@@ -1763,7 +1639,7 @@ character.db.medical_state = {
 - ✅ `eat <item>` - Oral consumption of solid substances
 - ✅ `drink <item>` - Liquid consumption system
 - ✅ `medlist` - List medical items in inventory with status
-- 🔲 `inhale/smoke` - Not yet implemented (planned for Phase 2.5)
+- 🔲 `inhale/smoke` - **NEXT PRIORITY** (Phase 2.5 - Complete Consumption System)
 
 #### Medical Item Integration
 - ✅ **Item type detection**: Automatic medical item classification
