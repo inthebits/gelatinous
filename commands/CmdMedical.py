@@ -277,10 +277,27 @@ class CmdMedicalInfo(Command):
             location_str = condition.location or "General"
             treated_str = "|gYes|n" if condition.treated else "|rNo|n"
             
+            # Handle both numeric and string severities
+            if isinstance(condition.severity, (int, float)):
+                # Convert numeric severity to descriptive string
+                if condition.severity >= 20:
+                    severity_str = "Critical"
+                elif condition.severity >= 10:
+                    severity_str = "Severe"
+                elif condition.severity >= 5:
+                    severity_str = "Moderate"
+                elif condition.severity >= 1:
+                    severity_str = "Minor"
+                else:
+                    severity_str = "Negligible"
+            else:
+                # String severity - just title case it
+                severity_str = str(condition.severity).title()
+            
             table.add_row(
                 condition.type.title(),
                 location_str,
-                condition.severity.title(),
+                severity_str,
                 treated_str
             )
             
