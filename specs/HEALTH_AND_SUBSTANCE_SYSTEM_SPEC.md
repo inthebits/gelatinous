@@ -1364,6 +1364,155 @@ The medical system supports multiple wound progression paths based on damage sev
 
 **Key Distinction:** "Destroyed" represents immediate, raw trauma requiring urgent medical care to prevent death/infection, while "Severed" represents the clean, safe state achieved through proper medical treatment of destroyed organs. This creates a realistic progression where catastrophic injuries must be medically stabilized before prosthetic attachment is possible.
 
+#### Organ-Specific Wound Descriptions
+The wound system supports both location-level and organ-specific descriptions for enhanced medical accuracy and narrative detail:
+
+**Current System Enhancement Opportunity:**
+- **Location-based**: `"a severe bullet wound on the chest"` (generic)
+- **Organ-specific**: `"a severe bullet wound through the heart"` (precise)
+
+**Implementation Strategy:**
+```python
+# Enhanced wound description format variables
+format_vars = {
+    'severity': INJURY_SEVERITY_MAP.get(severity, severity.lower()),
+    'location': location_display,           # "chest", "left arm"
+    'organ': organ_display_name,            # "heart", "left lung", "brain"
+    'organ_type': get_organ_type(organ),    # "vital organ", "bone", "sensory organ"
+    'injury_type': injury_type
+}
+
+# Organ-specific description examples
+def get_organ_display_name(organ_name):
+    """Convert technical organ names to readable descriptions"""
+    organ_mapping = {
+        "left_eye": "left eye",
+        "right_lung": "right lung", 
+        "left_humerus": "left arm bone",
+        "heart": "heart",
+        "brain": "brain"
+    }
+    return organ_mapping.get(organ_name, organ_name)
+```
+
+**Organ Type Categories for Descriptions:**
+```python
+ORGAN_TYPE_MAPPING = {
+    # Vital organs - catastrophic failure descriptions
+    "heart": "vital_organ",
+    "brain": "vital_organ", 
+    "liver": "vital_organ",
+    
+    # Sensory organs - functionality loss descriptions  
+    "left_eye": "sensory_organ",
+    "right_eye": "sensory_organ",
+    "left_ear": "sensory_organ",
+    
+    # Structural bones - fracture/break descriptions
+    "left_humerus": "bone",
+    "left_femur": "bone",
+    "jaw": "bone",
+    
+    # Limb organs - amputation descriptions
+    "left_hand_muscle": "limb_organ",
+    "right_foot_muscle": "limb_organ"
+}
+```
+
+**Enhanced Message File Examples:**
+```python
+# In world/medical/wounds/messages/bullet.py
+WOUND_DESCRIPTIONS = {
+    "fresh": [
+        # Generic location-based (fallback)
+        "|Ra {severity} bullet hole punched through the {location}|n",
+        
+        # Organ-specific variants (when organ provided)
+        "|Ra {severity} bullet wound piercing the {organ}|n",
+        "|Ra {severity} gunshot through the {organ} with devastating trauma|n",
+        
+        # Organ-type specific descriptions
+        "|Ra {severity} bullet wound destroying the {organ} in a spray of blood|n",  # vital_organ
+        "|Ra {severity} gunshot shattering the {organ} into fragments|n",           # bone
+        "|Ra {severity} bullet puncturing the {organ} with precision damage|n"      # sensory_organ
+    ],
+    
+    "destroyed": [
+        # Vital organ destruction
+        "|Ra devastating gunshot has obliterated the {organ} beyond repair|n",
+        
+        # Bone destruction  
+        "|Ra high-caliber bullet has shattered the {organ} into fragments|n",
+        
+        # Sensory organ destruction
+        "|Ra ballistic trauma has destroyed the {organ} completely|n"
+    ]
+}
+```
+
+**Benefits of Organ-Specific Descriptions:**
+- **Medical Accuracy**: "bullet wound through the heart" vs "bullet wound to the chest"
+- **Tactical Feedback**: Players understand exactly what was damaged
+- **Narrative Depth**: More immersive and realistic injury descriptions
+- **Surgical Precision**: Sets foundation for targeted medical treatment
+- **Character History**: Specific organ damage creates unique character stories
+
+**Implementation Phases:**
+1. **Phase A**: Add organ parameter to existing wound message templates
+2. **Phase B**: Create organ-type specific description variants  
+3. **Phase C**: Implement organ display name mapping system
+4. **Phase D**: Update all message files with organ-specific descriptions
+
+This enhancement maintains backward compatibility while providing much richer medical detail when organ information is available.
+
+#### Current Implementation Status & Enhancement Path
+
+**✅ Currently Implemented:**
+- Location-based wound descriptions (`"bullet wound on the chest"`)
+- Organ parameter available in format variables but unused in message files
+- Complete wound stage system (fresh/treated/healing/destroyed/severed/scarred)
+- Grammar formatting system preserving color codes
+- Multi-variant descriptions for narrative variety
+
+**🔄 Enhancement Ready:**
+- Organ-specific descriptions (`"bullet wound through the heart"`)
+- Organ type categorization for description selection
+- Enhanced medical accuracy and tactical feedback
+- Foundation exists - just needs message file updates
+
+**Implementation Required:**
+```python
+# 1. Add organ display name mapping
+def get_organ_display_name(organ_name):
+    return ORGAN_DISPLAY_MAPPING.get(organ_name, organ_name)
+
+# 2. Add organ type categorization  
+def get_organ_type(organ_name):
+    return ORGAN_TYPE_MAPPING.get(organ_name, "generic")
+
+# 3. Update message files to use {organ} variable
+"destroyed": [
+    "|Ra devastating bullet wound has obliterated the {organ} beyond repair|n",  # organ-specific
+    "|Ra devastating bullet wound has destroyed the {location}|n",               # location fallback
+]
+
+# 4. Smart description selection logic
+if format_vars['organ']:
+    # Use organ-specific descriptions when available
+    selected_descriptions = [desc for desc in stage_descriptions if '{organ}' in desc]
+else:
+    # Fall back to location-based descriptions  
+    selected_descriptions = [desc for desc in stage_descriptions if '{organ}' not in desc]
+```
+
+**Benefits of Implementation:**
+- **Immediate**: More precise medical descriptions without breaking existing system
+- **Scalable**: Easy to add organ-specific variants to existing message files
+- **Compatible**: Works with current wound generation and longdesc integration
+- **Future-ready**: Sets foundation for surgical/medical targeting systems
+
+The organ-specific enhancement can be implemented incrementally, starting with the most common organs (heart, brain, eyes) and expanding to cover the full anatomical system.
+
 #### Actual Implementation Architecture
 ```python
 # Organ-level wound state tracking (world/medical/core.py)
@@ -1398,16 +1547,31 @@ class Organ:
         self.wound_stage = stage_progression.get(self.wound_stage, 'scarred')
 
 # Dynamic wound description generation (world/medical/wounds/wound_descriptions.py)
-def get_wound_description(organ, skintone_var="{skintone}"):
-    """Generate contextual wound description with treatment quality details"""
+def get_wound_description(injury_type, location, severity="Moderate", stage="fresh", organ=None, character=None):
+    """Generate contextual wound description with organ-specific details"""
     stage = _determine_wound_stage_from_organ(organ)
     injury_type = getattr(organ, 'injury_type', 'generic')
     treatment_quality = getattr(organ, 'treatment_quality', None)
     treatment_method = getattr(organ, 'treatment_method', None)
     
+    # Enhanced format variables with organ support
+    format_vars = {
+        'severity': INJURY_SEVERITY_MAP.get(severity, severity.lower()),
+        'location': get_location_display_name(location, character),
+        'organ': get_organ_display_name(organ) if organ else "",           # ENHANCEMENT OPPORTUNITY
+        'organ_type': get_organ_type(organ) if organ else "",              # ENHANCEMENT OPPORTUNITY
+        'injury_type': injury_type
+    }
+    
     description = _get_variant_description(organ, stage, injury_type, 
-                                         treatment_quality, treatment_method)
+                                         treatment_quality, treatment_method, format_vars)
     return _format_wound_grammar(description)
+
+def _get_variant_description(organ, stage, injury_type, treatment_quality, treatment_method, format_vars):
+    """Select description variant with organ-specific logic"""
+    # Current: Only uses location-based descriptions
+    # Enhancement: Use organ-specific descriptions when available
+    pass
 
 def _format_wound_grammar(text):
     """Auto-format capitalization and punctuation while preserving color codes"""
