@@ -2331,7 +2331,7 @@ if character.has_condition("bleeding") and character.has_condition("burning"):
 - [ ] **Armor protection layers** - clothing/armor reduces damage to protected organs  
 - [ ] **Armor damage system** - protective gear degrades from absorbing hits
 - [ ] **Weapon penetration mechanics** - different weapons vs different armor types
-- [ ] **Critical hit amplification** - exceptional attacks can bypass armor or hit vital organs directly
+- [ ] **Limb loss system** - complete destruction of all organs in a location results in limb loss
 
 #### Hit Location Mechanics (IMPLEMENTED)
 ```python
@@ -2551,6 +2551,159 @@ HIT_LOCATION_DIFFICULTY = {
 2. Balance armor degradation rates vs availability
 3. Tune hit location probabilities for tactical depth vs playability
 4. Test integration with existing medical condition system
+
+#### Limb Loss System
+**Trigger Condition**: Complete destruction of all organs in a location results in limb loss.
+
+**Implementation Architecture**:
+```python
+# Location organ monitoring (world/medical/core.py)
+def check_location_viability(character, location):
+    """Check if a location has any functional organs remaining"""
+    location_organs = character.anatomy.get_organs_in_location(location)
+    
+    for organ in location_organs:
+        if organ.hp_current > 0:
+            return True  # Location still viable
+    return False  # All organs destroyed - limb loss
+
+def process_limb_loss(character, location):
+    """Handle complete limb loss when all organs destroyed"""
+    # Mark location as lost
+    character.anatomy.locations[location]['status'] = 'severed'
+    character.anatomy.locations[location]['lost_timestamp'] = time.time()
+    
+    # Apply massive bleeding condition
+    from world.medical.conditions import SevereBleedingCondition
+    bleeding = SevereBleedingCondition(
+        severity=10,  # Arterial bleeding from amputation
+        location=location,
+        requires_treatment=True
+    )
+    character.add_condition(bleeding)
+    
+    # Location-specific consequences
+    apply_limb_loss_effects(character, location)
+    
+    # Permanent character modification
+    update_longdesc_for_loss(character, location)
+    
+def apply_limb_loss_effects(character, location):
+    """Apply permanent stat and capability penalties"""
+    if location in ['left_arm', 'right_arm']:
+        character.db.limb_loss_penalties['manipulation'] += 2
+        character.db.limb_loss_penalties['equipment_capacity'] -= 0.5
+        
+    elif location in ['left_leg', 'right_leg']:
+        character.db.limb_loss_penalties['movement'] += 3
+        character.db.limb_loss_penalties['balance'] += 2
+        
+    elif location == 'head':
+        # Instant death - complete brain destruction
+        character.die("catastrophic head trauma")
+        return
+        
+    elif location in ['chest', 'abdomen']:
+        # Torso loss = death (heart, lungs, vital organs)
+        character.die("massive organ failure")
+        return
+```
+
+**Limb-Specific Consequences**:
+
+**Arm Loss**:
+```python
+# Mechanical effects
+- Cannot use two-handed weapons
+- -50% equipment carrying capacity  
+- Cannot perform actions requiring both hands (climbing, some crafting)
+- Manipulation skill penalties: -2 to fine motor tasks
+
+# Social/RP effects  
+- Updated character longdesc: "missing his left arm from the elbow down"
+- Equipment auto-drops from severed limb
+- Phantom limb pain condition (optional RP mechanic)
+```
+
+**Leg Loss**:
+```python
+# Mechanical effects
+- Movement speed reduced by 60%
+- Cannot run or sprint
+- Climbing becomes impossible without prosthetics
+- Balance penalties: -3 to acrobatic actions, easier to knock down
+
+# Social/RP effects
+- Requires crutches or prosthetic for mobility
+- Updated movement messages: "hobbles" instead of "walks"
+- Sitting/standing requires assistance or extra time
+```
+
+**Prevention & Treatment**:
+```python
+# Emergency intervention can prevent limb loss
+def emergency_stabilization(character, location, medical_skill):
+    """Attempt to save critically damaged limb"""
+    location_organs = character.anatomy.get_organs_in_location(location)
+    destroyed_count = sum(1 for organ in location_organs if organ.hp_current <= 0)
+    total_organs = len(location_organs)
+    
+    if destroyed_count == total_organs:
+        # Too late - limb already lost
+        return False
+        
+    if destroyed_count >= (total_organs * 0.8):
+        # Critical damage - medical check required
+        difficulty = 15 + (destroyed_count * 2)
+        if medical_skill_check(character, difficulty):
+            # Stabilize remaining organs at 1 HP
+            for organ in location_organs:
+                if organ.hp_current <= 0:
+                    organ.hp_current = 1
+            return True
+    return False
+```
+
+**Prosthetics Integration** (Future Phase 5):
+```python
+# Prosthetic system foundation
+class Prosthetic:
+    def __init__(self, limb_type, quality_level):
+        self.limb_type = limb_type      # 'arm', 'leg', 'hand', etc.
+        self.quality = quality_level    # 'crude', 'mechanical', 'cybernetic'
+        self.functionality = self.calculate_functionality()
+        
+    def calculate_functionality(self):
+        """Determine what percentage of original function is restored"""
+        quality_restoration = {
+            'crude': 0.3,      # Wooden peg leg, hook hand
+            'mechanical': 0.6,  # Articulated mechanical limbs  
+            'cybernetic': 0.9   # Advanced neural-linked prosthetics
+        }
+        return quality_restoration.get(self.quality, 0.1)
+```
+
+**Narrative Integration**:
+```python
+# Limb loss creates permanent character story
+- Battle scars and visible disabilities enhance RP depth
+- Prosthetics become valuable equipment with mechanical benefits
+- Medical professionals gain importance for limb-saving procedures
+- Combat becomes more consequential with permanent stakes
+
+# Longdesc modifications
+"A weathered soldier missing his right arm from a old battlefield wound..."
+"She moves with a pronounced limp, her left leg replaced by a crude wooden prosthetic..."
+"Advanced cybernetic implants have replaced both his arms, gleaming chrome visible at the joints..."
+```
+
+**System Benefits**:
+- **Permanent Consequences**: Combat decisions have lasting impact
+- **Medical Urgency**: Creates time-pressure for emergency treatment
+- **Character Development**: Disabilities become part of character identity
+- **Equipment Value**: Prosthetics become significant equipment upgrades
+- **Tactical Depth**: Targeting limbs vs vital areas becomes strategic choice
+- **Realistic Escalation**: Natural progression from wound system to major trauma
 
 ### Phase 4: Combat Integration & Stat Penalties
 - [ ] Location-based damage system in combat
