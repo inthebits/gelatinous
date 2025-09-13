@@ -128,13 +128,17 @@ class MedicalCondition:
         _ACTIVE_CONDITIONS[self.ticker_id] = self
         splattercast.msg(f"CONDITION_START: Registered in global registry, total conditions: {len(_ACTIVE_CONDITIONS)}")
         
-        # Start ticker with standalone callback
+        # Start ticker with standalone callback using explicit keyword args
+        ticker_args = [self.ticker_id]
+        ticker_kwargs = {
+            'idstring': f"medical_{self.ticker_id}",
+            'persistent': True
+        }
         TICKER_HANDLER.add(
-            self.tick_interval,  # interval (positional)
-            _condition_tick_callback,  # callback (positional)
-            self.ticker_id,  # *args - passed to callback
-            idstring=f"medical_{self.ticker_id}",  # keyword arg
-            persistent=True  # keyword arg
+            self.tick_interval,  # interval 
+            _condition_tick_callback,  # callback
+            *ticker_args,  # callback arguments
+            **ticker_kwargs  # ticker options
         )
         splattercast.msg(f"CONDITION_START: Ticker added to TICKER_HANDLER for {self.ticker_id}")
         
