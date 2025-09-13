@@ -95,6 +95,11 @@ class Organ:
         old_hp = self.current_hp
         self.current_hp = max(0, self.current_hp - amount)
         
+        # Store the injury type for wound description purposes
+        # Only store if this is the first damage or if it's different/more severe
+        if not hasattr(self, 'injury_type') or self.injury_type == "generic":
+            self.injury_type = injury_type
+        
         # Return True if this damage destroyed the organ
         return old_hp > 0 and self.current_hp <= 0
         

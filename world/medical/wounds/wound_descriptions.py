@@ -191,6 +191,10 @@ def _determine_injury_type_from_organ(organ):
     Returns:
         str: Injury type (bullet, cut, blunt, etc.)
     """
+    # First check if the organ has stored injury type from when damage was applied
+    if hasattr(organ, 'injury_type') and organ.injury_type != "generic":
+        return organ.injury_type
+    
     # Check organ conditions for injury type clues
     organ_conditions = getattr(organ, 'conditions', [])
     
@@ -210,7 +214,7 @@ def _determine_injury_type_from_organ(organ):
     if 'bone' in organ_name or 'femur' in organ_name or 'humerus' in organ_name:
         return 'blunt'  # Bone damage usually blunt
     elif 'eye' in organ_name or organ_name in ['brain', 'heart']:
-        return 'trauma'  # Delicate organs
+        return 'generic'  # Delicate organs use generic descriptions (no 'trauma' module)
     
     return 'generic'
 
