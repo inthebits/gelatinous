@@ -554,7 +554,7 @@ class MedicalState:
         
     def take_organ_damage(self, organ_name, damage_amount, injury_type="generic"):
         """
-        Apply damage to a specific organ.
+        Apply damage to a specific organ and create appropriate medical conditions.
         
         Args:
             organ_name (str): Name of organ to damage
@@ -566,8 +566,120 @@ class MedicalState:
         """
         organ = self.get_organ(organ_name)
         was_destroyed = organ.take_damage(damage_amount, injury_type)
+        
+        # Create medical conditions based on damage type and amount (Phase 2.6)
+        if damage_amount > 0:
+            new_conditions = self._create_conditions_from_damage(
+                damage_amount, injury_type, organ.container
+            )
+            
+            # Add and start new conditions
+            for condition in new_conditions:
+                self.add_condition(condition)
+        
         self._cache_dirty = True
         return was_destroyed
+        
+    def _create_conditions_from_damage(self, damage_amount, injury_type, location):
+        """
+        Create appropriate medical conditions based on damage dealt.
+        
+        Args:
+            damage_amount (int): Amount of damage
+            injury_type (str): Type of injury
+            location (str): Body location affected
+            
+        Returns:
+            list: List of medical conditions to add
+        """
+        try:
+            from .conditions import create_condition_from_damage
+            return create_condition_from_damage(damage_amount, injury_type, location)
+        except ImportError:
+            # Fallback if conditions module not available
+            return []
+            
+    def add_condition(self, condition):
+        """
+        Add a medical condition and start its ticker if needed.
+        
+        Args:
+            condition: MedicalCondition instance
+        """
+        if condition not in self.conditions:
+            self.conditions.append(condition)
+            
+            # Start ticker if condition requires it
+            if hasattr(condition, 'requires_ticker') and condition.requires_ticker:
+                # Get character reference - this is a bit tricky since MedicalState
+                # doesn't directly hold character reference
+                character = self._get_character_reference()
+                if character:
+                    condition.start_condition(character)
+                    
+    def remove_condition(self, condition):
+        """
+        Remove a medical condition and stop its ticker.
+        
+        Args:
+            condition: MedicalCondition instance to remove
+        """
+        if condition in self.conditions:
+            self.conditions.remove(condition)
+            
+            # Stop ticker if condition had one
+            if hasattr(condition, 'stop_condition'):
+                condition.stop_condition()
+                
+    def get_conditions_by_type(self, condition_type):
+        """
+        Get all conditions of a specific type.
+        
+        Args:
+            condition_type (str): Type of condition to search for
+            
+        Returns:
+            list: Conditions matching the type
+        """
+        return [c for c in self.conditions if c.condition_type == condition_type]
+        
+    def get_condition_summary(self):
+        """
+        Get a summary of all active medical conditions.
+        
+        Returns:
+            dict: Summary of conditions by type with counts and severity
+        """
+        summary = {}
+        for condition in self.conditions:
+            ctype = condition.condition_type
+            if ctype not in summary:
+                summary[ctype] = {'count': 0, 'severity': 0, 'locations': []}
+            
+            summary[ctype]['count'] += 1
+            summary[ctype]['severity'] += getattr(condition, 'severity', 1)
+            if hasattr(condition, 'location'):
+                summary[ctype]['locations'].append(condition.location)
+                
+        return summary
+                    
+    def _get_character_reference(self):
+        """
+        Get reference to character that owns this medical state.
+        
+        This is a helper method since MedicalState doesn't directly store
+        character reference. We'll need to find it through the character's
+        medical_state attribute.
+        """
+        # This is a bit hacky but necessary - search for character with this medical_state
+        try:
+            from evennia.objects.models import ObjectDB
+            for character in ObjectDB.objects.filter(db_typeclass_path__icontains="Character"):
+                if hasattr(character, 'medical_state') and character.medical_state is self:
+                    return character
+        except:
+            pass
+        return None
         
     def to_dict(self):
         """Serialize medical state for persistence."""

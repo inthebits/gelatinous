@@ -46,6 +46,42 @@ BANDAGE_EFFECTIVENESS = 15            # HP healed per bandage
 SURGERY_BASE_DIFFICULTY = 75          # Base difficulty for surgery
 INFECTION_CHANCE_BASE = 10            # Base infection chance %
 
+# ===================================================================
+# MEDICAL CONDITION TICKER CONSTANTS (Phase 2.6)
+# ===================================================================
+
+# Ticker intervals for different condition types
+COMBAT_TICK_INTERVAL = 6              # Combat speed (matches combat rounds)
+SEVERE_BLEEDING_INTERVAL = 12         # 2 combat rounds - balanced threat
+MEDICAL_TICK_INTERVAL = 60            # Medical progression speed
+
+# Condition type to ticker interval mapping
+CONDITION_INTERVALS = {
+    "burning": COMBAT_TICK_INTERVAL,           # 6s - immediate tactical threat
+    "acid_exposure": COMBAT_TICK_INTERVAL,     # 6s - immediate tactical threat  
+    "severe_bleeding": SEVERE_BLEEDING_INTERVAL, # 12s - significant but manageable
+    "minor_bleeding": MEDICAL_TICK_INTERVAL,   # 60s - natural clotting
+    "wound_healing": MEDICAL_TICK_INTERVAL,    # 60s - progression over time
+    "infection": MEDICAL_TICK_INTERVAL,        # 60s - slow development
+    "pain": MEDICAL_TICK_INTERVAL              # 60s - gradual reduction
+}
+
+# Condition severity thresholds based on damage amounts
+BLEEDING_DAMAGE_THRESHOLDS = {
+    "severe": 20,     # >20 damage = severe bleeding (12s ticks)
+    "minor": 10       # >10 damage = minor bleeding (60s ticks)
+}
+
+# Condition creation triggers by injury type
+CONDITION_TRIGGERS = {
+    "bullet": ["bleeding"],
+    "stab": ["bleeding"], 
+    "cut": ["bleeding"],
+    "burn": ["burning"],
+    "acid": ["acid_exposure"],
+    "blunt": []  # Blunt trauma typically doesn't cause bleeding
+}
+
 # Tool effectiveness modifiers - Phase 2 implementation
 TOOL_EFFECTIVENESS_MODIFIERS = {
     # To be defined in Phase 2 - tool appropriateness table
