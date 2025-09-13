@@ -804,15 +804,15 @@ def get_medical_status_description(medical_state):
     # Get vital signs
     blood_level = getattr(medical_state, 'blood_level', 100.0)
     pain_level = getattr(medical_state, 'pain_level', 0.0)
-    consciousness = getattr(medical_state, 'consciousness', 100.0)
+    consciousness = getattr(medical_state, 'consciousness', 1.0)
     condition_count = len(medical_state.conditions) if medical_state.conditions else 0
     
     # Check for critical conditions
-    if blood_level < 30 or consciousness < 40:
+    if blood_level < 30 or consciousness < 0.40:
         return ("CRITICAL", "|r")
     
     # Check for serious conditions  
-    if blood_level < 60 or pain_level > 60 or consciousness < 70:
+    if blood_level < 60 or pain_level > 60 or consciousness < 0.70:
         return ("SERIOUS", "|y")
         
     # Check for stable with injuries
@@ -823,7 +823,7 @@ def get_medical_status_description(medical_state):
             return ("STABLE", "|g")
     
     # Perfect health
-    if blood_level >= 95 and pain_level <= 5 and consciousness >= 95:
+    if blood_level >= 95 and pain_level <= 5 and consciousness >= 0.95:
         return ("OPTIMAL", "|g")
     
     # Good health with minor issues
