@@ -116,6 +116,16 @@ The medical system now features **hospital-grade anatomical accuracy** with **sk
 - ✅ Natural language consumption method system complete
 
 **Phase 3 - Advanced Features (Future Development):**
+
+**Phase 3.1 - Death Progression & Organ Harvesting (🔮 FUTURE):**
+- Progressive organ failure system after character death
+- Realistic organ deterioration timelines (brain dies in 3 rounds, heart in 8, etc.)
+- Organ harvesting commands (`harvest <organ> from <corpse>`)
+- Corpse examination system (`examine corpse <target>`, organ viability reports)
+- Harvested organ inventory management (`viability`, `organs`)
+- Foundation for cybernetics integration (organ replacement demand)
+
+**Phase 3.2 - Cybernetics & Prosthetics (🔮 FUTURE):**
 - Limb replacement mechanics (prosthetics, cybernetics) 
 - Advanced surgical procedures and medical equipment
 - Disease and infection progression systems
