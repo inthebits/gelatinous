@@ -130,8 +130,6 @@ class Character(ObjectParent, DefaultCharacter):
             
         Returns:
             bool: True if character died from this damage, False otherwise
-            
-        Note: For detailed damage results, use take_damage_detailed() method.
         """
         if not isinstance(amount, int) or amount <= 0:
             return False
@@ -143,31 +141,26 @@ class Character(ObjectParent, DefaultCharacter):
         # Save medical state after damage
         self.save_medical_state()
         
+        # Debug broadcast damage application
+        try:
+            from world.combat.utils import debug_broadcast
+            debug_broadcast(f"Applied {amount} {injury_type} damage to {self.key}'s {location}", 
+                           "DAMAGE", "SUCCESS")
+        except ImportError:
+            pass  # debug_broadcast not available
+        
+        # Handle death/unconsciousness state changes
+        died = self.is_dead()
+        unconscious = self.is_unconscious()
+        
+        if died:
+            self._handle_death()
+        elif unconscious:
+            self._handle_unconsciousness()
+        
         # Return death status for combat system compatibility
-        return self.is_dead()
+        return died
     
-    def take_damage_detailed(self, amount, location="chest", injury_type="generic"):
-        """
-        Apply damage and return detailed results.
-        
-        Same as take_damage() but returns the full medical system results
-        instead of just death status.
-        
-        Returns:
-            dict: Detailed results including organs damaged, conditions added, etc.
-        """
-        if not isinstance(amount, int) or amount <= 0:
-            return {"error": "Invalid damage amount"}
-
-        # Apply anatomical damage through medical system  
-        from world.medical.utils import apply_anatomical_damage
-        damage_results = apply_anatomical_damage(self, amount, location, injury_type)
-        
-        # Save medical state after damage
-        self.save_medical_state()
-        
-        return damage_results
-
     # Legacy method take_anatomical_damage removed - functionality merged into take_damage()
     
     def is_dead(self):
@@ -199,6 +192,46 @@ class Character(ObjectParent, DefaultCharacter):
         except AttributeError:
             pass  # Medical system not available
         return False
+
+    def _handle_death(self):
+        """
+        Handle character death from medical injuries.
+        
+        Provides death messaging to character and room.
+        """
+        self.msg("|RYou have died from your injuries!|n")
+        if self.location:
+            self.location.msg_contents(
+                f"|R{self.key} dies from their injuries!|n",
+                exclude=self
+            )
+        
+        # Optional: Debug broadcast for tracking
+        try:
+            from world.combat.utils import debug_broadcast
+            debug_broadcast(f"{self.key} died from medical injuries", "MEDICAL", "DEATH")
+        except ImportError:
+            pass  # debug_broadcast not available
+    
+    def _handle_unconsciousness(self):
+        """
+        Handle character becoming unconscious from medical injuries.
+        
+        Provides unconsciousness messaging to character and room.
+        """
+        self.msg("|rYou collapse, unconscious from your injuries!|n")
+        if self.location:
+            self.location.msg_contents(
+                f"|r{self.key} collapses, unconscious!|n",
+                exclude=self
+            )
+        
+        # Optional: Debug broadcast for tracking
+        try:
+            from world.combat.utils import debug_broadcast
+            debug_broadcast(f"{self.key} became unconscious from medical injuries", "MEDICAL", "UNCONSCIOUS")
+        except ImportError:
+            pass  # debug_broadcast not available
 
     def debug_death_analysis(self):
         """

@@ -1055,39 +1055,6 @@ def send_grenade_shield_messages(grappler, victim):
         grappler.location.msg_contents(observer_msg, exclude=[grappler, victim])
 
 
-def apply_damage(character, damage_amount, location="chest", injury_type="generic"):
-    """
-    Apply damage to a character using the medical system.
-    
-    Args:
-        character: The character object to damage
-        damage_amount (int): Amount of damage to apply
-        location (str): Body location hit (chest, head, etc.)
-        injury_type (str): Type of injury (cut, blunt, bullet, etc.)
-        
-    Returns:
-        dict: Damage results from medical system
-    """
-    if not hasattr(character, 'take_damage'):
-        # Character has no damage system, skip damage
-        debug_broadcast(f"Character {character.key} has no damage system", "DAMAGE", "WARNING")
-        return {"error": "No damage system"}
-    
-    # Apply damage through medical system
-    damage_results = character.take_damage(damage_amount, location, injury_type)
-    
-    debug_broadcast(f"Applied {damage_amount} {injury_type} damage to {character.key}'s {location}", 
-                   "DAMAGE", "SUCCESS")
-    
-    # Handle death/unconsciousness
-    if character.is_dead():
-        handle_character_death(character, death=True)
-    elif character.is_unconscious():
-        handle_character_death(character, death=False)
-        
-    return damage_results
-
-
 def handle_character_death(character, death=False):
     """
     Handle character death or unconsciousness.

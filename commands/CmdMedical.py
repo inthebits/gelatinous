@@ -102,32 +102,38 @@ class CmdDamageTest(Command):
         location = args[1] if len(args) > 1 else "chest"
         injury_type = args[2] if len(args) > 2 else "generic"
         
-        # Apply damage
-        results = caller.take_damage_detailed(damage_amount, location, injury_type)
+        # Apply damage and check result
+        target_died = caller.take_damage(damage_amount, location, injury_type)
         
-        # Check if damage was prevented due to destroyed limb
-        if results.get("limb_lost"):
-            caller.msg(f"|y{results.get('message', 'No damage applied - location already destroyed')}|n")
-            return
-        
-        # Show results
+        # Show basic damage message
         caller.msg(f"|rYou take {damage_amount} {injury_type} damage to your {location}!|n")
         
-        if results["organs_damaged"]:
-            caller.msg("|yOrgans damaged:|n")
-            for organ_name, damage in results["organs_damaged"]:
-                caller.msg(f"  - {organ_name}: {damage} damage")
-                
-        if results["organs_destroyed"]:
-            caller.msg(f"|rOrgans destroyed: {', '.join(results['organs_destroyed'])}|n")
+        # Show medical status after damage
+        medical_state = getattr(caller.db, 'medical_state', {})
+        if medical_state:
+            # Show current wounds
+            total_wounds = sum(len(wounds) for wounds in medical_state.get('wounds', {}).values())
+            if total_wounds > 0:
+                caller.msg(f"|yYou now have {total_wounds} total wounds.|n")
             
-        if results["conditions_added"]:
-            caller.msg("|yNew conditions:|n")
-            for condition_type, severity in results["conditions_added"]:
-                caller.msg(f"  - {condition_type.title()} ({severity})")
-                
+            # Show organ damage
+            organs = medical_state.get('organs', {})
+            damaged_organs = []
+            for location_name, location_organs in organs.items():
+                for organ_name, organ_data in location_organs.items():
+                    current_hp = organ_data.get('current_hp', organ_data.get('max_hp', 100))
+                    max_hp = organ_data.get('max_hp', 100)
+                    if current_hp < max_hp:
+                        damage_taken = max_hp - current_hp
+                        damaged_organs.append(f"{organ_name} ({damage_taken} damage)")
+            
+            if damaged_organs:
+                caller.msg("|yDamaged organs:|n")
+                for organ_info in damaged_organs:
+                    caller.msg(f"  - {organ_info}")
+        
         # Check for critical status
-        if caller.is_dead():
+        if target_died:
             caller.msg("|R*** YOU ARE DEAD ***|n")
         elif caller.is_unconscious():
             caller.msg("|Y*** YOU ARE UNCONSCIOUS ***|n")

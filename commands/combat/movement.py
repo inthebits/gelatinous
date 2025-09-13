@@ -1723,9 +1723,8 @@ class CmdJump(Command):
                     victim_damage = max(1, int(actual_fall_damage * 0.75))  # Victim takes 75% of damage
                     grappler_damage = max(1, int(actual_fall_damage * 0.25))  # Grappler takes 25% due to bodyshield
                     
-                    from world.combat.utils import apply_damage
-                    apply_damage(actual_grappled_victim, victim_damage, location="chest", injury_type="blunt")
-                    apply_damage(self.caller, grappler_damage, location="chest", injury_type="blunt")
+                    actual_grappled_victim.take_damage(victim_damage, location="chest", injury_type="blunt")
+                    self.caller.take_damage(grappler_damage, location="chest", injury_type="blunt")
                     
                     self.caller.msg(f"|gYou use {actual_grappled_victim.key} to cushion your landing! You take {grappler_damage} damage while they absorb most of the impact.|n")
                     actual_grappled_victim.msg(f"|r{self.caller.key} uses you as a bodyshield during the landing! You take {victim_damage} damage from being crushed beneath them!|n")
@@ -1735,9 +1734,8 @@ class CmdJump(Command):
                     victim_damage = int(actual_fall_damage * 1.5)  # Victim takes 150% damage (crushed on impact)
                     grappler_damage = max(1, int(actual_fall_damage * 0.5))  # Grappler takes 50% due to bodyshield
                     
-                    from world.combat.utils import apply_damage
-                    apply_damage(actual_grappled_victim, victim_damage, location="chest", injury_type="blunt")
-                    apply_damage(self.caller, grappler_damage, location="chest", injury_type="blunt")
+                    actual_grappled_victim.take_damage(victim_damage, location="chest", injury_type="blunt")
+                    self.caller.take_damage(grappler_damage, location="chest", injury_type="blunt")
                     
                     self.caller.msg(f"|rYou crash hard but {actual_grappled_victim.key} cushions your impact! You take {grappler_damage} damage while they are crushed beneath you!|n")
                     actual_grappled_victim.msg(f"|R{self.caller.key} uses you as a human cushion during the devastating crash! You take {victim_damage} damage from being crushed!|n")
@@ -1815,8 +1813,7 @@ class CmdJump(Command):
                     # Successful landing - reduced damage
                     reduced_damage = max(1, actual_fall_damage // 3)  # Much less damage on success
                     if reduced_damage > 1:
-                        from world.combat.utils import apply_damage
-                        apply_damage(self.caller, reduced_damage, location="chest", injury_type="blunt")
+                        self.caller.take_damage(reduced_damage, location="chest", injury_type="blunt")
                         self.caller.msg(f"|gYou land gracefully but still feel the impact! You take {reduced_damage} damage from the controlled landing.|n")
                         splattercast.msg(f"JUMP_EDGE_SUCCESS_DAMAGE: {self.caller.key} landed successfully, took {reduced_damage} controlled fall damage")
                     else:
@@ -1824,8 +1821,7 @@ class CmdJump(Command):
                         splattercast.msg(f"JUMP_EDGE_PERFECT: {self.caller.key} executed perfect landing, no damage")
                 else:
                     # Failed landing - full damage
-                    from world.combat.utils import apply_damage
-                    apply_damage(self.caller, actual_fall_damage, location="chest", injury_type="blunt")
+                    self.caller.take_damage(actual_fall_damage, location="chest", injury_type="blunt")
                     self.caller.msg(f"|rYou crash hard into the ground after falling {actual_fall_distance} {'story' if actual_fall_distance == 1 else 'stories'}! You take {actual_fall_damage} damage!|n")
                     splattercast.msg(f"JUMP_EDGE_CRASH: {self.caller.key} crashed after {actual_fall_distance} story fall, took {actual_fall_damage} damage")
             
