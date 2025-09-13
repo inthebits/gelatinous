@@ -215,6 +215,7 @@ class Character(ObjectParent, DefaultCharacter):
         Handle character becoming unconscious from medical injuries.
         
         Provides unconsciousness messaging to character and room.
+        Triggers removal from combat if currently fighting.
         """
         self.msg("|rYou collapse, unconscious from your injuries!|n")
         if self.location:
@@ -222,6 +223,25 @@ class Character(ObjectParent, DefaultCharacter):
                 f"|r{self.key} collapses, unconscious!|n",
                 exclude=self
             )
+        
+        # Check if character is in combat and remove them
+        combat_handler = getattr(self.ndb, "combat_handler", None)
+        if combat_handler:
+            try:
+                combat_handler.remove_combatant(self)
+                # Optional: Debug broadcast for tracking
+                try:
+                    from world.combat.utils import debug_broadcast
+                    debug_broadcast(f"{self.key} removed from combat due to unconsciousness", "MEDICAL", "UNCONSCIOUS")
+                except ImportError:
+                    pass  # debug_broadcast not available
+            except Exception as e:
+                # Optional: Debug broadcast for tracking errors
+                try:
+                    from world.combat.utils import debug_broadcast
+                    debug_broadcast(f"Error removing {self.key} from combat on unconsciousness: {e}", "MEDICAL", "ERROR")
+                except ImportError:
+                    pass  # debug_broadcast not available
         
         # Optional: Debug broadcast for tracking
         try:

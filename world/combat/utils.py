@@ -392,6 +392,13 @@ def validate_combat_target(caller, target, allow_self=False):
     if not hasattr(target, "location") or not target.location:
         return False, "Target is not in a valid location."
     
+    # Check if target is dead or unconscious
+    if hasattr(target, 'is_dead') and target.is_dead():
+        return False, f"{target.key} is dead and cannot be targeted."
+    
+    if hasattr(target, 'is_unconscious') and target.is_unconscious():
+        return False, f"{target.key} is unconscious and cannot be targeted."
+    
     return True, ""
 
 

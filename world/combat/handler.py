@@ -547,9 +547,12 @@ class CombatHandler(DefaultScript):
                 splattercast.msg(f"AT_REPEAT: {char.key} no longer in combatants list. Skipping.")
                 continue
 
-            # Skip if character is dead (prevents redundant processing after immediate death removal)
+            # Skip if character is dead or unconscious (prevents redundant processing after immediate removal)
             if char.is_dead():
                 splattercast.msg(f"AT_REPEAT: {char.key} is dead, skipping turn.")
+                continue
+            elif hasattr(char, 'is_unconscious') and char.is_unconscious():
+                splattercast.msg(f"AT_REPEAT: {char.key} is unconscious, skipping turn.")
                 continue
 
             # Skip if character has skip_combat_round flag
@@ -574,8 +577,10 @@ class CombatHandler(DefaultScript):
             # Only clean it up if it exists AND has a truthy value AND the character is not going to attack this turn.
             if hasattr(char.ndb, "charge_attack_bonus_active") and getattr(char.ndb, "charge_attack_bonus_active", False):
                 # In auto-combat, all characters attack, so bonus will be consumed naturally
-                # Only clean up if character won't attack (yielding, dead, etc.)
-                if current_char_combat_entry.get(DB_IS_YIELDING, False) or char.is_dead():
+                # Only clean up if character won't attack (yielding, dead, unconscious, etc.)
+                if (current_char_combat_entry.get(DB_IS_YIELDING, False) or 
+                    char.is_dead() or 
+                    (hasattr(char, 'is_unconscious') and char.is_unconscious())):
                     splattercast.msg(f"AT_REPEAT_START_TURN_CLEANUP: Clearing unused charge_attack_bonus_active for {char.key} (won't attack this turn).")
                     delattr(char.ndb, "charge_attack_bonus_active")
                 else:
@@ -843,19 +848,22 @@ class CombatHandler(DefaultScript):
         # Clear active list tracking now that round processing is complete
         self._active_combatants_list = None
 
-        # Check for dead combatants after all attacks are processed
+        # Check for dead or unconscious combatants after all attacks are processed
         remaining_combatants = getattr(self.db, DB_COMBATANTS, [])
-        dead_combatants = []
+        incapacitated_combatants = []
         
         for entry in remaining_combatants:
             char = entry.get(DB_CHAR)
             if char and hasattr(char, 'is_dead') and char.is_dead():
-                dead_combatants.append(char)
+                incapacitated_combatants.append(char)
                 splattercast.msg(f"POST_ROUND_DEATH_CHECK: {char.key} is dead, removing from combat.")
+            elif char and hasattr(char, 'is_unconscious') and char.is_unconscious():
+                incapacitated_combatants.append(char)
+                splattercast.msg(f"POST_ROUND_UNCONSCIOUS_CHECK: {char.key} is unconscious, removing from combat.")
                 
-        # Remove dead combatants
-        for dead_char in dead_combatants:
-            self.remove_combatant(dead_char)
+        # Remove dead and unconscious combatants
+        for incapacitated_char in incapacitated_combatants:
+            self.remove_combatant(incapacitated_char)
 
         # Check if combat should continue
         remaining_combatants = getattr(self.db, DB_COMBATANTS, [])
@@ -1084,9 +1092,12 @@ class CombatHandler(DefaultScript):
         """
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
-        # Check if target is already dead - prevents duplicate death processing
+        # Check if target is already dead or unconscious - prevents attacking incapacitated characters
         if target.is_dead():
             splattercast.msg(f"ATTACK_CANCELLED: {target.key} is already dead, cancelling {attacker.key}'s attack.")
+            return
+        elif hasattr(target, 'is_unconscious') and target.is_unconscious():
+            splattercast.msg(f"ATTACK_CANCELLED: {target.key} is unconscious, cancelling {attacker.key}'s attack.")
             return
         
         # Check if attacker is wielding a ranged weapon
