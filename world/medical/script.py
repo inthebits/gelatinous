@@ -23,7 +23,7 @@ class MedicalScript(DefaultScript):
     
     def at_script_creation(self):
         """Called when script is first created."""
-        self.key = f"medical_script_{self.obj.id}"
+        self.key = "medical_script"  # Use consistent key for searching
         self.desc = f"Medical condition manager for {self.obj.key}"
         self.interval = 60  # Tick every 60 seconds
         self.persistent = True
@@ -102,13 +102,37 @@ def start_medical_script(character):
     Returns:
         MedicalScript: The active medical script
     """
+    try:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"START_MEDICAL_SCRIPT: Checking for existing script on {character.key}")
+    except:
+        pass
+        
     # Check if script already exists
     existing_script = character.scripts.get("medical_script")
     if existing_script:
+        try:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"START_MEDICAL_SCRIPT: Found existing script for {character.key}")
+        except:
+            pass
         return existing_script.first() if existing_script else None
     
     # Create new script
+    try:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"START_MEDICAL_SCRIPT: Creating new script for {character.key}")
+    except:
+        pass
+        
     script = character.scripts.add(MedicalScript)
+    
+    try:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"START_MEDICAL_SCRIPT: Script created: {script}")
+    except:
+        pass
+        
     return script
 
 
