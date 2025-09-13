@@ -688,7 +688,39 @@ class Character(ObjectParent, DefaultCharacter):
                 if location in longdescs and longdescs[location]:
                     # Longdesc should have skintone applied
                     processed_desc = self._process_description_variables(longdescs[location], looker, force_third_person=True, apply_skintone=True)
+                    
+                    # Add wounds to this location if any exist
+                    try:
+                        from world.medical.wounds import append_wounds_to_longdesc
+                        processed_desc = append_wounds_to_longdesc(processed_desc, self, location, looker)
+                    except ImportError:
+                        # Wound system not available, continue without wounds
+                        pass
+                    
                     descriptions.append((location, processed_desc))
+                else:
+                    # No longdesc for this location, but check for standalone wounds
+                    try:
+                        from world.medical.wounds import get_character_wounds
+                        wounds = get_character_wounds(self)
+                        location_wounds = [w for w in wounds if w['location'] == location]
+                        
+                        if location_wounds:
+                            # Create standalone wound description for this location
+                            from world.medical.wounds import get_wound_description
+                            wound = location_wounds[0]  # Use first/most significant wound
+                            wound_desc = get_wound_description(
+                                injury_type=wound['injury_type'],
+                                location=wound['location'],
+                                severity=wound['severity'],
+                                stage=wound['stage'],
+                                organ=wound.get('organ'),
+                                character=self
+                            )
+                            descriptions.append((location, wound_desc))
+                    except ImportError:
+                        # Wound system not available, continue without wounds
+                        pass
         
         # Add any extended anatomy not in default order (clothing or longdesc)
         all_locations = set(longdescs.keys()) | set(coverage_map.keys())
@@ -706,7 +738,39 @@ class Character(ObjectParent, DefaultCharacter):
                 elif location in longdescs and longdescs[location]:
                     # Extended location with longdesc - apply template variable processing and skintone
                     processed_desc = self._process_description_variables(longdescs[location], looker, force_third_person=True, apply_skintone=True)
+                    
+                    # Add wounds to this extended location if any exist
+                    try:
+                        from world.medical.wounds import append_wounds_to_longdesc
+                        processed_desc = append_wounds_to_longdesc(processed_desc, self, location, looker)
+                    except ImportError:
+                        # Wound system not available, continue without wounds
+                        pass
+                    
                     descriptions.append((location, processed_desc))
+                else:
+                    # No longdesc for extended location, but check for standalone wounds
+                    try:
+                        from world.medical.wounds import get_character_wounds
+                        wounds = get_character_wounds(self)
+                        location_wounds = [w for w in wounds if w['location'] == location]
+                        
+                        if location_wounds:
+                            # Create standalone wound description for this extended location
+                            from world.medical.wounds import get_wound_description
+                            wound = location_wounds[0]  # Use first/most significant wound
+                            wound_desc = get_wound_description(
+                                injury_type=wound['injury_type'],
+                                location=wound['location'],
+                                severity=wound['severity'],
+                                stage=wound['stage'],
+                                organ=wound.get('organ'),
+                                character=self
+                            )
+                            descriptions.append((location, wound_desc))
+                    except ImportError:
+                        # Wound system not available, continue without wounds
+                        pass
         
         return descriptions
 

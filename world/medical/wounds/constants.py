@@ -21,19 +21,24 @@ INJURY_SEVERITY_MAP = {
 }
 
 # Body location display mapping for wounds (dynamic - will adapt to character's anatomy)
-def get_location_display_name(character, location):
+def get_location_display_name(location, character=None):
     """
     Get the display name for a body location based on character's anatomy.
     
     Args:
-        character: Character object
         location (str): Body location key
+        character: Character object (optional)
         
     Returns:
         str: Human-readable location name
     """
+    # Handle legacy calling convention (character, location)
+    if isinstance(location, object) and hasattr(location, 'longdesc') and isinstance(character, str):
+        # Swap arguments - old calling convention
+        character, location = location, character
+    
     # Check if character has custom location names
-    if hasattr(character, 'location_display_names'):
+    if character and hasattr(character, 'location_display_names'):
         custom_name = character.location_display_names.get(location)
         if custom_name:
             return custom_name

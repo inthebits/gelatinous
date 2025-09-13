@@ -44,14 +44,14 @@ def get_wound_description(injury_type, location, severity="Moderate", stage="fre
     stage_descriptions = wound_messages.get(stage, wound_messages.get("fresh", []))
     
     if not stage_descriptions:
-        location_display = get_location_display_name(character, location) if character else location
+        location_display = get_location_display_name(location, character)
         return f"a {severity.lower()} {injury_type} wound on the {location_display}"
     
     # Select random description from available options
     description_data = random.choice(stage_descriptions)
     
     # Build format variables
-    location_display = get_location_display_name(character, location) if character else location
+    location_display = get_location_display_name(location, character)
     format_vars = {
         'severity': INJURY_SEVERITY_MAP.get(severity, severity.lower()),
         'location': location_display,
@@ -63,9 +63,13 @@ def get_wound_description(injury_type, location, severity="Moderate", stage="fre
     if character and stage in ["treated", "healing", "scarred"]:
         skintone = getattr(character.db, 'skintone', None)
         if skintone:
-            from world.combat.constants import SKINTONE_PALETTE
-            color_code = SKINTONE_PALETTE.get(skintone, "")
-            format_vars['skintone'] = color_code
+            try:
+                from world.combat.constants import SKINTONE_PALETTE
+                color_code = SKINTONE_PALETTE.get(skintone, "")
+                format_vars['skintone'] = color_code
+            except ImportError:
+                # Skintone system not available, use empty string
+                format_vars['skintone'] = ""
         else:
             format_vars['skintone'] = ""
     else:

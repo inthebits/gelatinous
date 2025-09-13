@@ -154,7 +154,7 @@ def _create_compound_wound_description_for_location(location, wounds, character=
     primary_wound = max(wounds, key=lambda w: ["Light", "Moderate", "Severe", "Critical"].index(w['severity']))
     
     fresh_count = len([w for w in wounds if w['stage'] == 'fresh'])
-    location_display = get_location_display_name(character, location) if character else location
+    location_display = get_location_display_name(location, character)
     severity_display = INJURY_SEVERITY_MAP.get(primary_wound['severity'], primary_wound['severity'].lower())
     
     # Determine if we need skintone coloring
@@ -162,8 +162,12 @@ def _create_compound_wound_description_for_location(location, wounds, character=
     if character and fresh_count == 0:  # No fresh wounds, use skintone
         skintone = getattr(character.db, 'skintone', None)
         if skintone:
-            from world.combat.constants import SKINTONE_PALETTE
-            skintone_color = SKINTONE_PALETTE.get(skintone, "")
+            try:
+                from world.combat.constants import SKINTONE_PALETTE
+                skintone_color = SKINTONE_PALETTE.get(skintone, "")
+            except ImportError:
+                # Skintone system not available
+                skintone_color = ""
     
     if fresh_count > 1:
         return f"|RMultiple {severity_display} fresh wounds on the {location_display}|n"
