@@ -320,57 +320,23 @@ def apply_anatomical_damage(character, damage_amount, location, injury_type="gen
             if was_destroyed:
                 results["organs_destroyed"].append(organ_name)
                 
-    # Add appropriate conditions based on injury type and damage
-    conditions = _generate_conditions_for_injury(location, damage_amount, injury_type)
-    for condition_type, severity in conditions:
-        condition = medical_state.add_condition(condition_type, location, severity)
-        results["conditions_added"].append((condition_type, severity))
-        
+    # Note: Medical conditions are now automatically created by 
+    # MedicalState.take_organ_damage() in core.py, so we don't need
+    # to manually add them here anymore.
+                
     # Update vital signs after damage
     medical_state.update_vital_signs()
     
     return results
 
 
-def _generate_conditions_for_injury(location, damage_amount, injury_type):
-    """
-    Generate appropriate medical conditions based on injury parameters.
-    
-    Args:
-        location (str): Body location
-        damage_amount (int): Amount of damage
-        injury_type (str): Type of injury
-        
-    Returns:
-        list: List of (condition_type, severity) tuples
-    """
-    conditions = []
-    
-    # Generate bleeding for most injury types
-    if injury_type in ["cut", "stab", "bullet", "laceration"]:
-        if damage_amount >= 15:
-            conditions.append(("bleeding", "severe"))
-        elif damage_amount >= 8:
-            conditions.append(("bleeding", "moderate"))
-        elif damage_amount >= 3:
-            conditions.append(("bleeding", "minor"))
-            
-    # Generate fractures for blunt trauma to limbs
-    limb_locations = ["left_arm", "right_arm", "left_thigh", "right_thigh", 
-                     "left_shin", "right_shin", "left_hand", "right_hand"]
-    if injury_type == "blunt" and location in limb_locations and damage_amount >= 10:
-        conditions.append(("fracture", "moderate"))
-        
-    # Generate burns for fire/heat damage
-    if injury_type == "burn":
-        if damage_amount >= 20:
-            conditions.append(("burn", "severe"))
-        elif damage_amount >= 10:
-            conditions.append(("burn", "moderate"))
-        elif damage_amount >= 5:
-            conditions.append(("burn", "minor"))
-            
-    return conditions
+# DEPRECATED: _generate_conditions_for_injury() is no longer used.
+# Medical conditions are now automatically created by the new ticker-based
+# condition system in world.medical.conditions.py via MedicalState.take_organ_damage()
+# 
+# def _generate_conditions_for_injury(location, damage_amount, injury_type):
+#     """This function has been replaced by the new automatic condition creation system."""
+#     pass
 
 
 def get_medical_status_summary(character):
