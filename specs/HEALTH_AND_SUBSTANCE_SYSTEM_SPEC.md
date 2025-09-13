@@ -2118,6 +2118,213 @@ def check_wound_visibility(character, location):
 - [ ] **Combustion consumption**: Smoking/burning substance delivery
 - [ ] **Advanced substance interactions**: Multi-method delivery systems
 
+### Phase 2.6: Ticker-Based Medical Conditions - 🔲 PLANNED
+Dynamic medical conditions that apply ongoing effects over time using Evennia's native ticker system.
+
+#### Condition Ticker Architecture
+```python
+# Base condition class with ticker support (world/medical/conditions.py)
+class MedicalCondition:
+    def __init__(self, name, severity, duration=None, tick_interval=60):
+        self.name = name
+        self.severity = severity           # Current condition strength
+        self.max_duration = duration       # Total ticks before auto-resolve
+        self.current_tick = 0             # Current tick count
+        self.tick_interval = tick_interval # Seconds between ticks
+        self.auto_resolve = True          # Whether condition stops naturally
+        self.requires_treatment = False   # Must be treated to stop
+        
+    def start_condition(self, character):
+        """Begin ticking condition on character"""
+        from evennia import TICKER_HANDLER
+        TICKER_HANDLER.add(
+            interval=self.tick_interval,
+            callback=self.tick_effect,
+            idstring=f"{character.id}_{self.name}",
+            persistent=True
+        )
+        
+    def tick_effect(self, character):
+        """Apply condition effect each tick"""
+        self.current_tick += 1
+        
+        # Apply current severity effect
+        self.apply_effect(character)
+        
+        # Check for natural resolution
+        if self.should_resolve():
+            self.end_condition(character)
+            
+    def apply_effect(self, character):
+        """Override in subclasses for specific effects"""
+        pass
+        
+    def should_resolve(self):
+        """Check if condition should end naturally"""
+        if not self.auto_resolve:
+            return False
+        if self.max_duration and self.current_tick >= self.max_duration:
+            return True
+        if self.severity <= 0:
+            return True
+        return False
+        
+    def end_condition(self, character):
+        """Stop ticking and clean up"""
+        from evennia import TICKER_HANDLER
+        TICKER_HANDLER.remove(
+            interval=self.tick_interval,
+            callback=self.tick_effect,
+            idstring=f"{character.id}_{self.name}"
+        )
+```
+
+#### Bleeding Condition Implementation
+```python
+class BleedingCondition(MedicalCondition):
+    def __init__(self, initial_severity, decay_rate=1, location=None):
+        super().__init__(
+            name="bleeding",
+            severity=initial_severity,
+            tick_interval=60,  # 60 seconds between blood loss
+            auto_resolve=True
+        )
+        self.decay_rate = decay_rate  # How much severity decreases per tick
+        self.location = location      # Body location bleeding from
+        
+    def apply_effect(self, character):
+        """Lose blood each tick, severity decreases over time"""
+        if self.severity > 0:
+            # Apply blood loss
+            blood_loss = self.severity
+            character.medical_state.blood_current -= blood_loss
+            
+            # Decrease bleeding severity naturally
+            self.severity = max(0, self.severity - self.decay_rate)
+            
+            # Wound description updates
+            self.update_wound_descriptions(character)
+            
+            # Notify character
+            if blood_loss > 3:
+                character.msg(f"|rYou feel blood flowing from your {self.location}.|n")
+            elif blood_loss > 1:
+                character.msg(f"|RBlood seeps from your {self.location}.|n")
+```
+
+#### Condition Type Examples
+**Natural Decay Bleeding**:
+```python
+# Arterial bleeding: 8->7->6->5->4->3->2->1->0 (stops naturally)
+BleedingCondition(initial_severity=8, decay_rate=1, location="neck")
+
+# Venous bleeding: 4->3->2->1->0 (stops naturally) 
+BleedingCondition(initial_severity=4, decay_rate=1, location="arm")
+```
+
+**Persistent Conditions** (require treatment):
+```python
+class SevereBleedingCondition(BleedingCondition):
+    def __init__(self, severity, location):
+        super().__init__(severity, decay_rate=0, location=location)
+        self.auto_resolve = False
+        self.requires_treatment = True
+        
+    def apply_effect(self, character):
+        """Constant blood loss until treated"""
+        character.medical_state.blood_current -= self.severity
+        # Severity doesn't decrease - must be bandaged/treated
+```
+
+**Fire Condition**:
+```python
+class BurningCondition(MedicalCondition):
+    def __init__(self, intensity, spread_chance=0.1):
+        super().__init__(
+            name="burning",
+            severity=intensity,
+            tick_interval=30,  # Fire acts quickly
+            auto_resolve=False  # Must be extinguished
+        )
+        self.spread_chance = spread_chance
+        
+    def apply_effect(self, character):
+        """Burn damage each tick, chance to spread"""
+        # Apply burn damage to random location
+        damage = self.severity
+        location = random.choice(character.anatomy.locations)
+        character.take_damage(damage, location=location, injury_type="burn")
+        
+        # Chance to spread fire
+        if random.random() < self.spread_chance:
+            self.severity += 1
+            
+        character.msg(f"|YFlames sear your flesh!|n")
+```
+
+**Acid Exposure**:
+```python
+class AcidCondition(MedicalCondition):
+    def __init__(self, concentration, duration):
+        super().__init__(
+            name="acid_exposure", 
+            severity=concentration,
+            max_duration=duration,
+            tick_interval=45
+        )
+        
+    def apply_effect(self, character):
+        """Ongoing acid damage with equipment degradation"""
+        # Damage character
+        damage = self.severity
+        character.take_damage(damage, location="chest", injury_type="acid")
+        
+        # Damage equipment
+        for item in character.equipment:
+            if hasattr(item, 'acid_resistance'):
+                item.take_acid_damage(self.severity)
+```
+
+#### Treatment Integration
+```python
+def apply_medical_treatment(character, condition_name, treatment_quality):
+    """Treat ongoing conditions"""
+    condition = character.get_condition(condition_name)
+    
+    if condition_name == "bleeding":
+        if treatment_quality >= "adequate":
+            condition.end_condition(character)  # Stop bleeding immediately
+            character.msg("The bleeding has been stopped with proper bandaging.")
+        else:
+            condition.severity = max(1, condition.severity // 2)  # Reduce severity
+            character.msg("The bleeding has been slowed but not stopped.")
+            
+    elif condition_name == "burning":
+        condition.end_condition(character)  # Fire extinguished
+        character.msg("The flames have been extinguished.")
+```
+
+#### Condition Stacking & Interaction
+```python
+# Multiple bleeding sources
+character.add_condition(BleedingCondition(5, location="arm"))
+character.add_condition(BleedingCondition(3, location="leg"))
+# Each ticks independently: 5+3=8 blood loss per tick initially
+
+# Condition interactions
+if character.has_condition("bleeding") and character.has_condition("burning"):
+    # Fire cauterizes bleeding - reduce bleeding by 1 per tick
+    bleeding.severity = max(0, bleeding.severity - 1)
+```
+
+#### System Benefits
+- **Realistic Progression**: Bleeding naturally decreases over time
+- **Treatment Urgency**: Severe conditions require immediate intervention
+- **Dynamic Combat**: Ongoing effects create tactical decisions
+- **Medical Depth**: Different treatments for different condition types
+- **Performance Efficient**: Leverages Evennia's optimized ticker system
+- **Persistent**: Conditions survive server restarts via ticker persistence
+
 ### Phase 3: Combat Integration & Stat Penalties - 🔲 IN PROGRESS
 - [x] **Smart hit location system** based on attack success margin and precision targeting - ✅ COMPLETED
 - [ ] **Organ density-based targeting** - vital organ areas harder to hit precisely
