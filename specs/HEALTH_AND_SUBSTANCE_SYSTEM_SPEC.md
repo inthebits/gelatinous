@@ -1938,14 +1938,18 @@ Medical conditions dynamically modify character appearance through integrated lo
 # Organ-level wound state tracking (world/medical/core.py)
 class Organ:
     def __init__(self, name, hp_max):
-        self.wound_stage = 'fresh'      # fresh/treated/healing/scarred
-        self.injury_type = 'generic'    # bullet/stab/cut/blunt/etc
-        self.wound_timestamp = None     # For time-based healing
+        self.wound_stage = 'fresh'         # fresh/treated/healing/scarred
+        self.injury_type = 'generic'       # bullet/stab/cut/blunt/etc
+        self.wound_timestamp = None        # For time-based healing
+        self.treatment_quality = None      # poor/adequate/professional/surgical
+        self.treatment_method = None       # bandage/suture/cauterize/field_dressing
     
-    def apply_treatment(self):
-        """Professional medical treatment advances wound stage"""
+    def apply_treatment(self, quality='adequate', method='bandage'):
+        """Medical treatment with quality and method tracking"""
         if self.wound_stage == 'fresh':
             self.wound_stage = 'treated'
+            self.treatment_quality = quality
+            self.treatment_method = method
     
     def advance_healing_stage(self):
         """Natural healing progression over time"""
@@ -1958,11 +1962,14 @@ class Organ:
 
 # Dynamic wound description generation (world/medical/wounds/wound_descriptions.py)
 def get_wound_description(organ, skintone_var="{skintone}"):
-    """Generate contextual wound description with grammar formatting"""
+    """Generate contextual wound description with treatment quality details"""
     stage = _determine_wound_stage_from_organ(organ)
     injury_type = getattr(organ, 'injury_type', 'generic')
+    treatment_quality = getattr(organ, 'treatment_quality', None)
+    treatment_method = getattr(organ, 'treatment_method', None)
     
-    description = _get_variant_description(organ, stage, injury_type)
+    description = _get_variant_description(organ, stage, injury_type, 
+                                         treatment_quality, treatment_method)
     return _format_wound_grammar(description)
 
 def _format_wound_grammar(text):
@@ -1977,6 +1984,62 @@ def append_wounds_to_longdesc(character, location, base_longdesc):
         wound_desc = _create_compound_wound_description_for_location(wounds, location)
         return f"{base_longdesc} {wound_desc}"
     return base_longdesc
+```
+
+#### Treatment Quality & Method System
+**Treatment Quality Levels**:
+- **`poor`**: Makeshift field treatment, improvised materials
+  - *"crudely bandaged with torn cloth"*, *"hastily wrapped with dirty rags"*
+- **`adequate`**: Basic first aid with proper supplies
+  - *"bandaged with clean gauze"*, *"neatly dressed with field dressing"*  
+- **`professional`**: Skilled medical treatment in clinical setting
+  - *"expertly sutured and professionally bandaged"*, *"precisely stitched with medical precision"*
+- **`surgical`**: Advanced surgical intervention with specialized equipment
+  - *"surgically repaired with synthetic sutures"*, *"reconstructed with surgical mesh"*
+
+**Treatment Methods**:
+- **`bandage`**: Standard wound covering and pressure application
+- **`suture`**: Stitching for deep lacerations and surgical wounds
+- **`cauterize`**: Heat/chemical sealing for bleeding control
+- **`field_dressing`**: Emergency battlefield treatment
+- **`surgical_repair`**: Complex surgical reconstruction
+
+**Quality-Dependent Descriptions** (treated stage examples):
+```python
+# Poor quality bandage treatment
+"A crude bandage made from torn cloth covers the bullet wound on his arm, 
+ already showing signs of seepage."
+
+# Professional suture treatment  
+"His arm bears an expertly sutured bullet wound with pristine white bandaging 
+ and precise surgical tape."
+
+# Surgical repair with mesh
+"A complex surgical repair covers his chest, with visible surgical mesh beneath 
+ transparent medical dressing."
+```
+
+**Implementation in Message Files**:
+```python
+# In world/medical/wounds/messages/bullet.py
+TREATED_DESCRIPTIONS = {
+    'poor': [
+        "A crude {bandage_type} covers the bullet wound on {location}...",
+        "Makeshift field dressing barely contains the gunshot wound..."
+    ],
+    'adequate': [
+        "Clean white bandaging covers the bullet wound on {location}...", 
+        "A proper field dressing protects the gunshot wound..."
+    ],
+    'professional': [
+        "Expertly sutured bullet wound with pristine medical bandaging...",
+        "Professional surgical repair evident in the treated gunshot wound..."
+    ],
+    'surgical': [
+        "Advanced surgical reconstruction covers the bullet wound...",
+        "Sophisticated medical intervention visible in the surgical repair..."
+    ]
+}
 ```
 
 #### Wound Message System Implementation
@@ -2025,7 +2088,8 @@ def check_wound_visibility(character, location):
 
 #### Future-Proof Architecture Features
 - **Extensible State Tracking**: Organ-level `wound_stage` ready for medical system expansion
-- **Treatment Integration**: `apply_treatment()` and `advance_healing_stage()` methods prepared
+- **Treatment Quality System**: `treatment_quality` and `treatment_method` tracking for medical skill integration
+- **Treatment Integration**: `apply_treatment(quality, method)` and `advance_healing_stage()` methods prepared
 - **Time-Based Healing**: `wound_timestamp` tracking for temporal healing mechanics  
 - **Dynamic Anatomy Support**: Flexible location handling for any anatomy configuration
 - **Template System**: Variable substitution ready for expanded customization
@@ -2038,6 +2102,13 @@ def check_wound_visibility(character, location):
 ✅ **Clothing Interaction**: Concealment mechanics for realistic visibility  
 ✅ **State Persistence**: Organ-level tracking survives server restarts  
 ✅ **Debug Support**: External testing scripts validate all functionality
+
+#### Planned Extensions (Ready for Implementation)
+🔲 **Treatment Quality Integration**: Message variants based on medical skill levels  
+🔲 **Medical Skill Checks**: Treatment quality determined by character medical abilities  
+🔲 **Treatment Tools**: Quality modifiers based on available medical equipment  
+🔲 **Infection Mechanics**: Poor treatment quality leads to wound complications  
+🔲 **Healing Speed**: Treatment quality affects recovery time via `wound_timestamp`
 
 *Note: Phase 2.4 wound description system completed with comprehensive longdesc integration, multi-variant messaging, and future-proof organ state tracking architecture*
 
