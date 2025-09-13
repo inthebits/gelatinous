@@ -599,6 +599,10 @@ class MedicalState:
                         splattercast.msg(f"ADD_CONDITION: No character reference found for {condition.condition_type}")
                     except:
                         pass
+            
+            # Save medical state after adding condition to ensure persistence
+            if self.character:
+                self.character.save_medical_state()
                     
     def remove_condition(self, condition):
         """

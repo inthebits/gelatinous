@@ -25,7 +25,7 @@ class MedicalScript(DefaultScript):
         """Called when script is first created."""
         self.key = "medical_script"  # Use consistent key for searching
         self.desc = f"Medical condition manager for {self.obj.key}"
-        self.interval = 60  # Tick every 60 seconds
+        self.interval = 12  # Tick every 12 seconds (was 60 for production)
         self.persistent = True
         self.start_delay = False  # Start immediately
         

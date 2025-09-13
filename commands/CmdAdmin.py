@@ -156,6 +156,10 @@ class CmdHeal(Command):
                 # Clear all conditions
                 medical_state.conditions.clear()
                 
+                # Stop medical script since no conditions remain
+                from world.medical.script import stop_medical_script
+                stop_medical_script(target)
+                
                 # Restore all organs to full health
                 organs_healed = 0
                 for organ in medical_state.organs.values():
@@ -193,6 +197,11 @@ class CmdHeal(Command):
                         condition_key = matching_conditions.pop(0)
                         medical_state.conditions.pop(condition_key, None)
                 
+                # Stop medical script if no conditions remain
+                if not medical_state.conditions:
+                    from world.medical.script import stop_medical_script
+                    stop_medical_script(target)
+                
                 target.save_medical_state()
                 caller.msg(f"|g{target.key} healed {conditions_to_heal} {condition_type} condition(s).|n")
                 
@@ -219,6 +228,11 @@ class CmdHeal(Command):
                         conditions_removed += 1
                     else:
                         break
+                
+                # Stop medical script if no conditions remain
+                if not medical_state.conditions:
+                    from world.medical.script import stop_medical_script
+                    stop_medical_script(target)
                 
                 target.save_medical_state()
                 conditions_after = len(medical_state.conditions)
