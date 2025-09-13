@@ -119,6 +119,11 @@ class MedicalCondition:
             splattercast.msg(f"CONDITION_START: {self.condition_type} for {character.key} doesn't require ticker")
             return
             
+        # Check if ticker is already running (prevent double-start)
+        if hasattr(self, 'ticker_id') and self.ticker_id and self.ticker_id in _ACTIVE_CONDITIONS:
+            splattercast.msg(f"CONDITION_START: {self.condition_type} ticker {self.ticker_id} already running for {character.key}")
+            return
+            
         # Create unique ticker ID
         self.ticker_id = f"{character.id}_{self.condition_type}_{id(self)}"
         splattercast.msg(f"CONDITION_START: Starting {self.condition_type} ticker {self.ticker_id} for {character.key}")
