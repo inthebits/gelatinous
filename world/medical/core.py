@@ -521,7 +521,6 @@ class MedicalState:
         Returns:
             bool: True if organ was destroyed
         """
-        print(f"DEBUG: take_organ_damage called on {organ_name} with {damage_amount} {injury_type} damage")
         organ = self.get_organ(organ_name)
         was_destroyed = organ.take_damage(damage_amount, injury_type)
         
@@ -550,19 +549,14 @@ class MedicalState:
         Returns:
             list: List of medical conditions to add
         """
-        print(f"DEBUG: _create_conditions_from_damage called with damage={damage_amount}, type={injury_type}, location={location}")
         try:
             from .conditions import create_condition_from_damage
-            print(f"DEBUG: Successfully imported create_condition_from_damage")
             conditions = create_condition_from_damage(damage_amount, injury_type, location)
-            print(f"DEBUG: create_condition_from_damage returned {len(conditions)} conditions")
             return conditions
         except ImportError as e:
-            print(f"DEBUG: ImportError importing conditions: {e}")
             # Fallback if conditions module not available
             return []
         except Exception as e:
-            print(f"DEBUG: Exception in _create_conditions_from_damage: {e}")
             return []
             
     def add_condition(self, condition):

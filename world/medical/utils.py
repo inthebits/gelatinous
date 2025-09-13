@@ -275,7 +275,6 @@ def apply_anatomical_damage(character, damage_amount, location, injury_type="gen
     Returns:
         dict: Results of damage application
     """
-    print(f"DEBUG: apply_anatomical_damage called on {character.key} with {damage_amount} {injury_type} damage to {location}")
     # Ensure medical state exists - access property to trigger initialization
     try:
         medical_state = character.medical_state

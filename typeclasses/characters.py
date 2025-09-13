@@ -131,7 +131,6 @@ class Character(ObjectParent, DefaultCharacter):
         Returns:
             bool: True if character died from this damage, False otherwise
         """
-        print(f"DEBUG: take_damage called on {self.key} with {amount} {injury_type} damage to {location}")
         if not isinstance(amount, int) or amount <= 0:
             return False
 
@@ -969,7 +968,6 @@ class Character(ObjectParent, DefaultCharacter):
             str: Complete character appearance in clean format
         """
         # Debug: Make sure this method is being called
-        print(f"DEBUG: return_appearance called for {self.name}, looker: {looker.name}")
         
         # Build appearance components
         parts = []
