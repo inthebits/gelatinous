@@ -1,9 +1,107 @@
 """
-Medical Condition Classes - Phase 2.6
+Medical Conditions System
 
 Ticker-based medical conditions that apply ongoing effects over time.
-Implements dynamic medical progression with Evennia's native ticker system.
+Uses Evennia's native ticker system for time progression.
 """
+
+from evennia import TICKER_HANDLER
+from .constants import (
+    CONDITION_INTERVALS, BLEEDING_DAMAGE_THRESHOLDS, CONDITION_TRIGGERS
+)
+
+# Global registry to track active conditions for ticker callbacks
+_ACTIVE_CONDITIONS = {}
+
+def _condition_tick_callback(condition_id):
+    """
+    Standalone callback function for condition tickers.
+    
+    This is required because Evennia's TICKER_HANDLER only accepts
+    standalone functions or typeclass methods as callbacks.
+    """
+    if condition_id not in _ACTIVE_CONDITIONS:
+        # Condition was removed, stop ticker
+        TICKER_HANDLER.remove(idstring=condition_id)
+        return
+        
+    condition = _ACTIVE_CONDITIONS[condition_id]
+    
+    # Get character from condition ID
+    try:
+        character_id = condition_id.split('_')[0]
+        # Find character by ID
+        from evennia.objects.models import ObjectDB
+        character = ObjectDB.objects.get(id=int(character_id))
+        
+        if not character or not hasattr(character, 'medical_state'):
+            # Character doesn't exist or has no medical state, stop condition
+            condition.end_condition(None)
+            return
+            
+        # Apply tick effect
+        condition.tick_effect(character)
+        
+    except Exception as e:
+        # Error occurred, stop condition
+        print(f"Condition tick error for {condition_id}: {e}")
+        condition.end_condition(None)
+
+class MedicalCondition:
+    """
+    Base class for all medical conditions.
+    
+    Medical conditions are persistent effects that can tick over time,
+    applying ongoing damage, healing, or other effects to characters.
+    """
+    
+    def __init__(self, condition_type, severity, location=None, tick_interval=60):
+        self.condition_type = condition_type
+        self.severity = severity
+        self.location = location
+        self.tick_interval = tick_interval
+        self.requires_ticker = True
+        self.ticker_id = None
+        
+    def start_condition(self, character):
+        """Begin ticking condition on character if required."""
+        if not self.requires_ticker:
+            return
+            
+        # Create unique ticker ID
+        self.ticker_id = f"{character.id}_{self.condition_type}_{id(self)}"
+        
+        # Register condition in global registry
+        _ACTIVE_CONDITIONS[self.ticker_id] = self
+        
+        # Start ticker with standalone callback
+        TICKER_HANDLER.add(
+            interval=self.tick_interval,
+            callback=_condition_tick_callback,
+            idstring=self.ticker_id,
+            persistent=True,
+            # Pass the condition_id as an argument to the callback
+            args=[self.ticker_id]
+        )
+        
+    def tick_effect(self, character):
+        """Override in subclasses to implement specific effects."""
+        pass
+        
+    def end_condition(self, character):
+        """Stop ticking and clean up."""
+        if self.ticker_id:
+            # Remove from global registry
+            if self.ticker_id in _ACTIVE_CONDITIONS:
+                del _ACTIVE_CONDITIONS[self.ticker_id]
+                
+            # Stop ticker
+            TICKER_HANDLER.remove(idstring=self.ticker_id)
+            self.ticker_id = None
+            
+    def stop_condition(self):
+        """Alias for end_condition for compatibility."""
+        self.end_condition(None)
 
 import random
 from evennia import TICKER_HANDLER
