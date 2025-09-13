@@ -1896,100 +1896,150 @@ All new parameters have default values maintaining compatibility with existing c
 - `success_margin=0` → no location bias (original behavior)
 - `target_organ=None` → proportional damage distribution (original behavior)
 
-**Foundation Complete**: Two-stage precision targeting fully integrated with combat system, ready for Phase 2.4 wound description integration.
+**Foundation Complete**: Two-stage precision targeting fully integrated with combat system and Phase 2.4 wound description system fully implemented with comprehensive longdesc integration.
 
-### Phase 2.4: Longdesc Wound Integration - 🔲 PLANNED
-Dynamic wound descriptions that append to character longdesc based on medical state and treatment status.
+### Phase 2.4: Longdesc Wound Integration - ✅ COMPLETED
+Dynamic wound descriptions that integrate with character longdesc system, featuring comprehensive wound state tracking and multi-variant descriptions.
+
+#### Implementation Overview
+Complete wound description system with organ-level state tracking, automated grammar formatting, and dynamic longdesc integration:
+
+- **Multi-Variant Descriptions**: 20+ wound variants per injury type for variety
+- **Organ State Tracking**: `wound_stage`, `injury_type`, `wound_timestamp` per organ
+- **Grammar System**: Automatic capitalization and punctuation with color code preservation
+- **Multiple Wound Handling**: Smart formatting for locations with multiple wounds
+- **Dynamic Integration**: Flexible anatomy support with clothing concealment
 
 #### Wound Description Lifecycle
-Medical conditions dynamically modify character appearance through longdesc integration:
+Medical conditions dynamically modify character appearance through integrated longdesc hooks:
 
-**Fresh Wounds**:
+**Fresh Wounds** (`wound_stage: 'fresh'`):
 - Bleeding, swelling, immediate trauma descriptions
 - Severity-based intensity: minor cuts vs. gaping wounds
 - Location-specific descriptions: "blood seeping from his left shoulder"
 
-**Treated Wounds**:
+**Treated Wounds** (`wound_stage: 'treated'`):
 - Bandaged, sutured, or medicated wound descriptions
 - Treatment method visible: "neatly bandaged forearm" vs. "crude field dressing"
 - Treatment quality affects description detail
 
-**Healing Wounds**:
+**Healing Wounds** (`wound_stage: 'healing'`):
 - Scabbing, bruising progression, reduced severity
 - Time-based healing stages with evolving descriptions
 - Natural recovery process visualization
 
-**Infected Wounds**:
-- Redness, swelling, discharge descriptions
-- Progressive severity if untreated
-- Visual cues for medical intervention need
-
-**Scarred Wounds**:
+**Scarred Wounds** (`wound_stage: 'scarred'`):
 - Permanent marking system for significant traumas
 - Scar tissue descriptions based on original injury
 - Character history preservation through appearance
 
-**Clean Recovery**:
-- Minor wounds heal completely without scarring
-- Successful treatment prevents permanent marking
-- Medical skill affects scarring probability
-
-#### Longdesc Integration Architecture
+#### Actual Implementation Architecture
 ```python
-# Dynamic wound description system
-def update_wound_descriptions(character):
-    """Append wound descriptions to longdesc locations"""
-    for location, organs in character.anatomy.items():
-        wounds = get_wounds_for_location(location)
-        if wounds:
-            location_desc = generate_wound_description(wounds)
-            character.longdesc[location] += f" {location_desc}"
+# Organ-level wound state tracking (world/medical/core.py)
+class Organ:
+    def __init__(self, name, hp_max):
+        self.wound_stage = 'fresh'      # fresh/treated/healing/scarred
+        self.injury_type = 'generic'    # bullet/stab/cut/blunt/etc
+        self.wound_timestamp = None     # For time-based healing
+    
+    def apply_treatment(self):
+        """Professional medical treatment advances wound stage"""
+        if self.wound_stage == 'fresh':
+            self.wound_stage = 'treated'
+    
+    def advance_healing_stage(self):
+        """Natural healing progression over time"""
+        stage_progression = {
+            'fresh': 'healing',
+            'treated': 'healing', 
+            'healing': 'scarred'
+        }
+        self.wound_stage = stage_progression.get(self.wound_stage, 'scarred')
+
+# Dynamic wound description generation (world/medical/wounds/wound_descriptions.py)
+def get_wound_description(organ, skintone_var="{skintone}"):
+    """Generate contextual wound description with grammar formatting"""
+    stage = _determine_wound_stage_from_organ(organ)
+    injury_type = getattr(organ, 'injury_type', 'generic')
+    
+    description = _get_variant_description(organ, stage, injury_type)
+    return _format_wound_grammar(description)
+
+def _format_wound_grammar(text):
+    """Auto-format capitalization and punctuation while preserving color codes"""
+    # Handles color codes like |r, |g, |n and template vars like {skintone}
+    
+# Longdesc integration hooks (world/medical/wounds/longdesc_hooks.py)
+def append_wounds_to_longdesc(character, location, base_longdesc):
+    """Integrate wound descriptions into character longdesc"""
+    wounds = get_wounds_for_location(character, location)
+    if wounds:
+        wound_desc = _create_compound_wound_description_for_location(wounds, location)
+        return f"{base_longdesc} {wound_desc}"
+    return base_longdesc
 ```
 
-#### Treatment Stage Descriptions
-- **Fresh**: "A deep gash runs across his right thigh, blood still flowing."
-- **Treated**: "His right thigh shows a neatly sutured wound with clean bandaging."
-- **Healing**: "A healing cut marks his right thigh, scabbed but still tender."
-- **Infected**: "His right thigh bears an angry, swollen wound oozing yellowish discharge."
-- **Scarred**: "A pale scar crosses his right thigh, marking old trauma."
-- **Clean**: *(No description - wound healed completely)*
+#### Wound Message System Implementation
+Complete multi-variant wound description files covering all injury types and stages:
 
-#### Wound Complexity & Foreign Objects
-Medical conditions can track embedded foreign objects and surgical complexity for realistic triage scenarios:
+**Message File Structure** (`world/medical/wounds/messages/`):
+- Individual files per injury type: `bullet.py`, `stab.py`, `cut.py`, `blunt.py`, `burn.py`, etc.
+- 20+ description variants per wound stage for narrative variety
+- Template variable support: `{skintone}`, `{location}`, medical colors `|r`, `|g`, `|n`
 
-**Embedded Objects**:
-- Bullets lodged in tissue requiring surgical removal
-- Through-and-through wounds with clean trajectories  
-- Glass shards, shrapnel, or blade fragments embedded in flesh
-- Knives/blades stabilized in place to prevent fatal bleeding
-
-**Surgical Complexity Levels**:
-- **Low**: Field-treatable wounds, simple foreign object removal
-- **Moderate**: Requires medical facility, embedded objects in muscle
-- **High**: Complex trajectories, multiple fragments, imaging required
-- **Critical**: Near vital organs, specialist surgeon required
-
-**Triage Implications**:
-- Field medics can stabilize but not fully treat complex wounds
-- Embedded objects may require careful surgical extraction
-- Some objects must remain in place until proper surgery available
-- Treatment descriptions reflect wound complexity and intervention level
-
-**Example Conditions**:
+**Grammar Formatting System**:
 ```python
-# Through-and-through bullet wound (field treatable)
-MedicalCondition("gunshot", "arm", "moderate", foreign_object=None, exit_wound=True)
-
-# Embedded bullet requiring surgery  
-MedicalCondition("gunshot", "chest", "severe", foreign_object="9mm bullet", 
-                embedded=True, surgical_complexity="critical")
-
-# Stabilized blade (do not remove)
-MedicalCondition("stab_wound", "abdomen", "critical", foreign_object="knife blade",
-                stabilized=True, notes="DO NOT REMOVE - may be blocking major bleeding")
+def _format_wound_grammar(text):
+    """Intelligent grammar formatting preserving color codes and variables"""
+    # Capitalizes first actual letter while preserving |r color codes
+    # Ensures single period ending while avoiding double periods
+    # Handles template variables like {skintone} correctly
 ```
 
-*Note: Wound descriptions integrate seamlessly with existing three-layer anatomy system*
+**Multiple Wound Handling**:
+- Locations with longdesc: Wound descriptions append seamlessly
+- Locations without longdesc: Standalone descriptions using wound types
+- Smart conjunction formatting: "A cut and a bullet wound mark his arm"
+- Prevents redundancy while maintaining natural language flow
+
+#### Character Integration Points
+```python
+# Character longdesc integration (typeclasses/characters.py)
+def _get_visible_body_descriptions(self):
+    """Generate dynamic body descriptions including wounds"""
+    descriptions = {}
+    for location in self.anatomy.locations:
+        base_desc = self.db.longdesc.get(location, "")
+        wound_desc = append_wounds_to_longdesc(self, location, base_desc)
+        if wound_desc != base_desc:  # Only include if wounds present
+            descriptions[location] = wound_desc
+    return descriptions
+
+# Clothing concealment support
+def check_wound_visibility(character, location):
+    """Check if wounds are concealed by clothing"""
+    worn_items = character.get_worn_items_for_location(location)
+    coverage = calculate_coverage_percentage(worn_items, location)
+    return coverage < 90  # Wounds visible if <90% coverage
+```
+
+#### Future-Proof Architecture Features
+- **Extensible State Tracking**: Organ-level `wound_stage` ready for medical system expansion
+- **Treatment Integration**: `apply_treatment()` and `advance_healing_stage()` methods prepared
+- **Time-Based Healing**: `wound_timestamp` tracking for temporal healing mechanics  
+- **Dynamic Anatomy Support**: Flexible location handling for any anatomy configuration
+- **Template System**: Variable substitution ready for expanded customization
+
+#### Production Ready Features
+✅ **Complete Message Coverage**: All injury types with full variant descriptions  
+✅ **Grammar System**: Automatic formatting with color code preservation  
+✅ **Multiple Wound Support**: Intelligent handling of complex wound combinations  
+✅ **Longdesc Integration**: Seamless character description enhancement  
+✅ **Clothing Interaction**: Concealment mechanics for realistic visibility  
+✅ **State Persistence**: Organ-level tracking survives server restarts  
+✅ **Debug Support**: External testing scripts validate all functionality
+
+*Note: Phase 2.4 wound description system completed with comprehensive longdesc integration, multi-variant messaging, and future-proof organ state tracking architecture*
 
 ### Phase 2.5: Extended Consumption Methods - 🔲 PLANNED
 - [ ] **Additional consumption commands**: `inhale`, `smoke`, `huff` with aliasing
