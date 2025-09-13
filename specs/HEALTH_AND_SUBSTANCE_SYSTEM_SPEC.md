@@ -1126,7 +1126,7 @@ character.db.medical_state = {
 
 ### Phase 2: Medical Tools & Consumption Method Commands - ✅ COMPLETED
 - ✅ **Medical item classes**: Full item management system with usage tracking
-- ✅ **Consumption method commands implemented**: `inject`, `apply`, `bandage`, `eat`, `drink` 
+- ✅ **Consumption method commands implemented**: `inject`, `apply`, `bandage`, `eat`, `drink`, `inhale`, `smoke`
 - ✅ **Self-administration & third-party administration**: Complete targeting and consent mechanics
 - ✅ **Medical item management system**: Item discovery, validation, and usage tracking
 - ✅ **G.R.I.M.-based treatment success/failure**: Medical effectiveness calculations implemented
@@ -1138,6 +1138,9 @@ character.db.medical_state = {
 - ✅ `apply <item> [to target]` - Topical treatments with natural language syntax
 - ✅ `bandage <body_part> with <item>` - Advanced bandaging with body location targeting  
 - ✅ `eat <item>` - Oral consumption of solid substances
+- ✅ `drink <item>` - Liquid consumption system
+- ✅ `inhale <item>` - Inhalation of gases, vapors, oxygen, anesthetic substances
+- ✅ `smoke <item>` - Smoking medicinal herbs, cigarettes, dried medicines
 - ✅ `drink <item>` - Liquid consumption system
 - ✅ `medlist` - List medical items in inventory with status
 - ✅ `inhale/smoke` - **COMPLETE** (Phase 2.5 - Consumption System Complete)
@@ -1513,11 +1516,13 @@ def check_wound_visibility(character, location):
 
 *Note: Phase 2.4 wound description system completed with comprehensive longdesc integration, multi-variant messaging, and future-proof organ state tracking architecture*
 
-### Phase 2.5: Extended Consumption Methods - 🔲 PLANNED
-- [ ] **Additional consumption commands**: `inhale`, `smoke`, `huff` with aliasing
-- [ ] **Inhalation mechanics**: Respiratory delivery systems for substances  
-- [ ] **Combustion consumption**: Smoking/burning substance delivery
-- [ ] **Advanced substance interactions**: Multi-method delivery systems
+### Phase 2.5: Extended Consumption Methods - ✅ COMPLETED (September 2025)
+- ✅ **Additional consumption commands**: `inhale`, `smoke`, `huff` with full aliasing implemented
+- ✅ **Inhalation mechanics**: Respiratory delivery systems for gases, vapors, oxygen
+- ✅ **Combustion consumption**: Smoking/burning substance delivery for herbs and medicinal plants
+- 🔧 **Advanced substance interactions**: Command framework complete, substance effect refinement ongoing
+
+*Note: All consumption method commands are implemented and functional. Substance effect balancing and advanced interactions are iterative improvements to the solid foundation.*
 
 ### Phase 2.6: Ticker-Based Medical Conditions - 🔲 PLANNED
 Dynamic medical conditions that apply ongoing effects over time using Evennia's native ticker system.
@@ -2147,6 +2152,7 @@ This specification documents a comprehensive medical system architecture providi
 **Implementation Status:**
 - **Phase 1**: ✅ Foundation anatomy and damage system (Completed December 2024)
 - **Phase 2**: ✅ Medical tools and complete consumption interface (Completed September 2025)  
+- **Phase 2.5**: ✅ Extended consumption methods and inhalation mechanics (Completed September 2025)
 - **Phase 3**: 🔮 Advanced features (cybernetics, complex procedures) - Future development
 
 **Key Features Delivered:**
