@@ -17,9 +17,7 @@ from evennia import Command, utils
 from evennia.utils import search
 from evennia.comms.models import ChannelDB
 from world.combat.constants import *
-from world.combat.utils import (
-    apply_damage
-)
+# Note: apply_damage removed - using character.take_damage() for medical system integration
 from world.combat.handler import get_or_create_combat
 
 
@@ -194,10 +192,10 @@ class CmdThrow(Command):
             remaining = getattr(obj.ndb, NDB_COUNTDOWN_REMAINING, 0)
             if remaining is not None and remaining <= 0:
                 self.caller.msg(MSG_THROW_TIMER_EXPIRED)
-                # Apply damage to caller
+                # Apply damage to caller using medical system
                 blast_damage = getattr(obj.db, DB_BLAST_DAMAGE, 10)
-                damage_type = getattr(obj.db, 'damage_type', 'laceration')  # Default to shrapnel
-                apply_damage(self.caller, blast_damage, location="chest", injury_type=damage_type)
+                damage_type = getattr(obj.db, 'damage_type', 'blast')  # Changed to 'blast' for explosive damage
+                self.caller.take_damage(blast_damage, location="chest", injury_type=damage_type)
                 obj.delete()
                 return False
         
@@ -673,7 +671,7 @@ class CmdThrow(Command):
                 total_damage = random.randint(1, 6) + base_damage
                 damage_type = getattr(weapon.db, 'damage_type', 'blunt')  # Get weapon damage type
                 
-                apply_damage(target, total_damage, location="chest", injury_type=damage_type)
+                target.take_damage(total_damage, location="chest", injury_type=damage_type)
                 
                 target.msg(MSG_THROW_WEAPON_HIT.format(weapon=weapon.key, target=target.key))
                 thrower.msg(f"Your {weapon.key} strikes {target.key}!")
@@ -1192,8 +1190,8 @@ class CmdPull(Command):
             if holder:
                 # Explosion in hands - double damage and guaranteed hit
                 holder_damage = blast_damage * 2
-                damage_type = getattr(grenade.db, 'damage_type', 'laceration')  # Get explosive damage type
-                apply_damage(holder, holder_damage, location="chest", injury_type=damage_type)
+                damage_type = getattr(grenade.db, 'damage_type', 'blast')  # Explosive damage type
+                holder.take_damage(holder_damage, location="chest", injury_type=damage_type)
                 holder.msg(f"|rThe {grenade.key} EXPLODES IN YOUR HANDS!|n You take {holder_damage} damage!")
                 
                 # Announce to the room
@@ -1207,8 +1205,8 @@ class CmdPull(Command):
                 for character in proximity_list:
                     if character != holder and hasattr(character, 'msg'):
                         reduced_damage = blast_damage // 2  # Half damage due to body shielding
-                        damage_type = getattr(grenade.db, 'damage_type', 'laceration')
-                        apply_damage(character, reduced_damage, location="chest", injury_type=damage_type)
+                        damage_type = getattr(grenade.db, 'damage_type', 'blast')
+                        character.take_damage(reduced_damage, location="chest", injury_type=damage_type)
                         character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
                         
             else:
@@ -1235,8 +1233,8 @@ class CmdPull(Command):
                         final_damage = int(blast_damage * modifier)
                         
                         if final_damage > 0:
-                            damage_type = getattr(grenade.db, 'damage_type', 'laceration')
-                            apply_damage(character, final_damage, location="chest", injury_type=damage_type)
+                            damage_type = getattr(grenade.db, 'damage_type', 'blast')
+                            character.take_damage(final_damage, location="chest", injury_type=damage_type)
                             character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
                             if character.location:
                                 character.location.msg_contents(
@@ -1675,8 +1673,8 @@ def check_rigged_grenade(character, exit_obj):
             trigger_damage = int(blast_damage * modifier)
             
             if trigger_damage > 0:
-                damage_type = getattr(rigged_grenade.db, 'damage_type', 'laceration')
-                apply_damage(character, trigger_damage, location="chest", injury_type=damage_type)
+                damage_type = getattr(rigged_grenade.db, 'damage_type', 'blast')
+                character.take_damage(trigger_damage, location="chest", injury_type=damage_type)
                 character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
                 if character.location:
                     character.location.msg_contents(
@@ -1692,8 +1690,8 @@ def check_rigged_grenade(character, exit_obj):
                     final_damage = int(blast_damage * modifier)
                     
                     if final_damage > 0:
-                        damage_type = getattr(rigged_grenade.db, 'damage_type', 'laceration')
-                        apply_damage(other_character, final_damage, location="chest", injury_type=damage_type)
+                        damage_type = getattr(rigged_grenade.db, 'damage_type', 'blast')
+                        other_character.take_damage(final_damage, location="chest", injury_type=damage_type)
                         other_character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
                         if other_character.location:
                             other_character.location.msg_contents(
@@ -1874,7 +1872,7 @@ def get_unified_explosion_proximity(grenade):
 def explode_standalone_grenade(grenade):
     """Handle explosion for grenades outside of CmdPull context (like chain reactions)."""
     try:
-        from world.combat.utils import apply_damage
+        # Note: Using character.take_damage() for medical system integration
         
         # Debug: Confirm this function is being called
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
@@ -1921,8 +1919,8 @@ def explode_standalone_grenade(grenade):
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Handling explosion in holder's hands: {holder}")
             # Explosion in hands - double damage and guaranteed hit
             holder_damage = blast_damage * 2
-            damage_type = getattr(grenade.db, 'damage_type', 'laceration')  # Get explosive damage type
-            apply_damage(holder, holder_damage, location="chest", injury_type=damage_type)
+            damage_type = getattr(grenade.db, 'damage_type', 'blast')  # Explosive damage type
+            holder.take_damage(holder_damage, location="chest", injury_type=damage_type)
             holder.msg(f"|rThe {grenade.key} EXPLODES IN YOUR HANDS!|n You take {holder_damage} damage!")
             
             # Announce to the room
@@ -1936,8 +1934,8 @@ def explode_standalone_grenade(grenade):
             for character in proximity_list:
                 if character != holder and hasattr(character, 'msg'):
                     reduced_damage = blast_damage // 2  # Half damage due to body shielding
-                    damage_type = getattr(grenade.db, 'damage_type', 'laceration')
-                    apply_damage(character, reduced_damage, location="chest", injury_type=damage_type)
+                    damage_type = getattr(grenade.db, 'damage_type', 'blast')
+                    character.take_damage(reduced_damage, location="chest", injury_type=damage_type)
                     character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
                     
         else:
@@ -1971,8 +1969,8 @@ def explode_standalone_grenade(grenade):
                     final_damage = int(blast_damage * modifier)
                     
                     if final_damage > 0:
-                        damage_type = getattr(grenade.db, 'damage_type', 'laceration')
-                        apply_damage(character, final_damage, location="chest", injury_type=damage_type)
+                        damage_type = getattr(grenade.db, 'damage_type', 'blast')
+                        character.take_damage(final_damage, location="chest", injury_type=damage_type)
                         character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
                         if character.location:
                             character.location.msg_contents(
@@ -2190,7 +2188,7 @@ def handle_auto_defuse_failure(character, grenade):
 def trigger_auto_defuse_explosion(grenade):
     """Trigger early explosion from failed auto-defuse attempt (reuses manual defuse logic)."""
     # Reuse the explosion logic from manual defuse
-    from world.combat.utils import apply_damage
+    # Note: Using character.take_damage() for medical system integration
     
     try:
         # Check dud chance
@@ -2222,8 +2220,8 @@ def trigger_auto_defuse_explosion(grenade):
                 final_damage = int(blast_damage * modifier)
                 
                 if final_damage > 0:
-                    damage_type = getattr(grenade.db, 'damage_type', 'laceration')
-                    apply_damage(character, final_damage, location="chest", injury_type=damage_type)
+                    damage_type = getattr(grenade.db, 'damage_type', 'blast')
+                    character.take_damage(final_damage, location="chest", injury_type=damage_type)
                     character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
                     if character.location:
                         character.location.msg_contents(
@@ -2671,7 +2669,7 @@ class CmdDefuse(Command):
     def trigger_early_explosion(self, grenade):
         """Trigger early explosion from failed defuse attempt."""
         # Reuse the explosion logic from CmdPull
-        from world.combat.utils import apply_damage
+        # Note: Using character.take_damage() for medical system integration
         
         try:
             # Check dud chance
@@ -2703,8 +2701,8 @@ class CmdDefuse(Command):
                     final_damage = int(blast_damage * modifier)
                     
                     if final_damage > 0:
-                        damage_type = getattr(grenade.db, 'damage_type', 'laceration')
-                        apply_damage(character, final_damage, location="chest", injury_type=damage_type)
+                        damage_type = getattr(grenade.db, 'damage_type', 'blast')
+                        character.take_damage(final_damage, location="chest", injury_type=damage_type)
                         character.msg(MSG_GRENADE_DAMAGE.format(grenade=grenade.key))
                         if character.location:
                             character.location.msg_contents(

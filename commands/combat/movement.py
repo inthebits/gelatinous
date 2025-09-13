@@ -987,18 +987,17 @@ class CmdJump(Command):
                     observer_msg = f"|R{self.caller.key} uses {grappled_victim.key} as a human shield against their own 'heroic' sacrifice!|n"
                     self.caller.location.msg_contents(observer_msg, exclude=[self.caller, grappled_victim])
                     
-                    # Cruel damage distribution
-                    from world.combat.utils import apply_damage
+                    # Cruel damage distribution using medical system
                     victim_alive_before = not grappled_victim.is_dead()
-                    explosive_damage_type = getattr(explosive.db, "damage_type", "laceration")
-                    apply_damage(grappled_victim, blast_damage * 2, location="chest", injury_type=explosive_damage_type)  # Victim takes double damage from shrapnel
+                    explosive_damage_type = getattr(explosive.db, "damage_type", "blast")
+                    grappled_victim.take_damage(blast_damage * 2, location="chest", injury_type=explosive_damage_type)  # Victim takes double damage from shrapnel
                     victim_alive_after = not grappled_victim.is_dead()
                     
                     # Hero damage - currently set to 0 for maximum cruelty (adjustable)
                     hero_damage_multiplier = 0.0  # Change this to increase hero damage if desired
                     hero_damage = int(blast_damage * hero_damage_multiplier)
                     if hero_damage > 0:
-                        apply_damage(self.caller, hero_damage, location="chest", injury_type=explosive_damage_type)
+                        self.caller.take_damage(hero_damage, location="chest", injury_type=explosive_damage_type)
                     
                     # Check if victim died and add guilt messaging
                     if not victim_alive_after and victim_alive_before:
@@ -1008,9 +1007,8 @@ class CmdJump(Command):
                     splattercast.msg(f"JUMP_SACRIFICE_CRUEL: {self.caller.key} used {grappled_victim.key} as blast shield - victim took {blast_damage * 2}, hero took {hero_damage}")
                 else:
                     # Standard heroic sacrifice: hero takes ALL damage, others protected
-                    from world.combat.utils import apply_damage
-                    explosive_damage_type = getattr(explosive.db, "damage_type", "laceration")
-                    apply_damage(self.caller, blast_damage, location="chest", injury_type=explosive_damage_type)
+                    explosive_damage_type = getattr(explosive.db, "damage_type", "blast")
+                    self.caller.take_damage(blast_damage, location="chest", injury_type=explosive_damage_type)
                     splattercast.msg(f"JUMP_SACRIFICE_HEROIC: {self.caller.key} absorbed {blast_damage} damage, protecting all others")
                 
                 # Move caller to explosive's location and inherit ALL its proximity relationships
@@ -1162,23 +1160,21 @@ class CmdJump(Command):
                 grappled_victim.move_to(destination, quiet=True)
                 grappled_victim.msg(f"|r{self.caller.key} drags you off the {self.direction} edge!|n")
                 
-                # Apply bodyshield damage even without sky room
+                # Apply bodyshield damage even without sky room using medical system
                 base_damage = getattr(exit_obj.db, "fall_damage", 8)
                 victim_damage = max(1, int(base_damage * 1.2))  # Victim takes 120% damage
                 grappler_damage = max(1, int(base_damage * 0.3))  # Grappler takes 30% due to bodyshield
                 
-                from world.combat.utils import apply_damage
-                apply_damage(grappled_victim, victim_damage, location="chest", injury_type="blunt")
-                apply_damage(self.caller, grappler_damage, location="chest", injury_type="blunt")
+                grappled_victim.take_damage(victim_damage, location="chest", injury_type="blunt")
+                self.caller.take_damage(grappler_damage, location="chest", injury_type="blunt")
                 
                 self.caller.msg(f"|gYou use {grappled_victim.key} to cushion your fall! You take {grappler_damage} damage while they absorb the impact.|n")
                 grappled_victim.msg(f"|r{self.caller.key} uses you as a bodyshield during the fall! You take {victim_damage} damage!|n")
                 splattercast.msg(f"JUMP_EDGE_BODYSHIELD_DIRECT: {self.caller.key} used {grappled_victim.key} as bodyshield in direct fall - victim took {victim_damage}, grappler took {grappler_damage}")
             else:
-                # Normal fall damage without bodyshield
+                # Normal fall damage without bodyshield using medical system
                 base_damage = getattr(exit_obj.db, "fall_damage", 8)
-                from world.combat.utils import apply_damage
-                apply_damage(self.caller, base_damage, location="chest", injury_type="blunt")
+                self.caller.take_damage(base_damage, location="chest", injury_type="blunt")
                 self.caller.msg(f"|rYou land hard and take {base_damage} damage from the fall!|n")
             
             # Clear combat state if fleeing via edge
@@ -1521,9 +1517,8 @@ class CmdJump(Command):
                 self.caller.move_to(ground_room, quiet=True)
                 del self.caller.ndb.jump_movement_allowed
                 
-                # Apply fall damage
-                from world.combat.utils import apply_damage
-                apply_damage(self.caller, actual_fall_damage, location="chest", injury_type="blunt")
+                # Apply fall damage using medical system
+                self.caller.take_damage(actual_fall_damage, location="chest", injury_type="blunt")
                 
                 # Clear combat state (fell out of combat)
                 handler = getattr(self.caller.ndb, "combat_handler", None)
@@ -1549,8 +1544,7 @@ class CmdJump(Command):
         # For edge descent failure, apply damage but stay in current room
         fall_damage = getattr(exit_obj.db, "fall_damage", 8)  # Default moderate damage
         
-        from world.combat.utils import apply_damage
-        apply_damage(self.caller, fall_damage, location="chest", injury_type="blunt")
+        self.caller.take_damage(fall_damage, location="chest", injury_type="blunt")
         
         # Skip turn due to failed attempt
         setattr(self.caller.ndb, NDB_SKIP_ROUND, True)
