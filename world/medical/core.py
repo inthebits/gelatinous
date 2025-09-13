@@ -521,6 +521,7 @@ class MedicalState:
         Returns:
             bool: True if organ was destroyed
         """
+        print(f"DEBUG: take_organ_damage called on {organ_name} with {damage_amount} {injury_type} damage")
         organ = self.get_organ(organ_name)
         was_destroyed = organ.take_damage(damage_amount, injury_type)
         

@@ -131,6 +131,7 @@ class Character(ObjectParent, DefaultCharacter):
         Returns:
             bool: True if character died from this damage, False otherwise
         """
+        print(f"DEBUG: take_damage called on {self.key} with {amount} {injury_type} damage to {location}")
         if not isinstance(amount, int) or amount <= 0:
             return False
 
