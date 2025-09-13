@@ -258,97 +258,6 @@ class Organ:
         return organ
 
 
-class MedicalCondition:
-    """
-    Represents a medical condition affecting a character.
-    
-    Conditions can affect specific organs, body locations, or the entire character.
-    They track severity, progression, and treatment status.
-    """
-    
-    def __init__(self, condition_type, location=None, severity="minor", **kwargs):
-        """
-        Initialize a medical condition.
-        
-        Args:
-            condition_type (str): Type of condition (bleeding, fracture, infection, etc.)
-            location (str, optional): Body location affected
-            severity (str): Severity level (minor, moderate, severe, critical)
-            **kwargs: Additional condition-specific properties
-        """
-        self.type = condition_type
-        self.location = location
-        self.severity = severity
-        self.treated = False
-        self.created_time = None  # TODO: Add timestamp in full implementation
-        
-        # Store additional properties
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-            
-    def is_bleeding(self):
-        """Returns True if this condition causes bleeding."""
-        return self.type == "bleeding"
-        
-    def get_pain_contribution(self):
-        """
-        Calculate how much pain this condition contributes.
-        
-        Returns:
-            float: Pain points contributed by this condition
-        """
-        # Basic pain mapping - to be expanded with constants
-        pain_map = {
-            "bleeding": {"minor": 2, "moderate": 5, "severe": 10, "critical": 20},
-            "fracture": {"minor": 5, "moderate": 12, "severe": 25, "critical": 40},
-            "infection": {"minor": 3, "moderate": 8, "severe": 15, "critical": 30},
-            "burn": {"minor": 8, "moderate": 15, "severe": 30, "critical": 50}
-        }
-        
-        return pain_map.get(self.type, {}).get(self.severity, 0)
-        
-    def get_blood_loss_rate(self):
-        """
-        Calculate blood loss per round for bleeding conditions.
-        
-        Returns:
-            float: Blood percentage lost per round
-        """
-        if not self.is_bleeding():
-            return 0.0
-            
-        bleeding_rates = {
-            "minor": 1.0,     # 1% per round
-            "moderate": 3.0,  # 3% per round  
-            "severe": 8.0,    # 8% per round
-            "arterial": 15.0  # 15% per round
-        }
-        
-        return bleeding_rates.get(self.severity, 0.0)
-        
-    def to_dict(self):
-        """Serialize condition for persistence."""
-        return {
-            "type": self.type,
-            "location": self.location,
-            "severity": self.severity,
-            "treated": self.treated,
-            "created_time": self.created_time
-        }
-        
-    @classmethod
-    def from_dict(cls, data):
-        """Deserialize condition from persistence."""
-        condition = cls(
-            data["type"],
-            location=data.get("location"),
-            severity=data.get("severity", "minor")
-        )
-        condition.treated = data.get("treated", False)
-        condition.created_time = data.get("created_time")
-        return condition
-
-
 class MedicalState:
     """
     Manages the complete medical state of a character.
@@ -393,7 +302,7 @@ class MedicalState:
         
     def add_condition(self, condition_type, location=None, severity="minor", **kwargs):
         """
-        Add a new medical condition.
+        Add a new medical condition using the ticker-based system.
         
         Args:
             condition_type (str): Type of condition
@@ -404,10 +313,43 @@ class MedicalState:
         Returns:
             MedicalCondition: The created condition
         """
-        condition = MedicalCondition(condition_type, location, severity, **kwargs)
-        self.conditions.append(condition)
+        # Import the new condition creation function
+        from .conditions import create_condition_from_damage
+        
+        # Map condition types to injury types for new system
+        injury_type_map = {
+            "bleeding": "bullet",  # Bleeding usually from trauma
+            "fracture": "blunt",   # Fractures from blunt trauma
+            "burn": "burn",        # Burns
+            "infection": "generic" # Infections (generic for now)
+        }
+        injury_type = injury_type_map.get(condition_type, "bullet")
+        
+        # Convert string severities to numeric damage for new system
+        if isinstance(severity, str):
+            severity_map = {"minor": 3, "moderate": 6, "severe": 12, "critical": 20}
+            numeric_severity = severity_map.get(severity.lower(), 3)
+        else:
+            numeric_severity = severity
+        
+        # Create conditions using new ticker-based system
+        new_conditions = create_condition_from_damage(
+            damage_amount=numeric_severity * 5,  # Scale to match damage amounts
+            injury_type=injury_type,
+            location=location or "chest"
+        )
+        
+        # Add created conditions and start their tickers
+        created_condition = None
+        for condition in new_conditions:
+            self.conditions.append(condition)
+            # Start ticker if character is available
+            if hasattr(self, 'character') and self.character:
+                condition.start_condition(self.character)
+            created_condition = condition  # Return the last created condition
+            
         self._cache_dirty = True
-        return condition
+        return created_condition
         
     def remove_condition(self, condition):
         """Remove a medical condition."""
@@ -701,11 +643,44 @@ class MedicalState:
         for organ_name, organ_dict in organ_data.items():
             medical_state.organs[organ_name] = Organ.from_dict(organ_dict)
             
-        # Restore conditions
+        # Restore conditions - using new ticker-based condition system
         condition_data = data.get("conditions", [])
         for condition_dict in condition_data:
-            condition = MedicalCondition.from_dict(condition_dict)
-            medical_state.conditions.append(condition)
+            # Import the new condition creation function
+            from .conditions import create_condition_from_damage
+            
+            # Handle both old and new condition data formats
+            condition_type = condition_dict.get("type") or condition_dict.get("condition_type", "bleeding")
+            location = condition_dict.get("location")
+            severity = condition_dict.get("severity", "minor")
+            
+            # Convert old string severities to numeric for new system
+            if isinstance(severity, str):
+                severity_map = {"minor": 3, "moderate": 6, "severe": 12, "critical": 20}
+                numeric_severity = severity_map.get(severity.lower(), 3)
+            else:
+                numeric_severity = severity
+            
+            # Create appropriate ticker-based condition
+            injury_type_map = {
+                "bleeding": "bullet",  # Bleeding usually from trauma
+                "fracture": "blunt",   # Fractures from blunt trauma
+                "burn": "burn",        # Burns
+                "infection": "generic" # Infections (generic for now)
+            }
+            injury_type = injury_type_map.get(condition_type, "bullet")
+            
+            # Create conditions using new system
+            new_conditions = create_condition_from_damage(
+                damage_amount=numeric_severity * 5,  # Scale to match damage amounts
+                injury_type=injury_type,
+                location=location or "chest"
+            )
+            
+            # Add created conditions and start their tickers
+            for condition in new_conditions:
+                medical_state.conditions.append(condition)
+                condition.start_condition(character)
             
         # Restore vital signs
         medical_state.blood_level = data.get("blood_level", 100.0)
