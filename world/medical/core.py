@@ -672,44 +672,35 @@ class MedicalState:
         for organ_name, organ_dict in organ_data.items():
             medical_state.organs[organ_name] = Organ.from_dict(organ_dict)
             
-        # Restore conditions - using new ticker-based condition system
+        # Restore conditions - using proper deserialization
         condition_data = data.get("conditions", [])
         for condition_dict in condition_data:
-            # Import the new condition creation function
-            from .conditions import create_condition_from_damage
-            
-            # Handle both old and new condition data formats
-            condition_type = condition_dict.get("type") or condition_dict.get("condition_type", "bleeding")
-            location = condition_dict.get("location")
-            severity = condition_dict.get("severity", "minor")
-            
-            # Convert old string severities to numeric for new system
-            if isinstance(severity, str):
-                severity_map = {"minor": 3, "moderate": 6, "severe": 12, "critical": 20}
-                numeric_severity = severity_map.get(severity.lower(), 3)
-            else:
-                numeric_severity = severity
-            
-            # Create appropriate ticker-based condition
-            injury_type_map = {
-                "bleeding": "bullet",  # Bleeding usually from trauma
-                "fracture": "blunt",   # Fractures from blunt trauma
-                "burn": "burn",        # Burns
-                "infection": "generic" # Infections (generic for now)
-            }
-            injury_type = injury_type_map.get(condition_type, "bullet")
-            
-            # Create conditions using new system
-            new_conditions = create_condition_from_damage(
-                damage_amount=numeric_severity * 5,  # Scale to match damage amounts
-                injury_type=injury_type,
-                location=location or "chest"
-            )
-            
-            # Add created conditions and start their tickers
-            for condition in new_conditions:
+            try:
+                # Import condition classes
+                from .conditions import MedicalCondition, BleedingCondition, PainCondition, InfectionCondition
+                
+                # Get condition type
+                condition_type = condition_dict.get("condition_type", "minor_bleeding")
+                
+                # Create appropriate condition using its from_dict method
+                if condition_type == "minor_bleeding":
+                    condition = BleedingCondition.from_dict(condition_dict)
+                elif condition_type == "pain":
+                    condition = PainCondition.from_dict(condition_dict) 
+                elif condition_type == "infection":
+                    condition = InfectionCondition.from_dict(condition_dict)
+                else:
+                    # Fallback to base class
+                    condition = MedicalCondition.from_dict(condition_dict)
+                
                 medical_state.conditions.append(condition)
-                condition.start_condition(character)
+                # Re-start condition ticker if character is available
+                if character:
+                    condition.start_condition(character)
+                    
+            except Exception as e:
+                # If condition restoration fails, skip it
+                pass
             
         # Restore vital signs
         medical_state.blood_level = data.get("blood_level", 100.0)

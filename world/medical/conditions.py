@@ -75,6 +75,32 @@ class MedicalCondition:
         """Alias for condition_type for backward compatibility."""
         return self.condition_type
         
+    def to_dict(self):
+        """Serialize condition for persistence."""
+        return {
+            "condition_type": self.condition_type,
+            "severity": self.severity,
+            "max_severity": self.max_severity,
+            "location": self.location,
+            "tick_interval": self.tick_interval,
+            "requires_ticker": self.requires_ticker,
+            "treated": self.treated
+        }
+        
+    @classmethod
+    def from_dict(cls, data):
+        """Deserialize condition from persistence."""
+        condition = cls(
+            data.get("condition_type", "unknown"),
+            data.get("severity", 1),
+            data.get("location")
+        )
+        condition.max_severity = data.get("max_severity", condition.severity)
+        condition.tick_interval = data.get("tick_interval", 60)
+        condition.requires_ticker = data.get("requires_ticker", True)
+        condition.treated = data.get("treated", False)
+        return condition
+        
     def end_condition(self, character):
         """Clean up when condition ends."""
         # No ticker cleanup needed - script handles lifecycle
@@ -156,6 +182,26 @@ class BleedingCondition(MedicalCondition):
         
         # Reduce blood loss rate for treated bleeding
         self.blood_loss_rate = max(1, int(self.blood_loss_rate * 0.3))
+        
+    def to_dict(self):
+        """Serialize bleeding condition for persistence."""
+        data = super().to_dict()
+        data["blood_loss_rate"] = self.blood_loss_rate
+        return data
+        
+    @classmethod
+    def from_dict(cls, data):
+        """Deserialize bleeding condition from persistence."""
+        condition = cls(
+            data.get("severity", 1),
+            data.get("location")
+        )
+        condition.max_severity = data.get("max_severity", condition.severity)
+        condition.tick_interval = data.get("tick_interval", 60)
+        condition.requires_ticker = data.get("requires_ticker", True)
+        condition.treated = data.get("treated", False)
+        condition.blood_loss_rate = data.get("blood_loss_rate", condition.blood_loss_rate)
+        return condition
 
 
 class PainCondition(MedicalCondition):
