@@ -23,7 +23,7 @@ def _condition_tick_callback(condition_id):
     from evennia.comms.models import ChannelDB
     splattercast = ChannelDB.objects.filter(db_key="splattercast").first()
     
-    splattercast.msg(f"MEDICAL_TICK: Callback called with condition_id: {condition_id}")
+    splattercast.msg(f"MEDICAL_TICK: Callback executed with condition_id: {condition_id}")
     
     if condition_id not in _ACTIVE_CONDITIONS:
         # Condition was removed, ticker should be stopped
