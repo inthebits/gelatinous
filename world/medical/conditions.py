@@ -235,15 +235,6 @@ def create_condition_from_damage(damage_amount, damage_type, location=None):
     Returns:
         list: List of MedicalCondition instances
     """
-    # Quick debug via splattercast to verify function is called
-    try:
-        from evennia.comms.models import ChannelDB
-        from world.combat.constants import SPLATTERCAST_CHANNEL
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        splattercast.msg(f"CREATE_CONDITION_DEBUG: Called with damage={damage_amount}, type={damage_type}, location={location}")
-    except:
-        pass
-        
     conditions = []
     
     # Always create bleeding for significant damage

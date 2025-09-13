@@ -550,28 +550,13 @@ class MedicalState:
             list: List of medical conditions to add
         """
         try:
-            from evennia.comms.models import ChannelDB
-            from world.combat.constants import SPLATTERCAST_CHANNEL
-            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-            splattercast.msg(f"CREATE_CONDITIONS_DEBUG: Called with damage={damage_amount}, type={injury_type}, location={location}")
-        except:
-            pass
-            
-        try:
             from .conditions import create_condition_from_damage
             conditions = create_condition_from_damage(damage_amount, injury_type, location)
             return conditions
         except ImportError as e:
-            try:
-                splattercast.msg(f"CREATE_CONDITIONS_ERROR: ImportError - {e}")
-            except:
-                pass
+            # Fallback if conditions module not available
             return []
         except Exception as e:
-            try:
-                splattercast.msg(f"CREATE_CONDITIONS_ERROR: Exception - {e}")
-            except:
-                pass
             return []
             
     def add_condition(self, condition):

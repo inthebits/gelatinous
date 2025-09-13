@@ -90,6 +90,36 @@ TOOL_EFFECTIVENESS_MODIFIERS = {
     "placeholder": "to_be_defined_in_phase_2"
 }
 
+# Medical condition progression constants
+BLOOD_LOSS_PER_SEVERITY = {
+    1: 0.5,   # Minor bleeding - 0.5% blood loss per tick
+    2: 1.0,   # Light bleeding - 1% blood loss per tick  
+    3: 1.5,   # Moderate bleeding - 1.5% blood loss per tick
+    4: 2.0,   # Heavy bleeding - 2% blood loss per tick
+    5: 3.0,   # Severe bleeding - 3% blood loss per tick
+    6: 4.0,   # Critical bleeding - 4% blood loss per tick
+    7: 5.0,   # Arterial bleeding - 5% blood loss per tick
+    8: 6.0,   # Massive bleeding - 6% blood loss per tick
+    9: 8.0,   # Catastrophic bleeding - 8% blood loss per tick
+    10: 10.0  # Fatal bleeding - 10% blood loss per tick
+}
+
+# Treatment effectiveness by quality
+HEALING_EFFECTIVENESS = {
+    "poor": 0.3,      # Makeshift treatment
+    "average": 0.5,   # Basic medical care
+    "good": 0.7,      # Competent treatment
+    "excellent": 0.9  # Expert medical care
+}
+
+# Injury severity multipliers (for future use)
+INJURY_SEVERITY_MULTIPLIERS = {
+    "minor": 1.0,
+    "moderate": 1.5, 
+    "severe": 2.0,
+    "critical": 3.0
+}
+
 # ===================================================================
 # ORGAN SYSTEM CONSTANTS
 # ===================================================================
