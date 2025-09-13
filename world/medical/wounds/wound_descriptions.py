@@ -82,7 +82,57 @@ def get_wound_description(injury_type, location, severity="Moderate", stage="fre
     # Format with parameters
     formatted_description = description_data.format(**format_vars)
     
+    # Apply grammar formatting (capitalization and punctuation)
+    formatted_description = _format_wound_grammar(formatted_description)
+    
     return formatted_description
+
+
+def _format_wound_grammar(description):
+    """
+    Apply proper grammar formatting to wound descriptions.
+    
+    Handles capitalization and punctuation while preserving color codes.
+    
+    Args:
+        description (str): Raw wound description with possible color codes
+        
+    Returns:
+        str: Grammatically formatted description
+    """
+    if not description:
+        return description
+    
+    # Find the first actual letter (skip color codes)
+    import re
+    
+    # Pattern to match color codes like |R, {skintone}, etc.
+    color_pattern = r'(\|[a-zA-Z0-9]|\{[^}]+\})'
+    
+    # Split into tokens (color codes and text)
+    tokens = re.split(color_pattern, description)
+    
+    # Find first token that starts with a letter and capitalize it
+    capitalized = False
+    for i, token in enumerate(tokens):
+        if not capitalized and token and not re.match(color_pattern, token):
+            # This is regular text, capitalize first letter
+            if token[0].isalpha():
+                tokens[i] = token[0].upper() + token[1:]
+                capitalized = True
+                break
+    
+    # Rejoin the tokens
+    result = ''.join(tokens)
+    
+    # Add period at the end if not already there, but before |n
+    if result.endswith('|n'):
+        if not result.endswith('.|n'):
+            result = result[:-2] + '.|n'
+    elif not result.endswith('.'):
+        result += '.'
+    
+    return result
 
 
 def get_character_wounds(character):

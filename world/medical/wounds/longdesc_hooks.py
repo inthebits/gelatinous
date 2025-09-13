@@ -50,9 +50,36 @@ def append_wounds_to_longdesc(original_desc, character, location, looker=None):
     
     # Append to original description
     if len(wound_descriptions) == 1:
-        return f"{original_desc} {wound_descriptions[0]}."
+        # Single wound - remove the period and color reset, we'll add our own
+        clean_wound = wound_descriptions[0]
+        if clean_wound.endswith('.|n'):
+            clean_wound = clean_wound[:-3]  # Remove .|n
+        elif clean_wound.endswith('.'):
+            clean_wound = clean_wound[:-1]  # Remove just .
+        return f"{original_desc} {clean_wound}."
     elif len(wound_descriptions) == 2:
-        return f"{original_desc} {wound_descriptions[0]} and {wound_descriptions[1]}."
+        # Two wounds - format with proper conjunction
+        clean_wound1 = wound_descriptions[0]
+        clean_wound2 = wound_descriptions[1]
+        
+        # Clean both wounds
+        if clean_wound1.endswith('.|n'):
+            clean_wound1 = clean_wound1[:-3]
+        elif clean_wound1.endswith('.'):
+            clean_wound1 = clean_wound1[:-1]
+            
+        if clean_wound2.endswith('.|n'):
+            clean_wound2 = clean_wound2[:-3]
+        elif clean_wound2.endswith('.'):
+            clean_wound2 = clean_wound2[:-1]
+        
+        # Check if we need color reset at the end
+        has_color_reset = wound_descriptions[0].endswith('|n') or wound_descriptions[1].endswith('|n')
+        
+        if has_color_reset:
+            return f"{original_desc} {clean_wound1} and {clean_wound2}.|n"
+        else:
+            return f"{original_desc} {clean_wound1} and {clean_wound2}."
     
     return original_desc
 
@@ -149,13 +176,21 @@ def _prioritize_wounds_for_display(wounds):
 
 def _create_compound_wound_description_for_location(location, wounds, character=None):
     """Create description for multiple wounds at a location without longdesc."""
-    from .constants import get_location_display_name, INJURY_SEVERITY_MAP
+    from .constants import get_location_display_name
     
-    primary_wound = max(wounds, key=lambda w: ["Light", "Moderate", "Severe", "Critical"].index(w['severity']))
-    
-    fresh_count = len([w for w in wounds if w['stage'] == 'fresh'])
     location_display = get_location_display_name(location, character)
-    severity_display = INJURY_SEVERITY_MAP.get(primary_wound['severity'], primary_wound['severity'].lower())
+    fresh_count = len([w for w in wounds if w['stage'] == 'fresh'])
+    
+    # Get the most common or most severe wound type
+    wound_types = {}
+    for wound in wounds:
+        injury_type = wound['injury_type']
+        if injury_type not in wound_types:
+            wound_types[injury_type] = 0
+        wound_types[injury_type] += 1
+    
+    # Use the most common wound type for the description
+    primary_wound_type = max(wound_types, key=wound_types.get)
     
     # Determine if we need skintone coloring
     skintone_color = ""
@@ -170,8 +205,13 @@ def _create_compound_wound_description_for_location(location, wounds, character=
                 skintone_color = ""
     
     if fresh_count > 1:
-        return f"|RMultiple {severity_display} fresh wounds on the {location_display}|n"
+        desc = f"|RMultiple fresh {primary_wound_type} wounds on the {location_display}|n"
     elif fresh_count == 1:
-        return f"|RA {severity_display} fresh wound|n among other injuries on the {location_display}"
+        desc = f"|RA fresh {primary_wound_type} wound|n among other injuries on the {location_display}"
     else:
-        return f"{skintone_color}Multiple {severity_display} wounds on the {location_display}|n"
+        # All wounds are healed - use generic description
+        desc = f"{skintone_color}Multiple old scars on the {location_display}|n"
+    
+    # Apply grammar formatting
+    from .wound_descriptions import _format_wound_grammar
+    return _format_wound_grammar(desc)
