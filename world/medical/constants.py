@@ -200,7 +200,7 @@ ORGANS = {
         "eating_contribution": "major", "disfiguring_if_lost": True
     },
     "jaw": {
-        "container": "head", "max_hp": 10, "hit_weight": "very_rare",
+        "container": "head", "max_hp": 10, "hit_weight": "rare",
         "capacities": ["talking", "eating"], "talking_contribution": "major",
         "eating_contribution": "moderate", "disfiguring_if_lost": True, "can_scar": False
     },
