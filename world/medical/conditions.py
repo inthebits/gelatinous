@@ -146,6 +146,11 @@ class MedicalCondition:
         # Unique identifier for ticker system
         self.ticker_id = None
         
+    @property
+    def type(self):
+        """Backward compatibility property for condition.type access."""
+        return self.condition_type
+        
     def start_condition(self, character):
         """Begin ticking condition on character if required."""
         if not self.requires_ticker:
@@ -196,6 +201,66 @@ class MedicalCondition:
     def get_effect_message(self):
         """Get message describing current effect. Override in subclasses."""
         return f"Your {self.condition_type} condition continues."
+        
+    def get_pain_contribution(self):
+        """
+        Calculate how much pain this condition contributes.
+        
+        Returns:
+            float: Pain points contributed by this condition
+        """
+        # Basic pain mapping - to be expanded with constants
+        pain_map = {
+            "bleeding": {"minor": 2, "moderate": 5, "severe": 10, "critical": 20},
+            "burning": {"minor": 8, "moderate": 15, "severe": 30, "critical": 50},
+            "acid_exposure": {"minor": 6, "moderate": 12, "severe": 25, "critical": 45},
+            "fracture": {"minor": 5, "moderate": 12, "severe": 25, "critical": 40},
+            "infection": {"minor": 3, "moderate": 8, "severe": 15, "critical": 30}
+        }
+        
+        # Map numeric severity to pain levels
+        if isinstance(self.severity, (int, float)):
+            if self.severity >= 20:
+                severity_level = "critical"
+            elif self.severity >= 10:
+                severity_level = "severe"
+            elif self.severity >= 5:
+                severity_level = "moderate"
+            else:
+                severity_level = "minor"
+        else:
+            # String severity
+            severity_level = str(self.severity).lower()
+        
+        return pain_map.get(self.condition_type, {}).get(severity_level, 0)
+        
+    def get_blood_loss_rate(self):
+        """
+        Calculate blood loss per round for bleeding conditions.
+        
+        Returns:
+            float: Blood percentage lost per round
+        """
+        if self.condition_type != "bleeding":
+            return 0.0
+            
+        # Map severity to blood loss rates
+        if isinstance(self.severity, (int, float)):
+            # Numeric severity - direct percentage
+            return max(0.0, float(self.severity) * 0.5)  # 0.5% per severity point
+        else:
+            # String severity levels
+            bleeding_rates = {
+                "minor": 1.0,
+                "moderate": 3.0,
+                "severe": 6.0,
+                "critical": 12.0
+            }
+            return bleeding_rates.get(str(self.severity).lower(), 0.0)
+            
+    def is_bleeding(self):
+        """Returns True if this condition causes bleeding."""
+        return self.condition_type == "bleeding"
             
     def stop_condition(self):
         """Alias for end_condition for compatibility."""
