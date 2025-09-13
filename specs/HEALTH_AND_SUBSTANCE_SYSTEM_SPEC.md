@@ -2,7 +2,7 @@
 
 ## Implementation Status
 
-### ✅ COMPLETED (Phase 1, 2 & 3)
+### ✅ COMPLETED (Phase 1, 2, 2.5 & 3)
 **Medical Foundation Complete:**
 - Complete anatomical damage system (15 body regions + 6 organs)
 - Medical conditions with severity tracking (bleeding, fractures, pain, etc.)
@@ -11,7 +11,7 @@
 
 **Medical Tools & Consumption Complete:**
 - 7 medical item prototypes using Evennia's attribute-based system
-- Natural language consumption commands (`inject`, `apply`, `bandage`, `eat`, `drink`)
+- Natural language consumption commands (`inject`, `apply`, `bandage`, `eat`, `drink`, `inhale`, `smoke`)
 - Medical inventory management commands (`medlist`, `mediteminfo`, `refillmed`)
 - Skill-based treatment success using G.R.I.M. stats (Intellect-based medical skill)
 
@@ -111,9 +111,9 @@ The medical system now features **hospital-grade anatomical accuracy** with **sk
 - Version migration between game updates
 
 ### 🎯 NEXT PRIORITIES: ENHANCED MEDICAL MECHANICS
-**Phase 2.5 - Complete Consumption System (Immediate Priority):**
-- Missing consumption commands: `inhale/smoke` for inhalers, gases, medicinal herbs
-- Completes the natural language consumption method system
+**Phase 2.5 - Complete Consumption System (✅ COMPLETED September 2025):**
+- ✅ Complete consumption commands: `inhale/smoke` for inhalers, gases, medicinal herbs
+- ✅ Natural language consumption method system complete
 
 **Phase 3 - Advanced Features (Future Development):**
 - Limb replacement mechanics (prosthetics, cybernetics) 
@@ -1560,7 +1560,7 @@ MEDICAL_DESCRIPTIONS = {
 
 ---
 
-*This specification reflects the current implemented state (Phase 1, 2 & 3 complete) with pure medical system architecture.*
+*This specification reflects the current implemented state (Phase 1, 2, 2.5 & 3 complete) with pure medical system architecture and complete consumption method interface.*
 - **Shared Logic**: Common handler/utility classes for substance effects and medical calculations
 - **Aliases**: Evennia's native command-level alias system (e.g., `inhale`/`huff` aliases)
 - **Best Practices**: Follows Evennia command architecture patterns for maintainability
@@ -1639,7 +1639,7 @@ character.db.medical_state = {
 - ✅ `eat <item>` - Oral consumption of solid substances
 - ✅ `drink <item>` - Liquid consumption system
 - ✅ `medlist` - List medical items in inventory with status
-- 🔲 `inhale/smoke` - **NEXT PRIORITY** (Phase 2.5 - Complete Consumption System)
+- ✅ `inhale/smoke` - **COMPLETE** (Phase 2.5 - Consumption System Complete)
 
 #### Medical Item Integration
 - ✅ **Item type detection**: Automatic medical item classification
@@ -1648,6 +1648,30 @@ character.db.medical_state = {
 - ✅ **Success calculation**: `(intellect * 0.75) + (motorics * 0.25)` formula implemented
 
 *Note: Phase 2 consumption method system provides foundation for broader drug/substance system expansion*
+
+### Phase 2.5: Complete Consumption System - ✅ COMPLETED (September 2025)
+The final consumption method commands completing the natural language medical interface.
+
+#### Implemented Inhalation Commands
+- ✅ `inhale <item>` - Inhalation of gases, vapors, oxygen, anesthetic gases
+- ✅ `smoke <item>` - Smoking medicinal herbs, cigarettes, dried medicines  
+- ✅ Natural language syntax with help targeting: `help <target> inhale <item>`
+- ✅ Consciousness requirements: Both commands require conscious targets
+- ✅ Medical type validation: Items must have appropriate medical_type attributes
+
+#### New Medical Types Supported
+- ✅ **Inhalation types**: `oxygen`, `anesthetic`, `inhaler`, `gas`, `vapor`
+- ✅ **Smoking types**: `herb`, `cigarette`, `medicinal_plant`, `dried_medicine`
+- ✅ **Medical effects**: Respiratory treatment, pain relief, consciousness effects
+- ✅ **Prototype examples**: Oxygen tank, stimpak inhaler, medicinal herbs, pain relief cigarettes
+
+#### Command Integration
+- ✅ Added to default command set with proper aliases (`huff`, `breathe`, `light`, `burn`)
+- ✅ Full integration with existing medical utility functions
+- ✅ Consistent syntax and behavior with other consumption commands
+- ✅ Medical state persistence and treatment effect application
+
+**Foundation Complete**: All planned consumption methods implemented - comprehensive natural language medical interface achieved.
 
 ### Phase 2.3: Precision Targeting System - ✅ COMPLETED (December 2024)
 Advanced two-stage precision targeting system replacing simple weighted random hit location selection with skill-based anatomical targeting.

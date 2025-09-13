@@ -667,6 +667,72 @@ def apply_medical_effects(item, user, target, **kwargs):
         
         return "Antiseptic applied. Infections cleared and wounds sterilized."
     
+    elif medical_type == "oxygen":
+        # Oxygen therapy - improves consciousness and breathing
+        medical_state.consciousness = min(100, medical_state.consciousness + 15)
+        breathing_conditions = [c for c in medical_state.conditions 
+                               if c.type in ["breathing_difficulty", "suffocation"]]
+        for condition in breathing_conditions[:2]:
+            condition.severity = max(0, condition.severity - 2)
+            if condition.severity <= 0:
+                medical_state.conditions.remove(condition)
+        
+        return "Oxygen administered. Breathing improved and consciousness stabilized."
+    
+    elif medical_type == "anesthetic":
+        # Anesthetic gas - reduces pain and consciousness
+        medical_state.pain_level = max(0, medical_state.pain_level - 25)
+        medical_state.consciousness = max(0, medical_state.consciousness - 10)
+        
+        return "Anesthetic inhaled. Pain reduced but consciousness lowered."
+    
+    elif medical_type == "inhaler":
+        # Medical inhaler - targeted respiratory treatment
+        breathing_conditions = [c for c in medical_state.conditions 
+                               if c.type in ["breathing_difficulty", "lung_damage"]]
+        for condition in breathing_conditions[:1]:
+            condition.severity = max(0, condition.severity - 3)
+            if condition.severity <= 0:
+                medical_state.conditions.remove(condition)
+        
+        return "Inhaler used. Respiratory function improved."
+    
+    elif medical_type == "gas":
+        # Medical gas treatment - various effects
+        medical_state.consciousness = min(100, medical_state.consciousness + 5)
+        return "Medical gas inhaled. Minor therapeutic effects applied."
+    
+    elif medical_type == "vapor":
+        # Vaporized medicine - fast absorption
+        medical_state.pain_level = max(0, medical_state.pain_level - 10)
+        medical_state.blood_level = min(100, medical_state.blood_level + 5)
+        
+        return "Vaporized medicine inhaled. Rapid absorption achieved."
+    
+    elif medical_type == "herb":
+        # Medicinal herb - natural pain relief
+        medical_state.pain_level = max(0, medical_state.pain_level - 15)
+        stress_conditions = [c for c in medical_state.conditions 
+                            if c.type in ["stress", "anxiety"]]
+        for condition in stress_conditions[:1]:
+            condition.severity = max(0, condition.severity - 2)
+            if condition.severity <= 0:
+                medical_state.conditions.remove(condition)
+        
+        return "Medicinal herb smoked. Natural pain relief and calming effects."
+    
+    elif medical_type == "cigarette":
+        # Medicinal cigarette - mild therapeutic effects
+        medical_state.pain_level = max(0, medical_state.pain_level - 8)
+        return "Medicinal cigarette smoked. Mild pain relief achieved."
+    
+    elif medical_type in ["medicinal_plant", "dried_medicine"]:
+        # Dried medicinal substances - concentrated effects
+        medical_state.pain_level = max(0, medical_state.pain_level - 12)
+        medical_state.consciousness = min(100, medical_state.consciousness + 3)
+        
+        return "Dried medicine smoked. Concentrated therapeutic effects applied."
+    
     return f"Applied {medical_type.replace('_', ' ')} treatment."
 
 

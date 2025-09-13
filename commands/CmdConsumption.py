@@ -581,3 +581,159 @@ class CmdDrink(ConsumptionCommand):
             # Regular drink
             caller.msg(f"You drank {item.get_display_name(caller)}.")
             item.delete()  # Regular drinks are consumed completely
+
+
+class CmdInhale(ConsumptionCommand):
+    """
+    Inhale gases, vapors, or use inhalers for medical treatment.
+    
+    Usage:
+        inhale <item>
+        help <target> inhale <item>
+        
+    Examples:
+        inhale oxygen tank
+        inhale stimpak vapor
+        help Alice inhale anesthetic gas
+        
+    Inhalation is used for oxygen tanks, inhalers, anesthetic gases, 
+    and vaporized medical substances. Requires conscious target.
+    """
+    
+    key = "inhale"
+    aliases = ["huff", "breathe"]
+    help_category = "Medical"
+    
+    def func(self):
+        """Execute the inhale command."""
+        caller = self.caller
+        
+        # Parse arguments
+        result = self.get_item_and_target(self.args)
+        if result["errors"]:
+            caller.msg(result["errors"][0])
+            return
+            
+        item, target = result["item"], result["target"]
+        is_self = (caller == target)
+        
+        # Check if item can be inhaled
+        inhalable_types = ["oxygen", "anesthetic", "inhaler", "gas", "vapor"]
+        medical_type = get_medical_type(item)
+        if medical_type not in inhalable_types:
+            caller.msg(f"{item.get_display_name(caller)} cannot be inhaled.")
+            return
+            
+        # Check if target is conscious (required for inhalation)
+        if target.is_unconscious():
+            if is_self:
+                caller.msg("You cannot inhale while unconscious.")
+            else:
+                caller.msg(f"{target.get_display_name(caller)} is unconscious and cannot inhale.")
+            return
+            
+        # Check medical requirements
+        errors = self.check_medical_requirements(item, caller, target)
+        if errors:
+            caller.msg(errors[0])
+            return
+            
+        # Execute inhalation
+        if is_self:
+            caller.msg(f"You breathe in {item.get_display_name(caller)} deeply.")
+            caller.location.msg_contents(
+                f"{caller.get_display_name()} inhales {item.get_display_name()}.",
+                exclude=caller
+            )
+        else:
+            caller.msg(f"You help {target.get_display_name(caller)} inhale {item.get_display_name(caller)}.")
+            target.msg(f"{caller.get_display_name(target)} helps you inhale {item.get_display_name(target)}.")
+            caller.location.msg_contents(
+                f"{caller.get_display_name()} helps {target.get_display_name()} inhale {item.get_display_name()}.",
+                exclude=[caller, target]
+            )
+            
+        # Apply treatment effects
+        result_msg = self.execute_treatment(item, caller, target)
+        caller.msg(f"Inhalation result: {result_msg}")
+        
+        if not is_self:
+            target.msg(f"Treatment result: {result_msg}")
+
+
+class CmdSmoke(ConsumptionCommand):
+    """
+    Smoke medicinal herbs, cigarettes, or combustible treatments.
+    
+    Usage:
+        smoke <item>
+        help <target> smoke <item>
+        
+    Examples:
+        smoke medicinal herb
+        smoke pain-relief cigarette
+        help Bob smoke calming herb
+        
+    Smoking is used for dried herbs, medicinal cigarettes, and other
+    combustible medical substances. Creates smoke and may affect others nearby.
+    """
+    
+    key = "smoke"
+    aliases = ["light", "burn"]
+    help_category = "Medical"
+    
+    def func(self):
+        """Execute the smoke command."""
+        caller = self.caller
+        
+        # Parse arguments
+        result = self.get_item_and_target(self.args)
+        if result["errors"]:
+            caller.msg(result["errors"][0])
+            return
+            
+        item, target = result["item"], result["target"]
+        is_self = (caller == target)
+        
+        # Check if item can be smoked
+        smokable_types = ["herb", "cigarette", "medicinal_plant", "dried_medicine"]
+        medical_type = get_medical_type(item)
+        if medical_type not in smokable_types:
+            caller.msg(f"{item.get_display_name(caller)} cannot be smoked.")
+            return
+            
+        # Check if target is conscious (required for smoking)
+        if target.is_unconscious():
+            if is_self:
+                caller.msg("You cannot smoke while unconscious.")
+            else:
+                caller.msg(f"{target.get_display_name(caller)} is unconscious and cannot smoke.")
+            return
+            
+        # Check medical requirements
+        errors = self.check_medical_requirements(item, caller, target)
+        if errors:
+            caller.msg(errors[0])
+            return
+            
+        # Execute smoking
+        if is_self:
+            caller.msg(f"You light and smoke {item.get_display_name(caller)}, inhaling the medicinal smoke.")
+            caller.location.msg_contents(
+                f"{caller.get_display_name()} lights and smokes {item.get_display_name()}, creating aromatic smoke.",
+                exclude=caller
+            )
+        else:
+            caller.msg(f"You help {target.get_display_name(caller)} smoke {item.get_display_name(caller)}.")
+            target.msg(f"{caller.get_display_name(target)} helps you smoke {item.get_display_name(target)}.")
+            caller.location.msg_contents(
+                f"{caller.get_display_name()} helps {target.get_display_name()} smoke {item.get_display_name()}.",
+                exclude=[caller, target]
+            )
+            
+        # Apply treatment effects
+        result_msg = self.execute_treatment(item, caller, target)
+        caller.msg(f"Smoking result: {result_msg}")
+        
+        if not is_self:
+            target.msg(f"Treatment result: {result_msg}")

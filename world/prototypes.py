@@ -900,3 +900,105 @@ ANTISEPTIC = {
         })
     ],
 }
+
+# ===================================================================
+# PHASE 2.5: INHALATION & SMOKING MEDICAL ITEMS
+# ===================================================================
+
+OXYGEN_TANK = {
+    "key": "oxygen tank",
+    "typeclass": "typeclasses.items.Item",
+    "aliases": ["oxygen", "o2", "tank"],
+    "desc": "Portable oxygen tank with breathing mask. Essential for respiratory emergencies and consciousness recovery.",
+    "tags": [("medical_item", "item_type")],
+    "attrs": [
+        ("medical_type", "oxygen"),
+        ("uses_left", 10),
+        ("max_uses", 10),
+        ("stat_requirement", 0),
+        ("application_time", 1),
+        ("effectiveness", {
+            "consciousness": 9,      # Excellent consciousness boost
+            "breathing_difficulty": 8, # Great respiratory help
+            "suffocation": 10,       # Perfect suffocation treatment
+        })
+    ],
+}
+
+STIMPAK_INHALER = {
+    "key": "stimpak inhaler",
+    "typeclass": "typeclasses.items.Item", 
+    "aliases": ["inhaler", "stimpak vapor", "medical inhaler"],
+    "desc": "Pressurized inhaler containing vaporized stimpak for rapid respiratory absorption. Single use only.",
+    "tags": [("medical_item", "item_type")],
+    "attrs": [
+        ("medical_type", "vapor"),
+        ("uses_left", 1),
+        ("max_uses", 1),
+        ("stat_requirement", 1),
+        ("application_time", 2),
+        ("effectiveness", {
+            "pain": 7,           # Good pain relief
+            "blood_loss": 6,     # Moderate blood restoration
+            "breathing_difficulty": 5, # Some respiratory help
+        })
+    ],
+}
+
+ANESTHETIC_GAS = {
+    "key": "anesthetic gas",
+    "typeclass": "typeclasses.items.Item",
+    "aliases": ["anesthetic", "knockout gas", "medical gas"],
+    "desc": "Medical anesthetic gas canister. Reduces pain but may cause drowsiness. Use with caution.",
+    "tags": [("medical_item", "item_type")],
+    "attrs": [
+        ("medical_type", "anesthetic"),
+        ("uses_left", 5),
+        ("max_uses", 5),
+        ("stat_requirement", 2),
+        ("application_time", 2),
+        ("effectiveness", {
+            "pain": 9,           # Excellent pain relief
+            "consciousness": -2,  # Reduces consciousness (side effect)
+        })
+    ],
+}
+
+MEDICINAL_HERB = {
+    "key": "medicinal herb",
+    "typeclass": "typeclasses.items.Item",
+    "aliases": ["herb", "healing herb", "dried herb"],
+    "desc": "Dried medicinal herb that can be smoked for natural pain relief and calming effects. Organic treatment option.",
+    "tags": [("medical_item", "item_type")],
+    "attrs": [
+        ("medical_type", "herb"),
+        ("uses_left", 3),
+        ("max_uses", 3),
+        ("stat_requirement", 0),
+        ("application_time", 3),
+        ("effectiveness", {
+            "pain": 6,           # Good natural pain relief
+            "stress": 7,         # Excellent stress relief
+            "anxiety": 6,        # Good anxiety reduction
+        })
+    ],
+}
+
+PAIN_RELIEF_CIGARETTE = {
+    "key": "pain relief cigarette",
+    "typeclass": "typeclasses.items.Item",
+    "aliases": ["med cigarette", "medical cigarette", "pain cigarette"],
+    "desc": "Specially formulated cigarette infused with mild pain-relieving compounds. For medicinal use only.",
+    "tags": [("medical_item", "item_type")],
+    "attrs": [
+        ("medical_type", "cigarette"),
+        ("uses_left", 1),
+        ("max_uses", 1),
+        ("stat_requirement", 0),
+        ("application_time", 4),
+        ("effectiveness", {
+            "pain": 4,           # Mild pain relief
+            "stress": 3,         # Minor stress relief
+        })
+    ],
+}

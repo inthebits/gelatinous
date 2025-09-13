@@ -117,6 +117,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdConsumption.CmdBandage())
         self.add(CmdConsumption.CmdEat())
         self.add(CmdConsumption.CmdDrink())
+        self.add(CmdConsumption.CmdInhale())
+        self.add(CmdConsumption.CmdSmoke())
         
         # Add medical item management commands
         self.add(CmdMedicalItems.CmdListMedItems())
