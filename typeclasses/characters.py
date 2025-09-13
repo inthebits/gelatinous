@@ -197,14 +197,11 @@ class Character(ObjectParent, DefaultCharacter):
         """
         Handle character death from medical injuries.
         
-        Provides death messaging to character and room.
+        Note: Death messaging is handled by the combat system to avoid duplicates.
+        This method only handles the death state transition.
         """
-        self.msg("|RYou have died from your injuries!|n")
-        if self.location:
-            self.location.msg_contents(
-                f"|R{self.key} dies from their injuries!|n",
-                exclude=self
-            )
+        # No death messages here - combat system handles death announcements
+        # to avoid duplicate "Character has died" messages
         
         # Optional: Debug broadcast for tracking
         try:

@@ -1064,12 +1064,8 @@ def handle_character_death(character, death=False):
         death (bool): True for death, False for unconsciousness
     """
     if death:
-        character.msg("|RYou have died from your injuries!|n")
-        if character.location:
-            character.location.msg_contents(
-                f"|R{character.key} dies from their injuries!|n",
-                exclude=character
-            )
+        # No death messages here - combat system handles death announcements
+        # to avoid duplicate "Character has died" messages
         debug_broadcast(f"{character.key} died from medical injuries", "DAMAGE", "SUCCESS")
     else:
         character.msg("|rYou collapse, unconscious from your injuries!|n")
