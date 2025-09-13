@@ -15,25 +15,19 @@ _ACTIVE_CONDITIONS = {}
 
 def _condition_tick_callback(condition_id):
     """
-    Standalone callback function for condition tickers.
-    
-    This is required because Evennia's TICKER_HANDLER only accepts
-    standalone functions or typeclass methods as callbacks.
+    Standalone callback function for ticker system.
+    Args:
+        condition_id: The unique ID of the condition to tick
     """
+    # Get splattercast channel for debugging
     from evennia.comms.models import ChannelDB
-    from world.combat.constants import SPLATTERCAST_CHANNEL
+    splattercast = ChannelDB.objects.filter(db_key="splattercast").first()
     
-    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-    splattercast.msg(f"MEDICAL_TICK: Callback triggered for {condition_id}")
+    splattercast.msg(f"MEDICAL_TICK: Callback called with condition_id: {condition_id}")
     
     if condition_id not in _ACTIVE_CONDITIONS:
-        # Condition was removed, stop ticker
-        TICKER_HANDLER.remove(
-            interval=60,  # Default medical interval
-            callback=_condition_tick_callback,
-            idstring=f"medical_{condition_id}"
-        )
-        splattercast.msg(f"MEDICAL_TICK: Condition {condition_id} not in registry, stopping ticker")
+        # Condition was removed, ticker should be stopped
+        splattercast.msg(f"MEDICAL_TICK: Condition {condition_id} not in registry, ticker should be stopped")
         return
         
     condition = _ACTIVE_CONDITIONS[condition_id]
@@ -133,27 +127,13 @@ class MedicalCondition:
         _ACTIVE_CONDITIONS[self.ticker_id] = self
         splattercast.msg(f"CONDITION_START: Registered in global registry, total conditions: {len(_ACTIVE_CONDITIONS)}")
         
-        # Start ticker with standalone callback - basic approach
-        try:
-            TICKER_HANDLER.add(
-                self.tick_interval,
-                _condition_tick_callback,
-                self.ticker_id
-            )
-            splattercast.msg(f"CONDITION_START: Basic ticker added successfully for {self.ticker_id}")
-        except Exception as e:
-            splattercast.msg(f"CONDITION_START: Basic ticker failed: {e}")
-            # Try with explicit kwargs only
-            try:
-                TICKER_HANDLER.add(
-                    interval=self.tick_interval,
-                    callback=_condition_tick_callback,
-                    idstring=f"medical_{self.ticker_id}"
-                )
-                splattercast.msg(f"CONDITION_START: Kwargs-only ticker added for {self.ticker_id}")
-            except Exception as e2:
-                splattercast.msg(f"CONDITION_START: Both approaches failed: {e2}")
-                return
+        # Start ticker following documentation pattern
+        TICKER_HANDLER.add(
+            self.tick_interval,
+            _condition_tick_callback,
+            self.ticker_id  # This will be passed as args[0] to the callback
+        )
+        splattercast.msg(f"CONDITION_START: Ticker added for {self.ticker_id} at {self.tick_interval}s interval")
         
     def tick_effect(self, character):
         """Override in subclasses to implement specific effects."""
@@ -166,11 +146,10 @@ class MedicalCondition:
             if self.ticker_id in _ACTIVE_CONDITIONS:
                 del _ACTIVE_CONDITIONS[self.ticker_id]
                 
-            # Stop ticker
+            # Stop ticker - use simple remove approach
             TICKER_HANDLER.remove(
-                interval=self.tick_interval,
-                callback=_condition_tick_callback,
-                idstring=f"medical_{self.ticker_id}"
+                self.tick_interval,
+                _condition_tick_callback
             )
             self.ticker_id = None
             
