@@ -130,11 +130,11 @@ class MedicalCondition:
         
         # Start ticker with standalone callback
         TICKER_HANDLER.add(
-            self.tick_interval,  # interval
-            _condition_tick_callback,  # callback
-            self.ticker_id,  # args - passed to callback as first argument
+            interval=self.tick_interval,  # interval
+            callback=_condition_tick_callback,  # callback
             idstring=f"medical_{self.ticker_id}",  # unique idstring for identification
-            persistent=True  # persistent across reboots
+            persistent=True,  # persistent across reboots
+            *[self.ticker_id]  # args - passed to callback as arguments
         )
         splattercast.msg(f"CONDITION_START: Ticker added to TICKER_HANDLER for {self.ticker_id}")
         
