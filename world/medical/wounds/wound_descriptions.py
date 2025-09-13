@@ -277,7 +277,7 @@ def _determine_wound_stage_from_organ(organ):
         organ: Organ object from medical system
         
     Returns:
-        str: Wound stage (fresh, treated, healing, scarred)
+        str: Wound stage (fresh, treated, healing, destroyed, severed, scarred)
     """
     # Use stored wound stage if available (new tracking system)
     if hasattr(organ, 'wound_stage') and organ.wound_stage:
@@ -285,7 +285,9 @@ def _determine_wound_stage_from_organ(organ):
     
     # Fallback logic for organs without wound stage tracking
     if organ.current_hp <= 0:
-        return 'scarred'  # Destroyed organs become scars
+        # Need to determine if this should be destroyed or severed
+        # Default to destroyed for fallback (internal organs more common)
+        return 'destroyed'
     
     # Default to fresh for any damaged organ without tracking
     return 'fresh'

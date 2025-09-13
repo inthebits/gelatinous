@@ -35,6 +35,26 @@ WOUND_DESCRIPTIONS = {
         "{skintone}a {severity} improving bullet puncture in the {location}|n"
     ],
     
+    "destroyed": [
+        "|Ra {severity} devastating bullet wound has mangled the {location} beyond recognition|n",
+        "|Ra {severity} ballistic trauma has left the {location} a bloody, shattered mess|n",
+        "|Ra {severity} gunshot has reduced the {location} to pulverized tissue and bone|n",
+        "|Ra {severity} bullet has torn the {location} apart in a spray of blood and gore|n",
+        "|Ra {severity} projectile damage has left the {location} hanging by sinew and skin|n",
+        "|Ra {severity} explosive impact has turned the {location} into a mangled ruin|n",
+        "|Ra {severity} high-caliber wound has obliterated the {location} in a mess of trauma|n"
+    ],
+    
+    "severed": [
+        "A clean surgical amputation where the {location} once was, properly bandaged|n",
+        "The {location} has been medically severed with neat surgical dressing|n",
+        "A professionally treated amputation site where the {location} was removed|n",
+        "The {location} has been cleanly amputated with proper medical closure|n",
+        "A sterile amputation site with surgical sutures where the {location} once was|n",
+        "The {location} has been surgically removed with clinical precision|n",
+        "A medically treated severance where the {location} was cleanly amputated|n"
+    ],
+    
     "scarred": [
         "{skintone}a {severity} bullet wound scar on the {location}|n",
         "{skintone}a {severity} gunshot scar in the {location} with puckered edges|n", 

@@ -35,6 +35,26 @@ WOUND_DESCRIPTIONS = {
         "{skintone}a {severity} healing damaged area on the {location}|n"
     ],
     
+    "destroyed": [
+        "|Ra {severity} catastrophic trauma has mangled the {location} beyond recognition|n",
+        "|Ra {severity} devastating injury has left the {location} a bloody, ruined mess|n",
+        "|Ra {severity} massive damage has reduced the {location} to torn tissue and gore|n",
+        "|Ra {severity} horrific trauma has turned the {location} into unrecognizable wreckage|n",
+        "|Ra {severity} catastrophic injury has left the {location} hanging by shreds|n",
+        "|Ra {severity} devastating damage has obliterated the {location} in a spray of blood|n",
+        "|Ra {severity} massive trauma has destroyed the {location} beyond repair|n"
+    ],
+    
+    "severed": [
+        "A clean surgical amputation where the {location} once was, properly treated|n",
+        "The {location} has been medically severed with sterile bandaging|n",
+        "A professionally treated amputation site where the {location} was removed|n",
+        "The {location} has been cleanly amputated with proper medical closure|n",
+        "A sterile severance with surgical care where the {location} once was|n",
+        "The {location} has been surgically removed with clinical precision|n",
+        "A medically treated amputation where the {location} was cleanly severed|n"
+    ],
+    
     "scarred": [
         "{skintone}a {severity} wound scar on the {location}|n",
         "{skintone}a {severity} injury scar in the {location} permanently marked|n",

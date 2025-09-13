@@ -35,6 +35,26 @@ WOUND_DESCRIPTIONS = {
         "{skintone}a {severity} healing impact bruise on the {location} with normal color returning|n"
     ],
     
+    "destroyed": [
+        "|Ra {severity} devastating blunt trauma has mangled the {location} into pulp|n",
+        "|Ra {severity} massive impact has left the {location} a crushed, bloody mess|n",
+        "|Ra {severity} crushing force has reduced the {location} to shattered bone and gore|n",
+        "|Ra {severity} brutal bludgeoning has turned the {location} into unrecognizable wreckage|n",
+        "|Ra {severity} catastrophic impact has left the {location} hanging by mangled tissue|n",
+        "|Ra {severity} horrific crushing has obliterated the {location} in a spray of blood|n",
+        "|Ra {severity} devastating blunt force has pulverized the {location} beyond repair|n"
+    ],
+    
+    "severed": [
+        "A clean surgical amputation where the {location} once was, properly bandaged|n",
+        "The {location} has been medically severed with sterile wound dressing|n",
+        "A professionally treated amputation site where the {location} was removed|n",
+        "The {location} has been cleanly amputated with surgical closure|n",
+        "A sterile severance with medical sutures where the {location} once was|n",
+        "The {location} has been surgically removed with proper medical care|n",
+        "A medically treated amputation where the {location} was cleanly severed|n"
+    ],
+    
     "scarred": [
         "{skintone}a {severity} faded bruise mark on the {location}|n",
         "{skintone}a {severity} old contusion scar in the {location} barely visible|n",

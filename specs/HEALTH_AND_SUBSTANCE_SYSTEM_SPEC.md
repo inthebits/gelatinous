@@ -1332,17 +1332,44 @@ Medical conditions dynamically modify character appearance through integrated lo
 - Time-based healing stages with evolving descriptions
 - Natural recovery process visualization
 
+**Destroyed Wounds** (`wound_stage: 'destroyed'`):
+- Immediate aftermath of catastrophic organ/limb destruction
+- Raw trauma visualization: "mangled beyond recognition", "bloody mess", "hanging by sinew"
+- Requires immediate medical intervention to prevent death/infection
+- Can be treated to "severed" state with proper medical care
+
+**Severed Wounds** (`wound_stage: 'severed'`):
+- Medically treated destruction - clean amputation with proper surgical care
+- Professional medical descriptions: "surgical amputation", "sterile bandaging", "proper closure"
+- Result of treating "destroyed" organs with advanced medical intervention
+- Permanent state but clean and safe for prosthetic attachment
+
 **Scarred Wounds** (`wound_stage: 'scarred'`):
-- Permanent marking system for significant traumas
+- Permanent marking system for healed non-destroyed wounds
 - Scar tissue descriptions based on original injury
 - Character history preservation through appearance
+- Only applies to wounds that healed naturally (not destroyed organs)
+
+#### Wound Progression Paths
+The medical system supports multiple wound progression paths based on damage severity and medical intervention:
+
+**Normal Healing Path:**
+1. `Fresh` → `Treated` (medical intervention) → `Healing` (time) → `Scarred` (permanent)
+2. `Fresh` → `Healing` (natural) → `Scarred` (permanent)
+
+**Catastrophic Damage Path:**
+1. `Fresh` → `Destroyed` (damage exceeds threshold)
+2. `Destroyed` → `Severed` (medical treatment transforms raw trauma into clean amputation)
+3. `Destroyed/Severed` → **Prosthetic/Cybernetic Required** (permanent replacement)
+
+**Key Distinction:** "Destroyed" represents immediate, raw trauma requiring urgent medical care to prevent death/infection, while "Severed" represents the clean, safe state achieved through proper medical treatment of destroyed organs. This creates a realistic progression where catastrophic injuries must be medically stabilized before prosthetic attachment is possible.
 
 #### Actual Implementation Architecture
 ```python
 # Organ-level wound state tracking (world/medical/core.py)
 class Organ:
     def __init__(self, name, hp_max):
-        self.wound_stage = 'fresh'         # fresh/treated/healing/scarred
+        self.wound_stage = 'fresh'         # fresh/treated/healing/destroyed/severed/scarred
         self.injury_type = 'generic'       # bullet/stab/cut/blunt/etc
         self.wound_timestamp = None        # For time-based healing
         self.treatment_quality = None      # poor/adequate/professional/surgical
@@ -1354,6 +1381,11 @@ class Organ:
             self.wound_stage = 'treated'
             self.treatment_quality = quality
             self.treatment_method = method
+        elif self.wound_stage == 'destroyed':
+            # Medical intervention can transform raw trauma into clean amputation
+            self.wound_stage = 'severed'
+            self.treatment_quality = quality
+            self.treatment_method = method
     
     def advance_healing_stage(self):
         """Natural healing progression over time"""
@@ -1361,6 +1393,7 @@ class Organ:
             'fresh': 'healing',
             'treated': 'healing', 
             'healing': 'scarred'
+            # Note: destroyed/severed are permanent states requiring replacement
         }
         self.wound_stage = stage_progression.get(self.wound_stage, 'scarred')
 

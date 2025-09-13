@@ -111,11 +111,40 @@ class Organ:
         
         # Update wound stage based on organ state
         if self.current_hp <= 0:
-            self.wound_stage = 'scarred'  # Destroyed organ becomes scar
+            # All destroyed organs start as "destroyed" regardless of location
+            self.wound_stage = 'destroyed'  # Immediate aftermath of destruction
         # Keep existing stage if organ was already damaged (don't reset to fresh)
         
         # Return True if this damage destroyed the organ
         return old_hp > 0 and self.current_hp <= 0
+    
+    def _is_limb_container(self, container):
+        """
+        Determine if a container represents a limb/appendage vs internal body cavity.
+        
+        Args:
+            container (str): Body location container
+            
+        Returns:
+            bool: True if container is a limb/appendage
+        """
+        # Internal body cavities - organs here get "destroyed"
+        internal_containers = {
+            'head', 'chest', 'abdomen', 'back', 'neck', 'groin', 'face'
+        }
+        
+        # Limb/appendage containers - organs here get "severed"
+        limb_containers = {
+            'left_arm', 'right_arm', 'left_hand', 'right_hand',
+            'left_thigh', 'right_thigh', 'left_shin', 'right_shin', 
+            'left_foot', 'right_foot', 'tail', 'left_wing', 'right_wing'
+        }
+        
+        # Check for tentacles or other numbered appendages
+        if 'tentacle_' in container or '_leg_' in container or '_arm_' in container:
+            return True
+        
+        return container in limb_containers
         
     def heal(self, amount):
         """
@@ -148,14 +177,22 @@ class Organ:
         Args:
             treatment_type (str): Type of treatment applied
         """
-        if hasattr(self, 'wound_stage') and self.wound_stage == 'fresh':
-            self.wound_stage = 'treated'
-            # TODO: Add treatment effects, healing bonuses, etc.
+        if hasattr(self, 'wound_stage'):
+            if self.wound_stage == 'fresh':
+                self.wound_stage = 'treated'
+                # TODO: Add treatment effects, healing bonuses, etc.
+            elif self.wound_stage == 'destroyed':
+                # Medical treatment of destroyed organs results in clean amputation/severance
+                self.wound_stage = 'severed'
+                # TODO: Add surgical amputation effects, pain management, etc.
     
     def advance_healing_stage(self):
         """
         Advance the wound to the next healing stage.
         Future-proofing method for time-based healing system.
+        
+        Note: Destroyed organs can be treated to "severed" (clean amputation/medical care).
+        Severed organs are permanent and cannot heal further.
         """
         if not hasattr(self, 'wound_stage') or not self.wound_stage:
             return
@@ -164,14 +201,17 @@ class Organ:
             'fresh': 'healing',
             'treated': 'healing', 
             'healing': 'scarred',
-            'scarred': 'scarred'  # Scars don't heal further
+            'destroyed': 'destroyed',  # Stays destroyed until medical treatment
+            'severed': 'severed',      # Permanent - clean amputation/medical care
+            'scarred': 'scarred'       # Permanent marks
         }
         
         self.wound_stage = stage_progression.get(self.wound_stage, self.wound_stage)
         
-                # If wound has progressed to scarred but organ isn't destroyed,
-        # it means the wound healed completely over time
-        if self.wound_stage == 'scarred' and self.current_hp > 0:
+        # Scarred stage only applies to organs that still have HP (non-destroyed)
+        if self.wound_stage == 'scarred' and self.current_hp <= 0:
+            # Destroyed organs can't become scars - they stay destroyed
+            self.wound_stage = 'destroyed'
             # TODO: Consider if we want visible scars for non-destroyed organs
             pass
         

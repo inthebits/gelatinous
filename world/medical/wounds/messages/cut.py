@@ -35,6 +35,26 @@ WOUND_DESCRIPTIONS = {
         "{skintone}a {severity} knitting blade wound in the {location}|n"
     ],
     
+    "destroyed": [
+        "|Ra {severity} devastating cut has mangled the {location} into ribbons of flesh|n",
+        "|Ra {severity} massive slash has left the {location} hanging by threads of tissue|n",
+        "|Ra {severity} brutal laceration has reduced the {location} to bloody tatters|n",
+        "|Ra {severity} savage blade work has shredded the {location} beyond recognition|n",
+        "|Ra {severity} catastrophic slicing has turned the {location} into a gory mess|n",
+        "|Ra {severity} horrific cutting has left the {location} barely attached|n",
+        "|Ra {severity} brutal blade trauma has obliterated the {location} in a spray of gore|n"
+    ],
+    
+    "severed": [
+        "A clean surgical amputation where the {location} once was, properly closed|n",
+        "The {location} has been medically severed with neat surgical stitching|n",
+        "A professionally treated amputation site where the {location} was removed|n",
+        "The {location} has been cleanly amputated with sterile dressing|n",
+        "A surgical severance with proper closure where the {location} once was|n",
+        "The {location} has been surgically removed with clinical care|n",
+        "A medically treated amputation where the {location} was cleanly severed|n"
+    ],
+    
     "scarred": [
         "{skintone}a {severity} cutting scar across the {location}|n",
         "{skintone}a {severity} slash scar on the {location} with thin white line|n",

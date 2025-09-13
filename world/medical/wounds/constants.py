@@ -6,10 +6,12 @@ Constants for wound stages, severity mapping, and other wound-related data.
 
 # Wound healing stages (matching the weapon message pattern)
 WOUND_STAGES = [
-    "fresh",    # Just inflicted, bleeding, raw
-    "treated",  # Bandaged, sutured, basic medical care applied
-    "healing",  # Scabbing, closing, reduced bleeding
-    "scarred",  # Scar formation, permanent mark
+    "fresh",      # Just inflicted, bleeding, raw
+    "treated",    # Bandaged, sutured, basic medical care applied
+    "healing",    # Scabbing, closing, reduced bleeding
+    "destroyed",  # Internal organ completely destroyed/non-functional (permanent)
+    "severed",    # Limb/appendage completely removed (permanent)
+    "scarred",    # Scar formation, permanent mark (healed non-destroyed wounds)
 ]
 
 # Map injury severity to wound description intensity
