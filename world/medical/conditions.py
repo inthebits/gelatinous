@@ -62,6 +62,10 @@ class MedicalCondition:
         """Check if condition should be removed. Override in subclasses."""
         return self.severity <= 0
         
+    def get_pain_contribution(self):
+        """Return pain contribution from this condition. Override in subclasses."""
+        return 0  # Base conditions don't contribute pain by default
+        
     def end_condition(self, character):
         """Clean up when condition ends."""
         # No ticker cleanup needed - script handles lifecycle
@@ -119,6 +123,11 @@ class BleedingCondition(MedicalCondition):
         """Bleeding ends when severity reaches 0."""
         return self.severity <= 0
         
+    def get_pain_contribution(self):
+        """Return pain contribution from bleeding."""
+        # Bleeding causes pain proportional to severity
+        return max(1, self.severity // 2)  # Half severity as pain
+        
     def apply_treatment(self, treatment_quality="adequate"):
         """Apply medical treatment to bleeding."""
         super().apply_treatment(treatment_quality)
@@ -141,10 +150,10 @@ class PainCondition(MedicalCondition):
         
     def tick_effect(self, character):
         """Pain naturally diminishes over time."""
-        from evennia.comms.models import ChannelDB
+        from evennia import CHANNEL_HANDLER
         from world.combat.constants import SPLATTERCAST_CHANNEL
         
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast = CHANNEL_HANDLER.get(SPLATTERCAST_CHANNEL)
         
         # Natural pain reduction
         if random.randint(1, 100) <= 20:  # 20% chance per tick
@@ -160,6 +169,10 @@ class PainCondition(MedicalCondition):
     def should_end(self):
         """Pain ends when severity reaches 0."""
         return self.severity <= 0
+        
+    def get_pain_contribution(self):
+        """Return pain contribution from this condition."""
+        return self.severity  # Pain conditions contribute their full severity to total pain
         
     def apply_treatment(self, treatment_quality="adequate"):
         """Apply medical treatment to pain."""
@@ -181,10 +194,10 @@ class InfectionCondition(MedicalCondition):
         
     def tick_effect(self, character):
         """Infection can worsen if untreated, or improve if treated."""
-        from evennia.comms.models import ChannelDB
+        from evennia import CHANNEL_HANDLER
         from world.combat.constants import SPLATTERCAST_CHANNEL
         
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast = CHANNEL_HANDLER.get(SPLATTERCAST_CHANNEL)
         
         if self.treated:
             # Treated infection improves
