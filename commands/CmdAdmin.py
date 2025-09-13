@@ -166,7 +166,7 @@ class CmdHeal(Command):
                 # Restore vital signs
                 medical_state.blood_level = 100.0
                 medical_state.pain_level = 0.0
-                medical_state.consciousness = 100.0
+                medical_state.consciousness = 1.0  # Consciousness is stored as 0.0-1.0, displayed as percentage
                 
                 target.save_medical_state()
                 caller.msg(f"|g{target.key} fully healed - cleared all {conditions_before} conditions, healed {organs_healed} organs, and restored vital signs.|n")
