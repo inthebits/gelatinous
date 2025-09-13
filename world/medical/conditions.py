@@ -28,7 +28,11 @@ def _condition_tick_callback(condition_id):
     
     if condition_id not in _ACTIVE_CONDITIONS:
         # Condition was removed, stop ticker
-        TICKER_HANDLER.remove(idstring=condition_id)
+        TICKER_HANDLER.remove(
+            interval=60,  # Default medical interval
+            callback=_condition_tick_callback,
+            idstring=condition_id
+        )
         splattercast.msg(f"MEDICAL_TICK: Condition {condition_id} not in registry, stopping ticker")
         return
         
@@ -126,12 +130,11 @@ class MedicalCondition:
         
         # Start ticker with standalone callback
         TICKER_HANDLER.add(
-            interval=self.tick_interval,
-            callback=_condition_tick_callback,
-            idstring=self.ticker_id,
-            persistent=True,
-            # Pass the condition_id as an argument to the callback
-            args=[self.ticker_id]
+            self.tick_interval,  # interval
+            _condition_tick_callback,  # callback
+            self.ticker_id,  # args - passed to callback
+            idstring=self.ticker_id,  # idstring for identification
+            persistent=True  # persistent across reboots
         )
         splattercast.msg(f"CONDITION_START: Ticker added to TICKER_HANDLER for {self.ticker_id}")
         
@@ -147,7 +150,11 @@ class MedicalCondition:
                 del _ACTIVE_CONDITIONS[self.ticker_id]
                 
             # Stop ticker
-            TICKER_HANDLER.remove(idstring=self.ticker_id)
+            TICKER_HANDLER.remove(
+                interval=self.tick_interval,
+                callback=_condition_tick_callback,
+                idstring=self.ticker_id
+            )
             self.ticker_id = None
             
         # Remove from character's conditions
