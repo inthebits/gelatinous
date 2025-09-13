@@ -127,14 +127,46 @@ class MedicalCondition:
         _ACTIVE_CONDITIONS[self.ticker_id] = self
         splattercast.msg(f"CONDITION_START: Registered in global registry, total conditions: {len(_ACTIVE_CONDITIONS)}")
         
-        # Start ticker following documentation pattern
+        # Start ticker using the condition's method as callback (as per spec)
         TICKER_HANDLER.add(
-            self.tick_interval,
-            _condition_tick_callback,
-            self.ticker_id  # This will be passed as args[0] to the callback
+            interval=self.tick_interval,
+            callback=self.ticker_callback,
+            idstring=self.ticker_id,
+            persistent=True
         )
-        splattercast.msg(f"CONDITION_START: Ticker added for {self.ticker_id} at {self.tick_interval}s interval")
+        splattercast.msg(f"CONDITION_START: Ticker added for {self.ticker_id} using method callback")
         
+    def ticker_callback(self):
+        """
+        Ticker callback method - called by TICKER_HANDLER at regular intervals.
+        This approach uses the condition object's method as the callback.
+        """
+        # Get splattercast channel for debugging
+        from evennia.comms.models import ChannelDB
+        from world.combat.constants import SPLATTERCAST_CHANNEL
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        splattercast.msg(f"MEDICAL_TICK: Method callback executed for {self.ticker_id}")
+        
+        # Get character from condition ID
+        try:
+            character_id = self.ticker_id.split('_')[0]
+            from evennia.objects.models import ObjectDB
+            character = ObjectDB.objects.get(id=int(character_id))
+            
+            if not character or not hasattr(character, 'medical_state'):
+                splattercast.msg(f"MEDICAL_TICK: Character {character_id} invalid, ending condition")
+                self.end_condition(None)
+                return
+                
+            splattercast.msg(f"MEDICAL_TICK: Applying tick effect to {character.key}")
+            # Apply tick effect
+            self.tick_effect(character)
+            
+        except Exception as e:
+            splattercast.msg(f"MEDICAL_TICK_ERROR: {self.ticker_id}: {e}")
+            self.end_condition(None)
+
     def tick_effect(self, character):
         """Override in subclasses to implement specific effects."""
         pass
@@ -146,10 +178,11 @@ class MedicalCondition:
             if self.ticker_id in _ACTIVE_CONDITIONS:
                 del _ACTIVE_CONDITIONS[self.ticker_id]
                 
-            # Stop ticker - use simple remove approach
+            # Stop ticker using the method callback approach
             TICKER_HANDLER.remove(
-                self.tick_interval,
-                _condition_tick_callback
+                interval=self.tick_interval,
+                callback=self.ticker_callback,
+                idstring=self.ticker_id
             )
             self.ticker_id = None
             
