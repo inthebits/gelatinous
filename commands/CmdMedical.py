@@ -109,28 +109,33 @@ class CmdDamageTest(Command):
         caller.msg(f"|rYou take {damage_amount} {injury_type} damage to your {location}!|n")
         
         # Show medical status after damage
-        medical_state = getattr(caller.db, 'medical_state', {})
-        if medical_state:
-            # Show current wounds
-            total_wounds = sum(len(wounds) for wounds in medical_state.get('wounds', {}).values())
-            if total_wounds > 0:
-                caller.msg(f"|yYou now have {total_wounds} total wounds.|n")
-            
-            # Show organ damage
-            organs = medical_state.get('organs', {})
-            damaged_organs = []
-            for location_name, location_organs in organs.items():
-                for organ_name, organ_data in location_organs.items():
-                    current_hp = organ_data.get('current_hp', organ_data.get('max_hp', 100))
-                    max_hp = organ_data.get('max_hp', 100)
-                    if current_hp < max_hp:
-                        damage_taken = max_hp - current_hp
+        try:
+            medical_state = caller.medical_state  # Use property that loads from db
+            if medical_state:
+                # Show current wounds
+                total_wounds = sum(len(wounds) for wounds in medical_state.to_dict().get('wounds', {}).values())
+                if total_wounds > 0:
+                    caller.msg(f"|yYou now have {total_wounds} total wounds.|n")
+                
+                # Show organ damage - organs are now Organ objects, not dicts
+                damaged_organs = []
+                for organ_name, organ in medical_state.organs.items():
+                    if organ.current_hp < organ.max_hp:
+                        damage_taken = organ.max_hp - organ.current_hp
                         damaged_organs.append(f"{organ_name} ({damage_taken} damage)")
-            
-            if damaged_organs:
-                caller.msg("|yDamaged organs:|n")
-                for organ_info in damaged_organs:
-                    caller.msg(f"  - {organ_info}")
+                
+                if damaged_organs:
+                    caller.msg("|yDamaged organs:|n")
+                    for organ_info in damaged_organs:
+                        caller.msg(f"  - {organ_info}")
+        except AttributeError:
+            # Fallback to old db.medical_state format if property doesn't work
+            medical_state = getattr(caller.db, 'medical_state', {})
+            if medical_state:
+                # Show current wounds
+                total_wounds = sum(len(wounds) for wounds in medical_state.get('wounds', {}).values())
+                if total_wounds > 0:
+                    caller.msg(f"|yYou now have {total_wounds} total wounds.|n")
         
         # Check for critical status
         if target_died:
