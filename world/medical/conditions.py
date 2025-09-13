@@ -66,6 +66,15 @@ class MedicalCondition:
         """Return pain contribution from this condition. Override in subclasses."""
         return 0  # Base conditions don't contribute pain by default
         
+    def get_blood_loss_rate(self):
+        """Return blood loss rate from this condition. Override in subclasses."""
+        return 0  # Base conditions don't cause blood loss by default
+        
+    @property
+    def type(self):
+        """Alias for condition_type for backward compatibility."""
+        return self.condition_type
+        
     def end_condition(self, character):
         """Clean up when condition ends."""
         # No ticker cleanup needed - script handles lifecycle
@@ -86,10 +95,10 @@ class BleedingCondition(MedicalCondition):
         
     def tick_effect(self, character):
         """Apply blood loss and potentially reduce severity."""
-        from evennia.comms.models import ChannelDB
+        from evennia import CHANNEL_HANDLER
         from world.combat.constants import SPLATTERCAST_CHANNEL
         
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast = CHANNEL_HANDLER.get(SPLATTERCAST_CHANNEL)
         
         if not hasattr(character, 'medical_state'):
             return
@@ -127,6 +136,13 @@ class BleedingCondition(MedicalCondition):
         """Return pain contribution from bleeding."""
         # Bleeding causes pain proportional to severity
         return max(1, self.severity // 2)  # Half severity as pain
+        
+    def get_blood_loss_rate(self):
+        """Return blood loss rate per tick."""
+        blood_loss = self.blood_loss_rate
+        if self.treated:
+            blood_loss = int(blood_loss * 0.3)  # Treated bleeding loses less blood
+        return blood_loss
         
     def apply_treatment(self, treatment_quality="adequate"):
         """Apply medical treatment to bleeding."""
