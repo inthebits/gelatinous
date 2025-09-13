@@ -133,19 +133,27 @@ class MedicalCondition:
         _ACTIVE_CONDITIONS[self.ticker_id] = self
         splattercast.msg(f"CONDITION_START: Registered in global registry, total conditions: {len(_ACTIVE_CONDITIONS)}")
         
-        # Start ticker with standalone callback using explicit keyword args
-        ticker_args = [self.ticker_id]
-        ticker_kwargs = {
-            'idstring': f"medical_{self.ticker_id}",
-            'persistent': True
-        }
-        TICKER_HANDLER.add(
-            self.tick_interval,  # interval 
-            _condition_tick_callback,  # callback
-            *ticker_args,  # callback arguments
-            **ticker_kwargs  # ticker options
-        )
-        splattercast.msg(f"CONDITION_START: Ticker added to TICKER_HANDLER for {self.ticker_id}")
+        # Start ticker with standalone callback - basic approach
+        try:
+            TICKER_HANDLER.add(
+                self.tick_interval,
+                _condition_tick_callback,
+                self.ticker_id
+            )
+            splattercast.msg(f"CONDITION_START: Basic ticker added successfully for {self.ticker_id}")
+        except Exception as e:
+            splattercast.msg(f"CONDITION_START: Basic ticker failed: {e}")
+            # Try with explicit kwargs only
+            try:
+                TICKER_HANDLER.add(
+                    interval=self.tick_interval,
+                    callback=_condition_tick_callback,
+                    idstring=f"medical_{self.ticker_id}"
+                )
+                splattercast.msg(f"CONDITION_START: Kwargs-only ticker added for {self.ticker_id}")
+            except Exception as e2:
+                splattercast.msg(f"CONDITION_START: Both approaches failed: {e2}")
+                return
         
     def tick_effect(self, character):
         """Override in subclasses to implement specific effects."""
