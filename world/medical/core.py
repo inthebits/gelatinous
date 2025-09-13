@@ -46,6 +46,11 @@ class Organ:
         # Medical conditions affecting this organ
         self.conditions = []
         
+        # Wound state tracking for longdesc integration
+        self.wound_stage = None      # fresh, treated, healing, scarred
+        self.injury_type = None      # bullet, cut, stab, blunt, generic
+        self.wound_timestamp = None  # When the wound occurred (for future healing)
+        
     def is_destroyed(self):
         """Returns True if organ HP is 0 or below."""
         return self.current_hp <= 0
@@ -95,10 +100,19 @@ class Organ:
         old_hp = self.current_hp
         self.current_hp = max(0, self.current_hp - amount)
         
-        # Store the injury type for wound description purposes
-        # Only store if this is the first damage or if it's different/more severe
-        if not hasattr(self, 'injury_type') or self.injury_type == "generic":
+        # Set wound state when damage is first applied
+        if old_hp == self.max_hp:  # First damage to this organ
             self.injury_type = injury_type
+            self.wound_stage = 'fresh'
+            # TODO: Set wound_timestamp when time system is implemented
+        elif not hasattr(self, 'injury_type') or self.injury_type == "generic":
+            # Update injury type if this is more specific than previous
+            self.injury_type = injury_type
+        
+        # Update wound stage based on organ state
+        if self.current_hp <= 0:
+            self.wound_stage = 'scarred'  # Destroyed organ becomes scar
+        # Keep existing stage if organ was already damaged (don't reset to fresh)
         
         # Return True if this damage destroyed the organ
         return old_hp > 0 and self.current_hp <= 0
@@ -119,7 +133,47 @@ class Organ:
         old_hp = self.current_hp
         self.current_hp = min(self.max_hp, self.current_hp + amount)
         
+        # Update wound stage if fully healed
+        if self.current_hp == self.max_hp and hasattr(self, 'wound_stage'):
+            self.wound_stage = None  # No wound if fully healed
+            self.injury_type = None
+        
         return self.current_hp - old_hp
+        
+    def apply_treatment(self, treatment_type="basic"):
+        """
+        Apply medical treatment to this organ's wound.
+        Future-proofing method for medical treatment system.
+        
+        Args:
+            treatment_type (str): Type of treatment applied
+        """
+        if hasattr(self, 'wound_stage') and self.wound_stage == 'fresh':
+            self.wound_stage = 'treated'
+            # TODO: Add treatment effects, healing bonuses, etc.
+    
+    def advance_healing_stage(self):
+        """
+        Advance the wound to the next healing stage.
+        Future-proofing method for time-based healing system.
+        """
+        if not hasattr(self, 'wound_stage') or not self.wound_stage:
+            return
+            
+        stage_progression = {
+            'fresh': 'healing',
+            'treated': 'healing', 
+            'healing': 'scarred',
+            'scarred': 'scarred'  # Scars don't heal further
+        }
+        
+        self.wound_stage = stage_progression.get(self.wound_stage, self.wound_stage)
+        
+                # If wound has progressed to scarred but organ isn't destroyed,
+        # it means the wound healed completely over time
+        if self.wound_stage == 'scarred' and self.current_hp > 0:
+            # TODO: Consider if we want visible scars for non-destroyed organs
+            pass
         
     def add_condition(self, condition):
         """Add a medical condition to this organ."""

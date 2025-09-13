@@ -279,22 +279,16 @@ def _determine_wound_stage_from_organ(organ):
     Returns:
         str: Wound stage (fresh, treated, healing, scarred)
     """
+    # Use stored wound stage if available (new tracking system)
+    if hasattr(organ, 'wound_stage') and organ.wound_stage:
+        return organ.wound_stage
+    
+    # Fallback logic for organs without wound stage tracking
     if organ.current_hp <= 0:
         return 'scarred'  # Destroyed organs become scars
     
-    # Check for treatment indicators
-    organ_conditions = getattr(organ, 'conditions', [])
-    has_treatment = any(getattr(c, 'treated', False) for c in organ_conditions)
-    
-    # Determine stage based on damage level and treatment
-    damage_percent = organ.current_hp / organ.max_hp
-    
-    if damage_percent >= 0.8:
-        return 'healing'  # Light damage, healing
-    elif damage_percent >= 0.5:
-        return 'treated' if has_treatment else 'fresh'
-    else:
-        return 'fresh'  # Heavy damage is still fresh unless specifically treated
+    # Default to fresh for any damaged organ without tracking
+    return 'fresh'
 
 
 def _determine_severity_from_damage(organ):
