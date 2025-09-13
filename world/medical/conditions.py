@@ -154,58 +154,33 @@ class MedicalCondition:
         # Create unique ticker ID
         self.ticker_id = f"{character.id}_{self.condition_type}_{id(self)}"
         
-        # Start ticker
+        # Register condition in global registry
+        _ACTIVE_CONDITIONS[self.ticker_id] = self
+        
+        # Start ticker with standalone callback
         TICKER_HANDLER.add(
             interval=self.tick_interval,
-            callback=self.tick_callback,
+            callback=_condition_tick_callback,
             idstring=self.ticker_id,
-            persistent=True
+            persistent=True,
+            # Pass the condition_id as an argument to the callback
+            args=[self.ticker_id]
         )
         
-    def tick_callback(self, *args, **kwargs):
-        """Ticker callback - find character and apply effect."""
-        # Get character from ticker ID
-        character_id = self.ticker_id.split('_')[0]
-        character = self._get_character_by_id(character_id)
-        
-        if not character:
-            self.end_condition(None)  # Character doesn't exist, stop ticker
-            return
-            
-        # Apply tick effect
-        self.tick_effect(character)
-        
     def tick_effect(self, character):
-        """
-        Apply condition effect each tick.
-        
-        This method should be overridden by subclasses.
-        Default behavior: increment tick counter and check for resolution.
-        """
-        self.current_tick += 1
-        
-        # Check for natural resolution
-        if self.should_resolve():
-            self.end_condition(character)
-            
-    def should_resolve(self):
-        """Check if condition should end naturally."""
-        if not self.auto_resolve:
-            return False
-        if self.max_duration and self.current_tick >= self.max_duration:
-            return True
-        if isinstance(self.severity, (int, float)) and self.severity <= 0:
-            return True
-        return False
+        """Override in subclasses to implement specific effects."""
+        pass
         
     def end_condition(self, character):
         """Stop ticking and clean up."""
-        if self.ticker_id and self.requires_ticker:
-            TICKER_HANDLER.remove(
-                interval=self.tick_interval,
-                callback=self.tick_callback,
-                idstring=self.ticker_id
-            )
+        if self.ticker_id:
+            # Remove from global registry
+            if self.ticker_id in _ACTIVE_CONDITIONS:
+                del _ACTIVE_CONDITIONS[self.ticker_id]
+                
+            # Stop ticker
+            TICKER_HANDLER.remove(idstring=self.ticker_id)
+            self.ticker_id = None
             
         # Remove from character's conditions
         if character and hasattr(character, 'medical_state'):
@@ -221,15 +196,11 @@ class MedicalCondition:
     def get_effect_message(self):
         """Get message describing current effect. Override in subclasses."""
         return f"Your {self.condition_type} condition continues."
-        
-    def _get_character_by_id(self, character_id):
-        """Helper to get character object by ID."""
-        try:
-            from evennia import ObjectDB
-            return ObjectDB.objects.get(id=int(character_id))
-        except:
-            return None
             
+    def stop_condition(self):
+        """Alias for end_condition for compatibility."""
+        self.end_condition(None)
+        
     def to_dict(self):
         """Serialize condition for persistence."""
         return {
