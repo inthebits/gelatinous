@@ -235,37 +235,28 @@ def create_condition_from_damage(damage_amount, damage_type, location=None):
     Returns:
         list: List of MedicalCondition instances
     """
-    print(f"DEBUG: create_condition_from_damage called with damage={damage_amount}, type={damage_type}, location={location}")
+    # Quick debug via splattercast to verify function is called
+    try:
+        from evennia.comms.models import ChannelDB
+        from world.combat.constants import SPLATTERCAST_CHANNEL
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"CREATE_CONDITION_DEBUG: Called with damage={damage_amount}, type={damage_type}, location={location}")
+    except:
+        pass
+        
     conditions = []
     
     # Always create bleeding for significant damage
     threshold = BLEEDING_DAMAGE_THRESHOLDS.get('minor', 5)
-    print(f"DEBUG: Bleeding threshold={threshold}, damage={damage_amount}")
     
     if damage_amount >= threshold:
         bleeding_severity = min(10, max(1, damage_amount // 3))
-        print(f"DEBUG: Creating BleedingCondition with severity={bleeding_severity}")
         conditions.append(BleedingCondition(bleeding_severity, location))
-        
-        # Create splattercast message
-        try:
-            from evennia.comms.models import ChannelDB
-            from world.combat.constants import SPLATTERCAST_CHANNEL
-            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-            splattercast.msg(f"ADD_CONDITION: Added minor_bleeding severity {bleeding_severity}")
-            print(f"DEBUG: Sent splattercast message about bleeding condition")
-        except Exception as e:
-            print(f"DEBUG: Failed to send splattercast: {e}")
-    else:
-        print(f"DEBUG: Damage {damage_amount} below threshold {threshold}, no bleeding condition created")
     
     # Add pain for any damage
     if damage_amount > 0:
         pain_severity = min(8, max(1, damage_amount // 2))
-        print(f"DEBUG: Creating PainCondition with severity={pain_severity}")
         conditions.append(PainCondition(pain_severity, location))
-    
-    print(f"DEBUG: Returning {len(conditions)} conditions")
     
     # Add infection risk for penetrating wounds
     if damage_type in ['bullet', 'blade', 'pierce'] and damage_amount >= 8:
