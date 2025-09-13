@@ -33,12 +33,16 @@
 - ✅ **Organ naming consistency** - eliminated "unknown" container issues
 - ✅ **Enhanced medinfo diagnostics** - comprehensive medical status reporting
 - ✅ **Medical system migration tools** - administrative commands for mass updates
+- ✅ **Two-stage precision targeting system** - success margin + skill-based organ targeting
+- ✅ **Single organ damage model** - focused wounds replace damage spreading
 
-### 🔄 CURRENT STATE: ANATOMICALLY ACCURATE MEDICAL SYSTEM
-The medical system now features **hospital-grade anatomical accuracy** with individual bone structures:
+### 🔄 CURRENT STATE: PRECISION ANATOMICAL COMBAT SYSTEM
+The medical system now features **hospital-grade anatomical accuracy** with **skill-based precision targeting**:
 - Combat damage properly creates medical conditions (bleeding, fractures, organ damage)
 - Weapon types create appropriate injury patterns (bullets cause severe bleeding, blunt weapons cause fractures)
-- Organ damage occurs realistically (chest hits affect heart/lungs, head hits affect brain/eyes)  
+- **Success margin determines hit location bias** toward vital areas (head/chest vs extremities)
+- **Precision skills target specific organs** within hit locations (heart vs muscle in chest)
+- **Single organ damage creates focused wounds** instead of spreading damage across multiple organs
 - Medical conditions visible in `medinfo` and treatable with medical items
 - Destroyed organs cannot take further damage (prevents unrealistic overkill)
 - **Individual bone anatomy** with realistic fracture mechanics
@@ -1769,52 +1773,130 @@ character.db.medical_state = {
 
 *Note: Phase 2 consumption method system provides foundation for broader drug/substance system expansion*
 
-### Phase 2.3: Combat Message Integration - ✅ COMPLETED
-Advanced combat integration leveraging the existing anatomical hit weight system for dynamic hit location targeting.
+### Phase 2.3: Precision Targeting System - ✅ COMPLETED (December 2024)
+Advanced two-stage precision targeting system replacing simple weighted random hit location selection with skill-based anatomical targeting.
 
-#### Existing Foundation
-The system already includes a complete hit weight foundation:
+#### Two-Stage Targeting Architecture
 
-**Hit Weight System** (world/medical/constants.py):
-- Organ hit weight categories: very_rare (2), rare (8), uncommon (15), common (25)
-- Complete ORGANS dictionary with hit_weight properties for all body parts
-- HIT_WEIGHTS mapping for weighted random selection
-
-**Hit Location Calculation** (world/medical/utils.py):
-- `calculate_hit_weights_for_location()` function fully implemented
-- Weighted random selection based on organ hit_weight values
-- Integration with three-layer anatomy system
-
-**Current Combat Handler** (world/combat/handler.py):
-- Uses hardcoded `location="chest"` in attack resolution (~line 1210)
-- Success margin calculation already functional
-- Ready for dynamic hit location integration
-
-#### Implementation Requirements
-Replace hardcoded hit location with dynamic calculation:
+**Stage 1: Success Margin Location Bias**
+Attack success margin influences body region targeting with bias toward vital areas for skilled attacks:
 
 ```python
-# In combat handler attack resolution
-from world.medical.utils import calculate_hit_weights_for_location
-
-# Instead of: location="chest"
-available_locations = list(defender.anatomy.keys())
-location = calculate_hit_weights_for_location(available_locations, defender.anatomy)
-
-# Combat message system enhancement
-message_vars = {
-    'hit_location': location,  # Now dynamically calculated
-    'attacker': attacker.name,
-    'defender': defender.name,
-    # ... existing combat message variables
-}
+def select_hit_location(character, success_margin=0):
+    # Base organ weights calculated for each location
+    for location in available_locations:
+        base_weight = sum(organ_hit_weights_in_location)
+        
+        # Apply success margin bias to vital areas
+        if location in vital_areas and success_margin > 0:
+            if success_margin <= 3:
+                weight = base_weight * 1.25    # +25% vital area targeting
+            elif success_margin <= 8:
+                weight = base_weight * 1.5     # +50% vital area targeting  
+            elif success_margin <= 15:
+                weight = base_weight * 2.0     # +100% vital area targeting
+            else:
+                weight = base_weight * 3.0     # +200% vital area targeting
 ```
 
-#### Technical Integration
-- **Dynamic Hit Location**: Replace hardcoded "chest" with weighted random selection
-- **Anatomical Accuracy**: Hit locations determined by actual organ hit_weight properties
-- **Message System Ready**: {hit_location} variable already supported in combat messages
-- **Foundation Complete**: All underlying systems functional, requires only handler integration
+**Stage 2: Precision-Based Organ Selection**
+Separate skill check determines specific organ targeting within the hit location:
+
+```python
+def select_target_organ(location, precision_roll, attacker_skill):
+    # Mixed skill calculation: motorics (dexterity) + intellect (anatomy knowledge)
+    precision_skill = int((motorics * 0.7) + (intellect * 0.3))
+    precision_total = precision_roll + precision_skill
+    
+    # Precision affects rare/vital organ targeting probability
+    for organ in location_organs:
+        if organ.hit_weight == "very_rare":  # Heart, brain, arteries
+            if precision_total >= 25:
+                weight = base_weight * 3.0   # Exceptional precision
+            elif precision_total >= 20:
+                weight = base_weight * 2.0   # Good precision
+            else:
+                weight = base_weight * 0.5   # Poor precision
+        elif organ.hit_weight == "rare":     # Liver, kidneys, eyes
+            if precision_total >= 20:
+                weight = base_weight * 2.0
+            elif precision_total >= 15:
+                weight = base_weight * 1.5
+            # ... scaling continues for uncommon/common organs
+```
+
+#### Single Organ Damage Model
+Replaces damage distribution across multiple organs with focused single-organ targeting:
+
+**Previous System**: Damage spread proportionally across all organs in hit location
+**New System**: ALL damage applied to single targeted organ for realistic wound patterns
+
+```python
+def distribute_damage_to_organs(location, total_damage, medical_state, injury_type, target_organ=None):
+    if target_organ and target_organ in functional_organs:
+        return {target_organ: total_damage}  # Single organ receives all damage
+    # Falls back to proportional distribution if target organ destroyed
+```
+
+#### Combat Handler Integration
+Complete integration with existing combat architecture:
+
+```python
+# Combat handler attack resolution (world/combat/handler.py ~line 1210)
+if attacker_roll > target_roll:
+    # Calculate success margin for location bias
+    success_margin = attacker_roll - target_roll
+    
+    # Stage 1: Select hit location with success margin bias
+    hit_location = select_hit_location(target, success_margin)
+    
+    # Stage 2: Make precision roll for organ targeting
+    precision_roll = randint(1, 20)
+    attacker_motorics = get_numeric_stat(attacker, "motorics", 1)
+    attacker_intellect = get_numeric_stat(attacker, "intellect", 1)
+    precision_skill = int((attacker_motorics * 0.7) + (attacker_intellect * 0.3))
+    
+    # Select specific target organ within location
+    target_organ = select_target_organ(hit_location, precision_roll, precision_skill)
+    
+    # Apply focused damage to single organ
+    target_died = target.take_damage(damage, location=hit_location, 
+                                   injury_type=injury_type, target_organ=target_organ)
+```
+
+#### Updated Function Signatures
+All medical system functions updated to support precision targeting:
+
+```python
+# Core targeting functions
+select_hit_location(character, success_margin=0)
+select_target_organ(location, precision_roll=0, attacker_skill=1)
+
+# Damage application functions  
+distribute_damage_to_organs(location, total_damage, medical_state, injury_type="generic", target_organ=None)
+apply_anatomical_damage(character, damage_amount, location, injury_type="generic", target_organ=None)
+take_damage(amount, location="chest", injury_type="generic", target_organ=None)
+```
+
+#### System Benefits
+- **Skill-Based Targeting**: High motorics/intellect characters can target vital organs consistently
+- **Tactical Combat**: Success margin rewards skilled attacks with vital area hits
+- **Realistic Wounds**: Single organ damage creates focused injury patterns
+- **Progressive Difficulty**: Hitting specific organs requires both good attack rolls AND precision skills
+- **Medical Integration**: Sets foundation for surgical/medical skill interactions
+
+#### Debug & Testing Support
+Built-in debug output for precision targeting verification:
+```
+PRECISION_TARGET: attacker margin=8, precision=24, hit chest:heart
+```
+
+#### Backward Compatibility
+All new parameters have default values maintaining compatibility with existing code:
+- `success_margin=0` → no location bias (original behavior)
+- `target_organ=None` → proportional damage distribution (original behavior)
+
+**Foundation Complete**: Two-stage precision targeting fully integrated with combat system, ready for Phase 2.4 wound description integration.
 
 ### Phase 2.4: Longdesc Wound Integration - 🔲 PLANNED
 Dynamic wound descriptions that append to character longdesc based on medical state and treatment status.
@@ -1916,35 +1998,42 @@ MedicalCondition("stab_wound", "abdomen", "critical", foreign_object="knife blad
 - [ ] **Advanced substance interactions**: Multi-method delivery systems
 
 ### Phase 3: Combat Integration & Stat Penalties - 🔲 IN PROGRESS
-- [ ] **Smart hit location system** based on attack success margin
+- [x] **Smart hit location system** based on attack success margin and precision targeting - ✅ COMPLETED
 - [ ] **Organ density-based targeting** - vital organ areas harder to hit precisely
 - [ ] **Armor protection layers** - clothing/armor reduces damage to protected organs  
 - [ ] **Armor damage system** - protective gear degrades from absorbing hits
 - [ ] **Weapon penetration mechanics** - different weapons vs different armor types
 - [ ] **Critical hit amplification** - exceptional attacks can bypass armor or hit vital organs directly
 
-#### Hit Location Mechanics
+#### Hit Location Mechanics (IMPLEMENTED)
 ```python
-# Attack success determines hit precision
+# Two-stage precision targeting system (CURRENT IMPLEMENTATION)
+
+# Stage 1: Success margin affects location selection
 attack_roll = d20 + attacker_skill
-defense_roll = d20 + defender_skill
+defense_roll = d20 + defender_skill  
 success_margin = attack_roll - defense_roll
 
-if success_margin >= 15:  # Exceptional success
-    target_location = attacker_chooses_location()  # Deliberate targeting
-elif success_margin >= 5:   # Good success  
-    target_location = weighted_random(prefer_large_areas=True)  # Chest, torso likely
-else:  # Marginal success
-    target_location = weighted_random(prefer_extremities=True)  # Arms, legs likely
+hit_location = select_hit_location(target, success_margin)
+# Success margin biases targeting toward vital areas:
+# margin 1-3:   +25% weight to head/chest/neck/abdomen
+# margin 4-8:   +50% weight to vital areas
+# margin 9-15:  +100% weight to vital areas  
+# margin 16+:   +200% weight to vital areas
 
-# Organ targeting within location based on hit precision
-organs_in_location = get_organs_by_location(target_location)
-if success_margin >= 10:
-    # Can target specific vital organs
-    target_organ = weighted_random(organs_in_location, allow_vital=True)
-else:
-    # Random organ in location, bias away from vital organs
-    target_organ = weighted_random(organs_in_location, avoid_vital=True)
+# Stage 2: Precision roll determines specific organ within location
+precision_roll = d20
+precision_skill = (motorics * 0.7) + (intellect * 0.3)
+precision_total = precision_roll + precision_skill
+
+target_organ = select_target_organ(hit_location, precision_roll, precision_skill)
+# High precision (25+): 3x more likely to hit very_rare organs (heart, brain)
+# Good precision (20+): 2x more likely to hit rare organs (liver, kidneys)
+# Low precision (<20): Favors common organs (muscle, bone), avoids vitals
+
+# Single organ damage application
+target.take_damage(damage, location=hit_location, injury_type=weapon_type, target_organ=target_organ)
+# ALL damage goes to the targeted organ (no spreading)
 ```
 
 #### Armor Integration System
@@ -2017,24 +2106,38 @@ PENETRATION_VALUES = {
 }
 ```
 
-#### Integration with Existing Combat System
-The tactical hit location system builds on the existing combat architecture:
+#### Integration with Current Combat System (IMPLEMENTED)
+The precision targeting system is fully integrated with the existing combat architecture:
 
-**Current State**: Combat system calls `target.take_anatomical_damage(damage, "chest", injury_type)`
-- All hits currently default to "chest" location
-- Damage is distributed among chest organs (heart, lungs) by hit weights
-
-**Phase 3 Enhancement**: 
+**Current Implementation**: Combat handler uses two-stage targeting with single organ damage
 ```python
-# In combat handler, replace current location targeting:
-# OLD: target.take_anatomical_damage(damage, "chest", weapon.damage_type)
-
-# NEW: Smart location targeting
-attack_success_margin = attacker_roll - defender_roll  
-hit_location = calculate_hit_location(attack_success_margin, attacker_intent)
-final_damage = apply_armor_protection(damage, hit_location, target, weapon)
-target.take_anatomical_damage(final_damage, hit_location, weapon.damage_type)
+# In combat handler attack resolution (world/combat/handler.py)
+if attacker_roll > target_roll:
+    # Calculate success margin for location bias
+    success_margin = attacker_roll - target_roll
+    
+    # Stage 1: Location selection with vital area bias
+    hit_location = select_hit_location(target, success_margin)
+    
+    # Stage 2: Precision-based organ targeting
+    precision_roll = randint(1, 20)
+    precision_skill = int((attacker_motorics * 0.7) + (attacker_intellect * 0.3))
+    target_organ = select_target_organ(hit_location, precision_roll, precision_skill)
+    
+    # Apply focused damage to single targeted organ
+    target_died = target.take_damage(damage, location=hit_location, 
+                                   injury_type=injury_type, target_organ=target_organ)
 ```
+
+**Combat Message Integration**:
+- `{hit_location}` variable dynamically populated with actual hit location
+- Debug output: `PRECISION_TARGET: attacker margin=X, precision=Y, hit location:organ`
+- All weapon message files support dynamic hit location display
+
+**Weapon System Integration**:
+- Uses existing `weapon.db.damage_type` for injury classification
+- Integrates with weapon damage calculation: `get_weapon_damage(weapon, 0)`
+- Supports all current weapon types (unarmed, blades, firearms, etc.)
 
 **Combat Command Integration**:
 ```python
@@ -2083,13 +2186,13 @@ HIT_LOCATION_DIFFICULTY = {
 ```
 
 #### Technical Implementation Plan
-**Phase 3.1: Hit Location System**
-1. Create `world/combat/hit_location.py` module
-2. Add `calculate_hit_location(success_margin, targeting_intent)` function
-3. Define location difficulty constants and organ targeting weights
-4. Update combat handler to use smart location targeting
+**Phase 3.1: Hit Location System** - ✅ COMPLETED
+1. ~~Create `world/combat/hit_location.py` module~~ → Implemented in `world/medical/utils.py`
+2. ~~Add `calculate_hit_location(success_margin, targeting_intent)` function~~ → Implemented as `select_hit_location(character, success_margin)` and `select_target_organ(location, precision_roll, attacker_skill)`
+3. ~~Define location difficulty constants and organ targeting weights~~ → Implemented with success margin thresholds and precision-based organ weights
+4. ~~Update combat handler to use smart location targeting~~ → Fully integrated two-stage targeting system
 
-**Phase 3.2: Armor Protection Layer** 
+**Phase 3.2: Armor Protection Layer** - 🔲 PLANNED 
 1. Extend `typeclasses/items.py` with armor properties:
    ```python
    # Add to clothing items
