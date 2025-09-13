@@ -405,7 +405,7 @@ def get_medical_status_summary(character):
     # Vital signs
     lines.append(f"Blood Level: {medical_state.blood_level:.1f}%")
     lines.append(f"Pain Level: {medical_state.pain_level:.1f}")
-    lines.append(f"Consciousness: {medical_state.consciousness:.1f}%")
+    lines.append(f"Consciousness: {medical_state.consciousness * 100:.1f}%")
     
     # Active conditions
     if medical_state.conditions:
