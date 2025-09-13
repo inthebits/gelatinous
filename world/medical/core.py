@@ -346,18 +346,18 @@ class MedicalState:
             # Start ticker if character is available
             if hasattr(self, 'character') and self.character:
                 try:
-                    from evennia.comms.models import ChannelDB
+                    from evennia import CHANNEL_HANDLER
                     from world.combat.constants import SPLATTERCAST_CHANNEL
-                    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                    splattercast = CHANNEL_HANDLER.get(SPLATTERCAST_CHANNEL)
                     splattercast.msg(f"CONDITION_CREATE: Starting {condition.condition_type} for {self.character.key}")
                     condition.start_condition(self.character)
                 except:
                     pass
             else:
                 try:
-                    from evennia.comms.models import ChannelDB
+                    from evennia import CHANNEL_HANDLER
                     from world.combat.constants import SPLATTERCAST_CHANNEL
-                    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                    splattercast = CHANNEL_HANDLER.get(SPLATTERCAST_CHANNEL)
                     splattercast.msg(f"CONDITION_CREATE: No character reference available for {condition.condition_type}")
                 except:
                     pass
@@ -570,9 +570,9 @@ class MedicalState:
             self.conditions.append(condition)
             
             try:
-                from evennia.comms.models import ChannelDB
+                from evennia import CHANNEL_HANDLER
                 from world.combat.constants import SPLATTERCAST_CHANNEL
-                splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                splattercast = CHANNEL_HANDLER.get(SPLATTERCAST_CHANNEL)
                 splattercast.msg(f"ADD_CONDITION: Added {condition.condition_type} severity {condition.severity}")
             except:
                 pass
@@ -584,18 +584,18 @@ class MedicalState:
                 character = self._get_character_reference()
                 if character:
                     try:
-                        from evennia.comms.models import ChannelDB
+                        from evennia import CHANNEL_HANDLER
                         from world.combat.constants import SPLATTERCAST_CHANNEL
-                        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                        splattercast = CHANNEL_HANDLER.get(SPLATTERCAST_CHANNEL)
                         splattercast.msg(f"ADD_CONDITION: Starting ticker for {condition.condition_type} on {character.key}")
                     except:
                         pass
                     condition.start_condition(character)
                 else:
                     try:
-                        from evennia.comms.models import ChannelDB
+                        from evennia import CHANNEL_HANDLER
                         from world.combat.constants import SPLATTERCAST_CHANNEL
-                        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                        splattercast = CHANNEL_HANDLER.get(SPLATTERCAST_CHANNEL)
                         splattercast.msg(f"ADD_CONDITION: No character reference found for {condition.condition_type}")
                     except:
                         pass
@@ -649,20 +649,8 @@ class MedicalState:
     def _get_character_reference(self):
         """
         Get reference to character that owns this medical state.
-        
-        This is a helper method since MedicalState doesn't directly store
-        character reference. We'll need to find it through the character's
-        medical_state attribute.
         """
-        # This is a bit hacky but necessary - search for character with this medical_state
-        try:
-            from evennia.objects.models import ObjectDB
-            for character in ObjectDB.objects.filter(db_typeclass_path__icontains="Character"):
-                if hasattr(character, 'medical_state') and character.medical_state is self:
-                    return character
-        except:
-            pass
-        return None
+        return self.character
         
     def to_dict(self):
         """Serialize medical state for persistence."""
