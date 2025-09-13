@@ -345,7 +345,22 @@ class MedicalState:
             self.conditions.append(condition)
             # Start ticker if character is available
             if hasattr(self, 'character') and self.character:
-                condition.start_condition(self.character)
+                try:
+                    from evennia.comms.models import ChannelDB
+                    from world.combat.constants import SPLATTERCAST_CHANNEL
+                    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                    splattercast.msg(f"CONDITION_CREATE: Starting {condition.condition_type} for {self.character.key}")
+                    condition.start_condition(self.character)
+                except:
+                    pass
+            else:
+                try:
+                    from evennia.comms.models import ChannelDB
+                    from world.combat.constants import SPLATTERCAST_CHANNEL
+                    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                    splattercast.msg(f"CONDITION_CREATE: No character reference available for {condition.condition_type}")
+                except:
+                    pass
             created_condition = condition  # Return the last created condition
             
         self._cache_dirty = True
@@ -551,13 +566,36 @@ class MedicalState:
         if condition not in self.conditions:
             self.conditions.append(condition)
             
+            try:
+                from evennia.comms.models import ChannelDB
+                from world.combat.constants import SPLATTERCAST_CHANNEL
+                splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                splattercast.msg(f"ADD_CONDITION: Added {condition.condition_type} severity {condition.severity}")
+            except:
+                pass
+            
             # Start ticker if condition requires it
             if hasattr(condition, 'requires_ticker') and condition.requires_ticker:
                 # Get character reference - this is a bit tricky since MedicalState
                 # doesn't directly hold character reference
                 character = self._get_character_reference()
                 if character:
+                    try:
+                        from evennia.comms.models import ChannelDB
+                        from world.combat.constants import SPLATTERCAST_CHANNEL
+                        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                        splattercast.msg(f"ADD_CONDITION: Starting ticker for {condition.condition_type} on {character.key}")
+                    except:
+                        pass
                     condition.start_condition(character)
+                else:
+                    try:
+                        from evennia.comms.models import ChannelDB
+                        from world.combat.constants import SPLATTERCAST_CHANNEL
+                        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                        splattercast.msg(f"ADD_CONDITION: No character reference found for {condition.condition_type}")
+                    except:
+                        pass
                     
     def remove_condition(self, condition):
         """

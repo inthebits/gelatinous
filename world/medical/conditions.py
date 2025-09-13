@@ -20,12 +20,20 @@ def _condition_tick_callback(condition_id):
     This is required because Evennia's TICKER_HANDLER only accepts
     standalone functions or typeclass methods as callbacks.
     """
+    from evennia.comms.models import ChannelDB
+    from world.combat.constants import SPLATTERCAST_CHANNEL
+    
+    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+    splattercast.msg(f"MEDICAL_TICK: Callback triggered for {condition_id}")
+    
     if condition_id not in _ACTIVE_CONDITIONS:
         # Condition was removed, stop ticker
         TICKER_HANDLER.remove(idstring=condition_id)
+        splattercast.msg(f"MEDICAL_TICK: Condition {condition_id} not in registry, stopping ticker")
         return
         
     condition = _ACTIVE_CONDITIONS[condition_id]
+    splattercast.msg(f"MEDICAL_TICK: Found condition {condition.condition_type} severity {condition.severity}")
     
     # Get character from condition ID
     try:
@@ -36,15 +44,17 @@ def _condition_tick_callback(condition_id):
         
         if not character or not hasattr(character, 'medical_state'):
             # Character doesn't exist or has no medical state, stop condition
+            splattercast.msg(f"MEDICAL_TICK: Character {character_id} invalid, ending condition")
             condition.end_condition(None)
             return
             
+        splattercast.msg(f"MEDICAL_TICK: Applying tick effect to {character.key}")
         # Apply tick effect
         condition.tick_effect(character)
         
     except Exception as e:
         # Error occurred, stop condition
-        print(f"Condition tick error for {condition_id}: {e}")
+        splattercast.msg(f"MEDICAL_TICK_ERROR: {condition_id}: {e}")
         condition.end_condition(None)
 
 import random
@@ -96,14 +106,23 @@ class MedicalCondition:
         
     def start_condition(self, character):
         """Begin ticking condition on character if required."""
+        from evennia.comms.models import ChannelDB
+        from world.combat.constants import SPLATTERCAST_CHANNEL
+        
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
         if not self.requires_ticker:
+            splattercast.msg(f"CONDITION_START: {self.condition_type} for {character.key} doesn't require ticker")
             return
             
         # Create unique ticker ID
         self.ticker_id = f"{character.id}_{self.condition_type}_{id(self)}"
+        splattercast.msg(f"CONDITION_START: Starting {self.condition_type} ticker {self.ticker_id} for {character.key}")
+        splattercast.msg(f"CONDITION_START: Interval={self.tick_interval}s, Severity={self.severity}")
         
         # Register condition in global registry
         _ACTIVE_CONDITIONS[self.ticker_id] = self
+        splattercast.msg(f"CONDITION_START: Registered in global registry, total conditions: {len(_ACTIVE_CONDITIONS)}")
         
         # Start ticker with standalone callback
         TICKER_HANDLER.add(
@@ -114,6 +133,7 @@ class MedicalCondition:
             # Pass the condition_id as an argument to the callback
             args=[self.ticker_id]
         )
+        splattercast.msg(f"CONDITION_START: Ticker added to TICKER_HANDLER for {self.ticker_id}")
         
     def tick_effect(self, character):
         """Override in subclasses to implement specific effects."""
@@ -274,17 +294,28 @@ class BleedingCondition(MedicalCondition):
             
     def tick_effect(self, character):
         """Apply blood loss and natural clotting each tick."""
+        from evennia.comms.models import ChannelDB
+        from world.combat.constants import SPLATTERCAST_CHANNEL
+        
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"BLEEDING_TICK: {character.key} {self.location} severity {self.severity}")
+        
         if self.severity > 0:
             # Apply blood loss
             blood_loss = self.severity
             if hasattr(character, 'medical_state'):
+                old_blood = character.medical_state.blood_level
                 character.medical_state.blood_level = max(
                     0.0, 
                     character.medical_state.blood_level - blood_loss
                 )
+                new_blood = character.medical_state.blood_level
+                splattercast.msg(f"BLOOD_LOSS: {character.key} lost {blood_loss}%, {old_blood:.1f}% -> {new_blood:.1f}%")
             
             # Natural clotting - decrease bleeding severity
+            old_severity = self.severity
             self.severity = max(0, self.severity - self.decay_rate)
+            splattercast.msg(f"CLOTTING: {character.key} {self.location} severity {old_severity} -> {self.severity}")
             
         # Check for natural resolution
         super().tick_effect(character)
