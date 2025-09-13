@@ -17,7 +17,7 @@ from evennia import DefaultScript, create_script, search_object
 from random import randint
 from evennia.utils.utils import delay
 from world.combat.messages import get_combat_message
-from world.medical.utils import select_hit_location
+from world.medical.utils import select_hit_location, select_target_organ
 from evennia.comms.models import ChannelDB
 import traceback
 
@@ -1207,11 +1207,27 @@ class CombatHandler(DefaultScript):
             # Determine injury type based on weapon
             injury_type = self._determine_injury_type(weapon)
             
-            # Select hit location dynamically based on target's anatomy
-            hit_location = select_hit_location(target)
+            # Calculate success margin for precision targeting
+            success_margin = attacker_roll - target_roll
             
-            # Apply damage and check if target died
-            target_died = target.take_damage(damage, location=hit_location, injury_type=injury_type)
+            # Select hit location with success margin bias toward vital areas
+            hit_location = select_hit_location(target, success_margin)
+            
+            # Make precision roll for organ targeting within the location
+            precision_roll = randint(1, 20)
+            # Mix motorics (70%) and intellect (30%) for precision skill
+            attacker_motorics = get_numeric_stat(attacker, "motorics", 1)
+            attacker_intellect = get_numeric_stat(attacker, "intellect", 1) 
+            precision_skill = int((attacker_motorics * 0.7) + (attacker_intellect * 0.3))
+            
+            # Select specific target organ within the hit location
+            target_organ = select_target_organ(hit_location, precision_roll, precision_skill)
+            
+            # Debug output for precision targeting
+            splattercast.msg(f"PRECISION_TARGET: {attacker.key} margin={success_margin}, precision={precision_roll + precision_skill}, hit {hit_location}:{target_organ}")
+            
+            # Apply damage to the specific organ and check if target died
+            target_died = target.take_damage(damage, location=hit_location, injury_type=injury_type, target_organ=target_organ)
             
             # Determine weapon type for messages
             weapon_type = "unarmed"

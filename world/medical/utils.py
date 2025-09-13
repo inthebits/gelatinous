@@ -48,12 +48,14 @@ def calculate_hit_weights_for_location(location):
     return hit_weights
 
 
-def select_hit_location(character):
+def select_hit_location(character, success_margin=0):
     """
     Dynamically select a hit location based on character's anatomy and organ hit weights.
+    Success margin biases selection toward vital areas for skilled attacks.
     
     Args:
         character: Character object with longdesc anatomy structure
+        success_margin (int): Attack roll margin (attacker_roll - target_roll)
         
     Returns:
         str: Selected body location (e.g., "chest", "head", "left_arm")
@@ -72,6 +74,19 @@ def select_hit_location(character):
     # Calculate total hit weights for each body location
     location_weights = {}
     
+    # Define vital areas for success margin bias
+    vital_areas = {"head", "chest", "neck", "abdomen"}
+    
+    # Calculate success margin bias multiplier
+    if success_margin <= 3:
+        vital_bias = 1.25  # +25% weight to vital areas
+    elif success_margin <= 8:
+        vital_bias = 1.5   # +50% weight to vital areas
+    elif success_margin <= 15:
+        vital_bias = 2.0   # +100% weight to vital areas
+    else:
+        vital_bias = 3.0   # +200% weight to vital areas
+    
     for location in available_locations:
         # Get all organs in this location and sum their hit weights
         organs = get_organ_by_body_location(location)
@@ -82,6 +97,10 @@ def select_hit_location(character):
             weight_category = organ_data.get("hit_weight", "common")
             weight_value = HIT_WEIGHTS.get(weight_category, HIT_WEIGHTS["common"])
             total_weight += weight_value
+            
+        # Apply success margin bias to vital areas
+        if location in vital_areas and success_margin > 0:
+            total_weight = int(total_weight * vital_bias)
             
         # Use a minimum weight to ensure all locations are possible targets
         location_weights[location] = max(total_weight, 1)
@@ -104,7 +123,79 @@ def select_hit_location(character):
     return available_locations[0]
 
 
-def distribute_damage_to_organs(location, total_damage, medical_state, injury_type="generic"):
+def select_target_organ(location, precision_roll=0, attacker_skill=1):
+    """
+    Select a specific organ within a body location based on precision.
+    Higher precision rolls are more likely to hit rare/vital organs.
+    
+    Args:
+        location (str): Body location that was hit
+        precision_roll (int): d20 roll for precision targeting
+        attacker_skill (int): Attacker's skill for precision calculation
+        
+    Returns:
+        str: Selected organ name, or None if no organs in location
+    """
+    import random
+    
+    organs = get_organ_by_body_location(location)
+    if not organs:
+        return None
+        
+    # Calculate precision-based organ weights
+    organ_weights = {}
+    precision_total = precision_roll + attacker_skill
+    
+    for organ_name in organs:
+        organ_data = ORGANS.get(organ_name, {})
+        hit_weight_category = organ_data.get("hit_weight", "common")
+        base_weight = HIT_WEIGHTS.get(hit_weight_category, HIT_WEIGHTS["common"])
+        
+        # Precision affects targeting of rare organs
+        # Higher precision = more likely to hit rare/vital organs
+        if hit_weight_category == "very_rare":
+            # Very rare organs: need high precision to target
+            if precision_total >= 25:
+                weight = base_weight * 3.0  # Much more likely with exceptional precision
+            elif precision_total >= 20:
+                weight = base_weight * 2.0  # More likely with good precision
+            else:
+                weight = base_weight * 0.5  # Less likely with poor precision
+        elif hit_weight_category == "rare":
+            # Rare organs: moderate precision helps
+            if precision_total >= 20:
+                weight = base_weight * 2.0
+            elif precision_total >= 15:
+                weight = base_weight * 1.5
+            else:
+                weight = base_weight
+        else:
+            # Common/uncommon organs: always hittable, but less likely with high precision
+            if precision_total >= 20:
+                weight = base_weight * 0.7  # Skilled attackers avoid hitting "easy" targets
+            else:
+                weight = base_weight
+                
+        organ_weights[organ_name] = max(int(weight), 1)
+    
+    # Weighted random selection of specific organ
+    total_weight = sum(organ_weights.values())
+    if total_weight == 0:
+        return organs[0] if organs else None
+        
+    rand_value = random.randint(1, total_weight)
+    cumulative_weight = 0
+    
+    for organ_name, weight in organ_weights.items():
+        cumulative_weight += weight
+        if rand_value <= cumulative_weight:
+            return organ_name
+            
+    # Fallback
+    return organs[0] if organs else None
+
+
+def distribute_damage_to_organs(location, total_damage, medical_state, injury_type="generic", target_organ=None):
     """
     Distribute damage across organs in a body location based on hit weights.
     Only distributes damage to organs that aren't already destroyed.
@@ -114,6 +205,7 @@ def distribute_damage_to_organs(location, total_damage, medical_state, injury_ty
         total_damage (int): Total damage to distribute
         medical_state: Character's medical state to check organ status
         injury_type (str): Type of injury
+        target_organ (str): If specified, apply ALL damage to this organ only
         
     Returns:
         dict: {organ_name: damage_amount} mapping
@@ -132,6 +224,16 @@ def distribute_damage_to_organs(location, total_damage, medical_state, injury_ty
     # If all organs in this location are destroyed, no damage can be applied
     if not functional_organs:
         return {}
+    
+    # Single organ targeting - apply all damage to specified organ
+    if target_organ and target_organ in functional_organs:
+        return {target_organ: total_damage}
+    
+    # If target organ specified but not functional, fall back to distribution
+    if target_organ and target_organ not in functional_organs:
+        # Target organ is destroyed or doesn't exist in this location
+        # Fall back to proportional distribution among functional organs
+        pass
         
     hit_weights = calculate_hit_weights_for_location(location)
     # Recalculate total weight using only functional organs
@@ -157,7 +259,7 @@ def distribute_damage_to_organs(location, total_damage, medical_state, injury_ty
     return damage_distribution
 
 
-def apply_anatomical_damage(character, damage_amount, location, injury_type="generic"):
+def apply_anatomical_damage(character, damage_amount, location, injury_type="generic", target_organ=None):
     """
     Apply damage to a specific body location, affecting relevant organs.
     
@@ -168,6 +270,7 @@ def apply_anatomical_damage(character, damage_amount, location, injury_type="gen
         damage_amount (int): Amount of damage
         location (str): Body location hit
         injury_type (str): Type of injury
+        target_organ (str): If specified, target this specific organ
         
     Returns:
         dict: Results of damage application
@@ -183,7 +286,7 @@ def apply_anatomical_damage(character, damage_amount, location, injury_type="gen
     medical_state = character.medical_state
     
     # Distribute damage to organs in the location (only to functional organs)
-    damage_distribution = distribute_damage_to_organs(location, damage_amount, medical_state, injury_type)
+    damage_distribution = distribute_damage_to_organs(location, damage_amount, medical_state, injury_type, target_organ)
     
     # Check if all organs in this location are destroyed (potential limb loss)
     if not damage_distribution:

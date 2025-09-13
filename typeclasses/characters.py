@@ -115,7 +115,7 @@ class Character(ObjectParent, DefaultCharacter):
         save_medical_state(self)
 
 # Mortality Management  
-    def take_damage(self, amount, location="chest", injury_type="generic"):
+    def take_damage(self, amount, location="chest", injury_type="generic", target_organ=None):
         """
         Apply damage to a specific body location with injury type.
         
@@ -126,6 +126,7 @@ class Character(ObjectParent, DefaultCharacter):
             amount (int): Damage amount
             location (str): Body location (head, chest, left_arm, etc.)
             injury_type (str): Type of injury (cut, blunt, bullet, etc.)
+            target_organ (str): If specified, target this specific organ
             
         Returns:
             bool: True if character died from this damage, False otherwise
@@ -137,7 +138,7 @@ class Character(ObjectParent, DefaultCharacter):
 
         # Apply anatomical damage through medical system
         from world.medical.utils import apply_anatomical_damage
-        damage_results = apply_anatomical_damage(self, amount, location, injury_type)
+        damage_results = apply_anatomical_damage(self, amount, location, injury_type, target_organ)
         
         # Save medical state after damage
         self.save_medical_state()
