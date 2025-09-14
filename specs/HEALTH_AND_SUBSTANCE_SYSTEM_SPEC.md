@@ -42,14 +42,15 @@
 - ✅ **No HP attributes** - character health entirely managed by medical system
 - ✅ **Simplified architecture** - single system for all health management
 
-### 🔄 CURRENT STATE: UNIFIED MEDICAL MESSAGING & FORENSIC SYSTEM
-The medical system now features **consolidated messaging and forensic evidence management**:
-- **Single medical message per tick** combining bleeding and pain information to eliminate message spam
-- **BloodPool room integration** with forensic evidence that ages and deteriorates over time
-- **Enhanced cleaning system** with spray command supporting both graffiti and blood evidence removal
-- **Consistent death analysis** across all death scenarios (combat, medical conditions, other causes)
-- **Standardized |R bright red coloring** for all medical-related messages and evidence
-- **Context-appropriate messaging** that adapts based on what evidence is present and being cleaned
+### 🔄 CURRENT STATE: DEATH CURTAIN INTEGRATION & FORENSIC SYSTEM
+The medical system now features **comprehensive death processing and persistent state visualization**:
+- **Death curtain protection** with no personal medical messages sent to deceased characters
+- **Persistent placement descriptions** providing visual indicators for unconscious/dead states without scrolling
+- **Enhanced observer messaging** with atmospheric blood descriptions for deceased characters
+- **Race condition elimination** through centralized death processing and delayed attack validation
+- **Integrated infection messaging** with consolidated medical system using consistent red coloring
+- **BloodPool forensic evidence** with aging and room description integration
+- **Unified cleaning system** supporting both graffiti and blood evidence removal
 
 ### � UNIFIED MEDICAL MESSAGING SYSTEM (September 2025)
 **Consolidated Message Architecture:**
@@ -293,6 +294,72 @@ def _perform_death_analysis(self):
 - ✅ **Death analysis consistency** - Centralized death reporting via Character.at_death() for all death scenarios
 - ✅ **Standardized medical color coding** - Consistent |R bright red coloring for all medical-related messages
 - ✅ **Forensic evidence management** - Blood pools age and deteriorate over time, creating realistic crime scene evolution
+
+**Phase 2.8 - Death Curtain Integration & Race Condition Fixes (✅ COMPLETED September 2025):**
+- ✅ **Placement description system** - Persistent visual indicators for unconscious ("unconscious and motionless.") and death ("lying motionless and deceased.") states  
+- ✅ **Death curtain protection** - Medical messaging respects death curtain experience by not sending personal messages to deceased characters
+- ✅ **Enhanced observer messaging** - Special bleeding descriptions for deceased characters ("Blood flows freely from [name]'s lifeless body, forming a growing pool of crimson.")
+- ✅ **Automated placement cleanup** - Placement descriptions automatically cleared on consciousness recovery and manual healing
+- ✅ **Death processing race condition fixes** - Centralized death processing with proper flag timing prevents duplicate death curtains
+- ✅ **Delayed attack validation** - Combat system now validates attacker/target death status before executing delayed attacks
+- ✅ **Medical/combat coordination** - Elimination of redundant death handling code, single source of truth through Character.at_death()
+- ✅ **Infection message integration** - Infection conditions now part of consolidated medical messaging system with consistent |r red coloring
+
+**Death Processing Architecture:**
+```python
+def at_death(self):
+    """Centralized death processing with race condition protection"""
+    # Prevent duplicate processing with immediate flag setting
+    if hasattr(self, 'ndb') and getattr(self.ndb, 'death_processed', False):
+        return
+    self.ndb.death_processed = True
+    
+    # Clear unconsciousness state since death supersedes it
+    if getattr(self.ndb, 'unconsciousness_processed', False):
+        self.ndb.unconsciousness_processed = False
+    
+    # Set death placement description for persistent visual indication
+    self.override_place = "lying motionless and deceased."
+    
+    # Always show death analysis and start death curtain
+    self._show_death_analysis()
+    show_death_curtain(self)
+```
+
+**Medical Messaging for Deceased Characters:**
+```python
+def _send_medical_messages(self, bleeding_severity, pain_severity, infection_severity=0):
+    """Enhanced messaging with death curtain protection"""
+    # Check if character is dead - don't send personal messages
+    is_dead = self.obj.medical_state and self.obj.medical_state.is_dead()
+    
+    if is_dead:
+        # Special observer messages for deceased characters
+        if bleeding_severity > 12:
+            room_msg = f"Blood flows freely from {self.obj.key}'s lifeless body, forming a growing pool of crimson."
+            self.obj.location.msg_contents(room_msg, exclude=self.obj)
+    else:
+        # Normal personal + observer messages for living characters
+        self.obj.msg(personal_medical_message)
+        self.obj.location.msg_contents(observer_message, exclude=self.obj)
+```
+
+**Combat Race Condition Fixes:**
+```python
+def _process_delayed_attack(self, attacker, target, attacker_entry, combatants_list):
+    """Enhanced delayed attack validation with death checks"""
+    # Check if attacker is dead - dead characters can't attack
+    if attacker.is_dead():
+        splattercast.msg(f"DELAYED_ATTACK: {attacker.key} has died, attack cancelled.")
+        return
+        
+    # Check if target is dead - no point attacking the dead  
+    if target.is_dead():
+        splattercast.msg(f"DELAYED_ATTACK: {target.key} has died, {attacker.key}'s attack cancelled.")
+        return
+    
+    # Proceed with attack processing...
+```
 
 **Phase 3 - Advanced Features (Future Development):**
 
