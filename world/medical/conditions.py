@@ -6,6 +6,7 @@ like bleeding. Conditions are managed by per-character MedicalScript instances.
 """
 
 import random
+from evennia.comms.models import ChannelDB
 from .constants import (
     INJURY_SEVERITY_MULTIPLIERS,
     BLOOD_LOSS_PER_SEVERITY,
@@ -121,10 +122,9 @@ class BleedingCondition(MedicalCondition):
         
     def tick_effect(self, character):
         """Apply blood loss and potentially reduce severity."""
-        from evennia import CHANNEL_HANDLER
         from world.combat.constants import SPLATTERCAST_CHANNEL
         
-        splattercast = CHANNEL_HANDLER.get(SPLATTERCAST_CHANNEL)
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
         if not hasattr(character, 'medical_state'):
             return
@@ -212,10 +212,9 @@ class PainCondition(MedicalCondition):
         
     def tick_effect(self, character):
         """Pain naturally diminishes over time."""
-        from evennia import CHANNEL_HANDLER
         from world.combat.constants import SPLATTERCAST_CHANNEL
         
-        splattercast = CHANNEL_HANDLER.get(SPLATTERCAST_CHANNEL)
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
         # Natural pain reduction
         if random.randint(1, 100) <= 20:  # 20% chance per tick
@@ -256,10 +255,9 @@ class InfectionCondition(MedicalCondition):
         
     def tick_effect(self, character):
         """Infection can worsen if untreated, or improve if treated."""
-        from evennia import CHANNEL_HANDLER
         from world.combat.constants import SPLATTERCAST_CHANNEL
         
-        splattercast = CHANNEL_HANDLER.get(SPLATTERCAST_CHANNEL)
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
         if self.treated:
             # Treated infection improves
