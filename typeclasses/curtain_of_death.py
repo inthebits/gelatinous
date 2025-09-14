@@ -51,6 +51,21 @@ def _colorize_evennia(text):
     return "".join(colored)
 
 
+def _strip_color_codes(text):
+    """
+    Remove Evennia color codes to get the visible text length.
+    
+    Args:
+        text (str): Text with color codes
+        
+    Returns:
+        str: Text without color codes
+    """
+    import re
+    # Remove all |x and |xx codes (where x is any character)
+    return re.sub(r'\|.', '', text)
+
+
 def curtain_of_death(text, width=None, session=None):
     """
     Create a "dripping blood" death curtain animation.
@@ -66,15 +81,30 @@ def curtain_of_death(text, width=None, session=None):
     if width is None:
         width = _get_terminal_width(session)
     
-    # Center the message on a sea of '▓' characters (avoiding | for Evennia colors)
-    padded = text.center(width, "▓")
-    chars = list(padded)
+    # Calculate visible text length (without color codes)
+    visible_text = _strip_color_codes(text)
+    
+    # For the first frame, use the text as-is (with its color codes)
+    # Center it with colored blocks
+    padding_needed = width - len(visible_text)
+    left_padding = padding_needed // 2
+    right_padding = padding_needed - left_padding
+    
+    # Create colored padding blocks
+    left_blocks = _colorize_evennia("▓" * left_padding)
+    right_blocks = _colorize_evennia("▓" * right_padding)
+    
+    first_frame = left_blocks + text + right_blocks
+    
+    # For subsequent frames, work with a plain version for character removal
+    plain_padded = visible_text.center(width, "▓")
+    chars = list(plain_padded)
     
     # Build the "plan": a shuffled list of (index, drop-distance) pairs
     plan = [(i, random.randint(1, i + 1)) for i in range(len(chars))]
     random.shuffle(plan)
     
-    frames = [_colorize_evennia("".join(chars))]  # First frame (untouched)
+    frames = [first_frame]  # First frame with proper colors
     
     # Create dripping effect by removing characters in planned sequence
     # Only process every 3rd character to reduce vertical scroll
