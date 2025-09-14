@@ -45,8 +45,9 @@ class MedicalScript(DefaultScript):
             conditions = medical_state.conditions.copy()  # Copy to avoid modification during iteration
             
             if not conditions:
-                splattercast.msg(f"MEDICAL_SCRIPT: {self.obj.key} has no conditions, stopping script")
+                splattercast.msg(f"MEDICAL_SCRIPT: {self.obj.key} has no conditions, stopping and deleting script")
                 self.stop()
+                self.delete()
                 return
                 
             splattercast.msg(f"MEDICAL_SCRIPT: Processing {len(conditions)} conditions for {self.obj.key}")
@@ -75,13 +76,15 @@ class MedicalScript(DefaultScript):
             
             # Check if we should stop (no conditions left)
             if not medical_state.conditions:
-                splattercast.msg(f"MEDICAL_SCRIPT: All conditions processed, stopping script for {self.obj.key}")
+                splattercast.msg(f"MEDICAL_SCRIPT: All conditions processed, stopping and deleting script for {self.obj.key}")
                 self.stop()
+                self.delete()
                 
         except Exception as e:
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
             splattercast.msg(f"MEDICAL_SCRIPT_CRITICAL_ERROR: {self.obj.key}: {e}")
             self.stop()
+            self.delete()
     
     def at_stop(self):
         """Called when script stops."""
