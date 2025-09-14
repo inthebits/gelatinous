@@ -29,9 +29,9 @@ class MedicalScript(DefaultScript):
         self.persistent = True
         self.start_delay = False  # Start immediately but use custom delay for first message
         
-        # Schedule first medical message with a short delay
+        # Schedule first medical message with a delay longer than max combat delay
         from evennia.utils import delay
-        delay(1, self._initial_medical_check)
+        delay(5, self._initial_medical_check)  # 5s delay ensures combat messages appear first
         
     def _initial_medical_check(self):
         """Perform initial medical check after creation delay."""
@@ -147,28 +147,28 @@ class MedicalScript(DefaultScript):
         # Add bleeding components if present
         if bleeding_severity > 0:
             if bleeding_severity <= 3:
-                personal_parts.append("|RYou feel warm blood trickling from your wounds.|n")
+                personal_parts.append("|rYou feel warm blood trickling from your wounds.|n")
                 room_parts.append(f"Small droplets of blood fall from {self.obj.key}'s wounds.")
             elif bleeding_severity <= 7:
-                personal_parts.append("|RBlood flows freely from your wounds, leaving crimson trails.|n")
+                personal_parts.append("|rBlood flows freely from your wounds, leaving crimson trails.|n")
                 room_parts.append(f"Blood steadily drips from {self.obj.key}, forming dark stains.")
             elif bleeding_severity <= 12:
-                personal_parts.append("|RYou feel your life ebbing away as blood pours from your wounds.|n")
+                personal_parts.append("|rYou feel your life ebbing away as blood pours from your wounds.|n")
                 room_parts.append(f"Crimson flows freely from {self.obj.key}'s wounds, pooling on the ground.")
             else:  # 13+
-                personal_parts.append("|RYour vision dims as life-blood gushes from grievous wounds.|n")
+                personal_parts.append("|rYour vision dims as life-blood gushes from grievous wounds.|n")
                 room_parts.append(f"{self.obj.key} leaves a trail of blood, their wounds gushing freely.")
         
         # Add pain components if present
         if pain_severity > 0:
             if pain_severity <= 5:
-                personal_parts.append("|RYou feel a persistent ache from your injuries.|n")
+                personal_parts.append("|rYou feel a persistent ache from your injuries.|n")
             elif pain_severity <= 12:
-                personal_parts.append("|RSharp pain flares from your wounds.|n")
+                personal_parts.append("|rSharp pain flares from your wounds.|n")
             elif pain_severity <= 20:
-                personal_parts.append("|RAgony courses through your battered form.|n")
+                personal_parts.append("|rAgony courses through your battered form.|n")
             else:  # 21+
-                personal_parts.append("|RUnbearable agony threatens to drive you unconscious.|n")
+                personal_parts.append("|rUnbearable agony threatens to drive you unconscious.|n")
         
         # Combine and send messages
         if personal_parts:
@@ -178,7 +178,7 @@ class MedicalScript(DefaultScript):
         
         if room_parts:
             # Join room messages and add color
-            room_msg = f"|R{' '.join(room_parts)}|n"
+            room_msg = f"|r{' '.join(room_parts)}|n"
             if self.obj.location:
                 self.obj.location.msg_contents(room_msg, exclude=self.obj)
     
