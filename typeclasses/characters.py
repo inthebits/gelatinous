@@ -217,6 +217,22 @@ class Character(ObjectParent, DefaultCharacter):
         Provides unconsciousness messaging to character and room.
         Triggers removal from combat if currently fighting.
         """
+        # Prevent double unconsciousness processing
+        if hasattr(self, 'ndb') and getattr(self.ndb, 'unconsciousness_processed', False):
+            try:
+                from evennia.comms.models import ChannelDB
+                from world.combat.constants import SPLATTERCAST_CHANNEL
+                splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                splattercast.msg(f"UNCONSCIOUS_SKIP: {self.key} already processed unconsciousness, skipping")
+            except:
+                pass
+            return
+            
+        # Mark unconsciousness as processed
+        if not hasattr(self, 'ndb'):
+            self.ndb = {}
+        self.ndb.unconsciousness_processed = True
+        
         self.msg("|rYou collapse, unconscious from your injuries!|n")
         if self.location:
             self.location.msg_contents(
@@ -395,6 +411,10 @@ class Character(ObjectParent, DefaultCharacter):
         if not hasattr(self, 'ndb'):
             self.ndb = {}
         self.ndb.death_processed = True
+        
+        # Clear any previous unconsciousness state since death supersedes it
+        if getattr(self.ndb, 'unconsciousness_processed', False):
+            self.ndb.unconsciousness_processed = False
         
         # Always show death analysis when character dies
         try:

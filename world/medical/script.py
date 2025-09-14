@@ -118,9 +118,18 @@ class MedicalScript(DefaultScript):
                 return
             elif medical_state.is_unconscious():
                 splattercast.msg(f"MEDICAL_SCRIPT_UNCONSCIOUS: {self.obj.key} has become unconscious")
-                # Trigger unconsciousness handling
-                from world.combat.utils import handle_character_death
-                handle_character_death(self.obj, death=False)
+                
+                # Check if unconsciousness has already been processed to prevent double messages
+                if hasattr(self.obj, 'ndb') and getattr(self.obj.ndb, 'unconsciousness_processed', False):
+                    splattercast.msg(f"MEDICAL_SCRIPT_UNCONSCIOUS_SKIP: {self.obj.key} unconsciousness already processed")
+                else:
+                    # Use character's own unconsciousness handling method
+                    self.obj._handle_unconsciousness()
+            else:
+                # Character is conscious - clear unconsciousness flag if it was set
+                if hasattr(self.obj, 'ndb') and getattr(self.obj.ndb, 'unconsciousness_processed', False):
+                    splattercast.msg(f"MEDICAL_SCRIPT_RECOVERY: {self.obj.key} has regained consciousness")
+                    self.obj.ndb.unconsciousness_processed = False
             
             # Check if we should stop (no conditions left)
             if not medical_state.conditions:
