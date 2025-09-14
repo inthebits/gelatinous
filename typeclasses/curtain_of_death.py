@@ -169,6 +169,29 @@ class DeathCurtain:
         
     def start_animation(self):
         """Start the death curtain animation."""
+        # Send initial death messages before the curtain starts
+        if self.location:
+            # Get death cause for both messages
+            death_cause = None
+            if hasattr(self.character, 'get_death_cause'):
+                death_cause = self.character.get_death_cause()
+            
+            # Send victim's initial death message
+            if self.character:
+                if death_cause:
+                    victim_msg = f"|rYour body succumbs to {death_cause}. The end draws near...|n"
+                else:
+                    victim_msg = f"|rYour body fails you. The end draws near...|n"
+                self.character.msg(victim_msg)
+            
+            # Send observer message
+            if death_cause:
+                observer_msg = f"|r{self.character.key} is dying from {death_cause}...|n"
+            else:
+                observer_msg = f"|r{self.character.key} is dying...|n"
+                
+            self.location.msg_contents(observer_msg, exclude=[self.character])
+        
         self.current_frame = 0
         self._show_next_frame()
         
@@ -178,29 +201,6 @@ class DeathCurtain:
             # Send current frame to the dying character
             if self.character:
                 self.character.msg(self.frames[self.current_frame])
-            
-            # Send initial death messages only on the first frame
-            if self.location and self.current_frame == 0:
-                # Get death cause for both messages
-                death_cause = None
-                if hasattr(self.character, 'get_death_cause'):
-                    death_cause = self.character.get_death_cause()
-                
-                # Send victim's initial death message
-                if self.character:
-                    if death_cause:
-                        victim_msg = f"|rYour body succumbs to {death_cause}. The end draws near...|n"
-                    else:
-                        victim_msg = f"|rYour body fails you. The end draws near...|n"
-                    self.character.msg(victim_msg)
-                
-                # Send observer message
-                if death_cause:
-                    observer_msg = f"|r{self.character.key} is dying from {death_cause}...|n"
-                else:
-                    observer_msg = f"|r{self.character.key} is dying...|n"
-                    
-                self.location.msg_contents(observer_msg, exclude=[self.character])
             
             self.current_frame += 1
             
