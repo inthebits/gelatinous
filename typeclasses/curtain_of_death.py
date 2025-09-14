@@ -126,9 +126,17 @@ class DeathCurtain:
         # Get terminal width for this character's session
         self.width = _get_terminal_width(self.session)
         
-        # Default death message if none provided
+        # Create informed death message based on cause
         if message is None:
-            message = "A red haze blurs your vision as the world slips away..."
+            # Get death cause from character's medical analysis
+            death_cause = None
+            if hasattr(character, 'get_death_cause'):
+                death_cause = character.get_death_cause()
+            
+            if death_cause:
+                message = f"You are dying from {death_cause}..."
+            else:
+                message = "A red haze blurs your vision as the world slips away..."
         
         self.message = message
         self.frames = curtain_of_death(message, session=self.session)
@@ -150,7 +158,16 @@ class DeathCurtain:
             
             # Send observer message only on the first frame
             if self.location and self.current_frame == 0:
-                observer_msg = f"|r{self.character.key} is dying...|n"
+                # Create informed observer message
+                death_cause = None
+                if hasattr(self.character, 'get_death_cause'):
+                    death_cause = self.character.get_death_cause()
+                
+                if death_cause:
+                    observer_msg = f"|r{self.character.key} is dying from {death_cause}...|n"
+                else:
+                    observer_msg = f"|r{self.character.key} is dying...|n"
+                    
                 self.location.msg_contents(observer_msg, exclude=[self.character])
             
             self.current_frame += 1

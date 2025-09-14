@@ -174,15 +174,9 @@ class MedicalScript(DefaultScript):
         # Add bleeding components if present
         if bleeding_severity > 0:
             if is_dead:
-                # Special deceased character bleeding messages for observers only
-                if bleeding_severity <= 3:
-                    room_parts.append(f"Blood continues to seep from {self.obj.key}'s still form.")
-                elif bleeding_severity <= 7:
-                    room_parts.append(f"Dark blood pools slowly around {self.obj.key}'s motionless body.")
-                elif bleeding_severity <= 12:
-                    room_parts.append(f"Crimson spreads steadily from {self.obj.key}'s wounds, pooling around their deceased form.")
-                else:  # 13+
-                    room_parts.append(f"Blood flows freely from {self.obj.key}'s lifeless body, forming a growing pool of crimson.")
+                # Suppress all bleeding messages for dead characters
+                # Death curtain will handle death-related messaging
+                pass
             else:
                 # Normal living character bleeding messages
                 if bleeding_severity <= 3:

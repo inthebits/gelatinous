@@ -304,6 +304,45 @@ class Character(ObjectParent, DefaultCharacter):
             
         except Exception as e:
             return f"Error in death analysis: {e}"
+    
+    def get_death_cause(self):
+        """
+        Get simple death cause for user-facing messages.
+        
+        Returns:
+            str: Simple death cause description or None if not dead
+        """
+        if not self.is_dead():
+            return None
+            
+        try:
+            medical_state = self.medical_state
+            if not medical_state:
+                return "unknown causes"
+            
+            from world.medical.constants import BLOOD_LOSS_DEATH_THRESHOLD
+            
+            # Check causes in priority order
+            blood_pumping = medical_state.calculate_body_capacity("blood_pumping")
+            breathing = medical_state.calculate_body_capacity("breathing") 
+            digestion = medical_state.calculate_body_capacity("digestion")
+            blood_level = medical_state.blood_level
+            blood_loss_fatal = blood_level <= (100.0 - BLOOD_LOSS_DEATH_THRESHOLD)
+            
+            # Return first fatal condition found (in priority order)
+            if blood_loss_fatal:
+                return "blood loss"
+            elif blood_pumping <= 0:
+                return "heart failure"
+            elif breathing <= 0:
+                return "respiratory failure"
+            elif digestion <= 0:
+                return "organ failure"
+            else:
+                return "critical injuries"
+                
+        except Exception:
+            return "unknown causes"
         
     def get_medical_status(self):
         """
