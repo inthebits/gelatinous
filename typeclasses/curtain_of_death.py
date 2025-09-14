@@ -37,8 +37,8 @@ def _get_terminal_width(session=None):
 
 def _colorize_evennia(text):
     """Apply Evennia color codes to text for a blood-red effect."""
-    # Use Evennia's color system - all red variations for pure blood effect
-    colors = ["|r", "|R"]  # Just red variations for blood effect
+    # Use Evennia's color system - random red variations for blood effect
+    colors = ["|r", "|R"]  # Red variations for blood effect
     
     colored = []
     for char in text:
@@ -128,15 +128,8 @@ class DeathCurtain:
         
         # Create informed death message based on cause
         if message is None:
-            # Get death cause from character's medical analysis
-            death_cause = None
-            if hasattr(character, 'get_death_cause'):
-                death_cause = character.get_death_cause()
-            
-            if death_cause:
-                message = f"You are dying from {death_cause}..."
-            else:
-                message = "A red haze blurs your vision as the world slips away..."
+            # Always use the beautiful mixed red message for the curtain
+            message = "|rA |Rred |rhaze |Rblurs |ryour |Rvision |ras |Rthe |rworld |Rslips |raway|R...|n"
         
         self.message = message
         self.frames = curtain_of_death(message, session=self.session)
