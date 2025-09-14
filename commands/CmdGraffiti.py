@@ -25,7 +25,7 @@ based on the type of can used and syntax provided.
 from evennia import Command, create_object
 from evennia.utils import delay
 from typeclasses.items import SprayCanItem, SolventCanItem
-from typeclasses.objects import GraffitiObject
+from typeclasses.objects import GraffitiObject, BloodPool
 import random
 
 
@@ -35,7 +35,7 @@ class CmdGraffiti(Command):
     
     Usage:
         spray "<message>" with <spray_can>    - Spray paint graffiti
-        spray here with <solvent_can>         - Clean graffiti in room
+        spray here with <solvent_can>         - Clean graffiti and blood stains in room
         
     Examples:
         spray "HELLO WORLD" with red_can
@@ -45,9 +45,9 @@ class CmdGraffiti(Command):
     Paint cans have finite paint - if you run out mid-message, your graffiti
     will be cut short. Messages are limited to 100 characters.
     
-    Solvent cans can clean existing graffiti from the current room, removing
-    random characters from graffiti messages. Multiple applications may be
-    needed to completely clean walls.
+    Solvent cans can clean existing graffiti and blood stains from the current room, 
+    removing random characters from graffiti messages and potentially removing blood 
+    evidence. Multiple applications may be needed to completely clean surfaces.
     
     To change spray can colors, use: press <color> on <spray_can>
     """
@@ -198,37 +198,74 @@ class CmdGraffiti(Command):
             )
     
     def _handle_clean_with_solvent(self, solvent_can):
-        """Handle cleaning graffiti with a solvent can."""
+        """Handle cleaning graffiti and blood stains with a solvent can."""
         
         # Check if solvent can has uses left
         if solvent_can.db.aerosol_level <= 0:
             self.caller.msg(f"{solvent_can.get_display_name(self.caller)} is empty!")
             return
         
-        # Find the room's graffiti object
+        # Find both graffiti and blood pool objects
         graffiti_obj = None
+        blood_pools = []
+        
         for obj in self.caller.location.contents:
             if isinstance(obj, GraffitiObject):
                 graffiti_obj = obj
-                break
+            elif isinstance(obj, BloodPool) or (hasattr(obj.db, 'is_blood_pool') and obj.db.is_blood_pool):
+                blood_pools.append(obj)
         
-        if not graffiti_obj or not graffiti_obj.has_graffiti():
-            self.caller.msg("There's no graffiti here to clean.")
+        # Check if there's anything to clean
+        has_graffiti = graffiti_obj and graffiti_obj.has_graffiti()
+        has_blood = any(pool.db.bleeding_incidents for pool in blood_pools)
+        
+        if not has_graffiti and not has_blood:
+            self.caller.msg("There's nothing here to clean.")
             return
         
-        # Use solvent to remove random characters from graffiti
-        solvent_used = min(10, solvent_can.db.aerosol_level)  # Use up to 10 units of solvent
-        chars_affected = graffiti_obj.remove_random_characters(solvent_used)
-        
-        # Use solvent
+        # Use solvent (up to 10 units)
+        solvent_used = min(10, solvent_can.db.aerosol_level)
         solvent_can.use_solvent(solvent_used)
         
-        # Messages
-        if chars_affected > 0:
+        # Track what was cleaned
+        graffiti_cleaned = False
+        blood_cleaned = False
+        cleaned_items = []
+        
+        # Clean graffiti if present
+        if has_graffiti:
+            chars_affected = graffiti_obj.remove_random_characters(solvent_used)
+            if chars_affected > 0:
+                graffiti_cleaned = True
+                cleaned_items.append("|Cgraffiti|n")
+        
+        # Clean blood pools if present
+        if has_blood:
+            for blood_pool in blood_pools:
+                if blood_pool.db.bleeding_incidents:
+                    # Determine tool quality based on solvent can type
+                    tool_quality = "basic"  # Default for spray cans
+                    if hasattr(solvent_can.db, 'quality'):
+                        tool_quality = solvent_can.db.quality
+                    
+                    cleaned_volume, clean_result = blood_pool.clean_with_solvent(self.caller, tool_quality)
+                    if cleaned_volume > 0:
+                        blood_cleaned = True
+                        cleaned_items.append("|Rblood stains|n")
+        
+        # Generate messages based on what was cleaned
+        if graffiti_cleaned or blood_cleaned:
+            if len(cleaned_items) == 1:
+                item_desc = cleaned_items[0]
+            elif len(cleaned_items) == 2:
+                item_desc = f"{cleaned_items[0]} and {cleaned_items[1]}"
+            else:
+                item_desc = "various stains"
+            
             # Immediate action message
-            self.caller.msg("You apply solvent to the |Cgraffiti|n, watching the colors dissolve away.")
+            self.caller.msg(f"You apply solvent to the {item_desc}, watching the colors dissolve away.")
             self.caller.location.msg_contents(
-                f"{self.caller.name} applies solvent to the |Cgraffiti|n, watching the colors dissolve away.",
+                f"{self.caller.name} applies solvent to the {item_desc}, watching the colors dissolve away.",
                 exclude=self.caller
             )
             
@@ -236,15 +273,15 @@ class CmdGraffiti(Command):
             def delayed_message():
                 if self.caller.location:  # Make sure location still exists
                     self.caller.location.msg_contents(
-                        "The colors break down and the solvent evaporates, taking the |Cgraffiti|n with it."
+                        f"The colors break down and the solvent evaporates, taking the {item_desc} with it."
                     )
             
             delay(3, delayed_message)
             
         else:
-            self.caller.msg("There's no graffiti here to clean.")
+            self.caller.msg("The solvent doesn't seem to affect anything here.")
             self.caller.location.msg_contents(
-                f"{self.caller.name} scrubs at the wall with solvent.",
+                f"{self.caller.name} scrubs at the surfaces with solvent.",
                 exclude=self.caller
             )
 
