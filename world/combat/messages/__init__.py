@@ -105,6 +105,12 @@ def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None
         "grapple_damage_kill"
         # Add any other phases that represent a "successful hit" you want red
     ]
+    
+    miss_phases = [
+        "miss",
+        "grapple_damage_miss"
+        # Add any other phases that represent a "miss" you want white
+    ]
 
     for msg_key in ["attacker_msg", "victim_msg", "observer_msg"]:
         # Get template string from chosen set, or from fallback_template_set if key is missing in chosen
@@ -112,7 +118,7 @@ def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None
         try:
             formatted_msg = template_str.format(**format_kwargs)
             
-            # Apply red color if the phase is a "successful hit"
+            # Apply colors based on phase type
             # Assumes the template_str itself does not contain color codes for these phases.
             if phase in successful_hit_phases:
                 if not (formatted_msg.startswith("|") and formatted_msg.endswith("|n")):
@@ -120,6 +126,11 @@ def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None
                         final_messages[msg_key] = f"|r{formatted_msg}|n" # Apply bold red for kill
                     else:
                         final_messages[msg_key] = f"|R{formatted_msg}|n" # Apply non-bold red for other successful hits
+                else:
+                    final_messages[msg_key] = formatted_msg # Pass through if already colored
+            elif phase in miss_phases:
+                if not (formatted_msg.startswith("|") and formatted_msg.endswith("|n")):
+                    final_messages[msg_key] = f"|w{formatted_msg}|n" # Apply white for misses
                 else:
                     final_messages[msg_key] = formatted_msg # Pass through if already colored
             else:
