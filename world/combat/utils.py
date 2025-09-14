@@ -610,7 +610,6 @@ def add_combatant(handler, char, target=None, initial_grappling=None, initial_gr
     setattr(char.ndb, NDB_COMBAT_HANDLER, handler)
     
     splattercast.msg(f"ADD_COMB: {char.key} added to combat in {handler.key} with initiative {entry['initiative']}.")
-    char.msg("|rYou enter combat!|n")
     
     # Establish proximity for grappled pairs when adding to new handler
     from .proximity import establish_proximity
