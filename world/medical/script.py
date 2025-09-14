@@ -27,8 +27,16 @@ class MedicalScript(DefaultScript):
         self.desc = f"Medical condition manager for {self.obj.key}"
         self.interval = 12  # Tick every 12 seconds (was 60 for production)
         self.persistent = True
-        self.start_delay = True  # Delay first tick to appear after combat messages
-        self.delay = 1  # Brief 1-second delay for proper message sequencing
+        self.start_delay = False  # Start immediately but use custom delay for first message
+        
+        # Schedule first medical message with a short delay
+        from evennia.utils import delay
+        delay(1, self._initial_medical_check)
+        
+    def _initial_medical_check(self):
+        """Perform initial medical check after creation delay."""
+        # This is essentially the same as at_repeat but called once with delay
+        self.at_repeat()
         
     def at_repeat(self):
         """Process all medical conditions for this character."""
