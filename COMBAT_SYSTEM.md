@@ -266,6 +266,67 @@ GRAPPLE_DIFFICULTY = 8
 - **Maintain Standards**: Enforce roleplay and conduct standards
 - **Support Community**: Foster positive gaming environment
 
+## Recent System Improvements (Sept 2024)
+
+### Quality of Life Enhancements
+
+#### Enhanced Message Personalization
+Combat messaging now provides proper perspective-specific experiences:
+- **First-Person Actions**: Attackers see "You draw your knife..." instead of observer messages
+- **Second-Person Reactions**: Victims see "Nick prepares to strike you!" for direct engagement
+- **Third-Person Observation**: Bystanders see appropriate third-person descriptions
+
+#### Dual Initiate System
+Combat initiation now shows both aggressive and defensive stances:
+- **Attacker Initiate**: Shows weapon-specific aggressive preparation
+- **Victim Defensive**: Automatic defensive stance when surprised or not currently engaged
+- **Contextual Triggers**: Defensive messages only when target isn't already in combat or targeting
+
+#### Automatic Color Coding
+Visual clarity improved through contextual color application:
+- **Threat Escalation**: Red initiate → Red hit → Bold red kill
+- **Clear Misses**: White coloring for failed attempts
+- **Automatic Application**: No manual color coding required in weapon templates
+- **Override Support**: Pre-colored messages respected
+
+#### Clean Narrative Flow
+Removed meta-gaming elements for better immersion:
+- **No Entry/Exit Spam**: Eliminated "You enter combat!" and "You are no longer in combat!" messages
+- **Weapon-Focused**: Combat flows directly from weapon initiate to action
+- **Natural Transitions**: Combat begins and ends with narrative actions, not system announcements
+
+### Death System Integration
+
+#### Medical Cause Integration
+Death messages now reflect actual medical causes:
+- **Informed Death**: "Nick is dying from blood loss..." based on medical analysis
+- **Cause Detection**: Leverages existing medical system for accurate reporting
+- **Fallback Graceful**: Beautiful atmospheric messages when analysis unavailable
+
+#### Enhanced Death Curtain
+Visual death experience improved significantly:
+- **Proper Color Rendering**: Fixed color code parsing for perfect centering
+- **Medical Suppression**: Prevented "lifeless body" message conflicts
+- **Timing Coordination**: Clean message flow from cause → curtain → confirmation
+
+#### Race Condition Prevention
+Eliminated message ordering conflicts:
+- **Attack Before Consequences**: Attack messages now appear before damage/death
+- **Curtain Exclusivity**: Death curtain gets uninterrupted control during animation
+- **Medical Coordination**: Bleeding messages suppressed during death processing
+
+### Technical Improvements
+
+#### Message Architecture
+- **Perspective-Aware**: Three-message format (attacker/victim/observer) fully implemented
+- **Context-Sensitive**: Messages adapt based on combat state and participant status
+- **Weapon-Agnostic**: System works consistently across all weapon types
+
+#### System Coordination
+- **Combat-Medical Sync**: Proper handoff between combat damage and medical processing
+- **Death-Medical Sync**: Clean separation of death curtain and medical ticker messaging
+- **State Management**: Improved tracking of combat initiation and defensive states
+
 ---
 
 *The G.R.I.M. combat system is designed to be a tool for storytelling, not a replacement for good roleplay. Its complexity serves the narrative, providing depth and consequence while maintaining focus on character development and compelling stories.*

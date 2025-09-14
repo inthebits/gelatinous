@@ -182,6 +182,66 @@ show_death_curtain(character, "Your blood pools beneath you...")
 show_death_curtain(character, "Your essence fades into the void...")
 ```
 
+## Recent Enhancements (Sept 2024)
+
+### Medical System Integration
+The death curtain now integrates with the medical system for informed death messaging:
+
+#### Intelligent Death Cause Messages:
+- **Cause Detection**: Uses existing `debug_death_analysis()` logic to determine death cause
+- **Informed Messaging**: Shows specific causes like "blood loss", "heart failure", "respiratory failure"
+- **Fallback Gracefully**: Returns to beautiful mixed red message if cause detection fails
+
+#### Message Flow:
+1. **Initial Death Messages**: Both victim and observers get cause-specific messages
+   - Victim: "Your body succumbs to blood loss. The end draws near..."
+   - Observers: "Nick Kramer is dying from blood loss..."
+2. **Death Curtain**: Always uses the beautiful mixed red message for immersion
+3. **Final Notification**: "Nick Kramer has died." for observers
+
+### Visual Improvements
+Fixed color and centering issues for optimal presentation:
+
+#### Color Code Fixes:
+- **Proper Color Parsing**: Text centering now accounts for color code length
+- **Random Block Coloring**: Each ▓ and █ character gets random |r or |R coloring
+- **Preserved Message Colors**: Original mixed red death message maintains perfect coloring
+
+#### Centering Algorithm:
+- **Visible Length Calculation**: Strips color codes before calculating padding
+- **Accurate Centering**: Message appears properly centered regardless of color complexity
+- **Clean Animation**: No more malformed frames from color code counting errors
+
+### Race Condition Prevention
+Eliminated message conflicts between death curtain and medical system:
+
+#### Medical Message Suppression:
+- **Bleeding Messages**: All "lifeless body" messages suppressed for dead characters
+- **Clean Narrative**: Death curtain gets exclusive control over death messaging
+- **No Interference**: Medical ticker won't interrupt death animation with bleeding updates
+
+#### Timing Coordination:
+- **Pre-Curtain Messages**: Initial death cause messages sent before animation starts
+- **Exclusive Animation**: Medical system stays silent during death curtain
+- **Post-Animation**: Final death confirmation after curtain completes
+
+### Technical Refinements
+Multiple technical improvements for robustness and maintainability:
+
+#### Color Code Handling:
+```python
+def _strip_color_codes(text):
+    """Remove Evennia color codes to get visible text length."""
+    return re.sub(r'\|.', '', text)
+```
+
+#### Smart Message Selection:
+- **Cause-Based Selection**: Uses medical analysis for informed messages when available
+- **Elegant Fallback**: Always has beautiful default message as backup
+- **Consistent Experience**: Both paths provide rich, atmospheric death experience
+
+---
+
 ## Future Enhancements
 
 - **Multiple Sea Characters**: Different background patterns for different death types

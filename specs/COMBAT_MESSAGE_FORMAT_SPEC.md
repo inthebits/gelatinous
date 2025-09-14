@@ -253,3 +253,65 @@ For each existing message, create three versions:
 ---
 
 **Remember**: These messages are a core part of the game's atmospheric identity. The refactoring should enhance and preserve this identity, not diminish it through technical convenience.
+
+## Recent Quality of Life Improvements (Sept 2024)
+
+### Automatic Color Application System
+The combat message system now automatically applies contextual colors based on message phase:
+
+#### Color Scheme:
+- **Kill Messages**: `|r{message}|n` (Bold red for fatal attacks)
+- **Hit Messages**: `|R{message}|n` (Regular red for successful hits)  
+- **Initiate Messages**: `|R{message}|n` (Regular red for threat establishment)
+- **Miss Messages**: `|w{message}|n` (White for failed attempts)
+- **Other Messages**: No automatic coloring (neutral phases)
+
+#### Benefits:
+- **Threat Escalation**: Visual progression from initiate → hit → kill
+- **Clarity**: White misses clearly indicate failed attempts
+- **Consistency**: Automatic application ensures uniform presentation
+- **Override Support**: Pre-colored templates bypass automatic coloring
+
+### Enhanced Initiate Message System
+Combat initiation now provides proper perspective-specific messages and defensive reactions:
+
+#### Dual Initiate Messages:
+- **Attacker Initiate**: Aggressive stance establishment ("You draw your knife...")
+- **Victim Defensive**: Defensive reaction when not already engaged ("Nick raises his baton defensively...")
+
+#### Conditions for Victim Defensive Messages:
+- Target wasn't already in combat, OR
+- Target was in combat but not targeting anyone
+
+#### Message Personalization:
+- **Attackers** see first-person messages (`attacker_msg`)
+- **Victims** see second-person messages (`victim_msg`)  
+- **Observers** see third-person messages (`observer_msg`)
+
+### Meta-Message Removal
+Eliminated generic combat state announcements for cleaner narrative flow:
+- **Removed**: "You enter combat!" message
+- **Removed**: "You are no longer in combat." message  
+- **Added**: TODO placeholder for narrative combat exit messages
+
+#### Benefits:
+- More immersive combat transitions
+- Focus on weapon-specific narrative content
+- Reduced message spam
+- Natural flow from threat establishment to action
+
+### Death Message Improvements
+Enhanced death system messaging with medical cause integration:
+
+#### Informed Death Messages:
+- **Observer**: "Nick Kramer is dying from blood loss..."
+- **Victim**: "Your body succumbs to blood loss. The end draws near..."
+- **Fallback**: Beautiful mixed red death curtain message
+
+#### Death Curtain Enhancements:
+- **Color-corrected** random |r/|R block coloring
+- **Proper text centering** accounting for color code length
+- **Medical system integration** for cause-specific messaging
+- **Race condition prevention** with bleeding message suppression
+
+---
