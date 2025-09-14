@@ -212,9 +212,9 @@ class MedicalScript(DefaultScript):
         # Add infection components if present (only for living characters)
         if infection_severity > 0 and not is_dead:
             if infection_severity <= 3:
-                personal_parts.append("|yYou feel a mild warmth and tenderness at your injured areas.|n")
+                personal_parts.append("|rYou feel a mild warmth and tenderness at your injured areas.|n")
             elif infection_severity <= 5:
-                personal_parts.append("|yYour wounds throb with inflamed heat.|n")
+                personal_parts.append("|rYour wounds throb with inflamed heat.|n")
             elif infection_severity <= 7:
                 personal_parts.append("|rYour wounds feel hot and inflamed, infection spreading.|n")
             else:  # 8+
