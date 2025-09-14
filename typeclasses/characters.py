@@ -379,6 +379,17 @@ class Character(ObjectParent, DefaultCharacter):
         Override this for player-specific or mob-specific death logic.
         """
         from .curtain_of_death import show_death_curtain
+        from evennia.comms.models import ChannelDB
+        from world.combat.constants import SPLATTERCAST_CHANNEL
+        
+        # Always show death analysis when character dies
+        try:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            death_analysis = self.debug_death_analysis()
+            splattercast.msg(death_analysis)
+        except Exception as e:
+            # Fallback if splattercast channel not available
+            pass
         
         # Start the death curtain animation
         show_death_curtain(self)

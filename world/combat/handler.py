@@ -1257,11 +1257,7 @@ class CombatHandler(DefaultScript):
             
             # Handle death after all attack messages are sent
             if target_died:
-                # DEBUG: Show detailed death analysis
-                death_analysis = target.debug_death_analysis()
-                splattercast.msg(death_analysis)
-                
-                # Trigger death processing now that attack messages are complete
+                # Trigger death processing - at_death() will handle death analysis
                 target.at_death()
                 
                 # Get kill messages from the message system

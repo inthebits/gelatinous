@@ -95,9 +95,9 @@ class MedicalScript(DefaultScript):
             # Check for death/unconsciousness after processing conditions
             if medical_state.is_dead():
                 splattercast.msg(f"MEDICAL_SCRIPT_DEATH: {self.obj.key} has died from medical conditions")
-                # Trigger death handling
-                from world.combat.utils import handle_character_death
-                handle_character_death(self.obj, death=True)
+                
+                # Trigger full death processing (includes death analysis and death curtain)
+                self.obj.at_death()
                 self.stop()
                 self.delete()
                 return
