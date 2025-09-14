@@ -407,7 +407,7 @@ class Character(ObjectParent, DefaultCharacter):
                 pass
             return
             
-        # Mark death as processed
+        # Mark death as processed immediately to prevent race conditions
         if not hasattr(self, 'ndb'):
             self.ndb = {}
         self.ndb.death_processed = True
