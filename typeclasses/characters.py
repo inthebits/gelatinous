@@ -216,6 +216,9 @@ class Character(ObjectParent, DefaultCharacter):
             self.ndb = {}
         self.ndb.unconsciousness_processed = True
         
+        # Set unconscious placement description
+        self.override_place = "unconscious and motionless."
+        
         self.msg("|rYou collapse, unconscious from your injuries!|n")
         if self.location:
             self.location.msg_contents(
@@ -398,6 +401,9 @@ class Character(ObjectParent, DefaultCharacter):
         # Clear any previous unconsciousness state since death supersedes it
         if getattr(self.ndb, 'unconsciousness_processed', False):
             self.ndb.unconsciousness_processed = False
+        
+        # Set death placement description for persistent visual indication
+        self.override_place = "lying motionless and deceased."
         
         # Always show death analysis when character dies
         try:

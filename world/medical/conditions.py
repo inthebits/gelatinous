@@ -265,14 +265,9 @@ class InfectionCondition(MedicalCondition):
             if random.randint(1, 100) <= self.progression_chance:
                 self.severity = min(10, self.severity + 1)  # Cap at 10
                 splattercast.msg(f"INFECTION_WORSEN: {character.key} infection severity increased to {self.severity}")
-                character.msg(f"|rYour {self.location or 'wound'} feels hot and inflamed.|n")
+                # Note: Individual infection messages removed - now handled by consolidated messaging in medical script
                 
-        # Infection effects
-        if self.severity > 7:
-            character.msg(f"|rFever burns through you as infection spreads.|n")
-            # Could add fever effects here
-        elif self.severity > 4:
-            character.msg(f"|yYour {self.location or 'wound'} throbs with infection.|n")
+        # Note: Infection effect messages removed - now handled by consolidated messaging in medical script
             
     def should_end(self):
         """Infection ends when severity reaches 0."""

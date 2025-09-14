@@ -172,6 +172,15 @@ class CmdHeal(Command):
                 medical_state.pain_level = 0.0
                 medical_state.consciousness = 1.0  # Consciousness is stored as 0.0-1.0, displayed as percentage
                 
+                # Clear any death or unconsciousness placement descriptions
+                if hasattr(target, 'override_place'):
+                    target.override_place = None
+                
+                # Clear any death/unconsciousness processing flags
+                if hasattr(target, 'ndb'):
+                    target.ndb.death_processed = False
+                    target.ndb.unconsciousness_processed = False
+                
                 target.save_medical_state()
                 caller.msg(f"|g{target.key} fully healed - cleared all {conditions_before} conditions, healed {organs_healed} organs, and restored vital signs.|n")
                 

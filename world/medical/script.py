@@ -66,6 +66,7 @@ class MedicalScript(DefaultScript):
             conditions_to_remove = []
             total_bleeding_severity = 0
             total_pain_severity = 0
+            total_infection_severity = 0
             
             for condition in conditions:
                 try:
@@ -80,6 +81,10 @@ class MedicalScript(DefaultScript):
                         # Track pain severity for consolidated messaging
                         if condition.condition_type == "pain":
                             total_pain_severity += condition.severity
+                            
+                        # Track infection severity for consolidated messaging
+                        if condition.condition_type == "infection":
+                            total_infection_severity += condition.severity
                         
                         # Check if condition should be removed (e.g., severity reached 0)
                         if hasattr(condition, 'should_end') and condition.should_end():
@@ -91,8 +96,8 @@ class MedicalScript(DefaultScript):
                     conditions_to_remove.append(condition)
             
             # Send consolidated messaging if conditions are active
-            if total_bleeding_severity > 0 or total_pain_severity > 0:
-                self._send_medical_messages(total_bleeding_severity, total_pain_severity)
+            if total_bleeding_severity > 0 or total_pain_severity > 0 or total_infection_severity > 0:
+                self._send_medical_messages(total_bleeding_severity, total_pain_severity, total_infection_severity)
             
             if total_bleeding_severity > 0:
                 self._create_blood_pool(total_bleeding_severity)
@@ -130,6 +135,9 @@ class MedicalScript(DefaultScript):
                 if hasattr(self.obj, 'ndb') and getattr(self.obj.ndb, 'unconsciousness_processed', False):
                     splattercast.msg(f"MEDICAL_SCRIPT_RECOVERY: {self.obj.key} has regained consciousness")
                     self.obj.ndb.unconsciousness_processed = False
+                    # Clear unconsciousness placement description when regaining consciousness
+                    if hasattr(self.obj, 'override_place'):
+                        self.obj.override_place = None
             
             # Check if we should stop (no conditions left)
             if not medical_state.conditions:
@@ -151,8 +159,8 @@ class MedicalScript(DefaultScript):
         except:
             pass
     
-    def _send_medical_messages(self, bleeding_severity, pain_severity):
-        """Send consolidated medical messages combining bleeding and pain."""
+    def _send_medical_messages(self, bleeding_severity, pain_severity, infection_severity=0):
+        """Send consolidated medical messages combining bleeding, pain, and infection."""
         import random
         
         # Build message components
@@ -184,6 +192,17 @@ class MedicalScript(DefaultScript):
                 personal_parts.append("|rAgony courses through your battered form.|n")
             else:  # 21+
                 personal_parts.append("|rUnbearable agony threatens to drive you unconscious.|n")
+        
+        # Add infection components if present
+        if infection_severity > 0:
+            if infection_severity <= 3:
+                personal_parts.append("|yYou feel a mild warmth and tenderness at your injured areas.|n")
+            elif infection_severity <= 5:
+                personal_parts.append("|yYour wounds throb with inflamed heat.|n")
+            elif infection_severity <= 7:
+                personal_parts.append("|rYour wounds feel hot and inflamed, infection spreading.|n")
+            else:  # 8+
+                personal_parts.append("|rFever burns through you as infection spreads through your body.|n")
         
         # Combine and send messages
         if personal_parts:
