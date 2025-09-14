@@ -1262,26 +1262,23 @@ class CombatHandler(DefaultScript):
             
             splattercast.msg(f"ATTACK_HIT: {attacker.key} hit {target.key} for {damage} damage.")
             
-            # Predict if target will die from this damage (before applying it)
-            current_health = getattr(target.db, 'health', 100)
-            will_die = (current_health - damage) <= 0
+            # Apply damage to the specific organ and check if target died
+            target_died = target.take_damage(damage, location=hit_location, injury_type=injury_type, target_organ=target_organ)
             
-            # If target will die, send kill messages immediately after attack messages but before death processing
-            if will_die:
+            # Handle death - send kill messages BEFORE triggering death curtain
+            if target_died:
+                # Send kill messages immediately after death is confirmed but before death processing
                 kill_messages = get_combat_message(weapon_type, "kill", attacker=attacker, target=target, item=weapon, damage=damage, hit_location=hit_location)
                 
                 # Send kill messages to establish lethal narrative before death curtain
-                attacker.msg(kill_messages["attacker_msg"]) if "attacker_msg" in kill_messages else None
-                target.msg(kill_messages["victim_msg"]) if "victim_msg" in kill_messages else None
+                if "attacker_msg" in kill_messages:
+                    attacker.msg(kill_messages["attacker_msg"])
+                if "victim_msg" in kill_messages:
+                    target.msg(kill_messages["victim_msg"])
                 attacker.location.msg_contents(kill_messages["observer_msg"], exclude=[attacker, target])
                 
                 splattercast.msg(f"KILL_MESSAGE_SENT: Kill messages sent before death processing for {target.key}")
-            
-            # Apply damage to the specific organ and check if target died AFTER messages
-            target_died = target.take_damage(damage, location=hit_location, injury_type=injury_type, target_organ=target_organ)
-            
-            # Handle death after all messages are sent
-            if target_died:
+                
                 # Check if death has already been processed to prevent double death curtains
                 if hasattr(target, 'ndb') and getattr(target.ndb, 'death_processed', False):
                     splattercast.msg(f"COMBAT_DEATH_SKIP: {target.key} death already processed")
