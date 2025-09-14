@@ -1060,25 +1060,3 @@ def send_grenade_shield_messages(grappler, victim):
     # Send to observers in the same location (exclude the two participants)
     if grappler.location:
         grappler.location.msg_contents(observer_msg, exclude=[grappler, victim])
-
-
-def handle_character_death(character, death=False):
-    """
-    Handle character death or unconsciousness.
-    
-    Args:
-        character: The character who has died or become unconscious
-        death (bool): True for death, False for unconsciousness
-    """
-    if death:
-        # No death messages here - combat system handles death announcements
-        # to avoid duplicate "Character has died" messages
-        debug_broadcast(f"{character.key} died from medical injuries", "DAMAGE", "SUCCESS")
-    else:
-        character.msg("|rYou collapse, unconscious from your injuries!|n")
-        if character.location:
-            character.location.msg_contents(
-                f"|r{character.key} collapses, unconscious!|n",
-                exclude=character
-            )
-        debug_broadcast(f"{character.key} became unconscious from medical injuries", "DAMAGE", "SUCCESS")

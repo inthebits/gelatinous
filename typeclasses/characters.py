@@ -154,7 +154,7 @@ class Character(ObjectParent, DefaultCharacter):
         unconscious = self.is_unconscious()
         
         if died:
-            self._handle_death()
+            self.at_death()  # Direct call to main death handler
         elif unconscious:
             self._handle_unconsciousness()
         
@@ -193,23 +193,6 @@ class Character(ObjectParent, DefaultCharacter):
             pass  # Medical system not available
         return False
 
-    def _handle_death(self):
-        """
-        Handle character death from medical injuries.
-        
-        Note: Death messaging is handled by the combat system to avoid duplicates.
-        This method only handles the death state transition.
-        """
-        # No death messages here - combat system handles death announcements
-        # to avoid duplicate "Character has died" messages
-        
-        # Optional: Debug broadcast for tracking
-        try:
-            from world.combat.utils import debug_broadcast
-            debug_broadcast(f"{self.key} died from medical injuries", "MEDICAL", "DEATH")
-        except ImportError:
-            pass  # debug_broadcast not available
-    
     def _handle_unconsciousness(self):
         """
         Handle character becoming unconscious from medical injuries.
