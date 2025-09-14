@@ -673,7 +673,7 @@ def remove_combatant(handler, char):
         delattr(char.ndb, NDB_COMBAT_HANDLER)
     
     splattercast.msg(f"{char.key} removed from combat.")
-    char.msg("|gYou are no longer in combat.|n")
+    # TODO: Add narrative combat exit message (weapon lowering, stepping back, etc.)
     
     # Stop combat if no combatants remain
     if len(combatants) == 0:
