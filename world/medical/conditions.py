@@ -247,25 +247,42 @@ class InfectionCondition(MedicalCondition):
     
     def __init__(self, severity, location=None):
         super().__init__("infection", severity, location, tick_interval=300)  # 5 minute interval
-        self.progression_chance = 15  # % chance to worsen per tick if untreated
+        self.base_progression_chance = 1.0  # Base % chance to worsen per 12s tick (adjustable by environment)
+        self.last_progression_check = 0  # Track time for proper progression timing
+        self.environmental_modifier = 1.0  # Multiplier for environmental conditions (sewers, etc.)
         
     def tick_effect(self, character):
         """Infection can worsen if untreated, or improve if treated."""
         from world.combat.constants import SPLATTERCAST_CHANNEL
+        import time
         
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        current_time = time.time()
+        
+        # Initialize timing tracking if needed
+        if self.last_progression_check == 0:
+            self.last_progression_check = current_time
+            return  # Skip first tick to establish baseline
         
         if self.treated:
-            # Treated infection improves
-            if random.randint(1, 100) <= 30:  # 30% chance to improve
+            # Treated infection improves every ~5 minutes (25 ticks at 12s intervals)
+            if random.randint(1, 100) <= 12:  # ~30% chance over 25 ticks = 1.2% per tick
                 self.severity = max(0, self.severity - 1)
                 splattercast.msg(f"INFECTION_HEAL: {character.key} infection severity reduced to {self.severity}")
         else:
-            # Untreated infection can worsen
-            if random.randint(1, 100) <= self.progression_chance:
+            # Calculate effective progression chance based on timing and environment
+            effective_chance = self.base_progression_chance * self.environmental_modifier
+            
+            # Untreated infection can worsen - designed for realistic ~20min progression
+            if random.randint(1, 10000) <= int(effective_chance * 100):  # More granular probability
                 self.severity = min(10, self.severity + 1)  # Cap at 10
-                splattercast.msg(f"INFECTION_WORSEN: {character.key} infection severity increased to {self.severity}")
-                # Note: Individual infection messages removed - now handled by consolidated messaging in medical script
+                splattercast.msg(f"INFECTION_WORSEN: {character.key} infection severity increased to {self.severity} (env modifier: {self.environmental_modifier}x)")
+                
+        self.last_progression_check = current_time
+    
+    def set_environmental_modifier(self, modifier):
+        """Set environmental infection risk modifier (e.g., 3.0 for sewers, 0.5 for sterile conditions)"""
+        self.environmental_modifier = max(0.1, modifier)  # Minimum 0.1x, no maximum
                 
         # Note: Infection effect messages removed - now handled by consolidated messaging in medical script
             
@@ -339,3 +356,35 @@ def remove_condition_by_type(character, condition_type):
     for condition in conditions_to_remove:
         medical_state.conditions.remove(condition)
         condition.end_condition(character)
+
+
+def set_infection_environmental_risk(character, modifier, reason="environmental conditions"):
+    """
+    Modify infection progression risk for environmental conditions.
+    
+    Args:
+        character: Character to modify infection risk for
+        modifier: Risk multiplier (1.0 = normal, 3.0 = high risk like sewers, 0.5 = low risk like sterile)
+        reason: Description for debug logging
+        
+    Examples:
+        set_infection_environmental_risk(character, 3.0, "walking through sewers")
+        set_infection_environmental_risk(character, 0.3, "sterile medical facility")
+        set_infection_environmental_risk(character, 5.0, "toxic waste exposure")
+    """
+    if not hasattr(character, 'medical_state'):
+        return
+        
+    from world.combat.constants import SPLATTERCAST_CHANNEL
+    from evennia.comms.models import ChannelDB
+    
+    medical_state = character.medical_state
+    infection_conditions = [c for c in medical_state.conditions if c.condition_type == "infection"]
+    
+    if infection_conditions:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        for condition in infection_conditions:
+            condition.set_environmental_modifier(modifier)
+        
+        splattercast.msg(f"INFECTION_ENV_RISK: {character.key} infection risk set to {modifier}x due to {reason}")
+    # If no infections, the modifier would apply to future infections created in this environment
