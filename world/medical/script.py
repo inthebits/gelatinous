@@ -27,7 +27,7 @@ class MedicalScript(DefaultScript):
         self.desc = f"Medical condition manager for {self.obj.key}"
         self.interval = 12  # Tick every 12 seconds (was 60 for production)
         self.persistent = True
-        self.start_delay = False  # Start immediately but use custom delay for first message
+        self.start_delay = True  # Wait before first regular execution
         
         # Schedule first medical message with a delay longer than max combat delay
         from evennia.utils import delay
@@ -35,8 +35,9 @@ class MedicalScript(DefaultScript):
         
     def _initial_medical_check(self):
         """Perform initial medical check after creation delay."""
-        # This is essentially the same as at_repeat but called once with delay
+        # This replaces the first at_repeat call with proper timing
         self.at_repeat()
+        # Note: start_delay is managed by Evennia, not modifiable at runtime
         
     def at_repeat(self):
         """Process all medical conditions for this character."""
@@ -259,6 +260,15 @@ def start_medical_script(character):
         splattercast.msg(f"START_MEDICAL_SCRIPT: Checking for existing script on {character.key}")
     except:
         pass
+        
+    # Don't create scripts for dead characters
+    if hasattr(character, 'medical_state') and character.medical_state.is_dead():
+        try:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"START_MEDICAL_SCRIPT: {character.key} is dead, not creating medical script")
+        except:
+            pass
+        return None
         
     # Check if script already exists
     existing_script = character.scripts.get("medical_script")

@@ -42,6 +42,11 @@ class MedicalCondition:
         
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
+        # Don't add conditions to dead characters
+        if hasattr(character, 'medical_state') and character.medical_state.is_dead():
+            splattercast.msg(f"CONDITION_START: {character.key} is dead, not adding {self.condition_type}")
+            return
+        
         if not self.requires_ticker:
             splattercast.msg(f"CONDITION_START: {self.condition_type} for {character.key} doesn't require ticker")
             return

@@ -565,6 +565,18 @@ class MedicalState:
         Args:
             condition: MedicalCondition instance
         """
+        # Don't add conditions if character is dead
+        if self.is_dead():
+            try:
+                from world.combat.constants import SPLATTERCAST_CHANNEL
+                splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                character = self._get_character_reference()
+                char_name = character.key if character else "unknown"
+                splattercast.msg(f"ADD_CONDITION: {char_name} is dead, not adding {condition.condition_type}")
+            except:
+                pass
+            return
+            
         if condition not in self.conditions:
             self.conditions.append(condition)
             
