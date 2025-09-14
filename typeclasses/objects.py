@@ -484,7 +484,7 @@ class BloodPool(Object):
         # Set up integration for room description (like graffiti)
         self.db.integrate = True
         self.db.integration_priority = 4  # Lower priority than graffiti
-        self.db.integration_desc = "Dark |rstains|n mark the ground where blood has pooled."
+        self.db.integration_desc = "Dark |Rstains|n mark the ground where blood has pooled."
         
         self.locks.add("get:false()")  # Can't be picked up
         
@@ -604,13 +604,13 @@ class BloodPool(Object):
             # Update integration description based on current state
             age_hours = self.get_age_hours()
             if age_hours < 1:
-                self.db.integration_desc = "Fresh |rcrimson stains|n glisten wetly on the ground."
+                self.db.integration_desc = "Fresh |Rcrimson stains|n glisten wetly on the ground."
             elif age_hours < 6:
-                self.db.integration_desc = "Dark |rblood stains|n mark the ground ominously."
+                self.db.integration_desc = "Dark |Rblood stains|n mark the ground ominously."
             elif age_hours < 24:
-                self.db.integration_desc = "Dried |xbrown stains|n show where blood once pooled."
+                self.db.integration_desc = "Dried |Rbrown stains|n show where blood once pooled."
             else:
-                self.db.integration_desc = "Faint |xrusty marks|n hint at old bloodshed."
+                self.db.integration_desc = "Faint |Rrusty marks|n hint at old bloodshed."
     
     def return_appearance(self, looker, **kwargs):
         """Return detailed forensic description showing all incidents."""
