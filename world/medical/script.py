@@ -106,8 +106,13 @@ class MedicalScript(DefaultScript):
             if medical_state.is_dead():
                 splattercast.msg(f"MEDICAL_SCRIPT_DEATH: {self.obj.key} has died from medical conditions")
                 
-                # Trigger full death processing (includes death analysis and death curtain)
-                self.obj.at_death()
+                # Check if death has already been processed to prevent double death curtains
+                if hasattr(self.obj, 'ndb') and getattr(self.obj.ndb, 'death_processed', False):
+                    splattercast.msg(f"MEDICAL_SCRIPT_DEATH_SKIP: {self.obj.key} death already processed")
+                else:
+                    # Trigger full death processing (includes death analysis and death curtain)
+                    self.obj.at_death()
+                    
                 self.stop()
                 self.delete()
                 return

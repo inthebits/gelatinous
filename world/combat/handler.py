@@ -1257,8 +1257,12 @@ class CombatHandler(DefaultScript):
             
             # Handle death after all attack messages are sent
             if target_died:
-                # Trigger death processing - at_death() will handle death analysis
-                target.at_death()
+                # Check if death has already been processed to prevent double death curtains
+                if hasattr(target, 'ndb') and getattr(target.ndb, 'death_processed', False):
+                    splattercast.msg(f"COMBAT_DEATH_SKIP: {target.key} death already processed")
+                else:
+                    # Trigger death processing - at_death() will handle death analysis
+                    target.at_death()
                 
                 # Get kill messages from the message system
                 kill_messages = get_combat_message(weapon_type, "kill", attacker=attacker, target=target, item=weapon, damage=damage, hit_location=hit_location)

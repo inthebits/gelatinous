@@ -382,6 +382,20 @@ class Character(ObjectParent, DefaultCharacter):
         from evennia.comms.models import ChannelDB
         from world.combat.constants import SPLATTERCAST_CHANNEL
         
+        # Prevent double death processing
+        if hasattr(self, 'ndb') and getattr(self.ndb, 'death_processed', False):
+            try:
+                splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                splattercast.msg(f"AT_DEATH_SKIP: {self.key} already processed death, skipping")
+            except:
+                pass
+            return
+            
+        # Mark death as processed
+        if not hasattr(self, 'ndb'):
+            self.ndb = {}
+        self.ndb.death_processed = True
+        
         # Always show death analysis when character dies
         try:
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
