@@ -149,13 +149,22 @@ class DeathCurtain:
             if self.character:
                 self.character.msg(self.frames[self.current_frame])
             
-            # Send observer message only on the first frame
+            # Send initial death messages only on the first frame
             if self.location and self.current_frame == 0:
-                # Create informed observer message
+                # Get death cause for both messages
                 death_cause = None
                 if hasattr(self.character, 'get_death_cause'):
                     death_cause = self.character.get_death_cause()
                 
+                # Send victim's initial death message
+                if self.character:
+                    if death_cause:
+                        victim_msg = f"|rYour body succumbs to {death_cause}. The end draws near...|n"
+                    else:
+                        victim_msg = f"|rYour body fails you. The end draws near...|n"
+                    self.character.msg(victim_msg)
+                
+                # Send observer message
                 if death_cause:
                     observer_msg = f"|r{self.character.key} is dying from {death_cause}...|n"
                 else:
