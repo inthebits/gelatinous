@@ -314,4 +314,27 @@ Enhanced death system messaging with medical cause integration:
 - **Medical system integration** for cause-specific messaging
 - **Race condition prevention** with bleeding message suppression
 
+#### Kill Message Timing Fix (September 2024)
+**Problem**: Death curtain animation was starting before kill messages could be displayed, causing narrative sequence issues where the death animation interrupted the climactic kill message.
+
+**Root Cause**: Medical system's `take_damage()` method called `at_death()` immediately upon fatal damage determination, starting the death curtain before combat system could send contextual kill messages.
+
+**Solution**: Implemented deferred death curtain system in `at_death()` method:
+- **Combat Detection**: `at_death()` checks for active combat via `ndb.combat_handler`
+- **Deferred Execution**: If in combat, sets `ndb.death_curtain_pending = True` and skips immediate curtain
+- **Combat Integration**: Combat handler triggers deferred curtain after sending kill message
+- **Safety Fallback**: 5-second delayed trigger ensures curtain appears even if combat fails to handle it
+
+**Result**: Proper narrative sequence restored:
+1. Fatal damage determined by medical system
+2. Kill message sent by combat system ("Nick's bullet strikes you in the heart, killing you instantly")
+3. Death curtain animation begins after kill message
+4. Medical death analysis continues normally
+
+**Benefits**:
+- ✅ **Preserved Narrative Flow**: Kill messages appear before death animation
+- ✅ **System Integration**: Medical and combat systems coordinate without coupling
+- ✅ **Backward Compatibility**: Non-combat deaths (bleeding out) work unchanged
+- ✅ **Robust Fallback**: Safety mechanism prevents stuck death states
+
 ---
