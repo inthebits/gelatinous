@@ -1262,24 +1262,32 @@ class CombatHandler(DefaultScript):
             
             splattercast.msg(f"ATTACK_HIT: {attacker.key} hit {target.key} for {damage} damage.")
             
-            # Apply damage to the specific organ and check if target died AFTER attack messages
+            # Predict if target will die from this damage (before applying it)
+            current_health = getattr(target.db, 'health', 100)
+            will_die = (current_health - damage) <= 0
+            
+            # If target will die, send kill messages immediately after attack messages but before death processing
+            if will_die:
+                kill_messages = get_combat_message(weapon_type, "kill", attacker=attacker, target=target, item=weapon, damage=damage, hit_location=hit_location)
+                
+                # Send kill messages to establish lethal narrative before death curtain
+                attacker.msg(kill_messages["attacker_msg"]) if "attacker_msg" in kill_messages else None
+                target.msg(kill_messages["victim_msg"]) if "victim_msg" in kill_messages else None
+                attacker.location.msg_contents(kill_messages["observer_msg"], exclude=[attacker, target])
+                
+                splattercast.msg(f"KILL_MESSAGE_SENT: Kill messages sent before death processing for {target.key}")
+            
+            # Apply damage to the specific organ and check if target died AFTER messages
             target_died = target.take_damage(damage, location=hit_location, injury_type=injury_type, target_organ=target_organ)
             
-            # Handle death after all attack messages are sent
+            # Handle death after all messages are sent
             if target_died:
                 # Check if death has already been processed to prevent double death curtains
                 if hasattr(target, 'ndb') and getattr(target.ndb, 'death_processed', False):
                     splattercast.msg(f"COMBAT_DEATH_SKIP: {target.key} death already processed")
                 else:
-                    # Trigger death processing - at_death() will handle death analysis
+                    # Trigger death processing - at_death() will handle death analysis and death curtain
                     target.at_death()
-                
-                # Get kill messages from the message system
-                kill_messages = get_combat_message(weapon_type, "kill", attacker=attacker, target=target, item=weapon, damage=damage, hit_location=hit_location)
-                
-                # Note: target.at_death() already sent death messages, so we only send kill messages if needed
-                # target.msg(kill_messages["victim_msg"])  # Skip - death already handled
-                attacker.location.msg_contents(kill_messages["observer_msg"], exclude=[target])
                 
                 # Remove from combat
                 self.remove_combatant(target)
