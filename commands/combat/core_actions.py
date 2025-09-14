@@ -310,19 +310,73 @@ class CmdAttack(Command):
             # Standard local attack initiation message (use get_combat_message)
             initiate_msg_obj = get_combat_message(weapon_type_for_msg, "initiate", attacker=caller, target=target, item=weapon_obj)
             
-            final_initiate_str = ""
+            attacker_msg = ""
+            victim_msg = ""
+            observer_msg = ""
+            
             if isinstance(initiate_msg_obj, dict):
-                final_initiate_str = initiate_msg_obj.get("observer_msg")
-                if not final_initiate_str:
-                    splattercast.msg(f"CmdAttack: weapon_type {weapon_type_for_msg} initiate message was dict but missing 'observer_msg'. Dict: {initiate_msg_obj}")
-                    final_initiate_str = f"{caller.key} begins an action against {target.key if target else 'someone'}."
+                attacker_msg = initiate_msg_obj.get("attacker_msg", f"You prepare to strike {target.key}!")
+                victim_msg = initiate_msg_obj.get("victim_msg", f"{caller.key} prepares to strike you!")
+                observer_msg = initiate_msg_obj.get("observer_msg", f"{caller.key} prepares to strike {target.key}!")
             elif isinstance(initiate_msg_obj, str):
-                final_initiate_str = initiate_msg_obj
+                # If it's just a string, use it as observer message and create first/second person versions
+                observer_msg = initiate_msg_obj
+                attacker_msg = f"You prepare to strike {target.key}!"
+                victim_msg = f"{caller.key} prepares to strike you!"
             else:
                 splattercast.msg(f"CmdAttack: Unexpected initiate_msg_obj type from get_combat_message for {weapon_type_for_msg}: {type(initiate_msg_obj)}. Content: {initiate_msg_obj}")
-                final_initiate_str = f"{caller.key} initiates an attack on {target.key if target else 'someone'}."
+                attacker_msg = f"You initiate an attack on {target.key}."
+                victim_msg = f"{caller.key} initiates an attack on you."
+                observer_msg = f"{caller.key} initiates an attack on {target.key}."
 
-            caller.location.msg_contents(final_initiate_str)
+            # Send personalized messages
+            caller.msg(attacker_msg)
+            target.msg(victim_msg)
+            caller.location.msg_contents(observer_msg, exclude=[caller, target])
+
+            # Check if target should also get an initiate message
+            # Conditions: target wasn't already in combat OR target wasn't targeting anyone
+            should_show_target_initiate = (
+                not target_was_in_final_handler or 
+                (target_was_in_final_handler and not final_handler.get_target_obj(next((e for e in final_handler.db.combatants if e["char"] == target), None)))
+            )
+            
+            if should_show_target_initiate and target != caller:
+                # Get target's weapon for their defensive initiate message
+                target_weapon = get_wielded_weapon(target)
+                target_weapon_type = "unarmed"
+                if target_weapon and hasattr(target_weapon, 'db') and hasattr(target_weapon.db, 'weapon_type'):
+                    target_weapon_type = target_weapon.db.weapon_type
+                
+                # Get target's initiate message (defensive reaction)
+                target_initiate_msg_obj = get_combat_message(target_weapon_type, "initiate", attacker=target, target=caller, item=target_weapon)
+                
+                target_attacker_msg = ""
+                target_victim_msg = ""
+                target_observer_msg = ""
+                
+                if isinstance(target_initiate_msg_obj, dict):
+                    target_attacker_msg = target_initiate_msg_obj.get("attacker_msg", f"{target.key} takes a defensive stance!")
+                    target_victim_msg = target_initiate_msg_obj.get("victim_msg", f"{target.key} reacts defensively to your threat!")
+                    target_observer_msg = target_initiate_msg_obj.get("observer_msg", f"{target.key} reacts defensively to {caller.key}'s threat.")
+                elif isinstance(target_initiate_msg_obj, str):
+                    target_observer_msg = target_initiate_msg_obj
+                    target_attacker_msg = f"{target.key} takes a defensive stance!"
+                    target_victim_msg = f"{target.key} reacts defensively to your threat!"
+                else:
+                    target_attacker_msg = f"{target.key} takes a defensive stance!"
+                    target_victim_msg = f"{target.key} reacts defensively to your threat!"
+                    target_observer_msg = f"{target.key} reacts defensively to {caller.key}'s threat."
+                
+                # Send target's defensive reaction messages
+                target.msg(target_attacker_msg)  # Target sees their own defensive action
+                caller.msg(target_victim_msg)   # Attacker sees target's reaction to them
+                caller.location.msg_contents(target_observer_msg, exclude=[caller, target])  # Others see the reaction
+                
+                # Debug message (simplified to avoid f-string complexity)
+                target_entry = next((e for e in final_handler.db.combatants if e["char"] == target), None)
+                has_target = bool(final_handler.get_target_obj(target_entry)) if target_entry else False
+                splattercast.msg(f"TARGET_INITIATE: {target.key} shown defensive initiate against {caller.key} (was_in_combat: {target_was_in_final_handler}, has_target: {has_target})")
 
         splattercast.msg(f"{DEBUG_PREFIX_ATTACK}: {caller.key} attacks {target.key if target else 'a direction'}. Combat managed by {final_handler.key}.")
         
