@@ -130,7 +130,7 @@ def get_combat_message(weapon_type, phase, attacker=None, target=None, item=None
                     final_messages[msg_key] = formatted_msg # Pass through if already colored
             elif phase in miss_phases:
                 if not (formatted_msg.startswith("|") and formatted_msg.endswith("|n")):
-                    final_messages[msg_key] = f"|w{formatted_msg}|n" # Apply white for misses
+                    final_messages[msg_key] = f"|W{formatted_msg}|n" # Apply white for misses
                 else:
                     final_messages[msg_key] = formatted_msg # Pass through if already colored
             else:
