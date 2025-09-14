@@ -55,6 +55,7 @@ class MedicalScript(DefaultScript):
             # Process each condition
             conditions_to_remove = []
             total_bleeding_severity = 0
+            total_pain_severity = 0
             
             for condition in conditions:
                 try:
@@ -66,6 +67,10 @@ class MedicalScript(DefaultScript):
                         if condition.condition_type == "minor_bleeding":
                             total_bleeding_severity += condition.severity
                         
+                        # Track pain severity for consolidated messaging
+                        if condition.condition_type == "pain":
+                            total_pain_severity += condition.severity
+                        
                         # Check if condition should be removed (e.g., severity reached 0)
                         if hasattr(condition, 'should_end') and condition.should_end():
                             conditions_to_remove.append(condition)
@@ -75,9 +80,11 @@ class MedicalScript(DefaultScript):
                     splattercast.msg(f"MEDICAL_SCRIPT_ERROR: Error processing {condition.condition_type}: {e}")
                     conditions_to_remove.append(condition)
             
-            # Send consolidated bleeding messages if bleeding is occurring
+            # Send consolidated messaging if conditions are active
+            if total_bleeding_severity > 0 or total_pain_severity > 0:
+                self._send_medical_messages(total_bleeding_severity, total_pain_severity)
+            
             if total_bleeding_severity > 0:
-                self._send_bleeding_messages(total_bleeding_severity)
                 self._create_blood_pool(total_bleeding_severity)
             
             # Remove ended conditions
@@ -120,63 +127,51 @@ class MedicalScript(DefaultScript):
         except:
             pass
     
-    def _send_bleeding_messages(self, total_severity):
-        """Send consolidated bleeding messages to character and room."""
+    def _send_medical_messages(self, bleeding_severity, pain_severity):
+        """Send consolidated medical messages combining bleeding and pain."""
         import random
         
-        # Personal messages based on severity
-        if total_severity <= 3:
-            personal_msgs = [
-                "|rYou feel warm blood trickling from your wounds.|n",
-                "|rA steady seepage of blood marks your injuries.|n",
-                "|rCrimson slowly weeps from your damaged flesh.|n"
-            ]
-            room_msgs = [
-                f"Small droplets of blood fall from {self.obj.key}'s wounds.",
-                f"Blood slowly seeps from {self.obj.key}, leaving dark spots.",
-                f"{self.obj.key} shows signs of bleeding from their injuries."
-            ]
-        elif total_severity <= 7:
-            personal_msgs = [
-                "|rBlood flows freely from your wounds, leaving crimson trails.|n",
-                "|rYou feel your life essence slowly draining away.|n",
-                "|rWarm streams of blood course down your body.|n"
-            ]
-            room_msgs = [
-                f"Blood steadily drips from {self.obj.key}, forming dark stains.",
-                f"Crimson flows from {self.obj.key}'s wounds with concerning frequency.",
-                f"{self.obj.key} leaves scattered drops of blood in their wake."
-            ]
-        elif total_severity <= 12:
-            personal_msgs = [
-                "|RYou feel your life ebbing away as blood pours from your wounds.|n",
-                "|RCrimson streams from multiple wounds, pooling at your feet.|n",
-                "|RYour strength wanes as precious blood spills freely.|n"
-            ]
-            room_msgs = [
-                f"Crimson flows freely from {self.obj.key}'s wounds, pooling on the ground.",
-                f"Blood pours from {self.obj.key}, creating an alarming crimson trail.",
-                f"{self.obj.key} bleeds profusely, their wounds weeping red."
-            ]
-        else:  # 13+
-            personal_msgs = [
-                "|RYour vision dims as life-blood gushes from grievous wounds.|n",
-                "|RThe world grows cold as your life spills onto the ground.|n",
-                "|RMassive blood loss threatens to drag you into darkness.|n"
-            ]
-            room_msgs = [
-                f"{self.obj.key} leaves a trail of blood, their wounds gushing freely.",
-                f"Blood streams from {self.obj.key} in alarming quantities.",
-                f"{self.obj.key} is losing blood at a frightening rate."
-            ]
+        # Build message components
+        personal_parts = []
+        room_parts = []
         
-        # Send messages
-        personal_msg = random.choice(personal_msgs)
-        room_msg = f"|r{random.choice(room_msgs)}|n"
+        # Add bleeding components if present
+        if bleeding_severity > 0:
+            if bleeding_severity <= 3:
+                personal_parts.append("|RYou feel warm blood trickling from your wounds.|n")
+                room_parts.append(f"Small droplets of blood fall from {self.obj.key}'s wounds.")
+            elif bleeding_severity <= 7:
+                personal_parts.append("|RBlood flows freely from your wounds, leaving crimson trails.|n")
+                room_parts.append(f"Blood steadily drips from {self.obj.key}, forming dark stains.")
+            elif bleeding_severity <= 12:
+                personal_parts.append("|RYou feel your life ebbing away as blood pours from your wounds.|n")
+                room_parts.append(f"Crimson flows freely from {self.obj.key}'s wounds, pooling on the ground.")
+            else:  # 13+
+                personal_parts.append("|RYour vision dims as life-blood gushes from grievous wounds.|n")
+                room_parts.append(f"{self.obj.key} leaves a trail of blood, their wounds gushing freely.")
         
-        self.obj.msg(personal_msg)
-        if self.obj.location:
-            self.obj.location.msg_contents(room_msg, exclude=self.obj)
+        # Add pain components if present
+        if pain_severity > 0:
+            if pain_severity <= 5:
+                personal_parts.append("|RYou feel a persistent ache from your injuries.|n")
+            elif pain_severity <= 12:
+                personal_parts.append("|RSharp pain flares from your wounds.|n")
+            elif pain_severity <= 20:
+                personal_parts.append("|RAgony courses through your battered form.|n")
+            else:  # 21+
+                personal_parts.append("|RUnbearable agony threatens to drive you unconscious.|n")
+        
+        # Combine and send messages
+        if personal_parts:
+            # Join personal messages with space
+            personal_msg = " ".join(personal_parts)
+            self.obj.msg(personal_msg)
+        
+        if room_parts:
+            # Join room messages and add color
+            room_msg = f"|R{' '.join(room_parts)}|n"
+            if self.obj.location:
+                self.obj.location.msg_contents(room_msg, exclude=self.obj)
     
     def _create_blood_pool(self, severity):
         """Create or update blood pool object in the room (like graffiti system)."""
@@ -204,6 +199,40 @@ class MedicalScript(DefaultScript):
                 location=self.obj.location
             )
             blood_pool.add_bleeding_incident(self.obj.key, severity)
+    
+    def _send_pain_messages(self, total_severity):
+        """Send consolidated pain messages to character based on total pain severity."""
+        import random
+        
+        # Personal pain messages based on severity
+        if total_severity <= 5:
+            pain_msgs = [
+                "|yYou feel a persistent ache from your injuries.|n",
+                "|yDull pain reminds you of your wounds.|n",
+                "|yA nagging discomfort troubles your injured areas.|n"
+            ]
+        elif total_severity <= 12:
+            pain_msgs = [
+                "|rSharp pain flares from your wounds.|n",
+                "|rIntense aching throbs through your injured body.|n",
+                "|rPain pulses steadily from your various injuries.|n"
+            ]
+        elif total_severity <= 20:
+            pain_msgs = [
+                "|RAgony courses through your battered form.|n",
+                "|RExcruciating pain overwhelms your senses.|n",
+                "|RWaves of torment wash over you from multiple wounds.|n"
+            ]
+        else:  # 21+
+            pain_msgs = [
+                "|RUnbearable agony threatens to drive you unconscious.|n",
+                "|RThe pain is so intense you can barely think straight.|n",
+                "|REvery movement sends lightning bolts of pure torment through you.|n"
+            ]
+        
+        # Send personal pain message (no room message for pain - it's internal)
+        pain_msg = random.choice(pain_msgs)
+        self.obj.msg(pain_msg)
 
 
 def start_medical_script(character):

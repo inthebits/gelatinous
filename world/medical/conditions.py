@@ -216,11 +216,7 @@ class PainCondition(MedicalCondition):
             self.severity = max(0, self.severity - 1)
             splattercast.msg(f"PAIN_HEAL: {character.key} pain severity reduced to {self.severity}")
             
-        # Pain messages
-        if self.severity > 5:
-            character.msg(f"|rIntense pain throbs from your {self.location or 'injuries'}.|n")
-        elif self.severity > 2:
-            character.msg(f"|yAching pain persists in your {self.location or 'injuries'}.|n")
+        # Note: Individual pain messages removed - now handled by consolidated messaging in medical script
             
     def should_end(self):
         """Pain ends when severity reaches 0."""
