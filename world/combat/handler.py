@@ -1247,27 +1247,16 @@ class CombatHandler(DefaultScript):
             # Debug output for precision targeting
             splattercast.msg(f"PRECISION_TARGET: {attacker.key} margin={success_margin}, precision={precision_roll + precision_skill}, hit {hit_location}:{target_organ}")
             
-            # Determine weapon type for messages (before damage application)
+            # Determine weapon type for messages
             weapon_type = "unarmed"
             if weapon and hasattr(weapon, 'db') and hasattr(weapon.db, 'weapon_type'):
                 weapon_type = weapon.db.weapon_type
             
-            # Get hit messages from the message system and send them BEFORE damage
-            hit_messages = get_combat_message(weapon_type, "hit", attacker=attacker, target=target, item=weapon, damage=damage, hit_location=hit_location)
-            
-            # Send attack messages immediately to establish narrative before consequences
-            attacker.msg(hit_messages["attacker_msg"])
-            target.msg(hit_messages["victim_msg"]) 
-            attacker.location.msg_contents(hit_messages["observer_msg"], exclude=[attacker, target])
-            
-            splattercast.msg(f"ATTACK_HIT: {attacker.key} hit {target.key} for {damage} damage.")
-            
-            # Apply damage to the specific organ and check if target died
+            # Apply damage first to determine if this is a killing blow
             target_died = target.take_damage(damage, location=hit_location, injury_type=injury_type, target_organ=target_organ)
             
-            # Handle death - send kill messages BEFORE triggering death curtain
             if target_died:
-                # Send kill messages immediately after death is confirmed but before death processing
+                # This was a killing blow - send kill messages instead of regular attack messages
                 kill_messages = get_combat_message(weapon_type, "kill", attacker=attacker, target=target, item=weapon, damage=damage, hit_location=hit_location)
                 
                 # Send kill messages to establish lethal narrative before death curtain
@@ -1277,7 +1266,7 @@ class CombatHandler(DefaultScript):
                     target.msg(kill_messages["victim_msg"])
                 attacker.location.msg_contents(kill_messages["observer_msg"], exclude=[attacker, target])
                 
-                splattercast.msg(f"KILL_MESSAGE_SENT: Kill messages sent before death processing for {target.key}")
+                splattercast.msg(f"KILLING_BLOW: {attacker.key} delivered killing blow to {target.key} for {damage} damage.")
                 
                 # Check if death has already been processed to prevent double death curtains
                 if hasattr(target, 'ndb') and getattr(target.ndb, 'death_processed', False):
@@ -1288,6 +1277,16 @@ class CombatHandler(DefaultScript):
                 
                 # Remove from combat
                 self.remove_combatant(target)
+            else:
+                # Regular hit - send attack messages
+                hit_messages = get_combat_message(weapon_type, "hit", attacker=attacker, target=target, item=weapon, damage=damage, hit_location=hit_location)
+                
+                # Send attack messages for non-fatal hits
+                attacker.msg(hit_messages["attacker_msg"])
+                target.msg(hit_messages["victim_msg"]) 
+                attacker.location.msg_contents(hit_messages["observer_msg"], exclude=[attacker, target])
+                
+                splattercast.msg(f"ATTACK_HIT: {attacker.key} hit {target.key} for {damage} damage.")
                 
         else:
             # Miss - get miss messages from the message system
