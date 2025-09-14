@@ -1047,6 +1047,16 @@ class CombatHandler(DefaultScript):
             splattercast.msg(f"DELAYED_ATTACK: {target.key} no longer in combat, {attacker.key}'s attack cancelled.")
             return
         
+        # Check if attacker is dead - dead characters can't attack
+        if attacker.is_dead():
+            splattercast.msg(f"DELAYED_ATTACK: {attacker.key} has died, attack cancelled.")
+            return
+            
+        # Check if target is dead - no point attacking the dead
+        if target.is_dead():
+            splattercast.msg(f"DELAYED_ATTACK: {target.key} has died, {attacker.key}'s attack cancelled.")
+            return
+        
         # Get fresh combat entries
         fresh_attacker_entry = next((e for e in current_combatants if e.get(DB_CHAR) == attacker), None)
         if not fresh_attacker_entry:
