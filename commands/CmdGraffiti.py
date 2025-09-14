@@ -262,19 +262,32 @@ class CmdGraffiti(Command):
             else:
                 item_desc = "various stains"
             
+            # Customize the action description based on what's being cleaned
+            if graffiti_cleaned and blood_cleaned:
+                action_desc = "watching the colors dissolve and stains break down"
+            elif graffiti_cleaned:
+                action_desc = "watching the colors dissolve away"
+            else:  # blood only
+                action_desc = "watching the stains break down and fade"
+            
             # Immediate action message
-            self.caller.msg(f"You apply solvent to the {item_desc}, watching the colors dissolve away.")
+            self.caller.msg(f"You apply solvent to the {item_desc}, {action_desc}.")
             self.caller.location.msg_contents(
-                f"{self.caller.name} applies solvent to the {item_desc}, watching the colors dissolve away.",
+                f"{self.caller.name} applies solvent to the {item_desc}, {action_desc}.",
                 exclude=self.caller
             )
             
             # Delayed atmospheric message to everyone including the player
             def delayed_message():
                 if self.caller.location:  # Make sure location still exists
-                    self.caller.location.msg_contents(
-                        f"The colors break down and the solvent evaporates, taking the {item_desc} with it."
-                    )
+                    if graffiti_cleaned and blood_cleaned:
+                        evaporate_desc = "The colors break down and the solvent evaporates, taking the stains with it."
+                    elif graffiti_cleaned:
+                        evaporate_desc = f"The colors break down and the solvent evaporates, taking the {item_desc} with it."
+                    else:  # blood only
+                        evaporate_desc = f"The solvent breaks down the evidence and evaporates, removing the {item_desc}."
+                    
+                    self.caller.location.msg_contents(evaporate_desc)
             
             delay(3, delayed_message)
             
