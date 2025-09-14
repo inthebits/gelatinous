@@ -74,6 +74,21 @@ class MedicalScript(DefaultScript):
                 medical_state.conditions.remove(condition)
                 splattercast.msg(f"MEDICAL_SCRIPT: Removed {condition.condition_type}")
             
+            # Check for death/unconsciousness after processing conditions
+            if medical_state.is_dead():
+                splattercast.msg(f"MEDICAL_SCRIPT_DEATH: {self.obj.key} has died from medical conditions")
+                # Trigger death handling
+                from world.combat.utils import handle_character_death
+                handle_character_death(self.obj, death=True)
+                self.stop()
+                self.delete()
+                return
+            elif medical_state.is_unconscious():
+                splattercast.msg(f"MEDICAL_SCRIPT_UNCONSCIOUS: {self.obj.key} has become unconscious")
+                # Trigger unconsciousness handling
+                from world.combat.utils import handle_character_death
+                handle_character_death(self.obj, death=False)
+            
             # Check if we should stop (no conditions left)
             if not medical_state.conditions:
                 splattercast.msg(f"MEDICAL_SCRIPT: All conditions processed, stopping and deleting script for {self.obj.key}")
