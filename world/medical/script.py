@@ -141,12 +141,31 @@ def start_medical_script(character):
 
 def stop_medical_script(character):
     """
-    Stop the medical script for a character.
+    Stop and delete the medical script for a character.
     
     Args:
         character: The character to stop medical script for
     """
-    existing_script = character.scripts.get("medical_script")
-    if existing_script:
-        for script in existing_script:
+    try:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"STOP_MEDICAL_SCRIPT: Looking for medical scripts on {character.key}")
+    except:
+        pass
+    
+    # Find and delete all medical scripts (active or stopped)
+    existing_scripts = character.scripts.get("medical_script")
+    if existing_scripts:
+        for script in existing_scripts:
+            try:
+                splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                splattercast.msg(f"STOP_MEDICAL_SCRIPT: Found script {script}, deleting it")
+            except:
+                pass
             script.stop()
+            script.delete()
+    else:
+        try:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"STOP_MEDICAL_SCRIPT: No medical scripts found on {character.key}")
+        except:
+            pass
