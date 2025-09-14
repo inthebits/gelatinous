@@ -54,11 +54,17 @@ class MedicalScript(DefaultScript):
             
             # Process each condition
             conditions_to_remove = []
+            total_bleeding_severity = 0
+            
             for condition in conditions:
                 try:
                     if hasattr(condition, 'requires_ticker') and condition.requires_ticker:
                         splattercast.msg(f"MEDICAL_SCRIPT: Ticking {condition.condition_type} severity {condition.severity}")
                         condition.tick_effect(self.obj)
+                        
+                        # Track bleeding severity for consolidated messaging
+                        if condition.condition_type == "minor_bleeding":
+                            total_bleeding_severity += condition.severity
                         
                         # Check if condition should be removed (e.g., severity reached 0)
                         if hasattr(condition, 'should_end') and condition.should_end():
@@ -68,6 +74,11 @@ class MedicalScript(DefaultScript):
                 except Exception as e:
                     splattercast.msg(f"MEDICAL_SCRIPT_ERROR: Error processing {condition.condition_type}: {e}")
                     conditions_to_remove.append(condition)
+            
+            # Send consolidated bleeding messages if bleeding is occurring
+            if total_bleeding_severity > 0:
+                self._send_bleeding_messages(total_bleeding_severity)
+                self._create_blood_pool(total_bleeding_severity)
             
             # Remove ended conditions
             for condition in conditions_to_remove:
@@ -108,6 +119,91 @@ class MedicalScript(DefaultScript):
             splattercast.msg(f"MEDICAL_SCRIPT_STOP: Medical script stopped for {self.obj.key}")
         except:
             pass
+    
+    def _send_bleeding_messages(self, total_severity):
+        """Send consolidated bleeding messages to character and room."""
+        import random
+        
+        # Personal messages based on severity
+        if total_severity <= 3:
+            personal_msgs = [
+                "|rYou feel warm blood trickling from your wounds.|n",
+                "|rA steady seepage of blood marks your injuries.|n",
+                "|rCrimson slowly weeps from your damaged flesh.|n"
+            ]
+            room_msgs = [
+                f"Small droplets of blood fall from {self.obj.key}'s wounds.",
+                f"Blood slowly seeps from {self.obj.key}, leaving dark spots.",
+                f"{self.obj.key} shows signs of bleeding from their injuries."
+            ]
+        elif total_severity <= 7:
+            personal_msgs = [
+                "|rBlood flows freely from your wounds, leaving crimson trails.|n",
+                "|rYou feel your life essence slowly draining away.|n",
+                "|rWarm streams of blood course down your body.|n"
+            ]
+            room_msgs = [
+                f"Blood steadily drips from {self.obj.key}, forming dark stains.",
+                f"Crimson flows from {self.obj.key}'s wounds with concerning frequency.",
+                f"{self.obj.key} leaves scattered drops of blood in their wake."
+            ]
+        elif total_severity <= 12:
+            personal_msgs = [
+                "|RYou feel your life ebbing away as blood pours from your wounds.|n",
+                "|RCrimson streams from multiple wounds, pooling at your feet.|n",
+                "|RYour strength wanes as precious blood spills freely.|n"
+            ]
+            room_msgs = [
+                f"Crimson flows freely from {self.obj.key}'s wounds, pooling on the ground.",
+                f"Blood pours from {self.obj.key}, creating an alarming crimson trail.",
+                f"{self.obj.key} bleeds profusely, their wounds weeping red."
+            ]
+        else:  # 13+
+            personal_msgs = [
+                "|RYour vision dims as life-blood gushes from grievous wounds.|n",
+                "|RThe world grows cold as your life spills onto the ground.|n",
+                "|RMassive blood loss threatens to drag you into darkness.|n"
+            ]
+            room_msgs = [
+                f"{self.obj.key} leaves a trail of blood, their wounds gushing freely.",
+                f"Blood streams from {self.obj.key} in alarming quantities.",
+                f"{self.obj.key} is losing blood at a frightening rate."
+            ]
+        
+        # Send messages
+        personal_msg = random.choice(personal_msgs)
+        room_msg = f"|r{random.choice(room_msgs)}|n"
+        
+        self.obj.msg(personal_msg)
+        if self.obj.location:
+            self.obj.location.msg_contents(room_msg, exclude=self.obj)
+    
+    def _create_blood_pool(self, severity):
+        """Create or update blood pool object in the room (like graffiti system)."""
+        if not self.obj.location:
+            return
+            
+        # Check for existing blood pool (single pool per room)
+        existing_pool = None
+        for obj in self.obj.location.contents:
+            if hasattr(obj, 'db') and obj.db.is_blood_pool:
+                existing_pool = obj
+                break
+        
+        if existing_pool:
+            # Merge into existing pool (like graffiti entries)
+            existing_pool.add_bleeding_incident(self.obj.key, severity)
+        else:
+            # Create new blood pool
+            from evennia import create_object
+            from typeclasses.objects import BloodPool
+            
+            blood_pool = create_object(
+                BloodPool,
+                key="blood stains",
+                location=self.obj.location
+            )
+            blood_pool.add_bleeding_incident(self.obj.key, severity)
 
 
 def start_medical_script(character):

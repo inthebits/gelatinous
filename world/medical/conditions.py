@@ -147,12 +147,7 @@ class BleedingCondition(MedicalCondition):
             self.severity = max(0, self.severity - 1)
             splattercast.msg(f"BLEEDING_HEAL: {character.key} bleeding severity reduced to {self.severity}")
             
-        # Notify character of blood loss
-        if blood_loss > 0:
-            if self.location:
-                character.msg(f"|rYou feel blood seeping from your {self.location}.|n")
-            else:
-                character.msg(f"|rYou feel blood loss from your injuries.|n")
+        # Note: Individual bleeding messages removed - now handled by consolidated messaging in medical script
                 
     def should_end(self):
         """Bleeding ends when severity reaches 0."""

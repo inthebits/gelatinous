@@ -463,3 +463,200 @@ class GraffitiObject(Object):
                 appearance.append(entry['entry'])
         
         return "\n".join(appearance)
+
+
+class BloodPool(Object):
+    """
+    Blood pool object for forensic evidence and atmospheric effect.
+    
+    Like graffiti, consolidates multiple bleeding incidents into a single object.
+    Ages over time with progressive descriptions and can be cleaned with solvents.
+    """
+    
+    def at_object_creation(self):
+        """Called when the blood pool is first created."""
+        self.db.is_blood_pool = True
+        self.db.bleeding_incidents = []  # List of forensic incidents like graffiti entries
+        self.db.total_volume = 0
+        self.db.created_time = gametime.gametime()
+        self.db.last_updated = self.db.created_time
+        self.db.integrate = True  # Shows in room description
+        self.locks.add("get:false()")  # Can't be picked up
+        
+    def add_bleeding_incident(self, character_name, severity):
+        """Add a new bleeding incident to this pool (like adding graffiti)."""
+        current_time = gametime.gametime()
+        
+        incident = {
+            'character': character_name,
+            'severity': severity,
+            'timestamp': current_time,
+            'age_hours': 0  # Will be calculated dynamically
+        }
+        
+        if not self.db.bleeding_incidents:
+            self.db.bleeding_incidents = []
+            
+        self.db.bleeding_incidents.append(incident)
+        self.db.total_volume = (self.db.total_volume or 0) + severity
+        self.db.last_updated = current_time
+        
+        # Update room integration
+        self._update_description()
+    
+    def clean_with_solvent(self, cleaner=None, tool_quality="basic"):
+        """Clean blood stains with solvent (like cleaning graffiti)."""
+        if not self.db.bleeding_incidents:
+            return 0, "There are no blood stains to clean."
+            
+        # Cleaning effectiveness based on tool quality and age
+        oldest_incident = min(self.db.bleeding_incidents, key=lambda x: x['timestamp'])
+        age_hours = (gametime.gametime() - oldest_incident['timestamp']) / 3600.0
+        
+        if tool_quality == "professional":
+            base_effectiveness = 90
+        elif tool_quality == "industrial":
+            base_effectiveness = 70
+        else:  # basic
+            base_effectiveness = 50
+            
+        # Older blood is harder to clean
+        age_penalty = min(30, age_hours * 2)  # Up to 30% penalty
+        final_effectiveness = max(20, base_effectiveness - age_penalty)
+        
+        if random.randint(1, 100) <= final_effectiveness:
+            # Successful cleaning
+            cleaned_volume = self.db.total_volume
+            self.db.bleeding_incidents = []
+            self.db.total_volume = 0
+            self.delete()  # Remove like cleaned graffiti
+            return cleaned_volume, f"The blood stains have been successfully cleaned away."
+        else:
+            # Partial cleaning
+            incidents_removed = max(1, len(self.db.bleeding_incidents) // 2)
+            removed_incidents = self.db.bleeding_incidents[:incidents_removed]
+            self.db.bleeding_incidents = self.db.bleeding_incidents[incidents_removed:]
+            
+            removed_volume = sum(incident['severity'] for incident in removed_incidents)
+            self.db.total_volume -= removed_volume
+            
+            self._update_description()
+            return removed_volume, f"Some of the blood stains have been cleaned, but traces remain."
+    
+    def get_age_hours(self):
+        """Get the age of the oldest blood in hours."""
+        if not self.db.bleeding_incidents:
+            return 0
+            
+        oldest_incident = min(self.db.bleeding_incidents, key=lambda x: x['timestamp'])
+        current_time = gametime.gametime()
+        age_seconds = current_time - oldest_incident['timestamp']
+        return age_seconds / 3600.0
+    
+    def get_volume_description(self):
+        """Get description based on total blood volume."""
+        volume = self.db.total_volume or 0
+        if volume <= 3:
+            return "small droplets"
+        elif volume <= 10:
+            return "modest stains"
+        elif volume <= 20:
+            return "significant pooling"
+        elif volume <= 35:
+            return "extensive blood loss"
+        else:
+            return "massive carnage"
+    
+    def get_age_description(self):
+        """Get progressive description based on age of oldest blood."""
+        age_hours = self.get_age_hours()
+        
+        if age_hours < 0.5:
+            return "still glistening wet"
+        elif age_hours < 2:
+            return "beginning to coagulate"
+        elif age_hours < 6:
+            return "dark and tacky"
+        elif age_hours < 24:
+            return "dried and brown"
+        elif age_hours < 72:
+            return "old and flaking"
+        else:
+            return "ancient and barely visible"
+    
+    def _update_description(self):
+        """Update object description like graffiti system."""
+        if not self.db.bleeding_incidents:
+            self.delete()  # Remove empty pools like empty graffiti
+        else:
+            volume_desc = self.get_volume_description()
+            age_desc = self.get_age_description()
+            self.db.desc = f"Blood evidence shows {volume_desc}, {age_desc}."
+    
+    def return_appearance(self, looker, **kwargs):
+        """Return detailed forensic description showing all incidents."""
+        if not self.db.bleeding_incidents:
+            return "There are no blood stains here."
+            
+        volume_desc = self.get_volume_description()
+        age_desc = self.get_age_description()
+        
+        # Main description
+        if self.get_age_hours() < 1:
+            base_desc = f"Crimson blood marks this area with {volume_desc}, {age_desc}."
+        elif self.get_age_hours() < 6:
+            base_desc = f"Dark blood stains mark this spot with {volume_desc}, now {age_desc}."
+        elif self.get_age_hours() < 24:
+            base_desc = f"Dried blood residue shows {volume_desc} occurred here, {age_desc}."
+        else:
+            base_desc = f"Faint rusty stains hint at {volume_desc} that happened here, {age_desc}."
+        
+        # Forensic incident summary
+        incident_summary = []
+        character_counts = {}
+        
+        for incident in self.db.bleeding_incidents:
+            char = incident['character']
+            character_counts[char] = character_counts.get(char, 0) + incident['severity']
+        
+        if len(character_counts) == 1:
+            char_name = list(character_counts.keys())[0]
+            incident_summary.append(f"Evidence suggests this blood came from {char_name}.")
+        else:
+            incident_summary.append("Evidence suggests multiple sources:")
+            for char, total_volume in character_counts.items():
+                incident_summary.append(f"  - {char}: {total_volume} severity units")
+        
+        details = [
+            base_desc,
+            "",
+            *incident_summary,
+            f"Total incidents: {len(self.db.bleeding_incidents)}",
+            f"Total volume: {self.db.total_volume} severity units",
+            f"Age span: {self.get_age_hours():.1f} hours"
+        ]
+        
+        return "\n".join(details)
+    
+    def get_display_name(self, looker, **kwargs):
+        """Return the name as it appears in room contents."""
+        age_hours = self.get_age_hours()
+        volume = self.db.total_volume or 0
+        
+        if volume > 20:
+            size_prefix = "extensive "
+        elif volume > 10:
+            size_prefix = "significant "
+        elif volume > 5:
+            size_prefix = ""
+        else:
+            size_prefix = "small "
+        
+        if age_hours < 1:
+            return f"{size_prefix}fresh blood stains"
+        elif age_hours < 6:
+            return f"{size_prefix}blood stains"
+        elif age_hours < 24:
+            return f"{size_prefix}dried blood stains"
+        else:
+            return f"{size_prefix}old blood stains"
