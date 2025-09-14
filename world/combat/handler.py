@@ -1247,23 +1247,23 @@ class CombatHandler(DefaultScript):
             # Debug output for precision targeting
             splattercast.msg(f"PRECISION_TARGET: {attacker.key} margin={success_margin}, precision={precision_roll + precision_skill}, hit {hit_location}:{target_organ}")
             
-            # Apply damage to the specific organ and check if target died
-            target_died = target.take_damage(damage, location=hit_location, injury_type=injury_type, target_organ=target_organ)
-            
-            # Determine weapon type for messages
+            # Determine weapon type for messages (before damage application)
             weapon_type = "unarmed"
             if weapon and hasattr(weapon, 'db') and hasattr(weapon.db, 'weapon_type'):
                 weapon_type = weapon.db.weapon_type
             
-            # Get hit messages from the message system
+            # Get hit messages from the message system and send them BEFORE damage
             hit_messages = get_combat_message(weapon_type, "hit", attacker=attacker, target=target, item=weapon, damage=damage, hit_location=hit_location)
             
-            # Send messages
+            # Send attack messages immediately to establish narrative before consequences
             attacker.msg(hit_messages["attacker_msg"])
             target.msg(hit_messages["victim_msg"]) 
             attacker.location.msg_contents(hit_messages["observer_msg"], exclude=[attacker, target])
             
             splattercast.msg(f"ATTACK_HIT: {attacker.key} hit {target.key} for {damage} damage.")
+            
+            # Apply damage to the specific organ and check if target died AFTER attack messages
+            target_died = target.take_damage(damage, location=hit_location, injury_type=injury_type, target_organ=target_organ)
             
             # Handle death after all attack messages are sent
             if target_died:
