@@ -421,7 +421,8 @@ class Character(ObjectParent, DefaultCharacter):
         """
         from .curtain_of_death import show_death_curtain
         from evennia.comms.models import ChannelDB
-        from world.combat.constants import SPLATTERCAST_CHANNEL
+        from world.combat.constants import SPLATTERCAST_CHANNEL, NDB_COMBAT_HANDLER
+        from evennia.utils.utils import delay
         
         # Prevent double death processing
         if hasattr(self, 'ndb') and getattr(self.ndb, 'death_processed', False):
@@ -453,8 +454,33 @@ class Character(ObjectParent, DefaultCharacter):
             # Fallback if splattercast channel not available
             pass
         
-        # Start the death curtain animation
-        show_death_curtain(self)
+        # Check if character is in active combat - if so, defer death curtain
+        is_in_combat = hasattr(self.ndb, NDB_COMBAT_HANDLER) and getattr(self.ndb, NDB_COMBAT_HANDLER) is not None
+        
+        if is_in_combat:
+            # Set flag for combat system to trigger death curtain after kill message
+            self.ndb.death_curtain_pending = True
+            try:
+                splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                splattercast.msg(f"AT_DEATH_COMBAT: {self.key} death curtain deferred - in active combat")
+            except:
+                pass
+            
+            # Safety fallback - trigger curtain after 5 seconds if combat doesn't handle it
+            def fallback_death_curtain():
+                if hasattr(self.ndb, 'death_curtain_pending') and self.ndb.death_curtain_pending:
+                    try:
+                        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                        splattercast.msg(f"AT_DEATH_FALLBACK: {self.key} triggering fallback death curtain")
+                    except:
+                        pass
+                    show_death_curtain(self)
+                    self.ndb.death_curtain_pending = False
+            
+            delay(5, fallback_death_curtain)
+        else:
+            # Not in combat - show death curtain immediately
+            show_death_curtain(self)
         
         # You can override this to handle possession, corpse creation, etc.
         # PERMANENT-DEATH. DO NOT ENABLE YET. self.delete()

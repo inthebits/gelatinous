@@ -1271,9 +1271,23 @@ class CombatHandler(DefaultScript):
                 # Check if death has already been processed to prevent double death curtains
                 if hasattr(target, 'ndb') and getattr(target.ndb, 'death_processed', False):
                     splattercast.msg(f"COMBAT_DEATH_SKIP: {target.key} death already processed")
+                    
+                    # Check if death curtain was deferred and trigger it now after kill message
+                    if hasattr(target.ndb, 'death_curtain_pending') and target.ndb.death_curtain_pending:
+                        from typeclasses.curtain_of_death import show_death_curtain
+                        splattercast.msg(f"COMBAT_DEATH_CURTAIN: {target.key} triggering deferred death curtain after kill message")
+                        show_death_curtain(target)
+                        target.ndb.death_curtain_pending = False
                 else:
-                    # Trigger death processing - at_death() will handle death analysis and death curtain
+                    # Trigger death processing - at_death() will handle death analysis and potentially defer curtain
                     target.at_death()
+                    
+                    # If death curtain was deferred, trigger it now after kill message
+                    if hasattr(target.ndb, 'death_curtain_pending') and target.ndb.death_curtain_pending:
+                        from typeclasses.curtain_of_death import show_death_curtain
+                        splattercast.msg(f"COMBAT_DEATH_CURTAIN: {target.key} triggering deferred death curtain after kill message")
+                        show_death_curtain(target)
+                        target.ndb.death_curtain_pending = False
                 
                 # Remove from combat
                 self.remove_combatant(target)
