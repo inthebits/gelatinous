@@ -163,27 +163,43 @@ class MedicalScript(DefaultScript):
         """Send consolidated medical messages combining bleeding, pain, and infection."""
         import random
         
+        # Check if character is dead - don't send personal messages to preserve death curtain
+        medical_state = getattr(self.obj, 'medical_state', None)
+        is_dead = medical_state and medical_state.is_dead()
+        
         # Build message components
         personal_parts = []
         room_parts = []
         
         # Add bleeding components if present
         if bleeding_severity > 0:
-            if bleeding_severity <= 3:
-                personal_parts.append("|rYou feel warm blood trickling from your wounds.|n")
-                room_parts.append(f"Small droplets of blood fall from {self.obj.key}'s wounds.")
-            elif bleeding_severity <= 7:
-                personal_parts.append("|rBlood flows freely from your wounds, leaving crimson trails.|n")
-                room_parts.append(f"Blood steadily drips from {self.obj.key}, forming dark stains.")
-            elif bleeding_severity <= 12:
-                personal_parts.append("|rYou feel your life ebbing away as blood pours from your wounds.|n")
-                room_parts.append(f"Crimson flows freely from {self.obj.key}'s wounds, pooling on the ground.")
-            else:  # 13+
-                personal_parts.append("|rYour vision dims as life-blood gushes from grievous wounds.|n")
-                room_parts.append(f"{self.obj.key} leaves a trail of blood, their wounds gushing freely.")
+            if is_dead:
+                # Special deceased character bleeding messages for observers only
+                if bleeding_severity <= 3:
+                    room_parts.append(f"Blood continues to seep from {self.obj.key}'s still form.")
+                elif bleeding_severity <= 7:
+                    room_parts.append(f"Dark blood pools slowly around {self.obj.key}'s motionless body.")
+                elif bleeding_severity <= 12:
+                    room_parts.append(f"Crimson spreads steadily from {self.obj.key}'s wounds, pooling around their deceased form.")
+                else:  # 13+
+                    room_parts.append(f"Blood flows freely from {self.obj.key}'s lifeless body, forming a growing pool of crimson.")
+            else:
+                # Normal living character bleeding messages
+                if bleeding_severity <= 3:
+                    personal_parts.append("|rYou feel warm blood trickling from your wounds.|n")
+                    room_parts.append(f"Small droplets of blood fall from {self.obj.key}'s wounds.")
+                elif bleeding_severity <= 7:
+                    personal_parts.append("|rBlood flows freely from your wounds, leaving crimson trails.|n")
+                    room_parts.append(f"Blood steadily drips from {self.obj.key}, forming dark stains.")
+                elif bleeding_severity <= 12:
+                    personal_parts.append("|rYou feel your life ebbing away as blood pours from your wounds.|n")
+                    room_parts.append(f"Crimson flows freely from {self.obj.key}'s wounds, pooling on the ground.")
+                else:  # 13+
+                    personal_parts.append("|rYour vision dims as life-blood gushes from grievous wounds.|n")
+                    room_parts.append(f"{self.obj.key} leaves a trail of blood, their wounds gushing freely.")
         
-        # Add pain components if present
-        if pain_severity > 0:
+        # Add pain components if present (only for living characters)
+        if pain_severity > 0 and not is_dead:
             if pain_severity <= 5:
                 personal_parts.append("|rYou feel a persistent ache from your injuries.|n")
             elif pain_severity <= 12:
@@ -193,8 +209,8 @@ class MedicalScript(DefaultScript):
             else:  # 21+
                 personal_parts.append("|rUnbearable agony threatens to drive you unconscious.|n")
         
-        # Add infection components if present
-        if infection_severity > 0:
+        # Add infection components if present (only for living characters)
+        if infection_severity > 0 and not is_dead:
             if infection_severity <= 3:
                 personal_parts.append("|yYou feel a mild warmth and tenderness at your injured areas.|n")
             elif infection_severity <= 5:
@@ -205,8 +221,8 @@ class MedicalScript(DefaultScript):
                 personal_parts.append("|rFever burns through you as infection spreads through your body.|n")
         
         # Combine and send messages
-        if personal_parts:
-            # Join personal messages with space
+        if personal_parts and not is_dead:
+            # Only send personal messages to living characters to preserve death curtain
             personal_msg = " ".join(personal_parts)
             self.obj.msg(personal_msg)
         
