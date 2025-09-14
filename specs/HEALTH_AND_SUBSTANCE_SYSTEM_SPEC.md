@@ -42,18 +42,182 @@
 - ✅ **No HP attributes** - character health entirely managed by medical system
 - ✅ **Simplified architecture** - single system for all health management
 
-### 🔄 CURRENT STATE: PRECISION ANATOMICAL COMBAT SYSTEM
-The medical system now features **hospital-grade anatomical accuracy** with **skill-based precision targeting**:
-- Combat damage properly creates medical conditions (bleeding, fractures, organ damage)
-- Weapon types create appropriate injury patterns (bullets cause severe bleeding, blunt weapons cause fractures)
-- **Success margin determines hit location bias** toward vital areas (head/chest vs extremities)
-- **Precision skills target specific organs** within hit locations (heart vs muscle in chest)
-- **Single organ damage creates focused wounds** instead of spreading damage across multiple organs
-- Medical conditions visible in `medinfo` and treatable with medical items
-- Destroyed organs cannot take further damage (prevents unrealistic overkill)
-- **Individual bone anatomy** with realistic fracture mechanics
+### 🔄 CURRENT STATE: UNIFIED MEDICAL MESSAGING & FORENSIC SYSTEM
+The medical system now features **consolidated messaging and forensic evidence management**:
+- **Single medical message per tick** combining bleeding and pain information to eliminate message spam
+- **BloodPool room integration** with forensic evidence that ages and deteriorates over time
+- **Enhanced cleaning system** with spray command supporting both graffiti and blood evidence removal
+- **Consistent death analysis** across all death scenarios (combat, medical conditions, other causes)
+- **Standardized |R bright red coloring** for all medical-related messages and evidence
+- **Context-appropriate messaging** that adapts based on what evidence is present and being cleaned
 
-### 🦴 ANATOMICAL BONE SYSTEM (December 2024)
+### � UNIFIED MEDICAL MESSAGING SYSTEM (September 2025)
+**Consolidated Message Architecture:**
+- **Single medical message per tick** instead of separate bleeding/pain messages
+- **Combined severity assessment** showing both bleeding and pain status
+- **Consistent |R bright red coloring** for all medical-related text
+- **Smart message timing** prevents message spam while maintaining medical urgency
+
+**Message Consolidation Logic:**
+```python
+def _send_medical_messages(self):
+    """Send consolidated medical status message combining bleeding and pain"""
+    bleeding_messages = []
+    total_pain = 0
+    
+    # Collect all bleeding conditions
+    for condition in self.obj.medical_state.conditions:
+        if condition.condition_type == "bleeding":
+            bleeding_messages.append(condition.get_description())
+        elif condition.condition_type == "pain":
+            total_pain += condition.severity
+    
+    # Create unified message
+    if bleeding_messages or total_pain > 0:
+        combined_msg = "|RYou are "
+        
+        if bleeding_messages:
+            combined_msg += ", ".join(bleeding_messages)
+            if total_pain > 0:
+                combined_msg += " and experiencing "
+        
+        if total_pain > 0:
+            pain_desc = self._get_pain_description(total_pain)
+            combined_msg += f"{pain_desc}"
+        
+        combined_msg += ".|n"
+        self.obj.msg(combined_msg)
+```
+
+**Benefits:**
+- **Reduced message spam** - One message instead of multiple per tick
+- **Better player experience** - Clear, consolidated medical status
+- **Consistent formatting** - All medical text uses same color scheme
+- **Scalable system** - Easy to add new medical conditions to unified message
+
+### 🏠 BLOOD POOL ROOM INTEGRATION SYSTEM (September 2025)
+**Forensic Evidence Integration (PROOF-OF-CONCEPT):**
+- **BloodPool objects integrate into room descriptions** alongside GraffitiObject for atmospheric forensic scenes
+- **Graffiti-style evidence system** with incident tracking and aging mechanics
+- **Room description enhancement** showing blood stains as part of environment rather than object listings
+- **Forensic timeline tracking** with creation timestamps and deterioration over time
+
+> **⚠️ IMPLEMENTATION NOTE**: Current forensic system is a **proof-of-concept only**. Blood evidence appears automatically in room descriptions via the `look` command. A proper player-facing forensic system would require dedicated investigation commands (`examine evidence`, `analyze bloodstain`, `forensic scan`, etc.) and skill-based discovery mechanics. The current integration is primarily for atmospheric effect and technical foundation.
+
+**Integration Architecture:**
+```python
+# Room Integration System
+def get_integrated_objects_content(self, looker):
+    """Include BloodPool objects in room description integration"""
+    integrated_objects = []
+    
+    for obj in self.contents:
+        if obj.tags.has("graffiti", category="item_type"):
+            integrated_objects.append(obj)
+        elif obj.tags.has("blood_pool", category="item_type"):  # NEW
+            integrated_objects.append(obj)
+    
+    return integrated_objects
+
+# BloodPool Integration Description
+def integration_desc(self):
+    """Room description integration for blood stains"""
+    age_hours = (time.time() - self.db.created_at) / 3600
+    
+    if age_hours < 1:
+        return f"|R{self.db.description}|n"  # Fresh blood
+    elif age_hours < 24:
+        return f"|rDried {self.db.description.lower()}|n"  # Dried blood
+    else:
+        return f"|xDark stains mark where {self.db.description.lower()} once was|n"  # Old stains
+```
+
+**Forensic Features (Proof-of-Concept):**
+- **Incident tracking** - Each blood pool tracks creation timestamp and source incident
+- **Natural aging** - Blood evidence changes appearance over time (fresh → dried → stained)
+- **Room atmosphere** - Blood stains become part of room description for immersive crime scenes
+- **Evidence management** - Blood pools can be cleaned with spray command like graffiti
+
+> **🔮 FUTURE FORENSIC SYSTEM**: A complete forensic investigation system would include:
+> - Dedicated investigation commands (`examine bloodstain`, `analyze evidence`, `forensic scan`)
+> - Skill-based evidence discovery (hidden evidence only visible to skilled investigators)
+> - Evidence collection and laboratory analysis mechanics
+> - DNA/blood type identification systems
+> - Crime scene reconstruction tools
+> - Time-of-death estimation based on evidence age
+> - The current system provides the foundational data structure for these advanced features
+
+### 🧽 ENHANCED SPRAY COMMAND SYSTEM (September 2025)
+**Unified Evidence Cleaning:**
+- **Dual-purpose cleaning** - Single spray command handles both graffiti and blood evidence
+- **Context-appropriate messaging** - Different messages based on what's being cleaned
+- **Smart detection** - Automatically identifies and cleans appropriate evidence types
+- **Realistic solvent mechanics** - Spray removes both paint and biological evidence
+
+**Enhanced Cleaning Logic:**
+```python
+def func(self):
+    """Enhanced spray command with blood pool cleaning"""
+    location = self.caller.location
+    graffiti_objects = [obj for obj in location.contents 
+                       if obj.tags.has("graffiti", category="item_type")]
+    blood_pools = [obj for obj in location.contents 
+                   if obj.tags.has("blood_pool", category="item_type")]
+    
+    if not graffiti_objects and not blood_pools:
+        self.caller.msg("There's nothing here that needs cleaning.")
+        return
+    
+    # Context-appropriate cleaning messages
+    if graffiti_objects and blood_pools:
+        self.caller.msg("You spray solvent over the colors and stains, watching them dissolve and run off.")
+    elif graffiti_objects:
+        self.caller.msg("You spray solvent over the colors, watching them dissolve and run off.")
+    elif blood_pools:
+        self.caller.msg("You spray solvent over the stains, watching them dissolve and wash away.")
+    
+    # Clean all evidence
+    for obj in graffiti_objects + blood_pools:
+        obj.delete()
+```
+
+**Cleaning Features:**
+- **Comprehensive evidence removal** - Cleans both graffiti and blood in single action
+- **Realistic messaging** - References "colors" for graffiti, "stains" for blood
+- **Combined scenarios** - Smart messaging when both evidence types present
+- **Consistent mechanics** - Same solvent works on both paint and biological evidence
+
+### 💀 CENTRALIZED DEATH ANALYSIS SYSTEM (September 2025)
+**Consistent Death Reporting:**
+- **Centralized death analysis** in Character.at_death() method ensures consistent reporting
+- **Debug output standardization** - All death scenarios now trigger Splattercast debug analysis
+- **Medical integration** - Death analysis includes medical condition information
+- **Combat integration** - Removed duplicate death analysis from combat handler
+
+**Death Analysis Architecture:**
+```python
+def at_death(self):
+    """Centralized death handling with consistent analysis"""
+    # Standard death processing
+    self.msg("|rYou have died.|n")
+    
+    # Centralized death analysis for all scenarios
+    self._perform_death_analysis()
+    
+    # Continue with death processing
+    super().at_death()
+
+def _perform_death_analysis(self):
+    """Consistent death analysis across all death scenarios"""
+    from world.combat.utils import perform_death_analysis
+    perform_death_analysis(self, "medical system")
+```
+
+**Analysis Consistency:**
+- **All death scenarios covered** - Combat deaths, medical deaths, other causes
+- **Unified debug output** - Consistent format for all death analysis
+- **Medical condition reporting** - Death analysis includes current medical state
+- **Elimination of gaps** - No more inconsistent death analysis between different systems
 **Individual Bone Structure:**
 - **Arms:** `left/right_humerus` (main arm bones) → 40% manipulation each
 - **Hands:** `left/right_metacarpals` (hand bones) → 20% manipulation each  
@@ -122,9 +286,27 @@ The medical system now features **hospital-grade anatomical accuracy** with **sk
 - ✅ Automatic condition creation integrated with damage system
 - ✅ Synchronized effects and messaging to prevent mysterious deaths
 
+**Phase 2.7 - Unified Medical Messaging & Forensic Evidence (✅ COMPLETED September 2025):**
+- ✅ **Consolidated medical messaging system** - Single combined message per tick instead of separate bleeding/pain spam
+- ✅ **Blood pool room integration** - BloodPool objects properly integrate into room descriptions like graffiti
+- ✅ **Enhanced spray command** - Unified cleaning system for both graffiti and blood evidence with context-appropriate messaging
+- ✅ **Death analysis consistency** - Centralized death reporting via Character.at_death() for all death scenarios
+- ✅ **Standardized medical color coding** - Consistent |R bright red coloring for all medical-related messages
+- ✅ **Forensic evidence management** - Blood pools age and deteriorate over time, creating realistic crime scene evolution
+
 **Phase 3 - Advanced Features (Future Development):**
 
-**Phase 3.1 - Death Progression & Organ Harvesting (🔮 FUTURE):**
+**Phase 3.1 - Comprehensive Forensic Investigation System (🔮 FUTURE):**
+- **Dedicated Investigation Commands**: `examine evidence`, `analyze bloodstain`, `forensic scan`, `collect sample`
+- **Skill-Based Evidence Discovery**: Hidden evidence only visible to characters with investigation skills
+- **Evidence Collection & Analysis**: Laboratory mechanics for DNA/blood type identification
+- **Crime Scene Reconstruction**: Timeline analysis and incident recreation tools
+- **Advanced Evidence Types**: Fingerprints, DNA traces, ballistic evidence, chemical residues
+- **Investigation Equipment**: Forensic kits, evidence bags, portable labs, scanning devices
+- **Evidence Chain of Custody**: Proper evidence handling and legal admissibility mechanics
+- **Time-Based Degradation**: Evidence quality decreases over time, affecting analysis accuracy
+
+**Phase 3.2 - Death Progression & Organ Harvesting (🔮 FUTURE):**
 - Progressive organ failure system after character death
 - Realistic organ deterioration timelines (brain dies in 3 rounds, heart in 8, etc.)
 - Organ harvesting commands (`harvest <organ> from <corpse>`)
@@ -132,7 +314,7 @@ The medical system now features **hospital-grade anatomical accuracy** with **sk
 - Harvested organ inventory management (`viability`, `organs`)
 - Foundation for cybernetics integration (organ replacement demand)
 
-**Phase 3.2 - Cybernetics & Prosthetics (🔮 FUTURE):**
+**Phase 3.3 - Cybernetics & Prosthetics (🔮 FUTURE):**
 - Limb replacement mechanics (prosthetics, cybernetics) 
 - Advanced surgical procedures and medical equipment
 - Disease and infection progression systems
@@ -2361,23 +2543,31 @@ This specification documents a comprehensive medical system architecture providi
 - Precision single-organ damage model with skill-based targeting
 - Progressive condition system with natural healing and deterioration
 - Complete substance consumption interface with 7 natural consumption methods
+- **Unified medical messaging system eliminating message spam**
+- **Forensic evidence management with blood pool aging and integration**
 
 **Gameplay Integration:**
 - Medical tools seamlessly integrate with standard Evennia Item typeclass
 - G.R.I.M. stat system determines medical skill effectiveness  
 - Combat system creates medical emergencies requiring tactical response
 - Resource management through limited medical supplies and equipment uses
+- **Room integration system for atmospheric forensic evidence display**
+- **Enhanced cleaning mechanics for comprehensive evidence management**
 
 **System Architecture:**
 - Medical state persisted in character.db for save compatibility
 - Utility function interface requires no custom typeclasses
 - Modular condition system supports easy expansion
 - Universal substance framework enables medical, recreational, and toxic substances
+- **Consolidated messaging architecture preventing medical condition spam**
+- **Centralized death analysis ensuring consistent debug reporting**
 
 **Implementation Status:**
 - **Phase 1**: ✅ Foundation anatomy and damage system (Completed December 2024)
 - **Phase 2**: ✅ Medical tools and complete consumption interface (Completed September 2025)  
 - **Phase 2.5**: ✅ Extended consumption methods and inhalation mechanics (Completed September 2025)
+- **Phase 2.6**: ✅ Ticker-based medical conditions with time-based progression (Completed December 2024)
+- **Phase 2.7**: ✅ Unified medical messaging and forensic evidence systems (Completed September 2025) - *Forensic system is proof-of-concept only*
 - **Phase 3**: 🔮 Advanced features (cybernetics, complex procedures) - Future development
 
 **Key Features Delivered:**
@@ -2385,8 +2575,19 @@ This specification documents a comprehensive medical system architecture providi
 - Natural language medical commands (`inject`, `apply`, `bandage`, `inhale`, etc.)
 - Realistic injury progression and treatment mechanics
 - Tactical medical gameplay requiring resource allocation and skill development
+- **Single consolidated medical message per tick combining bleeding and pain**
+- **Integrated forensic evidence system with blood pools and crime scene management**
+- **Enhanced spray command for unified graffiti and blood evidence cleaning**
+- **Consistent death analysis across all death scenarios (combat, medical, other)**
 
-*The implemented system provides a solid foundation for medical gameplay while maintaining Evennia compatibility and extensibility for future enhancements.*
+**Recent Major Improvements (September 2025):**
+- **Message Spam Elimination**: Unified medical messaging prevents overwhelming players with multiple condition messages per tick
+- **Forensic Evidence Integration (Proof-of-Concept)**: Blood pools now integrate into room descriptions like graffiti, creating atmospheric crime scenes - *foundation for future dedicated forensic investigation system*
+- **Enhanced Evidence Cleaning**: Spray command now handles both graffiti and blood evidence with context-appropriate messaging
+- **Death Analysis Consistency**: Centralized death reporting ensures debug information appears for all death scenarios
+- **Medical Color Standardization**: All medical-related messages now use consistent |R bright red coloring
+
+*The implemented system provides a solid foundation for medical gameplay while maintaining Evennia compatibility and extensibility for future enhancements. Recent improvements focus on user experience quality-of-life enhancements and proof-of-concept forensic evidence management.*
 
 ---
 
