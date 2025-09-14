@@ -480,8 +480,16 @@ class BloodPool(Object):
         self.db.total_volume = 0
         self.db.created_time = gametime.gametime()
         self.db.last_updated = self.db.created_time
-        self.db.integrate = True  # Shows in room description
+        
+        # Set up integration for room description (like graffiti)
+        self.db.integrate = True
+        self.db.integration_priority = 4  # Lower priority than graffiti
+        self.db.integration_desc = "Dark |rstains|n mark the ground where blood has pooled."
+        
         self.locks.add("get:false()")  # Can't be picked up
+        
+        # Add aliases for examination
+        self.aliases.add(["blood", "stains", "pool", "evidence"])
         
     def add_bleeding_incident(self, character_name, severity):
         """Add a new bleeding incident to this pool (like adding graffiti)."""
@@ -592,6 +600,17 @@ class BloodPool(Object):
             volume_desc = self.get_volume_description()
             age_desc = self.get_age_description()
             self.db.desc = f"Blood evidence shows {volume_desc}, {age_desc}."
+            
+            # Update integration description based on current state
+            age_hours = self.get_age_hours()
+            if age_hours < 1:
+                self.db.integration_desc = "Fresh |rcrimson stains|n glisten wetly on the ground."
+            elif age_hours < 6:
+                self.db.integration_desc = "Dark |rblood stains|n mark the ground ominously."
+            elif age_hours < 24:
+                self.db.integration_desc = "Dried |xbrown stains|n show where blood once pooled."
+            else:
+                self.db.integration_desc = "Faint |xrusty marks|n hint at old bloodshed."
     
     def return_appearance(self, looker, **kwargs):
         """Return detailed forensic description showing all incidents."""
@@ -631,9 +650,9 @@ class BloodPool(Object):
             base_desc,
             "",
             *incident_summary,
-            f"Total incidents: {len(self.db.bleeding_incidents)}",
-            f"Total volume: {self.db.total_volume} severity units",
-            f"Age span: {self.get_age_hours():.1f} hours"
+            f"Forensic analysis: {len(self.db.bleeding_incidents)} separate bleeding events",
+            f"Total blood volume: {self.db.total_volume} severity units",
+            f"Evidence age span: {self.get_age_hours():.1f} hours"
         ]
         
         return "\n".join(details)
