@@ -27,7 +27,8 @@ class MedicalScript(DefaultScript):
         self.desc = f"Medical condition manager for {self.obj.key}"
         self.interval = 12  # Tick every 12 seconds (was 60 for production)
         self.persistent = True
-        self.start_delay = False  # Start immediately
+        self.start_delay = True  # Delay first tick to appear after combat messages
+        self.delay = 1  # Brief 1-second delay for proper message sequencing
         
     def at_repeat(self):
         """Process all medical conditions for this character."""
