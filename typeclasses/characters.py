@@ -203,11 +203,13 @@ class Character(ObjectParent, DefaultCharacter):
         Provides unconsciousness messaging to character and room.
         Triggers removal from combat if currently fighting.
         """
+        from evennia.comms.models import ChannelDB
+        from world.combat.constants import SPLATTERCAST_CHANNEL, NDB_COMBAT_HANDLER
+        from evennia.utils.utils import delay
+        
         # Prevent double unconsciousness processing
         if hasattr(self, 'ndb') and getattr(self.ndb, 'unconsciousness_processed', False):
             try:
-                from evennia.comms.models import ChannelDB
-                from world.combat.constants import SPLATTERCAST_CHANNEL
                 splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
                 splattercast.msg(f"UNCONSCIOUS_SKIP: {self.key} already processed unconsciousness, skipping")
             except:
@@ -222,6 +224,39 @@ class Character(ObjectParent, DefaultCharacter):
         # Set unconscious placement description
         self.override_place = "unconscious and motionless."
         
+        # Check if character is in active combat - if so, defer unconsciousness message
+        is_in_combat = hasattr(self.ndb, NDB_COMBAT_HANDLER) and getattr(self.ndb, NDB_COMBAT_HANDLER) is not None
+        
+        if is_in_combat:
+            # Set flag for combat system to trigger unconsciousness message after attack message
+            self.ndb.unconsciousness_pending = True
+            try:
+                splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                splattercast.msg(f"UNCONSCIOUS_COMBAT: {self.key} unconsciousness message deferred - in active combat")
+            except:
+                pass
+            
+            # Safety fallback - trigger message after 5 seconds if combat doesn't handle it
+            def fallback_unconsciousness_message():
+                if hasattr(self.ndb, 'unconsciousness_pending') and self.ndb.unconsciousness_pending:
+                    try:
+                        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                        splattercast.msg(f"UNCONSCIOUS_FALLBACK: {self.key} triggering fallback unconsciousness message")
+                    except:
+                        pass
+                    self._show_unconsciousness_message()
+                    self.ndb.unconsciousness_pending = False
+            
+            delay(5, fallback_unconsciousness_message)
+        else:
+            # Not in combat - show unconsciousness message immediately
+            self._show_unconsciousness_message()
+
+    def _show_unconsciousness_message(self):
+        """
+        Show the unconsciousness message to character and room.
+        Separated from _handle_unconsciousness for deferred messaging coordination.
+        """
         self.msg("|rYou collapse, unconscious from your injuries!|n")
         if self.location:
             self.location.msg_contents(
