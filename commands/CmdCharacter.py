@@ -8,9 +8,113 @@ from world.combat.constants import (
     COLOR_SUCCESS, COLOR_NORMAL,
     MAX_DESCRIPTION_LENGTH,
     VALID_LONGDESC_LOCATIONS,
-    SKINTONE_PALETTE, VALID_SKINTONES
+    SKINTONE_PALETTE, VALID_SKINTONES,
+    STAT_DESCRIPTORS, STAT_TIER_RANGES
 )
 from world.medical.utils import get_medical_status_description
+
+
+# ===================================================================
+# STAT DESCRIPTOR UTILITIES
+# ===================================================================
+
+def get_stat_descriptor(stat_name, numeric_value):
+    """
+    Convert numeric stat value to descriptive word.
+    
+    Args:
+        stat_name (str): Name of the stat ('grit', 'resonance', 'intellect', 'motorics')
+        numeric_value (int): Numeric stat value (0-150)
+        
+    Returns:
+        str: Descriptive word for the stat tier, or "Unknown" if invalid
+    """
+    # Validate stat name
+    if stat_name not in STAT_DESCRIPTORS:
+        return "Unknown"
+    
+    # Ensure numeric value is valid
+    if not isinstance(numeric_value, (int, float)) or numeric_value < 0:
+        numeric_value = 0
+    
+    numeric_value = int(numeric_value)
+    
+    # Handle values over 150
+    if numeric_value > 150:
+        numeric_value = 150
+    
+    # Find the appropriate tier
+    for min_val, max_val in STAT_TIER_RANGES:
+        if min_val <= numeric_value <= max_val:
+            # Find the descriptor key for this range
+            # The keys in STAT_DESCRIPTORS correspond to the max values of each range
+            descriptor_key = max_val
+            return STAT_DESCRIPTORS[stat_name].get(descriptor_key, "Unknown")
+    
+    # Fallback
+    return "Unknown"
+
+
+def get_stat_range(descriptor_word, stat_name):
+    """
+    Get numeric range for a descriptive word.
+    
+    Args:
+        descriptor_word (str): Descriptive word (e.g., "Granite", "Moderate")
+        stat_name (str): Name of the stat ('grit', 'resonance', 'intellect', 'motorics')
+        
+    Returns:
+        tuple: (min_value, max_value) tuple, or (0, 0) if not found
+    """
+    # Validate stat name
+    if stat_name not in STAT_DESCRIPTORS:
+        return (0, 0)
+    
+    # Find the descriptor in the stat's mapping
+    stat_descriptors = STAT_DESCRIPTORS[stat_name]
+    
+    # Look for the descriptor word (case-insensitive)
+    descriptor_word = descriptor_word.lower()
+    for max_val, word in stat_descriptors.items():
+        if word.lower() == descriptor_word:
+            # Find the corresponding range
+            for min_val, range_max_val in STAT_TIER_RANGES:
+                if range_max_val == max_val:
+                    return (min_val, max_val)
+    
+    # Not found
+    return (0, 0)
+
+
+def get_stat_tier_info(stat_name, numeric_value):
+    """
+    Get comprehensive tier information for a stat value.
+    
+    Args:
+        stat_name (str): Name of the stat
+        numeric_value (int): Numeric stat value
+        
+    Returns:
+        dict: Dictionary with 'descriptor', 'min_range', 'max_range', 'tier_letter'
+    """
+    descriptor = get_stat_descriptor(stat_name, numeric_value)
+    min_range, max_range = get_stat_range(descriptor, stat_name)
+    
+    # Calculate tier letter (A-Z)
+    tier_letter = "Z"  # Default
+    if 0 <= numeric_value <= 150:
+        for i, (min_val, max_val) in enumerate(STAT_TIER_RANGES):
+            if min_val <= numeric_value <= max_val:
+                tier_letter = chr(ord('A') + i)
+                break
+    
+    return {
+        'descriptor': descriptor,
+        'min_range': min_range,
+        'max_range': max_range,
+        'tier_letter': tier_letter,
+        'numeric_value': numeric_value
+    }
 
 class CmdStats(Command):
     """
@@ -18,9 +122,16 @@ class CmdStats(Command):
 
     Usage:
       @stats
-      @stats <target>  (Builder or Developer only)
+      @stats <target>          (Builder or Developer only)
+      @stats/numeric           (Builder or Developer only - shows numeric values)
+      @stats/numeric <target>  (Builder or Developer only)
 
-    Displays your G.R.I.M. attributes and any future derived stats.
+    Displays your G.R.I.M. attributes using descriptive words that indicate
+    your character's capabilities. Each stat is shown as a descriptive term
+    rather than a raw number for more immersive character representation.
+    
+    Builders and Developers can use the /numeric switch to see both the
+    descriptive word and the underlying numeric value for debugging purposes.
     """
 
     key = "@stats"
@@ -32,13 +143,26 @@ class CmdStats(Command):
 
         caller = self.caller
         target = caller
+        
+        # Parse switches manually
+        raw_args = self.args.strip()
+        switches = []
+        args = raw_args
+        
+        if raw_args.startswith('/'):
+            # Find the end of switches
+            parts = raw_args[1:].split(None, 1)
+            if parts:
+                switch_part = parts[0]
+                args = parts[1] if len(parts) > 1 else ""
+                switches = [s.lower() for s in switch_part.split('/') if s]
 
-        if self.args:
+        if args:
             if (
                 self.account.check_permstring(PERM_BUILDER)
                 or self.account.check_permstring(PERM_DEVELOPER)
             ):
-                matches = search_object(self.args.strip(), exact=False)
+                matches = search_object(args.strip(), exact=False)
                 if matches:
                     target = matches[0]
 
@@ -46,6 +170,18 @@ class CmdStats(Command):
         resonance = target.resonance
         intellect = target.intellect
         motorics = target.motorics
+        
+        # Get descriptive words for stats
+        grit_desc = get_stat_descriptor("grit", grit)
+        resonance_desc = get_stat_descriptor("resonance", resonance)
+        intellect_desc = get_stat_descriptor("intellect", intellect)
+        motorics_desc = get_stat_descriptor("motorics", motorics)
+        
+        # Check if caller has admin permissions for detailed view
+        show_numeric = (
+            self.account.check_permstring(PERM_BUILDER) or 
+            self.account.check_permstring(PERM_DEVELOPER)
+        ) and "numeric" in switches
         
         # Get medical status using medical terminology
         if hasattr(target, 'medical_state') and target.medical_state:
@@ -56,6 +192,20 @@ class CmdStats(Command):
             vitals_display = "NO DATA"
             vitals_color = ""
 
+        # Format stat displays based on permissions
+        if show_numeric:
+            # Admin view: show both descriptive and numeric
+            grit_display = f"{grit_desc} ({grit})"
+            resonance_display = f"{resonance_desc} ({resonance})"
+            intellect_display = f"{intellect_desc} ({intellect})"
+            motorics_display = f"{motorics_desc} ({motorics})"
+        else:
+            # Player view: only descriptive words
+            grit_display = grit_desc
+            resonance_display = resonance_desc
+            intellect_display = intellect_desc
+            motorics_display = motorics_desc
+
         # Fixed format to exactly 48 visible characters per row
         string = f"""{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * 48}{BOX_TOP_RIGHT}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL} PSYCHOPHYSICAL EVALUATION REPORT               {BOX_VERTICAL}{COLOR_NORMAL}
@@ -63,10 +213,10 @@ class CmdStats(Command):
 {COLOR_SUCCESS}{BOX_VERTICAL} File Reference: GEL-MST/PR-221A                {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * 48}{BOX_TEE_UP}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Grit:       {grit:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Resonance:  {resonance:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Intellect:  {intellect:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Motorics:   {motorics:>3}                        {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Grit:       {grit_display[:15]:<15}        {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Resonance:  {resonance_display[:15]:<15}        {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Intellect:  {intellect_display[:15]:<15}        {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Motorics:   {motorics_display[:15]:<15}        {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}         Vitals:     {vitals_color}{vitals_display:>12}{COLOR_SUCCESS}               {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}

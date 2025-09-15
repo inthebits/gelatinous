@@ -540,3 +540,47 @@ MAX_STAGGER_DELAY = 4.5  # seconds - maximum delay to ensure completion before n
 
 # From existing combathandler.py
 COMBAT_SCRIPT_KEY = "combat_handler_script"  # Will need to verify this from actual file
+
+# ===================================================================
+# DESCRIPTIVE STAT SYSTEM
+# ===================================================================
+
+# Stat descriptors for the alphabetical tier system (A-Z, 6-point ranges)
+STAT_DESCRIPTORS = {
+    "grit": {
+        150: "Apex", 144: "Bulletproof", 138: "Concrete", 132: "Durable", 126: "Enduring",
+        120: "Fortified", 114: "Granite", 108: "Hardy", 102: "Iron-willed", 96: "Juggernaut",
+        90: "Keen", 84: "Lasting", 78: "Moderate", 72: "Normal", 66: "Ordinary",
+        60: "Passable", 54: "Questionable", 48: "Rough", 42: "Soft", 36: "Tender",
+        30: "Unstable", 24: "Vulnerable", 18: "Weak", 12: "Xerotic", 6: "Yielding", 0: "Zero"
+    },
+    "resonance": {
+        150: "Attuned", 144: "Bonded", 138: "Charismatic", 132: "Dynamic", 126: "Empathetic",
+        120: "Fluid", 114: "Gracious", 108: "Harmonious", 102: "Intuitive", 96: "Jovial",
+        90: "Kind", 84: "Likeable", 78: "Moderate", 72: "Natural", 66: "Open",
+        60: "Polite", 54: "Quiet", 48: "Reserved", 42: "Stiff", 36: "Tense",
+        30: "Uncomfortable", 24: "Vacant", 18: "Withdrawn", 12: "Xenophobic", 6: "Yearning", 0: "Zero"
+    },
+    "intellect": {
+        150: "Absolute", 144: "Brilliant", 138: "Calculating", 132: "Discerning", 126: "Enlightened",
+        120: "Focused", 114: "Gifted", 108: "Heightened", 102: "Incisive", 96: "Judicious",
+        90: "Knowledgeable", 84: "Logical", 78: "Methodical", 72: "Normal", 66: "Observant",
+        60: "Practical", 54: "Questioning", 48: "Rough", 42: "Slow", 36: "Troubled",
+        30: "Unclear", 24: "Vacant", 18: "Wandering", 12: "Xeric", 6: "Yearning", 0: "Zero"
+    },
+    "motorics": {
+        150: "Artful", 144: "Balletic", 138: "Coordinated", 132: "Dexterous", 126: "Elegant",
+        120: "Fluid", 114: "Graceful", 108: "Harmonized", 102: "Intuitive", 96: "Jaunty",
+        90: "Kinetic", 84: "Limber", 78: "Mobile", 72: "Nimble", 66: "Ordinary",
+        60: "Passable", 54: "Questionable", 48: "Rigid", 42: "Stilted", 36: "Trembling",
+        30: "Unsteady", 24: "Vacant", 18: "Wobbly", 12: "Xyloid", 6: "Yielding", 0: "Zero"
+    }
+}
+
+# Stat tiers for easy lookup (maps numeric ranges to descriptive words)
+STAT_TIER_RANGES = [
+    (145, 150), (139, 144), (133, 138), (127, 132), (121, 126), (115, 120),
+    (109, 114), (103, 108), (97, 102), (91, 96), (85, 90), (79, 84),
+    (73, 78), (67, 72), (61, 66), (55, 60), (49, 54), (43, 48),
+    (37, 42), (31, 36), (25, 30), (19, 24), (13, 18), (7, 12), (1, 6), (0, 0)
+]
