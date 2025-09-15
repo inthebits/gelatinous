@@ -196,16 +196,11 @@ class CmdStats(Command):
 
         # Format stat displays based on permissions
         if show_numeric:
-            # Admin view: show descriptive word with tier range boundaries
-            grit_min, grit_max = get_stat_range(grit_desc, "grit")
-            resonance_min, resonance_max = get_stat_range(resonance_desc, "resonance")
-            intellect_min, intellect_max = get_stat_range(intellect_desc, "intellect")
-            motorics_min, motorics_max = get_stat_range(motorics_desc, "motorics")
-            
-            grit_display = f"{grit_desc} ({grit_min}-{grit_max})"
-            resonance_display = f"{resonance_desc} ({resonance_min}-{resonance_max})"
-            intellect_display = f"{intellect_desc} ({intellect_min}-{intellect_max})"
-            motorics_display = f"{motorics_desc} ({motorics_min}-{motorics_max})"
+            # Admin view: show descriptive word with exact numeric value
+            grit_display = f"{grit_desc} ({grit})"
+            resonance_display = f"{resonance_desc} ({resonance})"
+            intellect_display = f"{intellect_desc} ({intellect})"
+            motorics_display = f"{motorics_desc} ({motorics})"
         else:
             # Player view: only descriptive words
             grit_display = grit_desc
