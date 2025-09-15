@@ -196,11 +196,16 @@ class CmdStats(Command):
 
         # Format stat displays based on permissions
         if show_numeric:
-            # Admin view: show both descriptive and numeric
-            grit_display = f"{grit_desc} ({grit})"
-            resonance_display = f"{resonance_desc} ({resonance})"
-            intellect_display = f"{intellect_desc} ({intellect})"
-            motorics_display = f"{motorics_desc} ({motorics})"
+            # Admin view: show descriptive word with tier range boundaries
+            grit_min, grit_max = get_stat_range(grit_desc, "grit")
+            resonance_min, resonance_max = get_stat_range(resonance_desc, "resonance")
+            intellect_min, intellect_max = get_stat_range(intellect_desc, "intellect")
+            motorics_min, motorics_max = get_stat_range(motorics_desc, "motorics")
+            
+            grit_display = f"{grit_desc} ({grit_min}-{grit_max})"
+            resonance_display = f"{resonance_desc} ({resonance_min}-{resonance_max})"
+            intellect_display = f"{intellect_desc} ({intellect_min}-{intellect_max})"
+            motorics_display = f"{motorics_desc} ({motorics_min}-{motorics_max})"
         else:
             # Player view: only descriptive words
             grit_display = grit_desc
@@ -238,6 +243,26 @@ class CmdStats(Command):
         file_ref = f"GEL-MST/PR-{target.id}{roman_death}"
         file_ref_padded = f" File Reference: {file_ref}".ljust(48)
 
+        # Dynamic formatting based on display mode
+        if show_numeric:
+            # Calculate exact padding for numeric mode to maintain 48-char width
+            grit_content = f"         Grit:       {grit_display}"
+            resonance_content = f"         Resonance:  {resonance_display}"
+            intellect_content = f"         Intellect:  {intellect_display}"
+            motorics_content = f"         Motorics:   {motorics_display}"
+            
+            # Pad each line to exactly 48 characters
+            grit_line = grit_content.ljust(48)
+            resonance_line = resonance_content.ljust(48)
+            intellect_line = intellect_content.ljust(48)
+            motorics_line = motorics_content.ljust(48)
+        else:
+            # Standard format for descriptive mode (fixed 12-char stat field)
+            grit_line = f"         Grit:       {grit_display:<12}               "
+            resonance_line = f"         Resonance:  {resonance_display:<12}               "
+            intellect_line = f"         Intellect:  {intellect_display:<12}               "
+            motorics_line = f"         Motorics:   {motorics_display:<12}               "
+
         # Fixed format to exactly 48 visible characters per row
         string = f"""{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * 48}{BOX_TOP_RIGHT}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL} PSYCHOPHYSICAL EVALUATION REPORT               {BOX_VERTICAL}{COLOR_NORMAL}
@@ -245,10 +270,10 @@ class CmdStats(Command):
 {COLOR_SUCCESS}{BOX_VERTICAL}{file_ref_padded}{BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * 48}{BOX_TEE_UP}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Grit:       {grit_display:<12}               {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Resonance:  {resonance_display:<12}               {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Intellect:  {intellect_display:<12}               {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Motorics:   {motorics_display:<12}               {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}{grit_line}{BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}{resonance_line}{BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}{intellect_line}{BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}{motorics_line}{BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}         Vitals:     {vitals_color}{vitals_display:^12}{COLOR_SUCCESS}               {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
