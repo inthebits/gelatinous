@@ -441,6 +441,9 @@ class Character(ObjectParent, DefaultCharacter):
             self.ndb = {}
         self.ndb.death_processed = True
         
+        # Increment death counter for file reference system
+        self.death_count += 1
+        
         # Clear any previous unconsciousness state since death supersedes it
         if getattr(self.ndb, 'unconsciousness_processed', False):
             self.ndb.unconsciousness_processed = False
