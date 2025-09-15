@@ -206,11 +206,15 @@ class CmdStats(Command):
             intellect_display = intellect_desc
             motorics_display = motorics_desc
 
+        # Generate dynamic file reference with proper spacing
+        file_ref = f"GEL-MST/PR-{target.id}A"
+        file_ref_padded = f" File Reference: {file_ref}".ljust(48)
+
         # Fixed format to exactly 48 visible characters per row
         string = f"""{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * 48}{BOX_TOP_RIGHT}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL} PSYCHOPHYSICAL EVALUATION REPORT               {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL} Subject: {target.key[:38]:<38}{BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL} File Reference: GEL-MST/PR-221A                {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}{file_ref_padded}{BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * 48}{BOX_TEE_UP}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}         Grit:       {grit_display:<12}               {BOX_VERTICAL}{COLOR_NORMAL}
