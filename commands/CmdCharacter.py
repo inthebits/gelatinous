@@ -213,10 +213,10 @@ class CmdStats(Command):
 {COLOR_SUCCESS}{BOX_VERTICAL} File Reference: GEL-MST/PR-221A                {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * 48}{BOX_TEE_UP}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Grit:       {grit_display[:15]:<15}        {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Resonance:  {resonance_display[:15]:<15}        {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Intellect:  {intellect_display[:15]:<15}        {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Motorics:   {motorics_display[:15]:<15}        {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Grit:       {grit_display:>12}               {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Resonance:  {resonance_display:>12}               {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Intellect:  {intellect_display:>12}               {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}         Motorics:   {motorics_display:>12}               {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}         Vitals:     {vitals_color}{vitals_display:>12}{COLOR_SUCCESS}               {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
