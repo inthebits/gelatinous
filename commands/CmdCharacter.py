@@ -118,20 +118,22 @@ def get_stat_tier_info(stat_name, numeric_value):
 
 class CmdStats(Command):
     """
-    View your character's stats, or inspect another character if you're a Builder+.
+    Access your GEL-MST psychophysical evaluation report.
 
     Usage:
-      @stats
-      @stats <target>          (Builder or Developer only)
-      @stats/numeric           (Builder or Developer only - shows numeric values)
-      @stats/numeric <target>  (Builder or Developer only)
+      @stats / score
+      @stats <target>          (Authorized personnel only)
+      @stats/numeric           (Authorized personnel only - diagnostic mode)
+      @stats/numeric <target>  (Authorized personnel only)
 
-    Displays your G.R.I.M. attributes using descriptive words that indicate
-    your character's capabilities. Each stat is shown as a descriptive term
-    rather than a raw number for more immersive character representation.
+    Displays your subject evaluation from the Genetic Expression Liability - 
+    Medical & Sociological Testing program. G.R.I.M. assessment parameters 
+    are shown using standardized classification descriptors (A-Z tiers) for 
+    efficient liability assessment.
     
-    Builders and Developers can use the /numeric switch to see both the
-    descriptive word and the underlying numeric value for debugging purposes.
+    File reference includes subject ID and mortality revision count in Roman 
+    numerals. Authorized personnel may access diagnostic numeric values for 
+    detailed risk evaluation and resource allocation purposes.
     """
 
     key = "@stats"
