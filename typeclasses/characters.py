@@ -34,6 +34,9 @@ class Character(ObjectParent, DefaultCharacter):
     motorics = AttributeProperty(1, category='stat', autocreate=True)
     sex = AttributeProperty("ambiguous", category="biology", autocreate=True)
     
+    # Death tracking system
+    death_count = AttributeProperty(1, category='mortality', autocreate=True)
+    
     # Appearance attributes - stored in db but no auto-creation for optional features
     # skintone is set via @skintone command and stored as db.skintone
 

@@ -206,8 +206,34 @@ class CmdStats(Command):
             intellect_display = intellect_desc
             motorics_display = motorics_desc
 
-        # Generate dynamic file reference with proper spacing
-        file_ref = f"GEL-MST/PR-{target.id}A"
+        # Convert death count to Roman numerals for file reference
+        def to_roman(num):
+            """Convert integer to Roman numeral."""
+            val = [
+                1000, 900, 500, 400,
+                100, 90, 50, 40,
+                10, 9, 5, 4,
+                1
+            ]
+            syms = [
+                "M", "CM", "D", "CD",
+                "C", "XC", "L", "XL",
+                "X", "IX", "V", "IV",
+                "I"
+            ]
+            roman_num = ''
+            i = 0
+            while num > 0:
+                for _ in range(num // val[i]):
+                    roman_num += syms[i]
+                    num -= val[i]
+                i += 1
+            return roman_num
+
+        # Generate dynamic file reference with death counter
+        death_count = getattr(target, 'death_count', 1)  # Default to 1 if not set
+        roman_death = to_roman(death_count)
+        file_ref = f"GEL-MST/PR-{target.id}{roman_death}"
         file_ref_padded = f" File Reference: {file_ref}".ljust(48)
 
         # Fixed format to exactly 48 visible characters per row
