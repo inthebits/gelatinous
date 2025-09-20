@@ -602,8 +602,7 @@ class Character(ObjectParent, DefaultCharacter):
             self.cmdset.add_default(DeathCmdSet)
         
         # Placement description already set in at_death()
-        # Start death experience script for atmospheric immersion
-        self.start_death_script()
+        # TODO: Add death experience script for atmospheric immersion when implemented
 
     def remove_unconscious_state(self):
         """
@@ -647,8 +646,7 @@ class Character(ObjectParent, DefaultCharacter):
         if hasattr(self, 'override_place'):
             self.override_place = None
         
-        # Stop death script if running
-        self.stop_death_script()
+        # TODO: Stop death script if running when implemented
         
         # Clear death processing flag
         if hasattr(self.ndb, 'death_processed'):
