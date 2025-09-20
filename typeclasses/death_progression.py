@@ -371,90 +371,6 @@ class DeathProgressionScript(DefaultScript):
         # Stop the script
         self.stop()
 
-
-def start_death_progression(character):
-    """
-    Start the death progression script for a character.
-    
-    Args:
-        character: The character entering death progression
-        
-    Returns:
-        DeathProgressionScript: The created script
-    """
-    # Check if character already has a death progression script
-    existing_script = character.scripts.get("death_progression")
-    if existing_script:
-        try:
-            splattercast = ChannelDB.objects.get_channel("Splattercast")
-            splattercast.msg(f"DEATH_PROGRESSION: Existing script found for {character.key}")
-        except:
-            pass
-        return existing_script
-        
-    # Create new death progression script
-    try:
-        splattercast = ChannelDB.objects.get_channel("Splattercast")
-        splattercast.msg(f"DEATH_PROGRESSION: Creating new script for {character.key}")
-    except:
-        pass
-        
-    script = character.scripts.add(DeathProgressionScript)
-    # Set character immediately after creation
-    script.db.character = character
-    
-    # Explicitly start the timer to ensure it begins
-    script.start()
-    
-    try:
-        splattercast = ChannelDB.objects.get_channel("Splattercast")
-        splattercast.msg(f"DEATH_PROGRESSION: Script created and started: {script} for {character.key}")
-    except:
-        pass
-    
-    return script
-
-
-def get_death_progression_script(character):
-    """
-    Get the death progression script for a character if it exists.
-    
-    Args:
-        character: The character to check
-        
-    Returns:
-        DeathProgressionScript or None: The script if found, None otherwise
-    """
-    return character.scripts.get("death_progression")
-
-
-def get_death_progression_status(character):
-    """
-    Get the status of a character's death progression for medical system integration.
-    
-    Args:
-        character: The character to check
-        
-    Returns:
-        dict: Status information including time remaining, condition, etc.
-    """
-    script = get_death_progression_script(character)
-    if not script:
-        return {"in_progression": False}
-        
-    import time
-    elapsed = time.time() - script.db.start_time
-    remaining = script.db.total_duration - elapsed
-    
-    return {
-        "in_progression": True,
-        "time_elapsed": elapsed,
-        "time_remaining": remaining,
-        "total_duration": script.db.total_duration,
-        "can_be_revived": script.db.can_be_revived,
-        "time_factor": 1.0 - (elapsed / script.db.total_duration)
-    }
-
     def _handle_corpse_creation_and_transition(self, character):
         """
         Complete the death progression by creating corpse and transitioning character.
@@ -577,3 +493,87 @@ def get_death_progression_status(character):
         # - Redirect to character creation interface
         # - Provide character creation commands
         # - Handle character naming, stats, description setup
+
+
+def start_death_progression(character):
+    """
+    Start the death progression script for a character.
+    
+    Args:
+        character: The character entering death progression
+        
+    Returns:
+        DeathProgressionScript: The created script
+    """
+    # Check if character already has a death progression script
+    existing_script = character.scripts.get("death_progression")
+    if existing_script:
+        try:
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            splattercast.msg(f"DEATH_PROGRESSION: Existing script found for {character.key}")
+        except:
+            pass
+        return existing_script
+        
+    # Create new death progression script
+    try:
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        splattercast.msg(f"DEATH_PROGRESSION: Creating new script for {character.key}")
+    except:
+        pass
+        
+    script = character.scripts.add(DeathProgressionScript)
+    # Set character immediately after creation
+    script.db.character = character
+    
+    # Explicitly start the timer to ensure it begins
+    script.start()
+    
+    try:
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        splattercast.msg(f"DEATH_PROGRESSION: Script created and started: {script} for {character.key}")
+    except:
+        pass
+    
+    return script
+
+
+def get_death_progression_script(character):
+    """
+    Get the death progression script for a character if it exists.
+    
+    Args:
+        character: The character to check
+        
+    Returns:
+        DeathProgressionScript or None: The script if found, None otherwise
+    """
+    return character.scripts.get("death_progression")
+
+
+def get_death_progression_status(character):
+    """
+    Get the status of a character's death progression for medical system integration.
+    
+    Args:
+        character: The character to check
+        
+    Returns:
+        dict: Status information including time remaining, condition, etc.
+    """
+    script = get_death_progression_script(character)
+    if not script:
+        return {"in_progression": False}
+        
+    import time
+    elapsed = time.time() - script.db.start_time
+    remaining = script.db.total_duration - elapsed
+    
+    return {
+        "in_progression": True,
+        "time_elapsed": elapsed,
+        "time_remaining": remaining,
+        "total_duration": script.db.total_duration,
+        "can_be_revived": script.db.can_be_revived,
+        "time_factor": 1.0 - (elapsed / script.db.total_duration)
+    }
