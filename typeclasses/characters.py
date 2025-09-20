@@ -171,7 +171,12 @@ class Character(ObjectParent, DefaultCharacter):
         Returns True if character should be considered dead.
         
         Uses pure medical system - death from vital organ failure or blood loss.
+        Also checks for test death state for testing command restrictions.
         """
+        # Check for test flag first (for testing command restrictions)
+        if hasattr(self.db, '_test_death_state') and self.db._test_death_state:
+            return True
+            
         try:
             medical_state = self.medical_state
             if medical_state:
@@ -186,8 +191,12 @@ class Character(ObjectParent, DefaultCharacter):
         Returns True if character is unconscious.
         
         Uses medical system to determine unconsciousness from injuries,
-        blood loss, or pain.
+        blood loss, or pain. Also checks for test unconscious state.
         """
+        # Check for test flag first (for testing command restrictions)
+        if hasattr(self.db, '_test_unconscious_state') and self.db._test_unconscious_state:
+            return True
+            
         try:
             medical_state = self.medical_state
             if medical_state:
@@ -289,6 +298,9 @@ class Character(ObjectParent, DefaultCharacter):
             debug_broadcast(f"{self.key} became unconscious from medical injuries", "MEDICAL", "UNCONSCIOUS")
         except ImportError:
             pass  # debug_broadcast not available
+        
+        # Apply unconscious command restrictions
+        self.apply_unconscious_state()
 
     def debug_death_analysis(self):
         """
@@ -525,6 +537,127 @@ class Character(ObjectParent, DefaultCharacter):
         
         # You can override this to handle possession, corpse creation, etc.
         # PERMANENT-DEATH. DO NOT ENABLE YET. self.delete()
+        
+        # Apply death command restrictions
+        self.apply_death_state()
+
+    # MEDICAL REVIVAL SYSTEM - Command Set Management
+    
+    def apply_unconscious_state(self, force_test=False):
+        """
+        Apply unconscious command restrictions by replacing the default cmdset.
+        
+        Args:
+            force_test (bool): If True, apply restrictions even for staff (for testing)
+        """
+        if not force_test and not self.is_unconscious():
+            return
+            
+        # Check if character has builder/developer permissions
+        if not force_test and self.locks.check(self, "perm(Builder)"):
+            return  # Staff bypass cmdset restrictions
+        
+        # Remove current default cmdset and replace with unconscious cmdset
+        try:
+            self.cmdset.remove_default()
+        except Exception:
+            pass  # No default cmdset to remove, that's fine
+            
+        from commands.medical_states import UnconsciousCmdSet
+        self.cmdset.add_default(UnconsciousCmdSet)
+        
+        # Set placement description
+        self.override_place = "unconscious and motionless."
+        
+        # Notify area
+        if self.location:
+            self.location.msg_contents(f"{self.key} collapses unconscious.", exclude=[self])
+        self.msg("You lose consciousness and slip into darkness...")
+
+    def apply_death_state(self, force_test=False):
+        """
+        Apply death command restrictions by replacing the default cmdset.
+        
+        Args:
+            force_test (bool): If True, apply restrictions even for staff (for testing)
+        """
+        if not force_test and not self.is_dead():
+            return
+            
+        # Remove unconscious restrictions first if they exist
+        self.remove_unconscious_state()
+        
+        # Check if character has builder/developer permissions
+        if not force_test and self.locks.check(self, "perm(Builder)"):
+            # Staff bypass cmdset restrictions unless force_test=True
+            pass
+        else:
+            # Remove current default cmdset and replace with death cmdset
+            try:
+                self.cmdset.remove_default()
+            except Exception:
+                pass  # No default cmdset to remove, that's fine
+                
+            from commands.medical_states import DeathCmdSet
+            self.cmdset.add_default(DeathCmdSet)
+        
+        # Placement description already set in at_death()
+        # Start death experience script for atmospheric immersion
+        self.start_death_script()
+
+    def remove_unconscious_state(self):
+        """
+        Remove unconscious command restrictions by restoring the normal default cmdset.
+        """
+        try:
+            # Remove current default cmdset (should be unconscious cmdset)
+            self.cmdset.remove_default()
+        except Exception:
+            pass  # No default cmdset to remove, that's fine
+            
+        # Restore normal character cmdset
+        from commands.default_cmdsets import CharacterCmdSet
+        self.cmdset.add_default(CharacterCmdSet)
+        
+        # Clear placement description
+        if hasattr(self, 'override_place'):
+            self.override_place = None
+        
+        # Notify recovery
+        if self.location:
+            self.location.msg_contents(f"{self.key} regains consciousness.", exclude=[self])
+        self.msg("You slowly regain consciousness...")
+
+    def remove_death_state(self):
+        """
+        Remove death command restrictions by restoring the normal default cmdset.
+        Used for revival mechanics.
+        """
+        try:
+            # Remove current default cmdset (should be death cmdset)
+            self.cmdset.remove_default()
+        except Exception:
+            pass  # No default cmdset to remove, that's fine
+            
+        # Restore normal character cmdset
+        from commands.default_cmdsets import CharacterCmdSet
+        self.cmdset.add_default(CharacterCmdSet)
+        
+        # Clear placement description
+        if hasattr(self, 'override_place'):
+            self.override_place = None
+        
+        # Stop death script if running
+        self.stop_death_script()
+        
+        # Clear death processing flag
+        if hasattr(self.ndb, 'death_processed'):
+            self.ndb.death_processed = False
+        
+        # Notify revival
+        if self.location:
+            self.location.msg_contents(f"|g{self.key} has been revived!|n", exclude=[self])
+        self.msg("|gYou have been revived! You feel the spark of life return.|n")
 
     # MR. HANDS SYSTEM
     # Persistent hand slots: supports dynamic anatomy eventually

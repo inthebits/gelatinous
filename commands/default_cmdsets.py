@@ -111,6 +111,12 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdResetMedical())
         self.add(CmdMedicalAudit())
         
+        # Add medical state testing commands
+        from commands.test_medical_states import CmdTestDeath, CmdTestUnconscious, CmdTestMedicalClear
+        self.add(CmdTestDeath())
+        self.add(CmdTestUnconscious())
+        self.add(CmdTestMedicalClear())
+        
         # Add consumption method commands
         self.add(CmdConsumption.CmdInject())
         self.add(CmdConsumption.CmdApply())
