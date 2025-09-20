@@ -72,6 +72,70 @@ class Room(ObjectParent, DefaultRoom):
         if not hasattr(self, 'crowd_base_level'):
             self.crowd_base_level = 0
     
+    def msg_contents(self, message, exclude=None, from_obj=None, mapping=None, **kwargs):
+        """
+        Override msg_contents to implement death curtain message filtering.
+        
+        Filters out social messages (say, emote, etc.) from reaching dead characters
+        while allowing essential messages (system, staff, death progression) through.
+        """
+        if not exclude:
+            exclude = []
+        if not isinstance(exclude, list):
+            exclude = [exclude]
+            
+        # Get all contents that would normally receive the message
+        all_contents = [obj for obj in self.contents if obj not in exclude]
+        
+        # Filter dead characters for social messages
+        filtered_contents = []
+        for obj in all_contents:
+            # Check if this is a dead character
+            if (hasattr(obj, 'is_dead') and callable(obj.is_dead) and obj.is_dead()):
+                # Apply death curtain filtering
+                if self._should_allow_message_to_dead(message, from_obj):
+                    filtered_contents.append(obj)
+                # else: message blocked for dead character
+            else:
+                # Living characters get all messages
+                filtered_contents.append(obj)
+        
+        # Send message to filtered list using parent implementation
+        if filtered_contents:
+            # Temporarily replace self.contents to control who gets the message
+            original_contents = self.contents
+            self.contents = filtered_contents
+            try:
+                super().msg_contents(message, exclude=exclude, from_obj=from_obj, mapping=mapping, **kwargs)
+            finally:
+                self.contents = original_contents
+    
+    def _should_allow_message_to_dead(self, message, from_obj):
+        """
+        Determine if a message should be allowed through to dead characters.
+        
+        Args:
+            message: The message text
+            from_obj: Object sending the message
+            
+        Returns:
+            bool: True if message should be allowed, False if blocked
+        """
+        # Allow system messages (no from_obj)
+        if not from_obj:
+            return True
+            
+        # Allow messages from staff
+        if hasattr(from_obj, 'locks') and from_obj.locks.check(from_obj, "perm(Builder)"):
+            return True
+            
+        # Allow death progression messages
+        if hasattr(from_obj, 'key') and 'curtain' in str(from_obj.key).lower():
+            return True
+            
+        # Block all other messages (social commands, general chat, etc.)
+        return False
+    
     # Override the appearance template to use our custom footer for exits
     # and custom things display to handle @integrate objects
     # This avoids duplicate display issues with exits while letting Evennia handle characters
