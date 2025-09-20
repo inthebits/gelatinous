@@ -17,11 +17,12 @@ class CmdHeal(Command):
         @heal <room #> [= <amount>]
     
     Without amount: Completely heal target (remove all medical conditions)
+                   Also clears any test death/unconscious states and restrictions
     With amount: Heal a specific number of medical conditions (least severe first)
     With condition_type: Heal only specific types of conditions
     
     Examples:
-        @heal bob - Completely heal bob
+        @heal bob - Completely heal bob and clear any test states
         @heal bob = bleeding - Heal all bleeding conditions
         @heal bob = fracture 2 - Heal 2 fracture conditions
         @heal here = 3 - Heal 3 conditions from everyone here
@@ -181,6 +182,22 @@ class CmdHeal(Command):
                     target.ndb.death_processed = False
                     target.ndb.unconsciousness_processed = False
                 
+                # Clear old test flags (backward compatibility)
+                if hasattr(target.db, '_test_death_state'):
+                    del target.db._test_death_state
+                if hasattr(target.db, '_test_unconscious_state'):
+                    del target.db._test_unconscious_state
+                
+                # Remove any medical state restrictions (death/unconscious cmdsets)
+                try:
+                    target.remove_death_state()
+                except Exception:
+                    pass
+                try:
+                    target.remove_unconscious_state()
+                except Exception:
+                    pass
+                
                 target.save_medical_state()
                 caller.msg(f"|g{target.key} fully healed - cleared all {conditions_before} conditions, healed {organs_healed} organs, and restored vital signs.|n")
                 
@@ -249,6 +266,225 @@ class CmdHeal(Command):
 
         if len(targets) > 1 and condition_type != "list":
             caller.msg(f"|gHealed {len(targets)} targets in {target_desc}.|n")
+
+
+class CmdTestDeath(Command):
+    """
+    Test death state using organic medical conditions.
+    
+    Usage:
+        @testdeath [<target>] [force]
+        
+    This command creates severe bleeding conditions that naturally cause death
+    or fully heals to revive from death. Uses real medical conditions, not 
+    direct manipulation of vital signs.
+    If no target is specified, affects yourself.
+    If 'force' is specified, applies restrictions even to staff.
+    """
+    key = "@testdeath"
+    aliases = ["@td"]
+    locks = "cmd:perm(Builder)"
+    help_category = "Admin"
+    
+    def func(self):
+        caller = self.caller
+        args = self.args.strip()
+        
+        # Parse arguments for target and force flag
+        force_test = "force" in args.lower()
+        target_name = args.replace("force", "").strip()
+        
+        # Determine target
+        if target_name:
+            target = caller.search(target_name, global_search=True)
+            if not target:
+                caller.msg(f"Could not find '{target_name}'.")
+                return
+            if not hasattr(target, 'is_dead'):
+                caller.msg(f"{target.key} is not a character.")
+                return
+        else:
+            target = caller
+        
+        if target.is_dead():
+            # Character is dead, revive them using heal command logic
+            if hasattr(target, 'medical_state') and target.medical_state:
+                medical_state = target.medical_state
+                
+                # Clear all conditions
+                medical_state.conditions.clear()
+                
+                # Stop medical script since no conditions remain
+                from world.medical.script import stop_medical_script
+                stop_medical_script(target)
+                
+                # Restore all organs to full health
+                for organ in medical_state.organs.values():
+                    organ.current_hp = organ.max_hp
+                
+                # Restore vital signs
+                medical_state.blood_level = 100.0
+                medical_state.pain_level = 0.0
+                medical_state.consciousness = 1.0
+                
+                # Clear placement descriptions and processing flags
+                if hasattr(target, 'override_place'):
+                    target.override_place = None
+                if hasattr(target, 'ndb'):
+                    target.ndb.death_processed = False
+                    target.ndb.unconsciousness_processed = False
+                
+                target.save_medical_state()
+                
+                # Remove death state cmdset
+                target.remove_death_state()
+            
+            caller.msg(f"|g{target.key} has been revived from death via medical system.|n")
+            if target != caller:
+                target.msg("|gYou have been revived from death via medical system.|n")
+        else:
+            # Character is alive, kill them using medical system conditions
+            if hasattr(target, 'medical_state') and target.medical_state:
+                
+                # Use the medical system's natural damage-to-condition conversion
+                # This creates authentic medical conditions exactly as combat would
+                from world.medical.conditions import create_condition_from_damage
+                
+                # Create severe penetrating trauma that will cause death
+                # Equivalent to critical bullet wounds
+                fatal_conditions = create_condition_from_damage(
+                    damage_amount=50,  # Severe damage 
+                    damage_type="bullet",  # Penetrating trauma
+                    location="chest"
+                )
+                
+                # Add the organically created conditions
+                for condition in fatal_conditions:
+                    target.medical_state.add_condition(condition)
+                
+                # Save medical state to ensure persistence
+                target.save_medical_state()
+                
+                # These conditions will naturally cause death through blood loss
+                # The medical system will process them organically
+                
+            caller.msg(f"|r{target.key} has been given fatal bleeding conditions via medical system.|n")
+            if target != caller:
+                target.msg("|rYou have been given fatal bleeding conditions via medical system.|n")
+            if force_test:
+                caller.msg("|yForce mode: restrictions apply even to staff.|n")
+                if target != caller:
+                    target.msg("|yForce mode: restrictions apply even to staff.|n")
+
+
+class CmdTestUnconscious(Command):
+    """
+    Test unconscious state using organic medical conditions.
+    
+    Usage:
+        @testunconscious [<target>] [force]
+        
+    This command creates pain and bleeding conditions that naturally cause 
+    unconsciousness or fully heals to awaken from unconsciousness. Uses real 
+    medical conditions, not direct manipulation of vital signs.
+    If no target is specified, affects yourself.
+    If 'force' is specified, applies restrictions even to staff.
+    """
+    key = "@testunconscious"
+    aliases = ["@tu"]
+    locks = "cmd:perm(Builder)"
+    help_category = "Admin"
+    
+    def func(self):
+        caller = self.caller
+        args = self.args.strip()
+        
+        # Parse arguments for target and force flag
+        force_test = "force" in args.lower()
+        target_name = args.replace("force", "").strip()
+        
+        # Determine target
+        if target_name:
+            target = caller.search(target_name, global_search=True)
+            if not target:
+                caller.msg(f"Could not find '{target_name}'.")
+                return
+            if not hasattr(target, 'is_unconscious'):
+                caller.msg(f"{target.key} is not a character.")
+                return
+        else:
+            target = caller
+        
+        if target.is_unconscious():
+            # Character is unconscious, wake them up using heal logic
+            if hasattr(target, 'medical_state') and target.medical_state:
+                medical_state = target.medical_state
+                
+                # Restore consciousness to normal level
+                medical_state.consciousness = 1.0
+                medical_state.pain_level = 0.0  # Remove pain that might cause unconsciousness
+                medical_state.blood_level = 100.0  # Restore blood level
+                
+                # Clear any conditions that might cause unconsciousness
+                conditions_removed = []
+                for condition in list(medical_state.conditions):
+                    if condition.type in ['severe_bleeding', 'critical_bleeding']:
+                        medical_state.conditions.remove(condition)
+                        conditions_removed.append(condition.type)
+                
+                # Stop medical script if no conditions remain
+                if not medical_state.conditions:
+                    from world.medical.script import stop_medical_script
+                    stop_medical_script(target)
+                
+                # Clear placement descriptions and processing flags
+                if hasattr(target, 'override_place'):
+                    target.override_place = None
+                if hasattr(target, 'ndb'):
+                    target.ndb.unconsciousness_processed = False
+                
+                target.save_medical_state()
+                
+                # Remove unconscious state cmdset
+                target.remove_unconscious_state()
+            
+            caller.msg(f"|g{target.key} has been awakened from unconsciousness via medical system.|n")
+            if target != caller:
+                target.msg("|gYou have been awakened from unconsciousness via medical system.|n")
+        else:
+            # Character is conscious, make them unconscious using medical system conditions
+            if hasattr(target, 'medical_state') and target.medical_state:
+                
+                # Use the medical system's natural damage-to-condition conversion
+                # This creates authentic medical conditions exactly as combat would
+                from world.medical.conditions import create_condition_from_damage
+                
+                # Create moderate blunt trauma that will cause unconsciousness
+                # Equivalent to severe beating or head trauma
+                unconscious_conditions = create_condition_from_damage(
+                    damage_amount=25,  # Moderate damage causing pain/bleeding
+                    damage_type="blunt",  # Blunt trauma causes pain
+                    location="head"
+                )
+                
+                # Add the organically created conditions
+                for condition in unconscious_conditions:
+                    target.medical_state.add_condition(condition)
+                
+                # Save medical state to ensure persistence  
+                target.save_medical_state()
+                
+                # These conditions will naturally cause unconsciousness through pain and blood loss
+                # The medical system will process them organically
+                
+            caller.msg(f"|r{target.key} has been given conditions causing unconsciousness via medical system.|n")
+            if target != caller:
+                target.msg("|rYou have been given conditions causing unconsciousness via medical system.|n")
+            if force_test:
+                caller.msg("|yForce mode: restrictions apply even to staff.|n")
+                if target != caller:
+                    target.msg("|yForce mode: restrictions apply even to staff.|n")
+
 
 class CmdPeace(Command):
     """

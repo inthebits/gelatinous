@@ -24,12 +24,69 @@ from commands import CmdMedical
 from commands import CmdConsumption
 from commands import CmdMedicalItems
 from commands.CmdSpawnMob import CmdSpawnMob
-from commands.CmdAdmin import CmdHeal, CmdPeace, CmdTestDeathCurtain, CmdWeather, CmdResetMedical, CmdMedicalAudit
+from commands.CmdAdmin import CmdHeal, CmdPeace, CmdTestDeathCurtain, CmdWeather, CmdResetMedical, CmdMedicalAudit, CmdTestDeath, CmdTestUnconscious
 from commands.combat.cmdset_combat import CombatCmdSet
 from commands.combat.special_actions import CmdAim, CmdGrapple
 from commands.CmdThrow import CmdThrow, CmdPull, CmdCatch, CmdRig, CmdDefuse
 from commands.CmdGraffiti import CmdGraffiti, CmdPress
 from commands.CmdCharacter import CmdLongdesc, CmdSkintone
+
+
+class UnconsciousCmdSet(default_cmds.CmdSet):
+    """
+    Command set for unconscious characters.
+    Only allows minimal OOC commands - no perception, movement, or actions.
+    """
+    key = "unconscious_cmdset"
+    priority = 0  # Same as normal CharacterCmdSet since this replaces it entirely
+    no_exits = True  # Prevent exit traversal when unconscious
+    
+    def at_cmdset_creation(self):
+        """
+        Add only commands that unconscious characters should be able to use.
+        Unconscious = no perception, no movement, no actions.
+        """
+        # Essential OOC commands only
+        self.add(default_cmds.CmdHelp())      # Always allow help
+        self.add(default_cmds.CmdWho())       # OOC player information
+        self.add(default_cmds.CmdTime())      # OOC time information
+        
+        # System commands
+        self.add(default_cmds.CmdQuit())      # Can always quit
+        
+        # Staff commands (will be filtered by permissions anyway)
+        self.add(default_cmds.CmdPy())        # Staff debugging
+        self.add(default_cmds.CmdReload())    # Staff server management
+        
+        # NO look, NO movement, NO actions when unconscious
+
+
+class DeathCmdSet(default_cmds.CmdSet):
+    """
+    Command set for dead characters.
+    Only allows minimal OOC commands - no perception, no movement, no actions.
+    """
+    key = "death_cmdset"
+    priority = 0  # Same as normal CharacterCmdSet since this replaces it entirely
+    no_exits = True  # Prevent exit traversal when dead
+    
+    def at_cmdset_creation(self):
+        """
+        Add only commands that dead characters should be able to use.
+        Dead = no perception, no movement, no actions, minimal OOC only.
+        """
+        # Very minimal set - OOC information only
+        self.add(default_cmds.CmdHelp())      # Always allow help
+        self.add(default_cmds.CmdWho())       # OOC player information
+        self.add(default_cmds.CmdQuit())      # Can always quit
+        
+        # Staff commands (will be filtered by permissions anyway)
+        self.add(default_cmds.CmdPy())        # Staff debugging
+        self.add(default_cmds.CmdReload())    # Staff server management
+        
+        # NO look, NO time, NO movement, NO actions when dead
+
+
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
     The `CharacterCmdSet` contains general in-game commands like `look`,
@@ -111,11 +168,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdResetMedical())
         self.add(CmdMedicalAudit())
         
-        # Add medical state testing commands
-        from commands.test_medical_states import CmdTestDeath, CmdTestUnconscious, CmdTestMedicalClear
+        # Add medical state testing commands (using real medical system)
         self.add(CmdTestDeath())
         self.add(CmdTestUnconscious())
-        self.add(CmdTestMedicalClear())
         
         # Add consumption method commands
         self.add(CmdConsumption.CmdInject())

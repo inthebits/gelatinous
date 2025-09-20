@@ -171,12 +171,7 @@ class Character(ObjectParent, DefaultCharacter):
         Returns True if character should be considered dead.
         
         Uses pure medical system - death from vital organ failure or blood loss.
-        Also checks for test death state for testing command restrictions.
         """
-        # Check for test flag first (for testing command restrictions)
-        if hasattr(self.db, '_test_death_state') and self.db._test_death_state:
-            return True
-            
         try:
             medical_state = self.medical_state
             if medical_state:
@@ -191,12 +186,8 @@ class Character(ObjectParent, DefaultCharacter):
         Returns True if character is unconscious.
         
         Uses medical system to determine unconsciousness from injuries,
-        blood loss, or pain. Also checks for test unconscious state.
+        blood loss, or pain.
         """
-        # Check for test flag first (for testing command restrictions)
-        if hasattr(self.db, '_test_unconscious_state') and self.db._test_unconscious_state:
-            return True
-            
         try:
             medical_state = self.medical_state
             if medical_state:
@@ -563,7 +554,7 @@ class Character(ObjectParent, DefaultCharacter):
         except Exception:
             pass  # No default cmdset to remove, that's fine
             
-        from commands.medical_states import UnconsciousCmdSet
+        from commands.default_cmdsets import UnconsciousCmdSet
         self.cmdset.add_default(UnconsciousCmdSet)
         
         # Set placement description
@@ -598,7 +589,7 @@ class Character(ObjectParent, DefaultCharacter):
             except Exception:
                 pass  # No default cmdset to remove, that's fine
                 
-            from commands.medical_states import DeathCmdSet
+            from commands.default_cmdsets import DeathCmdSet
             self.cmdset.add_default(DeathCmdSet)
         
         # Placement description already set in at_death()
