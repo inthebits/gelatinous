@@ -42,18 +42,18 @@ class DeathProgressionScript(DefaultScript):
         self.db.messages_sent = []
         self.db.can_be_revived = True
         
-        # Store character reference
+        # Character reference will be set after creation
         if not hasattr(self.db, 'character'):
             self.db.character = None
             
         # Start the progression
         self.interval = 30  # Check every 30 seconds
         
-        # Debug logging
+        # Debug logging - character may not be set yet at creation time
         try:
             splattercast = ChannelDB.objects.get_channel("Splattercast")
-            char_name = self.db.character.key if self.db.character else "unknown"
-            splattercast.msg(f"DEATH_PROGRESSION: Script created for {char_name}")
+            char_name = self.db.character.key if self.db.character else "not_set_yet"
+            splattercast.msg(f"DEATH_PROGRESSION: Script at_script_creation for {char_name}")
         except:
             pass
         
@@ -312,11 +312,32 @@ def start_death_progression(character):
     # Check if character already has a death progression script
     existing_script = character.scripts.get("death_progression")
     if existing_script:
+        try:
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            splattercast.msg(f"DEATH_PROGRESSION: Existing script found for {character.key}")
+        except:
+            pass
         return existing_script
         
     # Create new death progression script
+    try:
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        splattercast.msg(f"DEATH_PROGRESSION: Creating new script for {character.key}")
+    except:
+        pass
+        
     script = character.scripts.add(DeathProgressionScript)
+    # Set character immediately after creation
     script.db.character = character
+    
+    # Explicitly start the timer to ensure it begins
+    script.start()
+    
+    try:
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        splattercast.msg(f"DEATH_PROGRESSION: Script created and started: {script} for {character.key}")
+    except:
+        pass
     
     return script
 
