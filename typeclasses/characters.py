@@ -491,6 +491,13 @@ class Character(ObjectParent, DefaultCharacter):
         # Set death placement description for persistent visual indication
         self.override_place = "lying motionless and deceased."
         
+        # Debug logging for override_place setting
+        try:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"AT_DEATH_OVERRIDE_PLACE: {self.key} override_place set to '{self.override_place}'")
+        except:
+            pass
+        
         # Always show death analysis when character dies
         try:
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)

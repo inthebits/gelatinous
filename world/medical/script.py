@@ -145,7 +145,10 @@ class MedicalScript(DefaultScript):
                     # But ONLY clear unconscious description, not death description
                     if (hasattr(self.obj, 'override_place') and 
                         self.obj.override_place == "unconscious and motionless."):
+                        splattercast.msg(f"MEDICAL_SCRIPT_CLEAR_UNCONSCIOUS: Clearing unconscious override_place for {self.obj.key}")
                         self.obj.override_place = None
+                    elif hasattr(self.obj, 'override_place'):
+                        splattercast.msg(f"MEDICAL_SCRIPT_PRESERVE: Preserving override_place '{self.obj.override_place}' for {self.obj.key}")
             
             # Check if we should stop (no conditions left)
             if not medical_state.conditions:
