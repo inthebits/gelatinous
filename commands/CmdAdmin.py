@@ -282,7 +282,7 @@ class CmdTestDeath(Command):
     If 'force' is specified, applies restrictions even to staff.
     """
     key = "@testdeath"
-    aliases = ["@td"]
+    aliases = ["@murder"]
     locks = "cmd:perm(Builder)"
     help_category = "Admin"
     
@@ -346,30 +346,49 @@ class CmdTestDeath(Command):
             # Character is alive, kill them using medical system conditions
             if hasattr(target, 'medical_state') and target.medical_state:
                 
+                # Theatrical entrance - the admin snaps their fingers menacingly
+                if target != caller:
+                    target.location.msg_contents(f"|R{caller.key} snaps their fingers menacingly...|n", exclude=[caller])
+                    caller.msg(f"|RYou snap your fingers menacingly at {target.key}...|n")
+                else:
+                    caller.location.msg_contents(f"|R{caller.key} snaps their fingers menacingly at themselves...|n", exclude=[caller])
+                    caller.msg(f"|RYou snap your fingers menacingly at yourself...|n")
+                
                 # Use the medical system's natural damage-to-condition conversion
                 # This creates authentic medical conditions exactly as combat would
                 from world.medical.conditions import create_condition_from_damage
                 
-                # Create multiple catastrophic wounds to ensure rapid death
-                # Equivalent to multiple gunshot wounds or severe arterial damage
+                def delayed_message(func, delay_time):
+                    """Helper to delay message functions"""
+                    import time
+                    import threading
+                    def delayed_func():
+                        time.sleep(delay_time)
+                        func()
+                    thread = threading.Thread(target=delayed_func)
+                    thread.daemon = True
+                    thread.start()
                 
-                # Critical chest wound (heart/lung damage)
+                # Create multiple catastrophic wounds to ensure rapid death
+                # Tripled damage amounts for faster death (3x multiplier)
+                
+                # Critical chest wound (heart/lung damage) - 225 damage
                 chest_conditions = create_condition_from_damage(
-                    damage_amount=75,  # Massive damage 
+                    damage_amount=225,  # Massive damage (75 * 3)
                     damage_type="bullet",  # Penetrating trauma
                     location="chest"
                 )
                 
-                # Critical neck wound (arterial bleeding)
+                # Critical neck wound (arterial bleeding) - 180 damage  
                 neck_conditions = create_condition_from_damage(
-                    damage_amount=60,  # Severe arterial damage
+                    damage_amount=180,  # Severe arterial damage (60 * 3)
                     damage_type="blade",  # Deep cutting trauma
                     location="neck"
                 )
                 
-                # Additional abdominal wound (organ damage)
+                # Additional abdominal wound (organ damage) - 150 damage
                 abdomen_conditions = create_condition_from_damage(
-                    damage_amount=50,  # Major internal bleeding
+                    damage_amount=150,  # Major internal bleeding (50 * 3)
                     damage_type="bullet",  # Penetrating trauma
                     location="abdomen"
                 )
@@ -381,6 +400,21 @@ class CmdTestDeath(Command):
                 
                 # Save medical state to ensure persistence
                 target.save_medical_state()
+                
+                # Delayed theatrical messages with gore
+                def show_bleeding_onset():
+                    target.msg(f"|RYour vision blurs as crimson begins to seep from every pore, your body betraying you in the most visceral way possible.|n")
+                    if target.location:
+                        target.location.msg_contents(f"|R{target.key} begins bleeding from every orifice and pore, crimson spreading like spilled ink across their skin.|n", exclude=[target])
+                
+                def show_bleeding_intensifies():
+                    target.msg(f"|RThe metallic taste of copper floods your mouth as rivulets of blood trace delicate patterns down your face and hands.|n")
+                    if target.location:
+                        target.location.msg_contents(f"|RThe bleeding intensifies, {target.key}'s clothing darkening with spreading stains as life itself begins to drain away.|n", exclude=[target])
+                
+                # Schedule the dramatic messages
+                delayed_message(show_bleeding_onset, 3)
+                delayed_message(show_bleeding_intensifies, 6)
                 
                 # These multiple severe conditions will cause rapid death through massive blood loss
                 # The medical system will process them organically
