@@ -218,24 +218,22 @@ class DeathProgressionScript(DefaultScript):
         if not character:
             return
             
-        # Message to the dying character - center each line individually like curtain does
-        dying_lines = [
-            "You hover at the threshold between life and death.",
-            "Your essence flickers like a candle in the wind...",
-            "There may still be time for intervention."
-        ]
+        # Message to the dying character - use exact same approach as curtain DEATH message
+        # Get session for proper width detection, just like curtain of death does
+        session = None
+        if hasattr(character, 'sessions') and character.sessions.all():
+            session = character.sessions.all()[0]
         
-        # Get width for centering
-        width = _get_terminal_width()
+        # Get width using the same function as curtain of death
+        width = _get_terminal_width(session)
         
-        # Center each line individually and add color codes after centering
-        centered_dying_lines = []
-        centered_dying_lines.append("|R" + dying_lines[0].center(width) + "|n")
-        centered_dying_lines.append("|r" + dying_lines[1].center(width) + "|n") 
-        centered_dying_lines.append("|R" + dying_lines[2].center(width) + "|n")
+        # Use exact same pattern as curtain: "|r" + text.center(width) + "|n"
+        dying_line1 = "|R" + "You hover at the threshold between life and death.".center(width) + "|n"
+        dying_line2 = "|r" + "Your essence flickers like a candle in the wind...".center(width) + "|n"
+        dying_line3 = "|R" + "There may still be time for intervention.".center(width) + "|n"
         
-        # Join with line breaks
-        centered_dying_msg = "\n".join(centered_dying_lines) + "\n"
+        # Send each line separately with line breaks
+        centered_dying_msg = dying_line1 + "\n" + dying_line2 + "\n" + dying_line3 + "\n"
         character.msg(centered_dying_msg)
         
         # Message to observers in the room
@@ -334,22 +332,21 @@ class DeathProgressionScript(DefaultScript):
         # Mark as permanently dead
         self.db.can_be_revived = False
         
-        # Send final death messages - center each line individually like curtain does
-        final_lines = [
-            "The darkness claims you completely...",
-            "Your consciousness fades into the void."
-        ]
+        # Send final death messages - use exact same approach as curtain DEATH message
+        # Get session for proper width detection, just like curtain of death does
+        session = None
+        if hasattr(character, 'sessions') and character.sessions.all():
+            session = character.sessions.all()[0]
         
-        # Get width for centering  
-        width = _get_terminal_width()
+        # Get width using the same function as curtain of death
+        width = _get_terminal_width(session)
         
-        # Center each line individually and add color codes after centering
-        centered_final_lines = []
-        centered_final_lines.append("|R" + final_lines[0].center(width) + "|n")
-        centered_final_lines.append("|r" + final_lines[1].center(width) + "|n")
+        # Use exact same pattern as curtain: "|r" + text.center(width) + "|n"
+        final_line1 = "|R" + "The darkness claims you completely...".center(width) + "|n"
+        final_line2 = "|r" + "Your consciousness fades into the void.".center(width) + "|n"
         
-        # Join with line breaks
-        centered_final_msg = "\n".join(centered_final_lines) + "\n"
+        # Send each line with line breaks
+        centered_final_msg = final_line1 + "\n" + final_line2 + "\n"
         character.msg(centered_final_msg)
         
         if character.location:
