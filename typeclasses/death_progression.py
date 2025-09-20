@@ -275,8 +275,8 @@ class DeathProgressionScript(DefaultScript):
         
         # Send final death messages
         final_msg = (
-            "|R║ The darkness claims you completely... ║|n\n"
-            "|r║ Your consciousness fades into the void. ║|n"
+            "|RThe darkness claims you completely...|n\n"
+            "|rYour consciousness fades into the void.|n"
         )
         character.msg(final_msg)
         
