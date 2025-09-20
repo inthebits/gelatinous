@@ -142,7 +142,9 @@ class MedicalScript(DefaultScript):
                     splattercast.msg(f"MEDICAL_SCRIPT_RECOVERY: {self.obj.key} has regained consciousness")
                     self.obj.ndb.unconsciousness_processed = False
                     # Clear unconsciousness placement description when regaining consciousness
-                    if hasattr(self.obj, 'override_place'):
+                    # But ONLY clear unconscious description, not death description
+                    if (hasattr(self.obj, 'override_place') and 
+                        self.obj.override_place == "unconscious and motionless."):
                         self.obj.override_place = None
             
             # Check if we should stop (no conditions left)
