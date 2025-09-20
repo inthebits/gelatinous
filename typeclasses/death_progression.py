@@ -315,7 +315,7 @@ def start_death_progression(character):
         return existing_script
         
     # Create new death progression script
-    script = character.scripts.add(DeathProgressionScript)[0]
+    script = character.scripts.add(DeathProgressionScript)
     script.db.character = character
     
     return script
