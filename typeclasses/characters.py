@@ -145,13 +145,22 @@ class Character(ObjectParent, DefaultCharacter):
                 pass
             return
             
-        # Allow system messages (no from_obj) 
+        # Block most system messages (from_obj=None), but allow death curtain animations
         if not from_obj:
-            try:
-                splattercast.msg(f"CHAR_FILTER_ALLOW: System message to dead {self.key}")
-            except:
-                pass
-            return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
+            # Allow death curtain animations (contains block characters)
+            if '▓' in str(text):
+                try:
+                    splattercast.msg(f"CHAR_FILTER_ALLOW: Death curtain animation to dead {self.key}")
+                except:
+                    pass
+                return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
+            else:
+                # Block other system messages (combat, explosives, medical, etc.)
+                try:
+                    splattercast.msg(f"CHAR_FILTER_BLOCK: System message (from_obj=None) to dead {self.key}")
+                except:
+                    pass
+                return
             
         # Allow messages from staff (for admin commands, but not social)
         if hasattr(from_obj, 'locks') and from_obj.locks.check(from_obj, "perm(Builder)"):
@@ -185,14 +194,6 @@ class Character(ObjectParent, DefaultCharacter):
             except:
                 pass
             return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
-            
-        # Block system messages (from_obj=None) - these include combat, explosives, etc.
-        if from_obj is None:
-            try:
-                splattercast.msg(f"CHAR_FILTER_BLOCK: System message (from_obj=None) to dead {self.key}")
-            except:
-                pass
-            return
             
         # Block all other messages (social commands, medical, etc.)
         try:
