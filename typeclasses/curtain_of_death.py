@@ -120,11 +120,7 @@ def curtain_of_death(text, width=None, session=None):
         frame = " " * width  # Empty line
         frames.append(_colorize_evennia(frame))
     
-    # Add the DEATH message in the middle of continued dripping
-    death_frame = "|r" + "DEATH".center(width) + "|n"
-    frames.append(death_frame)
-    
-    # Add one more frame after DEATH
+    # Add final frame
     final_frame = " " * width
     frames.append(_colorize_evennia(final_frame))
     
