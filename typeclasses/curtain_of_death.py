@@ -116,13 +116,39 @@ def curtain_of_death(text, width=None, session=None):
         frames.append(_colorize_evennia(frame))
     
     # Add several more frames of continued dripping
-    for i in range(5):  # Add 5 more frames of dripping
-        frame = " " * width  # Empty line
+    # Create trailing drip effect - scattered blocks that continue falling
+    remaining_blocks = [i for i, c in enumerate(chars) if c == "▓"]
+    
+    # Create 8-12 trailing frames with sparse dripping
+    trailing_frames = 12
+    for frame_num in range(trailing_frames):
+        # Gradually remove more blocks with each frame, but not all at once
+        removal_rate = 0.15 + (frame_num * 0.05)  # Start slow, speed up
+        blocks_to_remove = max(1, int(len(remaining_blocks) * removal_rate))
+        
+        # Remove random blocks with some clustering for more organic feel
+        for _ in range(min(blocks_to_remove, len(remaining_blocks))):
+            if remaining_blocks:
+                # Sometimes remove clustered blocks for streaky drip effect
+                if random.random() < 0.3 and len(remaining_blocks) > 1:
+                    # Find adjacent blocks occasionally
+                    idx = random.choice(remaining_blocks)
+                    adjacent = [i for i in remaining_blocks if abs(i - idx) <= 2]
+                    if adjacent:
+                        idx = random.choice(adjacent)
+                else:
+                    idx = random.choice(remaining_blocks)
+                remaining_blocks.remove(idx)
+                chars[idx] = " "
+        
+        # Create sparse frame with remaining blocks
+        frame = "".join(chars)
         frames.append(_colorize_evennia(frame))
     
-    # Add final frame
-    final_frame = " " * width
-    frames.append(_colorize_evennia(final_frame))
+    # Add a few final empty frames for smooth transition
+    for i in range(3):
+        final_frame = " " * width
+        frames.append(_colorize_evennia(final_frame))
     
     return frames
 
