@@ -13,17 +13,18 @@ from evennia import CmdSet, default_cmds
 class UnconsciousCmdSet(CmdSet):
     """
     Command set for unconscious characters.
-    Only allows essential passive commands - no movement, speech, or actions.
+    Only allows minimal OOC commands - no perception, movement, or actions.
     """
     key = "unconscious_cmdset"
     priority = 0  # Same as normal CharacterCmdSet since this replaces it entirely
+    no_exits = True  # Prevent exit traversal when unconscious
     
     def at_cmdset_creation(self):
         """
         Add only commands that unconscious characters should be able to use.
+        Unconscious = no perception, no movement, no actions.
         """
-        # Essential information commands
-        self.add(default_cmds.CmdLook())      # Can observe surroundings
+        # Essential OOC commands only
         self.add(default_cmds.CmdHelp())      # Always allow help
         self.add(default_cmds.CmdWho())       # OOC player information
         self.add(default_cmds.CmdTime())      # OOC time information
@@ -35,23 +36,24 @@ class UnconsciousCmdSet(CmdSet):
         self.add(default_cmds.CmdPy())        # Staff debugging
         self.add(default_cmds.CmdReload())    # Staff server management
         
-        # That's it! No movement, speech, actions, inventory management, etc.
+        # NO look, NO movement, NO actions when unconscious
 
 
 class DeathCmdSet(CmdSet):
     """
     Command set for dead characters.
-    Only allows minimal OOC commands - even more restrictive than unconscious.
+    Only allows minimal OOC commands - no perception, no movement, no actions.
     """
     key = "death_cmdset"
     priority = 0  # Same as normal CharacterCmdSet since this replaces it entirely
+    no_exits = True  # Prevent exit traversal when dead
     
     def at_cmdset_creation(self):
         """
         Add only commands that dead characters should be able to use.
+        Dead = no perception, no movement, no actions, minimal OOC only.
         """
-        # Very minimal set - mostly OOC information
-        self.add(default_cmds.CmdLook())      # Can observe from beyond
+        # Very minimal set - OOC information only
         self.add(default_cmds.CmdHelp())      # Always allow help
         self.add(default_cmds.CmdWho())       # OOC player information
         self.add(default_cmds.CmdQuit())      # Can always quit
@@ -60,4 +62,4 @@ class DeathCmdSet(CmdSet):
         self.add(default_cmds.CmdPy())        # Staff debugging
         self.add(default_cmds.CmdReload())    # Staff server management
         
-        # Even more restrictive than unconscious - no time, no other commands
+        # NO look, NO time, NO movement, NO actions when dead
