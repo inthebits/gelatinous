@@ -15,7 +15,7 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 
-from evennia import default_cmds
+from evennia import default_cmds, CmdSet
 from commands import CmdCharacter
 from commands import CmdInventory
 from commands import CmdAdmin
@@ -32,7 +32,7 @@ from commands.CmdGraffiti import CmdGraffiti, CmdPress
 from commands.CmdCharacter import CmdLongdesc, CmdSkintone
 
 
-class UnconsciousCmdSet(default_cmds.CmdSet):
+class UnconsciousCmdSet(CmdSet):
     """
     Command set for unconscious characters.
     Only allows minimal OOC commands - no perception, movement, or actions.
@@ -61,7 +61,7 @@ class UnconsciousCmdSet(default_cmds.CmdSet):
         # NO look, NO movement, NO actions when unconscious
 
 
-class DeathCmdSet(default_cmds.CmdSet):
+class DeathCmdSet(CmdSet):
     """
     Command set for dead characters.
     Only allows minimal OOC commands - no perception, no movement, no actions.
