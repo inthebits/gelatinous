@@ -381,21 +381,46 @@ class CmdTestDeath(Command):
                     suppression_type="anesthesia"  # Slower recovery type
                 )
                 
-                # Moderate systemic bleeding to ensure death 
-                systemic_bleeding = BleedingCondition(
-                    severity=8,  # Significant bleeding
-                    location="chest"
+                # Massive bleeding conditions - multiple severe arterial bleeds
+                # Need to lose 85% blood in one tick, so create multiple severity 10 conditions
+                arterial_bleeding_1 = BleedingCondition(
+                    severity=10,  # 10% blood loss per tick
+                    location="neck"  # Carotid artery
                 )
                 
-                # High pain to compound unconsciousness effects
+                arterial_bleeding_2 = BleedingCondition(
+                    severity=10,  # 10% blood loss per tick  
+                    location="chest"  # Aortic damage
+                )
+                
+                arterial_bleeding_3 = BleedingCondition(
+                    severity=10,  # 10% blood loss per tick
+                    location="abdomen"  # Abdominal aorta
+                )
+                
+                arterial_bleeding_4 = BleedingCondition(
+                    severity=10,  # 10% blood loss per tick
+                    location="left_leg"  # Femoral artery
+                )
+                
+                arterial_bleeding_5 = BleedingCondition(
+                    severity=10,  # 10% blood loss per tick
+                    location="right_leg"  # Femoral artery
+                )
+                
+                # High pain to compound effects
                 systemic_pain = PainCondition(
-                    severity=7,  # High pain
+                    severity=10,  # Maximum pain severity
                     location="abdomen"
                 )
                 
                 # Add all conditions to create a fatal combination
                 target.medical_state.add_condition(consciousness_suppression)
-                target.medical_state.add_condition(systemic_bleeding)
+                target.medical_state.add_condition(arterial_bleeding_1)
+                target.medical_state.add_condition(arterial_bleeding_2)
+                target.medical_state.add_condition(arterial_bleeding_3)
+                target.medical_state.add_condition(arterial_bleeding_4)
+                target.medical_state.add_condition(arterial_bleeding_5)
                 target.medical_state.add_condition(systemic_pain)
                 
                 # Save medical state to ensure persistence
@@ -416,12 +441,12 @@ class CmdTestDeath(Command):
                 delayed_message(show_suppression_onset, 3)
                 delayed_message(show_medical_crisis, 6)
                 
-                # These conditions will cause death through consciousness suppression and blood loss
-                # More realistic than massive trauma
+                # Multiple severe arterial bleeding conditions will cause rapid death
+                # 5 x 10% blood loss per tick = 50% blood loss per tick = death in 2 ticks
                 
-            caller.msg(f"|r{target.key} has been given fatal consciousness suppression and systemic conditions via medical system.|n")
+            caller.msg(f"|r{target.key} has been given fatal consciousness suppression and massive arterial bleeding via medical system.|n")
             if target != caller:
-                target.msg("|rYou have been given fatal consciousness suppression and systemic conditions via medical system.|n")
+                target.msg("|rYou have been given fatal consciousness suppression and massive arterial bleeding via medical system.|n")
             if force_test:
                 caller.msg("|yForce mode: restrictions apply even to staff.|n")
                 if target != caller:

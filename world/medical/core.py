@@ -463,8 +463,12 @@ class MedicalState:
         
     def is_unconscious(self):
         """Returns True if character is unconscious."""
-        consciousness_level = self.calculate_body_capacity("consciousness")
-        return consciousness_level < (CONSCIOUSNESS_UNCONSCIOUS_THRESHOLD / 100.0)
+        # Use the final consciousness value that includes all penalties:
+        # - organ damage penalties (from calculate_body_capacity)
+        # - pain penalties 
+        # - blood loss penalties
+        # - consciousness suppression penalties from conditions
+        return self.consciousness < (CONSCIOUSNESS_UNCONSCIOUS_THRESHOLD / 100.0)
         
     def is_dead(self):
         """Returns True if character should be considered dead."""

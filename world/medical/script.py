@@ -107,6 +107,10 @@ class MedicalScript(DefaultScript):
                 medical_state.conditions.remove(condition)
                 splattercast.msg(f"MEDICAL_SCRIPT: Removed {condition.condition_type}")
             
+            # Update vital signs after processing all conditions
+            # This ensures consciousness includes all penalties (pain, blood loss, suppression)
+            medical_state.update_vital_signs()
+            
             # Check for death/unconsciousness after processing conditions
             if medical_state.is_dead():
                 splattercast.msg(f"MEDICAL_SCRIPT_DEATH: {self.obj.key} has died from medical conditions")
