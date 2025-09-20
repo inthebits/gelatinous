@@ -107,7 +107,7 @@ def curtain_of_death(text, width=None, session=None):
     frames = [first_frame]  # First frame with proper colors
     
     # Create dripping effect by removing characters in planned sequence
-    # Only process every 3rd character to reduce vertical scroll
+    # Process every 3rd character initially for the main text removal
     for idx, _ in plan[::3]:  # Skip every 3rd character to reduce frame count
         if chars[idx] == " ":  # Skip spaces
             continue
@@ -115,11 +115,31 @@ def curtain_of_death(text, width=None, session=None):
         frame = "".join(chars).center(width, "█")  # Replace the sea with different char
         frames.append(_colorize_evennia(frame))
     
+    # Aggressively remove remaining text characters to clear the message
+    # Find all remaining non-space, non-block characters (the text)
+    text_chars = [i for i, c in enumerate(chars) if c not in [" ", "▓", "█"]]
+    
+    # Quickly remove remaining text in 3-4 frames
+    text_removal_frames = 4
+    for frame_num in range(text_removal_frames):
+        if not text_chars:
+            break
+        
+        # Remove a good chunk of remaining text each frame
+        chars_to_remove = len(text_chars) // (text_removal_frames - frame_num)
+        chars_to_remove = max(1, chars_to_remove)
+        
+        for _ in range(min(chars_to_remove, len(text_chars))):
+            if text_chars:
+                idx = text_chars.pop(random.randint(0, len(text_chars) - 1))
+                chars[idx] = " "
+        
+        frame = "".join(chars).center(width, "█")
+        frames.append(_colorize_evennia(frame))
+
     # Add several more frames of continued dripping
     # Create trailing drip effect - scattered blocks that continue falling
-    remaining_blocks = [i for i, c in enumerate(chars) if c == "▓"]
-    
-    # Create 8-12 trailing frames with sparse dripping
+    remaining_blocks = [i for i, c in enumerate(chars) if c == "▓"]    # Create 8-12 trailing frames with sparse dripping
     trailing_frames = 12
     for frame_num in range(trailing_frames):
         # Gradually remove more blocks with each frame, but not all at once
