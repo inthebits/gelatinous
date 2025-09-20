@@ -124,15 +124,6 @@ class Character(ObjectParent, DefaultCharacter):
         Dead characters receive only essential messages for immersive death experience.
         This catches ALL messages to characters, including combat, explosives, admin commands.
         """
-        # Debug logging
-        try:
-            from evennia.comms.models import ChannelDB
-            splattercast = ChannelDB.objects.get_channel("Splattercast")
-            if self.is_dead():
-                splattercast.msg(f"CHAR_FILTER_DEBUG: Dead {self.key} receiving msg: '{str(text)[:50]}...' from {from_obj}")
-        except:
-            pass
-            
         # If not dead, use normal messaging
         if not self.is_dead():
             return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
