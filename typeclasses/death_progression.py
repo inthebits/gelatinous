@@ -218,8 +218,8 @@ class DeathProgressionScript(DefaultScript):
         """Get the progression messages for different time intervals."""
         return {
             30: {  # 30 seconds - 5.5 minutes left
-                "dying": "|rTime becomes elastic, like chewing gum stretched between your teeth and the fluorescent lights are humming a song you remember from childhood but can't quite place. The edges of everything are soft now, melting like crayons left in a hot car, and you're floating in this warm red soup that tastes like copper pennies and your mother's disappointment.|n",
-                "observer": "|r{name}'s eyes roll back, showing only whites.|n"
+                "dying": "\n|WTime becomes elastic, like chewing gum stretched between your teeth and the fluorescent lights are humming a song you remember from childhood but can't quite place. The edges of everything are soft now, melting like crayons left in a hot car, and you're floating in this warm red soup that tastes like copper pennies and your mother's disappointment.|n\n",
+                "observer": "|W{name}'s eyes roll back, showing only whites.|n"
             },
             60: {  # 1 minute - 5 minutes left
                 "dying": "|RYou're sinking through the floor now, through layers of concrete and earth and forgotten promises, and the voices above sound like they're speaking underwater. Everything tastes like iron and regret. Your body feels like it belongs to someone else, some stranger whose story you heard in a bar once but never really believed.|n",
