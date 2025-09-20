@@ -358,10 +358,13 @@ class DeathProgressionScript(DefaultScript):
         if hasattr(character, 'apply_final_death_state'):
             character.apply_final_death_state()
             
+        # Complete death progression - corpse creation and character transition
+        self._complete_death_progression(character)
+            
         # Log completion
         try:
             splattercast = ChannelDB.objects.get_channel("Splattercast")
-            splattercast.msg(f"DEATH_PROGRESSION: {character.key} completed - now permanently dead")
+            splattercast.msg(f"DEATH_PROGRESSION: {character.key} completed - corpse created, character transitioned")
         except:
             pass
             
@@ -451,3 +454,126 @@ def get_death_progression_status(character):
         "can_be_revived": script.db.can_be_revived,
         "time_factor": 1.0 - (elapsed / script.db.total_duration)
     }
+
+    def _complete_death_progression(self, character):
+        """
+        Complete the death progression by creating corpse and transitioning character.
+        This separates the dead character object from the corpse object for investigation.
+        """
+        try:
+            # 1. Create corpse object with forensic data
+            corpse = self._create_corpse_from_character(character)
+            
+            # 2. Get account before unpuppeting
+            account = character.account
+            
+            # 3. Transition character out of play
+            self._transition_character_to_death(character)
+            
+            # 4. Initiate character creation for account (if they have one)
+            if account:
+                self._initiate_new_character_creation(account)
+                
+            # 5. Log the transition
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"DEATH_COMPLETION: {character.key} -> Corpse created, character transitioned")
+            except:
+                pass
+                
+        except Exception as e:
+            # Fallback - log error but don't crash the death progression
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"DEATH_COMPLETION_ERROR: {character.key} - {e}")
+            except:
+                pass
+
+    def _create_corpse_from_character(self, character):
+        """Create a corpse object that preserves forensic data from the character."""
+        from evennia import create_object
+        import time
+        
+        # Create corpse object
+        corpse = create_object(
+            typeclass="typeclasses.corpse.Corpse",
+            key=f"corpse of {character.key}",
+            location=character.location
+        )
+        
+        # Transfer forensic data for investigation
+        corpse.db.original_character_name = character.key
+        corpse.db.original_character_dbref = character.dbref
+        corpse.db.original_account_dbref = character.account.dbref if character.account else None
+        corpse.db.death_time = time.time()
+        corpse.db.physical_description = getattr(character.db, 'desc', 'A person.')
+        
+        # Transfer medical/death data if available
+        if hasattr(character, 'medical_state') and character.medical_state:
+            corpse.db.death_cause = character.medical_state.get_death_cause()
+            corpse.db.medical_conditions = character.medical_state.get_all_conditions()
+            corpse.db.blood_type = getattr(character.db, 'blood_type', 'unknown')
+        
+        # Transfer character description data
+        if hasattr(character, 'longdesc') and character.longdesc:
+            corpse.db.longdesc_data = character.longdesc.export_data()
+        
+        # Transfer inventory to corpse
+        for item in character.contents:
+            if item != corpse:  # Don't move the corpse itself
+                item.move_to(corpse, quiet=True)
+        
+        # Set corpse description
+        corpse.db.desc = f"The lifeless body of {character.key}. {corpse.db.physical_description}"
+        
+        return corpse
+
+    def _transition_character_to_death(self, character):
+        """Move character out of play and unpuppet from account."""
+        from evennia import search_object
+        
+        # Get account reference before unpuppeting
+        account = character.account
+        
+        # Move character to limbo/OOC room (Evennia's default limbo is #1)
+        try:
+            limbo_room = search_object("#1")[0]  # Evennia's default limbo room
+            character.move_to(limbo_room, quiet=True)
+        except:
+            # Fallback - just leave them where they are if limbo doesn't exist
+            pass
+        
+        # Unpuppet character from account
+        if account:
+            account.unpuppet_object(character)
+        
+        # Clear character state
+        character.db.account = None
+        
+        # TODO: Consider setting character to inactive or archiving them
+        # character.db.archived = True
+        # character.db.death_archived_time = time.time()
+
+    def _initiate_new_character_creation(self, account):
+        """Start the character creation process for the account."""
+        # Give the account feedback about what happened
+        account.msg("|r" + "=" * 60 + "|n")
+        account.msg("|rYour character has died and cannot be revived.|n")
+        account.msg("|rA corpse has been left behind for investigation.|n")
+        account.msg("|r" + "=" * 60 + "|n")
+        account.msg("")
+        account.msg("|gYou must create a new character to continue playing.|n")
+        account.msg("")
+        
+        # TODO: Implement character creation system
+        # For now, provide instructions
+        account.msg("|yCharacter creation system is under development.|n")
+        account.msg("|yPlease contact staff for assistance creating a new character.|n")
+        account.msg("|yUse the |cguest|y command to connect as a guest in the meantime.|n")
+        account.msg("")
+        
+        # TODO: Future implementation might:
+        # - Set account state to "needs_character_creation"
+        # - Redirect to character creation interface
+        # - Provide character creation commands
+        # - Handle character naming, stats, description setup
