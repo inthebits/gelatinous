@@ -65,6 +65,15 @@ WEBCLIENT_ENABLED = False
 DEFAULT_EXIT_TYPECLASS = "typeclasses.exits.Exit"
 
 ######################################################################
+# Account and Character Management
+######################################################################
+
+# Set multisession mode to 1: Account-based login with single character
+# This enables proper account/character separation for resleeving mechanics
+# Mode 1: Login with account (email), then select/create character
+MULTISESSION_MODE = 1
+
+######################################################################
 # Django web features
 ######################################################################
 
