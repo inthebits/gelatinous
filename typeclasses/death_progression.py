@@ -359,7 +359,7 @@ class DeathProgressionScript(DefaultScript):
             character.apply_final_death_state()
             
         # Complete death progression - corpse creation and character transition
-        self._complete_death_progression(character)
+        self._handle_corpse_creation_and_transition(character)
             
         # Log completion
         try:
@@ -455,7 +455,7 @@ def get_death_progression_status(character):
         "time_factor": 1.0 - (elapsed / script.db.total_duration)
     }
 
-    def _complete_death_progression(self, character):
+    def _handle_corpse_creation_and_transition(self, character):
         """
         Complete the death progression by creating corpse and transitioning character.
         This separates the dead character object from the corpse object for investigation.
@@ -470,9 +470,9 @@ def get_death_progression_status(character):
             # 3. Transition character out of play
             self._transition_character_to_death(character)
             
-            # 4. Initiate character creation for account (if they have one)
-            if account:
-                self._initiate_new_character_creation(account)
+            # 4. TODO: Initiate character creation for account (commented out until character creation ready)
+            # if account:
+            #     self._initiate_new_character_creation(account)
                 
             # 5. Log the transition
             try:
@@ -535,20 +535,20 @@ def get_death_progression_status(character):
         # Get account reference before unpuppeting
         account = character.account
         
-        # Move character to limbo/OOC room (Evennia's default limbo is #1)
+        # Move character to limbo/OOC room (Evennia's default limbo is #2)
         try:
-            limbo_room = search_object("#1")[0]  # Evennia's default limbo room
+            limbo_room = search_object("#2")[0]  # Limbo room
             character.move_to(limbo_room, quiet=True)
         except:
             # Fallback - just leave them where they are if limbo doesn't exist
             pass
         
-        # Unpuppet character from account
-        if account:
-            account.unpuppet_object(character)
-        
-        # Clear character state
-        character.db.account = None
+        # TODO: Unpuppet character from account (commented out until character creation ready)
+        # if account:
+        #     account.unpuppet_object(character)
+        # 
+        # # Clear character state
+        # character.db.account = None
         
         # TODO: Consider setting character to inactive or archiving them
         # character.db.archived = True
