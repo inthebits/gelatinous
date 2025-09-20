@@ -63,8 +63,17 @@ The medical system now features **comprehensive death processing and revival mec
 - **Unified cleaning system** supporting both graffiti and blood evidence removal
 - **Death progression system** with 6-minute revival window and medical intervention mechanics
 
-**NEXT: Brain Death Revival Integration (September 2025):**
-- **Consciousness-based revival mechanics** - Brain organ health determines revival eligibility during death progression
+**NEXT: Death Completion and Corpse System Integration (September 2025):**
+- **Death script cleanup** - Stop and delete death progression script when 6-minute window expires
+- **Character teleportation** - Move character to temporary death room or limbo area for processing
+- **Corpse object creation** - Generate corpse object that inherits character attributes for forensic examination:
+  - **Inventory transfer** - All carried items and equipment move to corpse
+  - **Physical description** - Copy character's longdesc and physical appearance
+  - **Medical conditions** - Preserve wounds, bleeding, infections for autopsy/examination
+  - **Death cause attribution** - Store cause of death, weapon used, attacker information
+  - **Forensic evidence** - Blood type, DNA markers, time of death, environmental factors
+  - **Decay progression** - Implement corpse aging and decomposition mechanics
+- **Brain death revival integration** - Brain organ health determines revival eligibility during death progression
 - **Brain death threshold** - Characters with destroyed/critically damaged brain cannot be revived after certain time
 - **Progressive brain damage** - Brain deterioration during death progression affects revival chances
 - **Medical realism** - Align revival mechanics with anatomical consciousness requirements
