@@ -75,11 +75,11 @@ class Character(ObjectParent, DefaultCharacter):
     # Legacy HP system eliminated - health now managed entirely by medical system
     # Death/unconsciousness determined by organ functionality and medical conditions
 
-# Character Placement Descriptions
+    # Character Placement Descriptions
     look_place = AttributeProperty("standing here.", category='description', autocreate=True)
     temp_place = AttributeProperty("", category='description', autocreate=True)
     override_place = AttributeProperty("", category='description', autocreate=True)
-
+    
     def at_object_creation(self):
         """
         Called once, at creation, to set dynamic stats.
@@ -616,8 +616,9 @@ class Character(ObjectParent, DefaultCharacter):
         from commands.default_cmdsets import CharacterCmdSet
         self.cmdset.add_default(CharacterCmdSet)
         
-        # Clear placement description
-        if hasattr(self, 'override_place'):
+        # Clear placement description - but only if it's unconscious-specific
+        if (hasattr(self, 'override_place') and 
+            self.override_place == "unconscious and motionless."):
             self.override_place = None
         
         # Notify recovery - but only if character is not dead
