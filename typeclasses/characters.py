@@ -124,16 +124,33 @@ class Character(ObjectParent, DefaultCharacter):
         Dead characters receive only essential messages for immersive death experience.
         This catches ALL messages to characters, including combat, explosives, admin commands.
         """
+        # Debug logging
+        try:
+            from evennia.comms.models import ChannelDB
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            if self.is_dead():
+                splattercast.msg(f"CHAR_FILTER_DEBUG: Dead {self.key} receiving msg: '{str(text)[:50]}...' from {from_obj}")
+        except:
+            pass
+            
         # If not dead, use normal messaging
         if not self.is_dead():
             return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
             
         # Death curtain filtering for dead characters
         if not text:
+            try:
+                splattercast.msg(f"CHAR_FILTER_DEBUG: Blocking empty message to dead {self.key}")
+            except:
+                pass
             return
             
         # Allow system messages (no from_obj) 
         if not from_obj:
+            try:
+                splattercast.msg(f"CHAR_FILTER_ALLOW: System message to dead {self.key}")
+            except:
+                pass
             return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
             
         # Allow messages from staff (for admin commands, but not social)
@@ -141,14 +158,31 @@ class Character(ObjectParent, DefaultCharacter):
             # Even staff social messages should be blocked for immersion
             # But allow admin command messages through
             if not self._is_social_message(text, kwargs):
+                try:
+                    splattercast.msg(f"CHAR_FILTER_ALLOW: Staff non-social message to dead {self.key}")
+                except:
+                    pass
                 return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
+            else:
+                try:
+                    splattercast.msg(f"CHAR_FILTER_BLOCK: Staff social message to dead {self.key}")
+                except:
+                    pass
+                return
             
         # Allow death progression messages from curtain of death
         if hasattr(from_obj, 'key') and 'curtain' in str(from_obj.key).lower():
+            try:
+                splattercast.msg(f"CHAR_FILTER_ALLOW: Death curtain message to dead {self.key}")
+            except:
+                pass
             return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
             
         # Block all other messages (social commands, combat, explosives, medical, etc.)
-        # This creates the complete immersive death curtain experience
+        try:
+            splattercast.msg(f"CHAR_FILTER_BLOCK: Blocking message to dead {self.key} from {from_obj}")
+        except:
+            pass
         return
         
     def _is_social_message(self, text, kwargs):
