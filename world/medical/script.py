@@ -120,7 +120,14 @@ class MedicalScript(DefaultScript):
                     splattercast.msg(f"MEDICAL_SCRIPT_DEATH_SKIP: {self.obj.key} death already processed")
                 else:
                     # Trigger full death processing (includes death analysis and death curtain)
-                    self.obj.at_death()
+                    splattercast.msg(f"MEDICAL_SCRIPT_CALLING_AT_DEATH: About to call at_death() for {self.obj.key}")
+                    try:
+                        self.obj.at_death()
+                        splattercast.msg(f"MEDICAL_SCRIPT_AT_DEATH_SUCCESS: at_death() completed for {self.obj.key}")
+                    except Exception as e:
+                        splattercast.msg(f"MEDICAL_SCRIPT_AT_DEATH_ERROR: at_death() failed for {self.obj.key}: {e}")
+                        import traceback
+                        splattercast.msg(f"MEDICAL_SCRIPT_AT_DEATH_TRACEBACK: {traceback.format_exc()}")
                     
                 self.stop()
                 self.delete()
