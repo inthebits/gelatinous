@@ -218,48 +218,48 @@ class DeathProgressionScript(DefaultScript):
         """Get the progression messages for different time intervals."""
         return {
             30: {  # 30 seconds - 5.5 minutes left
-                "dying": "\n|WTime becomes elastic, like chewing gum stretched between your teeth and the fluorescent lights are humming a song you remember from childhood but can't quite place. The edges of everything are soft now, melting like crayons left in a hot car, and you're floating in this warm red soup that tastes like copper pennies and your mother's disappointment.|n\n",
-                "observer": "|W{name}'s eyes roll back, showing only whites.|n"
+                "dying": "|WTime becomes elastic, like chewing gum stretched between your teeth and the fluorescent lights are humming a song you remember from childhood but can't quite place. The edges of everything are soft now, melting like crayons left in a hot car, and you're floating in this warm red soup that tastes like copper pennies and your mother's disappointment.|n",
+                "observer": "|n{name}'s eyes roll back, showing only whites.|n"
             },
             60: {  # 1 minute - 5 minutes left
-                "dying": "|RYou're sinking through the floor now, through layers of concrete and earth and forgotten promises, and the voices above sound like they're speaking underwater. Everything tastes like iron and regret. Your body feels like it belongs to someone else, some stranger whose story you heard in a bar once but never really believed.|n",
-                "observer": "|R{name}'s breathing becomes shallow and erratic.|n"
+                "dying": "|wYou're sinking through the floor now, through layers of concrete and earth and forgotten promises, and the voices above sound like they're speaking underwater. Everything tastes like iron and regret. Your body feels like it belongs to someone else, some stranger whose story you heard in a bar once but never really believed.|n",
+                "observer": "|n{name}'s breathing becomes shallow and erratic.|n"
             },
             90: {  # 1.5 minutes - 4.5 minutes left
-                "dying": "|rThe world is a television with bad reception and someone keeps changing the channels. Static. Your grandmother's kitchen. Static. That time you nearly drowned. Static. The taste of blood and birthday cake and the sound of someone crying who might be you but probably isn't because you're somewhere else now, somewhere darker.|n",
+                "dying": "|WThe world is a television with bad reception and someone keeps changing the channels. Static. Your grandmother's kitchen. Static. That time you nearly drowned. Static. The taste of blood and birthday cake and the sound of someone crying who might be you but probably isn't because you're somewhere else now, somewhere darker.|n",
                 "observer": "|r{name} makes a low, rattling sound in their throat.|n"
             },
             120: {  # 2 minutes - 4 minutes left
-                "dying": "|RYou're watching yourself from the ceiling corner like a security camera recording the most boring crime ever committed. That body down there, that meat puppet with your face, it's leaking life like a punctured water balloon. And you're thinking, this is it? This is the grand finale? This wet, messy, disappointing finale?|n",
-                "observer": "|R{name}'s skin takes on a waxy, gray pallor.|n"
+                "dying": "|wYou're watching yourself from the ceiling corner like a security camera recording the most boring crime ever committed. That body down there, that meat puppet with your face, it's leaking life like a punctured water balloon. And you're thinking, this is it? This is the grand finale? This wet, messy, disappointing finale?|n",
+                "observer": "|n{name}'s skin takes on a waxy, gray pallor.|n"
             },
             150: {  # 2.5 minutes - 3.5 minutes left
-                "dying": "|rMemory becomes a kaleidoscope where every piece is broken glass and every turn cuts deeper. You taste the last cigarette you ever smoked, feel the first hand you ever held, hear the last lie you ever told, and it's all happening simultaneously in this carnival of consciousness where the rides are broken and the music is playing backward.|n",
-                "observer": "|r{name}'s fingers twitch spasmodically.|n"
+                "dying": "|WMemory becomes a kaleidoscope where every piece is broken glass and every turn cuts deeper. You taste the last cigarette you ever smoked, feel the first hand you ever held, hear the last lie you ever told, and it's all happening simultaneously in this carnival of consciousness where the rides are broken and the music is playing backward.|n",
+                "observer": "|n{name}'s fingers twitch spasmodically.|n"
             },
             180: {  # 3 minutes - 3 minutes left
-                "dying": "|RThe darkness isn't dark anymore, it's every color that doesn't have a name, every sound that was never made, every word that was never spoken. You're dissolving into the spaces between seconds, becoming the pause between heartbeats, the silence between screams. And it's beautiful and terrible and completely, utterly ordinary.|n",
-                "observer": "|R{name}'s body convulses once, violently.|n"
+                "dying": "|wThe darkness isn't dark anymore, it's every color that doesn't have a name, every sound that was never made, every word that was never spoken. You're dissolving into the spaces between seconds, becoming the pause between heartbeats, the silence between screams. And it's beautiful and terrible and completely, utterly ordinary.|n",
+                "observer": "|n{name}'s body convulses once, violently.|n"
             },
             210: {  # 3.5 minutes - 2.5 minutes left
-                "dying": "|rYou're a radio losing signal, static eating away at the song of yourself until there's nothing left but the spaces between the notes. The pain is gone now, replaced by this vast emptiness that feels like Sunday afternoons and unfinished conversations and all the things you meant to say but never did.|n",
+                "dying": "|WYou're a radio losing signal, static eating away at the song of yourself until there's nothing left but the spaces between the notes. The pain is gone now, replaced by this vast emptiness that feels like Sunday afternoons and unfinished conversations and all the things you meant to say but never did.|n",
                 "observer": "|r{name} lies perfectly still except for the barely perceptible rise and fall of their chest.|n"
             },
             240: {  # 4 minutes - 2 minutes left
-                "dying": "|RYou're becoming weather now, becoming the wind that carries other people's secrets, the rain that washes away their sins. You're evaporating into stories that will never be told, jokes that will never be finished, dreams that will never be dreamed. And it's okay. It's all okay. Everything is okay in this place between places.|n",
-                "observer": "|R{name}'s breathing has become so faint it's almost imperceptible.|n"
+                "dying": "|wYou're becoming weather now, becoming the wind that carries other people's secrets, the rain that washes away their sins. You're evaporating into stories that will never be told, jokes that will never be finished, dreams that will never be dreamed. And it's okay. It's all okay. Everything is okay in this place between places.|n",
+                "observer": "|n{name}'s breathing has become so faint it's almost imperceptible.|n"
             },
             270: {  # 4.5 minutes - 1.5 minutes left
-                "dying": "|rThe last thoughts are like photographs burning in a fire, curling at the edges before disappearing into ash. You remember everything and nothing. You are everyone and no one. The boundary between self and not-self becomes as meaningless as the difference between Tuesday and the color blue.|n",
+                "dying": "|WThe last thoughts are like photographs burning in a fire, curling at the edges before disappearing into ash. You remember everything and nothing. You are everyone and no one. The boundary between self and not-self becomes as meaningless as the difference between Tuesday and the color blue.|n",
                 "observer": "|r{name}'s lips have turned blue.|n"
             },
             300: {  # 5 minutes - 1 minute left
-                "dying": "|RYou're the echo of an echo, the shadow of a shadow, the dream that someone else is forgetting. The darkness isn't coming for you anymore because you ARE the darkness, you are the silence, you are the space where something used to be. And in this final moment of dissolution, you understand everything and nothing at all.|n",
-                "observer": "|R{name} doesn't appear to be breathing anymore.|n"
+                "dying": "|wYou're the echo of an echo, the shadow of a shadow, the dream that someone else is forgetting. The darkness isn't coming for you anymore because you ARE the darkness, you are the silence, you are the space where something used to be. And in this final moment of dissolution, you understand everything and nothing at all.|n",
+                "observer": "|n{name} doesn't appear to be breathing anymore.|n"
             },
             330: {  # 5.5 minutes - 30 seconds left
-                "dying": "|r... ...you are... ...you... ...|n",
-                "observer": "|r{name} lies motionless, their body completely still.|n"
+                "dying": "|w... ...you are... ...you... ...|n",
+                "observer": "|n{name} lies motionless, their body completely still.|n"
             }
         }
         
