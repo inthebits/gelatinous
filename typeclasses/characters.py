@@ -178,7 +178,23 @@ class Character(ObjectParent, DefaultCharacter):
                 pass
             return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
             
-        # Block all other messages (social commands, combat, explosives, medical, etc.)
+        # Allow death progression script messages
+        if hasattr(from_obj, 'key') and 'death_progression' in str(from_obj.key).lower():
+            try:
+                splattercast.msg(f"CHAR_FILTER_ALLOW: Death progression script message to dead {self.key}")
+            except:
+                pass
+            return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
+            
+        # Block system messages (from_obj=None) - these include combat, explosives, etc.
+        if from_obj is None:
+            try:
+                splattercast.msg(f"CHAR_FILTER_BLOCK: System message (from_obj=None) to dead {self.key}")
+            except:
+                pass
+            return
+            
+        # Block all other messages (social commands, medical, etc.)
         try:
             splattercast.msg(f"CHAR_FILTER_BLOCK: Blocking message to dead {self.key} from {from_obj}")
         except:

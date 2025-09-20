@@ -198,7 +198,8 @@ class DeathProgressionScript(DefaultScript):
         # Medical revival messages
         character.msg(
             "|gThe medical treatment takes effect! You feel life returning to your body.|n\n"
-            "|gYou have been pulled back from death's door by skilled medical intervention.|n"
+            "|gYou have been pulled back from death's door by skilled medical intervention.|n",
+            from_obj=self
         )
         
         if character.location:
@@ -234,7 +235,7 @@ class DeathProgressionScript(DefaultScript):
         
         # Send each line separately with line breaks
         centered_dying_msg = dying_line1 + "\n" + dying_line2 + "\n" + dying_line3 + "\n"
-        character.msg(centered_dying_msg)
+        character.msg(centered_dying_msg, from_obj=self)
         
         # Message to observers in the room
         if character.location:
@@ -259,8 +260,8 @@ class DeathProgressionScript(DefaultScript):
         messages = self._get_progression_messages()
         message_data = messages.get(interval, messages[330])  # Default to final message
         
-        # Send message to dying character
-        character.msg(message_data["dying"])
+        # Send message to dying character with death progression script as from_obj
+        character.msg(message_data["dying"], from_obj=self)
         
         # Send message to observers
         if character.location:
@@ -347,7 +348,7 @@ class DeathProgressionScript(DefaultScript):
         
         # Send each line with line breaks
         centered_final_msg = final_line1 + "\n" + final_line2 + "\n"
-        character.msg(centered_final_msg)
+        character.msg(centered_final_msg, from_obj=self)
         
         if character.location:
             observer_msg = f"|r{character.key} takes their final breath and passes into death.|n"
