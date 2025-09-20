@@ -393,8 +393,23 @@ class CmdTestDeath(Command):
                     location="abdomen"
                 )
                 
+                # Major head trauma (brain damage) - 120 damage
+                head_conditions = create_condition_from_damage(
+                    damage_amount=120,  # Severe head trauma (40 * 3)
+                    damage_type="blunt",  # Blunt force trauma
+                    location="head"
+                )
+                
+                # Critical limb severing (femoral artery) - 90 damage
+                leg_conditions = create_condition_from_damage(
+                    damage_amount=90,  # Major arterial damage (30 * 3)
+                    damage_type="blade",  # Cutting trauma
+                    location="left_leg"
+                )
+                
                 # Add all the organically created conditions
-                all_conditions = chest_conditions + neck_conditions + abdomen_conditions
+                all_conditions = (chest_conditions + neck_conditions + abdomen_conditions + 
+                                head_conditions + leg_conditions)
                 for condition in all_conditions:
                     target.medical_state.add_condition(condition)
                 
