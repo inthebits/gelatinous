@@ -613,10 +613,11 @@ class Character(ObjectParent, DefaultCharacter):
         if hasattr(self, 'override_place'):
             self.override_place = None
         
-        # Notify recovery
-        if self.location:
-            self.location.msg_contents(f"{self.key} regains consciousness.", exclude=[self])
-        self.msg("You slowly regain consciousness...")
+        # Notify recovery - but only if character is not dead
+        if not self.is_dead():
+            if self.location:
+                self.location.msg_contents(f"{self.key} regains consciousness.", exclude=[self])
+            self.msg("You slowly regain consciousness...")
 
     def remove_death_state(self):
         """

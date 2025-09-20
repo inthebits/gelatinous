@@ -132,7 +132,9 @@ class MedicalScript(DefaultScript):
                     self.obj._handle_unconsciousness()
             else:
                 # Character is conscious - clear unconsciousness flag if it was set
-                if hasattr(self.obj, 'ndb') and getattr(self.obj.ndb, 'unconsciousness_processed', False):
+                # BUT only if they're not dead (prevent "regains consciousness" when dying)
+                if (hasattr(self.obj, 'ndb') and getattr(self.obj.ndb, 'unconsciousness_processed', False) 
+                    and not medical_state.is_dead()):
                     splattercast.msg(f"MEDICAL_SCRIPT_RECOVERY: {self.obj.key} has regained consciousness")
                     self.obj.ndb.unconsciousness_processed = False
                     # Clear unconsciousness placement description when regaining consciousness

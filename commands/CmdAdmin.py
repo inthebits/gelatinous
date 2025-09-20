@@ -457,7 +457,7 @@ class CmdTestUnconscious(Command):
     If 'force' is specified, applies restrictions even to staff.
     """
     key = "@testunconscious"
-    aliases = ["@tu"]
+    aliases = ["@knockout"]
     locks = "cmd:perm(Builder)"
     help_category = "Admin"
     
