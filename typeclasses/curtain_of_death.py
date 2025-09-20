@@ -221,10 +221,24 @@ class DeathCurtain:
         # Start death progression system after death curtain completes
         try:
             from .death_progression import start_death_progression
-            start_death_progression(self.character)
-        except ImportError:
-            # Death progression system not available, continue with normal death
-            pass
+            script = start_death_progression(self.character)
+            
+            # Debug logging
+            try:
+                from evennia.comms.models import ChannelDB
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"DEATH_CURTAIN: Death progression started for {self.character.key}, script: {script}")
+            except:
+                pass
+                
+        except Exception as e:
+            # Debug logging for any errors
+            try:
+                from evennia.comms.models import ChannelDB
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"DEATH_CURTAIN_ERROR: Failed to start death progression for {self.character.key}: {e}")
+            except:
+                pass
 
 
 def show_death_curtain(character, message=None):

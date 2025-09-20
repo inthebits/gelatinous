@@ -49,6 +49,14 @@ class DeathProgressionScript(DefaultScript):
         # Start the progression
         self.interval = 30  # Check every 30 seconds
         
+        # Debug logging
+        try:
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            char_name = self.db.character.key if self.db.character else "unknown"
+            splattercast.msg(f"DEATH_PROGRESSION: Script created for {char_name}")
+        except:
+            pass
+        
     def at_start(self):
         """Called when script starts."""
         character = self.db.character
@@ -75,6 +83,13 @@ class DeathProgressionScript(DefaultScript):
             
         current_time = time.time()
         elapsed = current_time - self.db.start_time
+        
+        # Debug logging
+        try:
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            splattercast.msg(f"DEATH_PROGRESSION: at_repeat for {character.key}, elapsed: {elapsed:.1f}s")
+        except:
+            pass
         
         # Check if medical conditions have been resolved and character should be revived
         if self._check_medical_revival_conditions(character):
@@ -345,96 +360,3 @@ def get_death_progression_status(character):
         "can_be_revived": script.db.can_be_revived,
         "time_factor": 1.0 - (elapsed / script.db.total_duration)
     }
-            
-    def _handle_successful_revival(self, revivor=None):
-        """Handle successful revival during death progression."""
-        character = self.db.character
-        if not character:
-            return
-            
-        # Revival messages
-        character.msg("|gYou feel the spark of life return! You have been pulled back from death's door.|n")
-        
-        if character.location:
-            if revivor:
-                room_msg = f"|g{revivor.key} successfully revives {character.key}!|n"
-            else:
-                room_msg = f"|g{character.key} miraculously returns from the brink of death!|n"
-            character.location.msg_contents(room_msg, exclude=[character])
-            
-        # Restore character to living state
-        if hasattr(character, 'remove_death_state'):
-            character.remove_death_state()
-            
-        # Log successful revival
-        try:
-            splattercast = ChannelDB.objects.get_channel("Splattercast")
-            revivor_name = revivor.key if revivor else "miraculous intervention"
-            splattercast.msg(f"DEATH_PROGRESSION: {character.key} successfully revived by {revivor_name}")
-        except:
-            pass
-            
-        # Stop the death progression
-        self.stop()
-        
-    def _handle_failed_revival(self, revivor=None):
-        """Handle failed revival attempt during death progression."""
-        character = self.db.character
-        if not character:
-            return
-            
-        # Failure messages
-        if revivor:
-            revivor.msg(f"|rYour revival attempt on {character.key} has failed.|n")
-            
-        if character.location:
-            if revivor:
-                room_msg = f"|r{revivor.key}'s attempt to revive {character.key} fails.|n"
-            else:
-                room_msg = f"|rThe revival attempt on {character.key} fails.|n"
-            character.location.msg_contents(room_msg, exclude=[character])
-            
-        # Log failed revival
-        try:
-            splattercast = ChannelDB.objects.get_channel("Splattercast")
-            revivor_name = revivor.key if revivor else "unknown"
-            splattercast.msg(f"DEATH_PROGRESSION: Revival attempt on {character.key} by {revivor_name} failed")
-        except:
-            pass
-
-
-def start_death_progression(character):
-    """
-    Start the death progression script for a character.
-    
-    Args:
-        character: The character entering death progression
-        
-    Returns:
-        DeathProgressionScript: The created script
-    """
-    # Check if character already has a death progression script
-    existing_script = character.scripts.get("death_progression")
-    if existing_script:
-        return existing_script
-        
-    # Create new death progression script
-    script = character.scripts.add(DeathProgressionScript)[0]
-    script.db.character = character
-    
-    return script
-
-
-def get_death_progression_script(character):
-    """
-    Get the death progression script for a character if it exists.
-    
-    Args:
-        character: The character to check
-        
-    Returns:
-        DeathProgressionScript or None: The script if found, None otherwise
-    """
-    return character.scripts.get("death_progression")
-
-
