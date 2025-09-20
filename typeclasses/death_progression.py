@@ -18,6 +18,49 @@ from evennia.utils import delay
 from evennia.comms.models import ChannelDB
 import random
 import time
+import re
+
+
+def _get_terminal_width(session=None):
+    """Get terminal width from session, defaulting to 78 for MUD compatibility."""
+    if session:
+        try:
+            detected_width = session.protocol_flags.get("SCREENWIDTH", [78])[0]
+            return max(68, detected_width - 5)  # Minimum 68 to ensure readability
+        except (IndexError, KeyError, TypeError):
+            pass
+    return 78
+
+
+def _strip_color_codes(text):
+    """Remove Evennia color codes from text to get actual visible length."""
+    # Remove all |x and |xx codes (where x is any character) - same as death curtain
+    return re.sub(r'\|.', '', text)
+
+
+def _center_text(text, width=None, session=None):
+    """Center text on the terminal using same logic as death curtain."""
+    if width is None:
+        width = _get_terminal_width(session)
+    
+    # Split into lines and center each line
+    lines = text.split('\n')
+    centered_lines = []
+    
+    for line in lines:
+        if not line.strip():  # Empty line
+            centered_lines.append("")
+            continue
+            
+        visible_text = _strip_color_codes(line)
+        padding_needed = width - len(visible_text)
+        left_padding = padding_needed // 2
+        
+        # Add spacing to center the text
+        centered_line = " " * left_padding + line
+        centered_lines.append(centered_line)
+    
+    return '\n'.join(centered_lines)
 
 
 class DeathProgressionScript(DefaultScript):
@@ -173,9 +216,11 @@ class DeathProgressionScript(DefaultScript):
         dying_msg = (
             "|RYou hover at the threshold between life and death.|n\n"
             "|rYour essence flickers like a candle in the wind...|n\n"
-            "|RThere may still be time for intervention.|n\n"
+            "|RThere may still be time for intervention.|n"
         )
-        character.msg(dying_msg)
+        # Center the message
+        centered_dying_msg = _center_text(dying_msg)
+        character.msg(centered_dying_msg)
         
         # Message to observers in the room
         if character.location:
@@ -278,7 +323,9 @@ class DeathProgressionScript(DefaultScript):
             "|RThe darkness claims you completely...|n\n"
             "|rYour consciousness fades into the void.|n"
         )
-        character.msg(final_msg)
+        # Center the final message
+        centered_final_msg = _center_text(final_msg)
+        character.msg(centered_final_msg)
         
         if character.location:
             observer_msg = f"|r{character.key} takes their final breath and passes into death.|n"
