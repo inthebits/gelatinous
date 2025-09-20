@@ -12,9 +12,10 @@ class CmdTestDeath(Command):
     Test death state command restrictions.
     
     Usage:
-        testdeath [force]
+        testdeath [<target>] [force]
         
     This command toggles the death state for testing command restrictions.
+    If no target is specified, affects yourself.
     If 'force' is specified, applies restrictions even to staff.
     """
     key = "testdeath"
@@ -24,20 +25,42 @@ class CmdTestDeath(Command):
     
     def func(self):
         caller = self.caller
-        force_test = "force" in self.args.lower()
+        args = self.args.strip()
         
-        if caller.is_dead():
+        # Parse arguments for target and force flag
+        force_test = "force" in args.lower()
+        target_name = args.replace("force", "").strip()
+        
+        # Determine target
+        if target_name:
+            target = caller.search(target_name, global_search=True)
+            if not target:
+                caller.msg(f"Could not find '{target_name}'.")
+                return
+            if not hasattr(target, 'is_dead'):
+                caller.msg(f"{target.key} is not a character.")
+                return
+        else:
+            target = caller
+        
+        if target.is_dead():
             # Character is dead, revive them
-            caller.remove_death_state()
-            caller.msg("|gYou have been revived from death for testing.|n")
+            target.remove_death_state()
+            caller.msg(f"|g{target.key} has been revived from death for testing.|n")
+            if target != caller:
+                target.msg("|gYou have been revived from death for testing.|n")
         else:
             # Character is alive, kill them for testing
             # Temporarily set a death state without actual medical damage
-            caller.db._test_death_state = True
-            caller.apply_death_state(force_test=force_test)
-            caller.msg("|rYou have been killed for testing command restrictions.|n")
+            target.db._test_death_state = True
+            target.apply_death_state(force_test=force_test)
+            caller.msg(f"|r{target.key} has been killed for testing command restrictions.|n")
+            if target != caller:
+                target.msg("|rYou have been killed for testing command restrictions.|n")
             if force_test:
                 caller.msg("|yForce mode: restrictions apply even to staff.|n")
+                if target != caller:
+                    target.msg("|yForce mode: restrictions apply even to staff.|n")
 
 
 class CmdTestUnconscious(Command):
@@ -45,9 +68,10 @@ class CmdTestUnconscious(Command):
     Test unconscious state command restrictions.
     
     Usage:
-        testunconscious [force]
+        testunconscious [<target>] [force]
         
     This command toggles the unconscious state for testing command restrictions.
+    If no target is specified, affects yourself.
     If 'force' is specified, applies restrictions even to staff.
     """
     key = "testunconscious"
@@ -57,20 +81,42 @@ class CmdTestUnconscious(Command):
     
     def func(self):
         caller = self.caller
-        force_test = "force" in self.args.lower()
+        args = self.args.strip()
         
-        if caller.is_unconscious():
+        # Parse arguments for target and force flag
+        force_test = "force" in args.lower()
+        target_name = args.replace("force", "").strip()
+        
+        # Determine target
+        if target_name:
+            target = caller.search(target_name, global_search=True)
+            if not target:
+                caller.msg(f"Could not find '{target_name}'.")
+                return
+            if not hasattr(target, 'is_unconscious'):
+                caller.msg(f"{target.key} is not a character.")
+                return
+        else:
+            target = caller
+        
+        if target.is_unconscious():
             # Character is unconscious, wake them up
-            caller.remove_unconscious_state()
-            caller.msg("|gYou have been awakened from unconsciousness for testing.|n")
+            target.remove_unconscious_state()
+            caller.msg(f"|g{target.key} has been awakened from unconsciousness for testing.|n")
+            if target != caller:
+                target.msg("|gYou have been awakened from unconsciousness for testing.|n")
         else:
             # Character is conscious, make them unconscious for testing
             # Temporarily set an unconscious state without actual medical damage
-            caller.db._test_unconscious_state = True
-            caller.apply_unconscious_state(force_test=force_test)
-            caller.msg("|rYou have been knocked unconscious for testing command restrictions.|n")
+            target.db._test_unconscious_state = True
+            target.apply_unconscious_state(force_test=force_test)
+            caller.msg(f"|r{target.key} has been knocked unconscious for testing command restrictions.|n")
+            if target != caller:
+                target.msg("|rYou have been knocked unconscious for testing command restrictions.|n")
             if force_test:
                 caller.msg("|yForce mode: restrictions apply even to staff.|n")
+                if target != caller:
+                    target.msg("|yForce mode: restrictions apply even to staff.|n")
 
 
 class CmdTestMedicalClear(Command):
@@ -78,10 +124,10 @@ class CmdTestMedicalClear(Command):
     Clear all test medical states and restore normal commands.
     
     Usage:
-        testmedicalclear
+        testmedicalclear [<target>]
         
     This command removes any test death/unconscious states and restores
-    the normal command set.
+    the normal command set. If no target is specified, affects yourself.
     """
     key = "testmedicalclear"
     aliases = ["tmc"]
@@ -90,25 +136,40 @@ class CmdTestMedicalClear(Command):
     
     def func(self):
         caller = self.caller
+        target_name = self.args.strip()
+        
+        # Determine target
+        if target_name:
+            target = caller.search(target_name, global_search=True)
+            if not target:
+                caller.msg(f"Could not find '{target_name}'.")
+                return
+            if not hasattr(target, 'db'):
+                caller.msg(f"{target.key} is not a character.")
+                return
+        else:
+            target = caller
         
         # Clear test flags
-        if hasattr(caller.db, '_test_death_state'):
-            del caller.db._test_death_state
-        if hasattr(caller.db, '_test_unconscious_state'):
-            del caller.db._test_unconscious_state
+        if hasattr(target.db, '_test_death_state'):
+            del target.db._test_death_state
+        if hasattr(target.db, '_test_unconscious_state'):
+            del target.db._test_unconscious_state
         
         # Remove any medical state restrictions
         try:
-            caller.remove_death_state()
+            target.remove_death_state()
         except Exception:
             pass
             
         try:
-            caller.remove_unconscious_state()
+            target.remove_unconscious_state()
         except Exception:
             pass
         
-        caller.msg("|gAll test medical states cleared. Normal commands restored.|n")
+        caller.msg(f"|gAll test medical states cleared for {target.key}. Normal commands restored.|n")
+        if target != caller:
+            target.msg("|gAll test medical states cleared. Normal commands restored.|n")
 
 
 # Modify the character's medical state methods to check for test flags
