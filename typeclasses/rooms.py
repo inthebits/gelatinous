@@ -72,7 +72,7 @@ class Room(ObjectParent, DefaultRoom):
         if not hasattr(self, 'crowd_base_level'):
             self.crowd_base_level = 0
     
-    def msg_contents(self, message, exclude=None, from_obj=None, mapping=None, **kwargs):
+    def msg_contents(self, text, exclude=None, from_obj=None, mapping=None, **kwargs):
         """
         Override msg_contents to implement death curtain message filtering.
         
@@ -81,34 +81,25 @@ class Room(ObjectParent, DefaultRoom):
         """
         if not exclude:
             exclude = []
-        if not isinstance(exclude, list):
+        elif not isinstance(exclude, (list, tuple)):
             exclude = [exclude]
             
         # Get all contents that would normally receive the message
-        all_contents = [obj for obj in self.contents if obj not in exclude]
+        all_recipients = [obj for obj in self.contents if obj not in exclude]
         
         # Filter dead characters for social messages
-        filtered_contents = []
-        for obj in all_contents:
+        final_exclude = list(exclude)  # Start with original exclude list
+        
+        for obj in all_recipients:
             # Check if this is a dead character
             if (hasattr(obj, 'is_dead') and callable(obj.is_dead) and obj.is_dead()):
                 # Apply death curtain filtering
-                if self._should_allow_message_to_dead(message, from_obj):
-                    filtered_contents.append(obj)
-                # else: message blocked for dead character
-            else:
-                # Living characters get all messages
-                filtered_contents.append(obj)
+                if not self._should_allow_message_to_dead(text, from_obj):
+                    # Add dead character to exclude list to block the message
+                    final_exclude.append(obj)
         
-        # Send message to filtered list using parent implementation
-        if filtered_contents:
-            # Temporarily replace self.contents to control who gets the message
-            original_contents = self.contents
-            self.contents = filtered_contents
-            try:
-                super().msg_contents(message, exclude=exclude, from_obj=from_obj, mapping=mapping, **kwargs)
-            finally:
-                self.contents = original_contents
+        # Call parent with updated exclude list
+        return super().msg_contents(text, exclude=final_exclude, from_obj=from_obj, mapping=mapping, **kwargs)
     
     def _should_allow_message_to_dead(self, message, from_obj):
         """
