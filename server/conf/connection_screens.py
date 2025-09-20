@@ -42,10 +42,11 @@ LOCATION: PARTS UNKNOWN
 >> Flesh: Grainy.
 >> Memory: OFFLINE.
 
-__ Connect : |wconnect <accountname> <password>|n
-__ Create  : |wcreate <accountname> <password>|n
+__ Connect : |wconnect <email@address.com> <password>|n
+__ Create  : |wcreate <email@address.com> <password>|n
 
-If you have spaces in your username, enclose it in quotes.
+Use your email address to connect or create a new account.
+Character creation happens after login.
 Enter |whelp|n for more info. |wlook|n will re-show this screen.
 
 |w>>> END OF TE▒T PATTERN. BROADCAST WI▒L NOT RESUME WITHOUT PROMPT.|n

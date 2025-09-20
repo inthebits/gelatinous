@@ -73,6 +73,15 @@ DEFAULT_EXIT_TYPECLASS = "typeclasses.exits.Exit"
 # Mode 1: Login with account (email), then select/create character
 MULTISESSION_MODE = 1
 
+# Enable auto-puppeting for seamless login experience
+# Characters will be created/managed through resleeving system
+AUTO_CREATE_CHARACTER_WITH_ACCOUNT = False  # We'll handle this custom
+AUTO_PUPPET_ON_LOGIN = True  # Puppet last available sleeve
+
+# Use our custom email-based login system
+CMDSET_UNLOGGEDIN = "commands.unloggedin_email.UnloggedinEmailCmdSet"
+CONNECTION_SCREEN_MODULE = "server.conf.connection_screens"
+
 ######################################################################
 # Django web features
 ######################################################################
