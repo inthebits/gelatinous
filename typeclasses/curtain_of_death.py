@@ -217,6 +217,14 @@ class DeathCurtain:
         if self.location:
             death_msg = f"|r{self.character.key} has died.|n"
             self.location.msg_contents(death_msg, exclude=[self.character])
+        
+        # Start death progression system after death curtain completes
+        try:
+            from .death_progression import start_death_progression
+            start_death_progression(self.character)
+        except ImportError:
+            # Death progression system not available, continue with normal death
+            pass
 
 
 def show_death_curtain(character, message=None):

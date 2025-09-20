@@ -460,7 +460,7 @@ class Character(ObjectParent, DefaultCharacter):
     def at_death(self):
         """
         Handles what happens when this character dies.
-        Override this for player-specific or mob-specific death logic.
+        Shows death curtain which will then start the death progression system.
         """
         from .curtain_of_death import show_death_curtain
         from evennia.comms.models import ChannelDB
@@ -526,12 +526,10 @@ class Character(ObjectParent, DefaultCharacter):
             delay(5, fallback_death_curtain)
         else:
             # Not in combat - show death curtain immediately
+            # Death curtain will start death progression when it completes
             show_death_curtain(self)
         
-        # You can override this to handle possession, corpse creation, etc.
-        # PERMANENT-DEATH. DO NOT ENABLE YET. self.delete()
-        
-        # Apply death command restrictions
+        # Apply death command restrictions immediately
         self.apply_death_state()
 
     # MEDICAL REVIVAL SYSTEM - Command Set Management
@@ -650,6 +648,29 @@ class Character(ObjectParent, DefaultCharacter):
         if self.location:
             self.location.msg_contents(f"|g{self.key} has been revived!|n", exclude=[self])
         self.msg("|gYou have been revived! You feel the spark of life return.|n")
+
+    def apply_final_death_state(self):
+        """
+        Apply final death state after death progression completes.
+        This is permanent death until manual revival by admin.
+        """
+        from evennia.comms.models import ChannelDB
+        from world.combat.constants import SPLATTERCAST_CHANNEL
+        
+        # Update placement description for permanent death
+        self.override_place = "lying motionless and deceased."
+        
+        # Ensure death cmdset is applied (should already be done)
+        if not hasattr(self, '_death_cmdset_applied'):
+            self.apply_death_state(force_test=True)
+            self._death_cmdset_applied = True
+        
+        # Log final death
+        try:
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(f"FINAL_DEATH: {self.key} has entered permanent death state")
+        except:
+            pass
 
     # MR. HANDS SYSTEM
     # Persistent hand slots: supports dynamic anatomy eventually
