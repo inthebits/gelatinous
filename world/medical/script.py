@@ -120,14 +120,7 @@ class MedicalScript(DefaultScript):
                     splattercast.msg(f"MEDICAL_SCRIPT_DEATH_SKIP: {self.obj.key} death already processed")
                 else:
                     # Trigger full death processing (includes death analysis and death curtain)
-                    splattercast.msg(f"MEDICAL_SCRIPT_CALLING_AT_DEATH: About to call at_death() for {self.obj.key}")
-                    try:
-                        self.obj.at_death()
-                        splattercast.msg(f"MEDICAL_SCRIPT_AT_DEATH_SUCCESS: at_death() completed for {self.obj.key}")
-                    except Exception as e:
-                        splattercast.msg(f"MEDICAL_SCRIPT_AT_DEATH_ERROR: at_death() failed for {self.obj.key}: {e}")
-                        import traceback
-                        splattercast.msg(f"MEDICAL_SCRIPT_AT_DEATH_TRACEBACK: {traceback.format_exc()}")
+                    self.obj.at_death()
                     
                 self.stop()
                 self.delete()
@@ -154,8 +147,6 @@ class MedicalScript(DefaultScript):
                         self.obj.override_place == "unconscious and motionless."):
                         splattercast.msg(f"MEDICAL_SCRIPT_CLEAR_UNCONSCIOUS: Clearing unconscious override_place for {self.obj.key}")
                         self.obj.override_place = None
-                    elif hasattr(self.obj, 'override_place'):
-                        splattercast.msg(f"MEDICAL_SCRIPT_PRESERVE: Preserving override_place '{self.obj.override_place}' for {self.obj.key}")
             
             # Check if we should stop (no conditions left)
             if not medical_state.conditions:
