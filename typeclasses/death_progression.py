@@ -52,11 +52,19 @@ def _center_text(text, width=None, session=None):
             centered_lines.append("")
             continue
             
+        # Calculate visible text length (without color codes) - same as curtain
         visible_text = _strip_color_codes(line)
+        
+        # Use Python's built-in center method for proper centering
+        # This handles odd/even width differences correctly
+        centered_visible = visible_text.center(width)
+        
+        # Now we need to apply the centering to the original line with color codes
+        # Calculate the actual padding that center() applied
         padding_needed = width - len(visible_text)
         left_padding = padding_needed // 2
         
-        # Add spacing to center the text
+        # Apply the same left padding to the original colored text
         centered_line = " " * left_padding + line
         centered_lines.append(centered_line)
     
@@ -216,7 +224,7 @@ class DeathProgressionScript(DefaultScript):
         dying_msg = (
             "|RYou hover at the threshold between life and death.|n\n"
             "|rYour essence flickers like a candle in the wind...|n\n"
-            "|RThere may still be time for intervention.|n"
+            "|RThere may still be time for intervention.|n\n"
         )
         # Center the message
         centered_dying_msg = _center_text(dying_msg)
