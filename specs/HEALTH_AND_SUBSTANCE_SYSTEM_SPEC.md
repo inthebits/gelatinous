@@ -42,8 +42,18 @@
 - ✅ **No HP attributes** - character health entirely managed by medical system
 - ✅ **Simplified architecture** - single system for all health management
 
-### 🔄 CURRENT STATE: DEATH CURTAIN INTEGRATION & FORENSIC SYSTEM
-The medical system now features **comprehensive death processing and persistent state visualization**:
+**Death Progression System Complete (September 2025):**
+- ✅ **6-minute revival window** - Time-delayed death progression allowing medical intervention
+- ✅ **Progressive dying messages** - Chuck Palahniuk/Hunter S. Thompson inspired visceral narrative 
+- ✅ **Medical system integration** - Automatic revival if medical conditions resolved during progression
+- ✅ **Session-aware formatting** - Text centering using curtain of death patterns for consistent presentation
+- ✅ **Emotional resonance** - 11 progression messages with substantial literary content creating meaningful death experience
+- ✅ **Observer messaging** - Room occupants see progression indicators while dying character experiences internal narrative
+- ✅ **Script-based timer** - Robust 30-second interval system with cleanup and state management
+- ✅ **Universal themes** - Death messaging avoids specific cultural/family references for inclusive player experience
+
+### 🔄 CURRENT STATE: BRAIN DEATH INTEGRATION FOR REVIVAL MECHANICS
+The medical system now features **comprehensive death processing and revival mechanics**:
 - **Death curtain protection** with no personal medical messages sent to deceased characters
 - **Persistent placement descriptions** providing visual indicators for unconscious/dead states without scrolling
 - **Enhanced observer messaging** with atmospheric blood descriptions for deceased characters
@@ -51,6 +61,14 @@ The medical system now features **comprehensive death processing and persistent 
 - **Integrated infection messaging** with consolidated medical system using consistent red coloring
 - **BloodPool forensic evidence** with aging and room description integration
 - **Unified cleaning system** supporting both graffiti and blood evidence removal
+- **Death progression system** with 6-minute revival window and medical intervention mechanics
+
+**NEXT: Brain Death Revival Integration (September 2025):**
+- **Consciousness-based revival mechanics** - Brain organ health determines revival eligibility during death progression
+- **Brain death threshold** - Characters with destroyed/critically damaged brain cannot be revived after certain time
+- **Progressive brain damage** - Brain deterioration during death progression affects revival chances
+- **Medical realism** - Align revival mechanics with anatomical consciousness requirements
+- **Revival conditions refinement** - Update `_check_medical_revival_conditions()` to prioritize brain/consciousness state
 
 ### � UNIFIED MEDICAL MESSAGING SYSTEM (September 2025)
 **Consolidated Message Architecture:**
@@ -219,6 +237,72 @@ def _perform_death_analysis(self):
 - **Unified debug output** - Consistent format for all death analysis
 - **Medical condition reporting** - Death analysis includes current medical state
 - **Elimination of gaps** - No more inconsistent death analysis between different systems
+
+### ⏳ DEATH PROGRESSION SYSTEM (September 2025)
+**6-Minute Revival Window:**
+- **Time-delayed death** - Characters enter 6-minute dying state instead of instant death
+- **Medical intervention window** - Healthcare providers can attempt revival during progression
+- **Dramatic tension** - Creates urgency and meaningful medical response opportunities
+- **Automatic revival** - Medical system integration allows natural recovery if conditions improve
+
+**Progressive Narrative Experience:**
+- **11 message intervals** - Every 30 seconds during 6-minute progression
+- **Literary styling** - Chuck Palahniuk/Hunter S. Thompson inspired visceral stream-of-consciousness
+- **Emotional progression** - Messages evolve from medical shock to existential acceptance to peaceful transition
+- **Universal themes** - Content avoids specific cultural/family references for inclusive player experience
+- **Session-aware formatting** - Text centering using death curtain patterns for consistent presentation
+
+**Death Progression Architecture:**
+```python
+class DeathProgressionScript(DefaultScript):
+    """Time-delayed death progression with medical intervention window"""
+    
+    def at_script_creation(self):
+        self.db.total_duration = 360  # 6 minutes
+        self.db.message_intervals = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330]
+        self.db.can_be_revived = True
+        
+    def _check_medical_revival_conditions(self, character):
+        """Check if medical treatment has resolved fatal conditions"""
+        # NEXT: Brain death integration - check consciousness/brain state
+        # Brain-dead characters cannot be revived regardless of other medical improvements
+        brain_organ = character.medical_state.get_organ("brain")
+        if brain_organ and brain_organ.current_hp <= 0:
+            return False  # Brain death = no revival possible
+            
+        # Check overall medical death status
+        if character.medical_state and not character.medical_state.is_dead():
+            return True  # Medical intervention successful
+        return False
+        
+    def _send_progression_message(self, interval):
+        """Send visceral dying narrative to character and observers"""
+        messages = self._get_progression_messages()
+        character.msg(messages[interval]["dying"])
+        location.msg_contents(messages[interval]["observer"], exclude=[character])
+```
+
+**Integration Features:**
+- **Medical system compatibility** - Automatic revival if fatal conditions resolved
+- **Brain death mechanics** - Characters with destroyed brain cannot be revived (medical realism)
+- **Consciousness threshold** - Revival eligibility tied to brain organ health and consciousness capacity
+- **Progressive brain damage** - Brain deterioration during death progression affects revival chances over time
+- **Observer messaging** - Room occupants see progression indicators
+- **Script-based timer** - Robust interval system with cleanup and state management
+- **Placement descriptions** - Death state visible in room descriptions
+- **Debug logging** - Comprehensive Splattercast integration for monitoring
+
+**Revival Mechanics (Next Implementation):**
+- **Brain death threshold** - 0 HP brain = no revival possible regardless of other medical treatment
+- **Consciousness requirements** - Revival only possible if brain can support consciousness
+- **Time-sensitive brain damage** - Longer death progression may cause progressive brain deterioration
+- **Medical intervention priority** - Brain-focused medical treatment becomes critical during death progression
+
+**Progression Message Themes:**
+- **Early stages (30-120s)** - Medical shock, surreal sensory experiences, dark humor
+- **Middle stages (150-240s)** - Existential reflection, memory fragmentation, acceptance
+- **Final stages (270-330s)** - Peaceful transition, universal human experiences, gentle release
+
 **Individual Bone Structure:**
 - **Arms:** `left/right_humerus` (main arm bones) → 40% manipulation each
 - **Hands:** `left/right_metacarpals` (hand bones) → 20% manipulation each  
@@ -373,7 +457,7 @@ def _process_delayed_attack(self, attacker, target, attacker_entry, combatants_l
 - **Evidence Chain of Custody**: Proper evidence handling and legal admissibility mechanics
 - **Time-Based Degradation**: Evidence quality decreases over time, affecting analysis accuracy
 
-**Phase 3.2 - Death Progression & Organ Harvesting (🔮 FUTURE):**
+**Phase 3.2 - Organ Harvesting & Corpse Examination (🔮 FUTURE):**
 - Progressive organ failure system after character death
 - Realistic organ deterioration timelines (brain dies in 3 rounds, heart in 8, etc.)
 - Organ harvesting commands (`harvest <organ> from <corpse>`)
