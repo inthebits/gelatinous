@@ -171,9 +171,9 @@ class DeathProgressionScript(DefaultScript):
             
         # Message to the dying character
         dying_msg = (
-            "|R║ You hover at the threshold between life and death. ║|n\n"
-            "|r║ Your essence flickers like a candle in the wind... ║|n\n"
-            "|R║ There may still be time for intervention. ║|n"
+            "|RYou hover at the threshold between life and death.|n\n"
+            "|rYour essence flickers like a candle in the wind...|n\n"
+            "|RThere may still be time for intervention.|n\n"
         )
         character.msg(dying_msg)
         
