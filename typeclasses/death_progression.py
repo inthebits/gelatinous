@@ -34,16 +34,16 @@ def _get_terminal_width(session=None):
 
 def _strip_color_codes(text):
     """Remove Evennia color codes from text to get actual visible length."""
-    # Remove all |x and |xx codes (where x is any character) - same as death curtain
+    # Remove all |x codes (where x is any character) - same pattern as death curtain
     return re.sub(r'\|.', '', text)
 
 
 def _center_text(text, width=None, session=None):
-    """Center text on the terminal using same logic as death curtain."""
+    """Center text using same approach as curtain_of_death.py for consistency."""
     if width is None:
         width = _get_terminal_width(session)
     
-    # Split into lines and center each line
+    # Split into lines and center each line - same as curtain
     lines = text.split('\n')
     centered_lines = []
     
@@ -55,11 +55,9 @@ def _center_text(text, width=None, session=None):
         # Calculate visible text length (without color codes) - same as curtain
         visible_text = _strip_color_codes(line)
         
-        # Use Python's built-in center method for proper centering
-        # This handles odd/even width differences correctly
+        # Use Python's built-in center method for proper centering - same as curtain  
         centered_visible = visible_text.center(width)
         
-        # Now we need to apply the centering to the original line with color codes
         # Calculate the actual padding that center() applied
         padding_needed = width - len(visible_text)
         left_padding = padding_needed // 2
