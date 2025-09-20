@@ -308,6 +308,42 @@ class CmdTestDeath(Command):
                 return
         else:
             target = caller
+            
+        # Staff protection: use Evennia's native permission system
+        if target != caller:
+            # Check if target has any staff permissions
+            if (target.locks.check(target, "perm(Builder)") or 
+                target.locks.check(target, "perm(Admin)") or 
+                target.locks.check(target, "perm(Developer)")):
+                
+                # Use Evennia's permission hierarchy - higher permissions can act on lower ones
+                # If caller doesn't have at least the same permission level as target, block it
+                target_is_developer = target.locks.check(target, "perm(Developer)")
+                target_is_admin = target.locks.check(target, "perm(Admin)")
+                target_is_builder = target.locks.check(target, "perm(Builder)")
+                
+                caller_is_developer = caller.locks.check(caller, "perm(Developer)")
+                caller_is_admin = caller.locks.check(caller, "perm(Admin)")
+                caller_is_builder = caller.locks.check(caller, "perm(Builder)")
+                
+                # Block if target outranks caller
+                if target_is_developer and not caller_is_developer:
+                    splattercast = ChannelDB.objects.get_channel("Splattercast")
+                    splattercast.msg(f"MURDER_BLOCKED: {caller.key} attempted @murder on Developer {target.key} - insufficient permissions")
+                    caller.msg(f"|rYou cannot use this command on {target.key} - insufficient permissions.|n")
+                    return
+                elif target_is_admin and not (caller_is_developer or caller_is_admin):
+                    splattercast = ChannelDB.objects.get_channel("Splattercast")
+                    splattercast.msg(f"MURDER_BLOCKED: {caller.key} attempted @murder on Admin {target.key} - insufficient permissions")
+                    caller.msg(f"|rYou cannot use this command on {target.key} - insufficient permissions.|n")
+                    return
+                elif (target_is_builder and caller_is_builder and 
+                      not (caller_is_admin or caller_is_developer) and not force_test):
+                    # Peer protection for builders
+                    splattercast = ChannelDB.objects.get_channel("Splattercast")
+                    splattercast.msg(f"MURDER_BLOCKED: Builder {caller.key} attempted @murder on peer Builder {target.key} without 'force'")
+                    caller.msg(f"|yWarning: Using this command on a peer staff member. Add 'force' if you're sure.|n")
+                    return
         
         if target.is_dead():
             # Character is dead, revive them using heal command logic
@@ -426,27 +462,22 @@ class CmdTestDeath(Command):
                 # Save medical state to ensure persistence
                 target.save_medical_state()
                 
-                # Delayed theatrical messages with medical overtones
-                def show_suppression_onset():
-                    target.msg(f"|RYour vision blurs and your limbs grow heavy as an overwhelming lethargy seeps through your body.|n")
+                # Delayed theatrical messages with visceral gore
+                def show_bleeding_onset():
+                    target.msg(f"|RYour vision blurs as crimson begins to weep from every pore, every orifice - your eyes streaming scarlet tears as your body betrays you in the most visceral symphony of hemorrhage.|n")
                     if target.location:
-                        target.location.msg_contents(f"|R{target.key} sways unsteadily, their eyes losing focus as if fighting against invisible weights.|n", exclude=[target])
+                        target.location.msg_contents(f"|R{target.key} begins bleeding from everywhere at once - eyes weeping blood, crimson pouring from nose and mouth as their skin becomes a canvas of seeping red.|n", exclude=[target])
                 
-                def show_medical_crisis():
-                    target.msg(f"|RYour breathing becomes labored and shallow as your body systems begin to fail in cascade.|n")
-                    if target.location:
-                        target.location.msg_contents(f"|R{target.key}'s breathing becomes erratic and strained, their complexion taking on an unhealthy pallor.|n", exclude=[target])
-                
-                # Schedule the dramatic messages
-                delayed_message(show_suppression_onset, 3)
-                delayed_message(show_medical_crisis, 6)
+                # Schedule the dramatic message - only one needed
+                delayed_message(show_bleeding_onset, 3)
                 
                 # Multiple severe arterial bleeding conditions will cause rapid death
                 # 5 x 10% blood loss per tick = 50% blood loss per tick = death in 2 ticks
                 
-            caller.msg(f"|r{target.key} has been given fatal consciousness suppression and massive arterial bleeding via medical system.|n")
-            if target != caller:
-                target.msg("|rYou have been given fatal consciousness suppression and massive arterial bleeding via medical system.|n")
+            # Log to splattercast for admin debugging
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            splattercast.msg(f"MURDER_CMD: {caller.key} used @murder on {target.key} - applied arterial hemorrhage conditions")
+            
             if force_test:
                 caller.msg("|yForce mode: restrictions apply even to staff.|n")
                 if target != caller:
@@ -493,6 +524,42 @@ class CmdTestUnconscious(Command):
                 return
         else:
             target = caller
+            
+        # Staff protection: use Evennia's native permission system
+        if target != caller:
+            # Check if target has any staff permissions
+            if (target.locks.check(target, "perm(Builder)") or 
+                target.locks.check(target, "perm(Admin)") or 
+                target.locks.check(target, "perm(Developer)")):
+                
+                # Use Evennia's permission hierarchy - higher permissions can act on lower ones
+                # If caller doesn't have at least the same permission level as target, block it
+                target_is_developer = target.locks.check(target, "perm(Developer)")
+                target_is_admin = target.locks.check(target, "perm(Admin)")
+                target_is_builder = target.locks.check(target, "perm(Builder)")
+                
+                caller_is_developer = caller.locks.check(caller, "perm(Developer)")
+                caller_is_admin = caller.locks.check(caller, "perm(Admin)")
+                caller_is_builder = caller.locks.check(caller, "perm(Builder)")
+                
+                # Block if target outranks caller
+                if target_is_developer and not caller_is_developer:
+                    splattercast = ChannelDB.objects.get_channel("Splattercast")
+                    splattercast.msg(f"KNOCKOUT_BLOCKED: {caller.key} attempted @knockout on Developer {target.key} - insufficient permissions")
+                    caller.msg(f"|rYou cannot use this command on {target.key} - insufficient permissions.|n")
+                    return
+                elif target_is_admin and not (caller_is_developer or caller_is_admin):
+                    splattercast = ChannelDB.objects.get_channel("Splattercast")
+                    splattercast.msg(f"KNOCKOUT_BLOCKED: {caller.key} attempted @knockout on Admin {target.key} - insufficient permissions")
+                    caller.msg(f"|rYou cannot use this command on {target.key} - insufficient permissions.|n")
+                    return
+                elif (target_is_builder and caller_is_builder and 
+                      not (caller_is_admin or caller_is_developer) and not force_test):
+                    # Peer protection for builders
+                    splattercast = ChannelDB.objects.get_channel("Splattercast")
+                    splattercast.msg(f"KNOCKOUT_BLOCKED: Builder {caller.key} attempted @knockout on peer Builder {target.key} without 'force'")
+                    caller.msg(f"|yWarning: Using this command on a peer staff member. Add 'force' if you're sure.|n")
+                    return
         
         if target.is_unconscious():
             # Character is unconscious, wake them up using heal logic
@@ -555,6 +622,10 @@ class CmdTestUnconscious(Command):
                 
                 # This condition will directly reduce consciousness level, causing unconsciousness
                 # The medical system will process it organically
+                
+            # Log to splattercast for admin debugging
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            splattercast.msg(f"KNOCKOUT_CMD: {caller.key} used @knockout on {target.key} - applied consciousness suppression")
                 
             caller.msg(f"|r{target.key} has been given consciousness suppression via medical system.|n")
             if target != caller:

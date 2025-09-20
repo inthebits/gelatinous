@@ -256,13 +256,15 @@ class Character(ObjectParent, DefaultCharacter):
         """
         Show the unconsciousness message to character and room.
         Separated from _handle_unconsciousness for deferred messaging coordination.
+        
+        NOTE: Messages commented out to avoid duplicates with consciousness suppression conditions.
         """
-        self.msg("|rYou collapse, unconscious from your injuries!|n")
-        if self.location:
-            self.location.msg_contents(
-                f"|r{self.key} collapses, unconscious!|n",
-                exclude=self
-            )
+        # self.msg("|rYou collapse, unconscious from your injuries!|n")
+        # if self.location:
+        #     self.location.msg_contents(
+        #         f"|r{self.key} collapses, unconscious!|n",
+        #         exclude=self
+        #     )
         
         # Check if character is in combat and remove them
         combat_handler = getattr(self.ndb, "combat_handler", None)
