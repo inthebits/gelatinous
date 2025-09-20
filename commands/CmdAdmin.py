@@ -350,22 +350,39 @@ class CmdTestDeath(Command):
                 # This creates authentic medical conditions exactly as combat would
                 from world.medical.conditions import create_condition_from_damage
                 
-                # Create severe penetrating trauma that will cause death
-                # Equivalent to critical bullet wounds
-                fatal_conditions = create_condition_from_damage(
-                    damage_amount=50,  # Severe damage 
+                # Create multiple catastrophic wounds to ensure rapid death
+                # Equivalent to multiple gunshot wounds or severe arterial damage
+                
+                # Critical chest wound (heart/lung damage)
+                chest_conditions = create_condition_from_damage(
+                    damage_amount=75,  # Massive damage 
                     damage_type="bullet",  # Penetrating trauma
                     location="chest"
                 )
                 
-                # Add the organically created conditions
-                for condition in fatal_conditions:
+                # Critical neck wound (arterial bleeding)
+                neck_conditions = create_condition_from_damage(
+                    damage_amount=60,  # Severe arterial damage
+                    damage_type="blade",  # Deep cutting trauma
+                    location="neck"
+                )
+                
+                # Additional abdominal wound (organ damage)
+                abdomen_conditions = create_condition_from_damage(
+                    damage_amount=50,  # Major internal bleeding
+                    damage_type="bullet",  # Penetrating trauma
+                    location="abdomen"
+                )
+                
+                # Add all the organically created conditions
+                all_conditions = chest_conditions + neck_conditions + abdomen_conditions
+                for condition in all_conditions:
                     target.medical_state.add_condition(condition)
                 
                 # Save medical state to ensure persistence
                 target.save_medical_state()
                 
-                # These conditions will naturally cause death through blood loss
+                # These multiple severe conditions will cause rapid death through massive blood loss
                 # The medical system will process them organically
                 
             caller.msg(f"|r{target.key} has been given fatal bleeding conditions via medical system.|n")
