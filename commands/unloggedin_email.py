@@ -88,6 +88,12 @@ class CmdEmailCreate(MuxCommand):
         address = session.address
         arglist = self.arglist
 
+        # Check if account registration is enabled
+        if not settings.NEW_ACCOUNT_REGISTRATION_ENABLED:
+            session.msg("|rAccount creation is currently disabled.|n")
+            session.msg("Contact an administrator if you need an account.")
+            return
+
         if not arglist or len(arglist) < 2:
             session.msg("\n\r Usage: create <email@address.com> <password>")
             return

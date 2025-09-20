@@ -24,6 +24,46 @@ from django.conf import settings
 from evennia import utils
 
 
+def connection_screen():
+    """
+    Dynamic connection screen that adjusts based on settings.
+    """
+    # Build the create command line based on registration setting
+    if settings.NEW_ACCOUNT_REGISTRATION_ENABLED:
+        create_line = "__ Create  : |wcreate <email@address.com> <password>|n\n\nUse your email address to connect or create a new account."
+    else:
+        create_line = "__ Create  : |rAccount creation disabled|n\n\nUse your email address to connect to your existing account."
+    
+    return f"""
+
+|b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
+█▒▒▒▒▒▒▒▒▒ |g{settings.SERVERNAME} SYSTEM |n :::: SIGNAL {utils.get_evennia_version("short")} |b▒▒▒▒▒▒▒▒▒▒█
+█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
+
+[ WARNING: Signal instability detected. ]
+[ Color bars desaturated. ]
+[ Anomalous resonance detected at 7.8Hz. ] 
+
+YEAR: 198|u█|n (ENDLESS BROADCAST)
+LOCATION: PARTS UNKNOWN
+ 
+>> Streets: Flowing.
+>> Airwaves: Distorted.
+>> Flesh: Grainy.
+>> Memory: OFFLINE.
+
+__ Connect : |wconnect <email@address.com> <password>|n
+{create_line}
+Character creation happens after login.
+Enter |whelp|n for more info. |wlook|n will re-show this screen.
+
+|w>>> END OF TE▒T PATTERN. BROADCAST WI▒L NOT RESUME WITHOUT PROMPT.|n
+
+|b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█|n
+"""
+
+
+# Keep the old static version as fallback (though the function above will take precedence)
 CONNECTION_SCREEN = """
 
 |b█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒█
