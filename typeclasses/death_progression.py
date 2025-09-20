@@ -218,14 +218,24 @@ class DeathProgressionScript(DefaultScript):
         if not character:
             return
             
-        # Message to the dying character
-        dying_msg = (
-            "|RYou hover at the threshold between life and death.|n\n"
-            "|rYour essence flickers like a candle in the wind...|n\n"
-            "|RThere may still be time for intervention.|n\n"
-        )
-        # Center the message
-        centered_dying_msg = _center_text(dying_msg)
+        # Message to the dying character - center each line individually like curtain does
+        dying_lines = [
+            "You hover at the threshold between life and death.",
+            "Your essence flickers like a candle in the wind...",
+            "There may still be time for intervention."
+        ]
+        
+        # Get width for centering
+        width = _get_terminal_width()
+        
+        # Center each line individually and add color codes after centering
+        centered_dying_lines = []
+        centered_dying_lines.append("|R" + dying_lines[0].center(width) + "|n")
+        centered_dying_lines.append("|r" + dying_lines[1].center(width) + "|n") 
+        centered_dying_lines.append("|R" + dying_lines[2].center(width) + "|n")
+        
+        # Join with line breaks
+        centered_dying_msg = "\n".join(centered_dying_lines) + "\n"
         character.msg(centered_dying_msg)
         
         # Message to observers in the room
@@ -324,13 +334,22 @@ class DeathProgressionScript(DefaultScript):
         # Mark as permanently dead
         self.db.can_be_revived = False
         
-        # Send final death messages
-        final_msg = (
-            "|RThe darkness claims you completely...|n\n"
-            "|rYour consciousness fades into the void.|n"
-        )
-        # Center the final message
-        centered_final_msg = _center_text(final_msg)
+        # Send final death messages - center each line individually like curtain does
+        final_lines = [
+            "The darkness claims you completely...",
+            "Your consciousness fades into the void."
+        ]
+        
+        # Get width for centering  
+        width = _get_terminal_width()
+        
+        # Center each line individually and add color codes after centering
+        centered_final_lines = []
+        centered_final_lines.append("|R" + final_lines[0].center(width) + "|n")
+        centered_final_lines.append("|r" + final_lines[1].center(width) + "|n")
+        
+        # Join with line breaks
+        centered_final_msg = "\n".join(centered_final_lines) + "\n"
         character.msg(centered_final_msg)
         
         if character.location:
