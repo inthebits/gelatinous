@@ -108,30 +108,43 @@ def curtain_of_death(text, width=None, session=None):
     
     # Create dripping effect by removing characters in planned sequence
     # Process every 3rd character initially for the main text removal
-    for idx, _ in plan[::3]:  # Skip every 3rd character to reduce frame count
+    text_chars = [i for i, c in enumerate(chars) if c not in [" ", "▓", "█"]]  # Track text chars from start
+    
+    for frame_num, (idx, _) in enumerate(plan[::3]):  # Skip every 3rd character to reduce frame count
         if chars[idx] == " ":  # Skip spaces
             continue
         chars[idx] = " "  # 'Erase' the character
+        
+        # After a few frames, start also removing text characters exponentially
+        if frame_num > len(plan) // 6:  # Start text removal after 1/6 of main dripping
+            # Exponentially increase text character removal as dripping progresses
+            text_removal_rate = min(0.4, 0.05 * (frame_num - len(plan) // 6) ** 1.3)
+            chars_to_remove = int(len(text_chars) * text_removal_rate)
+            
+            for _ in range(min(chars_to_remove, len(text_chars))):
+                if text_chars:
+                    text_idx = text_chars.pop(random.randint(0, len(text_chars) - 1))
+                    chars[text_idx] = " "
+        
         frame = "".join(chars).center(width, "█")  # Replace the sea with different char
         frames.append(_colorize_evennia(frame))
     
-    # Aggressively remove remaining text characters to clear the message
+    # Clean up any remaining text characters more gently
     # Find all remaining non-space, non-block characters (the text)
-    text_chars = [i for i, c in enumerate(chars) if c not in [" ", "▓", "█"]]
+    remaining_text_chars = [i for i, c in enumerate(chars) if c not in [" ", "▓", "█"]]
     
-    # More gradually remove remaining text in 6-8 frames for smoother transition
-    text_removal_frames = 7
+    # More gradually remove remaining text in fewer frames since most should be gone
+    text_removal_frames = 4  # Reduced since most text should already be removed
     for frame_num in range(text_removal_frames):
-        if not text_chars:
+        if not remaining_text_chars:
             break
         
-        # Remove smaller chunks of remaining text each frame for smoother fade
-        chars_per_frame = max(1, len(text_chars) // (text_removal_frames - frame_num + 1))
-        chars_per_frame = min(chars_per_frame, max(1, len(text_chars) // 3))  # Never remove more than 1/3 at once
+        # Remove remaining text each frame 
+        chars_per_frame = max(1, len(remaining_text_chars) // (text_removal_frames - frame_num + 1))
         
-        for _ in range(min(chars_per_frame, len(text_chars))):
-            if text_chars:
-                idx = text_chars.pop(random.randint(0, len(text_chars) - 1))
+        for _ in range(min(chars_per_frame, len(remaining_text_chars))):
+            if remaining_text_chars:
+                idx = remaining_text_chars.pop(random.randint(0, len(remaining_text_chars) - 1))
                 chars[idx] = " "
         
         frame = "".join(chars).center(width, "█")
