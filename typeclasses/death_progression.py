@@ -239,8 +239,8 @@ class DeathProgressionScript(DefaultScript):
         # Message to observers in the room
         if character.location:
             observer_msg = (
-                f"|r{character.key} lies at death's door, their life hanging by a thread.|n\n"
-                f"|R{character.key}'s breathing is labored and irregular - they may still be saved.|n"
+                f"|n{character.key} lies at death's door, their life hanging by a thread.|n\n"
+                f"|n{character.key}'s breathing is labored and irregular - they may still be saved.|n"
             )
             character.location.msg_contents(observer_msg, exclude=[character])
             
@@ -286,7 +286,7 @@ class DeathProgressionScript(DefaultScript):
             },
             90: {  # 1.5 minutes - 4.5 minutes left
                 "dying": "|nThe world is a television with bad reception and someone keeps changing the channels. Static. Your grandmother's kitchen. Static. That time you nearly drowned. Static. The taste of blood and birthday cake and the sound of someone crying who might be you but probably isn't because you're somewhere else now, somewhere darker.|n\n",
-                "observer": "|r{name} makes a low, rattling sound in their throat.|n"
+                "observer": "|n{name} makes a low, rattling sound in their throat.|n"
             },
             120: {  # 2 minutes - 4 minutes left
                 "dying": "|nYou're watching yourself from the ceiling corner like a security camera recording the most boring crime ever committed. That body down there, that meat puppet with your face, it's leaking life like a punctured water balloon. And you're thinking, this is it? This is the grand finale? This wet, messy, disappointing finale?|n\n",
