@@ -38,7 +38,10 @@ class CmdEmailConnect(MuxCommand):
         password = arglist[1]
 
         # Look up account by email
-        account = AccountDB.objects.get_account_from_email(email)
+        try:
+            account = AccountDB.objects.filter(email__iexact=email).first()
+        except AccountDB.DoesNotExist:
+            account = None
         
         if not account:
             session.msg(f"No account found with email '{email}'.")
@@ -98,7 +101,8 @@ class CmdEmailCreate(MuxCommand):
             return
 
         # Check if email already exists
-        if AccountDB.objects.get_account_from_email(email):
+        existing_account = AccountDB.objects.filter(email__iexact=email).first()
+        if existing_account:
             session.msg(f"An account with email '{email}' already exists.")
             session.msg("Use 'connect' to log in to your existing account.")
             return
