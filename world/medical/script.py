@@ -266,6 +266,14 @@ class MedicalScript(DefaultScript):
         """Send consolidated pain messages to character based on total pain severity."""
         import random
         
+        # Check if character is dead - don't send personal messages to preserve death curtain
+        medical_state = getattr(self.obj, 'medical_state', None)
+        is_dead = medical_state and medical_state.is_dead()
+        
+        if is_dead:
+            # No pain messages for dead characters - preserve death curtain experience
+            return
+        
         # Personal pain messages based on severity
         if total_severity <= 5:
             pain_msgs = [

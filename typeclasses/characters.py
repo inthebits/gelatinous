@@ -565,9 +565,41 @@ class Character(ObjectParent, DefaultCharacter):
             self.location.msg_contents(f"{self.key} collapses unconscious.", exclude=[self])
         self.msg("You lose consciousness and slip into darkness...")
 
+    def _filtered_death_msg(self, text=None, from_obj=None, session=None, **kwargs):
+        """
+        Filtered message method for dead characters. Blocks most messages for immersive death experience.
+        
+        Only allows system messages, staff messages, and death progression messages.
+        
+        Args:
+            text: Message text to filter
+            from_obj: Object sending the message
+            session: Session receiving message
+            **kwargs: Additional message parameters
+        """
+        if not text:
+            return
+            
+        # Allow system messages (no from_obj) 
+        if not from_obj:
+            return self._original_msg(text, from_obj=from_obj, session=session, **kwargs)
+            
+        # Allow messages from accounts/staff (future admin chat)
+        if hasattr(from_obj, 'locks') and from_obj.locks.check(from_obj, "perm(Builder)"):
+            return self._original_msg(text, from_obj=from_obj, session=session, **kwargs)
+            
+        # Allow death progression messages from curtain of death
+        if hasattr(from_obj, 'key') and 'curtain' in str(from_obj.key).lower():
+            return self._original_msg(text, from_obj=from_obj, session=session, **kwargs)
+            
+        # Block all other messages (social commands, medical, general chat, etc.)
+        # This creates the complete immersive death curtain experience
+        return
+
     def apply_death_state(self, force_test=False):
         """
         Apply death command restrictions by replacing the default cmdset.
+        Also applies death curtain message filtering for immersive death experience.
         
         Args:
             force_test (bool): If True, apply restrictions even for staff (for testing)
@@ -577,6 +609,11 @@ class Character(ObjectParent, DefaultCharacter):
             
         # Remove unconscious restrictions first if they exist
         self.remove_unconscious_state()
+        
+        # Apply death curtain message filtering
+        if not hasattr(self, '_original_msg'):
+            self._original_msg = self.msg
+            self.msg = self._filtered_death_msg
         
         # Check if character has builder/developer permissions
         if not force_test and self.locks.check(self, "perm(Builder)"):
@@ -622,9 +659,14 @@ class Character(ObjectParent, DefaultCharacter):
 
     def remove_death_state(self):
         """
-        Remove death command restrictions by restoring the normal default cmdset.
-        Used for revival mechanics.
+        Remove death command restrictions and restore normal cmdset.
+        Also restores normal message handling.
         """
+        # Restore original message method
+        if hasattr(self, '_original_msg'):
+            self.msg = self._original_msg
+            delattr(self, '_original_msg')
+            
         try:
             # Remove current default cmdset (should be death cmdset)
             self.cmdset.remove_default()
