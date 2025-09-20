@@ -374,35 +374,35 @@ class CmdTestDeath(Command):
                 
                 # Critical chest wound (heart/lung damage) - 225 damage
                 chest_conditions = create_condition_from_damage(
-                    damage_amount=225,  # Massive damage (75 * 3)
+                    damage_amount=666,  # Massive damage (75 * 3)
                     damage_type="bullet",  # Penetrating trauma
                     location="chest"
                 )
                 
                 # Critical neck wound (arterial bleeding) - 180 damage  
                 neck_conditions = create_condition_from_damage(
-                    damage_amount=180,  # Severe arterial damage (60 * 3)
+                    damage_amount=666,  # Severe arterial damage (60 * 3)
                     damage_type="blade",  # Deep cutting trauma
                     location="neck"
                 )
                 
                 # Additional abdominal wound (organ damage) - 150 damage
                 abdomen_conditions = create_condition_from_damage(
-                    damage_amount=150,  # Major internal bleeding (50 * 3)
+                    damage_amount=666,  # Major internal bleeding (50 * 3)
                     damage_type="bullet",  # Penetrating trauma
                     location="abdomen"
                 )
                 
                 # Major head trauma (brain damage) - 120 damage
                 head_conditions = create_condition_from_damage(
-                    damage_amount=120,  # Severe head trauma (40 * 3)
+                    damage_amount=666,  # Severe head trauma (40 * 3)
                     damage_type="blunt",  # Blunt force trauma
                     location="head"
                 )
                 
                 # Critical limb severing (femoral artery) - 90 damage
                 leg_conditions = create_condition_from_damage(
-                    damage_amount=90,  # Major arterial damage (30 * 3)
+                    damage_amount=666,  # Major arterial damage (30 * 3)
                     damage_type="blade",  # Cutting trauma
                     location="left_leg"
                 )
