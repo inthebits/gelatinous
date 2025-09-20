@@ -139,27 +139,15 @@ class Character(ObjectParent, DefaultCharacter):
             
         # Death curtain filtering for dead characters
         if not text:
-            try:
-                splattercast.msg(f"CHAR_FILTER_DEBUG: Blocking empty message to dead {self.key}")
-            except:
-                pass
             return
             
         # Block most system messages (from_obj=None), but allow death curtain animations
         if not from_obj:
             # Allow death curtain animations (contains block characters)
             if '▓' in str(text):
-                try:
-                    splattercast.msg(f"CHAR_FILTER_ALLOW: Death curtain animation to dead {self.key}")
-                except:
-                    pass
                 return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
             else:
                 # Block other system messages (combat, explosives, medical, etc.)
-                try:
-                    splattercast.msg(f"CHAR_FILTER_BLOCK: System message (from_obj=None) to dead {self.key}")
-                except:
-                    pass
                 return
             
         # Allow messages from staff (for admin commands, but not social)
@@ -167,39 +155,19 @@ class Character(ObjectParent, DefaultCharacter):
             # Even staff social messages should be blocked for immersion
             # But allow admin command messages through
             if not self._is_social_message(text, kwargs):
-                try:
-                    splattercast.msg(f"CHAR_FILTER_ALLOW: Staff non-social message to dead {self.key}")
-                except:
-                    pass
                 return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
             else:
-                try:
-                    splattercast.msg(f"CHAR_FILTER_BLOCK: Staff social message to dead {self.key}")
-                except:
-                    pass
                 return
             
         # Allow death progression messages from curtain of death
         if hasattr(from_obj, 'key') and 'curtain' in str(from_obj.key).lower():
-            try:
-                splattercast.msg(f"CHAR_FILTER_ALLOW: Death curtain message to dead {self.key}")
-            except:
-                pass
             return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
             
         # Allow death progression script messages
         if hasattr(from_obj, 'key') and 'death_progression' in str(from_obj.key).lower():
-            try:
-                splattercast.msg(f"CHAR_FILTER_ALLOW: Death progression script message to dead {self.key}")
-            except:
-                pass
             return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
             
         # Block all other messages (social commands, medical, etc.)
-        try:
-            splattercast.msg(f"CHAR_FILTER_BLOCK: Blocking message to dead {self.key} from {from_obj}")
-        except:
-            pass
         return
         
     def _is_social_message(self, text, kwargs):
