@@ -117,6 +117,66 @@ class Character(ObjectParent, DefaultCharacter):
         from world.medical.utils import save_medical_state
         save_medical_state(self)
 
+    def msg(self, text=None, from_obj=None, session=None, **kwargs):
+        """
+        Override msg method to implement death curtain message filtering.
+        
+        Dead characters receive only essential messages for immersive death experience.
+        This catches ALL messages to characters, including combat, explosives, admin commands.
+        """
+        # If not dead, use normal messaging
+        if not self.is_dead():
+            return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
+            
+        # Death curtain filtering for dead characters
+        if not text:
+            return
+            
+        # Allow system messages (no from_obj) 
+        if not from_obj:
+            return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
+            
+        # Allow messages from staff (for admin commands, but not social)
+        if hasattr(from_obj, 'locks') and from_obj.locks.check(from_obj, "perm(Builder)"):
+            # Even staff social messages should be blocked for immersion
+            # But allow admin command messages through
+            if not self._is_social_message(text, kwargs):
+                return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
+            
+        # Allow death progression messages from curtain of death
+        if hasattr(from_obj, 'key') and 'curtain' in str(from_obj.key).lower():
+            return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
+            
+        # Block all other messages (social commands, combat, explosives, medical, etc.)
+        # This creates the complete immersive death curtain experience
+        return
+        
+    def _is_social_message(self, text, kwargs):
+        """
+        Determine if this is a social message that should be blocked even for staff.
+        
+        Args:
+            text: Message text
+            kwargs: Message parameters
+            
+        Returns:
+            bool: True if this is a social message, False otherwise
+        """
+        # Check for social message indicators
+        if isinstance(kwargs.get('type'), str):
+            social_types = ['say', 'pose', 'emote', 'tell', 'whisper', 'ooc']
+            if kwargs['type'] in social_types:
+                return True
+                
+        # Check text patterns for social messages
+        if isinstance(text, str):
+            social_patterns = [' says, "', ' tells you', ' whispers', ' emotes']
+            for pattern in social_patterns:
+                if pattern in text:
+                    return True
+                    
+        return False
+
 # Mortality Management
     def take_damage(self, amount, location="chest", injury_type="generic", target_organ=None):
         """
