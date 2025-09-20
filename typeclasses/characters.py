@@ -117,36 +117,6 @@ class Character(ObjectParent, DefaultCharacter):
         from world.medical.utils import save_medical_state
         save_medical_state(self)
 
-    def msg(self, text=None, from_obj=None, session=None, **kwargs):
-        """
-        Override msg method to implement death curtain message filtering.
-        
-        Dead characters receive only essential messages for immersive death experience.
-        """
-        # If not dead, use normal messaging
-        if not self.is_dead():
-            return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
-            
-        # Death curtain filtering for dead characters
-        if not text:
-            return
-            
-        # Allow system messages (no from_obj) 
-        if not from_obj:
-            return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
-            
-        # Allow messages from accounts/staff (future admin chat)
-        if hasattr(from_obj, 'locks') and from_obj.locks.check(from_obj, "perm(Builder)"):
-            return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
-            
-        # Allow death progression messages from curtain of death
-        if hasattr(from_obj, 'key') and 'curtain' in str(from_obj.key).lower():
-            return super().msg(text=text, from_obj=from_obj, session=session, **kwargs)
-            
-        # Block all other messages (social commands, medical, general chat, etc.)
-        # This creates the complete immersive death curtain experience
-        return
-
 # Mortality Management
     def take_damage(self, amount, location="chest", injury_type="generic", target_organ=None):
         """

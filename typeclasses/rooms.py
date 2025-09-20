@@ -79,6 +79,14 @@ class Room(ObjectParent, DefaultRoom):
         Filters out social messages (say, emote, etc.) from reaching dead characters
         while allowing essential messages (system, staff, death progression) through.
         """
+        # Debug logging
+        try:
+            from evennia.comms.models import ChannelDB
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            splattercast.msg(f"DEATH_CURTAIN_DEBUG: msg_contents called with text='{text[:50]}...', from_obj={from_obj}")
+        except:
+            pass
+            
         if not exclude:
             exclude = []
         elif not isinstance(exclude, (list, tuple)):
@@ -93,10 +101,25 @@ class Room(ObjectParent, DefaultRoom):
         for obj in all_recipients:
             # Check if this is a dead character
             if (hasattr(obj, 'is_dead') and callable(obj.is_dead) and obj.is_dead()):
+                # Debug logging
+                try:
+                    splattercast.msg(f"DEATH_CURTAIN_DEBUG: Found dead character {obj.key}, checking message")
+                except:
+                    pass
+                    
                 # Apply death curtain filtering
                 if not self._should_allow_message_to_dead(text, from_obj):
                     # Add dead character to exclude list to block the message
                     final_exclude.append(obj)
+                    try:
+                        splattercast.msg(f"DEATH_CURTAIN_BLOCK: Blocking message to dead {obj.key}")
+                    except:
+                        pass
+                else:
+                    try:
+                        splattercast.msg(f"DEATH_CURTAIN_ALLOW: Allowing message to dead {obj.key}")
+                    except:
+                        pass
         
         # Call parent with updated exclude list
         return super().msg_contents(text, exclude=final_exclude, from_obj=from_obj, mapping=mapping, **kwargs)
