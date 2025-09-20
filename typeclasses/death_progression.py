@@ -218,7 +218,7 @@ class DeathProgressionScript(DefaultScript):
         """Get the progression messages for different time intervals."""
         return {
             30: {  # 30 seconds - 5.5 minutes left
-                "dying": "|NTime becomes elastic, like chewing gum stretched between your teeth and the fluorescent lights are humming a song you remember from childhood but can't quite place. The edges of everything are soft now, melting like crayons left in a hot car, and you're floating in this warm red soup that tastes like copper pennies and your mother's disappointment.|n",
+                "dying": "|nTime becomes elastic, like chewing gum stretched between your teeth and the fluorescent lights are humming a song you remember from childhood but can't quite place. The edges of everything are soft now, melting like crayons left in a hot car, and you're floating in this warm red soup that tastes like copper pennies and your mother's disappointment.|n",
                 "observer": "|n{name}'s eyes roll back, showing only whites.|n"
             },
             60: {  # 1 minute - 5 minutes left
@@ -226,7 +226,7 @@ class DeathProgressionScript(DefaultScript):
                 "observer": "|n{name}'s breathing becomes shallow and erratic.|n"
             },
             90: {  # 1.5 minutes - 4.5 minutes left
-                "dying": "|NThe world is a television with bad reception and someone keeps changing the channels. Static. Your grandmother's kitchen. Static. That time you nearly drowned. Static. The taste of blood and birthday cake and the sound of someone crying who might be you but probably isn't because you're somewhere else now, somewhere darker.|n",
+                "dying": "|nThe world is a television with bad reception and someone keeps changing the channels. Static. Your grandmother's kitchen. Static. That time you nearly drowned. Static. The taste of blood and birthday cake and the sound of someone crying who might be you but probably isn't because you're somewhere else now, somewhere darker.|n",
                 "observer": "|r{name} makes a low, rattling sound in their throat.|n"
             },
             120: {  # 2 minutes - 4 minutes left
@@ -234,7 +234,7 @@ class DeathProgressionScript(DefaultScript):
                 "observer": "|n{name}'s skin takes on a waxy, gray pallor.|n"
             },
             150: {  # 2.5 minutes - 3.5 minutes left
-                "dying": "|NMemory becomes a kaleidoscope where every piece is broken glass and every turn cuts deeper. You taste the last cigarette you ever smoked, feel the first hand you ever held, hear the last lie you ever told, and it's all happening simultaneously in this carnival of consciousness where the rides are broken and the music is playing backward.|n",
+                "dying": "|nMemory becomes a kaleidoscope where every piece is broken glass and every turn cuts deeper. You taste the last cigarette you ever smoked, feel the first hand you ever held, hear the last lie you ever told, and it's all happening simultaneously in this carnival of consciousness where the rides are broken and the music is playing backward.|n",
                 "observer": "|n{name}'s fingers twitch spasmodically.|n"
             },
             180: {  # 3 minutes - 3 minutes left
@@ -242,7 +242,7 @@ class DeathProgressionScript(DefaultScript):
                 "observer": "|n{name}'s body convulses once, violently.|n"
             },
             210: {  # 3.5 minutes - 2.5 minutes left
-                "dying": "|NYou're a radio losing signal, static eating away at the song of yourself until there's nothing left but the spaces between the notes. The pain is gone now, replaced by this vast emptiness that feels like Sunday afternoons and unfinished conversations and all the things you meant to say but never did.|n",
+                "dying": "|nYou're a radio losing signal, static eating away at the song of yourself until there's nothing left but the spaces between the notes. The pain is gone now, replaced by this vast emptiness that feels like Sunday afternoons and unfinished conversations and all the things you meant to say but never did.|n",
                 "observer": "|n{name} lies perfectly still except for the barely perceptible rise and fall of their chest.|n"
             },
             240: {  # 4 minutes - 2 minutes left
@@ -250,7 +250,7 @@ class DeathProgressionScript(DefaultScript):
                 "observer": "|n{name}'s breathing has become so faint it's almost imperceptible.|n"
             },
             270: {  # 4.5 minutes - 1.5 minutes left
-                "dying": "|NThe last thoughts are like photographs burning in a fire, curling at the edges before disappearing into ash. You remember everything and nothing. You are everyone and no one. The boundary between self and not-self becomes as meaningless as the difference between Tuesday and the color blue.|n",
+                "dying": "|nThe last thoughts are like photographs burning in a fire, curling at the edges before disappearing into ash. You remember everything and nothing. You are everyone and no one. The boundary between self and not-self becomes as meaningless as the difference between Tuesday and the color blue.|n",
                 "observer": "|n{name}'s lips have turned blue.|n"
             },
             300: {  # 5 minutes - 1 minute left
@@ -258,7 +258,7 @@ class DeathProgressionScript(DefaultScript):
                 "observer": "|n{name} doesn't appear to be breathing anymore.|n"
             },
             330: {  # 5.5 minutes - 30 seconds left
-                "dying": "|N... ...you are... ...you... ...|n",
+                "dying": "|n... ...you are... ...you... ...|n",
                 "observer": "|n{name} lies motionless, their body completely still.|n"
             }
         }
