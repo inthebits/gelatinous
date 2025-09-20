@@ -119,17 +119,17 @@ def curtain_of_death(text, width=None, session=None):
     # Find all remaining non-space, non-block characters (the text)
     text_chars = [i for i, c in enumerate(chars) if c not in [" ", "▓", "█"]]
     
-    # Quickly remove remaining text in 3-4 frames
-    text_removal_frames = 4
+    # More gradually remove remaining text in 6-8 frames for smoother transition
+    text_removal_frames = 7
     for frame_num in range(text_removal_frames):
         if not text_chars:
             break
         
-        # Remove a good chunk of remaining text each frame
-        chars_to_remove = len(text_chars) // (text_removal_frames - frame_num)
-        chars_to_remove = max(1, chars_to_remove)
+        # Remove smaller chunks of remaining text each frame for smoother fade
+        chars_per_frame = max(1, len(text_chars) // (text_removal_frames - frame_num + 1))
+        chars_per_frame = min(chars_per_frame, max(1, len(text_chars) // 3))  # Never remove more than 1/3 at once
         
-        for _ in range(min(chars_to_remove, len(text_chars))):
+        for _ in range(min(chars_per_frame, len(text_chars))):
             if text_chars:
                 idx = text_chars.pop(random.randint(0, len(text_chars) - 1))
                 chars[idx] = " "
