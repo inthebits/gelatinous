@@ -339,6 +339,85 @@ def create_condition_from_damage(damage_amount, damage_type, location=None):
     return conditions
 
 
+class ConsciousnessSuppressionCondition(MedicalCondition):
+    """
+    Condition that directly suppresses consciousness levels.
+    
+    This represents the effects of drugs, knockout trauma, sedatives, 
+    anesthesia, or other factors that directly impair consciousness
+    without necessarily causing physical damage.
+    """
+    
+    def __init__(self, severity, location=None, suppression_type="knockout"):
+        super().__init__("consciousness_suppression", severity, location, tick_interval=180)  # 3 minute interval
+        self.suppression_type = suppression_type  # "knockout", "sedative", "anesthesia", "trauma"
+        self.consciousness_penalty = min(1.0, severity * 0.15)  # Up to 1.5 consciousness reduction at severity 10
+        
+    def tick_effect(self, character):
+        """Consciousness suppression naturally diminishes over time."""
+        from world.combat.constants import SPLATTERCAST_CHANNEL
+        
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Natural recovery from consciousness suppression 
+        # Different types recover at different rates
+        recovery_rates = {
+            "knockout": 25,      # Fast recovery from blunt trauma
+            "sedative": 15,      # Moderate recovery from drugs  
+            "anesthesia": 10,    # Slower recovery from medical anesthesia
+            "trauma": 20         # Moderate recovery from head trauma
+        }
+        
+        recovery_chance = recovery_rates.get(self.suppression_type, 20)
+        
+        if random.randint(1, 100) <= recovery_chance:
+            self.severity = max(0, self.severity - 1)
+            # Recalculate consciousness penalty
+            self.consciousness_penalty = min(1.0, self.severity * 0.15)
+            splattercast.msg(f"CONSCIOUSNESS_RECOVERY: {character.key} {self.suppression_type} severity reduced to {self.severity} (penalty: {self.consciousness_penalty:.2f})")
+            
+    def should_end(self):
+        """Consciousness suppression ends when severity reaches 0."""
+        return self.severity <= 0
+        
+    def get_consciousness_penalty(self):
+        """Return direct consciousness penalty from this condition."""
+        return self.consciousness_penalty
+        
+    def apply_treatment(self, treatment_quality="adequate"):
+        """Apply medical treatment to consciousness suppression."""
+        super().apply_treatment(treatment_quality)
+        
+        # Medical treatment can help with some types of suppression
+        if self.suppression_type in ["sedative", "anesthesia"]:
+            effectiveness = HEALING_EFFECTIVENESS.get(treatment_quality, 0.5)
+            severity_reduction = max(1, int(self.severity * effectiveness))
+            self.severity = max(0, self.severity - severity_reduction)
+            self.consciousness_penalty = min(1.0, self.severity * 0.15)
+        
+    def to_dict(self):
+        """Serialize condition for persistence."""
+        data = super().to_dict()
+        data["suppression_type"] = self.suppression_type
+        data["consciousness_penalty"] = self.consciousness_penalty
+        return data
+        
+    @classmethod
+    def from_dict(cls, data):
+        """Deserialize condition from persistence."""
+        condition = cls(
+            data.get("severity", 1),
+            data.get("location"),
+            data.get("suppression_type", "knockout")
+        )
+        condition.consciousness_penalty = data.get("consciousness_penalty", 0.15)
+        condition.max_severity = data.get("max_severity", condition.severity)
+        condition.tick_interval = data.get("tick_interval", 180)
+        condition.requires_ticker = data.get("requires_ticker", True)
+        condition.treated = data.get("treated", False)
+        return condition
+
+
 def remove_condition_by_type(character, condition_type):
     """
     Remove all conditions of a specific type from character.

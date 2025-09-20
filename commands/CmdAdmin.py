@@ -270,14 +270,17 @@ class CmdHeal(Command):
 
 class CmdTestDeath(Command):
     """
-    Test death state using organic medical conditions.
+    Test death state using consciousness suppression and systemic conditions.
     
     Usage:
         @testdeath [<target>] [force]
+        @murder [<target>] [force]
         
-    This command creates severe bleeding conditions that naturally cause death
-    or fully heals to revive from death. Uses real medical conditions, not 
-    direct manipulation of vital signs.
+    This command creates a fatal combination of consciousness suppression and 
+    moderate bleeding/pain conditions that naturally cause death, or fully heals 
+    to revive from death. Uses realistic medical conditions that simulate controlled 
+    death (like overdose) rather than massive trauma.
+    
     If no target is specified, affects yourself.
     If 'force' is specified, applies restrictions even to staff.
     """
@@ -311,7 +314,7 @@ class CmdTestDeath(Command):
             if hasattr(target, 'medical_state') and target.medical_state:
                 medical_state = target.medical_state
                 
-                # Clear all conditions
+                # Clear all conditions (including consciousness suppression)
                 medical_state.conditions.clear()
                 
                 # Stop medical script since no conditions remain
@@ -354,9 +357,8 @@ class CmdTestDeath(Command):
                     caller.location.msg_contents(f"|R{caller.key} snaps their fingers menacingly at themselves...|n", exclude=[caller])
                     caller.msg(f"|RYou snap your fingers menacingly at yourself...|n")
                 
-                # Use the medical system's natural damage-to-condition conversion
-                # This creates authentic medical conditions exactly as combat would
-                from world.medical.conditions import create_condition_from_damage
+                # Import condition classes
+                from world.medical.conditions import ConsciousnessSuppressionCondition, PainCondition, BleedingCondition
                 
                 def delayed_message(func, delay_time):
                     """Helper to delay message functions"""
@@ -369,74 +371,57 @@ class CmdTestDeath(Command):
                     thread.daemon = True
                     thread.start()
                 
-                # Create multiple catastrophic wounds to ensure rapid death
-                # Tripled damage amounts for faster death (3x multiplier)
+                # Create a fatal combination using consciousness suppression and moderate damage
+                # This simulates a more controlled death like drug overdose or poisoning
                 
-                # Critical chest wound (heart/lung damage) - 225 damage
-                chest_conditions = create_condition_from_damage(
-                    damage_amount=666,  # Massive damage (75 * 3)
-                    damage_type="bullet",  # Penetrating trauma
+                # Severe consciousness suppression (anesthesia-like effect)
+                consciousness_suppression = ConsciousnessSuppressionCondition(
+                    severity=10,  # Maximum severity = 1.5 consciousness penalty
+                    location="head",
+                    suppression_type="anesthesia"  # Slower recovery type
+                )
+                
+                # Moderate systemic bleeding to ensure death 
+                systemic_bleeding = BleedingCondition(
+                    severity=8,  # Significant bleeding
                     location="chest"
                 )
                 
-                # Critical neck wound (arterial bleeding) - 180 damage  
-                neck_conditions = create_condition_from_damage(
-                    damage_amount=666,  # Severe arterial damage (60 * 3)
-                    damage_type="blade",  # Deep cutting trauma
-                    location="neck"
-                )
-                
-                # Additional abdominal wound (organ damage) - 150 damage
-                abdomen_conditions = create_condition_from_damage(
-                    damage_amount=666,  # Major internal bleeding (50 * 3)
-                    damage_type="bullet",  # Penetrating trauma
+                # High pain to compound unconsciousness effects
+                systemic_pain = PainCondition(
+                    severity=7,  # High pain
                     location="abdomen"
                 )
                 
-                # Major head trauma (brain damage) - 120 damage
-                head_conditions = create_condition_from_damage(
-                    damage_amount=666,  # Severe head trauma (40 * 3)
-                    damage_type="blunt",  # Blunt force trauma
-                    location="head"
-                )
-                
-                # Critical limb severing (femoral artery) - 90 damage
-                leg_conditions = create_condition_from_damage(
-                    damage_amount=666,  # Major arterial damage (30 * 3)
-                    damage_type="blade",  # Cutting trauma
-                    location="left_leg"
-                )
-                
-                # Add all the organically created conditions
-                all_conditions = (chest_conditions + neck_conditions + abdomen_conditions + 
-                                head_conditions + leg_conditions)
-                for condition in all_conditions:
-                    target.medical_state.add_condition(condition)
+                # Add all conditions to create a fatal combination
+                target.medical_state.add_condition(consciousness_suppression)
+                target.medical_state.add_condition(systemic_bleeding)
+                target.medical_state.add_condition(systemic_pain)
                 
                 # Save medical state to ensure persistence
                 target.save_medical_state()
                 
-                # Delayed theatrical messages with gore
-                def show_bleeding_onset():
-                    target.msg(f"|RYour vision blurs as crimson begins to seep from every pore, your body betraying you in the most visceral way possible.|n")
+                # Delayed theatrical messages with medical overtones
+                def show_suppression_onset():
+                    target.msg(f"|RYour vision blurs and your limbs grow heavy as an overwhelming lethargy seeps through your body.|n")
                     if target.location:
-                        target.location.msg_contents(f"|R{target.key} begins bleeding from every orifice and pore, crimson spreading like spilled ink across their skin.|n", exclude=[target])
+                        target.location.msg_contents(f"|R{target.key} sways unsteadily, their eyes losing focus as if fighting against invisible weights.|n", exclude=[target])
                 
-                def show_bleeding_intensifies():
-                    target.msg(f"|RThe metallic taste of copper floods your mouth as rivulets of blood trace delicate patterns down your face and hands.|n")
+                def show_medical_crisis():
+                    target.msg(f"|RYour breathing becomes labored and shallow as your body systems begin to fail in cascade.|n")
                     if target.location:
-                        target.location.msg_contents(f"|RThe bleeding intensifies, {target.key}'s clothing darkening with spreading stains as life itself begins to drain away.|n", exclude=[target])
+                        target.location.msg_contents(f"|R{target.key}'s breathing becomes erratic and strained, their complexion taking on an unhealthy pallor.|n", exclude=[target])
                 
                 # Schedule the dramatic messages
-                delayed_message(show_bleeding_onset, 3)
-                delayed_message(show_bleeding_intensifies, 6)
+                delayed_message(show_suppression_onset, 3)
+                delayed_message(show_medical_crisis, 6)
                 
-                # These multiple severe conditions will cause rapid death through massive blood loss
-                # The medical system will process them organically
+                # These conditions will cause death through consciousness suppression and blood loss
+                # More realistic than massive trauma
                 
-            caller.msg(f"|r{target.key} has been given fatal bleeding conditions via medical system.|n")
+            caller.msg(f"|r{target.key} has been given fatal consciousness suppression and systemic conditions via medical system.|n")
             if target != caller:
-                target.msg("|rYou have been given fatal bleeding conditions via medical system.|n")
+                target.msg("|rYou have been given fatal consciousness suppression and systemic conditions via medical system.|n")
             if force_test:
                 caller.msg("|yForce mode: restrictions apply even to staff.|n")
                 if target != caller:
@@ -445,14 +430,17 @@ class CmdTestDeath(Command):
 
 class CmdTestUnconscious(Command):
     """
-    Test unconscious state using organic medical conditions.
+    Test unconscious state using consciousness suppression conditions.
     
     Usage:
         @testunconscious [<target>] [force]
+        @knockout [<target>] [force]
         
-    This command creates pain and bleeding conditions that naturally cause 
-    unconsciousness or fully heals to awaken from unconsciousness. Uses real 
-    medical conditions, not direct manipulation of vital signs.
+    This command creates consciousness suppression conditions that directly 
+    reduce consciousness levels, or fully heals to awaken from unconsciousness. 
+    Uses consciousness suppression rather than damage-based methods, making it
+    ideal for testing drug effects, sedatives, or other non-traumatic knockouts.
+    
     If no target is specified, affects yourself.
     If 'force' is specified, applies restrictions even to staff.
     """
@@ -486,17 +474,19 @@ class CmdTestUnconscious(Command):
             if hasattr(target, 'medical_state') and target.medical_state:
                 medical_state = target.medical_state
                 
+                # Remove consciousness suppression conditions specifically
+                conditions_to_remove = []
+                for condition in list(medical_state.conditions):
+                    if condition.condition_type == 'consciousness_suppression':
+                        conditions_to_remove.append(condition)
+                
+                for condition in conditions_to_remove:
+                    medical_state.conditions.remove(condition)
+                
                 # Restore consciousness to normal level
                 medical_state.consciousness = 1.0
                 medical_state.pain_level = 0.0  # Remove pain that might cause unconsciousness
                 medical_state.blood_level = 100.0  # Restore blood level
-                
-                # Clear any conditions that might cause unconsciousness
-                conditions_removed = []
-                for condition in list(medical_state.conditions):
-                    if condition.type in ['severe_bleeding', 'critical_bleeding']:
-                        medical_state.conditions.remove(condition)
-                        conditions_removed.append(condition.type)
                 
                 # Stop medical script if no conditions remain
                 if not medical_state.conditions:
@@ -518,34 +508,32 @@ class CmdTestUnconscious(Command):
             if target != caller:
                 target.msg("|gYou have been awakened from unconsciousness via medical system.|n")
         else:
-            # Character is conscious, make them unconscious using medical system conditions
+            # Character is conscious, make them unconscious using consciousness suppression
             if hasattr(target, 'medical_state') and target.medical_state:
                 
-                # Use the medical system's natural damage-to-condition conversion
-                # This creates authentic medical conditions exactly as combat would
-                from world.medical.conditions import create_condition_from_damage
+                # Import the new consciousness suppression condition
+                from world.medical.conditions import ConsciousnessSuppressionCondition
                 
-                # Create moderate blunt trauma that will cause unconsciousness
-                # Equivalent to severe beating or head trauma
-                unconscious_conditions = create_condition_from_damage(
-                    damage_amount=25,  # Moderate damage causing pain/bleeding
-                    damage_type="blunt",  # Blunt trauma causes pain
-                    location="head"
+                # Create a knockout condition that directly suppresses consciousness
+                # Severity 6 = 0.9 consciousness penalty (almost complete unconsciousness)
+                knockout_condition = ConsciousnessSuppressionCondition(
+                    severity=6,
+                    location="head",
+                    suppression_type="knockout"
                 )
                 
-                # Add the organically created conditions
-                for condition in unconscious_conditions:
-                    target.medical_state.add_condition(condition)
+                # Add the consciousness suppression condition
+                target.medical_state.add_condition(knockout_condition)
                 
                 # Save medical state to ensure persistence  
                 target.save_medical_state()
                 
-                # These conditions will naturally cause unconsciousness through pain and blood loss
-                # The medical system will process them organically
+                # This condition will directly reduce consciousness level, causing unconsciousness
+                # The medical system will process it organically
                 
-            caller.msg(f"|r{target.key} has been given conditions causing unconsciousness via medical system.|n")
+            caller.msg(f"|r{target.key} has been given consciousness suppression via medical system.|n")
             if target != caller:
-                target.msg("|rYou have been given conditions causing unconsciousness via medical system.|n")
+                target.msg("|rYou have been given consciousness suppression via medical system.|n")
             if force_test:
                 caller.msg("|yForce mode: restrictions apply even to staff.|n")
                 if target != caller:

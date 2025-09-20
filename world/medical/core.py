@@ -503,7 +503,13 @@ class MedicalState:
         # Blood loss penalty
         blood_penalty = max(0.0, (100.0 - self.blood_level) / 100.0)
         
-        self.consciousness = max(0.0, base_consciousness - pain_penalty - blood_penalty)
+        # Consciousness suppression penalty from medical conditions
+        consciousness_suppression_penalty = 0.0
+        for condition in self.conditions:
+            if hasattr(condition, 'get_consciousness_penalty'):
+                consciousness_suppression_penalty += condition.get_consciousness_penalty()
+        
+        self.consciousness = max(0.0, base_consciousness - pain_penalty - blood_penalty - consciousness_suppression_penalty)
         
         # Mark cache as dirty after vital sign updates
         self._cache_dirty = True
