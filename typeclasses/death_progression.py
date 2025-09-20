@@ -243,7 +243,7 @@ class DeathProgressionScript(DefaultScript):
             },
             210: {  # 3.5 minutes - 2.5 minutes left
                 "dying": "|NYou're a radio losing signal, static eating away at the song of yourself until there's nothing left but the spaces between the notes. The pain is gone now, replaced by this vast emptiness that feels like Sunday afternoons and unfinished conversations and all the things you meant to say but never did.|n",
-                "observer": "|r{name} lies perfectly still except for the barely perceptible rise and fall of their chest.|n"
+                "observer": "|n{name} lies perfectly still except for the barely perceptible rise and fall of their chest.|n"
             },
             240: {  # 4 minutes - 2 minutes left
                 "dying": "|nYou're becoming weather now, becoming the wind that carries other people's secrets, the rain that washes away their sins. You're evaporating into stories that will never be told, jokes that will never be finished, dreams that will never be dreamed. And it's okay. It's all okay. Everything is okay in this place between places.|n",
@@ -251,7 +251,7 @@ class DeathProgressionScript(DefaultScript):
             },
             270: {  # 4.5 minutes - 1.5 minutes left
                 "dying": "|NThe last thoughts are like photographs burning in a fire, curling at the edges before disappearing into ash. You remember everything and nothing. You are everyone and no one. The boundary between self and not-self becomes as meaningless as the difference between Tuesday and the color blue.|n",
-                "observer": "|r{name}'s lips have turned blue.|n"
+                "observer": "|n{name}'s lips have turned blue.|n"
             },
             300: {  # 5 minutes - 1 minute left
                 "dying": "|nYou're the echo of an echo, the shadow of a shadow, the dream that someone else is forgetting. The darkness isn't coming for you anymore because you ARE the darkness, you are the silence, you are the space where something used to be. And in this final moment of dissolution, you understand everything and nothing at all.|n",
@@ -281,7 +281,7 @@ class DeathProgressionScript(DefaultScript):
         character.msg(final_msg)
         
         if character.location:
-            observer_msg = f"|R{character.key} takes their final breath and passes into death.|n"
+            observer_msg = f"|r{character.key} takes their final breath and passes into death.|n"
             character.location.msg_contents(observer_msg, exclude=[character])
             
         # Apply final death state (if not already done)
