@@ -357,14 +357,7 @@ class Corpse(Item):
         if hasattr(self.ndb, 'cached_appearance'):
             delattr(self.ndb, 'cached_appearance')
         
-        # Debug logging for item tracking
-        try:
-            from evennia.comms.models import ChannelDB
-            splattercast = ChannelDB.objects.get_channel("Splattercast")
-            source_name = source_location.key if source_location else "Unknown"
-            splattercast.msg(f"CORPSE_RECEIVE: {moved_obj.key} moved to corpse {self.key} from {source_name}")
-        except:
-            pass
+        # Debug logging removed to reduce noise
     
     def at_object_leave(self, moved_obj, target_location, **kwargs):
         """Called when an object leaves this corpse."""
@@ -373,14 +366,7 @@ class Corpse(Item):
         if hasattr(self.ndb, 'cached_appearance'):
             delattr(self.ndb, 'cached_appearance')
         
-        # Debug logging for item tracking
-        try:
-            from evennia.comms.models import ChannelDB
-            splattercast = ChannelDB.objects.get_channel("Splattercast")
-            target_name = target_location.key if target_location else "Unknown"
-            splattercast.msg(f"CORPSE_LEAVE: {moved_obj.key} left corpse {self.key} to {target_name}")
-        except:
-            pass
+        # Debug logging removed to reduce noise
     
     def _update_decay_descriptions(self):
         """Update descriptions based on current decay stage."""

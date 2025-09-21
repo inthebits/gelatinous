@@ -467,14 +467,14 @@ class DeathProgressionScript(DefaultScript):
         for item in character.contents:
             if item != corpse:  # Don't move the corpse itself
                 item.move_to(corpse, quiet=True)
-                transferred_items.append(f"{item.key} (inventory)")
+                transferred_items.append(f"{item.key} (#{item.dbref}) (inventory)")
         
         # Transfer worn clothing items
         if hasattr(character, 'worn_items') and character.worn_items:
             for location, items in character.worn_items.items():
                 for item in items[:]:  # Create a copy of the list to avoid modification during iteration
                     item.move_to(corpse, quiet=True)
-                    transferred_items.append(f"{item.key} (worn on {location})")
+                    transferred_items.append(f"{item.key} (#{item.dbref}) (worn on {location})")
             
             # Clear the worn_items structure
             character.worn_items = {}
@@ -484,7 +484,7 @@ class DeathProgressionScript(DefaultScript):
             for hand_name, held_item in character.hands.items():
                 if held_item:
                     held_item.move_to(corpse, quiet=True)
-                    transferred_items.append(f"{held_item.key} (held in {hand_name})")
+                    transferred_items.append(f"{held_item.key} (#{held_item.dbref}) (held in {hand_name})")
             
             # Clear hands
             for hand_name in character.hands:
