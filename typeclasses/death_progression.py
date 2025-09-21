@@ -80,9 +80,9 @@ class DeathProgressionScript(DefaultScript):
     def at_script_creation(self):
         """Initialize the death progression script."""
         self.key = "death_progression"
-        self.desc = "Time-delayed death progression"
+        self.desc = f"Time-delayed death progression for {self.obj.key}"
         self.persistent = True
-        self.autostart = False  # Don't auto-start until character is set
+        self.autostart = True  # Can use autostart since we'll use self.obj
         
         # Death progression timing (6 minutes total)
         self.db.total_duration = 360  # 6 minutes in seconds
@@ -91,27 +91,19 @@ class DeathProgressionScript(DefaultScript):
         self.db.messages_sent = []
         self.db.can_be_revived = True
         
-        # Character reference will be set after creation
-        self.db.character = None
-        self.db.character_set = False  # Flag to track when character is properly set
-        
         # Start the progression interval
         self.interval = 30  # Check every 30 seconds
         
         # Debug logging
         try:
             splattercast = ChannelDB.objects.get_channel("Splattercast")
-            splattercast.msg(f"DEATH_PROGRESSION: Script at_script_creation for not_set_yet")
+            splattercast.msg(f"DEATH_PROGRESSION: Script at_script_creation for {self.obj.key}")
         except:
             pass
         
     def at_start(self):
         """Called when script starts."""
-        # Don't proceed if character isn't properly set yet
-        if not getattr(self.db, 'character_set', False):
-            return
-            
-        character = self.db.character
+        character = self.obj
         if not character:
             self.stop()
             return
@@ -128,11 +120,7 @@ class DeathProgressionScript(DefaultScript):
         
     def at_repeat(self):
         """Called every 30 seconds during death progression."""
-        # Don't proceed if character isn't properly set yet
-        if not getattr(self.db, 'character_set', False):
-            return
-            
-        character = self.db.character
+        character = self.obj
         if not character:
             # Log cleanup for invalid character
             try:
@@ -197,7 +185,7 @@ class DeathProgressionScript(DefaultScript):
         
     def _handle_medical_revival(self):
         """Handle revival due to successful medical intervention."""
-        character = self.db.character
+        character = self.obj
         if not character:
             return
             
@@ -231,7 +219,7 @@ class DeathProgressionScript(DefaultScript):
             
     def _send_initial_message(self):
         """Send the initial message when death progression begins."""
-        character = self.db.character
+        character = self.obj
         if not character:
             return
             
@@ -263,7 +251,7 @@ class DeathProgressionScript(DefaultScript):
             
     def _send_progression_message(self, interval):
         """Send a message at specific intervals during death progression."""
-        character = self.db.character
+        character = self.obj
         if not character:
             return
             
@@ -341,9 +329,10 @@ class DeathProgressionScript(DefaultScript):
         
     def _complete_death_progression(self):
         """Complete the death progression - character is now permanently dead."""
-        character = self.db.character
+        character = self.obj
         if not character:
             self.stop()
+            self.delete()
             return
             
         # Mark as permanently dead
@@ -595,25 +584,16 @@ def start_death_progression(character):
     except:
         pass
         
-    # Create script with explicit character assignment
+    # Create script using the same pattern as medical script
     script = character.scripts.add(DeathProgressionScript)
-    
-    # Set character and mark as properly set
-    script.db.character = character
-    script.db.character_set = True
-    
-    # Explicitly start the timer to ensure it begins
-    script.start()
     
     try:
         splattercast = ChannelDB.objects.get_channel("Splattercast")
         splattercast.msg(f"DEATH_PROGRESSION: Script created and started: {script} for {character.key}")
     except:
         pass
-    
+        
     return script
-
-
 def get_death_progression_script(character):
     """
     Get the death progression script for a character if it exists.
