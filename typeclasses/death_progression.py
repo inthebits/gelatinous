@@ -127,7 +127,14 @@ class DeathProgressionScript(DefaultScript):
         """Called every 30 seconds during death progression."""
         character = self.db.character
         if not character:
+            # Log cleanup for invalid character
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"DEATH_SCRIPT_CLEANUP: Stopping and deleting death progression script (invalid character)")
+            except:
+                pass
             self.stop()
+            self.delete()
             return
             
         current_time = time.time()
@@ -192,6 +199,7 @@ class DeathProgressionScript(DefaultScript):
             splattercast = ChannelDB.objects.get_channel("Splattercast")
             elapsed = time.time() - self.db.start_time
             splattercast.msg(f"MEDICAL_REVIVAL: {character.key} revived by medical treatment after {elapsed:.1f}s")
+            splattercast.msg(f"DEATH_SCRIPT_CLEANUP: Stopping and deleting death progression script for {character.key} (medical revival)")
         except:
             pass
             
@@ -210,8 +218,9 @@ class DeathProgressionScript(DefaultScript):
         if hasattr(character, 'remove_death_state'):
             character.remove_death_state()
             
-        # Stop the death progression
+        # Stop and delete the death progression script
         self.stop()
+        self.delete()
             
     def _send_initial_message(self):
         """Send the initial message when death progression begins."""
@@ -365,11 +374,13 @@ class DeathProgressionScript(DefaultScript):
         try:
             splattercast = ChannelDB.objects.get_channel("Splattercast")
             splattercast.msg(f"DEATH_PROGRESSION: {character.key} completed - corpse created, character transitioned")
+            splattercast.msg(f"DEATH_SCRIPT_CLEANUP: Stopping and deleting death progression script for {character.key}")
         except:
             pass
             
-        # Stop the script
+        # Stop and delete the script to clean up completely
         self.stop()
+        self.delete()
 
     def _handle_corpse_creation_and_transition(self, character):
         """
