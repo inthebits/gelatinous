@@ -413,13 +413,6 @@ class DeathProgressionScript(DefaultScript):
         # Create corpse object
         corpse = create_object(
             typeclass="typeclasses.items.Item",  # Use base Item class for now
-            key=f"a fresh corpse",  # Anonymous corpse name
-            location=character.location
-        )
-        
-        # Create corpse object
-        corpse = create_object(
-            typeclass="typeclasses.items.Item",  # Use base Item class for now
             key="a fresh corpse",  # Anonymous corpse name
             location=character.location
         )
@@ -437,8 +430,8 @@ class DeathProgressionScript(DefaultScript):
         
         # Transfer medical/death data if available
         if hasattr(character, 'medical_state') and character.medical_state:
-            corpse.db.death_cause = character.medical_state.get_death_cause()
-            corpse.db.medical_conditions = character.medical_state.get_all_conditions()
+            corpse.db.death_cause = character.get_death_cause()
+            corpse.db.medical_conditions = character.medical_state.get_condition_summary()
             corpse.db.blood_type = getattr(character.db, 'blood_type', 'unknown')
         
         # Transfer character description data
@@ -465,10 +458,23 @@ class DeathProgressionScript(DefaultScript):
         # Move character to limbo/OOC room (Evennia's default limbo is #2)
         try:
             limbo_room = search_object("#2")[0]  # Limbo room
+            old_location = character.location
             character.move_to(limbo_room, quiet=True)
-        except:
-            # Fallback - just leave them where they are if limbo doesn't exist
-            pass
+            
+            # Debug logging for successful teleportation
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"DEATH_TELEPORT_SUCCESS: {character.key} moved from {old_location} to {limbo_room}")
+            except:
+                pass
+                
+        except Exception as e:
+            # Log the specific error instead of silently failing
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"DEATH_TELEPORT_ERROR: {character.key} - {e}")
+            except:
+                pass
         
         # TODO: Unpuppet character from account (commented out until character creation ready)
         # if account:
