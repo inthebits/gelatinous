@@ -15,20 +15,18 @@ from evennia.utils import delay
 def _get_terminal_width(session=None):
     """
     Get terminal width from session, defaulting to 78 for MUD compatibility.
-    Subtracts 5 characters for safety margin to prevent wrapping.
     
     Args:
         session: Evennia session object to get width from
         
     Returns:
-        int: Terminal width in characters (with safety margin)
+        int: Terminal width in characters
     """
     if session:
         # Use Evennia's built-in screen width detection
         try:
             detected_width = session.protocol_flags.get("SCREENWIDTH", [78])[0]
-            # Subtract 5 for safety margin to prevent wrapping
-            return max(68, detected_width - 5)  # Minimum 68 to ensure readability
+            return max(60, detected_width)  # Minimum 60 for readability
         except (IndexError, KeyError, TypeError):
             # Fallback if protocol flags aren't available or malformed
             pass

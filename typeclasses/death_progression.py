@@ -26,7 +26,7 @@ def _get_terminal_width(session=None):
     if session:
         try:
             detected_width = session.protocol_flags.get("SCREENWIDTH", [78])[0]
-            return max(68, detected_width - 5)  # Minimum 68 to ensure readability
+            return max(60, detected_width)  # Minimum 60 for readability
         except (IndexError, KeyError, TypeError):
             pass
     return 78
