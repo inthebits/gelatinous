@@ -232,11 +232,15 @@ class CmdStats(Command):
                 i += 1
             return roman_num
 
-        # Generate dynamic file reference with death counter
+        # Generate dynamic file reference and subject name with death counter
         death_count = getattr(target, 'death_count', 1)  # Default to 1 if not set
         roman_death = to_roman(death_count)
-        file_ref = f"GEL-MST/PR-{target.id}{roman_death}"
+        file_ref = f"GEL-MST/PR-{target.id}"
         file_ref_padded = f" File Reference: {file_ref}".ljust(48)
+        
+        # Add roman numeral to subject name
+        subject_name = f"{target.key} {roman_death}"
+        subject_line = f" Subject: {subject_name[:38]:<38}"
 
         # Dynamic formatting based on display mode
         if show_numeric:
@@ -258,10 +262,19 @@ class CmdStats(Command):
             intellect_line = f"         Intellect:  {intellect_display:<12}               "
             motorics_line = f"         Motorics:   {motorics_display:<12}               "
 
+        # Add vitals formatting to match other GRIM descriptors
+        if show_numeric:
+            # For numeric mode, vitals should follow the same pattern as other stats
+            vitals_content = f"         Vitals:     {vitals_display}"
+            vitals_line = vitals_content.ljust(48)
+        else:
+            # Standard format for descriptive mode (fixed 12-char stat field)
+            vitals_line = f"         Vitals:     {vitals_color}{vitals_display:<12}{COLOR_SUCCESS}               "
+
         # Fixed format to exactly 48 visible characters per row
         string = f"""{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * 48}{BOX_TOP_RIGHT}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL} PSYCHOPHYSICAL EVALUATION REPORT               {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL} Subject: {target.key[:38]:<38}{BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}{subject_line}{BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}{file_ref_padded}{BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * 48}{BOX_TEE_UP}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
@@ -270,7 +283,7 @@ class CmdStats(Command):
 {COLOR_SUCCESS}{BOX_VERTICAL}{intellect_line}{BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}{motorics_line}{BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
-{COLOR_SUCCESS}{BOX_VERTICAL}         Vitals:     {vitals_color}{vitals_display:^12}{COLOR_SUCCESS}               {BOX_VERTICAL}{COLOR_NORMAL}
+{COLOR_SUCCESS}{BOX_VERTICAL}{vitals_line}{BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * 48}{BOX_TEE_UP}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_VERTICAL} Notes:                                         {BOX_VERTICAL}{COLOR_NORMAL}
