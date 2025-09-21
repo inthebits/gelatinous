@@ -113,8 +113,10 @@ class Corpse(Item):
                 # Location not covered - use preserved longdesc if available
                 if location in longdesc_data and longdesc_data[location]:
                     description = longdesc_data[location]
+                    # Process template variables like living characters do
+                    processed_desc = self._process_corpse_description_variables(description)
                     # Apply decay modifications to the description
-                    decay_modified_desc = self._apply_decay_to_description(description)
+                    decay_modified_desc = self._apply_decay_to_description(processed_desc)
                     descriptions.append((location, decay_modified_desc))
         
         return descriptions
@@ -144,8 +146,11 @@ class Corpse(Item):
         # Try to get worn description first
         worn_desc = getattr(clothing_item.db, 'worn_desc', None)
         if worn_desc:
+            # Process template variables like living characters do
+            processed_desc = self._process_corpse_description_variables(worn_desc)
+            
             # Modify for corpse context - change "you" to "the corpse"
-            corpse_desc = worn_desc.replace("You are wearing", "The corpse is wearing")
+            corpse_desc = processed_desc.replace("You are wearing", "The corpse is wearing")
             corpse_desc = corpse_desc.replace("you are wearing", "the corpse is wearing")
             corpse_desc = corpse_desc.replace("Your", "The corpse's")
             corpse_desc = corpse_desc.replace("your", "the corpse's")
@@ -156,6 +161,9 @@ class Corpse(Item):
         # Fallback to item description
         item_desc = getattr(clothing_item.db, 'desc', None)
         if item_desc:
+            # Process template variables
+            processed_desc = self._process_corpse_description_variables(item_desc)
+            
             # Create a simple worn description
             item_name = clothing_item.get_display_name(None)
             corpse_desc = f"The corpse is wearing {item_name}."
@@ -171,6 +179,54 @@ class Corpse(Item):
         # Simple paragraph formatting - join all descriptions
         descriptions = [desc for location, desc in longdesc_list]
         return " ".join(descriptions)
+    
+    def _process_corpse_description_variables(self, description):
+        """Process template variables in corpse descriptions using preserved character data."""
+        if not description:
+            return description
+            
+        # Get preserved character data for template processing
+        original_name = self.db.original_character_name or "the corpse"
+        
+        # Try to get the original character for gender/skintone data
+        original_char = self.get_original_character()
+        
+        if original_char:
+            # Use original character's processing if available
+            try:
+                # Process with the original character's context but force third person
+                processed = original_char._process_description_variables(
+                    description, 
+                    looker=None, 
+                    force_third_person=True, 
+                    apply_skintone=True
+                )
+                return processed
+            except:
+                # Fallback to manual processing if character method fails
+                pass
+        
+        # Manual fallback processing for basic template variables
+        processed_desc = description
+        
+        # Basic pronoun processing (assume default gender if no character data)
+        gender = getattr(original_char, 'gender', 'neutral') if original_char else 'neutral'
+        
+        # Simple pronoun substitution
+        pronoun_map = {
+            'male': {'They': 'He', 'they': 'he', 'their': 'his', 'them': 'him'},
+            'female': {'They': 'She', 'they': 'she', 'their': 'her', 'them': 'her'},
+            'neutral': {'They': 'They', 'they': 'they', 'their': 'their', 'them': 'them'}
+        }
+        
+        pronouns = pronoun_map.get(gender, pronoun_map['neutral'])
+        for template, replacement in pronouns.items():
+            processed_desc = processed_desc.replace(f"{{{template}}}", replacement)
+        
+        # Remove color templates for now (corpses don't need dynamic colors)
+        processed_desc = processed_desc.replace("{color}", "")
+        
+        return processed_desc
     
     def _apply_decay_to_description(self, description):
         """Modify a description based on current decay stage."""
@@ -213,6 +269,20 @@ class Corpse(Item):
                 parts.append(formatted_longdesc)
         
         return '\n\n'.join(parts)
+    
+    def at_object_receive(self, moved_obj, source_location, **kwargs):
+        """Called when an object is moved to this corpse."""
+        super().at_object_receive(moved_obj, source_location, **kwargs)
+        # Clear any cached appearance data since contents changed
+        if hasattr(self.ndb, 'cached_appearance'):
+            delattr(self.ndb, 'cached_appearance')
+    
+    def at_object_leave(self, moved_obj, target_location, **kwargs):
+        """Called when an object leaves this corpse."""
+        super().at_object_leave(moved_obj, target_location, **kwargs)
+        # Clear any cached appearance data since contents changed
+        if hasattr(self.ndb, 'cached_appearance'):
+            delattr(self.ndb, 'cached_appearance')
     
     def _update_decay_descriptions(self):
         """Update descriptions based on current decay stage."""
