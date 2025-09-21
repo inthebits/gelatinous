@@ -43,6 +43,10 @@ def _center_text(text, width=None, session=None):
     if width is None:
         width = _get_terminal_width(session)
     
+    # Use same width calculation as curtain for consistent centering
+    # Reserve small buffer for color codes like the curtain does
+    message_width = width - 1  # Match curtain_width calculation
+    
     # Split into lines and center each line - same as curtain
     lines = text.split('\n')
     centered_lines = []
@@ -56,10 +60,10 @@ def _center_text(text, width=None, session=None):
         visible_text = _strip_color_codes(line)
         
         # Use Python's built-in center method for proper centering - same as curtain  
-        centered_visible = visible_text.center(width)
+        centered_visible = visible_text.center(message_width)
         
         # Calculate the actual padding that center() applied
-        padding_needed = width - len(visible_text)
+        padding_needed = message_width - len(visible_text)
         left_padding = padding_needed // 2
         
         # Apply the same left padding to the original colored text
@@ -351,9 +355,13 @@ class DeathProgressionScript(DefaultScript):
         # Get width using the same function as curtain of death
         width = _get_terminal_width(session)
         
-        # Use exact same pattern as curtain: "|r" + text.center(width) + "|n"
-        final_line1 = "|R" + "The darkness claims you completely...".center(width) + "|n"
-        final_line2 = "|r" + "Your consciousness fades into the void.".center(width) + "|n"
+        # Use same width calculation as curtain for consistent centering
+        # Reserve small buffer for color codes like the curtain does
+        message_width = width - 1  # Match curtain_width calculation
+        
+        # Use exact same pattern as curtain: "|r" + text.center(message_width) + "|n"
+        final_line1 = "|R" + "The darkness claims you completely...".center(message_width) + "|n"
+        final_line2 = "|r" + "Your consciousness fades into the void.".center(message_width) + "|n"
         
         # Send each line with line breaks
         centered_final_msg = final_line1 + "\n" + final_line2 + "\n"

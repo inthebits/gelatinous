@@ -213,26 +213,12 @@ class Corpse(Item):
         # Get preserved character data for template processing
         original_name = self.db.original_character_name or "the corpse"
         
-        # Debug: track what we're processing
-        try:
-            from evennia.comms.models import ChannelDB
-            splattercast = ChannelDB.objects.get_channel("Splattercast")
-            splattercast.msg(f"CORPSE_TEMPLATE_DEBUG: Processing '{description[:50]}...'")
-        except:
-            pass
-        
         # Manual processing using preserved character data (more reliable than character method)
         processed_desc = description
         
         # Get preserved character data
         original_gender = getattr(self.db, 'original_gender', 'neutral')
         original_skintone = getattr(self.db, 'original_skintone', None)
-        
-        # Debug: track manual processing data
-        try:
-            splattercast.msg(f"CORPSE_TEMPLATE_MANUAL: Gender: {original_gender}, Skintone: {original_skintone}")
-        except:
-            pass
         
         # Process color templates FIRST (before other processing)
         if hasattr(self, '_current_item_context'):
@@ -251,33 +237,14 @@ class Corpse(Item):
                         # No color definition found, just remove the tag
                         processed_desc = processed_desc.replace("{color}", "")
                     
-                    # Debug: track color application
-                    try:
-                        splattercast.msg(f"CORPSE_TEMPLATE_COLOR: Applied '{color_code}' ({color_name}) from {item.key}")
-                    except:
-                        pass
                 except ImportError:
                     # Fallback if COLOR_DEFINITIONS not available
                     processed_desc = processed_desc.replace("{color}", "")
-                    try:
-                        splattercast.msg(f"CORPSE_TEMPLATE_COLOR: Import failed, removing color from {item.key}")
-                    except:
-                        pass
             else:
                 processed_desc = processed_desc.replace("{color}", "")
-                # Debug: track color removal
-                try:
-                    splattercast.msg(f"CORPSE_TEMPLATE_COLOR: No color found for {item.key if item else 'None'}")
-                except:
-                    pass
         else:
             # No item context, just remove color tags
             processed_desc = processed_desc.replace("{color}", "")
-            # Debug: track color removal
-            try:
-                splattercast.msg(f"CORPSE_TEMPLATE_COLOR: No item context, removing color tags")
-            except:
-                pass
         
         # Process gender pronouns (always third person for corpses)
         gender_mapping = {
@@ -322,11 +289,6 @@ class Corpse(Item):
         for template, replacement in pronouns.items():
             if f"{{{template}}}" in processed_desc:
                 processed_desc = processed_desc.replace(f"{{{template}}}", replacement)
-                # Debug: track pronoun replacement
-                try:
-                    splattercast.msg(f"CORPSE_TEMPLATE_PRONOUN: {{{template}}} -> {replacement}")
-                except:
-                    pass
         
         # Process name variables
         processed_desc = processed_desc.replace("{name}", original_name)
@@ -340,23 +302,9 @@ class Corpse(Item):
                 if color_code:
                     # Apply skintone color to ALL body part descriptions
                     processed_desc = f"{color_code}{processed_desc}|n"
-                    # Debug: track skintone application
-                    try:
-                        splattercast.msg(f"CORPSE_TEMPLATE_SKINTONE: Applied {original_skintone} color to body description")
-                    except:
-                        pass
             except ImportError:
                 # Fallback if constants not available
-                try:
-                    splattercast.msg(f"CORPSE_TEMPLATE_SKINTONE: SKINTONE_PALETTE import failed")
-                except:
-                    pass
-        
-        # Debug: track final result
-        try:
-            splattercast.msg(f"CORPSE_TEMPLATE_FINAL: '{processed_desc[:50]}...'")
-        except:
-            pass
+                pass
         
         return processed_desc
     
