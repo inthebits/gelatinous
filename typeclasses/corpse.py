@@ -262,13 +262,83 @@ class Corpse(Item):
         return None
     
     def _format_corpse_longdescs(self, longdesc_list):
-        """Format the longdesc descriptions for corpse display."""
+        """
+        Format the longdesc descriptions for corpse display with smart paragraph breaks.
+        
+        Uses the same intelligent paragraph formatting as living characters for readability.
+        """
         if not longdesc_list:
             return ""
         
-        # Simple paragraph formatting - join all descriptions
-        descriptions = [desc for location, desc in longdesc_list]
-        return " ".join(descriptions)
+        # Use the character's smart paragraph formatting logic
+        try:
+            from world.combat.constants import (
+                PARAGRAPH_BREAK_THRESHOLD, 
+                ANATOMICAL_REGIONS,
+                REGION_BREAK_PRIORITY
+            )
+        except ImportError:
+            # Fallback to simple formatting if constants not available
+            descriptions = [desc for location, desc in longdesc_list]
+            return " ".join(descriptions)
+        
+        paragraphs = []
+        current_paragraph = []
+        current_char_count = 0
+        current_region = None
+        
+        for location, description in longdesc_list:
+            # Determine which anatomical region this location belongs to
+            location_region = self._get_anatomical_region(location)
+            
+            # Check if we should break for a new paragraph
+            should_break = False
+            
+            if REGION_BREAK_PRIORITY and current_region and location_region != current_region:
+                # Region changed - check if we should break
+                if current_char_count >= PARAGRAPH_BREAK_THRESHOLD * 0.7:  # 70% threshold for region breaks
+                    should_break = True
+            elif current_char_count + len(description) > PARAGRAPH_BREAK_THRESHOLD:
+                # Would exceed threshold - break now
+                should_break = True
+            
+            if should_break and current_paragraph:
+                # Finish current paragraph and start new one
+                paragraphs.append(" ".join(current_paragraph))
+                current_paragraph = []
+                current_char_count = 0
+            
+            # Add description to current paragraph
+            current_paragraph.append(description)
+            current_char_count += len(description) + 1  # +1 for space
+            current_region = location_region
+        
+        # Add final paragraph
+        if current_paragraph:
+            paragraphs.append(" ".join(current_paragraph))
+        
+        return "\n\n".join(paragraphs)
+    
+    def _get_anatomical_region(self, location):
+        """
+        Determines which anatomical region a location belongs to.
+        
+        Args:
+            location: Body location string
+            
+        Returns:
+            str: Region name or 'extended' for non-standard anatomy
+        """
+        try:
+            from world.combat.constants import ANATOMICAL_REGIONS
+            
+            for region_name, locations in ANATOMICAL_REGIONS.items():
+                if location in locations:
+                    return region_name
+            return "extended"
+        except ImportError:
+            # Fallback if constants not available
+            return "extended"
     
     def _process_corpse_description_variables(self, description):
         """Process template variables in corpse descriptions using preserved character data."""
