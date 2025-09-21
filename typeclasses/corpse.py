@@ -162,6 +162,11 @@ class Corpse(Item):
             corpse_desc = corpse_desc.replace("Your", "The corpse's")
             corpse_desc = corpse_desc.replace("your", "the corpse's")
             
+            # Ensure the description ends with proper punctuation
+            corpse_desc = corpse_desc.strip()
+            if corpse_desc and not corpse_desc.endswith(('.', '!', '?')):
+                corpse_desc += '.'
+            
             # Clear item context
             if hasattr(self, '_current_item_context'):
                 delattr(self, '_current_item_context')
@@ -327,29 +332,19 @@ class Corpse(Item):
         processed_desc = processed_desc.replace("{name}", original_name)
         processed_desc = processed_desc.replace("{name's}", f"{original_name}'s")
         
-        # Apply skintone coloring if preserved (only to skin-related descriptions, not items)
+        # Apply skintone coloring if preserved (only to body descriptions, not clothing items)
         if original_skintone and not hasattr(self, '_current_item_context'):
             try:
                 from world.combat.constants import SKINTONE_PALETTE
                 color_code = SKINTONE_PALETTE.get(original_skintone)
                 if color_code:
-                    # Apply skintone to descriptions that mention skin-related terms OR body parts
-                    skin_keywords = ['skin', 'bronze', 'olive', 'pale', 'dark', 'complexion', 'flesh', 'face', 'neck', 'eyes', 'forehead', 'cheeks', 'hands', 'arms', 'chest', 'back', 'abs', 'thighs', 'legs', 'feet']
-                    description_lower = processed_desc.lower()
-                    if any(keyword in description_lower for keyword in skin_keywords):
-                        # Apply skintone color with proper reset
-                        processed_desc = f"{color_code}{processed_desc}|n"
-                        # Debug: track skintone application
-                        try:
-                            splattercast.msg(f"CORPSE_TEMPLATE_SKINTONE: Applied {original_skintone} color to skin description")
-                        except:
-                            pass
-                    else:
-                        # Debug: track why skintone wasn't applied
-                        try:
-                            splattercast.msg(f"CORPSE_TEMPLATE_SKINTONE: No skin keywords found in '{processed_desc[:30]}...'")
-                        except:
-                            pass
+                    # Apply skintone color to ALL body part descriptions
+                    processed_desc = f"{color_code}{processed_desc}|n"
+                    # Debug: track skintone application
+                    try:
+                        splattercast.msg(f"CORPSE_TEMPLATE_SKINTONE: Applied {original_skintone} color to body description")
+                    except:
+                        pass
             except ImportError:
                 # Fallback if constants not available
                 try:
