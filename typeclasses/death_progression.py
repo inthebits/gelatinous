@@ -82,7 +82,7 @@ class DeathProgressionScript(DefaultScript):
         self.key = "death_progression"
         self.desc = "Time-delayed death progression"
         self.persistent = True
-        self.autostart = True
+        self.autostart = False  # Don't auto-start until character is set
         
         # Death progression timing (6 minutes total)
         self.db.total_duration = 360  # 6 minutes in seconds
@@ -95,7 +95,7 @@ class DeathProgressionScript(DefaultScript):
         if not hasattr(self.db, 'character'):
             self.db.character = None
             
-        # Start the progression
+        # Start the progression interval
         self.interval = 30  # Check every 30 seconds
         
         # Debug logging - character may not be set yet at creation time
@@ -589,7 +589,7 @@ def start_death_progression(character):
         pass
         
     script = character.scripts.add(DeathProgressionScript)
-    # Set character immediately after creation
+    # Set character immediately after creation but BEFORE starting
     script.db.character = character
     
     # Explicitly start the timer to ensure it begins
