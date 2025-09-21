@@ -63,8 +63,8 @@ class Corpse(Item):
         stage = self.get_decay_stage()
         
         decay_names = {
-            "fresh": "a fresh corpse",
-            "early": "a pale corpse", 
+            "fresh": "fresh corpse",
+            "early": "pale corpse", 
             "moderate": "decomposing remains",
             "advanced": "putrid remains",
             "skeletal": "skeletal remains"

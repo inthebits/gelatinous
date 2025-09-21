@@ -410,16 +410,15 @@ class DeathProgressionScript(DefaultScript):
         from evennia import create_object
         import time
         
-        # Create corpse object
+        # Create corpse object using specialized Corpse typeclass
         corpse = create_object(
-            typeclass="typeclasses.items.Item",  # Use base Item class for now
-            key="fresh corpse",  # Anonymous corpse name
+            typeclass="typeclasses.corpse.Corpse",
+            key="a fresh corpse",  # Anonymous corpse name
             location=character.location
         )
         
-        # Set corpse properties manually
-        corpse.db.is_corpse = True
-        corpse.db.creation_time = time.time()
+        # The Corpse typeclass automatically sets up most properties in at_object_creation()
+        # Just need to transfer the specific forensic data from this character
         
         # Transfer forensic data for investigation
         corpse.db.original_character_name = character.key
