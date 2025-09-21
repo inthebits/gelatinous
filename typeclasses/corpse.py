@@ -147,6 +147,9 @@ class Corpse(Item):
     
     def _get_clothing_desc_for_corpse(self, clothing_item, location):
         """Get clothing description for corpse context."""
+        # Set item context for color processing
+        self._current_item_context = clothing_item
+        
         # Try to get worn description first
         worn_desc = getattr(clothing_item.db, 'worn_desc', None)
         if worn_desc:
@@ -158,6 +161,10 @@ class Corpse(Item):
             corpse_desc = corpse_desc.replace("you are wearing", "the corpse is wearing")
             corpse_desc = corpse_desc.replace("Your", "The corpse's")
             corpse_desc = corpse_desc.replace("your", "the corpse's")
+            
+            # Clear item context
+            if hasattr(self, '_current_item_context'):
+                delattr(self, '_current_item_context')
             
             # Apply decay modifications
             return self._apply_decay_to_description(corpse_desc)
@@ -171,7 +178,16 @@ class Corpse(Item):
             # Create a simple worn description
             item_name = clothing_item.get_display_name(None)
             corpse_desc = f"The corpse is wearing {item_name}."
+            
+            # Clear item context
+            if hasattr(self, '_current_item_context'):
+                delattr(self, '_current_item_context')
+                
             return self._apply_decay_to_description(corpse_desc)
+        
+        # Clear item context
+        if hasattr(self, '_current_item_context'):
+            delattr(self, '_current_item_context')
         
         return None
     
@@ -195,20 +211,43 @@ class Corpse(Item):
         # Try to get the original character for gender/skintone data
         original_char = self.get_original_character()
         
+        # Debug: track what processing path we take
+        try:
+            from evennia.comms.models import ChannelDB
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            has_char = original_char is not None
+            splattercast.msg(f"CORPSE_TEMPLATE_DEBUG: Processing '{description[:50]}...' - Has char: {has_char}")
+        except:
+            pass
+        
         if original_char:
             # Use original character's processing if available
             try:
-                # Process with the original character's context but force third person
+                # Create a dummy looker if none provided - use the character itself for context
+                looker = original_char if original_char else self
                 processed = original_char._process_description_variables(
                     description, 
-                    looker=None, 
+                    looker=looker, 
                     force_third_person=True, 
                     apply_skintone=True
                 )
+                
+                # Debug: track successful character processing
+                try:
+                    splattercast.msg(f"CORPSE_TEMPLATE_SUCCESS: Character processing worked: '{processed[:50]}...'")
+                except:
+                    pass
+                    
                 return processed
-            except:
+            except Exception as e:
                 # Fallback to manual processing if character method fails
-                pass
+                # Debug: log what went wrong
+                try:
+                    from evennia.comms.models import ChannelDB
+                    splattercast = ChannelDB.objects.get_channel("Splattercast")
+                    splattercast.msg(f"CORPSE_TEMPLATE_FALLBACK: Character processing failed: {e}")
+                except:
+                    pass
         
         # Manual processing using preserved character data
         processed_desc = description
@@ -216,6 +255,12 @@ class Corpse(Item):
         # Get preserved character data
         original_gender = getattr(self.db, 'original_gender', 'neutral')
         original_skintone = getattr(self.db, 'original_skintone', None)
+        
+        # Debug: track manual processing data
+        try:
+            splattercast.msg(f"CORPSE_TEMPLATE_MANUAL: Gender: {original_gender}, Skintone: {original_skintone}")
+        except:
+            pass
         
         # Process gender pronouns (always third person for corpses)
         gender_mapping = {
@@ -264,8 +309,18 @@ class Corpse(Item):
         processed_desc = processed_desc.replace("{name}", original_name)
         processed_desc = processed_desc.replace("{name's}", f"{original_name}'s")
         
-        # Remove/process color templates  
-        processed_desc = processed_desc.replace("{color}", "")
+        # Process color templates
+        # For item descriptions, try to use the item's color if available
+        if hasattr(self, '_current_item_context'):
+            # If we have item context, use the item's color
+            item = getattr(self, '_current_item_context', None)
+            if item and hasattr(item.db, 'color') and item.db.color:
+                processed_desc = processed_desc.replace("{color}", item.db.color)
+            else:
+                processed_desc = processed_desc.replace("{color}", "")
+        else:
+            # No item context, just remove color tags
+            processed_desc = processed_desc.replace("{color}", "")
         
         # Apply skintone coloring if preserved
         if original_skintone:
@@ -278,6 +333,12 @@ class Corpse(Item):
             except ImportError:
                 # Fallback if constants not available
                 pass
+        
+        # Debug: track final result
+        try:
+            splattercast.msg(f"CORPSE_TEMPLATE_FINAL: '{processed_desc[:50]}...'")
+        except:
+            pass
         
         return processed_desc
     
