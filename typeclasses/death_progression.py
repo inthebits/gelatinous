@@ -413,7 +413,7 @@ class DeathProgressionScript(DefaultScript):
         # Create corpse object
         corpse = create_object(
             typeclass="typeclasses.items.Item",  # Use base Item class for now
-            key="a fresh corpse",  # Anonymous corpse name
+            key="fresh corpse",  # Anonymous corpse name
             location=character.location
         )
         
