@@ -79,23 +79,32 @@ def curtain_of_death(text, width=None, session=None):
     if width is None:
         width = _get_terminal_width(session)
     
+    # Reserve small buffer for color codes in curtain animation
+    # Since we add color codes to padding blocks, we need to account for them
+    curtain_width = width - 3  # Small buffer for color code overhead
+    
     # Calculate visible text length (without color codes)
     visible_text = _strip_color_codes(text)
     
     # For the first frame, use the text as-is (with its color codes)
-    # Center it with colored blocks
-    padding_needed = width - len(visible_text)
-    left_padding = padding_needed // 2
-    right_padding = padding_needed - left_padding
+    # Center it with colored blocks, but ensure total doesn't exceed width
+    padding_needed = curtain_width - len(visible_text)
     
-    # Create colored padding blocks
-    left_blocks = _colorize_evennia("▓" * left_padding)
-    right_blocks = _colorize_evennia("▓" * right_padding)
-    
-    first_frame = left_blocks + text + right_blocks
+    if padding_needed <= 0:
+        # Message is too long for terminal, use as-is without padding
+        first_frame = text
+    else:
+        left_padding = padding_needed // 2
+        right_padding = padding_needed - left_padding
+        
+        # Create colored padding blocks
+        left_blocks = _colorize_evennia("▓" * left_padding)
+        right_blocks = _colorize_evennia("▓" * right_padding)
+        
+        first_frame = left_blocks + text + right_blocks
     
     # For subsequent frames, work with a plain version for character removal
-    plain_padded = visible_text.center(width, "▓")
+    plain_padded = visible_text.center(curtain_width, "▓")
     chars = list(plain_padded)
     
     # Build the "plan": a shuffled list of (index, drop-distance) pairs
@@ -124,7 +133,7 @@ def curtain_of_death(text, width=None, session=None):
                     text_idx = text_chars.pop(random.randint(0, len(text_chars) - 1))
                     chars[text_idx] = " "
         
-        frame = "".join(chars).center(width, "█")  # Replace the sea with different char
+        frame = "".join(chars).center(curtain_width, "█")  # Replace the sea with different char
         frames.append(_colorize_evennia(frame))
     
     # Clean up any remaining text characters more gently
@@ -145,7 +154,7 @@ def curtain_of_death(text, width=None, session=None):
                 idx = remaining_text_chars.pop(random.randint(0, len(remaining_text_chars) - 1))
                 chars[idx] = " "
         
-        frame = "".join(chars).center(width, "█")
+        frame = "".join(chars).center(curtain_width, "█")
         frames.append(_colorize_evennia(frame))
 
     # Add several more frames of continued dripping
@@ -178,7 +187,7 @@ def curtain_of_death(text, width=None, session=None):
     
     # Add a few final empty frames for smooth transition
     for i in range(3):
-        final_frame = " " * width
+        final_frame = " " * curtain_width
         frames.append(_colorize_evennia(final_frame))
     
     return frames
