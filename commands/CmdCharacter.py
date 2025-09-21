@@ -12,6 +12,63 @@ from world.combat.constants import (
     STAT_DESCRIPTORS, STAT_TIER_RANGES
 )
 from world.medical.utils import get_medical_status_description
+import re
+
+
+# ===================================================================
+# CENTERING UTILITIES (from death_progression.py)
+# ===================================================================
+
+def _get_terminal_width(session=None):
+    """Get terminal width from session, defaulting to 78 for MUD compatibility."""
+    if session:
+        try:
+            detected_width = session.protocol_flags.get("SCREENWIDTH", [78])[0]
+            return max(60, detected_width)  # Minimum 60 for readability
+        except (IndexError, KeyError, TypeError):
+            pass
+    return 78
+
+
+def _strip_color_codes(text):
+    """Remove Evennia color codes from text to get actual visible length."""
+    # Remove all |x codes (where x is any character) - same pattern as death curtain
+    return re.sub(r'\|.', '', text)
+
+
+def _center_text(text, width=None, session=None):
+    """Center text using same approach as curtain_of_death.py for consistency."""
+    if width is None:
+        width = _get_terminal_width(session)
+    
+    # Use same width calculation as curtain for consistent centering
+    # Reserve small buffer for color codes like the curtain does
+    message_width = width - 1  # Match curtain_width calculation
+    
+    # Split into lines and center each line - same as curtain
+    lines = text.split('\n')
+    centered_lines = []
+    
+    for line in lines:
+        if not line.strip():  # Empty line
+            centered_lines.append("")
+            continue
+            
+        # Calculate visible text length (without color codes) - same as curtain
+        visible_text = _strip_color_codes(line)
+        
+        # Use Python's built-in center method for proper centering - same as curtain  
+        centered_visible = visible_text.center(message_width)
+        
+        # Calculate the actual padding that center() applied
+        padding_needed = message_width - len(visible_text)
+        left_padding = padding_needed // 2
+        
+        # Apply the same left padding to the original colored text
+        centered_line = " " * left_padding + line
+        centered_lines.append(centered_line)
+    
+    return '\n'.join(centered_lines)
 
 
 # ===================================================================
@@ -291,7 +348,14 @@ class CmdStats(Command):
 {COLOR_SUCCESS}{BOX_VERTICAL}                                                {BOX_VERTICAL}{COLOR_NORMAL}
 {COLOR_SUCCESS}{BOX_BOTTOM_LEFT}{BOX_HORIZONTAL * 48}{BOX_BOTTOM_RIGHT}{COLOR_NORMAL}"""
 
-        caller.msg(string)
+        # Get session for terminal width detection
+        session = None
+        if hasattr(caller, 'sessions') and caller.sessions.all():
+            session = caller.sessions.all()[0]
+        
+        # Center the entire stats display using death curtain approach
+        centered_string = _center_text(string, session=session)
+        caller.msg(centered_string)
 
 
 class CmdLookPlace(Command):
