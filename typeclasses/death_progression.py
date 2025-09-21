@@ -455,6 +455,37 @@ class DeathProgressionScript(DefaultScript):
             corpse.db.death_cause = character.get_death_cause()
             corpse.db.medical_conditions = character.medical_state.get_condition_summary()
             corpse.db.blood_type = getattr(character.db, 'blood_type', 'unknown')
+            
+            # Transfer wound data for corpse wound descriptions
+            try:
+                from world.medical.wounds import get_character_wounds
+                wound_data = get_character_wounds(character)
+                if wound_data:
+                    # Store wound data with additional forensic information
+                    corpse.db.wounds_at_death = []
+                    for wound in wound_data:
+                        wound_record = {
+                            'injury_type': wound['injury_type'],
+                            'location': wound['location'],
+                            'severity': wound['severity'],
+                            'stage': wound['stage'],
+                            'organ': wound.get('organ'),
+                            # Store organ state for potential forensic analysis
+                            'organ_damage': {
+                                'current_hp': wound.get('organ_obj', {}).current_hp if wound.get('organ_obj') else 0,
+                                'max_hp': wound.get('organ_obj', {}).max_hp if wound.get('organ_obj') else 100,
+                                'container': wound.get('organ_obj', {}).container if wound.get('organ_obj') else wound['location']
+                            }
+                        }
+                        corpse.db.wounds_at_death.append(wound_record)
+                    
+                    splattercast.msg(f"DEATH_WOUNDS_PRESERVED: {len(wound_data)} wounds preserved on corpse for {character.key}")
+            except Exception as e:
+                # Don't fail death progression if wound preservation fails
+                try:
+                    splattercast.msg(f"DEATH_WOUNDS_ERROR: Failed to preserve wounds for {character.key}: {e}")
+                except:
+                    pass
         
         # Transfer character description data
         if hasattr(character, 'longdesc') and character.longdesc:
@@ -463,7 +494,7 @@ class DeathProgressionScript(DefaultScript):
         # Transfer inventory and worn items to corpse
         transferred_items = []
         
-        # Transfer regular inventory items (contents)
+        # Transfer regular inventory items (contents) - this includes held items
         for item in character.contents:
             if item != corpse:  # Don't move the corpse itself
                 item.move_to(corpse, quiet=True)
@@ -479,14 +510,8 @@ class DeathProgressionScript(DefaultScript):
             # Clear the worn_items structure
             character.worn_items = {}
         
-        # Transfer items held in hands
+        # Clear hands (items already moved via contents transfer above)
         if hasattr(character, 'hands') and character.hands:
-            for hand_name, held_item in character.hands.items():
-                if held_item:
-                    held_item.move_to(corpse, quiet=True)
-                    transferred_items.append(f"{held_item.key} (#{held_item.dbref}) (held in {hand_name})")
-            
-            # Clear hands
             for hand_name in character.hands:
                 character.hands[hand_name] = None
         

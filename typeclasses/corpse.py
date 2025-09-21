@@ -115,13 +115,26 @@ class Corpse(Item):
                         added_clothing_items.add(clothing_item)
             else:
                 # Location not covered - use preserved longdesc if available
+                final_desc = ""
                 if location in longdesc_data and longdesc_data[location]:
                     description = longdesc_data[location]
                     # Process template variables like living characters do
                     processed_desc = self._process_corpse_description_variables(description)
                     # Apply decay modifications to the description
-                    decay_modified_desc = self._apply_decay_to_description(processed_desc)
-                    descriptions.append((location, decay_modified_desc))
+                    final_desc = self._apply_decay_to_description(processed_desc)
+                
+                # Add preserved wound descriptions for this location
+                wound_descriptions = self.get_preserved_wound_descriptions(location)
+                if wound_descriptions:
+                    wound_text = " ".join(wound_descriptions)
+                    if final_desc:
+                        final_desc = f"{final_desc} {wound_text}"
+                    else:
+                        # No base description, just use wound descriptions
+                        final_desc = wound_text
+                
+                if final_desc:
+                    descriptions.append((location, final_desc))
         
         return descriptions
     
@@ -144,6 +157,58 @@ class Corpse(Item):
                 coverage_map[location] = item
         
         return coverage_map
+    
+    def get_preserved_wound_descriptions(self, location=None):
+        """
+        Get wound descriptions for this corpse based on preserved wound data.
+        
+        Args:
+            location (str, optional): Specific body location to check. If None, returns all wounds.
+            
+        Returns:
+            list: List of wound description strings for the location(s)
+        """
+        wound_descriptions = []
+        
+        # Get preserved wound data
+        wounds_at_death = getattr(self.db, 'wounds_at_death', [])
+        if not wounds_at_death:
+            return wound_descriptions
+        
+        # Filter by location if specified
+        relevant_wounds = wounds_at_death
+        if location:
+            relevant_wounds = [w for w in wounds_at_death if w.get('location') == location]
+        
+        # Generate descriptions for each wound
+        for wound_data in relevant_wounds:
+            try:
+                from world.medical.wounds import get_wound_description
+                
+                # Generate wound description using preserved data
+                wound_desc = get_wound_description(
+                    injury_type=wound_data['injury_type'],
+                    location=wound_data['location'],
+                    severity=wound_data['severity'],
+                    stage='old',  # Corpse wounds are considered 'old' stage
+                    organ=wound_data.get('organ'),
+                    character=self  # Pass corpse as character for any skintone processing
+                )
+                
+                if wound_desc:
+                    wound_descriptions.append(wound_desc)
+                    
+            except Exception as e:
+                # Don't break corpse display if wound description fails
+                try:
+                    from evennia.comms.models import ChannelDB
+                    splattercast = ChannelDB.objects.get_channel("Splattercast")
+                    splattercast.msg(f"CORPSE_WOUND_ERROR: Failed to generate wound description for {self.key}: {e}")
+                except:
+                    pass
+                continue
+        
+        return wound_descriptions
     
     def _get_clothing_desc_for_corpse(self, clothing_item, location):
         """Get clothing description for corpse context."""
