@@ -208,48 +208,15 @@ class Corpse(Item):
         # Get preserved character data for template processing
         original_name = self.db.original_character_name or "the corpse"
         
-        # Try to get the original character for gender/skintone data
-        original_char = self.get_original_character()
-        
-        # Debug: track what processing path we take
+        # Debug: track what we're processing
         try:
             from evennia.comms.models import ChannelDB
             splattercast = ChannelDB.objects.get_channel("Splattercast")
-            has_char = original_char is not None
-            splattercast.msg(f"CORPSE_TEMPLATE_DEBUG: Processing '{description[:50]}...' - Has char: {has_char}")
+            splattercast.msg(f"CORPSE_TEMPLATE_DEBUG: Processing '{description[:50]}...'")
         except:
             pass
         
-        if original_char:
-            # Use original character's processing if available
-            try:
-                # Create a dummy looker if none provided - use the character itself for context
-                looker = original_char if original_char else self
-                processed = original_char._process_description_variables(
-                    description, 
-                    looker=looker, 
-                    force_third_person=True, 
-                    apply_skintone=True
-                )
-                
-                # Debug: track successful character processing
-                try:
-                    splattercast.msg(f"CORPSE_TEMPLATE_SUCCESS: Character processing worked: '{processed[:50]}...'")
-                except:
-                    pass
-                    
-                return processed
-            except Exception as e:
-                # Fallback to manual processing if character method fails
-                # Debug: log what went wrong
-                try:
-                    from evennia.comms.models import ChannelDB
-                    splattercast = ChannelDB.objects.get_channel("Splattercast")
-                    splattercast.msg(f"CORPSE_TEMPLATE_FALLBACK: Character processing failed: {e}")
-                except:
-                    pass
-        
-        # Manual processing using preserved character data
+        # Manual processing using preserved character data (more reliable than character method)
         processed_desc = description
         
         # Get preserved character data
@@ -261,6 +228,35 @@ class Corpse(Item):
             splattercast.msg(f"CORPSE_TEMPLATE_MANUAL: Gender: {original_gender}, Skintone: {original_skintone}")
         except:
             pass
+        
+        # Process color templates FIRST (before other processing)
+        if hasattr(self, '_current_item_context'):
+            # If we have item context, use the item's color
+            item = getattr(self, '_current_item_context', None)
+            if item and hasattr(item.db, 'color') and item.db.color:
+                # Apply the item's color code
+                color_code = item.db.color
+                processed_desc = processed_desc.replace("{color}", color_code)
+                # Debug: track color application
+                try:
+                    splattercast.msg(f"CORPSE_TEMPLATE_COLOR: Applied '{color_code}' from {item.key}")
+                except:
+                    pass
+            else:
+                processed_desc = processed_desc.replace("{color}", "")
+                # Debug: track color removal
+                try:
+                    splattercast.msg(f"CORPSE_TEMPLATE_COLOR: No color found for {item.key if item else 'None'}")
+                except:
+                    pass
+        else:
+            # No item context, just remove color tags
+            processed_desc = processed_desc.replace("{color}", "")
+            # Debug: track color removal
+            try:
+                splattercast.msg(f"CORPSE_TEMPLATE_COLOR: No item context, removing color tags")
+            except:
+                pass
         
         # Process gender pronouns (always third person for corpses)
         gender_mapping = {
@@ -303,33 +299,35 @@ class Corpse(Item):
         
         pronouns = pronoun_map.get(character_gender, pronoun_map['plural'])
         for template, replacement in pronouns.items():
-            processed_desc = processed_desc.replace(f"{{{template}}}", replacement)
+            if f"{{{template}}}" in processed_desc:
+                processed_desc = processed_desc.replace(f"{{{template}}}", replacement)
+                # Debug: track pronoun replacement
+                try:
+                    splattercast.msg(f"CORPSE_TEMPLATE_PRONOUN: {{{template}}} -> {replacement}")
+                except:
+                    pass
         
         # Process name variables
         processed_desc = processed_desc.replace("{name}", original_name)
         processed_desc = processed_desc.replace("{name's}", f"{original_name}'s")
         
-        # Process color templates
-        # For item descriptions, try to use the item's color if available
-        if hasattr(self, '_current_item_context'):
-            # If we have item context, use the item's color
-            item = getattr(self, '_current_item_context', None)
-            if item and hasattr(item.db, 'color') and item.db.color:
-                processed_desc = processed_desc.replace("{color}", item.db.color)
-            else:
-                processed_desc = processed_desc.replace("{color}", "")
-        else:
-            # No item context, just remove color tags
-            processed_desc = processed_desc.replace("{color}", "")
-        
-        # Apply skintone coloring if preserved
-        if original_skintone:
+        # Apply skintone coloring if preserved (only to skin-related descriptions, not items)
+        if original_skintone and not hasattr(self, '_current_item_context'):
             try:
                 from world.combat.constants import SKINTONE_PALETTE
                 color_code = SKINTONE_PALETTE.get(original_skintone)
                 if color_code:
-                    # Apply skintone color to the processed description
-                    processed_desc = f"{color_code}{processed_desc}|n"
+                    # Only apply skintone to descriptions that mention skin-related terms
+                    skin_keywords = ['skin', 'bronze', 'complexion', 'flesh', 'face', 'neck', 'eyes', 'forehead', 'cheeks']
+                    description_lower = processed_desc.lower()
+                    if any(keyword in description_lower for keyword in skin_keywords):
+                        # Apply skintone color with proper reset
+                        processed_desc = f"{color_code}{processed_desc}|n"
+                        # Debug: track skintone application
+                        try:
+                            splattercast.msg(f"CORPSE_TEMPLATE_SKINTONE: Applied {original_skintone} color to skin description")
+                        except:
+                            pass
             except ImportError:
                 # Fallback if constants not available
                 pass
