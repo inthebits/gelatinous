@@ -133,6 +133,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         # Add wrest command (non-combat item snatching)
         self.add(CmdInventory.CmdWrest())
         
+        # Add frisk command (search characters/corpses)
+        self.add(CmdInventory.CmdFrisk())
+        
         # Add throw command system
         self.add(CmdThrow())
         self.add(CmdPull())

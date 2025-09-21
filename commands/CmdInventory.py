@@ -974,3 +974,138 @@ class CmdWrest(Command):
             ),
             exclude=[caller, target]
         )
+
+
+class CmdFrisk(Command):
+    """
+    Thoroughly search an unconscious character, corpse, or dead person for items.
+    
+    Usage:
+        frisk <target>
+        
+    This command allows you to pat down and search another character
+    or corpse, revealing all items they are carrying or wearing.
+    The target must be unconscious, dead, or a corpse to be frisked.
+    """
+    
+    key = "frisk"
+    aliases = ["patdown"]
+    locks = "cmd:all()"
+    help_category = "General"
+    
+    def func(self):
+        caller = self.caller
+        
+        if not self.args:
+            caller.msg("Frisk whom?")
+            return
+            
+        target = caller.search(self.args.strip())
+        if not target:
+            return
+            
+        # Check if target is in the same location
+        if target.location != caller.location:
+            caller.msg("They are not here.")
+            return
+            
+        # Can't frisk yourself
+        if target == caller:
+            caller.msg("You can't frisk yourself.")
+            return
+            
+        # Check if target can be frisked (must be unconscious, dead, or corpse)
+        can_frisk = False
+        frisk_reason = ""
+        
+        # Check if it's a corpse (proper typeclass check)
+        if hasattr(target, 'typeclass_path') and 'corpse' in target.typeclass_path.lower():
+            can_frisk = True
+            frisk_reason = "corpse"
+        # Also check direct inheritance
+        elif target.__class__.__name__ == 'Corpse':
+            can_frisk = True
+            frisk_reason = "corpse"
+        # Check if character is dead using medical system
+        elif hasattr(target, 'medical_state') and target.medical_state and target.medical_state.is_dead():
+            can_frisk = True
+            frisk_reason = "dead"
+        # Check if character is unconscious using medical system  
+        elif hasattr(target, 'medical_state') and target.medical_state and target.medical_state.is_unconscious():
+            can_frisk = True
+            frisk_reason = "unconscious"
+            
+        if not can_frisk:
+            caller.msg(f"{target.key} is too lively to frisk. They need to be unconscious, dead, or a corpse.")
+            return
+        
+        # Get target's gender for pronouns
+        gender = getattr(target.db, 'gender', 'neutral')
+        # For corpses, try to get original gender
+        if frisk_reason == "corpse":
+            gender = getattr(target.db, 'original_gender', gender)
+            
+        pronoun_map = {
+            'male': {'them': 'him', 'their': 'his', 'they': 'he'},
+            'female': {'them': 'her', 'their': 'her', 'they': 'she'},
+            'neutral': {'them': 'them', 'their': 'their', 'they': 'they'},
+            'plural': {'them': 'them', 'their': 'their', 'they': 'they'}
+        }
+        
+        pronouns = pronoun_map.get(gender, pronoun_map['neutral'])
+        them = pronouns['them']
+        
+        # Send action message to caller
+        caller.msg(f"You square up to {target.key} and begin patting {them} down thoroughly.")
+        
+        # Send message to target (if they're a character and conscious)
+        if hasattr(target, 'msg') and target.has_account and frisk_reason == "unconscious":
+            target.msg(f"{caller.key} squares up to you and begins patting you down thoroughly.")
+            
+        # Send message to room (excluding caller and target)
+        caller.location.msg_contents(
+            f"{caller.key} squares up to {target.key} and begins patting {them} down thoroughly.",
+            exclude=[caller, target]
+        )
+        
+        # Gather all items on target
+        worn_items = []
+        carried_items = []
+        
+        # Get all contents (both worn and carried)
+        all_items = target.contents
+        
+        if not all_items:
+            caller.msg(f"You feel nothing on {target.key}.")
+            return
+            
+        # Separate worn vs carried items
+        for item in all_items:
+            # Check if item is worn (common patterns for worn items)
+            if hasattr(item.db, 'worn') and item.db.worn:
+                worn_items.append(item)
+            elif hasattr(item, 'worn') and item.worn:
+                worn_items.append(item)
+            # Check if it's in a wear location
+            elif hasattr(item.db, 'wear_location') and item.db.wear_location:
+                worn_items.append(item)
+            else:
+                carried_items.append(item)
+                
+        # Build the results message
+        result_lines = [f"You feel the following on {target.key}:"]
+        
+        # Add worn items first
+        for item in worn_items:
+            # Get item's short description, pad it for alignment
+            desc = item.get_display_name(caller)
+            padded_desc = f"{desc:<40} (worn)"
+            result_lines.append(padded_desc)
+            
+        # Add carried items
+        for item in carried_items:
+            desc = item.get_display_name(caller)
+            result_lines.append(desc)
+            
+        # Send the results
+        caller.msg("\n".join(result_lines))
