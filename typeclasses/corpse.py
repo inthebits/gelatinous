@@ -70,7 +70,7 @@ class Corpse(Item):
             "skeletal": "skeletal remains"
         }
         
-        return f"|x{decay_names.get(stage, 'a corpse')}|n"
+        return decay_names.get(stage, 'corpse')
     
     def return_appearance(self, looker, **kwargs):
         """Update appearance based on current decay stage when looked at."""
