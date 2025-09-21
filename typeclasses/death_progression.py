@@ -427,6 +427,10 @@ class DeathProgressionScript(DefaultScript):
         corpse.db.death_time = time.time()
         corpse.db.physical_description = getattr(character.db, 'desc', 'A person.')
         
+        # Preserve character appearance data for proper corpse display
+        corpse.db.original_gender = getattr(character, 'gender', 'neutral')
+        corpse.db.original_skintone = getattr(character.db, 'skintone', None)
+        
         # Transfer medical/death data if available
         if hasattr(character, 'medical_state') and character.medical_state:
             corpse.db.death_cause = character.get_death_cause()
@@ -437,10 +441,45 @@ class DeathProgressionScript(DefaultScript):
         if hasattr(character, 'longdesc') and character.longdesc:
             corpse.db.longdesc_data = dict(character.longdesc)  # Copy the dictionary data
         
-        # Transfer inventory to corpse
+        # Transfer inventory and worn items to corpse
+        transferred_items = []
+        
+        # Transfer regular inventory items (contents)
         for item in character.contents:
             if item != corpse:  # Don't move the corpse itself
                 item.move_to(corpse, quiet=True)
+                transferred_items.append(f"{item.key} (inventory)")
+        
+        # Transfer worn clothing items
+        if hasattr(character, 'worn_items') and character.worn_items:
+            for location, items in character.worn_items.items():
+                for item in items[:]:  # Create a copy of the list to avoid modification during iteration
+                    item.move_to(corpse, quiet=True)
+                    transferred_items.append(f"{item.key} (worn on {location})")
+            
+            # Clear the worn_items structure
+            character.worn_items = {}
+        
+        # Transfer items held in hands
+        if hasattr(character, 'hands') and character.hands:
+            for hand_name, held_item in character.hands.items():
+                if held_item:
+                    held_item.move_to(corpse, quiet=True)
+                    transferred_items.append(f"{held_item.key} (held in {hand_name})")
+            
+            # Clear hands
+            for hand_name in character.hands:
+                character.hands[hand_name] = None
+        
+        # Debug logging for item transfer
+        try:
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            if transferred_items:
+                splattercast.msg(f"DEATH_ITEMS_TRANSFERRED: {len(transferred_items)} items moved to corpse: {', '.join(transferred_items)}")
+            else:
+                splattercast.msg(f"DEATH_ITEMS_TRANSFERRED: No items found on {character.key} to transfer")
+        except:
+            pass
         
         # Set corpse description
         corpse.db.desc = f"The lifeless body of {character.key}. {corpse.db.physical_description}"

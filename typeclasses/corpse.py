@@ -34,6 +34,10 @@ class Corpse(Item):
         self.db.physical_description = ""
         self.db.longdesc_data = {}
         
+        # Preserve character appearance data for proper display
+        self.db.original_skintone = None
+        self.db.original_gender = "neutral"
+        
         # Decay settings
         self.db.decay_stages = {
             "fresh": 3600,      # < 1 hour
@@ -206,25 +210,74 @@ class Corpse(Item):
                 # Fallback to manual processing if character method fails
                 pass
         
-        # Manual fallback processing for basic template variables
+        # Manual processing using preserved character data
         processed_desc = description
         
-        # Basic pronoun processing (assume default gender if no character data)
-        gender = getattr(original_char, 'gender', 'neutral') if original_char else 'neutral'
+        # Get preserved character data
+        original_gender = getattr(self.db, 'original_gender', 'neutral')
+        original_skintone = getattr(self.db, 'original_skintone', None)
         
-        # Simple pronoun substitution
-        pronoun_map = {
-            'male': {'They': 'He', 'they': 'he', 'their': 'his', 'them': 'him'},
-            'female': {'They': 'She', 'they': 'she', 'their': 'her', 'them': 'her'},
-            'neutral': {'They': 'They', 'they': 'they', 'their': 'their', 'them': 'them'}
+        # Process gender pronouns (always third person for corpses)
+        gender_mapping = {
+            'male': 'male',
+            'female': 'female', 
+            'neutral': 'plural',
+            'nonbinary': 'plural',
+            'other': 'plural'
         }
         
-        pronouns = pronoun_map.get(gender, pronoun_map['neutral'])
+        character_gender = gender_mapping.get(original_gender, 'plural')
+        
+        # Pronoun processing - comprehensive mapping
+        pronoun_map = {
+            'male': {
+                'They': 'He', 'they': 'he', 
+                'Their': 'His', 'their': 'his',
+                'Them': 'Him', 'them': 'him',
+                'Theirs': 'His', 'theirs': 'his',
+                'Themselves': 'Himself', 'themselves': 'himself',
+                'Themself': 'Himself', 'themself': 'himself'
+            },
+            'female': {
+                'They': 'She', 'they': 'she',
+                'Their': 'Her', 'their': 'her', 
+                'Them': 'Her', 'them': 'her',
+                'Theirs': 'Hers', 'theirs': 'hers',
+                'Themselves': 'Herself', 'themselves': 'herself',
+                'Themself': 'Herself', 'themself': 'herself'
+            },
+            'plural': {
+                'They': 'They', 'they': 'they',
+                'Their': 'Their', 'their': 'their',
+                'Them': 'Them', 'them': 'them', 
+                'Theirs': 'Theirs', 'theirs': 'theirs',
+                'Themselves': 'Themselves', 'themselves': 'themselves',
+                'Themself': 'Themselves', 'themself': 'themselves'
+            }
+        }
+        
+        pronouns = pronoun_map.get(character_gender, pronoun_map['plural'])
         for template, replacement in pronouns.items():
             processed_desc = processed_desc.replace(f"{{{template}}}", replacement)
         
-        # Remove color templates for now (corpses don't need dynamic colors)
+        # Process name variables
+        processed_desc = processed_desc.replace("{name}", original_name)
+        processed_desc = processed_desc.replace("{name's}", f"{original_name}'s")
+        
+        # Remove/process color templates  
         processed_desc = processed_desc.replace("{color}", "")
+        
+        # Apply skintone coloring if preserved
+        if original_skintone:
+            try:
+                from world.combat.constants import SKINTONE_PALETTE
+                color_code = SKINTONE_PALETTE.get(original_skintone)
+                if color_code:
+                    # Apply skintone color to the processed description
+                    processed_desc = f"{color_code}{processed_desc}|n"
+            except ImportError:
+                # Fallback if constants not available
+                pass
         
         return processed_desc
     
@@ -276,6 +329,15 @@ class Corpse(Item):
         # Clear any cached appearance data since contents changed
         if hasattr(self.ndb, 'cached_appearance'):
             delattr(self.ndb, 'cached_appearance')
+        
+        # Debug logging for item tracking
+        try:
+            from evennia.comms.models import ChannelDB
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            source_name = source_location.key if source_location else "Unknown"
+            splattercast.msg(f"CORPSE_RECEIVE: {moved_obj.key} moved to corpse {self.key} from {source_name}")
+        except:
+            pass
     
     def at_object_leave(self, moved_obj, target_location, **kwargs):
         """Called when an object leaves this corpse."""
@@ -283,6 +345,15 @@ class Corpse(Item):
         # Clear any cached appearance data since contents changed
         if hasattr(self.ndb, 'cached_appearance'):
             delattr(self.ndb, 'cached_appearance')
+        
+        # Debug logging for item tracking
+        try:
+            from evennia.comms.models import ChannelDB
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            target_name = target_location.key if target_location else "Unknown"
+            splattercast.msg(f"CORPSE_LEAVE: {moved_obj.key} left corpse {self.key} to {target_name}")
+        except:
+            pass
     
     def _update_decay_descriptions(self):
         """Update descriptions based on current decay stage."""
