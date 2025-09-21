@@ -234,7 +234,7 @@ class DeathProgressionScript(DefaultScript):
         
         # Use same width calculation as curtain for consistent centering
         # Reserve small buffer for color codes like the curtain does
-        message_width = width - 3  # Match curtain_width calculation
+        message_width = width - 1  # Match curtain_width calculation
         
         # Use exact same pattern as curtain: "|r" + text.center(message_width) + "|n"
         dying_line1 = "|R" + "You hover at the threshold between life and death.".center(message_width) + "|n"

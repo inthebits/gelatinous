@@ -81,7 +81,7 @@ def curtain_of_death(text, width=None, session=None):
     
     # Reserve small buffer for color codes in curtain animation
     # Since we add color codes to padding blocks, we need to account for them
-    curtain_width = width - 3  # Small buffer for color code overhead
+    curtain_width = width - 1  # Small buffer for color code overhead
     
     # Calculate visible text length (without color codes)
     visible_text = _strip_color_codes(text)
