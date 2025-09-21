@@ -1079,7 +1079,21 @@ class CmdFrisk(Command):
             caller.msg(f"You feel nothing on {target.key}.")
             return
             
+        # Calculate delay based on item count (1-6 seconds, scaling with items)
+        # Base delay of 1 second + 0.5 seconds per item, capped at 6 seconds
+        item_count = len(all_items)
+        delay_seconds = min(1 + (item_count * 0.5), 6)
+        
+        # Use Evennia's delay system to show results after realistic search time
+        from evennia.utils import delay
+        delay(delay_seconds, self._show_frisk_results, caller, target, all_items, them)
+    
+    def _show_frisk_results(self, caller, target, all_items, them):
+        """Show the frisk results after the delay."""
         # Separate worn vs carried items
+        worn_items = []
+        carried_items = []
+        
         for item in all_items:
             # Check if item is worn (common patterns for worn items)
             if hasattr(item.db, 'worn') and item.db.worn:
