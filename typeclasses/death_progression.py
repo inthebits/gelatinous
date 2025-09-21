@@ -92,22 +92,25 @@ class DeathProgressionScript(DefaultScript):
         self.db.can_be_revived = True
         
         # Character reference will be set after creation
-        if not hasattr(self.db, 'character'):
-            self.db.character = None
-            
+        self.db.character = None
+        self.db.character_set = False  # Flag to track when character is properly set
+        
         # Start the progression interval
         self.interval = 30  # Check every 30 seconds
         
-        # Debug logging - character may not be set yet at creation time
+        # Debug logging
         try:
             splattercast = ChannelDB.objects.get_channel("Splattercast")
-            char_name = self.db.character.key if self.db.character else "not_set_yet"
-            splattercast.msg(f"DEATH_PROGRESSION: Script at_script_creation for {char_name}")
+            splattercast.msg(f"DEATH_PROGRESSION: Script at_script_creation for not_set_yet")
         except:
             pass
         
     def at_start(self):
         """Called when script starts."""
+        # Don't proceed if character isn't properly set yet
+        if not getattr(self.db, 'character_set', False):
+            return
+            
         character = self.db.character
         if not character:
             self.stop()
@@ -125,6 +128,10 @@ class DeathProgressionScript(DefaultScript):
         
     def at_repeat(self):
         """Called every 30 seconds during death progression."""
+        # Don't proceed if character isn't properly set yet
+        if not getattr(self.db, 'character_set', False):
+            return
+            
         character = self.db.character
         if not character:
             # Log cleanup for invalid character
@@ -588,9 +595,12 @@ def start_death_progression(character):
     except:
         pass
         
+    # Create script with explicit character assignment
     script = character.scripts.add(DeathProgressionScript)
-    # Set character immediately after creation but BEFORE starting
+    
+    # Set character and mark as properly set
     script.db.character = character
+    script.db.character_set = True
     
     # Explicitly start the timer to ensure it begins
     script.start()
