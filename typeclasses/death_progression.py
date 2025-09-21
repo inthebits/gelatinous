@@ -232,10 +232,14 @@ class DeathProgressionScript(DefaultScript):
         # Get width using the same function as curtain of death
         width = _get_terminal_width(session)
         
-        # Use exact same pattern as curtain: "|r" + text.center(width) + "|n"
-        dying_line1 = "|R" + "You hover at the threshold between life and death.".center(width) + "|n"
-        dying_line2 = "|r" + "Your essence flickers like a candle in the wind...".center(width) + "|n"
-        dying_line3 = "|R" + "There may still be time for intervention.".center(width) + "|n"
+        # Use same width calculation as curtain for consistent centering
+        # Reserve small buffer for color codes like the curtain does
+        message_width = width - 3  # Match curtain_width calculation
+        
+        # Use exact same pattern as curtain: "|r" + text.center(message_width) + "|n"
+        dying_line1 = "|R" + "You hover at the threshold between life and death.".center(message_width) + "|n"
+        dying_line2 = "|r" + "Your essence flickers like a candle in the wind...".center(message_width) + "|n"
+        dying_line3 = "|R" + "There may still be time for intervention.".center(message_width) + "|n"
         
         # Send each line separately with line breaks
         centered_dying_msg = dying_line1 + "\n" + dying_line2 + "\n" + dying_line3 + "\n"
