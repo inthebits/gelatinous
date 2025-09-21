@@ -234,14 +234,30 @@ class Corpse(Item):
             # If we have item context, use the item's color
             item = getattr(self, '_current_item_context', None)
             if item and hasattr(item.db, 'color') and item.db.color:
-                # Apply the item's color code
-                color_code = item.db.color
-                processed_desc = processed_desc.replace("{color}", color_code)
-                # Debug: track color application
+                # Get the proper color code from COLOR_DEFINITIONS
                 try:
-                    splattercast.msg(f"CORPSE_TEMPLATE_COLOR: Applied '{color_code}' from {item.key}")
-                except:
-                    pass
+                    from typeclasses.items import COLOR_DEFINITIONS
+                    color_name = item.db.color
+                    color_code = COLOR_DEFINITIONS.get(color_name, "")
+                    if color_code:
+                        # Replace {color} with proper color code and space
+                        processed_desc = processed_desc.replace("{color}", f"{color_code}")
+                    else:
+                        # No color definition found, just remove the tag
+                        processed_desc = processed_desc.replace("{color}", "")
+                    
+                    # Debug: track color application
+                    try:
+                        splattercast.msg(f"CORPSE_TEMPLATE_COLOR: Applied '{color_code}' ({color_name}) from {item.key}")
+                    except:
+                        pass
+                except ImportError:
+                    # Fallback if COLOR_DEFINITIONS not available
+                    processed_desc = processed_desc.replace("{color}", "")
+                    try:
+                        splattercast.msg(f"CORPSE_TEMPLATE_COLOR: Import failed, removing color from {item.key}")
+                    except:
+                        pass
             else:
                 processed_desc = processed_desc.replace("{color}", "")
                 # Debug: track color removal
@@ -317,8 +333,8 @@ class Corpse(Item):
                 from world.combat.constants import SKINTONE_PALETTE
                 color_code = SKINTONE_PALETTE.get(original_skintone)
                 if color_code:
-                    # Only apply skintone to descriptions that mention skin-related terms
-                    skin_keywords = ['skin', 'bronze', 'complexion', 'flesh', 'face', 'neck', 'eyes', 'forehead', 'cheeks']
+                    # Apply skintone to descriptions that mention skin-related terms OR body parts
+                    skin_keywords = ['skin', 'bronze', 'olive', 'pale', 'dark', 'complexion', 'flesh', 'face', 'neck', 'eyes', 'forehead', 'cheeks', 'hands', 'arms', 'chest', 'back', 'abs', 'thighs', 'legs', 'feet']
                     description_lower = processed_desc.lower()
                     if any(keyword in description_lower for keyword in skin_keywords):
                         # Apply skintone color with proper reset
@@ -328,9 +344,18 @@ class Corpse(Item):
                             splattercast.msg(f"CORPSE_TEMPLATE_SKINTONE: Applied {original_skintone} color to skin description")
                         except:
                             pass
+                    else:
+                        # Debug: track why skintone wasn't applied
+                        try:
+                            splattercast.msg(f"CORPSE_TEMPLATE_SKINTONE: No skin keywords found in '{processed_desc[:30]}...'")
+                        except:
+                            pass
             except ImportError:
                 # Fallback if constants not available
-                pass
+                try:
+                    splattercast.msg(f"CORPSE_TEMPLATE_SKINTONE: SKINTONE_PALETTE import failed")
+                except:
+                    pass
         
         # Debug: track final result
         try:
