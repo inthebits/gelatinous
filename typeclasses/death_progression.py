@@ -412,10 +412,21 @@ class DeathProgressionScript(DefaultScript):
         
         # Create corpse object
         corpse = create_object(
-            typeclass="typeclasses.corpse.Corpse",
-            key=f"corpse of {character.key}",
+            typeclass="typeclasses.items.Item",  # Use base Item class for now
+            key=f"a fresh corpse",  # Anonymous corpse name
             location=character.location
         )
+        
+        # Create corpse object
+        corpse = create_object(
+            typeclass="typeclasses.items.Item",  # Use base Item class for now
+            key=f"a fresh corpse",  # Anonymous corpse name
+            location=character.location
+        )
+        
+        # Set corpse properties manually
+        corpse.db.is_corpse = True
+        corpse.db.creation_time = time.time()
         
         # Transfer forensic data for investigation
         corpse.db.original_character_name = character.key
