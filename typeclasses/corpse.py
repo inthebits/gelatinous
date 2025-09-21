@@ -72,6 +72,121 @@ class Corpse(Item):
         
         return decay_names.get(stage, 'corpse')
     
+    def _get_preserved_longdesc_descriptions(self):
+        """Get visible longdesc descriptions with clothing integration, like living characters."""
+        if not self.db.longdesc_data:
+            return []
+        
+        # Import anatomical display order
+        try:
+            from world.combat.constants import ANATOMICAL_DISPLAY_ORDER
+        except ImportError:
+            # Fallback order if constants not available
+            ANATOMICAL_DISPLAY_ORDER = [
+                "head", "face", "left_eye", "right_eye", "left_ear", "right_ear", "neck",
+                "chest", "back", "abdomen", "groin",
+                "left_arm", "right_arm", "left_hand", "right_hand",
+                "left_thigh", "right_thigh", "left_shin", "right_shin", "left_foot", "right_foot"
+            ]
+        
+        descriptions = []
+        longdesc_data = self.db.longdesc_data
+        
+        # Build clothing coverage map from corpse contents
+        coverage_map = self._build_corpse_clothing_coverage_map()
+        added_clothing_items = set()
+        
+        # Process in anatomical order, integrating clothing like living characters
+        for location in ANATOMICAL_DISPLAY_ORDER:
+            if location in coverage_map:
+                # Location covered by clothing - use clothing description instead
+                clothing_item = coverage_map[location]
+                
+                # Only add each clothing item once, regardless of how many locations it covers
+                if clothing_item not in added_clothing_items:
+                    # Get clothing description for corpse context
+                    desc = self._get_clothing_desc_for_corpse(clothing_item, location)
+                    if desc:
+                        descriptions.append((location, desc))
+                        added_clothing_items.add(clothing_item)
+            else:
+                # Location not covered - use preserved longdesc if available
+                if location in longdesc_data and longdesc_data[location]:
+                    description = longdesc_data[location]
+                    # Apply decay modifications to the description
+                    decay_modified_desc = self._apply_decay_to_description(description)
+                    descriptions.append((location, decay_modified_desc))
+        
+        return descriptions
+    
+    def _build_corpse_clothing_coverage_map(self):
+        """Build a map of body locations covered by clothing items in corpse."""
+        coverage_map = {}
+        
+        # Get clothing items from corpse contents
+        clothing_items = []
+        for item in self.contents:
+            # Check if item appears to be clothing (has coverage attribute)
+            if hasattr(item.db, 'coverage') and item.db.coverage:
+                clothing_items.append(item)
+        
+        # For each clothing item, map its coverage to body locations
+        for item in clothing_items:
+            coverage = getattr(item.db, 'coverage', [])
+            for location in coverage:
+                # Use outermost item (last one wins for now - could be enhanced)
+                coverage_map[location] = item
+        
+        return coverage_map
+    
+    def _get_clothing_desc_for_corpse(self, clothing_item, location):
+        """Get clothing description for corpse context."""
+        # Try to get worn description first
+        worn_desc = getattr(clothing_item.db, 'worn_desc', None)
+        if worn_desc:
+            # Modify for corpse context - change "you" to "the corpse"
+            corpse_desc = worn_desc.replace("You are wearing", "The corpse is wearing")
+            corpse_desc = corpse_desc.replace("you are wearing", "the corpse is wearing")
+            corpse_desc = corpse_desc.replace("Your", "The corpse's")
+            corpse_desc = corpse_desc.replace("your", "the corpse's")
+            
+            # Apply decay modifications
+            return self._apply_decay_to_description(corpse_desc)
+        
+        # Fallback to item description
+        item_desc = getattr(clothing_item.db, 'desc', None)
+        if item_desc:
+            # Create a simple worn description
+            item_name = clothing_item.get_display_name(None)
+            corpse_desc = f"The corpse is wearing {item_name}."
+            return self._apply_decay_to_description(corpse_desc)
+        
+        return None
+    
+    def _format_corpse_longdescs(self, longdesc_list):
+        """Format the longdesc descriptions for corpse display."""
+        if not longdesc_list:
+            return ""
+        
+        # Simple paragraph formatting - join all descriptions
+        descriptions = [desc for location, desc in longdesc_list]
+        return " ".join(descriptions)
+    
+    def _apply_decay_to_description(self, description):
+        """Modify a description based on current decay stage."""
+        stage = self.get_decay_stage()
+        
+        decay_modifiers = {
+            "fresh": "",  # No modification for fresh corpses
+            "early": " The area shows early signs of pallor and cooling.",
+            "moderate": " Visible discoloration and early decomposition changes are apparent.",
+            "advanced": " Severe decomposition changes have altered the appearance significantly.", 
+            "skeletal": " Only skeletal remains and dried tissue are visible."
+        }
+        
+        modifier = decay_modifiers.get(stage, "")
+        return f"{description}{modifier}"
+    
     def return_appearance(self, looker, **kwargs):
         """Update appearance based on current decay stage when looked at."""
         # Check for complete decay first
@@ -81,8 +196,23 @@ class Corpse(Item):
         # Update decay-based descriptions just-in-time
         self._update_decay_descriptions()
         
-        # Return normal appearance with updated descriptions
-        return super().return_appearance(looker, **kwargs)
+        # Build appearance similar to character with preserved longdesc data
+        parts = []
+        
+        # 1. Corpse name and main description (current decay state)
+        name_and_desc = [self.get_display_name(looker)]
+        if self.db.desc:
+            name_and_desc.append(self.db.desc)
+        parts.append('\n'.join(name_and_desc))
+        
+        # 2. Display preserved longdesc data with clothing integration
+        if self.db.longdesc_data:
+            longdesc_descriptions = self._get_preserved_longdesc_descriptions()
+            if longdesc_descriptions:
+                formatted_longdesc = self._format_corpse_longdescs(longdesc_descriptions)
+                parts.append(formatted_longdesc)
+        
+        return '\n\n'.join(parts)
     
     def _update_decay_descriptions(self):
         """Update descriptions based on current decay stage."""

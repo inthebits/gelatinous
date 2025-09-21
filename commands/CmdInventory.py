@@ -374,23 +374,52 @@ class CmdGet(Command):
 
     Usage:
         get <item>
+        get <item> from <container>
+
+    Examples:
+        get knife
+        get jeans from corpse
+        get bandages from backpack
     """
 
     key = "get"
     aliases = ["take", "grab"]
 
+    def parse(self):
+        """Parse 'get <item> [from <container>]' syntax."""
+        self.item_name = ""
+        self.container_name = ""
+        
+        args = self.args.strip()
+        if not args:
+            return
+            
+        # Look for "from" keyword
+        if " from " in args:
+            parts = args.split(" from ", 1)
+            if len(parts) == 2:
+                self.item_name = parts[0].strip()
+                self.container_name = parts[1].strip()
+        else:
+            # Simple "get <item>" syntax
+            self.item_name = args
+
     def func(self):
         from typeclasses.items import Item
         
         caller = self.caller
-        itemname = self.args.strip()
 
-        if not itemname:
+        if not self.item_name:
             caller.msg("Get what?")
             return
 
-        # Search in the room - enhanced search by display name and aliases
-        item = self._find_item_in_room(caller, itemname)
+        # Handle container-based retrieval
+        if self.container_name:
+            success = self._get_from_container(caller, self.item_name, self.container_name)
+            return
+
+        # Standard room-based retrieval
+        item = self._find_item_in_room(caller, self.item_name)
         if not item:
             return
 
@@ -399,15 +428,79 @@ class CmdGet(Command):
             caller.msg(f"You can't pick up {item.get_display_name(caller)}.")
             return
 
+        self._give_item_to_character(caller, item)
+
+    def _get_from_container(self, caller, item_name, container_name):
+        """Get an item from a container."""
+        # Find the container in the room
+        container = self._find_container_in_room(caller, container_name)
+        if not container:
+            return False
+
+        # Find the item in the container
+        item = self._find_item_in_container(caller, item_name, container)
+        if not item:
+            return False
+
+        # Move the item to the character
+        self._give_item_to_character(caller, item, from_container=container)
+        return True
+
+    def _find_container_in_room(self, caller, container_name):
+        """Find a container in the room."""
+        room_candidates = [obj for obj in caller.location.contents if obj != caller]
+        if not room_candidates:
+            caller.msg(f"You don't see a '{container_name}' here.")
+            return None
+            
+        result = caller.search(container_name, candidates=room_candidates, quiet=True)
+        if result:
+            container = result[0] if isinstance(result, list) else result
+            return container
+        
+        caller.msg(f"You don't see a '{container_name}' here.")
+        return None
+
+    def _find_item_in_container(self, caller, item_name, container):
+        """Find an item inside a container."""
+        container_contents = list(container.contents)
+        if not container_contents:
+            caller.msg(f"The {container.get_display_name(caller)} is empty.")
+            return None
+            
+        result = caller.search(item_name, candidates=container_contents, quiet=True)
+        if result:
+            item = result[0] if isinstance(result, list) else result
+            
+            # Check if it's actually an item we can take
+            from typeclasses.items import Item
+            if not isinstance(item, Item):
+                caller.msg(f"You can't take {item.get_display_name(caller)} from the {container.get_display_name(caller)}.")
+                return None
+                
+            return item
+        
+        caller.msg(f"You don't see a '{item_name}' in the {container.get_display_name(caller)}.")
+        return None
+
+    def _give_item_to_character(self, caller, item, from_container=None):
+        """Give an item to the character, managing hands and inventory."""
         # Try to put it in a free hand
         for hand, held in caller.hands.items():
             if held is None:
                 caller.hands[hand] = item
                 item.location = caller
-                caller.msg(f"You pick up {item.get_display_name(caller)} and hold it in your {hand} hand.")
-                caller.location.msg_contents(
-                    f"{caller.key} picks up {item.get_display_name(caller)} and holds it in {hand} hand.", exclude=caller
-                )
+                
+                if from_container:
+                    caller.msg(f"You take {item.get_display_name(caller)} from {from_container.get_display_name(caller)} and hold it in your {hand} hand.")
+                    caller.location.msg_contents(
+                        f"{caller.key} takes {item.get_display_name(caller)} from {from_container.get_display_name(caller)}.", exclude=caller
+                    )
+                else:
+                    caller.msg(f"You pick up {item.get_display_name(caller)} and hold it in your {hand} hand.")
+                    caller.location.msg_contents(
+                        f"{caller.key} picks up {item.get_display_name(caller)} and holds it in {hand} hand.", exclude=caller
+                    )
                 return
 
         # No free hands — move the first held item to inventory
@@ -416,14 +509,25 @@ class CmdGet(Command):
                 held.location = caller  # move to inventory
                 caller.hands[hand] = item
                 item.location = caller
-                caller.msg(
-                    f"Your hands are full. You move {held.get_display_name(caller)} to inventory "
-                    f"and hold {item.get_display_name(caller)} in your {hand} hand."
-                )
-                caller.location.msg_contents(
-                    f"{caller.key} picks up {item.get_display_name(caller)}, shifting {held.get_display_name(caller)} to inventory.",
-                    exclude=caller
-                )
+                
+                if from_container:
+                    caller.msg(
+                        f"Your hands are full. You move {held.get_display_name(caller)} to inventory "
+                        f"and hold {item.get_display_name(caller)} from {from_container.get_display_name(caller)} in your {hand} hand."
+                    )
+                    caller.location.msg_contents(
+                        f"{caller.key} takes {item.get_display_name(caller)} from {from_container.get_display_name(caller)}, shifting {held.get_display_name(caller)} to inventory.",
+                        exclude=caller
+                    )
+                else:
+                    caller.msg(
+                        f"Your hands are full. You move {held.get_display_name(caller)} to inventory "
+                        f"and hold {item.get_display_name(caller)} in your {hand} hand."
+                    )
+                    caller.location.msg_contents(
+                        f"{caller.key} picks up {item.get_display_name(caller)}, shifting {held.get_display_name(caller)} to inventory.",
+                        exclude=caller
+                    )
                 return
     
     def _find_item_in_room(self, caller, itemname):
