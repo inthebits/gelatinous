@@ -1131,24 +1131,6 @@ class CombatHandler(DefaultScript):
                 setattr(attacker.ndb, NDB_PROXIMITY, set())
                 proximity_set = set()
             
-            # RELOAD RECOVERY: If characters are in active combat in same room, restore proximity
-            if target not in proximity_set and attacker.location == target.location:
-                # Check if both characters are in active combat with each other
-                if self._are_characters_in_mutual_combat(attacker, target):
-                    # Restore proximity that was lost due to reload
-                    proximity_set.add(target)
-                    setattr(attacker.ndb, NDB_PROXIMITY, proximity_set)
-                    # Also restore target's proximity to attacker
-                    if not hasattr(target.ndb, NDB_PROXIMITY):
-                        setattr(target.ndb, NDB_PROXIMITY, set())
-                    target_proximity = getattr(target.ndb, NDB_PROXIMITY, set())
-                    if not target_proximity:  # Handle case where attribute exists but is None/empty
-                        setattr(target.ndb, NDB_PROXIMITY, set())
-                        target_proximity = set()
-                    target_proximity.add(attacker)
-                    setattr(target.ndb, NDB_PROXIMITY, target_proximity)
-                    splattercast.msg(f"PROXIMITY_RESTORE: {attacker.key} and {target.key} proximity restored after reload.")
-                    
             if target not in proximity_set:
                 attacker.msg(f"You need to be in melee proximity with {target.key} to attack them. Try advancing or charging.")
                 splattercast.msg(f"ATTACK_FAIL (PROXIMITY): {attacker.key} not in proximity with {target.key}.")
