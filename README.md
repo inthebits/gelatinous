@@ -135,5 +135,5 @@ gelatinous/
 
 *\*Facility exit procedures may require completion of standard decontamination protocols. Management is not responsible for any lingering effects of genetic modification or tactical combat training. For questions, complaints, or mutation reports, please contact our Customer Relations department at your earliest convenience.*
 
-**WARNING**: *This facility is a work in progress and our research team is still figuring things out. Side effects of exposure may include uncontrollable urges to optimize combat strategies and an inexplicable fondness for turn-based tactical planning.*
+**WARNING**: *This facility is a work in progress and our research team is one troubleshooter who has no idea what they are doing.*
 
