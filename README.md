@@ -15,7 +15,7 @@ Connect with any MUD client when our containment protocols are restored!
 
 ## 🧬 The G.R.I.M. Enhancement Protocol
 
-*Our proprietary enhancement system* based on four rigorously tested genetic modifications:
+*Our proprietary enhancement system* based on four rigorously tested metrics:
 
 - **Grit**: Physical toughness and endurance *(Warning: May cause stubborn behavior)*
 - **Resonance**: Social awareness and empathy *(Side effects include caring about others)*
