@@ -722,12 +722,22 @@ class Character(ObjectParent, DefaultCharacter):
                 if stopped_scripts:
                     stopped_scripts[0].start()
                     splattercast.msg(f"REVIVAL_RESTART: Restarted medical script for {self.key}")
+                    
+                    # Force immediate processing to overcome start_delay
+                    from evennia.utils import delay
+                    delay(0.1, stopped_scripts[0].at_repeat)
+                    splattercast.msg(f"REVIVAL_IMMEDIATE: Forced immediate medical processing for {self.key}")
                 else:
                     # Create new script if none exists
                     from world.medical.script import MedicalScript
                     from evennia import create_script
                     script = create_script(MedicalScript, obj=self, autostart=True)
                     splattercast.msg(f"REVIVAL_CREATE: Created new medical script for {self.key}")
+                    
+                    # Force immediate processing for new script too
+                    from evennia.utils import delay
+                    delay(0.1, script.at_repeat)
+                    splattercast.msg(f"REVIVAL_IMMEDIATE_NEW: Forced immediate medical processing for new script for {self.key}")
             except Exception as e:
                 try:
                     splattercast.msg(f"REVIVAL_ERROR: Failed to restart medical script for {self.key}: {e}")
