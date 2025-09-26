@@ -208,21 +208,19 @@ class ConsumptionCommand(Command):
             try:
                 # Check for low blood level or bleeding conditions
                 blood_level = getattr(target.medical_state, 'blood_level', 100)
-                has_bleeding = any(condition.condition_type == "bleeding" 
+                has_bleeding = any(condition.condition_type == "minor_bleeding" 
                                  for condition in getattr(target.medical_state, 'conditions', []))
                 return blood_level < 100 or has_bleeding
             except:
                 return False
                 
         elif medical_type == "wound_care":
-            # Check if character has external wounds that need bandaging
+            # Check if character has bleeding conditions that bandages can treat
             try:
-                # Check for bleeding and external wound conditions
-                has_bleeding = any(condition.condition_type == "bleeding" 
+                # Check for bleeding conditions (bandages help with external bleeding)
+                has_bleeding = any(condition.condition_type == "minor_bleeding" 
                                  for condition in getattr(target.medical_state, 'conditions', []))
-                has_wounds = any(condition.condition_type in ["wound", "laceration", "cut", "abrasion"] 
-                               for condition in getattr(target.medical_state, 'conditions', []))
-                return has_bleeding or has_wounds
+                return has_bleeding
             except:
                 return False
                 
