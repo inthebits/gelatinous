@@ -121,7 +121,7 @@ class ConsumptionCommand(Command):
         if hasattr(target, 'is_unconscious') and target.is_unconscious():
             # Some procedures can be done on unconscious patients
             medical_type = get_medical_type(item)
-            if medical_type not in ["blood_restoration", "surgical_treatment"]:
+            if medical_type not in ["blood_restoration", "surgical_treatment", "wound_care", "antiseptic"]:
                 errors.append(f"{target.get_display_name(user)} is unconscious and cannot cooperate.")
                 
         return errors
