@@ -143,6 +143,15 @@ class ConsumptionCommand(Command):
             medical_type = get_medical_type(item)
             treatment_possible = self._check_treatment_possible(target, medical_type)
             
+            # Debug output for troubleshooting  
+            try:
+                from evennia import search_channel
+                splattercast = search_channel("Splattercast")
+                if splattercast:
+                    splattercast[0].msg(f"CONSUMPTION_DEBUG: Item {item.key} type '{medical_type}' -> treatment_possible: {treatment_possible}")
+            except:
+                pass
+            
             result_msg = apply_medical_effects(item, user, target, **kwargs)
             
             if treatment_possible:
@@ -205,6 +214,7 @@ class ConsumptionCommand(Command):
             
         elif medical_type in ["blood_restoration", "pain_relief", "wound_care", "antiseptic"]:
             # These treatments can always be applied (conditions or blood level)
+            # TODO: Could add smarter logic here to check blood level, conditions, etc.
             return True
             
         else:
