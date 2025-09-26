@@ -140,18 +140,23 @@ class ConsumptionCommand(Command):
         # Apply item effects based on success
         if success_result["success_level"] == "success":
             result_msg = apply_medical_effects(item, user, target, **kwargs)
-            use_item(item)  # Consume item use
+            use_result = use_item(item)  # Consume item use
+            if use_result["destroyed"]:
+                result_msg += f" {use_result['message']}"
             
         elif success_result["success_level"] == "partial_success":
             # Partial success - reduced effects
             result_msg = f"Partial success: {apply_medical_effects(item, user, target, **kwargs)}"
             result_msg += " (Treatment was not fully effective.)"
-            use_item(item)
+            use_result = use_item(item)
+            if use_result["destroyed"]:
+                result_msg += f" {use_result['message']}"
             
         else:  # failure
             result_msg = f"Treatment failed! {item.get_display_name(user)} was wasted."
-            # Add failure consequences here in full implementation
-            use_item(item)
+            use_result = use_item(item)
+            if use_result["destroyed"]:
+                result_msg += f" {use_result['message']}"
             
         # Add dice roll information for feedback
         if success_result["success_level"] != "success":

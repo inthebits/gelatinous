@@ -469,15 +469,52 @@ def can_be_used(item):
 
 
 def use_item(item):
-    """Use the item, reducing uses left."""
+    """
+    Use the item, reducing uses left. Destroys item when uses reach 0.
+    
+    Returns:
+        dict: {"success": bool, "destroyed": bool, "message": str}
+    """
     if not is_medical_item(item):
-        return False
+        return {"success": False, "destroyed": False, "message": "Item is not a medical item"}
         
     uses_left = item.attributes.get("uses_left", 1)
-    if uses_left > 0:
-        item.attributes.add("uses_left", uses_left - 1)
-        return True
-    return False
+    max_uses = item.attributes.get("max_uses", 1)
+    
+    if uses_left <= 0:
+        return {"success": False, "destroyed": False, "message": "Item is already empty"}
+    
+    # Reduce uses by 1
+    new_uses = uses_left - 1
+    item.attributes.add("uses_left", new_uses)
+    
+    # Check if item should be destroyed
+    if new_uses <= 0:
+        item_name = item.get_display_name()
+        
+        # Notify holders/location before destruction
+        if hasattr(item, 'location') and item.location:
+            if hasattr(item.location, 'msg'):
+                # Item is held by a character
+                item.location.msg(f"{item_name} is now empty and crumbles away.")
+            elif hasattr(item.location, 'msg_contents'):
+                # Item is in a room
+                item.location.msg_contents(f"{item_name} crumbles away, now empty.")
+        
+        # Destroy the item
+        item.delete()
+        
+        return {
+            "success": True, 
+            "destroyed": True, 
+            "message": f"{item_name} used up and destroyed ({max_uses}/{max_uses} uses)"
+        }
+    else:
+        return {
+            "success": True, 
+            "destroyed": False, 
+            "message": f"Item used ({max_uses - new_uses}/{max_uses} uses)"
+        }
 
 
 def get_stat_requirement(item):
