@@ -629,20 +629,42 @@ def apply_medical_effects(item, user, target, **kwargs):
         result_msg = "Wounds properly bandaged. Bleeding controlled."
         
     elif medical_type == "fracture_treatment":
-        # Splint effects
-        fracture_conditions = [c for c in medical_state.conditions 
-                             if hasattr(c, 'condition_type') and c.condition_type == "fracture"]
-        for condition in fracture_conditions[:1]:  # Stabilize one fracture
-            condition.severity = max(0, condition.severity - 4)
-            if condition.severity <= 0:
-                medical_state.conditions.remove(condition)
+        # Splint treatment - heal damaged bones only (excludes destroyed bones)
+        damaged_bones = [(name, organ) for name, organ in medical_state.organs.items() 
+                        if (organ.current_hp < organ.max_hp and organ.current_hp > 0 and 
+                            (organ.data.get("fracture_vulnerable", False) or organ.data.get("bone_type")))]
         
-        result_msg = "Fracture stabilized with splint. Mobility partially restored."
+        if damaged_bones:
+            # Heal the most damaged bone (lowest HP percentage)
+            damaged_bones.sort(key=lambda x: x[1].current_hp / x[1].max_hp)
+            bone_name, bone = damaged_bones[0]
+            
+            # Bone healing - slightly less than surgery but bone-specific
+            heal_amount = 5  # Base bone healing with splints
+            actual_healed = bone.heal(heal_amount)
+            
+            if actual_healed > 0:
+                bone_display_name = bone_name.replace('_', ' ').title()
+                bone_type = bone.data.get("bone_type", "bone")
+                result_msg = f"Splint applied successfully. {bone_display_name} ({bone_type}) healed for {actual_healed} HP ({bone.current_hp}/{bone.max_hp})."
+            else:
+                result_msg = "Splint applied, but no further bone healing was possible."
+        else:
+            # Check if there are destroyed bones (0 HP)
+            destroyed_bones = [name for name, organ in medical_state.organs.items() 
+                             if (organ.current_hp <= 0 and (organ.data.get("fracture_vulnerable", False) or organ.data.get("bone_type")))]
+            
+            if destroyed_bones:
+                bone_list = ', '.join([name.replace('_', ' ').title() for name in destroyed_bones])
+                result_msg = f"Orthopedic examination complete. Destroyed bones detected ({bone_list}) - beyond splint repair. No repairable fractures found."
+            else:
+                result_msg = "Orthopedic examination complete. No damaged bones requiring splint treatment found."
         
     elif medical_type == "surgical_treatment":
-        # Surgical intervention - heal damaged organs (excludes destroyed organs)
+        # Surgical intervention - heal damaged soft tissue organs only (excludes bones and destroyed organs)
         damaged_organs = [(name, organ) for name, organ in medical_state.organs.items() 
-                         if organ.current_hp < organ.max_hp and organ.current_hp > 0]
+                         if (organ.current_hp < organ.max_hp and organ.current_hp > 0 and 
+                             not (organ.data.get("fracture_vulnerable", False) or organ.data.get("bone_type")))]
         
         if damaged_organs:
             # Heal the most damaged organ (lowest HP percentage)
@@ -659,15 +681,15 @@ def apply_medical_effects(item, user, target, **kwargs):
             else:
                 result_msg = "Surgical procedure completed, but no further healing was possible."
         else:
-            # Check if there are destroyed organs (0 HP)
+            # Check if there are destroyed soft tissue organs (0 HP, non-bones)
             destroyed_organs = [name for name, organ in medical_state.organs.items() 
-                              if organ.current_hp <= 0]
+                              if (organ.current_hp <= 0 and not (organ.data.get("fracture_vulnerable", False) or organ.data.get("bone_type")))]
             
             if destroyed_organs:
                 organ_list = ', '.join([name.replace('_', ' ').title() for name in destroyed_organs])
-                result_msg = f"Surgical examination complete. Destroyed organs detected ({organ_list}) - beyond surgical repair. No repairable damage found."
+                result_msg = f"Surgical examination complete. Destroyed organs detected ({organ_list}) - beyond surgical repair. No repairable soft tissue damage found."
             else:
-                result_msg = "Surgical examination complete. No damaged organs requiring surgery found."
+                result_msg = "Surgical examination complete. No damaged soft tissue organs requiring surgery found."
     
     elif medical_type == "healing_acceleration":
         # Stimpak effects - general healing boost
