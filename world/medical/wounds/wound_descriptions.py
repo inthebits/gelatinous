@@ -336,7 +336,8 @@ def _determine_injury_type_from_condition(condition):
         "fracture": "blunt",    # Fractures are blunt trauma
     }
     
-    return condition_to_injury.get(condition.type, "trauma")
+    condition_type = condition.condition_type if hasattr(condition, 'condition_type') else "unknown"
+    return condition_to_injury.get(condition_type, "trauma")
 
 
 def _determine_wound_stage(condition):

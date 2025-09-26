@@ -373,7 +373,7 @@ class MedicalState:
             
     def get_conditions_by_type(self, condition_type):
         """Get all conditions of a specific type."""
-        return [c for c in self.conditions if c.type == condition_type]
+        return [c for c in self.conditions if hasattr(c, 'condition_type') and c.condition_type == condition_type]
         
     def get_conditions_by_location(self, location):
         """Get all conditions affecting a specific body location."""

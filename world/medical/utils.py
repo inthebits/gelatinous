@@ -378,7 +378,8 @@ def get_medical_status_summary(character):
         lines.append("Active Conditions:")
         for condition in medical_state.conditions:
             location_str = f" ({condition.location})" if condition.location else ""
-            lines.append(f"  - {condition.type.title()} ({condition.severity}){location_str}")
+            condition_name = condition.condition_type.title() if hasattr(condition, 'condition_type') else "Unknown"
+            lines.append(f"  - {condition_name} ({condition.severity}){location_str}")
     else:
         lines.append("No active medical conditions")
         
@@ -552,24 +553,24 @@ def apply_medical_effects(item, user, target, **kwargs):
     
     # Basic effect application based on medical type
     if medical_type == "blood_restoration":
-        # Restore blood volume
-        old_volume = medical_state.blood_volume
-        medical_state.blood_volume = min(100.0, old_volume + 25.0)
+        # Restore blood volume (using blood_level attribute)
+        old_level = medical_state.blood_level
+        medical_state.blood_level = min(100.0, old_level + 25.0)
         
-        # Reduce bleeding
+        # Reduce bleeding (check for minor_bleeding condition type)
         bleeding_conditions = [c for c in medical_state.conditions 
-                             if c.type == "bleeding"]
+                             if hasattr(c, 'condition_type') and c.condition_type == "minor_bleeding"]
         for condition in bleeding_conditions[:2]:  # Reduce up to 2 bleeding conditions
             condition.severity = max(0, condition.severity - 3)
             if condition.severity <= 0:
                 medical_state.conditions.remove(condition)
         
-        return f"Blood transfusion successful! Blood volume increased from {old_volume:.1f} to {medical_state.blood_volume:.1f}."
+        return f"Blood transfusion successful! Blood level increased from {old_level:.1f} to {medical_state.blood_level:.1f}."
         
     elif medical_type == "pain_relief":
         # Reduce pain conditions
         pain_conditions = [c for c in medical_state.conditions 
-                         if c.type == "pain"]
+                         if hasattr(c, 'condition_type') and c.condition_type == "pain"]
         for condition in pain_conditions[:3]:  # Reduce multiple pain sources
             condition.severity = max(0, condition.severity - 2)
             if condition.severity <= 0:
@@ -580,7 +581,7 @@ def apply_medical_effects(item, user, target, **kwargs):
     elif medical_type == "wound_care":
         # Bandaging effects
         bleeding_conditions = [c for c in medical_state.conditions 
-                             if c.type == "bleeding"]
+                             if hasattr(c, 'condition_type') and c.condition_type == "minor_bleeding"]
         for condition in bleeding_conditions[:1]:  # Stop one source of bleeding
             condition.severity = max(0, condition.severity - 2)
             if condition.severity <= 0:
@@ -591,7 +592,7 @@ def apply_medical_effects(item, user, target, **kwargs):
     elif medical_type == "fracture_treatment":
         # Splint effects
         fracture_conditions = [c for c in medical_state.conditions 
-                             if c.type == "fracture"]
+                             if hasattr(c, 'condition_type') and c.condition_type == "fracture"]
         for condition in fracture_conditions[:1]:  # Stabilize one fracture
             condition.severity = max(0, condition.severity - 4)
             if condition.severity <= 0:
@@ -602,7 +603,7 @@ def apply_medical_effects(item, user, target, **kwargs):
     elif medical_type == "surgical_treatment":
         # Surgical intervention
         organ_conditions = [c for c in medical_state.conditions 
-                          if c.type == "organ_damage"]
+                          if hasattr(c, 'condition_type') and c.condition_type == "organ_damage"]
         for condition in organ_conditions[:1]:  # Repair one organ
             condition.severity = max(0, condition.severity - 5)
             if condition.severity <= 0:
@@ -625,7 +626,7 @@ def apply_medical_effects(item, user, target, **kwargs):
     elif medical_type == "antiseptic":
         # Infection prevention and wound cleaning
         infection_conditions = [c for c in medical_state.conditions 
-                              if c.type == "infection"]
+                              if hasattr(c, 'condition_type') and c.condition_type == "infection"]
         for condition in infection_conditions[:2]:  # Clear multiple infections
             condition.severity = max(0, condition.severity - 3)
             if condition.severity <= 0:
@@ -637,7 +638,7 @@ def apply_medical_effects(item, user, target, **kwargs):
         # Oxygen therapy - improves consciousness and breathing
         medical_state.consciousness = min(100, medical_state.consciousness + 15)
         breathing_conditions = [c for c in medical_state.conditions 
-                               if c.type in ["breathing_difficulty", "suffocation"]]
+                               if hasattr(c, 'condition_type') and c.condition_type in ["breathing_difficulty", "suffocation"]]
         for condition in breathing_conditions[:2]:
             condition.severity = max(0, condition.severity - 2)
             if condition.severity <= 0:
@@ -655,7 +656,7 @@ def apply_medical_effects(item, user, target, **kwargs):
     elif medical_type == "inhaler":
         # Medical inhaler - targeted respiratory treatment
         breathing_conditions = [c for c in medical_state.conditions 
-                               if c.type in ["breathing_difficulty", "lung_damage"]]
+                               if hasattr(c, 'condition_type') and c.condition_type in ["breathing_difficulty", "lung_damage"]]
         for condition in breathing_conditions[:1]:
             condition.severity = max(0, condition.severity - 3)
             if condition.severity <= 0:
@@ -679,7 +680,7 @@ def apply_medical_effects(item, user, target, **kwargs):
         # Medicinal herb - natural pain relief
         medical_state.pain_level = max(0, medical_state.pain_level - 15)
         stress_conditions = [c for c in medical_state.conditions 
-                            if c.type in ["stress", "anxiety"]]
+                            if hasattr(c, 'condition_type') and c.condition_type in ["stress", "anxiety"]]
         for condition in stress_conditions[:1]:
             condition.severity = max(0, condition.severity - 2)
             if condition.severity <= 0:
