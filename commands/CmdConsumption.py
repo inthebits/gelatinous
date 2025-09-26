@@ -237,7 +237,7 @@ class CmdInject(ConsumptionCommand):
 
 class CmdApply(ConsumptionCommand):
     """
-    Apply a topical medical treatment to yourself or another character.
+    Apply a medical treatment to yourself or another character.
     
     Usage:
         apply <item>
@@ -247,37 +247,65 @@ class CmdApply(ConsumptionCommand):
     Examples:
         apply burn gel
         apply antiseptic to Alice
-        apply healing salve to Bob
+        apply surgical kit to Bob
         
-    Topical items include burn gel, antiseptic, healing salves, and other
-    external treatments. Takes time to apply properly.
+    Applicable items include burn gel, antiseptic, healing salves, surgical
+    kits, and other medical treatments. Takes time to apply properly.
+    Surgery requires high medical skill (Intellect 3+).
     """
     
     key = "apply"
-    aliases = ["rub", "spread"]
+    aliases = ["rub", "spread", "operate", "surgery"]
     help_category = "Medical"
     
     def func(self):
         """Execute the apply command."""
         caller = self.caller
         
-        # Handle "apply item to target" syntax
-        args = self.args.replace(" to ", " ")
-        
-        # Parse arguments
-        result = self.get_item_and_target(args)
-        if result["errors"]:
-            caller.msg(result["errors"][0])
-            return
+        # Handle special surgery/operate aliases that auto-find surgical kits
+        if self.cmdstring.lower() in ["surgery", "operate"]:
+            # Look for surgical kit in caller's inventory
+            surgical_kits = [obj for obj in caller.contents 
+                           if hasattr(obj, 'attributes') and 
+                           obj.attributes.get('medical_type') == 'surgical_treatment']
             
-        item, target = result["item"], result["target"]
-        is_self = (caller == target)
+            if not surgical_kits:
+                caller.msg("You don't have a surgical kit to perform surgery.")
+                return
+                
+            # Use the first surgical kit found
+            surgical_kit = surgical_kits[0]
+            
+            # Parse target (surgery/operate only takes target, no item name needed)
+            if not self.args.strip():
+                caller.msg("Surgery on whom? Usage: surgery <target>")
+                return
+                
+            # Get target
+            target = caller.search(self.args.strip(), location=caller.location)
+            if not target:
+                return
+                
+            item = surgical_kit
+            is_self = (caller == target)
+        else:
+            # Handle normal "apply item to target" syntax
+            args = self.args.replace(" to ", " ")
+            
+            # Parse arguments
+            result = self.get_item_and_target(args)
+            if result["errors"]:
+                caller.msg(result["errors"][0])
+                return
+                
+            item, target = result["item"], result["target"]
+            is_self = (caller == target)
         
-        # Check if item can be applied topically
-        topical_types = ["burn_treatment", "antiseptic", "healing_salve", "wound_care"]
+        # Check if item can be applied (topically or surgically)
+        applicable_types = ["burn_treatment", "antiseptic", "healing_salve", "wound_care", "surgical_treatment"]
         medical_type = get_medical_type(item)
-        if medical_type not in topical_types:
-            caller.msg(f"{item.get_display_name(caller)} cannot be applied topically.")
+        if medical_type not in applicable_types:
+            caller.msg(f"{item.get_display_name(caller)} cannot be applied.")
             return
             
         # Check medical requirements
