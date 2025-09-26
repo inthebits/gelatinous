@@ -640,15 +640,26 @@ def apply_medical_effects(item, user, target, **kwargs):
         result_msg = "Fracture stabilized with splint. Mobility partially restored."
         
     elif medical_type == "surgical_treatment":
-        # Surgical intervention
-        organ_conditions = [c for c in medical_state.conditions 
-                          if hasattr(c, 'condition_type') and c.condition_type == "organ_damage"]
-        for condition in organ_conditions[:1]:  # Repair one organ
-            condition.severity = max(0, condition.severity - 5)
-            if condition.severity <= 0:
-                medical_state.conditions.remove(condition)
+        # Surgical intervention - heal damaged organs
+        damaged_organs = [(name, organ) for name, organ in medical_state.organs.items() 
+                         if organ.current_hp < organ.max_hp]
         
-        result_msg = "Surgical procedure completed. Internal injuries treated."
+        if damaged_organs:
+            # Heal the most damaged organ (lowest HP percentage)
+            damaged_organs.sort(key=lambda x: x[1].current_hp / x[1].max_hp)
+            organ_name, organ = damaged_organs[0]
+            
+            # Heal 5-10 HP depending on surgical skill effectiveness  
+            heal_amount = 7  # Base surgical healing
+            actual_healed = organ.heal(heal_amount)
+            
+            if actual_healed > 0:
+                organ_display_name = organ_name.replace('_', ' ').title()
+                result_msg = f"Surgical procedure completed. {organ_display_name} healed for {actual_healed} HP ({organ.current_hp}/{organ.max_hp})."
+            else:
+                result_msg = "Surgical procedure completed, but no further healing was possible."
+        else:
+            result_msg = "Surgical examination complete. No damaged organs requiring surgery found."
     
     elif medical_type == "healing_acceleration":
         # Stimpak effects - general healing boost
