@@ -552,6 +552,8 @@ def apply_medical_effects(item, user, target, **kwargs):
     medical_state = target.medical_state
     
     # Basic effect application based on medical type
+    result_msg = ""
+    
     if medical_type == "blood_restoration":
         # Restore blood volume (using blood_level attribute)
         old_level = medical_state.blood_level
@@ -565,7 +567,7 @@ def apply_medical_effects(item, user, target, **kwargs):
             if condition.severity <= 0:
                 medical_state.conditions.remove(condition)
         
-        return f"Blood transfusion successful! Blood level increased from {old_level:.1f} to {medical_state.blood_level:.1f}."
+        result_msg = f"Blood transfusion successful! Blood level increased from {old_level:.1f} to {medical_state.blood_level:.1f}."
         
     elif medical_type == "pain_relief":
         # Reduce pain conditions
@@ -576,7 +578,7 @@ def apply_medical_effects(item, user, target, **kwargs):
             if condition.severity <= 0:
                 medical_state.conditions.remove(condition)
         
-        return "Painkiller administered. Pain significantly reduced."
+        result_msg = "Painkiller administered. Pain significantly reduced."
         
     elif medical_type == "wound_care":
         # Bandaging effects
@@ -587,7 +589,7 @@ def apply_medical_effects(item, user, target, **kwargs):
             if condition.severity <= 0:
                 medical_state.conditions.remove(condition)
         
-        return "Wounds properly bandaged. Bleeding controlled."
+        result_msg = "Wounds properly bandaged. Bleeding controlled."
         
     elif medical_type == "fracture_treatment":
         # Splint effects
@@ -598,7 +600,7 @@ def apply_medical_effects(item, user, target, **kwargs):
             if condition.severity <= 0:
                 medical_state.conditions.remove(condition)
         
-        return "Fracture stabilized with splint. Mobility partially restored."
+        result_msg = "Fracture stabilized with splint. Mobility partially restored."
         
     elif medical_type == "surgical_treatment":
         # Surgical intervention
@@ -609,7 +611,7 @@ def apply_medical_effects(item, user, target, **kwargs):
             if condition.severity <= 0:
                 medical_state.conditions.remove(condition)
         
-        return "Surgical procedure completed. Internal injuries treated."
+        result_msg = "Surgical procedure completed. Internal injuries treated."
     
     elif medical_type == "healing_acceleration":
         # Stimpak effects - general healing boost
@@ -621,7 +623,7 @@ def apply_medical_effects(item, user, target, **kwargs):
                 medical_state.conditions.remove(condition)
                 healed_count += 1
         
-        return f"Stimpak administered. Rapid healing activated - {healed_count} conditions improved."
+        result_msg = f"Stimpak administered. Rapid healing activated - {healed_count} conditions improved."
     
     elif medical_type == "antiseptic":
         # Infection prevention and wound cleaning
@@ -632,7 +634,7 @@ def apply_medical_effects(item, user, target, **kwargs):
             if condition.severity <= 0:
                 medical_state.conditions.remove(condition)
         
-        return "Antiseptic applied. Infections cleared and wounds sterilized."
+        result_msg = "Antiseptic applied. Infections cleared and wounds sterilized."
     
     elif medical_type == "oxygen":
         # Oxygen therapy - improves consciousness and breathing
@@ -644,14 +646,14 @@ def apply_medical_effects(item, user, target, **kwargs):
             if condition.severity <= 0:
                 medical_state.conditions.remove(condition)
         
-        return "Oxygen administered. Breathing improved and consciousness stabilized."
+        result_msg = "Oxygen administered. Breathing improved and consciousness stabilized."
     
     elif medical_type == "anesthetic":
         # Anesthetic gas - reduces pain and consciousness
         medical_state.pain_level = max(0, medical_state.pain_level - 25)
         medical_state.consciousness = max(0, medical_state.consciousness - 10)
         
-        return "Anesthetic inhaled. Pain reduced but consciousness lowered."
+        result_msg = "Anesthetic inhaled. Pain reduced but consciousness lowered."
     
     elif medical_type == "inhaler":
         # Medical inhaler - targeted respiratory treatment
@@ -662,19 +664,19 @@ def apply_medical_effects(item, user, target, **kwargs):
             if condition.severity <= 0:
                 medical_state.conditions.remove(condition)
         
-        return "Inhaler used. Respiratory function improved."
+        result_msg = "Inhaler used. Respiratory function improved."
     
     elif medical_type == "gas":
         # Medical gas treatment - various effects
         medical_state.consciousness = min(100, medical_state.consciousness + 5)
-        return "Medical gas inhaled. Minor therapeutic effects applied."
+        result_msg = "Medical gas inhaled. Minor therapeutic effects applied."
     
     elif medical_type == "vapor":
         # Vaporized medicine - fast absorption
         medical_state.pain_level = max(0, medical_state.pain_level - 10)
         medical_state.blood_level = min(100, medical_state.blood_level + 5)
         
-        return "Vaporized medicine inhaled. Rapid absorption achieved."
+        result_msg = "Vaporized medicine inhaled. Rapid absorption achieved."
     
     elif medical_type == "herb":
         # Medicinal herb - natural pain relief
@@ -686,19 +688,21 @@ def apply_medical_effects(item, user, target, **kwargs):
             if condition.severity <= 0:
                 medical_state.conditions.remove(condition)
         
-        return "Medicinal herb smoked. Natural pain relief and calming effects."
+        result_msg = "Medicinal herb smoked. Natural pain relief and calming effects."
     
     elif medical_type == "cigarette":
         # Medicinal cigarette - mild therapeutic effects
         medical_state.pain_level = max(0, medical_state.pain_level - 8)
-        return "Medicinal cigarette smoked. Mild pain relief achieved."
+        result_msg = "Medicinal cigarette smoked. Mild pain relief achieved."
     
     elif medical_type in ["medicinal_plant", "dried_medicine"]:
         # Dried medicinal substances - concentrated effects
         medical_state.pain_level = max(0, medical_state.pain_level - 12)
         medical_state.consciousness = min(100, medical_state.consciousness + 3)
         
-        return "Dried medicine smoked. Concentrated therapeutic effects applied."
+        result_msg = "Dried medicine smoked. Concentrated therapeutic effects applied."
+    else:
+        result_msg = f"Applied {medical_type.replace('_', ' ')} treatment."
     
     # Check for immediate revival after any medical treatment
     death_scripts = target.scripts.get("death_progression")
@@ -753,7 +757,7 @@ def apply_medical_effects(item, user, target, **kwargs):
             except:
                 pass
     
-    return f"Applied {medical_type.replace('_', ' ')} treatment."
+    return result_msg
 
 
 def get_medical_item_info(item, viewer):
