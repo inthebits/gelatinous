@@ -702,17 +702,48 @@ def apply_medical_effects(item, user, target, **kwargs):
     
     # Check for immediate revival after any medical treatment
     death_scripts = target.scripts.get("death_progression")
+    
+    try:
+        from evennia.comms.models import ChannelDB
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        splattercast.msg(f"REVIVAL_DEBUG: {target.key} has {len(death_scripts)} death scripts")
+        
+        if hasattr(target, 'medical_state') and target.medical_state:
+            is_dead = target.medical_state.is_dead()
+            blood_level = target.medical_state.blood_level
+            splattercast.msg(f"REVIVAL_DEBUG: {target.key} blood_level={blood_level:.1f}%, is_dead={is_dead}")
+        else:
+            splattercast.msg(f"REVIVAL_DEBUG: {target.key} has no medical_state")
+    except:
+        pass
+    
     if death_scripts:
         try:
             for script in death_scripts:
                 if (script.is_active and 
                     hasattr(script, '_check_medical_revival_conditions')):
+                    
+                    # Debug the revival condition check
+                    try:
+                        from evennia.comms.models import ChannelDB
+                        splattercast = ChannelDB.objects.get_channel("Splattercast")
+                        splattercast.msg(f"REVIVAL_DEBUG: Checking revival conditions for {target.key}")
+                    except:
+                        pass
+                    
                     if script._check_medical_revival_conditions(target):
                         from evennia.comms.models import ChannelDB
                         splattercast = ChannelDB.objects.get_channel("Splattercast")
                         splattercast.msg(f"IMMEDIATE_REVIVAL_CHECK: {target.key} revival triggered by medical treatment")
                         script._handle_medical_revival()
                         break  # Revival handled, stop checking
+                    else:
+                        try:
+                            from evennia.comms.models import ChannelDB
+                            splattercast = ChannelDB.objects.get_channel("Splattercast")
+                            splattercast.msg(f"REVIVAL_DEBUG: {target.key} does not meet revival conditions")
+                        except:
+                            pass
         except Exception as e:
             # Don't let revival check errors break medical treatment
             try:
