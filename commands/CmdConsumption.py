@@ -248,9 +248,10 @@ class CmdApply(ConsumptionCommand):
         apply burn gel
         apply antiseptic to Alice
         apply surgical kit to Bob
+        apply splint to Charlie
         
     Applicable items include burn gel, antiseptic, healing salves, surgical
-    kits, and other medical treatments. Takes time to apply properly.
+    kits, splints, and other medical treatments. Takes time to apply properly.
     Surgery requires high medical skill (Intellect 3+).
     """
     
@@ -301,8 +302,8 @@ class CmdApply(ConsumptionCommand):
             item, target = result["item"], result["target"]
             is_self = (caller == target)
         
-        # Check if item can be applied (topically or surgically)
-        applicable_types = ["burn_treatment", "antiseptic", "healing_salve", "wound_care", "surgical_treatment"]
+        # Check if item can be applied (topically, surgically, or orthopedically)
+        applicable_types = ["burn_treatment", "antiseptic", "healing_salve", "wound_care", "surgical_treatment", "fracture_treatment"]
         medical_type = get_medical_type(item)
         if medical_type not in applicable_types:
             caller.msg(f"{item.get_display_name(caller)} cannot be applied.")
