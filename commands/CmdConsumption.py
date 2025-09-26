@@ -139,10 +139,19 @@ class ConsumptionCommand(Command):
         
         # Apply item effects based on success
         if success_result["success_level"] == "success":
+            # Check if actual treatment is possible before applying effects
+            medical_type = get_medical_type(item)
+            treatment_possible = self._check_treatment_possible(target, medical_type)
+            
             result_msg = apply_medical_effects(item, user, target, **kwargs)
-            use_result = use_item(item)  # Consume item use
-            if use_result["destroyed"]:
-                result_msg += f" {use_result['message']}"
+            
+            if treatment_possible:
+                use_result = use_item(item)  # Only consume if treatment actually happened
+                if use_result["destroyed"]:
+                    result_msg += f" {use_result['message']}"
+            else:
+                # No treatment occurred - don't consume the item
+                result_msg += " No supplies were used."
             
         elif success_result["success_level"] == "partial_success":
             # Partial success - reduced effects
@@ -163,6 +172,44 @@ class ConsumptionCommand(Command):
             result_msg += f" (Rolled {success_result['roll']} + {success_result['medical_skill']:.1f} = {success_result['total']:.1f} vs {success_result['difficulty']})"
             
         return result_msg
+        
+    def _check_treatment_possible(self, target, medical_type):
+        """
+        Check if actual treatment is possible based on target's medical state.
+        
+        Args:
+            target: Character to be treated
+            medical_type: Type of medical treatment
+            
+        Returns:
+            bool: True if treatment can actually occur, False if only examination possible
+        """
+        try:
+            medical_state = target.medical_state
+        except AttributeError:
+            return False
+            
+        if medical_type == "surgical_treatment":
+            # Check for damaged soft tissue organs (excludes bones and destroyed organs)
+            damaged_organs = [organ for name, organ in medical_state.organs.items() 
+                            if (organ.current_hp < organ.max_hp and organ.current_hp > 0 and 
+                                not (organ.data.get("fracture_vulnerable", False) or organ.data.get("bone_type")))]
+            return len(damaged_organs) > 0
+            
+        elif medical_type == "fracture_treatment":
+            # Check for damaged bones (excludes destroyed bones)
+            damaged_bones = [organ for name, organ in medical_state.organs.items() 
+                           if (organ.current_hp < organ.max_hp and organ.current_hp > 0 and 
+                               (organ.data.get("fracture_vulnerable", False) or organ.data.get("bone_type")))]
+            return len(damaged_bones) > 0
+            
+        elif medical_type in ["blood_restoration", "pain_relief", "wound_care", "antiseptic"]:
+            # These treatments can always be applied (conditions or blood level)
+            return True
+            
+        else:
+            # For other medical types, assume treatment is always possible
+            return True
 
 
 class CmdInject(ConsumptionCommand):
