@@ -122,8 +122,9 @@ class MedicalScript(DefaultScript):
                     # Trigger full death processing (includes death analysis and death curtain)
                     self.obj.at_death()
                     
+                # Stop script but preserve it for potential revival
                 self.stop()
-                self.delete()
+                splattercast.msg(f"MEDICAL_SCRIPT_PAUSED: {self.obj.key} medical script stopped but preserved for revival")
                 return
             elif medical_state.is_unconscious():
                 splattercast.msg(f"MEDICAL_SCRIPT_UNCONSCIOUS: {self.obj.key} has become unconscious")

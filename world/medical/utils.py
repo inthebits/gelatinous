@@ -700,6 +700,28 @@ def apply_medical_effects(item, user, target, **kwargs):
         
         return "Dried medicine smoked. Concentrated therapeutic effects applied."
     
+    # Check for immediate revival after any medical treatment
+    death_scripts = target.scripts.get("death_progression")
+    if death_scripts:
+        try:
+            for script in death_scripts:
+                if (script.is_active and 
+                    hasattr(script, '_check_medical_revival_conditions')):
+                    if script._check_medical_revival_conditions(target):
+                        from evennia.comms.models import ChannelDB
+                        splattercast = ChannelDB.objects.get_channel("Splattercast")
+                        splattercast.msg(f"IMMEDIATE_REVIVAL_CHECK: {target.key} revival triggered by medical treatment")
+                        script._handle_medical_revival()
+                        break  # Revival handled, stop checking
+        except Exception as e:
+            # Don't let revival check errors break medical treatment
+            try:
+                from evennia.comms.models import ChannelDB
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"REVIVAL_CHECK_ERROR: {target.key}: {e}")
+            except:
+                pass
+    
     return f"Applied {medical_type.replace('_', ' ')} treatment."
 
 

@@ -375,6 +375,25 @@ class DeathProgressionScript(DefaultScript):
         if hasattr(character, 'apply_final_death_state'):
             character.apply_final_death_state()
             
+        # Clean up medical script since character is permanently dead
+        try:
+            medical_scripts = character.scripts.get("medical_script")
+            if medical_scripts:
+                for script in medical_scripts:
+                    script.stop()
+                    script.delete()
+                try:
+                    splattercast = ChannelDB.objects.get_channel("Splattercast")
+                    splattercast.msg(f"FINAL_DEATH_CLEANUP: Deleted medical script for {character.key}")
+                except:
+                    pass
+        except Exception as e:
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"FINAL_DEATH_CLEANUP_ERROR: Failed to delete medical script for {character.key}: {e}")
+            except:
+                pass
+            
         # Complete death progression - corpse creation and character transition
         self._handle_corpse_creation_and_transition(character)
             

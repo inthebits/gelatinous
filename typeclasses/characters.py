@@ -708,7 +708,31 @@ class Character(ObjectParent, DefaultCharacter):
         if hasattr(self, 'override_place'):
             self.override_place = None
         
-        # TODO: Stop death script if running when implemented
+        # Restart medical script if character has conditions and script is stopped
+        if (hasattr(self, 'medical_state') and self.medical_state and 
+            self.medical_state.conditions):
+            try:
+                from evennia.comms.models import ChannelDB
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                
+                # Find stopped medical script and restart it
+                medical_scripts = self.scripts.get("medical_script")
+                stopped_scripts = [s for s in medical_scripts if not s.is_active]
+                
+                if stopped_scripts:
+                    stopped_scripts[0].start()
+                    splattercast.msg(f"REVIVAL_RESTART: Restarted medical script for {self.key}")
+                else:
+                    # Create new script if none exists
+                    from world.medical.script import MedicalScript
+                    from evennia import create_script
+                    script = create_script(MedicalScript, obj=self, autostart=True)
+                    splattercast.msg(f"REVIVAL_CREATE: Created new medical script for {self.key}")
+            except Exception as e:
+                try:
+                    splattercast.msg(f"REVIVAL_ERROR: Failed to restart medical script for {self.key}: {e}")
+                except:
+                    pass
         
         # Clear death processing flag
         if hasattr(self.ndb, 'death_processed'):
