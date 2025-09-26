@@ -640,9 +640,9 @@ def apply_medical_effects(item, user, target, **kwargs):
         result_msg = "Fracture stabilized with splint. Mobility partially restored."
         
     elif medical_type == "surgical_treatment":
-        # Surgical intervention - heal damaged organs
+        # Surgical intervention - heal damaged organs (excludes destroyed organs)
         damaged_organs = [(name, organ) for name, organ in medical_state.organs.items() 
-                         if organ.current_hp < organ.max_hp]
+                         if organ.current_hp < organ.max_hp and organ.current_hp > 0]
         
         if damaged_organs:
             # Heal the most damaged organ (lowest HP percentage)
@@ -659,7 +659,15 @@ def apply_medical_effects(item, user, target, **kwargs):
             else:
                 result_msg = "Surgical procedure completed, but no further healing was possible."
         else:
-            result_msg = "Surgical examination complete. No damaged organs requiring surgery found."
+            # Check if there are destroyed organs (0 HP)
+            destroyed_organs = [name for name, organ in medical_state.organs.items() 
+                              if organ.current_hp <= 0]
+            
+            if destroyed_organs:
+                organ_list = ', '.join([name.replace('_', ' ').title() for name in destroyed_organs])
+                result_msg = f"Surgical examination complete. Destroyed organs detected ({organ_list}) - beyond surgical repair. No repairable damage found."
+            else:
+                result_msg = "Surgical examination complete. No damaged organs requiring surgery found."
     
     elif medical_type == "healing_acceleration":
         # Stimpak effects - general healing boost
