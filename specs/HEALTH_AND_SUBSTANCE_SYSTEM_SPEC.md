@@ -14,6 +14,7 @@
 - Natural language consumption commands (`inject`, `apply`, `bandage`, `eat`, `drink`, `inhale`, `smoke`)
 - Medical inventory management commands (`medlist`, `mediteminfo`, `refillmed`)
 - Skill-based treatment success using G.R.I.M. stats (Intellect-based medical skill)
+- Smart consumption system preventing resource waste through need-based analysis
 
 **Evennia Integration Complete:**
 - Proper attribute-based medical items (no custom typeclass required)
@@ -62,6 +63,7 @@
 - **BloodPool forensic evidence** with aging and room description integration
 - **Unified cleaning system** supporting both graffiti and blood evidence removal
 - **Death progression system** with 6-minute revival window and medical intervention mechanics
+- **Smart medical item consumption** with need-based resource management preventing waste
 
 **Death System Implementation Complete:**
 - **✅ Death script cleanup** - Death progression script automatically stops and deletes after 6-minute window expires
@@ -77,16 +79,47 @@
 - **✅ Consistent |R bright red coloring** for all medical-related text
 - **✅ Smart message timing** prevents message spam while maintaining medical urgency
 
-**NEXT: Medical System Integration Testing and Refinement:**
-- **🔨 Medical conditions** - Test preservation of wounds, bleeding, infections for autopsy/examination *(needs testing)*
-- **🔨 Death cause attribution** - Test storage of cause of death, weapon used, attacker information *(needs testing)*
-- **🔨 Forensic evidence** - Test blood type, DNA markers, time of death, environmental factors *(needs testing)*
-- **🔨 Decay progression** - Test corpse aging and decomposition mechanics *(needs testing)*
-- **Brain death revival integration** - Brain organ health determines revival eligibility during death progression *(theoretical - untested)*
-- **Brain death threshold** - Characters with destroyed/critically damaged brain cannot be revived after certain time *(theoretical - untested)*
-- **Progressive brain damage** - Brain deterioration during death progression affects revival chances *(theoretical - untested)*
-- **Medical realism** - Align revival mechanics with anatomical consciousness requirements *(theoretical - untested)*
-- **Revival conditions refinement** - Update `_check_medical_revival_conditions()` to prioritize brain/consciousness state *(theoretical - untested)*
+**Smart Medical Item Consumption System Complete (September 2025):**
+- **✅ Need-based consumption logic** - Medical supplies only consumed when actual treatment can occur, not during examination-only procedures
+- **✅ Medical specialization** - Surgery kits for soft tissue organs, splints for bones, bandages for bleeding, blood bags for blood loss
+- **✅ Architectural robustness** - Direct medical state analysis replaces fragile message text parsing for consumption decisions
+- **✅ Resource efficiency** - Prevents wasteful consumption on healthy patients or inappropriate conditions
+- **✅ Unconscious patient support** - Medical procedures that don't require cooperation work on unconscious patients
+- **✅ Real condition detection** - Uses actual condition types (`minor_bleeding`, `pain`, `infection`) from medical system classes
+
+**Smart Consumption Matrix:**
+```python
+# Medical item consumption logic based on actual medical need
+CONSUMPTION_RULES = {
+    "surgical_treatment": "Only consumed for damaged soft tissue organs (excludes bones and destroyed organs)",
+    "fracture_treatment": "Only consumed for damaged bones (fracture_vulnerable or bone_type properties)",
+    "blood_restoration": "Consumed for blood_level < 100 OR minor_bleeding conditions present",
+    "wound_care": "Consumed only for minor_bleeding conditions (external wound dressing)",
+    "pain_relief": "Always consumed (pain detection complexity)",
+    "antiseptic": "Always consumed (infection prevention)"
+}
+```
+
+**NEXT: Organ Harvesting and Biotech Foundation (Phase 3.1):**
+- **🎯 Death progression message themes refinement** - Enhance narrative consistency and emotional progression
+- **🎯 Organ viability system** - Time-based organ deterioration after death for harvesting mechanics
+- **🎯 Corpse examination enhancement** - Detailed organ status and harvest viability assessment commands
+- **🎯 Organ harvesting commands** - `harvest <organ> from <corpse>` with skill requirements and failure consequences
+- **🎯 Harvested organ inventory** - Storage, preservation, and viability tracking systems
+- **🎯 Foundation for cybernetics** - Organ replacement demand system setting up prosthetic/cybernetic integration
+
+**Medical System Testing and Validation (Completed September 2025):**
+- **✅ Medical conditions** - Extensive testing of bleeding, pain, infection condition preservation and treatment
+- **✅ Smart consumption system** - Comprehensive testing of need-based medical item consumption logic
+- **✅ Revival mechanics** - Production testing of 6-minute death progression and medical intervention
+- **✅ Unconscious patient treatment** - Verified medical procedures work correctly on unconscious patients  
+- **✅ Medical specialization** - Tested surgery vs splint specialization with appropriate organ targeting
+- **✅ Item consumption accuracy** - Verified items only consumed when actual treatment occurs vs examination only
+
+**Forensic Evidence System (Lower Priority Future Features):**
+- **🔨 Death cause attribution** - Enhanced storage of cause of death, weapon used, attacker information *(future enhancement)*
+- **🔨 Advanced forensic evidence** - DNA markers, blood typing, time of death analysis *(future enhancement)*  
+- **🔨 Decay progression** - Enhanced corpse aging and decomposition mechanics *(future enhancement)*
 
 ### 🏠 BLOOD POOL ROOM INTEGRATION SYSTEM (September 2025)
 **Forensic Evidence Integration (PROOF-OF-CONCEPT):**
@@ -266,11 +299,11 @@ class DeathProgressionScript(DefaultScript):
 - **Placement descriptions** - Death state visible in room descriptions
 - **Debug logging** - Comprehensive Splattercast integration for monitoring
 
-**Revival Mechanics (Next Implementation):**
-- **Brain death threshold** - 0 HP brain = no revival possible regardless of other medical treatment
-- **Consciousness requirements** - Revival only possible if brain can support consciousness
-- **Time-sensitive brain damage** - Longer death progression may cause progressive brain deterioration
-- **Medical intervention priority** - Brain-focused medical treatment becomes critical during death progression
+**Revival Mechanics (Currently Functional):**
+- **✅ 6-minute revival window** - Medical intervention during death progression works as intended
+- **✅ Medical system integration** - Automatic revival when fatal conditions resolved
+- **✅ Death progression messaging** - Complete narrative experience with observer integration
+- **Future enhancement potential** - Brain death mechanics could be added but current system is sufficient
 
 **Progression Message Themes:**
 - **Early stages (30-120s)** - Medical shock, surreal sensory experiences, dark humor
@@ -431,20 +464,22 @@ def _process_delayed_attack(self, attacker, target, attacker_entry, combatants_l
 - **Evidence Chain of Custody**: Proper evidence handling and legal admissibility mechanics
 - **Time-Based Degradation**: Evidence quality decreases over time, affecting analysis accuracy
 
-**Phase 3.2 - Organ Harvesting & Corpse Examination (🔮 FUTURE):**
-- Progressive organ failure system after character death
-- Realistic organ deterioration timelines (brain dies in 3 rounds, heart in 8, etc.)
-- Organ harvesting commands (`harvest <organ> from <corpse>`)
-- Corpse examination system (`examine corpse <target>`, organ viability reports)
-- Harvested organ inventory management (`viability`, `organs`)
-- Foundation for cybernetics integration (organ replacement demand)
+**Phase 3.1 - Organ Harvesting & Biotech Foundation (🎯 NEXT PRIORITY):**
+- **Death progression message enhancement** - Refine narrative themes and emotional progression
+- **Progressive organ failure system** - Time-based organ deterioration after character death
+- **Realistic organ deterioration timelines** - Brain dies in 3 rounds, heart in 8, liver in 12, etc.
+- **Organ harvesting commands** - `harvest <organ> from <corpse>` with medical skill requirements
+- **Corpse examination system** - `examine corpse <target>` with detailed organ viability reports
+- **Harvested organ inventory management** - `viability`, `organs`, preservation mechanics
+- **Foundation for cybernetics integration** - Organ replacement demand system
 
-**Phase 3.3 - Cybernetics & Prosthetics (🔮 FUTURE):**
-- Limb replacement mechanics (prosthetics, cybernetics) 
-- Advanced surgical procedures and medical equipment
-- Disease and infection progression systems
-- Drug addiction and dependency mechanics
-- Complex organ transplant procedures
+**Phase 3.2 - Cybernetics & Prosthetics (🔮 FOLLOW-UP):**
+- **Organ transplant procedures** - Living organ replacement using harvested organs
+- **Limb replacement mechanics** - Prosthetics and cybernetic limb systems
+- **Advanced surgical procedures** - Complex medical equipment and high-skill operations  
+- **Cybernetic enhancement systems** - Performance-boosting implants and modifications
+- **Bio-compatibility mechanics** - Rejection, adaptation, and maintenance systems
+- **Mr. Hands integration** - Seamless body modification system compatibility
 
 ## Overview
 
@@ -1069,7 +1104,8 @@ CONSUMPTION_METHODS = {
         "examples": ["inject painkiller", "inject stimpak Alice"],
         "time_required": "1-2 rounds",
         "stat_requirements": "varies by substance",
-        "applicable_to": ["painkillers", "stimpaks", "adrenal boosters", "toxins", "vaccines"]
+        "applicable_to": ["painkillers", "stimpaks", "adrenal boosters", "toxins", "vaccines"],
+        "consumption_logic": "need-based analysis prevents waste on inappropriate conditions"
     },
     
     # Topical applications
@@ -1255,6 +1291,8 @@ You breathe in the aerosolized stimpak. Energy surges through your body as your 
 - **Natural Language**: Commands reflect real-world familiarity with consumption methods
 - **Scalability**: System supports easy addition of new substances and consumption methods
 - **Medical Foundation**: Medical system provides the underlying health/condition framework for all substances
+- **Smart Resource Management**: Direct medical state analysis prevents wasteful consumption on healthy/inappropriate patients
+- **Architectural Robustness**: Need-based consumption logic replaces fragile message parsing with direct condition inspection
 
 ### Medical Tool Interactions
 
