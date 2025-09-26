@@ -143,15 +143,6 @@ class ConsumptionCommand(Command):
             medical_type = get_medical_type(item)
             treatment_possible = self._check_treatment_possible(target, medical_type)
             
-            # Debug output for troubleshooting  
-            try:
-                from evennia import search_channel
-                splattercast = search_channel("Splattercast")
-                if splattercast:
-                    splattercast[0].msg(f"CONSUMPTION_DEBUG: Item {item.key} type '{medical_type}' -> treatment_possible: {treatment_possible}")
-            except:
-                pass
-            
             result_msg = apply_medical_effects(item, user, target, **kwargs)
             
             if treatment_possible:
@@ -212,9 +203,31 @@ class ConsumptionCommand(Command):
                                (organ.data.get("fracture_vulnerable", False) or organ.data.get("bone_type")))]
             return len(damaged_bones) > 0
             
-        elif medical_type in ["blood_restoration", "pain_relief", "wound_care", "antiseptic"]:
-            # These treatments can always be applied (conditions or blood level)
-            # TODO: Could add smarter logic here to check blood level, conditions, etc.
+        elif medical_type == "blood_restoration":
+            # Check if character actually needs blood restoration
+            try:
+                # Check for low blood level or bleeding conditions
+                blood_level = getattr(target.medical_state, 'blood_level', 100)
+                has_bleeding = any(condition.condition_type == "bleeding" 
+                                 for condition in getattr(target.medical_state, 'conditions', []))
+                return blood_level < 100 or has_bleeding
+            except:
+                return False
+                
+        elif medical_type == "wound_care":
+            # Check if character has external wounds that need bandaging
+            try:
+                # Check for bleeding and external wound conditions
+                has_bleeding = any(condition.condition_type == "bleeding" 
+                                 for condition in getattr(target.medical_state, 'conditions', []))
+                has_wounds = any(condition.condition_type in ["wound", "laceration", "cut", "abrasion"] 
+                               for condition in getattr(target.medical_state, 'conditions', []))
+                return has_bleeding or has_wounds
+            except:
+                return False
+                
+        elif medical_type in ["pain_relief", "antiseptic"]:
+            # These can still always be applied (harder to detect pain/infection need)
             return True
             
         else:
