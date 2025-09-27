@@ -158,14 +158,14 @@ MESSAGES = {
             'observer_msg': "The katana flashes and bites into {target_name} with surgical precision, a single clean line blooming red."
         },
         {
-            'attacker_msg': "You dance through the air, slicing a wide arc that cleaves across {target_name}'s torso in one fluid stroke.",
-            'victim_msg': "{attacker_name} dances through the air, slicing a wide arc that cleaves across your torso in one fluid stroke.",
-            'observer_msg': "{attacker_name} dances through the air, slicing a wide arc that cleaves across {target_name}'s torso in one fluid stroke."
+            'attacker_msg': "You dance through the air, slicing a wide arc that cleaves across {target_name}'s {hit_location} in one fluid stroke.",
+            'victim_msg': "{attacker_name} dances through the air, slicing a wide arc that cleaves across your {hit_location} in one fluid stroke.",
+            'observer_msg': "{attacker_name} dances through the air, slicing a wide arc that cleaves across {target_name}'s {hit_location} in one fluid stroke."
         },
         {
-            'attacker_msg': "A whisper of motion—then blood. Your katana slices across {target_name}'s arm before they even react.",
-            'victim_msg': "A whisper of motion—then blood. {attacker_name}'s katana slices across your arm before you even react.",
-            'observer_msg': "A whisper of motion—then blood. {attacker_name}'s katana slices across {target_name}'s arm before they even react."
+            'attacker_msg': "A whisper of motion—then blood. Your katana slices across {target_name}'s {hit_location} before they even react.",
+            'victim_msg': "A whisper of motion—then blood. {attacker_name}'s katana slices across your {hit_location} before you even react.",
+            'observer_msg': "A whisper of motion—then blood. {attacker_name}'s katana slices across {target_name}'s {hit_location} before they even react."
         },
         {
             'attacker_msg': "The strike lands like a signature, carving through {target_name}'s defenses with lethal artistry.",
@@ -173,9 +173,9 @@ MESSAGES = {
             'observer_msg': "The strike lands like a signature, carving through {target_name}'s defenses with lethal artistry."
         },
         {
-            'attacker_msg': "{target_name} stumbles back, a red ribbon unraveling across their side where you left your mark.",
-            'victim_msg': "You stumble back, a red ribbon unraveling across your side where {attacker_name} left their mark.",
-            'observer_msg': "{target_name} stumbles back, a red ribbon unraveling across their side where {attacker_name} left their mark."
+            'attacker_msg': "{target_name} stumbles back, a red ribbon unraveling across their {hit_location} where you left your mark.",
+            'victim_msg': "You stumble back, a red ribbon unraveling across your {hit_location} where {attacker_name} left their mark.",
+            'observer_msg': "{target_name} stumbles back, a red ribbon unraveling across their {hit_location} where {attacker_name} left their mark."
         },
         {
             'attacker_msg': "The katana kisses flesh and exits before {target_name} finishes their breath—elegant, final.",
@@ -183,34 +183,34 @@ MESSAGES = {
             'observer_msg': "The katana kisses flesh and exits before {target_name} finishes their breath—elegant, final."
         },
         {
-            'attacker_msg': "Steel sings, and {target_name} answers in a gasp as your blade bites deep into their thigh.",
-            'victim_msg': "Steel sings, and you answer in a gasp as {attacker_name}'s blade bites deep into your thigh.",
-            'observer_msg': "Steel sings, and {target_name} answers in a gasp as {attacker_name}'s blade bites deep into their thigh."
+            'attacker_msg': "Steel sings, and {target_name} answers in a gasp as your blade bites deep into their {hit_location}.",
+            'victim_msg': "Steel sings, and you answer in a gasp as {attacker_name}'s blade bites deep into your {hit_location}.",
+            'observer_msg': "Steel sings, and {target_name} answers in a gasp as {attacker_name}'s blade bites deep into their {hit_location}."
         },
         {
-            'attacker_msg': "One step, one motion, and {target_name} is marked from shoulder to hip in a stroke older than remorse.",
-            'victim_msg': "One step, one motion, and you are marked from shoulder to hip in a stroke older than remorse.",
-            'observer_msg': "One step, one motion, and {target_name} is marked from shoulder to hip in a stroke older than remorse."
+            'attacker_msg': "One step, one motion, and {target_name} is marked from {hit_location} to hip in a stroke older than remorse.",
+            'victim_msg': "One step, one motion, and you are marked from {hit_location} to hip in a stroke older than remorse.",
+            'observer_msg': "One step, one motion, and {target_name} is marked from {hit_location} to hip in a stroke older than remorse."
         },
         {
-            'attacker_msg': "You glide past, and {target_name} realizes only too late the pain blooming across their ribs.",
-            'victim_msg': "{attacker_name} glides past, and you realize only too late the pain blooming across your ribs.",
-            'observer_msg': "{attacker_name} glides past, and {target_name} realizes only too late the pain blooming across their ribs."
+            'attacker_msg': "You glide past, and {target_name} realizes only too late the pain blooming across their {hit_location}.",
+            'victim_msg': "{attacker_name} glides past, and you realize only too late the pain blooming across your {hit_location}.",
+            'observer_msg': "{attacker_name} glides past, and {target_name} realizes only too late the pain blooming across their {hit_location}."
         },
         {
-            'attacker_msg': "The katana's tip flicks and draws a crimson line across {target_name}'s chest like calligraphy in violence.",
-            'victim_msg': "The katana's tip flicks and draws a crimson line across your chest like calligraphy in violence.",
-            'observer_msg': "The katana's tip flicks and draws a crimson line across {target_name}'s chest like calligraphy in violence."
+            'attacker_msg': "The katana's tip flicks and draws a crimson line across {target_name}'s {hit_location} like calligraphy in violence.",
+            'victim_msg': "The katana's tip flicks and draws a crimson line across your {hit_location} like calligraphy in violence.",
+            'observer_msg': "The katana's tip flicks and draws a crimson line across {target_name}'s {hit_location} like calligraphy in violence."
         },
         {
-            'attacker_msg': "Steel arcs down in a vertical cleave that opens {target_name}'s shoulder like rotten fruit.",
-            'victim_msg': "Steel arcs down in a vertical cleave that opens your shoulder like rotten fruit.",
-            'observer_msg': "Steel arcs down in a vertical cleave that opens {target_name}'s shoulder like rotten fruit."
+            'attacker_msg': "Steel arcs down in a vertical cleave that opens {target_name}'s {hit_location} like rotten fruit.",
+            'victim_msg': "Steel arcs down in a vertical cleave that opens your {hit_location} like rotten fruit.",
+            'observer_msg': "Steel arcs down in a vertical cleave that opens {target_name}'s {hit_location} like rotten fruit."
         },
         {
-            'attacker_msg': "A wet crunch. Your blade finds bone beneath {target_name}'s collar, and does not stop.",
-            'victim_msg': "A wet crunch. {attacker_name}'s blade finds bone beneath your collar, and does not stop.",
-            'observer_msg': "A wet crunch. {attacker_name}'s blade finds bone beneath {target_name}'s collar, and does not stop."
+            'attacker_msg': "A wet crunch. Your blade finds bone beneath {target_name}'s {hit_location}, and does not stop.",
+            'victim_msg': "A wet crunch. {attacker_name}'s blade finds bone beneath your {hit_location}, and does not stop.",
+            'observer_msg': "A wet crunch. {attacker_name}'s blade finds bone beneath {target_name}'s {hit_location}, and does not stop."
         },
         {
             'attacker_msg': "The strike is graceful, cruel, and eerily quiet. {target_name} wails only after you step away.",
@@ -233,19 +233,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name} lashes sideways, and {target_name} crumples, leaking from a line too precise to be accidental."
         },
         {
-            'attacker_msg': "The katana spins once in your grip before cutting a cruel smile into {target_name}'s midsection.",
-            'victim_msg': "The katana spins once in {attacker_name}'s grip before cutting a cruel smile into your midsection.",
-            'observer_msg': "The katana spins once in {attacker_name}'s grip before cutting a cruel smile into {target_name}'s midsection."
+            'attacker_msg': "The katana spins once in your grip before cutting a cruel smile into {target_name}'s {hit_location}.",
+            'victim_msg': "The katana spins once in {attacker_name}'s grip before cutting a cruel smile into your {hit_location}.",
+            'observer_msg': "The katana spins once in {attacker_name}'s grip before cutting a cruel smile into {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "A slash blurs into reality—{target_name}'s weapon drops as their forearm opens like a pouch.",
-            'victim_msg': "A slash blurs into reality—your weapon drops as your forearm opens like a pouch.",
-            'observer_msg': "A slash blurs into reality—{target_name}'s weapon drops as their forearm opens like a pouch."
+            'attacker_msg': "A slash blurs into reality—{target_name}'s weapon drops as their {hit_location} opens like a pouch.",
+            'victim_msg': "A slash blurs into reality—your weapon drops as your {hit_location} opens like a pouch.",
+            'observer_msg': "A slash blurs into reality—{target_name}'s weapon drops as their {hit_location} opens like a pouch."
         },
         {
-            'attacker_msg': "{target_name} gasps as the edge glides across their stomach, agony blossoming like a fresh bloom.",
-            'victim_msg': "You gasp as the edge glides across your stomach, agony blossoming like a fresh bloom.",
-            'observer_msg': "{target_name} gasps as the edge glides across their stomach, agony blossoming like a fresh bloom."
+            'attacker_msg': "{target_name} gasps as the edge glides across their {hit_location}, agony blossoming like a fresh bloom.",
+            'victim_msg': "You gasp as the edge glides across your {hit_location}, agony blossoming like a fresh bloom.",
+            'observer_msg': "{target_name} gasps as the edge glides across their {hit_location}, agony blossoming like a fresh bloom."
         },
         {
             'attacker_msg': "The katana hums as it glides through flesh. {target_name} drops to a knee, clutching something that's no longer intact.",
@@ -253,9 +253,9 @@ MESSAGES = {
             'observer_msg': "The katana hums as it glides through flesh. {target_name} drops to a knee, clutching something that's no longer intact."
         },
         {
-            'attacker_msg': "With a sidestep and a twist, you slice a crimson arc through {target_name}'s thigh.",
-            'victim_msg': "With a sidestep and a twist, {attacker_name} slices a crimson arc through your thigh.",
-            'observer_msg': "With a sidestep and a twist, {attacker_name} slices a crimson arc through {target_name}'s thigh."
+            'attacker_msg': "With a sidestep and a twist, you slice a crimson arc through {target_name}'s {hit_location}.",
+            'victim_msg': "With a sidestep and a twist, {attacker_name} slices a crimson arc through your {hit_location}.",
+            'observer_msg': "With a sidestep and a twist, {attacker_name} slices a crimson arc through {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "One slice, one pivot. {target_name} is left with pain, and you without expression.",
@@ -273,9 +273,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s katana moves like wind through paper. {target_name} buckles, slashed and leaking."
         },
         {
-            'attacker_msg': "Blood spatters the wall in a streak as your blade finishes its arc through {target_name}'s ribs.",
-            'victim_msg': "Blood spatters the wall in a streak as {attacker_name}'s blade finishes its arc through your ribs.",
-            'observer_msg': "Blood spatters the wall in a streak as {attacker_name}'s blade finishes its arc through {target_name}'s ribs."
+            'attacker_msg': "Blood spatters the wall in a streak as your blade finishes its arc through {target_name}'s {hit_location}.",
+            'victim_msg': "Blood spatters the wall in a streak as {attacker_name}'s blade finishes its arc through your {hit_location}.",
+            'observer_msg': "Blood spatters the wall in a streak as {attacker_name}'s blade finishes its arc through {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "A whip of red mist trails the katana's path as you complete the perfect cut.",
@@ -283,19 +283,19 @@ MESSAGES = {
             'observer_msg': "A whip of red mist trails the katana's path as {attacker_name} completes the perfect cut."
         },
         {
-            'attacker_msg': "The blade hisses through the air before finding purchase in {target_name}'s hip with a brutal crunch.",
-            'victim_msg': "The blade hisses through the air before finding purchase in your hip with a brutal crunch.",
-            'observer_msg': "The blade hisses through the air before finding purchase in {target_name}'s hip with a brutal crunch."
+            'attacker_msg': "The blade hisses through the air before finding purchase in {target_name}'s {hit_location} with a brutal crunch.",
+            'victim_msg': "The blade hisses through the air before finding purchase in your {hit_location} with a brutal crunch.",
+            'observer_msg': "The blade hisses through the air before finding purchase in {target_name}'s {hit_location} with a brutal crunch."
         },
         {
-            'attacker_msg': "{target_name}'s balance is gone—stolen by a slice through their calf from your ghosting blade.",
-            'victim_msg': "Your balance is gone—stolen by a slice through your calf from {attacker_name}'s ghosting blade.",
-            'observer_msg': "{target_name}'s balance is gone—stolen by a slice through their calf from {attacker_name}'s ghosting blade."
+            'attacker_msg': "{target_name}'s balance is gone—stolen by a slice through their {hit_location} from your ghosting blade.",
+            'victim_msg': "Your balance is gone—stolen by a slice through your {hit_location} from {attacker_name}'s ghosting blade.",
+            'observer_msg': "{target_name}'s balance is gone—stolen by a slice through their {hit_location} from {attacker_name}'s ghosting blade."
         },
         {
-            'attacker_msg': "The katana catches light—and {target_name}'s cheek—as you draw a long, ragged line down their face.",
-            'victim_msg': "The katana catches light—and your cheek—as {attacker_name} draws a long, ragged line down your face.",
-            'observer_msg': "The katana catches light—and {target_name}'s cheek—as {attacker_name} draws a long, ragged line down their face."
+            'attacker_msg': "The katana catches light—and {target_name}'s {hit_location}—as you draw a long, ragged line down their face.",
+            'victim_msg': "The katana catches light—and your {hit_location}—as {attacker_name} draws a long, ragged line down your face.",
+            'observer_msg': "The katana catches light—and {target_name}'s {hit_location}—as {attacker_name} draws a long, ragged line down their face."
         },
         {
             'attacker_msg': "A brutal diagonal cut sends {target_name} staggering, the pain loud and sudden.",
