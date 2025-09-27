@@ -151,9 +151,33 @@ class CmdAttack(Command):
             if not caller_existing_handler and not target_existing_handler:
                 establish_proximity(caller, target)
                 splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_COMBAT_INITIATION: Established proximity between {caller.key} and {target.key} for melee combat initiation.")
-            # If caller is not in combat but target is, this is JOINING existing combat - must earn proximity
+            # If caller is not in combat but target is, this is JOINING existing combat - contested proximity roll
             elif not caller_existing_handler and target_existing_handler:
-                splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_COMBAT_JOIN: {caller.key} joins existing combat - must advance or charge to reach {target.key}.")
+                splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_COMBAT_JOIN: {caller.key} joins existing combat - rolling contested proximity.")
+                
+                # Perform contested proximity roll (same mechanics as advance command)
+                from world.combat.utils import get_numeric_stat
+                
+                caller_motorics = get_numeric_stat(caller, "motorics")
+                target_motorics = get_numeric_stat(target, "motorics")
+                caller_roll = randint(1, max(1, caller_motorics))
+                target_roll = randint(1, max(1, target_motorics))
+                
+                splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_CONTESTED: {caller.key} (motorics:{caller_motorics}, roll:{caller_roll}) vs {target.key} (motorics:{target_motorics}, roll:{target_roll})")
+                
+                if caller_roll > target_roll:
+                    # Success - establish proximity
+                    establish_proximity(caller, target)
+                    caller.msg(f"|gYou rush forward and close to melee range with {target.get_display_name(caller)}!|n")
+                    target.msg(f"|y{caller.get_display_name(target)} rushes forward to melee range with you!|n")
+                    caller.location.msg_contents(f"|y{caller.key} rushes forward to melee range with {target.key}!|n", exclude=[caller, target])
+                    splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_CONTESTED: {caller.key} successfully gained proximity to {target.key}.")
+                else:
+                    # Failure - no proximity established, but still joins combat
+                    caller.msg(f"|rYou rush forward trying to reach {target.get_display_name(caller)}, but they keep their distance!|n")
+                    target.msg(f"|g{caller.get_display_name(target)} rushes at you but you keep your distance!|n")
+                    caller.location.msg_contents(f"|y{caller.key} rushes at {target.key} but fails to close the distance.|n", exclude=[caller, target])
+                    splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_CONTESTED: {caller.key} failed to gain proximity to {target.key}, but joins combat anyway.")
             else:
                 splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_EXISTING_COMBAT: Preserving existing proximity state. Caller handler: {caller_existing_handler.key if caller_existing_handler else 'None'}, Target handler: {target_existing_handler.key if target_existing_handler else 'None'}.")
 
@@ -170,10 +194,20 @@ class CmdAttack(Command):
                     splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_{DEBUG_SUCCESS}: {caller.key} attacking {target.key} with non-ranged '{weapon_name_for_msg}' while in melee proximity.")
             else: # Caller is NOT in melee with target (at range in same room)
                 if not is_ranged_weapon:
-                    caller.msg(f"You are too far away to hit {target.get_display_name(caller)} with your {weapon_name_for_msg}. Try advancing or charging.")
-                    splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_{DEBUG_FAIL}: {caller.key} tried to use non-ranged weapon '{weapon_name_for_msg}' on {target.key} who is not in melee proximity. Attack aborted.")
-                    return
-                splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_{DEBUG_SUCCESS}: {caller.key} attacking {target.key} with ranged weapon '{weapon_name_for_msg}' from distance in same room.")
+                    # Check if this is a "joining existing combat" scenario - allow those through
+                    caller_existing_handler = getattr(caller.ndb, "combat_handler", None)
+                    target_existing_handler = getattr(target.ndb, "combat_handler", None)
+                    
+                    if not caller_existing_handler and target_existing_handler:
+                        # This is joining existing combat - proximity was handled above, allow through
+                        splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_JOINING: {caller.key} joining existing combat with melee weapon, proceeding to handler.")
+                    else:
+                        # Not joining existing combat - standard proximity failure
+                        caller.msg(f"You are too far away to hit {target.get_display_name(caller)} with your {weapon_name_for_msg}. Try advancing or charging.")
+                        splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_{DEBUG_FAIL}: {caller.key} tried to use non-ranged weapon '{weapon_name_for_msg}' on {target.key} who is not in melee proximity. Attack aborted.")
+                        return
+                else:
+                    splattercast.msg(f"{DEBUG_PREFIX_ATTACK}_{DEBUG_SUCCESS}: {caller.key} attacking {target.key} with ranged weapon '{weapon_name_for_msg}' from distance in same room.")
         else: # ADJACENT ROOM ATTACK (aiming_direction is set)
             splattercast.msg(f"{DEBUG_PREFIX_ATTACK}: Validating ranged attack into {target_room.key} by {caller.key} on {target.key}.")
             if not is_ranged_weapon:
