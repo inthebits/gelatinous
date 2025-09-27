@@ -153,84 +153,84 @@ MESSAGES = {
     ],
     'hit': [
         {
-            "attacker_msg": "Your clean jab punctures their chest just under the ribs. The look in {target_name}'s eyes says they felt everything.",
-            "victim_msg": "A clean jab punctures your chest just under the ribs. The look in your eyes says you felt everything.",
-            "observer_msg": "A clean jab punctures {target_name}'s chest just under the ribs. The look in {target_name}'s eyes says they felt everything."
+            "attacker_msg": "Your clean jab punctures their {hit_location} just under the ribs. The look in {target_name}'s eyes says they felt everything.",
+            "victim_msg": "A clean jab punctures your {hit_location} just under the ribs. The look in your eyes says you felt everything.",
+            "observer_msg": "A clean jab punctures {target_name}'s {hit_location} just under the ribs. The look in {target_name}'s eyes says they felt everything."
         },
         {
-            "attacker_msg": "Your knife darts into their abdomen and yanks sideways. {target_name} crumples, clutching everything that hurts.",
-            "victim_msg": "The knife darts into your abdomen and yanks sideways. You crumple, clutching everything that hurts.",
-            "observer_msg": "The knife darts into the abdomen and yanks sideways. {target_name} crumples, clutching everything that hurts."
+            "attacker_msg": "Your knife darts into their {hit_location} and yanks sideways. {target_name} crumples, clutching everything that hurts.",
+            "victim_msg": "The knife darts into your {hit_location} and yanks sideways. You crumple, clutching everything that hurts.",
+            "observer_msg": "The knife darts into the {hit_location} and yanks sideways. {target_name} crumples, clutching everything that hurts."
         },
         {
-            "attacker_msg": "Your knife lands in their shoulder and sticks. You twist it once before pulling back.",
-            "victim_msg": "The knife lands in your shoulder and sticks. {attacker_name} twists it once before pulling back.",
-            "observer_msg": "The knife lands in the shoulder and sticks. {attacker_name} twists it once before pulling back."
+            "attacker_msg": "Your knife lands in their {hit_location} and sticks. You twist it once before pulling back.",
+            "victim_msg": "The knife lands in your {hit_location} and sticks. {attacker_name} twists it once before pulling back.",
+            "observer_msg": "The knife lands in the {hit_location} and sticks. {attacker_name} twists it once before pulling back."
         },
         {
-            "attacker_msg": "Your knife lands in the side of their neck. Not fatal — yet. But close enough to ruin everything.",
-            "victim_msg": "The knife lands in the side of your neck. Not fatal — yet. But close enough to ruin everything.",
-            "observer_msg": "The knife lands in the side of the neck. Not fatal — yet. But close enough to ruin everything."
+            "attacker_msg": "Your knife lands in the side of their {hit_location}. Not fatal — yet. But close enough to ruin everything.",
+            "victim_msg": "The knife lands in the side of your {hit_location}. Not fatal — yet. But close enough to ruin everything.",
+            "observer_msg": "The knife lands in the side of the {hit_location}. Not fatal — yet. But close enough to ruin everything."
         },
         {
-            "attacker_msg": "Your knife slices across {target_name}'s forearm. A red ribbon follows instantly.",
-            "victim_msg": "The knife slices across your forearm. A red ribbon follows instantly.",
-            "observer_msg": "The knife slices across {target_name}'s forearm. A red ribbon follows instantly."
+            "attacker_msg": "Your knife slices across {target_name}'s {hit_location}. A red ribbon follows instantly.",
+            "victim_msg": "The knife slices across your {hit_location}. A red ribbon follows instantly.",
+            "observer_msg": "The knife slices across {target_name}'s {hit_location}. A red ribbon follows instantly."
         },
         {
-            "attacker_msg": "Your knife slices along {target_name}'s ribs, not deep — just enough to make them scream.",
-            "victim_msg": "The knife slices along your ribs, not deep — just enough to scream.",
-            "observer_msg": "The knife slices along {target_name}'s ribs, not deep — just enough to scream."
+            "attacker_msg": "Your knife slices along {target_name}'s {hit_location}, not deep — just enough to make them scream.",
+            "victim_msg": "The knife slices along your {hit_location}, not deep — just enough to scream.",
+            "observer_msg": "The knife slices along {target_name}'s {hit_location}, not deep — just enough to scream."
         },
         {
-            "attacker_msg": "The point punctures {target_name}'s bicep. Not fatal — but it ruins their grip.",
-            "victim_msg": "The point punctures your bicep. Not fatal — but it ruins your grip.",
-            "observer_msg": "The point punctures {target_name}'s bicep. Not fatal — but it ruins their grip."
+            "attacker_msg": "The point punctures {target_name}'s {hit_location}. Not fatal — but it ruins their grip.",
+            "victim_msg": "The point punctures your {hit_location}. Not fatal — but it ruins your grip.",
+            "observer_msg": "The point punctures {target_name}'s {hit_location}. Not fatal — but it ruins their grip."
         },
         {
-            "attacker_msg": "Your stab lands in their gut. The pull leaves a longer wound than it made.",
-            "victim_msg": "The stab lands in your gut. The pull leaves a longer wound than it made.",
-            "observer_msg": "The stab lands in the gut. The pull leaves a longer wound than it made."
+            "attacker_msg": "Your stab lands in their {hit_location}. The pull leaves a longer wound than it made.",
+            "victim_msg": "The stab lands in your {hit_location}. The pull leaves a longer wound than it made.",
+            "observer_msg": "The stab lands in the {hit_location}. The pull leaves a longer wound than it made."
         },
         {
-            "attacker_msg": "Your weapon carves across their knuckles. {target_name} drops what they were holding.",
-            "victim_msg": "The weapon carves across your knuckles. You drop what you were holding.",
-            "observer_msg": "The weapon carves across the knuckles. {target_name} drops what they were holding."
+            "attacker_msg": "Your weapon carves across their {hit_location}. {target_name} drops what they were holding.",
+            "victim_msg": "The weapon carves across your {hit_location}. You drop what you were holding.",
+            "observer_msg": "The weapon carves across the {hit_location}. {target_name} drops what they were holding."
         },
         {
-            "attacker_msg": "You carve a shallow cut across their cheek. The line is clean. The message, clearer.",
-            "victim_msg": "{attacker_name} carves a shallow cut across your cheek. The line is clean. The message, clearer.",
-            "observer_msg": "{attacker_name} carves a shallow cut across the cheek. The line is clean. The message, clearer."
+            "attacker_msg": "You carve a shallow cut across their {hit_location}. The line is clean. The message, clearer.",
+            "victim_msg": "{attacker_name} carves a shallow cut across your {hit_location}. The line is clean. The message, clearer.",
+            "observer_msg": "{attacker_name} carves a shallow cut across the {hit_location}. The line is clean. The message, clearer."
         },
         {
-            "attacker_msg": "You carve down their forearm. Their grip fails. The pain does not.",
-            "victim_msg": "{attacker_name} carves down your forearm. Your grip fails. The pain does not.",
-            "observer_msg": "{attacker_name} carves down the forearm. The grip fails. The pain does not."
+            "attacker_msg": "You carve down their {hit_location}. Their grip fails. The pain does not.",
+            "victim_msg": "{attacker_name} carves down your {hit_location}. Your grip fails. The pain does not.",
+            "observer_msg": "{attacker_name} carves down the {hit_location}. The grip fails. The pain does not."
         },
         {
-            "attacker_msg": "You feint left, then slip the blade across their ribs. {target_name} winces, bleeding already.",
-            "victim_msg": "{attacker_name} feints left, then slips the blade across your ribs. You wince, bleeding already.",
-            "observer_msg": "{attacker_name} feints left, then slips the blade across the ribs. {target_name} winces, bleeding already."
+            "attacker_msg": "You feint left, then slip the blade across their {hit_location}. {target_name} winces, bleeding already.",
+            "victim_msg": "{attacker_name} feints left, then slips the blade across your {hit_location}. You wince, bleeding already.",
+            "observer_msg": "{attacker_name} feints left, then slips the blade across the {hit_location}. {target_name} winces, bleeding already."
         },
         {
-            "attacker_msg": "You jab the knife upward into their gut. {target_name} doubles over and stays there.",
-            "victim_msg": "{attacker_name} jabs the knife upward into your gut. You double over and stay there.",
-            "observer_msg": "{attacker_name} jabs the knife upward into the gut. {target_name} doubles over and stays there."
+            "attacker_msg": "You jab the knife upward into their {hit_location}. {target_name} doubles over and stays there.",
+            "victim_msg": "{attacker_name} jabs the knife upward into your {hit_location}. You double over and stay there.",
+            "observer_msg": "{attacker_name} jabs the knife upward into the {hit_location}. {target_name} doubles over and stays there."
         },
         {
-            "attacker_msg": "You jam the knife into their thigh and pull sideways. Red floods the ground.",
-            "victim_msg": "{attacker_name} jams the knife into your thigh and pulls sideways. Red floods the ground.",
-            "observer_msg": "{attacker_name} jams the knife into the thigh and pulls sideways. Red floods the ground."
+            "attacker_msg": "You jam the knife into their {hit_location} and pull sideways. Red floods the ground.",
+            "victim_msg": "{attacker_name} jams the knife into your {hit_location} and pulls sideways. Red floods the ground.",
+            "observer_msg": "{attacker_name} jams the knife into the {hit_location} and pulls sideways. Red floods the ground."
         },
         {
-            "attacker_msg": "You slash across their collarbone. The cut is shallow — but the pain is not.",
-            "victim_msg": "{attacker_name} slashes across your collarbone. The cut is shallow — but the pain is not.",
-            "observer_msg": "{attacker_name} slashes across the collarbone. The cut is shallow — but the pain is not."
+            "attacker_msg": "You slash across their {hit_location}. The cut is shallow — but the pain is not.",
+            "victim_msg": "{attacker_name} slashes across your {hit_location}. The cut is shallow — but the pain is not.",
+            "observer_msg": "{attacker_name} slashes across the {hit_location}. The cut is shallow — but the pain is not."
         },
         {
-            "attacker_msg": "You slice open the side of their neck. Not enough to kill. Just enough to terrify.",
-            "victim_msg": "{attacker_name} slices open the side of your neck. Not enough to kill. Just enough to terrify.",
-            "observer_msg": "{attacker_name} slices open the side of the neck. Not enough to kill. Just enough to terrify."
+            "attacker_msg": "You slice open the side of their {hit_location}. Not enough to kill. Just enough to terrify.",
+            "victim_msg": "{attacker_name} slices open the side of your {hit_location}. Not enough to kill. Just enough to terrify.",
+            "observer_msg": "{attacker_name} slices open the side of the {hit_location}. Not enough to kill. Just enough to terrify."
         }
     ],
     'miss': [
