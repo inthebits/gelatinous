@@ -188,6 +188,18 @@ TENNIS_RACKET = {
     "hands": 1,
 }
 
+# Katana (legendary weapon of the samurai soul)
+KATANA = {
+    "prototype_parent": "MELEE_WEAPON_BASE",
+    "key": "katana",
+    "aliases": ["sword", "blade", "japanese sword", "nihonto", "samurai sword"],
+    "desc": "A legendary nihonto katana forged by a master swordsmith in the ancient traditions of the samurai. The curved, single-edged blade bears the distinctive hamon temper line like frozen lightning captured in tamahagane steel. Its razor-sharp ha (cutting edge) whispers promises of iai-jutsu and the Way of the Sword, while the sacred geometry of its curvature channels the very essence of bushido. The ray-skin wrapped tsuka handle, bound with silk ito in traditional diamond patterns, fits perfectly in the hand as if forged for your soul alone. This is not merely a weapon—it is the steel incarnation of honor, discipline, and the indomitable spirit of the warrior. To wield it is to walk the path of the samurai, where each cut carries the weight of a thousand generations of swordmasters. The blade seems to hum with latent spiritual energy, as if it remembers every duel, every moment of perfect technique, every drop of blood spilled in service to the code. In the right hands, this katana transcends mere metal to become an extension of one's very being—the soul made manifest in folded steel.",
+    "damage": 14,
+    "deflection_bonus": 0.25,  # +5 to deflection threshold (excellent for parrying)
+    "weapon_type": "katana",  # Using existing katana message type
+    "damage_type": "cut",  # Medical system injury type
+}
+
 # Dagger (poor deflection)
 DAGGER = {
     "prototype_parent": "MELEE_WEAPON_BASE",
