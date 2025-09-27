@@ -715,9 +715,24 @@ def remove_combatant(handler, char):
             splattercast.msg(f"RMV_COMB: Auto-retarget analysis for {other_char.key}: weapon_ranged={other_char_is_ranged}, proximity_attackers={len(proximity_attackers)}, total_attackers={len(ranged_attackers)}, reason='{retarget_reason}'")
             
             if new_target:
-                # Auto-retarget found - use handler's set_target method (handles both DB and active list)
+                # Auto-retarget found - simulate the same flow as attack/kill command
+                splattercast.msg(f"RMV_COMB: Auto-retargeting {other_char.key} to {new_target.key} ({retarget_reason}) - simulating attack command")
+                
+                # Use the same pattern as attack command: set_target + manual database update
                 handler.set_target(other_char, new_target)
-                splattercast.msg(f"RMV_COMB: Auto-retargeted {other_char.key} to {new_target.key} ({retarget_reason})")
+                
+                # Manual database update using attack command's copy-modify-save pattern
+                combatants_copy = getattr(handler.db, "combatants", [])
+                other_char_entry_copy = next((e for e in combatants_copy if e.get("char") == other_char), None)
+                if other_char_entry_copy:
+                    # Clear combat action and yielding (same as attack command)
+                    other_char_entry_copy["combat_action"] = None
+                    other_char_entry_copy["combat_action_target"] = None 
+                    other_char_entry_copy["is_yielding"] = False
+                    
+                    # Save the modified combatants list back (same as attack command)
+                    setattr(handler.db, "combatants", combatants_copy)
+                    splattercast.msg(f"RMV_COMB: Updated database using attack command pattern for {other_char.key}")
                 
                 # Get weapon info for initiate message
                 from .messages import get_combat_message
@@ -726,7 +741,7 @@ def remove_combatant(handler, char):
                 if weapon_obj and hasattr(weapon_obj, 'db') and hasattr(weapon_obj.db, 'weapon_type'):
                     weapon_type = weapon_obj.db.weapon_type
                 
-                # Get and send initiate messages
+                # Send initiate messages (same as attack command)
                 try:
                     initiate_msg_obj = get_combat_message(weapon_type, "initiate", 
                                                         attacker=other_char, target=new_target, item=weapon_obj)
@@ -745,7 +760,7 @@ def remove_combatant(handler, char):
                     other_char.msg(attacker_msg)
                     new_target.msg(victim_msg)
                     
-                    # Send observer message to location
+                    # Send observer message to location  
                     if hasattr(other_char, 'location') and other_char.location:
                         other_char.location.msg_contents(observer_msg, exclude=[other_char, new_target])
                         
