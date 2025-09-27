@@ -741,14 +741,23 @@ def remove_combatant(handler, char):
                 # Auto-retarget found - simulate the same flow as attack/kill command
                 splattercast.msg(f"RMV_COMB: Auto-retargeting {other_char.key} to {new_target.key} ({retarget_reason}) - simulating attack command")
                 
-                # Use the same pattern as attack command: set_target + manual database update
+                # Use the same pattern as attack command: set_target + update both working list and database
                 handler.set_target(other_char, new_target)
                 
-                # Manual database update using attack command's copy-modify-save pattern
+                # CRITICAL: Update the working list (combatants parameter) if we're using it
+                other_char_entry_working = next((e for e in combatants if e.get("char") == other_char), None)
+                if other_char_entry_working:
+                    other_char_entry_working["target_dbref"] = get_character_dbref(new_target)
+                    other_char_entry_working["combat_action"] = None
+                    other_char_entry_working["combat_action_target"] = None 
+                    other_char_entry_working["is_yielding"] = False
+                    splattercast.msg(f"RMV_COMB: Updated working list for {other_char.key} -> target_dbref={other_char_entry_working['target_dbref']}")
+                
+                # Also update database to ensure persistence (same as attack command)
                 combatants_copy = getattr(handler.db, "combatants", [])
                 other_char_entry_copy = next((e for e in combatants_copy if e.get("char") == other_char), None)
                 if other_char_entry_copy:
-                    # Clear combat action and yielding (same as attack command)
+                    other_char_entry_copy["target_dbref"] = get_character_dbref(new_target)
                     other_char_entry_copy["combat_action"] = None
                     other_char_entry_copy["combat_action_target"] = None 
                     other_char_entry_copy["is_yielding"] = False
