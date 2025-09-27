@@ -15,6 +15,7 @@ Functions:
 """
 
 from random import randint
+from evennia.comms.models import ChannelDB
 from .constants import (
     DEFAULT_MOTORICS, MIN_DICE_VALUE, SPLATTERCAST_CHANNEL,
     DEBUG_TEMPLATE, NDB_PROXIMITY, COLOR_NORMAL
@@ -35,7 +36,6 @@ def debug_broadcast(message, prefix="DEBUG", status="INFO"):
         status (str): Status level (INFO, SUCCESS, ERROR, etc.)
     """
     try:
-        from evennia.comms.models import ChannelDB
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         if splattercast:
             formatted_msg = f"{prefix}_{status}: {message}"
@@ -166,7 +166,6 @@ def log_debug(prefix, action, message, character=None):
         character: Optional character for context
     """
     try:
-        from evennia.comms.models import ChannelDB
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         if splattercast:
             char_context = f" ({character.key})" if character else ""
@@ -559,7 +558,6 @@ def add_combatant(handler, char, target=None, initial_grappling=None, initial_gr
         initial_grappled_by: Optional character grappling this char initially
         initial_is_yielding: Whether the character starts yielding
     """
-    from evennia.comms.models import ChannelDB
     from .constants import (
         SPLATTERCAST_CHANNEL, DB_COMBATANTS, DB_CHAR, DB_TARGET_DBREF,
         DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF, DB_IS_YIELDING, 
@@ -644,7 +642,6 @@ def remove_combatant(handler, char):
         handler: The combat handler instance
         char: The character to remove from combat
     """
-    from evennia.comms.models import ChannelDB
     from .constants import (
         SPLATTERCAST_CHANNEL, DB_COMBATANTS, DB_CHAR, DB_TARGET_DBREF, 
         NDB_COMBAT_HANDLER
@@ -881,7 +878,6 @@ def cleanup_combatant_state(char, entry, handler):
     if (hasattr(char, 'override_place') and 
         char.override_place == "locked in combat."):
         char.override_place = ""
-        from evennia.comms.models import ChannelDB
         from .constants import SPLATTERCAST_CHANNEL
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         splattercast.msg(f"CLEANUP_COMB: Cleared combat override_place for {char.key}")
@@ -900,7 +896,6 @@ def cleanup_all_combatants(handler):
     Args:
         handler: The combat handler instance
     """
-    from evennia.comms.models import ChannelDB
     from .constants import SPLATTERCAST_CHANNEL, DB_COMBATANTS, DB_CHAR, DEBUG_PREFIX_HANDLER, DEBUG_CLEANUP
     
     splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
@@ -947,7 +942,6 @@ def update_all_combatant_handler_references(handler):
     Args:
         handler: The combat handler instance all combatants should reference
     """
-    from evennia.comms.models import ChannelDB
     from .constants import SPLATTERCAST_CHANNEL, DB_COMBATANTS, DB_CHAR, NDB_COMBAT_HANDLER
     
     splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
@@ -1054,7 +1048,6 @@ def detect_and_remove_orphaned_combatants(handler):
     Returns:
         list: List of orphaned combatants that were removed
     """
-    from evennia.comms.models import ChannelDB
     from .constants import (
         SPLATTERCAST_CHANNEL, DB_COMBATANTS, DB_CHAR, DB_TARGET_DBREF,
         DB_GRAPPLING_DBREF, DB_GRAPPLED_BY_DBREF, DB_IS_YIELDING
@@ -1121,7 +1114,6 @@ def resolve_bonus_attack(handler, attacker, target):
         attacker: The character making the bonus attack
         target: The target of the bonus attack
     """
-    from evennia.comms.models import ChannelDB
     from .constants import SPLATTERCAST_CHANNEL, DB_COMBATANTS, DB_CHAR
     
     splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
@@ -1163,7 +1155,6 @@ def check_grenade_human_shield(proximity_list, combat_handler=None):
         dict: Modified damage assignments {char: damage_multiplier}
              where damage_multiplier is 0.0 for grapplers, 2.0 for victims
     """
-    from evennia.comms.models import ChannelDB
     from .constants import SPLATTERCAST_CHANNEL, DB_CHAR, DB_GRAPPLING_DBREF, DB_COMBATANTS, NDB_COMBAT_HANDLER
     
     splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
