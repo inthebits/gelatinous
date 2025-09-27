@@ -687,7 +687,30 @@ def remove_combatant(handler, char):
                 if potential_target_char == other_char or potential_target_char == char:
                     continue
                 
-                # Check if this potential target is actively attacking other_char
+                # Skip dead or unconscious characters - they can't be valid retarget options
+                if (hasattr(potential_target_char, 'is_dead') and potential_target_char.is_dead()) or \
+                   (hasattr(potential_target_char, 'is_unconscious') and potential_target_char.is_unconscious()):
+                    splattercast.msg(f"RMV_COMB: Skipping {potential_target_char.key} for auto-retarget - dead/unconscious")
+                    continue
+                
+                # FRIENDLY FIRE PREVENTION: Only consider characters actively attacking other_char
+                # This prevents auto-retargeting to teammates or neutral parties in combat
+                if potential_target_dbref == get_character_dbref(other_char):
+                    splattercast.msg(f"RMV_COMB: {potential_target_char.key} is actively attacking {other_char.key} - valid retarget candidate")
+                elif potential_target_dbref:
+                    target_name = "unknown"
+                    try:
+                        target_obj = next((e.get(DB_CHAR) for e in combatants if get_character_dbref(e.get(DB_CHAR)) == potential_target_dbref), None)
+                        target_name = target_obj.key if target_obj else f"dbref#{potential_target_dbref}"
+                    except:
+                        target_name = f"dbref#{potential_target_dbref}"
+                    splattercast.msg(f"RMV_COMB: Skipping {potential_target_char.key} for auto-retarget - attacking {target_name}, not {other_char.key} (friendly fire prevention)")
+                    continue
+                else:
+                    splattercast.msg(f"RMV_COMB: Skipping {potential_target_char.key} for auto-retarget - not targeting anyone")
+                    continue
+                
+                # This character is actively attacking other_char - valid candidate
                 if potential_target_dbref == get_character_dbref(other_char):
                     ranged_attackers.append(potential_target_char)
                     
