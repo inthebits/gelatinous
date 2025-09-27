@@ -655,14 +655,100 @@ def remove_combatant(handler, char):
     # Clean up the character's state
     cleanup_combatant_state(char, entry, handler)
     
-    # Remove references to this character from other combatants
+    # Remove references to this character from other combatants and attempt auto-retargeting
     for other_entry in combatants:
         if other_entry.get(DB_TARGET_DBREF) == get_character_dbref(char):
             other_entry[DB_TARGET_DBREF] = None
-            splattercast.msg(f"RMV_COMB: Cleared {other_entry[DB_CHAR].key}'s target_dbref (was {char.key})")
-            # Inform the character that their target is gone
-            if hasattr(other_entry[DB_CHAR], 'msg'):
-                other_entry[DB_CHAR].msg(f"|yYour target {char.get_display_name(other_entry[DB_CHAR]) if hasattr(char, 'get_display_name') else char.key} has left combat. Choose a new target if you wish to continue fighting.|n")
+            other_char = other_entry[DB_CHAR]
+            splattercast.msg(f"RMV_COMB: Cleared {other_char.key}'s target_dbref (was {char.key})")
+            
+            # Attempt smart auto-retargeting: find someone who is actively attacking this character
+            # For melee weapons, prioritize targets in proximity; for ranged weapons, any attacker is fine
+            other_char_weapon = get_wielded_weapon(other_char)
+            other_char_is_ranged = other_char_weapon and hasattr(other_char_weapon, "db") and getattr(other_char_weapon.db, "is_ranged", False)
+            
+            new_target = None
+            proximity_attackers = []  # Attackers in proximity (for melee priority)
+            ranged_attackers = []     # All attackers (fallback)
+            
+            for potential_target_entry in combatants:
+                potential_target_char = potential_target_entry.get(DB_CHAR)
+                potential_target_dbref = potential_target_entry.get(DB_TARGET_DBREF)
+                
+                # Skip self and the character being removed
+                if potential_target_char == other_char or potential_target_char == char:
+                    continue
+                
+                # Check if this potential target is actively attacking other_char
+                if potential_target_dbref == get_character_dbref(other_char):
+                    ranged_attackers.append(potential_target_char)
+                    
+                    # Check if they're also in proximity for melee priority
+                    if hasattr(other_char.ndb, "in_proximity_with") and potential_target_char in other_char.ndb.in_proximity_with:
+                        proximity_attackers.append(potential_target_char)
+            
+            # Smart targeting logic based on weapon type
+            if other_char_is_ranged:
+                # Ranged weapon - any attacker is fine, pick first available
+                new_target = ranged_attackers[0] if ranged_attackers else None
+                retarget_reason = "ranged weapon - any attacker"
+            else:
+                # Melee weapon - prioritize proximity attackers, fallback to any attacker
+                if proximity_attackers:
+                    new_target = proximity_attackers[0]
+                    retarget_reason = "melee weapon - proximity attacker"
+                elif ranged_attackers:
+                    new_target = ranged_attackers[0]
+                    retarget_reason = "melee weapon - distant attacker (no proximity available)"
+                else:
+                    new_target = None
+                    retarget_reason = "no valid attackers found"
+            
+            splattercast.msg(f"RMV_COMB: Auto-retarget analysis for {other_char.key}: weapon_ranged={other_char_is_ranged}, proximity_attackers={len(proximity_attackers)}, total_attackers={len(ranged_attackers)}, reason='{retarget_reason}'")
+            
+            if new_target:
+                # Auto-retarget found - set new target and show initiate messages
+                other_entry[DB_TARGET_DBREF] = get_character_dbref(new_target)
+                splattercast.msg(f"RMV_COMB: Auto-retargeted {other_char.key} to {new_target.key} ({retarget_reason})")
+                
+                # Get weapon info for initiate message
+                from .messages import get_combat_message
+                weapon_obj = get_wielded_weapon(other_char)
+                weapon_type = "unarmed"
+                if weapon_obj and hasattr(weapon_obj, 'db') and hasattr(weapon_obj.db, 'weapon_type'):
+                    weapon_type = weapon_obj.db.weapon_type
+                
+                # Get and send initiate messages
+                try:
+                    initiate_msg_obj = get_combat_message(weapon_type, "initiate", 
+                                                        attacker=other_char, target=new_target, item=weapon_obj)
+                    
+                    if isinstance(initiate_msg_obj, dict):
+                        attacker_msg = initiate_msg_obj.get("attacker_msg", f"You turn your attention to {new_target.key}!")
+                        victim_msg = initiate_msg_obj.get("victim_msg", f"{other_char.key} turns their attention to you!")
+                        observer_msg = initiate_msg_obj.get("observer_msg", f"{other_char.key} turns their attention to {new_target.key}!")
+                    else:
+                        # Fallback messages
+                        attacker_msg = f"|yYour target has left combat, but you quickly turn your attention to {new_target.get_display_name(other_char)}!|n"
+                        victim_msg = f"|y{other_char.get_display_name(new_target)} turns their attention to you!|n"
+                        observer_msg = f"|y{other_char.key} turns their attention to {new_target.key}!|n"
+                    
+                    # Send messages
+                    other_char.msg(attacker_msg)
+                    new_target.msg(victim_msg)
+                    
+                    # Send observer message to location
+                    if hasattr(other_char, 'location') and other_char.location:
+                        other_char.location.msg_contents(observer_msg, exclude=[other_char, new_target])
+                        
+                except Exception as e:
+                    splattercast.msg(f"RMV_COMB_ERROR: Failed to send auto-retarget messages for {other_char.key}: {e}")
+                    # Fallback message
+                    other_char.msg(f"|yYour target has left combat, but you quickly turn your attention to {new_target.get_display_name(other_char)}!|n")
+            else:
+                # No auto-retarget found - send original message
+                if hasattr(other_char, 'msg'):
+                    other_char.msg(f"|yYour target {char.get_display_name(other_char) if hasattr(char, 'get_display_name') else char.key} has left combat. Choose a new target if you wish to continue fighting.|n")
     
     # Remove from combatants list
     combatants = [e for e in combatants if e.get(DB_CHAR) != char]
