@@ -153,9 +153,9 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "A swift, hard strike from your bokken lands on {target_name}’s arm with a sickening thud.",
-            "victim_msg": "A swift, hard strike from {attacker_name}’s bokken lands on your arm with a sickening thud.",
-            "observer_msg": "A swift, hard strike from {attacker_name}’s bokken lands on {target_name}’s arm with a sickening thud."
+            "attacker_msg": "A swift, hard strike from your bokken lands on {target_name}’s {hit_location} with a sickening thud.",
+            "victim_msg": "A swift, hard strike from {attacker_name}’s bokken lands on your {hit_location} with a sickening thud.",
+            "observer_msg": "A swift, hard strike from {attacker_name}’s bokken lands on {target_name}’s {hit_location} with a sickening thud."
         },
         {
             "attacker_msg": "The bokken connects with a dull crack, your blow finding a gap in {target_name}’s defense.",
@@ -163,19 +163,19 @@ MESSAGES = {
             "observer_msg": "The bokken connects with a dull crack, {attacker_name}’s blow finding a gap in {target_name}’s defense."
         },
         {
-            "attacker_msg": "Your wooden blade smashes into {target_name}’s shoulder, drawing a cry of pain.",
-            "victim_msg": "{attacker_name}’s wooden blade smashes into your shoulder, drawing a cry of pain.",
-            "observer_msg": "{attacker_name}’s wooden blade smashes into {target_name}’s shoulder, drawing a cry of pain."
+            "attacker_msg": "Your wooden blade smashes into {target_name}’s {hit_location}, drawing a cry of pain.",
+            "victim_msg": "{attacker_name}’s wooden blade smashes into your {hit_location}, drawing a cry of pain.",
+            "observer_msg": "{attacker_name}’s wooden blade smashes into {target_name}’s {hit_location}, drawing a cry of pain."
         },
         {
-            "attacker_msg": "Wood impacts flesh as your bokken deflects a blow and delivers a painful counter to {target_name}’s side.",
-            "victim_msg": "Wood impacts flesh as {attacker_name}’s bokken deflects a blow and delivers a painful counter to your side.",
-            "observer_msg": "Wood impacts flesh as {attacker_name}’s bokken deflects a blow and delivers a painful counter to {target_name}’s side."
+            "attacker_msg": "Wood impacts flesh as your bokken deflects a blow and delivers a painful counter to {target_name}’s {hit_location}.",
+            "victim_msg": "Wood impacts flesh as {attacker_name}’s bokken deflects a blow and delivers a painful counter to your {hit_location}.",
+            "observer_msg": "Wood impacts flesh as {attacker_name}’s bokken deflects a blow and delivers a painful counter to {target_name}’s {hit_location}."
         },
         {
-            "attacker_msg": "The heavy bokken strikes {target_name}’s leg, making them stumble and howl.",
-            "victim_msg": "The heavy bokken strikes your leg, making you stumble and howl.",
-            "observer_msg": "The heavy bokken strikes {target_name}’s leg, making them stumble and howl."
+            "attacker_msg": "The heavy bokken strikes {target_name}’s {hit_location}, making them stumble and howl.",
+            "victim_msg": "The heavy bokken strikes your {hit_location}, making you stumble and howl.",
+            "observer_msg": "The heavy bokken strikes {target_name}’s {hit_location}, making them stumble and howl."
         },
         {
             "attacker_msg": "Your powerful swing connects, the bokken delivering a bone-jarring impact to {target_name}.",
@@ -183,9 +183,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s powerful swing connects, the bokken delivering a bone-jarring impact to {target_name}."
         },
         {
-            "attacker_msg": "A well-aimed feint, then your bokken cracks against {target_name}’s ribs.",
-            "victim_msg": "A well-aimed feint, then {attacker_name}’s bokken cracks against your ribs.",
-            "observer_msg": "A well-aimed feint, then {attacker_name}’s bokken cracks against {target_name}’s ribs."
+            "attacker_msg": "A well-aimed feint, then your bokken cracks against {target_name}’s {hit_location}.",
+            "victim_msg": "A well-aimed feint, then {attacker_name}’s bokken cracks against your {hit_location}.",
+            "observer_msg": "A well-aimed feint, then {attacker_name}’s bokken cracks against {target_name}’s {hit_location}."
         },
         {
             "attacker_msg": "The bokken’s unyielding tip strikes {target_name}’s defenses, the force of the blow staggering them.",
@@ -193,9 +193,9 @@ MESSAGES = {
             "observer_msg": "The bokken’s unyielding tip strikes {target_name}’s defenses, the force of the blow staggering them."
         },
         {
-            "attacker_msg": "Your bokken whistles through the air before striking {target_name}’s exposed flank with brutal force.",
-            "victim_msg": "{attacker_name}’s bokken whistles through the air before striking your exposed flank with brutal force.",
-            "observer_msg": "{attacker_name}’s bokken whistles through the air before striking {target_name}’s exposed flank with brutal force."
+            "attacker_msg": "Your bokken whistles through the air before striking {target_name}’s exposed {hit_location} with brutal force.",
+            "victim_msg": "{attacker_name}’s bokken whistles through the air before striking your exposed {hit_location} with brutal force.",
+            "observer_msg": "{attacker_name}’s bokken whistles through the air before striking {target_name}’s exposed {hit_location} with brutal force."
         },
         {
             "attacker_msg": "With a grunt of effort, you drive the bokken against {target_name}, the impact echoing.",
@@ -203,14 +203,14 @@ MESSAGES = {
             "observer_msg": "With a grunt of effort, {attacker_name} drives the bokken against {target_name}, the impact echoing."
         },
         {
-            "attacker_msg": "The bokken scores a heavy hit on {target_name}’s weapon arm, numbing it with the impact.",
-            "victim_msg": "The bokken scores a heavy hit on your weapon arm, numbing it with the impact.",
-            "observer_msg": "The bokken scores a heavy hit on {target_name}’s weapon arm, numbing it with the impact."
+            "attacker_msg": "The bokken scores a heavy hit on {target_name}’s weapon {hit_location}, numbing it with the impact.",
+            "victim_msg": "The bokken scores a heavy hit on your weapon {hit_location}, numbing it with the impact.",
+            "observer_msg": "The bokken scores a heavy hit on {target_name}’s weapon {hit_location}, numbing it with the impact."
         },
         {
-            "attacker_msg": "Your precise strike opens a livid bruise on {target_name}’s brow, stunning them.",
-            "victim_msg": "{attacker_name}’s precise strike opens a livid bruise on your brow, stunning you.",
-            "observer_msg": "{attacker_name}’s precise strike opens a livid bruise on {target_name}’s brow, stunning them."
+            "attacker_msg": "Your precise strike opens a livid bruise on {target_name}’s {hit_location}, stunning them.",
+            "victim_msg": "{attacker_name}’s precise strike opens a livid bruise on your {hit_location}, stunning you.",
+            "observer_msg": "{attacker_name}’s precise strike opens a livid bruise on {target_name}’s {hit_location}, stunning them."
         },
         {
             "attacker_msg": "A resounding crack as your bokken smashes against {target_name}, the force felt by both.",
@@ -218,9 +218,9 @@ MESSAGES = {
             "observer_msg": "A resounding crack as {attacker_name}’s bokken smashes against {target_name}, the force felt by both."
         },
         {
-            "attacker_msg": "The unyielding wood of the bokken leaves a deep, painful bruise on {target_name}’s torso.",
-            "victim_msg": "The unyielding wood of the bokken leaves a deep, painful bruise on your torso.",
-            "observer_msg": "The unyielding wood of the bokken leaves a deep, painful bruise on {target_name}’s torso."
+            "attacker_msg": "The unyielding wood of the bokken leaves a deep, painful bruise on {target_name}’s {hit_location}.",
+            "victim_msg": "The unyielding wood of the bokken leaves a deep, painful bruise on your {hit_location}.",
+            "observer_msg": "The unyielding wood of the bokken leaves a deep, painful bruise on {target_name}’s {hit_location}."
         },
         {
             "attacker_msg": "Your follow-through strike with the bokken catches {target_name} off-balance and in pain.",
@@ -228,9 +228,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s follow-through strike with the bokken catches {target_name} off-balance and in pain."
         },
         {
-            "attacker_msg": "A flick of your wrist sends the bokken's tip into {target_name}’s hand with a sharp crack.",
-            "victim_msg": "A flick of {attacker_name}’s wrist sends the bokken's tip into your hand with a sharp crack.",
-            "observer_msg": "A flick of {attacker_name}’s wrist sends the bokken's tip into {target_name}’s hand with a sharp crack."
+            "attacker_msg": "A flick of your {hit_location} sends the bokken's tip into {target_name}’s {hit_location} with a sharp crack.",
+            "victim_msg": "A flick of {attacker_name}’s {hit_location} sends the bokken's tip into your {hit_location} with a sharp crack.",
+            "observer_msg": "A flick of {attacker_name}’s {hit_location} sends the bokken's tip into {target_name}’s {hit_location} with a sharp crack."
         },
         {
             "attacker_msg": "The bokken thuds heavily as it connects with {target_name}, driving the air from their lungs.",
@@ -238,9 +238,9 @@ MESSAGES = {
             "observer_msg": "The bokken thuds heavily as it connects with {target_name}, driving the air from their lungs."
         },
         {
-            "attacker_msg": "Your wooden blade finds purchase, delivering a crushing blow to {target_name}’s thigh.",
-            "victim_msg": "{attacker_name}’s wooden blade finds purchase, delivering a crushing blow to your thigh.",
-            "observer_msg": "{attacker_name}’s wooden blade finds purchase, delivering a crushing blow to {target_name}’s thigh."
+            "attacker_msg": "Your wooden blade finds purchase, delivering a crushing blow to {target_name}’s {hit_location}.",
+            "victim_msg": "{attacker_name}’s wooden blade finds purchase, delivering a crushing blow to your {hit_location}.",
+            "observer_msg": "{attacker_name}’s wooden blade finds purchase, delivering a crushing blow to {target_name}’s {hit_location}."
         },
         {
             "attacker_msg": "A glancing blow from the bokken still manages to leave {target_name} reeling and bruised.",
@@ -263,9 +263,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s thrust is true, the bokken’s point striking {target_name} squarely with concussive force."
         },
         {
-            "attacker_msg": "A downward strike from your bokken impacts {target_name}’s collarbone with a sickening crunch.",
-            "victim_msg": "A downward strike from {attacker_name}’s bokken impacts your collarbone with a sickening crunch.",
-            "observer_msg": "A downward strike from {attacker_name}’s bokken impacts {target_name}’s collarbone with a sickening crunch."
+            "attacker_msg": "A downward strike from your bokken impacts {target_name}’s {hit_location} with a sickening crunch.",
+            "victim_msg": "A downward strike from {attacker_name}’s bokken impacts your {hit_location} with a sickening crunch.",
+            "observer_msg": "A downward strike from {attacker_name}’s bokken impacts {target_name}’s {hit_location} with a sickening crunch."
         },
         {
             "attacker_msg": "The bokken, though wood, moves with deadly speed in your grip, its edge finding an opening on {target_name}.",
@@ -283,14 +283,14 @@ MESSAGES = {
             "observer_msg": "A powerful strike from the bokken forces {target_name} to give ground, wincing from the heavy blow."
         },
         {
-            "attacker_msg": "The tip of your bokken connects like a hammer, striking {target_name}’s forearm.",
-            "victim_msg": "The tip of {attacker_name}’s bokken connects like a hammer, striking your forearm.",
-            "observer_msg": "The tip of {attacker_name}’s bokken connects like a hammer, striking {target_name}’s forearm."
+            "attacker_msg": "The tip of your bokken connects like a hammer, striking {target_name}’s {hit_location}.",
+            "victim_msg": "The tip of {attacker_name}’s bokken connects like a hammer, striking your {hit_location}.",
+            "observer_msg": "The tip of {attacker_name}’s bokken connects like a hammer, striking {target_name}’s {hit_location}."
         },
         {
-            "attacker_msg": "Your bokken delivers a brutal blow to {target_name}’s side, the wood unforgiving.",
-            "victim_msg": "{attacker_name}’s bokken delivers a brutal blow to your side, the wood unforgiving.",
-            "observer_msg": "{attacker_name}’s bokken delivers a brutal blow to {target_name}’s side, the wood unforgiving."
+            "attacker_msg": "Your bokken delivers a brutal blow to {target_name}’s {hit_location}, the wood unforgiving.",
+            "victim_msg": "{attacker_name}’s bokken delivers a brutal blow to your {hit_location}, the wood unforgiving.",
+            "observer_msg": "{attacker_name}’s bokken delivers a brutal blow to {target_name}’s {hit_location}, the wood unforgiving."
         },
         {
             "attacker_msg": "A well-placed strike from the bokken leaves {target_name} momentarily breathless and seeing stars.",

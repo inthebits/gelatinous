@@ -163,19 +163,19 @@ MESSAGES = {
             "observer_msg": "The claymore connects with a sickening crunch, {attacker_name}'s blow shattering {target_name}'s defense and bone."
         },
         {
-            "attacker_msg": "Your massive blade cleaves into {target_name}'s shoulder, nearly severing the limb.",
-            "victim_msg": "{attacker_name}'s massive blade cleaves into your shoulder, nearly severing the limb.",
-            "observer_msg": "{attacker_name}'s massive blade cleaves into {target_name}'s shoulder, nearly severing the limb."
+            "attacker_msg": "Your massive blade cleaves into {target_name}'s {hit_location}, nearly severing the limb.",
+            "victim_msg": "{attacker_name}'s massive blade cleaves into your {hit_location}, nearly severing the limb.",
+            "observer_msg": "{attacker_name}'s massive blade cleaves into {target_name}'s {hit_location}, nearly severing the limb."
         },
         {
-            "attacker_msg": "Steel screams as your claymore parries a blow and delivers a crushing counter-sweep to {target_name}'s torso.",
-            "victim_msg": "Steel screams as {attacker_name}'s claymore parries a blow and delivers a crushing counter-sweep to your torso.",
-            "observer_msg": "Steel screams as {attacker_name}'s claymore parries a blow and delivers a crushing counter-sweep to {target_name}'s torso."
+            "attacker_msg": "Steel screams as your claymore parries a blow and delivers a crushing counter-sweep to {target_name}'s {hit_location}.",
+            "victim_msg": "Steel screams as {attacker_name}'s claymore parries a blow and delivers a crushing counter-sweep to your {hit_location}.",
+            "observer_msg": "Steel screams as {attacker_name}'s claymore parries a blow and delivers a crushing counter-sweep to {target_name}'s {hit_location}."
         },
         {
-            "attacker_msg": "The heavy edge of the claymore bites deep into {target_name}'s leg, sending them sprawling in agony.",
-            "victim_msg": "The heavy edge of the claymore bites deep into your leg, sending you sprawling in agony.",
-            "observer_msg": "The heavy edge of the claymore bites deep into {target_name}'s leg, sending them sprawling in agony."
+            "attacker_msg": "The heavy edge of the claymore bites deep into {target_name}'s {hit_location}, sending them sprawling in agony.",
+            "victim_msg": "The heavy edge of the claymore bites deep into your {hit_location}, sending you sprawling in agony.",
+            "observer_msg": "The heavy edge of the claymore bites deep into {target_name}'s {hit_location}, sending them sprawling in agony."
         },
         {
             "attacker_msg": "Your powerful swing connects, the claymore's momentum carrying through {target_name} like a scythe through wheat.",
@@ -183,9 +183,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s powerful swing connects, the claymore's momentum carrying through {target_name} like a scythe through wheat."
         },
         {
-            "attacker_msg": "A brutal feint, then your claymore slams into {target_name}'s ribs with the force of a battering ram.",
-            "victim_msg": "A brutal feint, then {attacker_name}'s claymore slams into your ribs with the force of a battering ram.",
-            "observer_msg": "A brutal feint, then {attacker_name}'s claymore slams into {target_name}'s ribs with the force of a battering ram."
+            "attacker_msg": "A brutal feint, then your claymore slams into {target_name}'s {hit_location} with the force of a battering ram.",
+            "victim_msg": "A brutal feint, then {attacker_name}'s claymore slams into your {hit_location} with the force of a battering ram.",
+            "observer_msg": "A brutal feint, then {attacker_name}'s claymore slams into {target_name}'s {hit_location} with the force of a battering ram."
         },
         {
             "attacker_msg": "The claymore's immense blade smashes through {target_name}'s guard, leaving a grievous, gaping wound.",
@@ -193,9 +193,9 @@ MESSAGES = {
             "observer_msg": "The claymore's immense blade smashes through {target_name}'s guard, leaving a grievous, gaping wound."
         },
         {
-            "attacker_msg": "Your claymore whistles in a wide arc before striking {target_name}'s exposed side, throwing them from their feet.",
-            "victim_msg": "{attacker_name}'s claymore whistles in a wide arc before striking your exposed side, throwing you from your feet.",
-            "observer_msg": "{attacker_name}'s claymore whistles in a wide arc before striking {target_name}'s exposed side, throwing them from their feet."
+            "attacker_msg": "Your claymore whistles in a wide arc before striking {target_name}'s exposed {hit_location}, throwing them from their feet.",
+            "victim_msg": "{attacker_name}'s claymore whistles in a wide arc before striking your exposed {hit_location}, throwing you from your feet.",
+            "observer_msg": "{attacker_name}'s claymore whistles in a wide arc before striking {target_name}'s exposed {hit_location}, throwing them from their feet."
         },
         {
             "attacker_msg": "With a roar of effort, you drive the claymore against {target_name}, the impact echoing like thunder.",
@@ -208,14 +208,14 @@ MESSAGES = {
             "observer_msg": "The claymore scores a brutal hit on {target_name}'s shield, splintering it and staggering them."
         },
         {
-            "attacker_msg": "Your powerful strike opens a horrific wound on {target_name}'s chest, blood erupting.",
-            "victim_msg": "{attacker_name}'s powerful strike opens a horrific wound on your chest, blood erupting.",
-            "observer_msg": "{attacker_name}'s powerful strike opens a horrific wound on {target_name}'s chest, blood erupting."
+            "attacker_msg": "Your powerful strike opens a horrific wound on {target_name}'s {hit_location}, blood erupting.",
+            "victim_msg": "{attacker_name}'s powerful strike opens a horrific wound on your {hit_location}, blood erupting.",
+            "observer_msg": "{attacker_name}'s powerful strike opens a horrific wound on {target_name}'s {hit_location}, blood erupting."
         },
         {
-            "attacker_msg": "A resounding clang as your claymore smashes against {target_name}'s armor, buckling it and breaking bones beneath.",
-            "victim_msg": "A resounding clang as {attacker_name}'s claymore smashes against your armor, buckling it and breaking bones beneath.",
-            "observer_msg": "A resounding clang as {attacker_name}'s claymore smashes against {target_name}'s armor, buckling it and breaking bones beneath."
+            "attacker_msg": "A resounding clang as your claymore smashes against {target_name}'s {hit_location}or, buckling it and breaking bones beneath.",
+            "victim_msg": "A resounding clang as {attacker_name}'s claymore smashes against your {hit_location}or, buckling it and breaking bones beneath.",
+            "observer_msg": "A resounding clang as {attacker_name}'s claymore smashes against {target_name}'s {hit_location}or, buckling it and breaking bones beneath."
         },
         {
             "attacker_msg": "The keen, heavy blade of the claymore leaves a wide, bloody chasm along {target_name}'s body.",
@@ -228,9 +228,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s follow-through sweep with the claymore catches {target_name} with unstoppable force, sending them flying."
         },
         {
-            "attacker_msg": "A downward smash from your claymore crushes {target_name}'s hand against their own weapon.",
-            "victim_msg": "A downward smash from {attacker_name}'s claymore crushes your hand against your own weapon.",
-            "observer_msg": "A downward smash from {attacker_name}'s claymore crushes {target_name}'s hand against their own weapon."
+            "attacker_msg": "A downward smash from your claymore crushes {target_name}'s {hit_location} against their own weapon.",
+            "victim_msg": "A downward smash from {attacker_name}'s claymore crushes your {hit_location} against your own weapon.",
+            "observer_msg": "A downward smash from {attacker_name}'s claymore crushes {target_name}'s {hit_location} against their own weapon."
         },
         {
             "attacker_msg": "The claymore thunders as it connects with {target_name}, the sheer impact enough to pulp organs.",
@@ -238,9 +238,9 @@ MESSAGES = {
             "observer_msg": "The claymore thunders as it connects with {target_name}, the sheer impact enough to pulp organs."
         },
         {
-            "attacker_msg": "Your blade finds purchase, carving a devastating wound into {target_name}'s thigh, shattering the bone.",
-            "victim_msg": "{attacker_name}'s blade finds purchase, carving a devastating wound into your thigh, shattering the bone.",
-            "observer_msg": "{attacker_name}'s blade finds purchase, carving a devastating wound into {target_name}'s thigh, shattering the bone."
+            "attacker_msg": "Your blade finds purchase, carving a devastating wound into {target_name}'s {hit_location}, shattering the bone.",
+            "victim_msg": "{attacker_name}'s blade finds purchase, carving a devastating wound into your {hit_location}, shattering the bone.",
+            "observer_msg": "{attacker_name}'s blade finds purchase, carving a devastating wound into {target_name}'s {hit_location}, shattering the bone."
         },
         {
             "attacker_msg": "A glancing blow from the claymore still manages to rip through armor and inflict a horrific injury on {target_name}.",
@@ -263,9 +263,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s strike is brutally effective, the claymore's mass striking {target_name} with devastating, crushing force."
         },
         {
-            "attacker_msg": "A downward slash from your claymore impacts {target_name}'s head, cleaving through helmet and skull.",
-            "victim_msg": "A downward slash from {attacker_name}'s claymore impacts your head, cleaving through helmet and skull.",
-            "observer_msg": "A downward slash from {attacker_name}'s claymore impacts {target_name}'s head, cleaving through helmet and skull."
+            "attacker_msg": "A downward slash from your claymore impacts {target_name}'s {hit_location}, cleaving through helmet and skull.",
+            "victim_msg": "A downward slash from {attacker_name}'s claymore impacts your {hit_location}, cleaving through helmet and skull.",
+            "observer_msg": "A downward slash from {attacker_name}'s claymore impacts {target_name}'s {hit_location}, cleaving through helmet and skull."
         },
         {
             "attacker_msg": "The claymore, though massive, moves with terrifying purpose in your grip, its edge finding an opening on {target_name}.",
@@ -283,14 +283,14 @@ MESSAGES = {
             "observer_msg": "A powerful chop from the claymore forces {target_name} to give ground, blood gushing from the terrible injury."
         },
         {
-            "attacker_msg": "The point of your claymore, driven by immense strength, impales {target_name}'s torso.",
-            "victim_msg": "The point of {attacker_name}'s claymore, driven by immense strength, impales your torso.",
-            "observer_msg": "The point of {attacker_name}'s claymore, driven by immense strength, impales {target_name}'s torso."
+            "attacker_msg": "The point of your claymore, driven by immense strength, impales {target_name}'s {hit_location}.",
+            "victim_msg": "The point of {attacker_name}'s claymore, driven by immense strength, impales your {hit_location}.",
+            "observer_msg": "The point of {attacker_name}'s claymore, driven by immense strength, impales {target_name}'s {hit_location}."
         },
         {
-            "attacker_msg": "Your claymore opens a savage, wide cut on {target_name}'s side, the steel unforgiving and brutal.",
-            "victim_msg": "{attacker_name}'s claymore opens a savage, wide cut on your side, the steel unforgiving and brutal.",
-            "observer_msg": "{attacker_name}'s claymore opens a savage, wide cut on {target_name}'s side, the steel unforgiving and brutal."
+            "attacker_msg": "Your claymore opens a savage, wide cut on {target_name}'s {hit_location}, the steel unforgiving and brutal.",
+            "victim_msg": "{attacker_name}'s claymore opens a savage, wide cut on your {hit_location}, the steel unforgiving and brutal.",
+            "observer_msg": "{attacker_name}'s claymore opens a savage, wide cut on {target_name}'s {hit_location}, the steel unforgiving and brutal."
         },
         {
             "attacker_msg": "A well-placed strike from the claymore leaves {target_name} broken and gasping on the ground.",

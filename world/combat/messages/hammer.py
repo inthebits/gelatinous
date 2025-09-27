@@ -153,29 +153,29 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "You bring the pool cue down on {target_name}'s shoulder, wood cracking with the impact.",
-            'victim_msg': "{attacker_name} brings the pool cue down on your shoulder, wood cracking with the impact.",
-            'observer_msg': "{attacker_name} brings the pool cue down on {target_name}'s shoulder, wood cracking with the impact."
+            'attacker_msg': "You bring the pool cue down on {target_name}'s {hit_location}, wood cracking with the impact.",
+            'victim_msg': "{attacker_name} brings the pool cue down on your {hit_location}, wood cracking with the impact.",
+            'observer_msg': "{attacker_name} brings the pool cue down on {target_name}'s {hit_location}, wood cracking with the impact."
         },
         {
-            'attacker_msg': "The tip jabs into {target_name}'s ribs, knocking the wind out of them.",
-            'victim_msg': "The tip jabs into your ribs, knocking the wind out of you.",
-            'observer_msg': "The tip jabs into {target_name}'s ribs, knocking the wind out of them."
+            'attacker_msg': "The tip jabs into {target_name}'s {hit_location}, knocking the wind out of them.",
+            'victim_msg': "The tip jabs into your {hit_location}, knocking the wind out of you.",
+            'observer_msg': "The tip jabs into {target_name}'s {hit_location}, knocking the wind out of them."
         },
         {
-            'attacker_msg': "You swing the cue like a bat, catching {target_name} across the jaw.",
-            'victim_msg': "{attacker_name} swings the cue like a bat, catching you across the jaw.",
-            'observer_msg': "{attacker_name} swings the cue like a bat, catching {target_name} across the jaw."
+            'attacker_msg': "You swing the cue like a bat, catching {target_name} across the {hit_location}.",
+            'victim_msg': "{attacker_name} swings the cue like a bat, catching you across the {hit_location}.",
+            'observer_msg': "{attacker_name} swings the cue like a bat, catching {target_name} across the {hit_location}."
         },
         {
-            'attacker_msg': "A quick thrust buries the tip in {target_name}'s gut. The sound is dull and final.",
-            'victim_msg': "A quick thrust buries the tip in your gut. The sound is dull and final.",
-            'observer_msg': "A quick thrust buries the tip in {target_name}'s gut. The sound is dull and final."
+            'attacker_msg': "A quick thrust buries the tip in {target_name}'s {hit_location}. The sound is dull and final.",
+            'victim_msg': "A quick thrust buries the tip in your {hit_location}. The sound is dull and final.",
+            'observer_msg': "A quick thrust buries the tip in {target_name}'s {hit_location}. The sound is dull and final."
         },
         {
-            'attacker_msg': "The cue flashes, opening a welt across {target_name}'s back.",
-            'victim_msg': "The cue flashes, opening a welt across your back.",
-            'observer_msg': "The cue flashes, opening a welt across {target_name}'s back."
+            'attacker_msg': "The cue flashes, opening a welt across {target_name}'s {hit_location}.",
+            'victim_msg': "The cue flashes, opening a welt across your {hit_location}.",
+            'observer_msg': "The cue flashes, opening a welt across {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "You draw the shaft across {target_name}'s knuckles, skin splitting under the blow.",
@@ -183,69 +183,69 @@ MESSAGES = {
             'observer_msg': "{attacker_name} draws the shaft across {target_name}'s knuckles, skin splitting under the blow."
         },
         {
-            'attacker_msg': "A flick of the wrist cracks the cue against {target_name}'s eyebrow. Blood blinds one eye.",
-            'victim_msg': "A flick of the wrist cracks the cue against your eyebrow. Blood blinds one eye.",
-            'observer_msg': "A flick of the wrist cracks the cue against {target_name}'s eyebrow. Blood blinds one eye."
+            'attacker_msg': "A flick of the {hit_location} cracks the cue against {target_name}'s eyebrow. Blood blinds one eye.",
+            'victim_msg': "A flick of the {hit_location} cracks the cue against your eyebrow. Blood blinds one eye.",
+            'observer_msg': "A flick of the {hit_location} cracks the cue against {target_name}'s eyebrow. Blood blinds one eye."
         },
         {
-            'attacker_msg': "The thick end slams into {target_name}'s gut, doubling them over.",
-            'victim_msg': "The thick end slams into your gut, doubling you over.",
-            'observer_msg': "The thick end slams into {target_name}'s gut, doubling them over."
+            'attacker_msg': "The thick end slams into {target_name}'s {hit_location}, doubling them over.",
+            'victim_msg': "The thick end slams into your {hit_location}, doubling you over.",
+            'observer_msg': "The thick end slams into {target_name}'s {hit_location}, doubling them over."
         },
         {
-            'attacker_msg': "You jab the cue into the back of {target_name}'s hand, weapon clattering to the floor.",
-            'victim_msg': "{attacker_name} jabs the cue into the back of your hand, weapon clattering to the floor.",
-            'observer_msg': "{attacker_name} jabs the cue into the back of {target_name}'s hand, weapon clattering to the floor."
+            'attacker_msg': "You jab the cue into the {hit_location} of {target_name}'s {hit_location}, weapon clattering to the floor.",
+            'victim_msg': "{attacker_name} jabs the cue into the {hit_location} of your {hit_location}, weapon clattering to the floor.",
+            'observer_msg': "{attacker_name} jabs the cue into the {hit_location} of {target_name}'s {hit_location}, weapon clattering to the floor."
         },
         {
-            'attacker_msg': "A heavy swing across the stomach leaves {target_name} clutching at their guts.",
-            'victim_msg': "A heavy swing across the stomach leaves you clutching at your guts.",
-            'observer_msg': "A heavy swing across the stomach leaves {target_name} clutching at their guts."
+            'attacker_msg': "A heavy swing across the {hit_location} leaves {target_name} clutching at their guts.",
+            'victim_msg': "A heavy swing across the {hit_location} leaves you clutching at your {hit_location}s.",
+            'observer_msg': "A heavy swing across the {hit_location} leaves {target_name} clutching at their guts."
         },
         {
-            'attacker_msg': "The cue slips under {target_name}'s chin, snapping their head back.",
-            'victim_msg': "The cue slips under your chin, snapping your head back.",
-            'observer_msg': "The cue slips under {target_name}'s chin, snapping their head back."
+            'attacker_msg': "The cue slips under {target_name}'s chin, snapping their {hit_location} {hit_location}.",
+            'victim_msg': "The cue slips under your chin, snapping your {hit_location} {hit_location}.",
+            'observer_msg': "The cue slips under {target_name}'s chin, snapping their {hit_location} {hit_location}."
         },
         {
-            'attacker_msg': "You carve a line down {target_name}'s back as they try to run.",
-            'victim_msg': "{attacker_name} carves a line down your back as you try to run.",
-            'observer_msg': "{attacker_name} carves a line down {target_name}'s back as they try to run."
+            'attacker_msg': "You carve a line down {target_name}'s {hit_location} as they try to run.",
+            'victim_msg': "{attacker_name} carves a line down your {hit_location} as you try to run.",
+            'observer_msg': "{attacker_name} carves a line down {target_name}'s {hit_location} as they try to run."
         },
         {
-            'attacker_msg': "A quick jab to the palm leaves {target_name} shaking their hand in pain.",
-            'victim_msg': "A quick jab to the palm leaves you shaking your hand in pain.",
-            'observer_msg': "A quick jab to the palm leaves {target_name} shaking their hand in pain."
+            'attacker_msg': "A quick jab to the palm leaves {target_name} shaking their {hit_location} in pain.",
+            'victim_msg': "A quick jab to the palm leaves you shaking your {hit_location} in pain.",
+            'observer_msg': "A quick jab to the palm leaves {target_name} shaking their {hit_location} in pain."
         },
         {
-            'attacker_msg': "The cue digs into {target_name}'s calf. They stagger, limping.",
-            'victim_msg': "The cue digs into your calf. You stagger, limping.",
-            'observer_msg': "The cue digs into {target_name}'s calf. They stagger, limping."
+            'attacker_msg': "The cue digs into {target_name}'s {hit_location}. They stagger, limping.",
+            'victim_msg': "The cue digs into your {hit_location}. You stagger, limping.",
+            'observer_msg': "The cue digs into {target_name}'s {hit_location}. They stagger, limping."
         },
         {
-            'attacker_msg': "You crack the cue across the inside of {target_name}'s arm, nerves screaming.",
-            'victim_msg': "{attacker_name} cracks the cue across the inside of your arm, nerves screaming.",
-            'observer_msg': "{attacker_name} cracks the cue across the inside of {target_name}'s arm, nerves screaming."
+            'attacker_msg': "You crack the cue across the inside of {target_name}'s {hit_location}, nerves screaming.",
+            'victim_msg': "{attacker_name} cracks the cue across the inside of your {hit_location}, nerves screaming.",
+            'observer_msg': "{attacker_name} cracks the cue across the inside of {target_name}'s {hit_location}, nerves screaming."
         },
         {
-            'attacker_msg': "A jab to the neck leaves a deep, purple bruise.",
-            'victim_msg': "A jab to the neck leaves a deep, purple bruise.",
-            'observer_msg': "A jab to the neck leaves a deep, purple bruise."
+            'attacker_msg': "A jab to the {hit_location} leaves a deep, purple bruise.",
+            'victim_msg': "A jab to the {hit_location} leaves a deep, purple bruise.",
+            'observer_msg': "A jab to the {hit_location} leaves a deep, purple bruise."
         },
         {
-            'attacker_msg': "The shaft glides across {target_name}'s jaw, leaving a red mark.",
-            'victim_msg': "The shaft glides across your jaw, leaving a red mark.",
-            'observer_msg': "The shaft glides across {target_name}'s jaw, leaving a red mark."
+            'attacker_msg': "The shaft glides across {target_name}'s {hit_location}, leaving a red mark.",
+            'victim_msg': "The shaft glides across your {hit_location}, leaving a red mark.",
+            'observer_msg': "The shaft glides across {target_name}'s {hit_location}, leaving a red mark."
         },
         {
-            'attacker_msg': "You smash the cue into {target_name}'s shoulder, splinters flying.",
-            'victim_msg': "{attacker_name} smashes the cue into your shoulder, splinters flying.",
-            'observer_msg': "{attacker_name} smashes the cue into {target_name}'s shoulder, splinters flying."
+            'attacker_msg': "You smash the cue into {target_name}'s {hit_location}, splinters flying.",
+            'victim_msg': "{attacker_name} smashes the cue into your {hit_location}, splinters flying.",
+            'observer_msg': "{attacker_name} smashes the cue into {target_name}'s {hit_location}, splinters flying."
         },
         {
-            'attacker_msg': "A heavy blow across the ribs leaves {target_name} gasping.",
-            'victim_msg': "A heavy blow across the ribs leaves you gasping.",
-            'observer_msg': "A heavy blow across the ribs leaves {target_name} gasping."
+            'attacker_msg': "A heavy blow across the {hit_location} leaves {target_name} gasping.",
+            'victim_msg': "A heavy blow across the {hit_location} leaves you gasping.",
+            'observer_msg': "A heavy blow across the {hit_location} leaves {target_name} gasping."
         },
         {
             'attacker_msg': "The tip slips between fingers, knuckles swelling instantly.",
@@ -253,29 +253,29 @@ MESSAGES = {
             'observer_msg': "The tip slips between fingers, knuckles swelling instantly."
         },
         {
-            'attacker_msg': "You draw the cue across {target_name}'s throat—shallow, but terrifying.",
-            'victim_msg': "{attacker_name} draws the cue across your throat—shallow, but terrifying.",
-            'observer_msg': "{attacker_name} draws the cue across {target_name}'s throat—shallow, but terrifying."
+            'attacker_msg': "You draw the cue across {target_name}'s {hit_location}—shallow, but terrifying.",
+            'victim_msg': "{attacker_name} draws the cue across your {hit_location}—shallow, but terrifying.",
+            'observer_msg': "{attacker_name} draws the cue across {target_name}'s {hit_location}—shallow, but terrifying."
         },
         {
-            'attacker_msg': "A quick flick cracks {target_name}'s ear. Blood pours down their neck.",
-            'victim_msg': "A quick flick cracks your ear. Blood pours down your neck.",
-            'observer_msg': "A quick flick cracks {target_name}'s ear. Blood pours down their neck."
+            'attacker_msg': "A quick flick cracks {target_name}'s ear. Blood pours down their {hit_location}.",
+            'victim_msg': "A quick flick cracks your ear. Blood pours down your {hit_location}.",
+            'observer_msg': "A quick flick cracks {target_name}'s ear. Blood pours down their {hit_location}."
         },
         {
-            'attacker_msg': "The shaft bites into {target_name}'s knee. The joint gives way.",
-            'victim_msg': "The shaft bites into your knee. The joint gives way.",
-            'observer_msg': "The shaft bites into {target_name}'s knee. The joint gives way."
+            'attacker_msg': "The shaft bites into {target_name}'s {hit_location}. The joint gives way.",
+            'victim_msg': "The shaft bites into your {hit_location}. The joint gives way.",
+            'observer_msg': "The shaft bites into {target_name}'s {hit_location}. The joint gives way."
         },
         {
-            'attacker_msg': "A swing across the back of the hand leaves {target_name} howling.",
-            'victim_msg': "A swing across the back of the hand leaves you howling.",
-            'observer_msg': "A swing across the back of the hand leaves {target_name} howling."
+            'attacker_msg': "A swing across the {hit_location} of the {hit_location} leaves {target_name} howling.",
+            'victim_msg': "A swing across the {hit_location} of the {hit_location} leaves you howling.",
+            'observer_msg': "A swing across the {hit_location} of the {hit_location} leaves {target_name} howling."
         },
         {
-            'attacker_msg': "You bury the cue in {target_name}'s side, snapping the wood.",
-            'victim_msg': "{attacker_name} buries the cue in your side, snapping the wood.",
-            'observer_msg': "{attacker_name} buries the cue in {target_name}'s side, snapping the wood."
+            'attacker_msg': "You bury the cue in {target_name}'s {hit_location}, snapping the wood.",
+            'victim_msg': "{attacker_name} buries the cue in your {hit_location}, snapping the wood.",
+            'observer_msg': "{attacker_name} buries the cue in {target_name}'s {hit_location}, snapping the wood."
         },
         {
             'attacker_msg': "The cue slips under {target_name}'s chin, leaving a red welt.",
@@ -288,19 +288,19 @@ MESSAGES = {
             'observer_msg': "A blow across the Achilles leaves {target_name} stumbling."
         },
         {
-            'attacker_msg': "You carve a spiral up {target_name}'s forearm. The pattern is purple and red.",
-            'victim_msg': "{attacker_name} carves a spiral up your forearm. The pattern is purple and red.",
-            'observer_msg': "{attacker_name} carves a spiral up {target_name}'s forearm. The pattern is purple and red."
+            'attacker_msg': "You carve a spiral up {target_name}'s {hit_location}. The pattern is purple and red.",
+            'victim_msg': "{attacker_name} carves a spiral up your {hit_location}. The pattern is purple and red.",
+            'observer_msg': "{attacker_name} carves a spiral up {target_name}'s {hit_location}. The pattern is purple and red."
         },
         {
-            'attacker_msg': "The cue cracks across the ribs, breath leaving in a rush.",
-            'victim_msg': "The cue cracks across the ribs, breath leaving in a rush.",
-            'observer_msg': "The cue cracks across the ribs, breath leaving in a rush."
+            'attacker_msg': "The cue cracks across the {hit_location}, breath leaving in a rush.",
+            'victim_msg': "The cue cracks across the {hit_location}, breath leaving in a rush.",
+            'observer_msg': "The cue cracks across the {hit_location}, breath leaving in a rush."
         },
         {
-            'attacker_msg': "A quick jab opens {target_name}'s cheek, blood and splinters mixing.",
-            'victim_msg': "A quick jab opens your cheek, blood and splinters mixing.",
-            'observer_msg': "A quick jab opens {target_name}'s cheek, blood and splinters mixing."
+            'attacker_msg': "A quick jab opens {target_name}'s {hit_location}, blood and splinters mixing.",
+            'victim_msg': "A quick jab opens your {hit_location}, blood and splinters mixing.",
+            'observer_msg': "A quick jab opens {target_name}'s {hit_location}, blood and splinters mixing."
         }
     ],
     "miss": [

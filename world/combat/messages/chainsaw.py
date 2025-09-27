@@ -208,14 +208,14 @@ MESSAGES = {
     ],
     'hit': [
         {
-            'attacker_msg': "A glancing blow becomes a tearing ruin. You pull back, and what comes with the blade doesn't belong outside the body.",
-            'victim_msg': "A glancing blow becomes a tearing ruin. {attacker_name} pulls back, and what comes with the blade doesn't belong outside your body.",
-            'observer_msg': "A glancing blow becomes a tearing ruin. {attacker_name} pulls back, and what comes with the blade doesn't belong outside the body."
+            'attacker_msg': "A glancing blow becomes a tearing ruin. You pull {hit_location}, and what comes with the blade doesn't belong outside the body.",
+            'victim_msg': "A glancing blow becomes a tearing ruin. {attacker_name} pulls {hit_location}, and what comes with the blade doesn't belong outside your body.",
+            'observer_msg': "A glancing blow becomes a tearing ruin. {attacker_name} pulls {hit_location}, and what comes with the blade doesn't belong outside the body."
         },
         {
-            'attacker_msg': "A horizontal sweep tears open a gash across {target_name}'s gut. Blood splashes hot against steel and keeps dripping long after the blade moves on.",
-            'victim_msg': "A horizontal sweep tears open a gash across your gut. Blood splashes hot against steel and keeps dripping long after the blade moves on.",
-            'observer_msg': "A horizontal sweep tears open a gash across {target_name}'s gut. Blood splashes hot against steel and keeps dripping long after the blade moves on."
+            'attacker_msg': "A horizontal sweep tears open a gash across {target_name}'s {hit_location}. Blood splashes hot against steel and keeps dripping long after the blade moves on.",
+            'victim_msg': "A horizontal sweep tears open a gash across your {hit_location}. Blood splashes hot against steel and keeps dripping long after the blade moves on.",
+            'observer_msg': "A horizontal sweep tears open a gash across {target_name}'s {hit_location}. Blood splashes hot against steel and keeps dripping long after the blade moves on."
         },
         {
             'attacker_msg': "A quick slice becomes something more. {target_name} collapses mid-sentence, blood painting punctuation around their last word.",
@@ -223,34 +223,34 @@ MESSAGES = {
             'observer_msg': "A quick slice becomes something more. {target_name} collapses mid-sentence, blood painting punctuation around their last word."
         },
         {
-            'attacker_msg': "A spray of red arcs into the air as you drive the saw into {target_name}'s shoulder. The sound is wet, grinding — unforgettable.",
-            'victim_msg': "A spray of red arcs into the air as {attacker_name} drives the saw into your shoulder. The sound is wet, grinding — unforgettable.",
-            'observer_msg': "A spray of red arcs into the air as {attacker_name} drives the saw into {target_name}'s shoulder. The sound is wet, grinding — unforgettable."
+            'attacker_msg': "A spray of red arcs into the air as you drive the saw into {target_name}'s {hit_location}. The sound is wet, grinding — unforgettable.",
+            'victim_msg': "A spray of red arcs into the air as {attacker_name} drives the saw into your {hit_location}. The sound is wet, grinding — unforgettable.",
+            'observer_msg': "A spray of red arcs into the air as {attacker_name} drives the saw into {target_name}'s {hit_location}. The sound is wet, grinding — unforgettable."
         },
         {
-            'attacker_msg': "A vertical plunge opens {target_name} from clavicle to sternum. The wound screams even if they don't.",
-            'victim_msg': "A vertical plunge opens you from clavicle to sternum. The wound screams even if you don't.",
-            'observer_msg': "A vertical plunge opens {target_name} from clavicle to sternum. The wound screams even if they don't."
+            'attacker_msg': "A vertical plunge opens {target_name} from {hit_location} to {hit_location}. The wound screams even if they don't.",
+            'victim_msg': "A vertical plunge opens you from {hit_location} to {hit_location}. The wound screams even if you don't.",
+            'observer_msg': "A vertical plunge opens {target_name} from {hit_location} to {hit_location}. The wound screams even if they don't."
         },
         {
-            'attacker_msg': "Chainsaw teeth rake across {target_name}'s ribs, dragging sparks and fluids in equal measure. The roar drowns out the agony.",
-            'victim_msg': "Chainsaw teeth rake across your ribs, dragging sparks and fluids in equal measure. The roar drowns out your agony.",
-            'observer_msg': "Chainsaw teeth rake across {target_name}'s ribs, dragging sparks and fluids in equal measure. The roar drowns out the agony."
+            'attacker_msg': "Chainsaw teeth rake across {target_name}'s {hit_location}, dragging sparks and fluids in equal measure. The roar drowns out the agony.",
+            'victim_msg': "Chainsaw teeth rake across your {hit_location}, dragging sparks and fluids in equal measure. The roar drowns out your agony.",
+            'observer_msg': "Chainsaw teeth rake across {target_name}'s {hit_location}, dragging sparks and fluids in equal measure. The roar drowns out the agony."
         },
         {
-            'attacker_msg': "It catches {target_name} in the thigh, spinning them to the ground. They try to crawl. The saw has other ideas.",
-            'victim_msg': "It catches you in the thigh, spinning you to the ground. You try to crawl. The saw has other ideas.",
-            'observer_msg': "It catches {target_name} in the thigh, spinning them to the ground. They try to crawl. The saw has other ideas."
+            'attacker_msg': "It catches {target_name} in the {hit_location}, spinning them to the ground. They try to crawl. The saw has other ideas.",
+            'victim_msg': "It catches you in the {hit_location}, spinning you to the ground. You try to crawl. The saw has other ideas.",
+            'observer_msg': "It catches {target_name} in the {hit_location}, spinning them to the ground. They try to crawl. The saw has other ideas."
         },
         {
-            'attacker_msg': "It connects with {target_name}'s spine and vibrates like a tuning fork. Their scream dies mid-breath.",
-            'victim_msg': "It connects with your spine and vibrates like a tuning fork. Your scream dies mid-breath.",
-            'observer_msg': "It connects with {target_name}'s spine and vibrates like a tuning fork. Their scream dies mid-breath."
+            'attacker_msg': "It connects with {target_name}'s {hit_location} and vibrates like a tuning fork. Their scream dies mid-breath.",
+            'victim_msg': "It connects with your {hit_location} and vibrates like a tuning fork. Your scream dies mid-breath.",
+            'observer_msg': "It connects with {target_name}'s {hit_location} and vibrates like a tuning fork. Their scream dies mid-breath."
         },
         {
-            'attacker_msg': "It doesn't go in clean. It *grinds*, catching on ribs, dragging. {target_name} bucks like their body wants to flee itself.",
-            'victim_msg': "It doesn't go in clean. It *grinds*, catching on ribs, dragging. You buck like your body wants to flee itself.",
-            'observer_msg': "It doesn't go in clean. It *grinds*, catching on ribs, dragging. {target_name} bucks like their body wants to flee itself."
+            'attacker_msg': "It doesn't go in clean. It *grinds*, catching on {hit_location}, dragging. {target_name} bucks like their body wants to flee itself.",
+            'victim_msg': "It doesn't go in clean. It *grinds*, catching on {hit_location}, dragging. You buck like your body wants to flee itself.",
+            'observer_msg': "It doesn't go in clean. It *grinds*, catching on {hit_location}, dragging. {target_name} bucks like their body wants to flee itself."
         },
         {
             'attacker_msg': "It hits and stays there, teeth chewing deeper. {target_name}'s resistance falters, buckling under the brutal thrum.",
@@ -263,14 +263,14 @@ MESSAGES = {
             'observer_msg': "It hits at an angle. Not clean. Not kind. The saw chews and {target_name} shrieks, dancing with death they didn't invite."
         },
         {
-            'attacker_msg': "One side of {target_name} caves in under the churning chain. Their body doesn't break — it *melts* around the motion.",
-            'victim_msg': "One side of you caves in under the churning chain. Your body doesn't break — it *melts* around the motion.",
-            'observer_msg': "One side of {target_name} caves in under the churning chain. Their body doesn't break — it *melts* around the motion."
+            'attacker_msg': "One {hit_location} of {target_name} caves in under the churning chain. Their body doesn't break — it *melts* around the motion.",
+            'victim_msg': "One {hit_location} of you caves in under the churning chain. Your body doesn't break — it *melts* around the motion.",
+            'observer_msg': "One {hit_location} of {target_name} caves in under the churning chain. Their body doesn't break — it *melts* around the motion."
         },
         {
-            'attacker_msg': "One slash, from shoulder to hip. {target_name} collapses mid-turn, blood trailing behind them like punctuation.",
-            'victim_msg': "One slash, from shoulder to hip. You collapse mid-turn, blood trailing behind you like punctuation.",
-            'observer_msg': "One slash, from shoulder to hip. {target_name} collapses mid-turn, blood trailing behind them like punctuation."
+            'attacker_msg': "One slash, from {hit_location} to {hit_location}. {target_name} collapses mid-turn, blood trailing behind them like punctuation.",
+            'victim_msg': "One slash, from {hit_location} to {hit_location}. You collapse mid-turn, blood trailing behind you like punctuation.",
+            'observer_msg': "One slash, from {hit_location} to {hit_location}. {target_name} collapses mid-turn, blood trailing behind them like punctuation."
         },
         {
             'attacker_msg': "Steel roars against bone. {target_name} crumples, twitching, as the saw finishes its sentence.",
@@ -283,9 +283,9 @@ MESSAGES = {
             'observer_msg': "Teeth meet body, and the world becomes red static. {target_name} convulses as the chainsaw chews its way through resistance."
         },
         {
-            'attacker_msg': "Your blade clips {target_name}'s arm, spraying red in tight spirals. They try to clutch it. There's nothing left to clutch.",
-            'victim_msg': "The blade clips your arm, spraying red in tight spirals. You try to clutch it. There's nothing left to clutch.",
-            'observer_msg': "The blade clips {target_name}'s arm, spraying red in tight spirals. They try to clutch it. There's nothing left to clutch."
+            'attacker_msg': "Your blade clips {target_name}'s {hit_location}, spraying red in tight spirals. They try to clutch it. There's nothing left to clutch.",
+            'victim_msg': "The blade clips your {hit_location}, spraying red in tight spirals. You try to clutch it. There's nothing left to clutch.",
+            'observer_msg': "The blade clips {target_name}'s {hit_location}, spraying red in tight spirals. They try to clutch it. There's nothing left to clutch."
         },
         {
             'attacker_msg': "Your blade sinks in and {target_name} howls, twisting as pieces of them don't keep up. The chainsaw doesn't cut — it devours.",
@@ -298,9 +298,9 @@ MESSAGES = {
             'observer_msg': "The chain bites and sticks. {attacker_name} wrenches it free, taking a ribbon of flesh that will never be reattached."
         },
         {
-            'attacker_msg': "Your chainsaw kisses {target_name}'s shoulder and keeps going. Their scream is short — there's too much damage for sound.",
-            'victim_msg': "The chainsaw kisses your shoulder and keeps going. Your scream is short — there's too much damage for sound.",
-            'observer_msg': "The chainsaw kisses {target_name}'s shoulder and keeps going. Their scream is short — there's too much damage for sound."
+            'attacker_msg': "Your chainsaw kisses {target_name}'s {hit_location} and keeps going. Their scream is short — there's too much damage for sound.",
+            'victim_msg': "The chainsaw kisses your {hit_location} and keeps going. Your scream is short — there's too much damage for sound.",
+            'observer_msg': "The chainsaw kisses {target_name}'s {hit_location} and keeps going. Their scream is short — there's too much damage for sound."
         },
         {
             'attacker_msg': "Your chainsaw punches into {target_name} like a fist full of monsters. The shriek that follows isn't just theirs — it belongs to the saw.",
@@ -313,14 +313,14 @@ MESSAGES = {
             'observer_msg': "The engine dips as it grinds bone, but {attacker_name} holds steady. The saw doesn't care what's in its way — only that it's soft."
         },
         {
-            'attacker_msg': "Your saw bites into {target_name}'s side, ripping through cloth, flesh, and composure. Screams drown under the roar of steel on meat.",
-            'victim_msg': "The saw bites into your side, ripping through cloth, flesh, and composure. Your screams drown under the roar of steel on meat.",
-            'observer_msg': "The saw bites into {target_name}'s side, ripping through cloth, flesh, and composure. Screams drown under the roar of steel on meat."
+            'attacker_msg': "Your saw bites into {target_name}'s {hit_location}, ripping through cloth, flesh, and composure. Screams drown under the roar of steel on meat.",
+            'victim_msg': "The saw bites into your {hit_location}, ripping through cloth, flesh, and composure. Your screams drown under the roar of steel on meat.",
+            'observer_msg': "The saw bites into {target_name}'s {hit_location}, ripping through cloth, flesh, and composure. Screams drown under the roar of steel on meat."
         },
         {
-            'attacker_msg': "Your saw catches {target_name} along the ribs, the engine lurching as it tears through resistance. The blood isn't a spray — it's a curtain.",
-            'victim_msg': "The saw catches you along the ribs, the engine lurching as it tears through resistance. The blood isn't a spray — it's a curtain.",
-            'observer_msg': "The saw catches {target_name} along the ribs, the engine lurching as it tears through resistance. The blood isn't a spray — it's a curtain."
+            'attacker_msg': "Your saw catches {target_name} along the {hit_location}, the engine lurching as it tears through resistance. The blood isn't a spray — it's a curtain.",
+            'victim_msg': "The saw catches you along the {hit_location}, the engine lurching as it tears through resistance. The blood isn't a spray — it's a curtain.",
+            'observer_msg': "The saw catches {target_name} along the {hit_location}, the engine lurching as it tears through resistance. The blood isn't a spray — it's a curtain."
         },
         {
             'attacker_msg': "Your saw doesn't just cut — it *removes*. Flesh peels, muscle splits, and {target_name}'s balance disappears with their composure.",
@@ -343,14 +343,14 @@ MESSAGES = {
             'observer_msg': "There's a moment where the blade sticks — then a jolt, and it's free again, trailing flesh behind it like a streamer."
         },
         {
-            'attacker_msg': "You carve a crescent into {target_name}'s flank. The teeth drag muscle with them like souvenirs.",
-            'victim_msg': "{attacker_name} carves a crescent into your flank. The teeth drag muscle with them like souvenirs.",
-            'observer_msg': "{attacker_name} carves a crescent into {target_name}'s flank. The teeth drag muscle with them like souvenirs."
+            'attacker_msg': "You carve a crescent into {target_name}'s {hit_location}. The teeth drag muscle with them like souvenirs.",
+            'victim_msg': "{attacker_name} carves a crescent into your {hit_location}. The teeth drag muscle with them like souvenirs.",
+            'observer_msg': "{attacker_name} carves a crescent into {target_name}'s {hit_location}. The teeth drag muscle with them like souvenirs."
         },
         {
-            'attacker_msg': "You carve a deep, ragged line across {target_name}'s back. The engine snarls with satisfaction as skin peels like cheap wallpaper.",
-            'victim_msg': "{attacker_name} carves a deep, ragged line across your back. The engine snarls with satisfaction as skin peels like cheap wallpaper.",
-            'observer_msg': "{attacker_name} carves a deep, ragged line across {target_name}'s back. The engine snarls with satisfaction as skin peels like cheap wallpaper."
+            'attacker_msg': "You carve a deep, ragged line across {target_name}'s {hit_location}. The engine snarls with satisfaction as skin peels like cheap wallpaper.",
+            'victim_msg': "{attacker_name} carves a deep, ragged line across your {hit_location}. The engine snarls with satisfaction as skin peels like cheap wallpaper.",
+            'observer_msg': "{attacker_name} carves a deep, ragged line across {target_name}'s {hit_location}. The engine snarls with satisfaction as skin peels like cheap wallpaper."
         },
         {
             'attacker_msg': "You don't hesitate. Your chainsaw carves into flesh like a drunk god drawing new commandments.",
@@ -358,9 +358,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name} doesn't hesitate. The chainsaw carves into flesh like a drunk god drawing new commandments."
         },
         {
-            'attacker_msg': "You drag the saw upward through {target_name}, spine sparking on the teeth. It smells like burned meat.",
-            'victim_msg': "{attacker_name} drags the saw upward through you, spine sparking on the teeth. It smells like burned meat.",
-            'observer_msg': "{attacker_name} drags the saw upward through {target_name}, spine sparking on the teeth. It smells like burned meat."
+            'attacker_msg': "You drag the saw upward through {target_name}, {hit_location} sparking on the teeth. It smells like burned meat.",
+            'victim_msg': "{attacker_name} drags the saw upward through you, {hit_location} sparking on the teeth. It smells like burned meat.",
+            'observer_msg': "{attacker_name} drags the saw upward through {target_name}, {hit_location} sparking on the teeth. It smells like burned meat."
         },
         {
             'attacker_msg': "You follow through as the saw tears down the centerline. The damage isn't a wound — it's a statement.",
@@ -368,9 +368,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name} follows through as the saw tears down the centerline. The damage isn't a wound — it's a statement."
         },
         {
-            'attacker_msg': "You grind the saw into {target_name}'s thigh, shredding meat into vapor. The smell is thick, unmistakable.",
-            'victim_msg': "{attacker_name} grinds the saw into your thigh, shredding meat into vapor. The smell is thick, unmistakable.",
-            'observer_msg': "{attacker_name} grinds the saw into {target_name}'s thigh, shredding meat into vapor. The smell is thick, unmistakable."
+            'attacker_msg': "You grind the saw into {target_name}'s {hit_location}, shredding meat into vapor. The smell is thick, unmistakable.",
+            'victim_msg': "{attacker_name} grinds the saw into your {hit_location}, shredding meat into vapor. The smell is thick, unmistakable.",
+            'observer_msg': "{attacker_name} grinds the saw into {target_name}'s {hit_location}, shredding meat into vapor. The smell is thick, unmistakable."
         },
         {
             'attacker_msg': "You plant a boot into {target_name} and drive the saw in deep. The result is chaos — bone crunching, nerves firing, everything screaming.",
@@ -378,9 +378,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name} plants a boot into {target_name} and drives the saw in deep. The result is chaos — bone crunching, nerves firing, everything screaming."
         },
         {
-            'attacker_msg': "You push the blade into {target_name}'s gut, slowly, deliberately. They don't scream — they *wail*.",
-            'victim_msg': "{attacker_name} pushes the blade into your gut, slowly, deliberately. You don't scream — you *wail*.",
-            'observer_msg': "{attacker_name} pushes the blade into {target_name}'s gut, slowly, deliberately. They don't scream — they *wail*."
+            'attacker_msg': "You push the blade into {target_name}'s {hit_location}, slowly, deliberately. They don't scream — they *wail*.",
+            'victim_msg': "{attacker_name} pushes the blade into your {hit_location}, slowly, deliberately. You don't scream — you *wail*.",
+            'observer_msg': "{attacker_name} pushes the blade into {target_name}'s {hit_location}, slowly, deliberately. They don't scream — they *wail*."
         },
         {
             'attacker_msg': "Your strike lands center mass. The saw buckles, catches, and explodes forward, taking {target_name}'s balance with it.",
@@ -393,14 +393,14 @@ MESSAGES = {
             'observer_msg': "{target_name} staggers as the saw hits home. For a second, they look surprised — then the blood surges up and surprise turns to collapse."
         },
         {
-            'attacker_msg': "{target_name} tries to dodge, but the edge catches them across the ribs. Their scream is guttural. The smell is copper and smoke.",
-            'victim_msg': "You try to dodge, but the edge catches you across the ribs. Your scream is guttural. The smell is copper and smoke.",
-            'observer_msg': "{target_name} tries to dodge, but the edge catches them across the ribs. Their scream is guttural. The smell is copper and smoke."
+            'attacker_msg': "{target_name} tries to dodge, but the edge catches them across the {hit_location}. Their scream is guttural. The smell is copper and smoke.",
+            'victim_msg': "You try to dodge, but the edge catches you across the {hit_location}. Your scream is guttural. The smell is copper and smoke.",
+            'observer_msg': "{target_name} tries to dodge, but the edge catches them across the {hit_location}. Their scream is guttural. The smell is copper and smoke."
         },
         {
-            'attacker_msg': "{target_name} turns too late. Your saw greets them with a full-throated growl and a mouthful of shoulder.",
-            'victim_msg': "You turn too late. The saw greets you with a full-throated growl and a mouthful of shoulder.",
-            'observer_msg': "{target_name} turns too late. The saw greets them with a full-throated growl and a mouthful of shoulder."
+            'attacker_msg': "{target_name} turns too late. Your saw greets them with a full-throated growl and a mouthful of {hit_location}.",
+            'victim_msg': "You turn too late. The saw greets you with a full-throated growl and a mouthful of {hit_location}.",
+            'observer_msg': "{target_name} turns too late. The saw greets them with a full-throated growl and a mouthful of {hit_location}."
         },
         {
             'attacker_msg': "{target_name}'s scream is swallowed whole by the motor. Their body jerks as the chain digs, sputters, and *eats*.",

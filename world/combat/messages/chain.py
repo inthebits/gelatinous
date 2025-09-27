@@ -153,69 +153,69 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "A brutal downward whip strikes {target_name}'s shoulder. Muscle spasms. Blood speckles the floor.",
-            "victim_msg": "A brutal downward whip strikes your shoulder. Muscle spasms. Blood speckles the floor.",
-            "observer_msg": "A brutal downward whip strikes {target_name}'s shoulder. Muscle spasms. Blood speckles the floor."
+            "attacker_msg": "A brutal downward whip strikes {target_name}'s {hit_location}. Muscle spasms. Blood speckles the floor.",
+            "victim_msg": "A brutal downward whip strikes your {hit_location}. Muscle spasms. Blood speckles the floor.",
+            "observer_msg": "A brutal downward whip strikes {target_name}'s {hit_location}. Muscle spasms. Blood speckles the floor."
         },
         {
-            "attacker_msg": "A diagonal strike catches the thigh. The chain bounces, but not before digging deep.",
-            "victim_msg": "A diagonal strike catches your thigh. The chain bounces, but not before digging deep.",
-            "observer_msg": "A diagonal strike catches {target_name}'s thigh. The chain bounces, but not before digging deep."
+            "attacker_msg": "A diagonal strike catches the {hit_location}. The chain bounces, but not before digging deep.",
+            "victim_msg": "A diagonal strike catches your {hit_location}. The chain bounces, but not before digging deep.",
+            "observer_msg": "A diagonal strike catches {target_name}'s {hit_location}. The chain bounces, but not before digging deep."
         },
         {
-            "attacker_msg": "A harsh crack across the ribs steals air from {target_name}'s lungs. The chain wraps around briefly before sliding free.",
-            "victim_msg": "A harsh crack across your ribs steals air from your lungs. The chain wraps around briefly before sliding free.",
-            "observer_msg": "A harsh crack across the ribs steals air from {target_name}'s lungs. The chain wraps around briefly before sliding free."
+            "attacker_msg": "A harsh crack across the {hit_location} steals air from {target_name}'s lungs. The chain wraps around briefly before sliding free.",
+            "victim_msg": "A harsh crack across your {hit_location} steals air from your lungs. The chain wraps around briefly before sliding free.",
+            "observer_msg": "A harsh crack across the {hit_location} steals air from {target_name}'s lungs. The chain wraps around briefly before sliding free."
         },
         {
-            "attacker_msg": "A hook of the chain slams into {target_name}'s stomach. They fold, breath gone and eyes wide.",
-            "victim_msg": "A hook of the chain slams into your stomach. You fold, breath gone and eyes wide.",
-            "observer_msg": "A hook of the chain slams into {target_name}'s stomach. They fold, breath gone and eyes wide."
+            "attacker_msg": "A hook of the chain slams into {target_name}'s {hit_location}. They fold, breath gone and eyes wide.",
+            "victim_msg": "A hook of the chain slams into your {hit_location}. You fold, breath gone and eyes wide.",
+            "observer_msg": "A hook of the chain slams into {target_name}'s {hit_location}. They fold, breath gone and eyes wide."
         },
         {
-            "attacker_msg": "A snap of your wrist sends the chain into {target_name}'s shin. The sound is brittle. So is the stance.",
-            "victim_msg": "A snap of {attacker_name}'s wrist sends the chain into your shin. The sound is brittle. So is your stance.",
-            "observer_msg": "A snap of {attacker_name}'s wrist sends the chain into {target_name}'s shin. The sound is brittle. So is the stance."
+            "attacker_msg": "A snap of your {hit_location} sends the chain into {target_name}'s {hit_location}. The sound is brittle. So is the stance.",
+            "victim_msg": "A snap of {attacker_name}'s {hit_location} sends the chain into your {hit_location}. The sound is brittle. So is your stance.",
+            "observer_msg": "A snap of {attacker_name}'s {hit_location} sends the chain into {target_name}'s {hit_location}. The sound is brittle. So is the stance."
         },
         {
-            "attacker_msg": "A spinning backhand wraps the chain around {target_name}'s arm. When it pulls away, the arm doesn't lift again.",
-            "victim_msg": "A spinning backhand wraps the chain around your arm. When it pulls away, your arm doesn't lift again.",
-            "observer_msg": "A spinning backhand wraps the chain around {target_name}'s arm. When it pulls away, the arm doesn't lift again."
+            "attacker_msg": "A spinning backhand wraps the chain around {target_name}'s {hit_location}. When it pulls away, the {hit_location} doesn't lift again.",
+            "victim_msg": "A spinning backhand wraps the chain around your {hit_location}. When it pulls away, your {hit_location} doesn't lift again.",
+            "observer_msg": "A spinning backhand wraps the chain around {target_name}'s {hit_location}. When it pulls away, the {hit_location} doesn't lift again."
         },
         {
-            "attacker_msg": "A sudden twist wraps the chain around {target_name}'s neck — not tight enough to choke, but tight enough to scare.",
-            "victim_msg": "A sudden twist wraps the chain around your neck — not tight enough to choke, but tight enough to scare.",
-            "observer_msg": "A sudden twist wraps the chain around {target_name}'s neck — not tight enough to choke, but tight enough to scare."
+            "attacker_msg": "A sudden twist wraps the chain around {target_name}'s {hit_location} — not tight enough to choke, but tight enough to scare.",
+            "victim_msg": "A sudden twist wraps the chain around your {hit_location} — not tight enough to choke, but tight enough to scare.",
+            "observer_msg": "A sudden twist wraps the chain around {target_name}'s {hit_location} — not tight enough to choke, but tight enough to scare."
         },
         {
-            "attacker_msg": "A tight, whipping motion lands the chain across the face. {target_name}'s eye swells instantly.",
-            "victim_msg": "A tight, whipping motion lands the chain across your face. Your eye swells instantly.",
-            "observer_msg": "A tight, whipping motion lands the chain across the face. {target_name}'s eye swells instantly."
+            "attacker_msg": "A tight, whipping motion lands the chain across the {hit_location}. {target_name}'s eye swells instantly.",
+            "victim_msg": "A tight, whipping motion lands the chain across your {hit_location}. Your eye swells instantly.",
+            "observer_msg": "A tight, whipping motion lands the chain across the {hit_location}. {target_name}'s eye swells instantly."
         },
         {
-            "attacker_msg": "Metal links crash into {target_name}'s thigh. They buckle, stagger, and nearly fall.",
-            "victim_msg": "Metal links crash into your thigh. You buckle, stagger, and nearly fall.",
-            "observer_msg": "Metal links crash into {target_name}'s thigh. They buckle, stagger, and nearly fall."
+            "attacker_msg": "Metal links crash into {target_name}'s {hit_location}. They buckle, stagger, and nearly fall.",
+            "victim_msg": "Metal links crash into your {hit_location}. You buckle, stagger, and nearly fall.",
+            "observer_msg": "Metal links crash into {target_name}'s {hit_location}. They buckle, stagger, and nearly fall."
         },
         {
-            "attacker_msg": "Metal links tear through cloth and skin, leaving a red path down {target_name}'s bicep.",
-            "victim_msg": "Metal links tear through cloth and skin, leaving a red path down your bicep.",
-            "observer_msg": "Metal links tear through cloth and skin, leaving a red path down {target_name}'s bicep."
+            "attacker_msg": "Metal links tear through cloth and skin, leaving a red path down {target_name}'s {hit_location}.",
+            "victim_msg": "Metal links tear through cloth and skin, leaving a red path down your {hit_location}.",
+            "observer_msg": "Metal links tear through cloth and skin, leaving a red path down {target_name}'s {hit_location}."
         },
         {
-            "attacker_msg": "One end of the chain smashes into {target_name}'s ribs, the other into their pride. Both break.",
-            "victim_msg": "One end of the chain smashes into your ribs, the other into your pride. Both break.",
-            "observer_msg": "One end of the chain smashes into {target_name}'s ribs, the other into their pride. Both break."
+            "attacker_msg": "One end of the chain smashes into {target_name}'s {hit_location}, the other into their pride. Both break.",
+            "victim_msg": "One end of the chain smashes into your {hit_location}, the other into your pride. Both break.",
+            "observer_msg": "One end of the chain smashes into {target_name}'s {hit_location}, the other into their pride. Both break."
         },
         {
-            "attacker_msg": "The chain catches {target_name}'s hand. Their fingers curl and won't uncurl. The scream is involuntary.",
-            "victim_msg": "The chain catches your hand. Your fingers curl and won't uncurl. The scream is involuntary.",
-            "observer_msg": "The chain catches {target_name}'s hand. Their fingers curl and won't uncurl. The scream is involuntary."
+            "attacker_msg": "The chain catches {target_name}'s {hit_location}. Their fingers curl and won't uncurl. The scream is involuntary.",
+            "victim_msg": "The chain catches your {hit_location}. Your fingers curl and won't uncurl. The scream is involuntary.",
+            "observer_msg": "The chain catches {target_name}'s {hit_location}. Their fingers curl and won't uncurl. The scream is involuntary."
         },
         {
-            "attacker_msg": "The chain lashes across {target_name}'s back, raising welts instantly. They arch and scream, more insulted than injured — for now.",
-            "victim_msg": "The chain lashes across your back, raising welts instantly. You arch and scream, more insulted than injured — for now.",
-            "observer_msg": "The chain lashes across {target_name}'s back, raising welts instantly. They arch and scream, more insulted than injured — for now."
+            "attacker_msg": "The chain lashes across {target_name}'s {hit_location}, raising welts instantly. They arch and scream, more insulted than injured — for now.",
+            "victim_msg": "The chain lashes across your {hit_location}, raising welts instantly. You arch and scream, more insulted than injured — for now.",
+            "observer_msg": "The chain lashes across {target_name}'s {hit_location}, raising welts instantly. They arch and scream, more insulted than injured — for now."
         },
         {
             "attacker_msg": "The chain lashes up, catching {target_name} under the chin. They bite their own tongue trying not to scream.",
@@ -223,9 +223,9 @@ MESSAGES = {
             "observer_msg": "The chain lashes up, catching {target_name} under the chin. They bite their own tongue trying not to scream."
         },
         {
-            "attacker_msg": "The chain lashes {target_name}'s ankle. They tumble, one leg folded wrong under the weight of pain.",
-            "victim_msg": "The chain lashes your ankle. You tumble, one leg folded wrong under the weight of pain.",
-            "observer_msg": "The chain lashes {target_name}'s ankle. They tumble, one leg folded wrong under the weight of pain."
+            "attacker_msg": "The chain lashes {target_name}'s {hit_location}. They tumble, one {hit_location} folded wrong under the weight of pain.",
+            "victim_msg": "The chain lashes your {hit_location}. You tumble, one {hit_location} folded wrong under the weight of pain.",
+            "observer_msg": "The chain lashes {target_name}'s {hit_location}. They tumble, one {hit_location} folded wrong under the weight of pain."
         },
         {
             "attacker_msg": "The chain loops around {target_name}'s waist. One hard tug, and they crash into the ground like bad news.",
@@ -233,29 +233,29 @@ MESSAGES = {
             "observer_msg": "The chain loops around {target_name}'s waist. One hard tug, and they crash into the ground like bad news."
         },
         {
-            "attacker_msg": "The chain loops briefly around {target_name}'s neck before snapping away. It leaves behind silence and panic.",
-            "victim_msg": "The chain loops briefly around your neck before snapping away. It leaves behind silence and panic.",
-            "observer_msg": "The chain loops briefly around {target_name}'s neck before snapping away. It leaves behind silence and panic."
+            "attacker_msg": "The chain loops briefly around {target_name}'s {hit_location} before snapping away. It leaves behind silence and panic.",
+            "victim_msg": "The chain loops briefly around your {hit_location} before snapping away. It leaves behind silence and panic.",
+            "observer_msg": "The chain loops briefly around {target_name}'s {hit_location} before snapping away. It leaves behind silence and panic."
         },
         {
-            "attacker_msg": "The chain slashes across {target_name}'s wrist, wrapping tight before you yank it back. Skin peels with it.",
-            "victim_msg": "The chain slashes across your wrist, wrapping tight before {attacker_name} yanks it back. Skin peels with it.",
-            "observer_msg": "The chain slashes across {target_name}'s wrist, wrapping tight before {attacker_name} yanks it back. Skin peels with it."
+            "attacker_msg": "The chain slashes across {target_name}'s {hit_location}, wrapping tight before you yank it {hit_location}. Skin peels with it.",
+            "victim_msg": "The chain slashes across your {hit_location}, wrapping tight before {attacker_name} yanks it {hit_location}. Skin peels with it.",
+            "observer_msg": "The chain slashes across {target_name}'s {hit_location}, wrapping tight before {attacker_name} yanks it {hit_location}. Skin peels with it."
         },
         {
-            "attacker_msg": "The chain smacks into {target_name}'s thigh, wrapping briefly and dragging them sideways.",
-            "victim_msg": "The chain smacks into your thigh, wrapping briefly and dragging you sideways.",
-            "observer_msg": "The chain smacks into {target_name}'s thigh, wrapping briefly and dragging them sideways."
+            "attacker_msg": "The chain smacks into {target_name}'s {hit_location}, wrapping briefly and dragging them sideways.",
+            "victim_msg": "The chain smacks into your {hit_location}, wrapping briefly and dragging you sideways.",
+            "observer_msg": "The chain smacks into {target_name}'s {hit_location}, wrapping briefly and dragging them sideways."
         },
         {
-            "attacker_msg": "The chain swings fast and wraps around {target_name}'s shoulder. The pull that follows unbalances them.",
-            "victim_msg": "The chain swings fast and wraps around your shoulder. The pull that follows unbalances you.",
-            "observer_msg": "The chain swings fast and wraps around {target_name}'s shoulder. The pull that follows unbalances them."
+            "attacker_msg": "The chain swings fast and wraps around {target_name}'s {hit_location}. The pull that follows unbalances them.",
+            "victim_msg": "The chain swings fast and wraps around your {hit_location}. The pull that follows unbalances you.",
+            "observer_msg": "The chain swings fast and wraps around {target_name}'s {hit_location}. The pull that follows unbalances them."
         },
         {
-            "attacker_msg": "The chain whips across {target_name}'s arm. Skin breaks, and the sleeve turns red.",
-            "victim_msg": "The chain whips across your arm. Skin breaks, and your sleeve turns red.",
-            "observer_msg": "The chain whips across {target_name}'s arm. Skin breaks, and the sleeve turns red."
+            "attacker_msg": "The chain whips across {target_name}'s {hit_location}. Skin breaks, and the sleeve turns red.",
+            "victim_msg": "The chain whips across your {hit_location}. Skin breaks, and your sleeve turns red.",
+            "observer_msg": "The chain whips across {target_name}'s {hit_location}. Skin breaks, and the sleeve turns red."
         },
         {
             "attacker_msg": "The chain whips {target_name}'s fingers. Bones crunch. Their grip on anything disappears.",
@@ -263,14 +263,14 @@ MESSAGES = {
             "observer_msg": "The chain whips {target_name}'s fingers. Bones crunch. Their grip on anything disappears."
         },
         {
-            "attacker_msg": "The links slap into {target_name}'s gut. They fold in half, wheezing curses.",
-            "victim_msg": "The links slap into your gut. You fold in half, wheezing curses.",
-            "observer_msg": "The links slap into {target_name}'s gut. They fold in half, wheezing curses."
+            "attacker_msg": "The links slap into {target_name}'s {hit_location}. They fold in half, wheezing curses.",
+            "victim_msg": "The links slap into your {hit_location}. You fold in half, wheezing curses.",
+            "observer_msg": "The links slap into {target_name}'s {hit_location}. They fold in half, wheezing curses."
         },
         {
-            "attacker_msg": "You bring the chain down on {target_name}'s shoulder. The sound is like meat hitting concrete.",
-            "victim_msg": "{attacker_name} brings the chain down on your shoulder. The sound is like meat hitting concrete.",
-            "observer_msg": "{attacker_name} brings the chain down on {target_name}'s shoulder. The sound is like meat hitting concrete."
+            "attacker_msg": "You bring the chain down on {target_name}'s {hit_location}. The sound is like meat hitting concrete.",
+            "victim_msg": "{attacker_name} brings the chain down on your {hit_location}. The sound is like meat hitting concrete.",
+            "observer_msg": "{attacker_name} brings the chain down on {target_name}'s {hit_location}. The sound is like meat hitting concrete."
         },
         {
             "attacker_msg": "You coil the chain around your fist and punch. The result is blood and an audible crack.",
@@ -278,29 +278,29 @@ MESSAGES = {
             "observer_msg": "{attacker_name} coils the chain around their fist and punches. The result is blood and an audible crack."
         },
         {
-            "attacker_msg": "You hammer the chain down like a judge. It lands on the knee. The verdict is collapse.",
-            "victim_msg": "{attacker_name} hammers the chain down like a judge. It lands on your knee. The verdict is collapse.",
-            "observer_msg": "{attacker_name} hammers the chain down like a judge. It lands on the knee. The verdict is collapse."
+            "attacker_msg": "You hammer the chain down like a judge. It lands on the {hit_location}. The verdict is collapse.",
+            "victim_msg": "{attacker_name} hammers the chain down like a judge. It lands on your {hit_location}. The verdict is collapse.",
+            "observer_msg": "{attacker_name} hammers the chain down like a judge. It lands on the {hit_location}. The verdict is collapse."
         },
         {
-            "attacker_msg": "You land a clean shot to the face. The chain wraps briefly before snapping free with blood and hair.",
-            "victim_msg": "{attacker_name} lands a clean shot to your face. The chain wraps briefly before snapping free with blood and hair.",
-            "observer_msg": "{attacker_name} lands a clean shot to the face. The chain wraps briefly before snapping free with blood and hair."
+            "attacker_msg": "You land a clean shot to the {hit_location}. The chain wraps briefly before snapping free with blood and hair.",
+            "victim_msg": "{attacker_name} lands a clean shot to your {hit_location}. The chain wraps briefly before snapping free with blood and hair.",
+            "observer_msg": "{attacker_name} lands a clean shot to the {hit_location}. The chain wraps briefly before snapping free with blood and hair."
         },
         {
-            "attacker_msg": "You loop the chain around {target_name}'s torso and pull. Ribs crack audibly.",
-            "victim_msg": "{attacker_name} loops the chain around your torso and pulls. Ribs crack audibly.",
-            "observer_msg": "{attacker_name} loops the chain around {target_name}'s torso and pulls. Ribs crack audibly."
+            "attacker_msg": "You loop the chain around {target_name}'s {hit_location} and pull. Ribs crack audibly.",
+            "victim_msg": "{attacker_name} loops the chain around your {hit_location} and pulls. Ribs crack audibly.",
+            "observer_msg": "{attacker_name} loops the chain around {target_name}'s {hit_location} and pulls. Ribs crack audibly."
         },
         {
-            "attacker_msg": "You spin once and let the chain crack against {target_name}'s ribs. The noise is hollow. Their breath is gone.",
-            "victim_msg": "{attacker_name} spins once and lets the chain crack against your ribs. The noise is hollow. Your breath is gone.",
-            "observer_msg": "{attacker_name} spins once and lets the chain crack against {target_name}'s ribs. The noise is hollow. Their breath is gone."
+            "attacker_msg": "You spin once and let the chain crack against {target_name}'s {hit_location}. The noise is hollow. Their breath is gone.",
+            "victim_msg": "{attacker_name} spins once and lets the chain crack against your {hit_location}. The noise is hollow. Your breath is gone.",
+            "observer_msg": "{attacker_name} spins once and lets the chain crack against {target_name}'s {hit_location}. The noise is hollow. Their breath is gone."
         },
         {
-            "attacker_msg": "You yank the chain hard, and it slaps across {target_name}'s face. The welt forms immediately.",
-            "victim_msg": "{attacker_name} yanks the chain hard, and it slaps across your face. The welt forms immediately.",
-            "observer_msg": "{attacker_name} yanks the chain hard, and it slaps across {target_name}'s face. The welt forms immediately."
+            "attacker_msg": "You yank the chain hard, and it slaps across {target_name}'s {hit_location}. The welt forms immediately.",
+            "victim_msg": "{attacker_name} yanks the chain hard, and it slaps across your {hit_location}. The welt forms immediately.",
+            "observer_msg": "{attacker_name} yanks the chain hard, and it slaps across {target_name}'s {hit_location}. The welt forms immediately."
         }
     ],
     "miss": [
