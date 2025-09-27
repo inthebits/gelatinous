@@ -645,7 +645,15 @@ def remove_combatant(handler, char):
     
     splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
     
-    combatants = getattr(handler.db, DB_COMBATANTS, [])
+    # Use the active working list if available (during round processing), otherwise use database
+    active_list = getattr(handler, '_active_combatants_list', None)
+    if active_list:
+        combatants = active_list
+        splattercast.msg(f"RMV_COMB: Using active working list with {len(combatants)} entries")
+    else:
+        combatants = getattr(handler.db, DB_COMBATANTS, [])
+        splattercast.msg(f"RMV_COMB: Using database list with {len(combatants)} entries")
+        
     entry = next((e for e in combatants if e.get(DB_CHAR) == char), None)
     
     if not entry:
@@ -752,7 +760,17 @@ def remove_combatant(handler, char):
     
     # Remove from combatants list
     combatants = [e for e in combatants if e.get(DB_CHAR) != char]
-    setattr(handler.db, DB_COMBATANTS, combatants)
+    
+    # Update the appropriate list(s)
+    if active_list:
+        # Working with active list - it will be saved back at end of round
+        # But also update database in case something else queries it
+        setattr(handler.db, DB_COMBATANTS, combatants)
+        splattercast.msg(f"RMV_COMB: Updated both active list and database (active list will be saved at round end)")
+    else:
+        # Working with database directly
+        setattr(handler.db, DB_COMBATANTS, combatants)
+        splattercast.msg(f"RMV_COMB: Updated database directly")
     
     # Remove handler reference
     if hasattr(char.ndb, NDB_COMBAT_HANDLER) and getattr(char.ndb, NDB_COMBAT_HANDLER) == handler:
