@@ -632,7 +632,7 @@ class Character(ObjectParent, DefaultCharacter):
         
         # Notify area
         if self.location:
-            self.location.msg_contents(f"{self.key} collapses unconscious.", exclude=[self])
+            self.location.msg_contents(f"{self.key} collapses on the ground in an unconscious heap.", exclude=[self])
         self.msg("You lose consciousness and slip into darkness...")
 
     def apply_death_state(self, force_test=False):
