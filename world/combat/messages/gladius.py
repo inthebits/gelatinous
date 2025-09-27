@@ -153,29 +153,29 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A powerful thrust from you, and the gladius punches into {target_name}'s side.",
-            'victim_msg': "A powerful thrust from {attacker_name}, and the gladius punches into your side.",
-            'observer_msg': "A powerful thrust from {attacker_name}, and the gladius punches into {target_name}'s side."
+            'attacker_msg': "A powerful thrust from you, and the gladius punches into {target_name}'s {hit_location}.",
+            'victim_msg': "A powerful thrust from {attacker_name}, and the gladius punches into your {hit_location}.",
+            'observer_msg': "A powerful thrust from {attacker_name}, and the gladius punches into {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "The gladius flashes, your short, brutal chop landing on {target_name}'s arm.",
-            'victim_msg': "The gladius flashes, {attacker_name}'s short, brutal chop landing on your arm.",
-            'observer_msg': "The gladius flashes, {attacker_name}'s short, brutal chop landing on {target_name}'s arm."
+            'attacker_msg': "The gladius flashes, your short, brutal chop landing on {target_name}'s {hit_location}.",
+            'victim_msg': "The gladius flashes, {attacker_name}'s short, brutal chop landing on your {hit_location}.",
+            'observer_msg': "The gladius flashes, {attacker_name}'s short, brutal chop landing on {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "Your blade bites deep, the gladius cleaving into {target_name}'s shoulder with a sickening thud.",
-            'victim_msg': "{attacker_name}'s blade bites deep, the gladius cleaving into your shoulder with a sickening thud.",
-            'observer_msg': "{attacker_name}'s blade bites deep, the gladius cleaving into {target_name}'s shoulder with a sickening thud."
+            'attacker_msg': "Your blade bites deep, the gladius cleaving into {target_name}'s {hit_location} with a sickening thud.",
+            'victim_msg': "{attacker_name}'s blade bites deep, the gladius cleaving into your {hit_location} with a sickening thud.",
+            'observer_msg': "{attacker_name}'s blade bites deep, the gladius cleaving into {target_name}'s {hit_location} with a sickening thud."
         },
         {
-            'attacker_msg': "Steel grinds as your gladius deflects a blow and delivers a savage counter-thrust to {target_name}'s gut.",
-            'victim_msg': "Steel grinds as {attacker_name}'s gladius deflects a blow and delivers a savage counter-thrust to your gut.",
-            'observer_msg': "Steel grinds as {attacker_name}'s gladius deflects a blow and delivers a savage counter-thrust to {target_name}'s gut."
+            'attacker_msg': "Steel grinds as your gladius deflects a blow and delivers a savage counter-thrust to {target_name}'s {hit_location}.",
+            'victim_msg': "Steel grinds as {attacker_name}'s gladius deflects a blow and delivers a savage counter-thrust to your {hit_location}.",
+            'observer_msg': "Steel grinds as {attacker_name}'s gladius deflects a blow and delivers a savage counter-thrust to {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "The broad edge of the gladius slices across {target_name}'s leg, leaving a gaping wound.",
-            'victim_msg': "The broad edge of the gladius slices across your leg, leaving a gaping wound.",
-            'observer_msg': "The broad edge of the gladius slices across {target_name}'s leg, leaving a gaping wound."
+            'attacker_msg': "The broad edge of the gladius slices across {target_name}'s {hit_location}, leaving a gaping wound.",
+            'victim_msg': "The broad edge of the gladius slices across your {hit_location}, leaving a gaping wound.",
+            'observer_msg': "The broad edge of the gladius slices across {target_name}'s {hit_location}, leaving a gaping wound."
         },
         {
             'attacker_msg': "Your close-quarters expertise shows as the gladius finds an opening in {target_name}'s guard.",
@@ -183,9 +183,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s close-quarters expertise shows as the gladius finds an opening in {target_name}'s guard."
         },
         {
-            'attacker_msg': "A quick feint, then your gladius darts out to gash {target_name}'s face.",
-            'victim_msg': "A quick feint, then {attacker_name}'s gladius darts out to gash your face.",
-            'observer_msg': "A quick feint, then {attacker_name}'s gladius darts out to gash {target_name}'s face."
+            'attacker_msg': "A quick feint, then your gladius darts out to gash {target_name}'s {hit_location}.",
+            'victim_msg': "A quick feint, then {attacker_name}'s gladius darts out to gash your {hit_location}.",
+            'observer_msg': "A quick feint, then {attacker_name}'s gladius darts out to gash {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "The gladius's wicked point pierces {target_name}'s defenses, leaving a deep, bloody puncture.",
@@ -193,34 +193,34 @@ MESSAGES = {
             'observer_msg': "The gladius's wicked point pierces {target_name}'s defenses, leaving a deep, bloody puncture."
         },
         {
-            'attacker_msg': "Your blade whistles in a short arc before striking {target_name}'s exposed ribs.",
-            'victim_msg': "{attacker_name}'s blade whistles in a short arc before striking your exposed ribs.",
-            'observer_msg': "{attacker_name}'s blade whistles in a short arc before striking {target_name}'s exposed ribs."
+            'attacker_msg': "Your blade whistles in a short arc before striking {target_name}'s exposed {hit_location}.",
+            'victim_msg': "{attacker_name}'s blade whistles in a short arc before striking your exposed {hit_location}.",
+            'observer_msg': "{attacker_name}'s blade whistles in a short arc before striking {target_name}'s exposed {hit_location}."
         },
         {
-            'attacker_msg': "With a grunt of exertion, you drive the gladius against {target_name}, forcing them back with raw power.",
-            'victim_msg': "With a grunt of exertion, {attacker_name} drives the gladius against you, forcing you back with raw power.",
-            'observer_msg': "With a grunt of exertion, {attacker_name} drives the gladius against {target_name}, forcing them back with raw power."
+            'attacker_msg': "With a grunt of exertion, you drive the gladius against {target_name}, forcing them {hit_location} with raw power.",
+            'victim_msg': "With a grunt of exertion, {attacker_name} drives the gladius against you, forcing you {hit_location} with raw power.",
+            'observer_msg': "With a grunt of exertion, {attacker_name} drives the gladius against {target_name}, forcing them {hit_location} with raw power."
         },
         {
-            'attacker_msg': "The gladius scores a brutal hit on {target_name}'s shield arm, the impact numbing.",
-            'victim_msg': "The gladius scores a brutal hit on your shield arm, the impact numbing.",
-            'observer_msg': "The gladius scores a brutal hit on {target_name}'s shield arm, the impact numbing."
+            'attacker_msg': "The gladius scores a brutal hit on {target_name}'s shield {hit_location}, the impact numbing.",
+            'victim_msg': "The gladius scores a brutal hit on your shield {hit_location}, the impact numbing.",
+            'observer_msg': "The gladius scores a brutal hit on {target_name}'s shield {hit_location}, the impact numbing."
         },
         {
-            'attacker_msg': "Your precise thrust opens a ragged wound on {target_name}'s chest.",
-            'victim_msg': "{attacker_name}'s precise thrust opens a ragged wound on your chest.",
-            'observer_msg': "{attacker_name}'s precise thrust opens a ragged wound on {target_name}'s chest."
+            'attacker_msg': "Your precise thrust opens a ragged wound on {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name}'s precise thrust opens a ragged wound on your {hit_location}.",
+            'observer_msg': "{attacker_name}'s precise thrust opens a ragged wound on {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "A resounding thwack as your gladius smashes against {target_name}'s armor, denting it inward.",
-            'victim_msg': "A resounding thwack as {attacker_name}'s gladius smashes against your armor, denting it inward.",
-            'observer_msg': "A resounding thwack as {attacker_name}'s gladius smashes against {target_name}'s armor, denting it inward."
+            'attacker_msg': "A resounding thwack as your gladius smashes against {target_name}'s {hit_location}or, denting it inward.",
+            'victim_msg': "A resounding thwack as {attacker_name}'s gladius smashes against your {hit_location}or, denting it inward.",
+            'observer_msg': "A resounding thwack as {attacker_name}'s gladius smashes against {target_name}'s {hit_location}or, denting it inward."
         },
         {
-            'attacker_msg': "The keen blade of the gladius leaves a wide, bloody trail along {target_name}'s torso.",
-            'victim_msg': "The keen blade of the gladius leaves a wide, bloody trail along your torso.",
-            'observer_msg': "The keen blade of the gladius leaves a wide, bloody trail along {target_name}'s torso."
+            'attacker_msg': "The keen blade of the gladius leaves a wide, bloody trail along {target_name}'s {hit_location}.",
+            'victim_msg': "The keen blade of the gladius leaves a wide, bloody trail along your {hit_location}.",
+            'observer_msg': "The keen blade of the gladius leaves a wide, bloody trail along {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "Your follow-through chop with the gladius catches {target_name} with brutal force.",
@@ -228,9 +228,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s follow-through chop with the gladius catches {target_name} with brutal force."
         },
         {
-            'attacker_msg': "A flick of your wrist sends the gladius's point into {target_name}'s exposed hand.",
-            'victim_msg': "A flick of {attacker_name}'s wrist sends the gladius's point into your exposed hand.",
-            'observer_msg': "A flick of {attacker_name}'s wrist sends the gladius's point into {target_name}'s exposed hand."
+            'attacker_msg': "A flick of your {hit_location} sends the gladius's point into {target_name}'s exposed {hit_location}.",
+            'victim_msg': "A flick of {attacker_name}'s {hit_location} sends the gladius's point into your exposed {hit_location}.",
+            'observer_msg': "A flick of {attacker_name}'s {hit_location} sends the gladius's point into {target_name}'s exposed {hit_location}."
         },
         {
             'attacker_msg': "The gladius sings its grim song as it connects with {target_name}, tearing flesh.",
@@ -238,9 +238,9 @@ MESSAGES = {
             'observer_msg': "The gladius sings its grim song as it connects with {target_name}, tearing flesh."
         },
         {
-            'attacker_msg': "Your blade finds purchase, carving a horrific wound into {target_name}'s thigh.",
-            'victim_msg': "{attacker_name}'s blade finds purchase, carving a horrific wound into your thigh.",
-            'observer_msg': "{attacker_name}'s blade finds purchase, carving a horrific wound into {target_name}'s thigh."
+            'attacker_msg': "Your blade finds purchase, carving a horrific wound into {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name}'s blade finds purchase, carving a horrific wound into your {hit_location}.",
+            'observer_msg': "{attacker_name}'s blade finds purchase, carving a horrific wound into {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "A glancing blow from the gladius still manages to rip through armor and draw significant blood from {target_name}.",
@@ -263,9 +263,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s thrust is brutally effective, the gladius's point striking {target_name} with devastating force."
         },
         {
-            'attacker_msg': "A downward hack from your gladius impacts {target_name}'s collarbone, shattering it.",
-            'victim_msg': "A downward hack from {attacker_name}'s gladius impacts your collarbone, shattering it.",
-            'observer_msg': "A downward hack from {attacker_name}'s gladius impacts {target_name}'s collarbone, shattering it."
+            'attacker_msg': "A downward hack from your gladius impacts {target_name}'s {hit_location}, shattering it.",
+            'victim_msg': "A downward hack from {attacker_name}'s gladius impacts your {hit_location}, shattering it.",
+            'observer_msg': "A downward hack from {attacker_name}'s gladius impacts {target_name}'s {hit_location}, shattering it."
         },
         {
             'attacker_msg': "The gladius, short and vicious, dances in your grip, its edge finding an opening on {target_name}.",
@@ -283,14 +283,14 @@ MESSAGES = {
             'observer_msg': "A powerful chop from the gladius forces {target_name} to give ground, blood welling from the injury."
         },
         {
-            'attacker_msg': "The point of your gladius darts like a viper, striking {target_name}'s exposed neck.",
-            'victim_msg': "The point of {attacker_name}'s gladius darts like a viper, striking your exposed neck.",
-            'observer_msg': "The point of {attacker_name}'s gladius darts like a viper, striking {target_name}'s exposed neck."
+            'attacker_msg': "The point of your gladius darts like a viper, striking {target_name}'s exposed {hit_location}.",
+            'victim_msg': "The point of {attacker_name}'s gladius darts like a viper, striking your exposed {hit_location}.",
+            'observer_msg': "The point of {attacker_name}'s gladius darts like a viper, striking {target_name}'s exposed {hit_location}."
         },
         {
-            'attacker_msg': "Your gladius opens a savage cut on {target_name}'s side, the steel unforgiving.",
-            'victim_msg': "{attacker_name}'s gladius opens a savage cut on your side, the steel unforgiving.",
-            'observer_msg': "{attacker_name}'s gladius opens a savage cut on {target_name}'s side, the steel unforgiving."
+            'attacker_msg': "Your gladius opens a savage cut on {target_name}'s {hit_location}, the steel unforgiving.",
+            'victim_msg': "{attacker_name}'s gladius opens a savage cut on your {hit_location}, the steel unforgiving.",
+            'observer_msg': "{attacker_name}'s gladius opens a savage cut on {target_name}'s {hit_location}, the steel unforgiving."
         },
         {
             'attacker_msg': "A well-placed thrust from the gladius leaves {target_name} winded and bleeding.",

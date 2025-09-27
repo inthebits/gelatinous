@@ -302,10 +302,10 @@ class CmdStats(Command):
         # Dynamic formatting based on display mode
         if show_numeric:
             # Calculate exact padding for numeric mode to maintain 48-char width
-            grit_content = f"         Grit:       {grit_display}"
-            resonance_content = f"         Resonance:  {resonance_display}"
-            intellect_content = f"         Intellect:  {intellect_display}"
-            motorics_content = f"         Motorics:   {motorics_display}"
+            grit_content = f"              Grit:       {grit_display}"
+            resonance_content = f"              Resonance:  {resonance_display}"
+            intellect_content = f"              Intellect:  {intellect_display}"
+            motorics_content = f"              Motorics:   {motorics_display}"
             
             # Pad each line to exactly 48 characters
             grit_line = grit_content.ljust(48)
@@ -313,20 +313,20 @@ class CmdStats(Command):
             intellect_line = intellect_content.ljust(48)
             motorics_line = motorics_content.ljust(48)
         else:
-            # Standard format for descriptive mode (fixed 12-char stat field)
-            grit_line = f"         Grit:       {grit_display:<12}               "
-            resonance_line = f"         Resonance:  {resonance_display:<12}               "
-            intellect_line = f"         Intellect:  {intellect_display:<12}               "
-            motorics_line = f"         Motorics:   {motorics_display:<12}               "
+            # Standard format for descriptive mode - centered stats
+            grit_line = f"              Grit:       {grit_display:<12}          "
+            resonance_line = f"              Resonance:  {resonance_display:<12}          "
+            intellect_line = f"              Intellect:  {intellect_display:<12}          "
+            motorics_line = f"              Motorics:   {motorics_display:<12}          "
 
         # Add vitals formatting to match other GRIM descriptors
         if show_numeric:
             # For numeric mode, vitals should follow the same pattern as other stats
-            vitals_content = f"         Vitals:     {vitals_display}"
+            vitals_content = f"              Vitals:     {vitals_display}"
             vitals_line = vitals_content.ljust(48)
         else:
-            # Standard format for descriptive mode (fixed 12-char stat field)
-            vitals_line = f"         Vitals:     {vitals_color}{vitals_display:<12}{COLOR_SUCCESS}               "
+            # Standard format for descriptive mode - centered vitals
+            vitals_line = f"              Vitals:     {vitals_color}{vitals_display:<12}{COLOR_SUCCESS}          "
 
         # Fixed format to exactly 48 visible characters per row
         string = f"""{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * 48}{BOX_TOP_RIGHT}{COLOR_NORMAL}

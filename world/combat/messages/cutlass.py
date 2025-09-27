@@ -153,29 +153,29 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "A powerful slash from you, and the cutlass's broad blade bites deep into {target_name}'s side.",
-            "victim_msg": "A powerful slash from {attacker_name}, and the cutlass's broad blade bites deep into your side.",
-            "observer_msg": "A powerful slash from {attacker_name}, and the cutlass's broad blade bites deep into {target_name}'s side."
+            "attacker_msg": "A powerful slash from you, and the cutlass's broad blade bites deep into {target_name}'s {hit_location}.",
+            "victim_msg": "A powerful slash from {attacker_name}, and the cutlass's broad blade bites deep into your {hit_location}.",
+            "observer_msg": "A powerful slash from {attacker_name}, and the cutlass's broad blade bites deep into {target_name}'s {hit_location}."
         },
         {
-            "attacker_msg": "The cutlass flashes, your short, brutal chop landing heavily on {target_name}'s arm, drawing a howl.",
-            "victim_msg": "The cutlass flashes, {attacker_name}'s short, brutal chop landing heavily on your arm, drawing a howl.",
-            "observer_msg": "The cutlass flashes, {attacker_name}'s short, brutal chop landing heavily on {target_name}'s arm, drawing a howl."
+            "attacker_msg": "The cutlass flashes, your short, brutal chop landing heavily on {target_name}'s {hit_location}, drawing a howl.",
+            "victim_msg": "The cutlass flashes, {attacker_name}'s short, brutal chop landing heavily on your {hit_location}, drawing a howl.",
+            "observer_msg": "The cutlass flashes, {attacker_name}'s short, brutal chop landing heavily on {target_name}'s {hit_location}, drawing a howl."
         },
         {
-            "attacker_msg": "Your blade hacks down, the cutlass cleaving into {target_name}'s shoulder with a sickening thud and a spray of red.",
-            "victim_msg": "{attacker_name}'s blade hacks down, the cutlass cleaving into your shoulder with a sickening thud and a spray of red.",
-            "observer_msg": "{attacker_name}'s blade hacks down, the cutlass cleaving into {target_name}'s shoulder with a sickening thud and a spray of red."
+            "attacker_msg": "Your blade hacks down, the cutlass cleaving into {target_name}'s {hit_location} with a sickening thud and a spray of red.",
+            "victim_msg": "{attacker_name}'s blade hacks down, the cutlass cleaving into your {hit_location} with a sickening thud and a spray of red.",
+            "observer_msg": "{attacker_name}'s blade hacks down, the cutlass cleaving into {target_name}'s {hit_location} with a sickening thud and a spray of red."
         },
         {
-            "attacker_msg": "Steel rings as your cutlass deflects a blow and delivers a savage counter-chop to {target_name}'s gut.",
-            "victim_msg": "Steel rings as {attacker_name}'s cutlass deflects a blow and delivers a savage counter-chop to your gut.",
-            "observer_msg": "Steel rings as {attacker_name}'s cutlass deflects a blow and delivers a savage counter-chop to {target_name}'s gut."
+            "attacker_msg": "Steel rings as your cutlass deflects a blow and delivers a savage counter-chop to {target_name}'s {hit_location}.",
+            "victim_msg": "Steel rings as {attacker_name}'s cutlass deflects a blow and delivers a savage counter-chop to your {hit_location}.",
+            "observer_msg": "Steel rings as {attacker_name}'s cutlass deflects a blow and delivers a savage counter-chop to {target_name}'s {hit_location}."
         },
         {
-            "attacker_msg": "The broad edge of the cutlass slices across {target_name}'s leg, leaving a gaping, bloody wound.",
-            "victim_msg": "The broad edge of the cutlass slices across your leg, leaving a gaping, bloody wound.",
-            "observer_msg": "The broad edge of the cutlass slices across {target_name}'s leg, leaving a gaping, bloody wound."
+            "attacker_msg": "The broad edge of the cutlass slices across {target_name}'s {hit_location}, leaving a gaping, bloody wound.",
+            "victim_msg": "The broad edge of the cutlass slices across your {hit_location}, leaving a gaping, bloody wound.",
+            "observer_msg": "The broad edge of the cutlass slices across {target_name}'s {hit_location}, leaving a gaping, bloody wound."
         },
         {
             "attacker_msg": "Your close-quarters expertise shows as the cutlass finds an opening in {target_name}'s guard, biting deep.",
@@ -183,44 +183,44 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s close-quarters expertise shows as the cutlass finds an opening in {target_name}'s guard, biting deep."
         },
         {
-            "attacker_msg": "A quick feint, then your cutlass darts out to gash {target_name}'s face, leaving a wicked scar.",
-            "victim_msg": "A quick feint, then {attacker_name}'s cutlass darts out to gash your face, leaving a wicked scar.",
-            "observer_msg": "A quick feint, then {attacker_name}'s cutlass darts out to gash {target_name}'s face, leaving a wicked scar."
+            "attacker_msg": "A quick feint, then your cutlass darts out to gash {target_name}'s {hit_location}, leaving a wicked scar.",
+            "victim_msg": "A quick feint, then {attacker_name}'s cutlass darts out to gash your {hit_location}, leaving a wicked scar.",
+            "observer_msg": "A quick feint, then {attacker_name}'s cutlass darts out to gash {target_name}'s {hit_location}, leaving a wicked scar."
         },
         {
-            "attacker_msg": "The cutlass's wicked point pierces {target_name}'s defenses, leaving a deep, bloody puncture in their chest.",
-            "victim_msg": "The cutlass's wicked point pierces your defenses, leaving a deep, bloody puncture in your chest.",
-            "observer_msg": "The cutlass's wicked point pierces {target_name}'s defenses, leaving a deep, bloody puncture in their chest."
+            "attacker_msg": "The cutlass's wicked point pierces {target_name}'s defenses, leaving a deep, bloody puncture in their {hit_location}.",
+            "victim_msg": "The cutlass's wicked point pierces your defenses, leaving a deep, bloody puncture in your {hit_location}.",
+            "observer_msg": "The cutlass's wicked point pierces {target_name}'s defenses, leaving a deep, bloody puncture in their {hit_location}."
         },
         {
-            "attacker_msg": "Your blade whistles in a short arc before striking {target_name}'s exposed ribs with a brutal crack.",
-            "victim_msg": "{attacker_name}'s blade whistles in a short arc before striking your exposed ribs with a brutal crack.",
-            "observer_msg": "{attacker_name}'s blade whistles in a short arc before striking {target_name}'s exposed ribs with a brutal crack."
+            "attacker_msg": "Your blade whistles in a short arc before striking {target_name}'s exposed {hit_location} with a brutal crack.",
+            "victim_msg": "{attacker_name}'s blade whistles in a short arc before striking your exposed {hit_location} with a brutal crack.",
+            "observer_msg": "{attacker_name}'s blade whistles in a short arc before striking {target_name}'s exposed {hit_location} with a brutal crack."
         },
         {
-            "attacker_msg": "With a grunt of exertion, you drive the cutlass against {target_name}, forcing them back with raw, brawling power.",
-            "victim_msg": "With a grunt of exertion, {attacker_name} drives the cutlass against you, forcing you back with raw, brawling power.",
-            "observer_msg": "With a grunt of exertion, {attacker_name} drives the cutlass against {target_name}, forcing them back with raw, brawling power."
+            "attacker_msg": "With a grunt of exertion, you drive the cutlass against {target_name}, forcing them {hit_location} with raw, brawling power.",
+            "victim_msg": "With a grunt of exertion, {attacker_name} drives the cutlass against you, forcing you {hit_location} with raw, brawling power.",
+            "observer_msg": "With a grunt of exertion, {attacker_name} drives the cutlass against {target_name}, forcing them {hit_location} with raw, brawling power."
         },
         {
-            "attacker_msg": "The cutlass scores a brutal hit on {target_name}'s shield arm, the impact numbing and nearly severing.",
-            "victim_msg": "The cutlass scores a brutal hit on your shield arm, the impact numbing and nearly severing.",
-            "observer_msg": "The cutlass scores a brutal hit on {target_name}'s shield arm, the impact numbing and nearly severing."
+            "attacker_msg": "The cutlass scores a brutal hit on {target_name}'s shield {hit_location}, the impact numbing and nearly severing.",
+            "victim_msg": "The cutlass scores a brutal hit on your shield {hit_location}, the impact numbing and nearly severing.",
+            "observer_msg": "The cutlass scores a brutal hit on {target_name}'s shield {hit_location}, the impact numbing and nearly severing."
         },
         {
-            "attacker_msg": "Your precise chop opens a ragged wound on {target_name}'s chest, blood welling quickly.",
-            "victim_msg": "{attacker_name}'s precise chop opens a ragged wound on your chest, blood welling quickly.",
-            "observer_msg": "{attacker_name}'s precise chop opens a ragged wound on {target_name}'s chest, blood welling quickly."
+            "attacker_msg": "Your precise chop opens a ragged wound on {target_name}'s {hit_location}, blood welling quickly.",
+            "victim_msg": "{attacker_name}'s precise chop opens a ragged wound on your {hit_location}, blood welling quickly.",
+            "observer_msg": "{attacker_name}'s precise chop opens a ragged wound on {target_name}'s {hit_location}, blood welling quickly."
         },
         {
-            "attacker_msg": "A resounding thwack as your cutlass smashes against {target_name}'s armor, denting it inward and breaking bone.",
-            "victim_msg": "A resounding thwack as {attacker_name}'s cutlass smashes against your armor, denting it inward and breaking bone.",
-            "observer_msg": "A resounding thwack as {attacker_name}'s cutlass smashes against {target_name}'s armor, denting it inward and breaking bone."
+            "attacker_msg": "A resounding thwack as your cutlass smashes against {target_name}'s {hit_location}or, denting it inward and breaking bone.",
+            "victim_msg": "A resounding thwack as {attacker_name}'s cutlass smashes against your {hit_location}or, denting it inward and breaking bone.",
+            "observer_msg": "A resounding thwack as {attacker_name}'s cutlass smashes against {target_name}'s {hit_location}or, denting it inward and breaking bone."
         },
         {
-            "attacker_msg": "The keen blade of the cutlass leaves a wide, bloody trail along {target_name}'s torso, a pirate's mark.",
-            "victim_msg": "The keen blade of the cutlass leaves a wide, bloody trail along your torso, a pirate's mark.",
-            "observer_msg": "The keen blade of the cutlass leaves a wide, bloody trail along {target_name}'s torso, a pirate's mark."
+            "attacker_msg": "The keen blade of the cutlass leaves a wide, bloody trail along {target_name}'s {hit_location}, a pirate's mark.",
+            "victim_msg": "The keen blade of the cutlass leaves a wide, bloody trail along your {hit_location}, a pirate's mark.",
+            "observer_msg": "The keen blade of the cutlass leaves a wide, bloody trail along {target_name}'s {hit_location}, a pirate's mark."
         },
         {
             "attacker_msg": "Your follow-through chop with the cutlass catches {target_name} with brutal force, sending them reeling.",
@@ -228,9 +228,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s follow-through chop with the cutlass catches {target_name} with brutal force, sending them reeling."
         },
         {
-            "attacker_msg": "A flick of your wrist sends the cutlass's point into {target_name}'s exposed hand, eliciting a scream.",
-            "victim_msg": "A flick of {attacker_name}'s wrist sends the cutlass's point into your exposed hand, eliciting a scream.",
-            "observer_msg": "A flick of {attacker_name}'s wrist sends the cutlass's point into {target_name}'s exposed hand, eliciting a scream."
+            "attacker_msg": "A flick of your {hit_location} sends the cutlass's point into {target_name}'s exposed {hit_location}, eliciting a scream.",
+            "victim_msg": "A flick of {attacker_name}'s {hit_location} sends the cutlass's point into your exposed {hit_location}, eliciting a scream.",
+            "observer_msg": "A flick of {attacker_name}'s {hit_location} sends the cutlass's point into {target_name}'s exposed {hit_location}, eliciting a scream."
         },
         {
             "attacker_msg": "The cutlass sings its grim song as it connects with {target_name}, tearing flesh with its heavy edge.",
@@ -238,9 +238,9 @@ MESSAGES = {
             "observer_msg": "The cutlass sings its grim song as it connects with {target_name}, tearing flesh with its heavy edge."
         },
         {
-            "attacker_msg": "Your blade finds purchase, carving a horrific wound into {target_name}'s thigh, dropping them to a knee.",
-            "victim_msg": "{attacker_name}'s blade finds purchase, carving a horrific wound into your thigh, dropping you to a knee.",
-            "observer_msg": "{attacker_name}'s blade finds purchase, carving a horrific wound into {target_name}'s thigh, dropping them to a knee."
+            "attacker_msg": "Your blade finds purchase, carving a horrific wound into {target_name}'s {hit_location}, dropping them to a {hit_location}.",
+            "victim_msg": "{attacker_name}'s blade finds purchase, carving a horrific wound into your {hit_location}, dropping you to a {hit_location}.",
+            "observer_msg": "{attacker_name}'s blade finds purchase, carving a horrific wound into {target_name}'s {hit_location}, dropping them to a {hit_location}."
         },
         {
             "attacker_msg": "A glancing blow from the cutlass still manages to rip through armor and draw significant blood from {target_name}.",
@@ -253,9 +253,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name} presses the attack relentlessly, the cutlass a continuous, brutal assault that finally lands on {target_name}."
         },
         {
-            "attacker_msg": "The cutlass's edge meets flesh with a wet tearing sound, and {target_name} screams, stumbling back.",
-            "victim_msg": "The cutlass's edge meets flesh with a wet tearing sound, and you scream, stumbling back.",
-            "observer_msg": "The cutlass's edge meets flesh with a wet tearing sound, and {target_name} screams, stumbling back."
+            "attacker_msg": "The cutlass's edge meets flesh with a wet tearing sound, and {target_name} screams, stumbling {hit_location}.",
+            "victim_msg": "The cutlass's edge meets flesh with a wet tearing sound, and you scream, stumbling {hit_location}.",
+            "observer_msg": "The cutlass's edge meets flesh with a wet tearing sound, and {target_name} screams, stumbling {hit_location}."
         },
         {
             "attacker_msg": "Your chop is brutally effective, the cutlass's weight striking {target_name} with devastating force.",
@@ -263,9 +263,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s chop is brutally effective, the cutlass's weight striking {target_name} with devastating force."
         },
         {
-            "attacker_msg": "A downward hack from your cutlass impacts {target_name}'s collarbone, shattering it with a wet crunch.",
-            "victim_msg": "A downward hack from {attacker_name}'s cutlass impacts your collarbone, shattering it with a wet crunch.",
-            "observer_msg": "A downward hack from {attacker_name}'s cutlass impacts {target_name}'s collarbone, shattering it with a wet crunch."
+            "attacker_msg": "A downward hack from your cutlass impacts {target_name}'s {hit_location}, shattering it with a wet crunch.",
+            "victim_msg": "A downward hack from {attacker_name}'s cutlass impacts your {hit_location}, shattering it with a wet crunch.",
+            "observer_msg": "A downward hack from {attacker_name}'s cutlass impacts {target_name}'s {hit_location}, shattering it with a wet crunch."
         },
         {
             "attacker_msg": "The cutlass, short and vicious, dances in your grip, its edge finding an opening on {target_name}.",
@@ -283,14 +283,14 @@ MESSAGES = {
             "observer_msg": "A powerful chop from the cutlass forces {target_name} to give ground, blood welling from the terrible injury."
         },
         {
-            "attacker_msg": "The point of your cutlass darts like a viper, striking {target_name}'s exposed neck with deadly precision.",
-            "victim_msg": "The point of {attacker_name}'s cutlass darts like a viper, striking your exposed neck with deadly precision.",
-            "observer_msg": "The point of {attacker_name}'s cutlass darts like a viper, striking {target_name}'s exposed neck with deadly precision."
+            "attacker_msg": "The point of your cutlass darts like a viper, striking {target_name}'s exposed {hit_location} with deadly precision.",
+            "victim_msg": "The point of {attacker_name}'s cutlass darts like a viper, striking your exposed {hit_location} with deadly precision.",
+            "observer_msg": "The point of {attacker_name}'s cutlass darts like a viper, striking {target_name}'s exposed {hit_location} with deadly precision."
         },
         {
-            "attacker_msg": "Your cutlass opens a savage cut on {target_name}'s side, the steel unforgiving and brutally sharp.",
-            "victim_msg": "{attacker_name}'s cutlass opens a savage cut on your side, the steel unforgiving and brutally sharp.",
-            "observer_msg": "{attacker_name}'s cutlass opens a savage cut on {target_name}'s side, the steel unforgiving and brutally sharp."
+            "attacker_msg": "Your cutlass opens a savage cut on {target_name}'s {hit_location}, the steel unforgiving and brutally sharp.",
+            "victim_msg": "{attacker_name}'s cutlass opens a savage cut on your {hit_location}, the steel unforgiving and brutally sharp.",
+            "observer_msg": "{attacker_name}'s cutlass opens a savage cut on {target_name}'s {hit_location}, the steel unforgiving and brutally sharp."
         },
         {
             "attacker_msg": "A well-placed chop from the cutlass leaves {target_name} winded and bleeding, their vision blurring.",

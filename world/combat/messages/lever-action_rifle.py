@@ -153,29 +153,29 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A sharp, authoritative *CRACK* as your lever-action rifle fires, the heavy bullet striking {target_name}'s arm with significant, bone-jarring force. You instantly work the lever with a practiced *SHUCK-CHUNK*, ejecting a spent brass casing and chambering another round.",
-            'victim_msg': "A sharp, authoritative *CRACK* as {attacker_name}'s lever-action rifle fires, the heavy bullet striking your arm with significant, bone-jarring force. {attacker_name} instantly works the lever with a practiced *SHUCK-CHUNK*, ejecting a spent brass casing and chambering another round.",
-            'observer_msg': "A sharp, authoritative *CRACK* as {attacker_name}'s lever-action rifle fires, the heavy bullet striking {target_name}'s arm with significant, bone-jarring force. {attacker_name} instantly works the lever with a practiced *SHUCK-CHUNK*, ejecting a spent brass casing and chambering another round."
+            'attacker_msg': "A sharp, authoritative *CRACK* as your lever-action rifle fires, the heavy bullet striking {target_name}'s {hit_location} with significant, bone-jarring force. You instantly work the lever with a practiced *SHUCK-CHUNK*, ejecting a spent brass casing and chambering another round.",
+            'victim_msg': "A sharp, authoritative *CRACK* as {attacker_name}'s lever-action rifle fires, the heavy bullet striking your {hit_location} with significant, bone-jarring force. {attacker_name} instantly works the lever with a practiced *SHUCK-CHUNK*, ejecting a spent brass casing and chambering another round.",
+            'observer_msg': "A sharp, authoritative *CRACK* as {attacker_name}'s lever-action rifle fires, the heavy bullet striking {target_name}'s {hit_location} with significant, bone-jarring force. {attacker_name} instantly works the lever with a practiced *SHUCK-CHUNK*, ejecting a spent brass casing and chambering another round."
         },
         {
-            'attacker_msg': "The lever-action rifle barks loudly, and a potent slug tears a nasty, bleeding hole in {target_name}'s leg, making them cry out and stumble. You smoothly cycle the lever action, the rifle readying another shot with a metallic ring.",
-            'victim_msg': "The lever-action rifle barks loudly, and a potent slug tears a nasty, bleeding hole in your leg, making you cry out and stumble. {attacker_name} smoothly cycles the lever action, the rifle readying another shot with a metallic ring.",
-            'observer_msg': "The lever-action rifle barks loudly, and a potent slug tears a nasty, bleeding hole in {target_name}'s leg, making them cry out and stumble. {attacker_name} smoothly cycles the lever action, the rifle readying another shot with a metallic ring."
+            'attacker_msg': "The lever-action rifle barks loudly, and a potent slug tears a nasty, bleeding hole in {target_name}'s {hit_location}, making them cry out and stumble. You smoothly cycle the lever action, the rifle readying another shot with a metallic ring.",
+            'victim_msg': "The lever-action rifle barks loudly, and a potent slug tears a nasty, bleeding hole in your {hit_location}, making you cry out and stumble. {attacker_name} smoothly cycles the lever action, the rifle readying another shot with a metallic ring.",
+            'observer_msg': "The lever-action rifle barks loudly, and a potent slug tears a nasty, bleeding hole in {target_name}'s {hit_location}, making them cry out and stumble. {attacker_name} smoothly cycles the lever action, the rifle readying another shot with a metallic ring."
         },
         {
-            'attacker_msg': "Your quick, aimed shot from the lever-action rifle hits {target_name}'s shoulder, the impact staggering them visibly. A gleaming brass casing flips out and away as the lever is worked with fluid speed.",
-            'victim_msg': "{attacker_name}'s quick, aimed shot from the lever-action rifle hits your shoulder, the impact staggering you visibly. A gleaming brass casing flips out and away as the lever is worked with fluid speed.",
-            'observer_msg': "{attacker_name}'s quick, aimed shot from the lever-action rifle hits {target_name}'s shoulder, the impact staggering them visibly. A gleaming brass casing flips out and away as the lever is worked with fluid speed."
+            'attacker_msg': "Your quick, aimed shot from the lever-action rifle hits {target_name}'s {hit_location}, the impact staggering them visibly. A gleaming brass casing flips out and away as the lever is worked with fluid speed.",
+            'victim_msg': "{attacker_name}'s quick, aimed shot from the lever-action rifle hits your {hit_location}, the impact staggering you visibly. A gleaming brass casing flips out and away as the lever is worked with fluid speed.",
+            'observer_msg': "{attacker_name}'s quick, aimed shot from the lever-action rifle hits {target_name}'s {hit_location}, the impact staggering them visibly. A gleaming brass casing flips out and away as the lever is worked with fluid speed."
         },
         {
-            'attacker_msg': "Lead meets flesh with brutal authority as the bullet from your lever-action rifle slams into {target_name}'s side with a meaty, sickening thud. You chamber another round with a decisive, rapid *clack-clack* of the lever.",
-            'victim_msg': "Lead meets flesh with brutal authority as the bullet from {attacker_name}'s lever-action rifle slams into your side with a meaty, sickening thud. {attacker_name} chambers another round with a decisive, rapid *clack-clack* of the lever.",
-            'observer_msg': "Lead meets flesh with brutal authority as the bullet from {attacker_name}'s lever-action rifle slams into {target_name}'s side with a meaty, sickening thud. {attacker_name} chambers another round with a decisive, rapid *clack-clack* of the lever."
+            'attacker_msg': "Lead meets flesh with brutal authority as the bullet from your lever-action rifle slams into {target_name}'s {hit_location} with a meaty, sickening thud. You chamber another round with a decisive, rapid *clack-clack* of the lever.",
+            'victim_msg': "Lead meets flesh with brutal authority as the bullet from {attacker_name}'s lever-action rifle slams into your {hit_location} with a meaty, sickening thud. {attacker_name} chambers another round with a decisive, rapid *clack-clack* of the lever.",
+            'observer_msg': "Lead meets flesh with brutal authority as the bullet from {attacker_name}'s lever-action rifle slams into {target_name}'s {hit_location} with a meaty, sickening thud. {attacker_name} chambers another round with a decisive, rapid *clack-clack* of the lever."
         },
         {
-            'attacker_msg': "The lever-action rifle's bullet strikes {target_name}'s thigh, the impact dropping them to a knee with a grunt of pain. You quickly work the lever, ejecting the hot brass, the rifle eager for more.",
-            'victim_msg': "The lever-action rifle's bullet strikes your thigh, the impact dropping you to a knee with a grunt of pain. {attacker_name} quickly works the lever, ejecting the hot brass, the rifle eager for more.",
-            'observer_msg': "The lever-action rifle's bullet strikes {target_name}'s thigh, the impact dropping them to a knee with a grunt of pain. {attacker_name} quickly works the lever, ejecting the hot brass, the rifle eager for more."
+            'attacker_msg': "The lever-action rifle's bullet strikes {target_name}'s {hit_location}, the impact dropping them to a {hit_location} with a grunt of pain. You quickly work the lever, ejecting the hot brass, the rifle eager for more.",
+            'victim_msg': "The lever-action rifle's bullet strikes your {hit_location}, the impact dropping you to a {hit_location} with a grunt of pain. {attacker_name} quickly works the lever, ejecting the hot brass, the rifle eager for more.",
+            'observer_msg': "The lever-action rifle's bullet strikes {target_name}'s {hit_location}, the impact dropping them to a {hit_location} with a grunt of pain. {attacker_name} quickly works the lever, ejecting the hot brass, the rifle eager for more."
         },
         {
             'attacker_msg': "Your well-aimed shot with the lever-action rifle leaves a deep, profusely bleeding wound in {target_name}. The lever is cycled with a smooth, almost casual motion, another round sliding smoothly home.",
@@ -183,9 +183,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s well-aimed shot with the lever-action rifle leaves a deep, profusely bleeding wound in {target_name}. The lever is cycled with a smooth, almost casual motion, another round sliding smoothly home."
         },
         {
-            'attacker_msg': "A direct hit! The lever-action rifle's bullet smashes into {target_name}'s chest, driving them back a step with a visible shockwave. You work the lever without hesitation, preparing for an immediate follow-up.",
-            'victim_msg': "A direct hit! The lever-action rifle's bullet smashes into your chest, driving you back a step with a visible shockwave. {attacker_name} works the lever without hesitation, preparing for an immediate follow-up.",
-            'observer_msg': "A direct hit! The lever-action rifle's bullet smashes into {target_name}'s chest, driving them back a step with a visible shockwave. {attacker_name} works the lever without hesitation, preparing for an immediate follow-up."
+            'attacker_msg': "A direct hit! The lever-action rifle's bullet smashes into {target_name}'s {hit_location}, driving them {hit_location} a step with a visible shockwave. You work the lever without hesitation, preparing for an immediate follow-up.",
+            'victim_msg': "A direct hit! The lever-action rifle's bullet smashes into your {hit_location}, driving you {hit_location} a step with a visible shockwave. {attacker_name} works the lever without hesitation, preparing for an immediate follow-up.",
+            'observer_msg': "A direct hit! The lever-action rifle's bullet smashes into {target_name}'s {hit_location}, driving them {hit_location} a step with a visible shockwave. {attacker_name} works the lever without hesitation, preparing for an immediate follow-up."
         },
         {
             'attacker_msg': "The lever-action rifle's projectile punches into {target_name} with considerable, undeniable force, its impact marked by a sudden spray of blood and a choked gasp. A single spent casing is ejected cleanly as you work the lever.",
@@ -193,24 +193,24 @@ MESSAGES = {
             'observer_msg': "The lever-action rifle's projectile punches into {target_name} with considerable, undeniable force, its impact marked by a sudden spray of blood and a choked gasp. A single spent casing is ejected cleanly as {attacker_name} works the lever."
         },
         {
-            'attacker_msg': "Your lever-action rifle fires with a loud, sharp report, and {target_name} is struck hard, stumbling. The lever is worked with a practiced, efficient flick of the wrist, ejecting and loading in one smooth movement.",
-            'victim_msg': "{attacker_name}'s lever-action rifle fires with a loud, sharp report, and you are struck hard, stumbling. The lever is worked with a practiced, efficient flick of the wrist, ejecting and loading in one smooth movement.",
-            'observer_msg': "{attacker_name}'s lever-action rifle fires with a loud, sharp report, and {target_name} is struck hard, stumbling. The lever is worked with a practiced, efficient flick of the wrist, ejecting and loading in one smooth movement."
+            'attacker_msg': "Your lever-action rifle fires with a loud, sharp report, and {target_name} is struck hard, stumbling. The lever is worked with a practiced, efficient flick of the {hit_location}, ejecting and loading in one smooth movement.",
+            'victim_msg': "{attacker_name}'s lever-action rifle fires with a loud, sharp report, and you are struck hard, stumbling. The lever is worked with a practiced, efficient flick of the {hit_location}, ejecting and loading in one smooth movement.",
+            'observer_msg': "{attacker_name}'s lever-action rifle fires with a loud, sharp report, and {target_name} is struck hard, stumbling. The lever is worked with a practiced, efficient flick of the {hit_location}, ejecting and loading in one smooth movement."
         },
         {
-            'attacker_msg': "With a loud, echoing crack, the bullet from your lever-action rifle hits {target_name}'s abdomen, the wound grievous and instantly debilitating. You cycle the lever methodically, eyes never leaving {target_name}.",
-            'victim_msg': "With a loud, echoing crack, the bullet from {attacker_name}'s lever-action rifle hits your abdomen, the wound grievous and instantly debilitating. {attacker_name} cycles the lever methodically, eyes never leaving you.",
-            'observer_msg': "With a loud, echoing crack, the bullet from {attacker_name}'s lever-action rifle hits {target_name}'s abdomen, the wound grievous and instantly debilitating. {attacker_name} cycles the lever methodically, eyes never leaving {target_name}."
+            'attacker_msg': "With a loud, echoing crack, the bullet from your lever-action rifle hits {target_name}'s {hit_location}, the wound grievous and instantly debilitating. You cycle the lever methodically, eyes never leaving {target_name}.",
+            'victim_msg': "With a loud, echoing crack, the bullet from {attacker_name}'s lever-action rifle hits your {hit_location}, the wound grievous and instantly debilitating. {attacker_name} cycles the lever methodically, eyes never leaving you.",
+            'observer_msg': "With a loud, echoing crack, the bullet from {attacker_name}'s lever-action rifle hits {target_name}'s {hit_location}, the wound grievous and instantly debilitating. {attacker_name} cycles the lever methodically, eyes never leaving {target_name}."
         },
         {
-            'attacker_msg': "The lever-action rifle scores a painful, disabling hit, the bullet tearing through {target_name}'s arm and shattering bone. A hot brass casing is ejected as you prepare another shot with a swift throw of the lever.",
-            'victim_msg': "The lever-action rifle scores a painful, disabling hit, the bullet tearing through your arm and shattering bone. A hot brass casing is ejected as {attacker_name} prepares another shot with a swift throw of the lever.",
-            'observer_msg': "The lever-action rifle scores a painful, disabling hit, the bullet tearing through {target_name}'s arm and shattering bone. A hot brass casing is ejected as {attacker_name} prepares another shot with a swift throw of the lever."
+            'attacker_msg': "The lever-action rifle scores a painful, disabling hit, the bullet tearing through {target_name}'s {hit_location} and shattering bone. A hot brass casing is ejected as you prepare another shot with a swift throw of the lever.",
+            'victim_msg': "The lever-action rifle scores a painful, disabling hit, the bullet tearing through your {hit_location} and shattering bone. A hot brass casing is ejected as {attacker_name} prepares another shot with a swift throw of the lever.",
+            'observer_msg': "The lever-action rifle scores a painful, disabling hit, the bullet tearing through {target_name}'s {hit_location} and shattering bone. A hot brass casing is ejected as {attacker_name} prepares another shot with a swift throw of the lever."
         },
         {
-            'attacker_msg': "Your well-aimed shot from the lever-action rifle strikes {target_name}'s hip, the impact clearly visible as they lurch. The lever is worked with smooth, almost contemptuous efficiency.",
-            'victim_msg': "{attacker_name}'s well-aimed shot from the lever-action rifle strikes your hip, the impact clearly visible as you lurch. The lever is worked with smooth, almost contemptuous efficiency.",
-            'observer_msg': "{attacker_name}'s well-aimed shot from the lever-action rifle strikes {target_name}'s hip, the impact clearly visible as they lurch. The lever is worked with smooth, almost contemptuous efficiency."
+            'attacker_msg': "Your well-aimed shot from the lever-action rifle strikes {target_name}'s {hit_location}, the impact clearly visible as they lurch. The lever is worked with smooth, almost contemptuous efficiency.",
+            'victim_msg': "{attacker_name}'s well-aimed shot from the lever-action rifle strikes your {hit_location}, the impact clearly visible as you lurch. The lever is worked with smooth, almost contemptuous efficiency.",
+            'observer_msg': "{attacker_name}'s well-aimed shot from the lever-action rifle strikes {target_name}'s {hit_location}, the impact clearly visible as they lurch. The lever is worked with smooth, almost contemptuous efficiency."
         },
         {
             'attacker_msg': "A loud, sharp crack and a gout of crimson blood erupt as the lever-action rifle's bullet finds its mark on {target_name}. You cycle the action with a familiar rhythm, eyes still on {target_name}, ready for more.",
@@ -228,19 +228,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s lever-action rifle bullet slams into {target_name}, the kinetic energy evident as they're thrown off balance. Another round is chambered with a solid, reassuring sound from the well-oiled lever action."
         },
         {
-            'attacker_msg': "A shot from the lever-action rifle hits {target_name}'s hand with a sickening crunch, sending their weapon clattering away. You cycle the lever, unflinching, another round ready.",
-            'victim_msg': "A shot from the lever-action rifle hits your hand with a sickening crunch, sending your weapon clattering away. {attacker_name} cycles the lever, unflinching, another round ready.",
-            'observer_msg': "A shot from the lever-action rifle hits {target_name}'s hand with a sickening crunch, sending their weapon clattering away. {attacker_name} cycles the lever, unflinching, another round ready."
+            'attacker_msg': "A shot from the lever-action rifle hits {target_name}'s {hit_location} with a sickening crunch, sending their weapon clattering away. You cycle the lever, unflinching, another round ready.",
+            'victim_msg': "A shot from the lever-action rifle hits your {hit_location} with a sickening crunch, sending your weapon clattering away. {attacker_name} cycles the lever, unflinching, another round ready.",
+            'observer_msg': "A shot from the lever-action rifle hits {target_name}'s {hit_location} with a sickening crunch, sending their weapon clattering away. {attacker_name} cycles the lever, unflinching, another round ready."
         },
         {
-            'attacker_msg': "The lever-action rifle's bullet makes solid, heavy contact with {target_name}'s torso, the impact audible even over the shot's report. You work the lever smoothly, chambering a fresh, potent round.",
-            'victim_msg': "The lever-action rifle's bullet makes solid, heavy contact with your torso, the impact audible even over the shot's report. {attacker_name} works the lever smoothly, chambering a fresh, potent round.",
-            'observer_msg': "The lever-action rifle's bullet makes solid, heavy contact with {target_name}'s torso, the impact audible even over the shot's report. {attacker_name} works the lever smoothly, chambering a fresh, potent round."
+            'attacker_msg': "The lever-action rifle's bullet makes solid, heavy contact with {target_name}'s {hit_location}, the impact audible even over the shot's report. You work the lever smoothly, chambering a fresh, potent round.",
+            'victim_msg': "The lever-action rifle's bullet makes solid, heavy contact with your {hit_location}, the impact audible even over the shot's report. {attacker_name} works the lever smoothly, chambering a fresh, potent round.",
+            'observer_msg': "The lever-action rifle's bullet makes solid, heavy contact with {target_name}'s {hit_location}, the impact audible even over the shot's report. {attacker_name} works the lever smoothly, chambering a fresh, potent round."
         },
         {
-            'attacker_msg': "Your lever-action rifle projectile finds its mark, delivering a painful, instantly debilitating wound to {target_name}'s leg. A single brass casing arcs away gracefully as the lever is cycled with practiced ease.",
-            'victim_msg': "{attacker_name}'s lever-action rifle projectile finds its mark, delivering a painful, instantly debilitating wound to your leg. A single brass casing arcs away gracefully as the lever is cycled with practiced ease.",
-            'observer_msg': "{attacker_name}'s lever-action rifle projectile finds its mark, delivering a painful, instantly debilitating wound to {target_name}'s leg. A single brass casing arcs away gracefully as the lever is cycled with practiced ease."
+            'attacker_msg': "Your lever-action rifle projectile finds its mark, delivering a painful, instantly debilitating wound to {target_name}'s {hit_location}. A single brass casing arcs away gracefully as the lever is cycled with practiced ease.",
+            'victim_msg': "{attacker_name}'s lever-action rifle projectile finds its mark, delivering a painful, instantly debilitating wound to your {hit_location}. A single brass casing arcs away gracefully as the lever is cycled with practiced ease.",
+            'observer_msg': "{attacker_name}'s lever-action rifle projectile finds its mark, delivering a painful, instantly debilitating wound to {target_name}'s {hit_location}. A single brass casing arcs away gracefully as the lever is cycled with practiced ease."
         },
         {
             'attacker_msg': "Even a glancing blow from the lever-action rifle's heavy bullet tears a nasty, ragged gash in {target_name}'s skin, drawing a pained yell. You cycle the action with a flick, ready again in an instant.",
@@ -258,14 +258,14 @@ MESSAGES = {
             'observer_msg': "The lever-action rifle's loud, clear report is followed by {target_name}'s pained cry as the bullet embeds itself deeply. {attacker_name} chambers another round with the practiced ease and speed of the lever."
         },
         {
-            'attacker_msg': "Your shot is true, the lever-action rifle's bullet striking {target_name} squarely in the gut, doubling them over. The lever is cycled with a sharp *shunk*, ready for the next target or a finishing shot.",
-            'victim_msg': "{attacker_name}'s shot is true, the lever-action rifle's bullet striking you squarely in the gut, doubling you over. The lever is cycled with a sharp *shunk*, ready for the next target or a finishing shot.",
-            'observer_msg': "{attacker_name}'s shot is true, the lever-action rifle's bullet striking {target_name} squarely in the gut, doubling them over. The lever is cycled with a sharp *shunk*, ready for the next target or a finishing shot."
+            'attacker_msg': "Your shot is true, the lever-action rifle's bullet striking {target_name} squarely in the {hit_location}, doubling them over. The lever is cycled with a sharp *shunk*, ready for the next target or a finishing shot.",
+            'victim_msg': "{attacker_name}'s shot is true, the lever-action rifle's bullet striking you squarely in the {hit_location}, doubling you over. The lever is cycled with a sharp *shunk*, ready for the next target or a finishing shot.",
+            'observer_msg': "{attacker_name}'s shot is true, the lever-action rifle's bullet striking {target_name} squarely in the {hit_location}, doubling them over. The lever is cycled with a sharp *shunk*, ready for the next target or a finishing shot."
         },
         {
-            'attacker_msg': "A close-range shot from your lever-action rifle tears a significant, bloody hole in {target_name}'s side. You work the lever with a grunt, the sound sharp and distinct in the sudden quiet.",
-            'victim_msg': "A close-range shot from {attacker_name}'s lever-action rifle tears a significant, bloody hole in your side. {attacker_name} works the lever with a grunt, the sound sharp and distinct in the sudden quiet.",
-            'observer_msg': "A close-range shot from {attacker_name}'s lever-action rifle tears a significant, bloody hole in {target_name}'s side. {attacker_name} works the lever with a grunt, the sound sharp and distinct in the sudden quiet."
+            'attacker_msg': "A close-range shot from your lever-action rifle tears a significant, bloody hole in {target_name}'s {hit_location}. You work the lever with a grunt, the sound sharp and distinct in the sudden quiet.",
+            'victim_msg': "A close-range shot from {attacker_name}'s lever-action rifle tears a significant, bloody hole in your {hit_location}. {attacker_name} works the lever with a grunt, the sound sharp and distinct in the sudden quiet.",
+            'observer_msg': "A close-range shot from {attacker_name}'s lever-action rifle tears a significant, bloody hole in {target_name}'s {hit_location}. {attacker_name} works the lever with a grunt, the sound sharp and distinct in the sudden quiet."
         },
         {
             'attacker_msg': "The lever-action rifle proves its timeless effectiveness as you land another solid, damaging hit on {target_name}. The action is cycled with a metallic, rhythmic *SHUCK-CHUNK*.",
@@ -278,19 +278,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s lever-action rifle bullet makes impact, leaving another deep, profusely bleeding puncture. A single spent casing hits the ground with a faint *tink* as the lever is worked with smooth precision."
         },
         {
-            'attacker_msg': "A painful, echoing crack as the bullet from your lever-action rifle strikes {target_name}'s ribs, likely breaking several. You cycle the lever with a grimace, chambering another heavy, unforgiving round.",
-            'victim_msg': "A painful, echoing crack as the bullet from {attacker_name}'s lever-action rifle strikes your ribs, likely breaking several. {attacker_name} cycles the lever with a grimace, chambering another heavy, unforgiving round.",
-            'observer_msg': "A painful, echoing crack as the bullet from {attacker_name}'s lever-action rifle strikes {target_name}'s ribs, likely breaking several. {attacker_name} cycles the lever with a grimace, chambering another heavy, unforgiving round."
+            'attacker_msg': "A painful, echoing crack as the bullet from your lever-action rifle strikes {target_name}'s {hit_location}, likely breaking several. You cycle the lever with a grimace, chambering another heavy, unforgiving round.",
+            'victim_msg': "A painful, echoing crack as the bullet from {attacker_name}'s lever-action rifle strikes your {hit_location}, likely breaking several. {attacker_name} cycles the lever with a grimace, chambering another heavy, unforgiving round.",
+            'observer_msg': "A painful, echoing crack as the bullet from {attacker_name}'s lever-action rifle strikes {target_name}'s {hit_location}, likely breaking several. {attacker_name} cycles the lever with a grimace, chambering another heavy, unforgiving round."
         },
         {
-            'attacker_msg': "The projectile from your lever-action rifle hits {target_name}'s collarbone, the impact throwing them off balance and eliciting a scream. The lever is worked with a sharp, decisive motion, ejecting the casing.",
-            'victim_msg': "The projectile from {attacker_name}'s lever-action rifle hits your collarbone, the impact throwing you off balance and eliciting a scream. The lever is worked with a sharp, decisive motion, ejecting the casing.",
-            'observer_msg': "The projectile from {attacker_name}'s lever-action rifle hits {target_name}'s collarbone, the impact throwing them off balance and eliciting a scream. The lever is worked with a sharp, decisive motion, ejecting the casing."
+            'attacker_msg': "The projectile from your lever-action rifle hits {target_name}'s {hit_location}, the impact throwing them off balance and eliciting a scream. The lever is worked with a sharp, decisive motion, ejecting the casing.",
+            'victim_msg': "The projectile from {attacker_name}'s lever-action rifle hits your {hit_location}, the impact throwing you off balance and eliciting a scream. The lever is worked with a sharp, decisive motion, ejecting the casing.",
+            'observer_msg': "The projectile from {attacker_name}'s lever-action rifle hits {target_name}'s {hit_location}, the impact throwing them off balance and eliciting a scream. The lever is worked with a sharp, decisive motion, ejecting the casing."
         },
         {
-            'attacker_msg': "Your lever-action rifle delivers another solid, deeply penetrating impact to {target_name}'s torso. The lever is cycled with a familiar, grim promise of more to come if needed.",
-            'victim_msg': "{attacker_name}'s lever-action rifle delivers another solid, deeply penetrating impact to your torso. The lever is cycled with a familiar, grim promise of more to come if needed.",
-            'observer_msg': "{attacker_name}'s lever-action rifle delivers another solid, deeply penetrating impact to {target_name}'s torso. The lever is cycled with a familiar, grim promise of more to come if needed."
+            'attacker_msg': "Your lever-action rifle delivers another solid, deeply penetrating impact to {target_name}'s {hit_location}. The lever is cycled with a familiar, grim promise of more to come if needed.",
+            'victim_msg': "{attacker_name}'s lever-action rifle delivers another solid, deeply penetrating impact to your {hit_location}. The lever is cycled with a familiar, grim promise of more to come if needed.",
+            'observer_msg': "{attacker_name}'s lever-action rifle delivers another solid, deeply penetrating impact to {target_name}'s {hit_location}. The lever is cycled with a familiar, grim promise of more to come if needed."
         },
         {
             'attacker_msg': "A well-placed shot from the lever-action rifle leaves {target_name} reeling and clutching the wound, gasping from the fresh, painful injury. You work the lever, ready if {target_name} makes another move.",

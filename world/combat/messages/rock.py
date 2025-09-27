@@ -164,9 +164,9 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A swift, brutal swing from your rock connects with {target_name}'s arm with a sickening, dull crack.",
-            'victim_msg': "A swift, brutal swing from {attacker_name}'s rock connects with your arm with a sickening, dull crack.",
-            'observer_msg': "A swift, brutal swing from {attacker_name}'s rock connects with {target_name}'s arm with a sickening, dull crack."
+            'attacker_msg': "A swift, brutal swing from your rock connects with {target_name}'s {hit_location} with a sickening, dull crack.",
+            'victim_msg': "A swift, brutal swing from {attacker_name}'s rock connects with your {hit_location} with a sickening, dull crack.",
+            'observer_msg': "A swift, brutal swing from {attacker_name}'s rock connects with {target_name}'s {hit_location} with a sickening, dull crack."
         },
         {
             'attacker_msg': "The rock connects with a heavy thud, your desperate attack finding bone and flesh.",
@@ -174,9 +174,9 @@ MESSAGES = {
             'observer_msg': "The rock connects with a heavy thud, {attacker_name}'s desperate attack finding bone and flesh."
         },
         {
-            'attacker_msg': "Your rock smashes against {target_name}'s face, leaving a bloody, pulped mess and a scream of agony.",
-            'victim_msg': "{attacker_name}'s rock smashes against your face, leaving a bloody, pulped mess and a scream of agony.",
-            'observer_msg': "{attacker_name}'s rock smashes against {target_name}'s face, leaving a bloody, pulped mess and a scream of agony."
+            'attacker_msg': "Your rock smashes against {target_name}'s {hit_location}, leaving a bloody, pulped mess and a scream of agony.",
+            'victim_msg': "{attacker_name}'s rock smashes against your {hit_location}, leaving a bloody, pulped mess and a scream of agony.",
+            'observer_msg': "{attacker_name}'s rock smashes against {target_name}'s {hit_location}, leaving a bloody, pulped mess and a scream of agony."
         },
         {
             'attacker_msg': "Hard stone bites deep as your rock connects, {target_name} recoiling from the sudden, intense, crushing pain.",
@@ -184,9 +184,9 @@ MESSAGES = {
             'observer_msg': "Hard stone bites deep as {attacker_name}'s rock connects, {target_name} recoiling from the sudden, intense, crushing pain."
         },
         {
-            'attacker_msg': "The jagged edge of the rock slams into {target_name}'s leg, who howls and stumbles as bone likely breaks.",
-            'victim_msg': "The jagged edge of the rock slams into your leg, you howling and stumbling as bone likely breaks.",
-            'observer_msg': "The jagged edge of the rock slams into {target_name}'s leg, who howls and stumbles as bone likely breaks."
+            'attacker_msg': "The jagged edge of the rock slams into {target_name}'s {hit_location}, who howls and stumbles as bone likely breaks.",
+            'victim_msg': "The jagged edge of the rock slams into your {hit_location}, you howling and stumbling as bone likely breaks.",
+            'observer_msg': "The jagged edge of the rock slams into {target_name}'s {hit_location}, who howls and stumbles as bone likely breaks."
         },
         {
             'attacker_msg': "Your desperate lunge with the rock leaves a nasty, bruising, and bleeding wound on {target_name}.",
@@ -194,9 +194,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s desperate lunge with the rock leaves a nasty, bruising, and bleeding wound on {target_name}."
         },
         {
-            'attacker_msg': "A quick, powerful blow, and the rock cracks against {target_name}'s side, drawing a choked cry and breaking ribs.",
-            'victim_msg': "A quick, powerful blow, and the rock cracks against your side, drawing a choked cry and breaking ribs.",
-            'observer_msg': "A quick, powerful blow, and the rock cracks against {target_name}'s side, drawing a choked cry and breaking ribs."
+            'attacker_msg': "A quick, powerful blow, and the rock cracks against {target_name}'s {hit_location}, drawing a choked cry and breaking {hit_location}.",
+            'victim_msg': "A quick, powerful blow, and the rock cracks against your {hit_location}, drawing a choked cry and breaking {hit_location}.",
+            'observer_msg': "A quick, powerful blow, and the rock cracks against {target_name}'s {hit_location}, drawing a choked cry and breaking {hit_location}."
         },
         {
             'attacker_msg': "The rock's unyielding surface smashes through {target_name}'s defenses and into flesh with brutal efficiency.",
@@ -204,9 +204,9 @@ MESSAGES = {
             'observer_msg': "The rock's unyielding surface smashes through {target_name}'s defenses and into flesh with brutal efficiency."
         },
         {
-            'attacker_msg': "Your rock makes a glancing hit, but still cracks against {target_name}'s ribs, sending a jolt of pain.",
-            'victim_msg': "{attacker_name}'s rock makes a glancing hit, but still cracks against your ribs, sending a jolt of pain.",
-            'observer_msg': "{attacker_name}'s rock makes a glancing hit, but still cracks against {target_name}'s ribs, sending a jolt of pain."
+            'attacker_msg': "Your rock makes a glancing hit, but still cracks against {target_name}'s {hit_location}, sending a jolt of pain.",
+            'victim_msg': "{attacker_name}'s rock makes a glancing hit, but still cracks against your {hit_location}, sending a jolt of pain.",
+            'observer_msg': "{attacker_name}'s rock makes a glancing hit, but still cracks against {target_name}'s {hit_location}, sending a jolt of pain."
         },
         {
             'attacker_msg': "With a savage push, you drive the rock into {target_name}, who thrashes wildly, trying to escape the crushing agony.",
@@ -214,14 +214,14 @@ MESSAGES = {
             'observer_msg': "With a savage push, {attacker_name} drives the rock into {target_name}, who thrashes wildly, trying to escape the crushing agony."
         },
         {
-            'attacker_msg': "The rock scores a heavy hit on {target_name}'s hand, the impact shattering small bones.",
-            'victim_msg': "The rock scores a heavy hit on your hand, the impact shattering small bones.",
-            'observer_msg': "The rock scores a heavy hit on {target_name}'s hand, the impact shattering small bones."
+            'attacker_msg': "The rock scores a heavy hit on {target_name}'s {hit_location}, the impact shattering small bones.",
+            'victim_msg': "The rock scores a heavy hit on your {hit_location}, the impact shattering small bones.",
+            'observer_msg': "The rock scores a heavy hit on {target_name}'s {hit_location}, the impact shattering small bones."
         },
         {
-            'attacker_msg': "Your well-aimed blow with the rock leaves it impacting {target_name}'s shoulder with a sickening crunch.",
-            'victim_msg': "{attacker_name}'s well-aimed blow with the rock leaves it impacting your shoulder with a sickening crunch.",
-            'observer_msg': "{attacker_name}'s well-aimed blow with the rock leaves it impacting {target_name}'s shoulder with a sickening crunch."
+            'attacker_msg': "Your well-aimed blow with the rock leaves it impacting {target_name}'s {hit_location} with a sickening crunch.",
+            'victim_msg': "{attacker_name}'s well-aimed blow with the rock leaves it impacting your {hit_location} with a sickening crunch.",
+            'observer_msg': "{attacker_name}'s well-aimed blow with the rock leaves it impacting {target_name}'s {hit_location} with a sickening crunch."
         },
         {
             'attacker_msg': "A sharp cracking sound and a cry of pain as your rock smashes into {target_name}'s flesh and bone.",
@@ -229,9 +229,9 @@ MESSAGES = {
             'observer_msg': "A sharp cracking sound and a cry of pain as {attacker_name}'s rock smashes into {target_name}'s flesh and bone."
         },
         {
-            'attacker_msg': "The unyielding weight of your rock leaves a deep, painful bruise and likely broken bones on {target_name}'s torso.",
-            'victim_msg': "The unyielding weight of {attacker_name}'s rock leaves a deep, painful bruise and likely broken bones on your torso.",
-            'observer_msg': "The unyielding weight of {attacker_name}'s rock leaves a deep, painful bruise and likely broken bones on {target_name}'s torso."
+            'attacker_msg': "The unyielding weight of your rock leaves a deep, painful bruise and likely broken bones on {target_name}'s {hit_location}.",
+            'victim_msg': "The unyielding weight of {attacker_name}'s rock leaves a deep, painful bruise and likely broken bones on your {hit_location}.",
+            'observer_msg': "The unyielding weight of {attacker_name}'s rock leaves a deep, painful bruise and likely broken bones on {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "Your follow-up attack with the rock catches {target_name} again, adding another grievous, crushing wound.",
@@ -239,19 +239,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s follow-up attack with the rock catches {target_name} again, adding another grievous, crushing wound."
         },
         {
-            'attacker_msg': "A desperate block by {target_name} is met with the full force of the rock, shattering their forearm.",
-            'victim_msg': "A desperate block by you is met with the full force of the rock, shattering your forearm.",
-            'observer_msg': "A desperate block by {target_name} is met with the full force of the rock, shattering their forearm."
+            'attacker_msg': "A desperate block by {target_name} is met with the full force of the rock, shattering their {hit_location}.",
+            'victim_msg': "A desperate block by you is met with the full force of the rock, shattering your {hit_location}.",
+            'observer_msg': "A desperate block by {target_name} is met with the full force of the rock, shattering their {hit_location}."
         },
         {
-            'attacker_msg': "The rock makes solid contact with {target_name}'s chest, the blunt force knocking the wind out of them and cracking ribs.",
-            'victim_msg': "The rock makes solid contact with your chest, the blunt force knocking the wind out of you and cracking ribs.",
-            'observer_msg': "The rock makes solid contact with {target_name}'s chest, the blunt force knocking the wind out of them and cracking ribs."
+            'attacker_msg': "The rock makes solid contact with {target_name}'s {hit_location}, the blunt force knocking the wind out of them and cracking {hit_location}.",
+            'victim_msg': "The rock makes solid contact with your {hit_location}, the blunt force knocking the wind out of you and cracking {hit_location}.",
+            'observer_msg': "The rock makes solid contact with {target_name}'s {hit_location}, the blunt force knocking the wind out of them and cracking {hit_location}."
         },
         {
-            'attacker_msg': "Your rock finds purchase, delivering a painful, debilitating blow to {target_name}'s side.",
-            'victim_msg': "{attacker_name}'s rock finds purchase, delivering a painful, debilitating blow to your side.",
-            'observer_msg': "{attacker_name}'s rock finds purchase, delivering a painful, debilitating blow to {target_name}'s side."
+            'attacker_msg': "Your rock finds purchase, delivering a painful, debilitating blow to {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name}'s rock finds purchase, delivering a painful, debilitating blow to your {hit_location}.",
+            'observer_msg': "{attacker_name}'s rock finds purchase, delivering a painful, debilitating blow to {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "Even a glancing blow from the rock leaves {target_name} with a significant, throbbing bruise and ringing ears.",
@@ -274,9 +274,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s strike is true, the rock smashing {target_name} squarely and causing immediate, severe trauma."
         },
         {
-            'attacker_msg': "A close-quarters struggle, and you manage to bring the rock down hard on {target_name}'s head.",
-            'victim_msg': "A close-quarters struggle, and {attacker_name} manages to bring the rock down hard on your head.",
-            'observer_msg': "A close-quarters struggle, and {attacker_name} manages to bring the rock down hard on {target_name}'s head."
+            'attacker_msg': "A close-quarters struggle, and you manage to bring the rock down hard on {target_name}'s {hit_location}.",
+            'victim_msg': "A close-quarters struggle, and {attacker_name} manages to bring the rock down hard on your {hit_location}.",
+            'observer_msg': "A close-quarters struggle, and {attacker_name} manages to bring the rock down hard on {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "The rock, though a crude weapon, proves brutally effective as you inflict a horrific injury on {target_name}.",
@@ -289,19 +289,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s rock makes contact again, leaving another deep, painful bruise on {target_name}."
         },
         {
-            'attacker_msg': "A painful thudding sound as the rock from you smashes into {target_name}'s ribs, making them gasp.",
-            'victim_msg': "A painful thudding sound as the rock from {attacker_name} smashes into your ribs, making you gasp.",
-            'observer_msg': "A painful thudding sound as the rock from {attacker_name} smashes into {target_name}'s ribs, making them gasp."
+            'attacker_msg': "A painful thudding sound as the rock from you smashes into {target_name}'s {hit_location}, making them gasp.",
+            'victim_msg': "A painful thudding sound as the rock from {attacker_name} smashes into your {hit_location}, making you gasp.",
+            'observer_msg': "A painful thudding sound as the rock from {attacker_name} smashes into {target_name}'s {hit_location}, making them gasp."
         },
         {
-            'attacker_msg': "The point of your rock impacts {target_name}'s temple, the pain and shock overwhelming.",
-            'victim_msg': "The point of {attacker_name}'s rock impacts your temple, the pain and shock overwhelming.",
-            'observer_msg': "The point of {attacker_name}'s rock impacts {target_name}'s temple, the pain and shock overwhelming."
+            'attacker_msg': "The point of your rock impacts {target_name}'s {hit_location}, the pain and shock overwhelming.",
+            'victim_msg': "The point of {attacker_name}'s rock impacts your {hit_location}, the pain and shock overwhelming.",
+            'observer_msg': "The point of {attacker_name}'s rock impacts {target_name}'s {hit_location}, the pain and shock overwhelming."
         },
         {
-            'attacker_msg': "Your rock delivers another brutal blow to {target_name}'s torso, the unyielding stone unforgiving.",
-            'victim_msg': "{attacker_name}'s rock delivers another brutal blow to your torso, the unyielding stone unforgiving.",
-            'observer_msg': "{attacker_name}'s rock delivers another brutal blow to {target_name}'s torso, the unyielding stone unforgiving."
+            'attacker_msg': "Your rock delivers another brutal blow to {target_name}'s {hit_location}, the unyielding stone unforgiving.",
+            'victim_msg': "{attacker_name}'s rock delivers another brutal blow to your {hit_location}, the unyielding stone unforgiving.",
+            'observer_msg': "{attacker_name}'s rock delivers another brutal blow to {target_name}'s {hit_location}, the unyielding stone unforgiving."
         },
         {
             'attacker_msg': "A well-placed strike with the rock leaves {target_name} momentarily stunned, vision blurring from the impact.",

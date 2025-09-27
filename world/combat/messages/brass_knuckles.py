@@ -183,19 +183,19 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "You land a clean shot to {target_name}'s cheek, snapping their head sideways. Their body follows, eventually.",
-            "victim_msg": "A clean shot to your cheek from {attacker_name} snaps your head sideways. Your body follows, eventually.",
-            "observer_msg": "A clean shot to {target_name}'s cheek from {attacker_name} snaps their head sideways. Their body follows, eventually."
+            "attacker_msg": "You land a clean shot to {target_name}'s {hit_location}, snapping their {hit_location} sideways. Their body follows, eventually.",
+            "victim_msg": "A clean shot to your {hit_location} from {attacker_name} snaps your {hit_location} sideways. Your body follows, eventually.",
+            "observer_msg": "A clean shot to {target_name}'s {hit_location} from {attacker_name} snaps their {hit_location} sideways. Their body follows, eventually."
         },
         {
-            "attacker_msg": "Your left-right combo ends with brass to {target_name}'s temple. They sag like a book slammed shut mid-sentence.",
-            "victim_msg": "A left-right combo from {attacker_name} ends with brass to your temple. You sag like a book slammed shut mid-sentence.",
-            "observer_msg": "A left-right combo from {attacker_name} ends with brass to {target_name}'s temple. They sag like a book slammed shut mid-sentence."
+            "attacker_msg": "Your left-right combo ends with brass to {target_name}'s {hit_location}. They sag like a book slammed shut mid-sentence.",
+            "victim_msg": "A left-right combo from {attacker_name} ends with brass to your {hit_location}. You sag like a book slammed shut mid-sentence.",
+            "observer_msg": "A left-right combo from {attacker_name} ends with brass to {target_name}'s {hit_location}. They sag like a book slammed shut mid-sentence."
         },
         {
-            "attacker_msg": "You deliver a short jab, perfectly placed. {target_name}'s head snaps sideways like a marionette whose strings were yanked by a god.",
-            "victim_msg": "A short jab from {attacker_name}, perfectly placed. Your head snaps sideways like a marionette whose strings were yanked by a god.",
-            "observer_msg": "A short jab from {attacker_name}, perfectly placed. {target_name}'s head snaps sideways like a marionette whose strings were yanked by a god."
+            "attacker_msg": "You deliver a short jab, perfectly placed. {target_name}'s {hit_location} snaps sideways like a marionette whose strings were yanked by a god.",
+            "victim_msg": "A short jab from {attacker_name}, perfectly placed. Your {hit_location} snaps sideways like a marionette whose strings were yanked by a god.",
+            "observer_msg": "A short jab from {attacker_name}, perfectly placed. {target_name}'s {hit_location} snaps sideways like a marionette whose strings were yanked by a god."
         },
         {
             "attacker_msg": "Your short, vicious jab connects with {target_name}'s nose. Blood erupts in a sharp spray, painting their teeth in red regret.",
@@ -203,19 +203,19 @@ MESSAGES = {
             "observer_msg": "A short, vicious jab from {attacker_name} connects with {target_name}'s nose. Blood erupts in a sharp spray, painting their teeth in red regret."
         },
         {
-            "attacker_msg": "Blood sprays from {target_name}'s nose as your knuckles bury themselves in flesh. They look stunned, like betrayal just hit them in the face.",
-            "victim_msg": "Blood sprays from your nose as {attacker_name}'s knuckles bury themselves in your flesh. You look stunned, like betrayal just hit you in the face.",
-            "observer_msg": "Blood sprays from {target_name}'s nose as {attacker_name}'s knuckles bury themselves in flesh. They look stunned, like betrayal just hit them in the face."
+            "attacker_msg": "Blood sprays from {target_name}'s nose as your knuckles bury themselves in flesh. They look stunned, like betrayal just hit them in the {hit_location}.",
+            "victim_msg": "Blood sprays from your nose as {attacker_name}'s knuckles bury themselves in your flesh. You look stunned, like betrayal just hit you in the {hit_location}.",
+            "observer_msg": "Blood sprays from {target_name}'s nose as {attacker_name}'s knuckles bury themselves in flesh. They look stunned, like betrayal just hit them in the {hit_location}."
         },
         {
-            "attacker_msg": "Your brass scrapes bone as your fist drags across {target_name}'s brow. They flinch, then crumble.",
-            "victim_msg": "Brass scrapes bone as {attacker_name}'s fist drags across your brow. You flinch, then crumble.",
-            "observer_msg": "Brass scrapes bone as {attacker_name}'s fist drags across {target_name}'s brow. They flinch, then crumble."
+            "attacker_msg": "Your brass scrapes bone as your fist drags across {target_name}'s {hit_location}. They flinch, then crumble.",
+            "victim_msg": "Brass scrapes bone as {attacker_name}'s fist drags across your {hit_location}. You flinch, then crumble.",
+            "observer_msg": "Brass scrapes bone as {attacker_name}'s fist drags across {target_name}'s {hit_location}. They flinch, then crumble."
         },
         {
-            "attacker_msg": "Your knuckles crash into {target_name}'s jaw, and something gives — maybe a tooth, maybe time itself. Either way, they won't forget it.",
-            "victim_msg": "{attacker_name}'s knuckles crash into your jaw, and something gives — maybe a tooth, maybe time itself. Either way, you won't forget it.",
-            "observer_msg": "{attacker_name}'s knuckles crash into {target_name}'s jaw, and something gives — maybe a tooth, maybe time itself. Either way, they won't forget it."
+            "attacker_msg": "Your knuckles crash into {target_name}'s {hit_location}, and something gives — maybe a tooth, maybe time itself. Either way, they won't forget it.",
+            "victim_msg": "{attacker_name}'s knuckles crash into your {hit_location}, and something gives — maybe a tooth, maybe time itself. Either way, you won't forget it.",
+            "observer_msg": "{attacker_name}'s knuckles crash into {target_name}'s {hit_location}, and something gives — maybe a tooth, maybe time itself. Either way, they won't forget it."
         },
         {
             "attacker_msg": "Your knuckles drive through resistance. {target_name}'s breath explodes out, along with something more vital.",
@@ -223,34 +223,34 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s knuckles drive through resistance. {target_name}'s breath explodes out, along with something more vital."
         },
         {
-            "attacker_msg": "Your knuckles meet {target_name}'s jaw and the result is immediate — their head whips sideways, a fine mist of spit and red trailing behind like punctuation. There’s a beat, a stagger, and the dull thud of knees losing faith.",
-            "victim_msg": "{attacker_name}'s knuckles meet your jaw and the result is immediate — your head whips sideways, a fine mist of spit and red trailing behind like punctuation. There’s a beat, a stagger, and the dull thud of your knees losing faith.",
-            "observer_msg": "{attacker_name}'s knuckles meet {target_name}'s jaw and the result is immediate — their head whips sideways, a fine mist of spit and red trailing behind like punctuation. There’s a beat, a stagger, and the dull thud of knees losing faith."
+            "attacker_msg": "Your knuckles meet {target_name}'s {hit_location} and the result is immediate — their {hit_location} whips sideways, a fine mist of spit and red trailing behind like punctuation. There’s a beat, a stagger, and the dull thud of knees losing faith.",
+            "victim_msg": "{attacker_name}'s knuckles meet your {hit_location} and the result is immediate — your {hit_location} whips sideways, a fine mist of spit and red trailing behind like punctuation. There’s a beat, a stagger, and the dull thud of your {hit_location}s losing faith.",
+            "observer_msg": "{attacker_name}'s knuckles meet {target_name}'s {hit_location} and the result is immediate — their {hit_location} whips sideways, a fine mist of spit and red trailing behind like punctuation. There’s a beat, a stagger, and the dull thud of knees losing faith."
         },
         {
-            "attacker_msg": "No wasted motion from you — just the brutal truth of metal meeting {target_name}'s skull. They blink, then sway, then drop to a knee.",
-            "victim_msg": "No wasted motion from {attacker_name} — just the brutal truth of metal meeting your skull. You blink, then sway, then drop to a knee.",
-            "observer_msg": "No wasted motion from {attacker_name} — just the brutal truth of metal meeting {target_name}'s skull. They blink, then sway, then drop to a knee."
+            "attacker_msg": "No wasted motion from you — just the brutal truth of metal meeting {target_name}'s skull. They blink, then sway, then drop to a {hit_location}.",
+            "victim_msg": "No wasted motion from {attacker_name} — just the brutal truth of metal meeting your skull. You blink, then sway, then drop to a {hit_location}.",
+            "observer_msg": "No wasted motion from {attacker_name} — just the brutal truth of metal meeting {target_name}'s skull. They blink, then sway, then drop to a {hit_location}."
         },
         {
-            "attacker_msg": "Your blow crunches into {target_name}'s face. For a moment, everything pauses. Then the blood starts.",
-            "victim_msg": "The blow from {attacker_name} crunches into your face. For a moment, everything pauses. Then the blood starts.",
-            "observer_msg": "The blow from {attacker_name} crunches into {target_name}'s face. For a moment, everything pauses. Then the blood starts."
+            "attacker_msg": "Your blow crunches into {target_name}'s {hit_location}. For a moment, everything pauses. Then the blood starts.",
+            "victim_msg": "The blow from {attacker_name} crunches into your {hit_location}. For a moment, everything pauses. Then the blood starts.",
+            "observer_msg": "The blow from {attacker_name} crunches into {target_name}'s {hit_location}. For a moment, everything pauses. Then the blood starts."
         },
         {
-            "attacker_msg": "Your blow isn't clean — it scrapes, digs, *sticks*. When you pull back, there's a smear of blood across your brass like a signature. {target_name} stumbles, and the floor suddenly feels too far away to trust.",
-            "victim_msg": "The blow from {attacker_name} isn't clean — it scrapes, digs, *sticks*. When they pull back, there's a smear of blood across the brass like a signature. You stumble, and the floor suddenly feels too far away to trust.",
-            "observer_msg": "The blow from {attacker_name} isn't clean — it scrapes, digs, *sticks*. When they pull back, there's a smear of blood across the brass like a signature. {target_name} stumbles, and the floor suddenly feels too far away to trust."
+            "attacker_msg": "Your blow isn't clean — it scrapes, digs, *sticks*. When you pull {hit_location}, there's a smear of blood across your brass like a signature. {target_name} stumbles, and the floor suddenly feels too far away to trust.",
+            "victim_msg": "The blow from {attacker_name} isn't clean — it scrapes, digs, *sticks*. When they pull {hit_location}, there's a smear of blood across the brass like a signature. You stumble, and the floor suddenly feels too far away to trust.",
+            "observer_msg": "The blow from {attacker_name} isn't clean — it scrapes, digs, *sticks*. When they pull {hit_location}, there's a smear of blood across the brass like a signature. {target_name} stumbles, and the floor suddenly feels too far away to trust."
         },
         {
-            "attacker_msg": "Your brass slams into the side of {target_name}'s head with blunt finality. They reel like they forgot how legs work.",
-            "victim_msg": "The brass from {attacker_name} slams into the side of your head with blunt finality. You reel like you forgot how legs work.",
-            "observer_msg": "The brass from {attacker_name} slams into the side of {target_name}'s head with blunt finality. They reel like they forgot how legs work."
+            "attacker_msg": "Your brass slams into the {hit_location} of {target_name}'s {hit_location} with blunt finality. They reel like they forgot how legs work.",
+            "victim_msg": "The brass from {attacker_name} slams into the {hit_location} of your {hit_location} with blunt finality. You reel like you forgot how legs work.",
+            "observer_msg": "The brass from {attacker_name} slams into the {hit_location} of {target_name}'s {hit_location} with blunt finality. They reel like they forgot how legs work."
         },
         {
-            "attacker_msg": "Your fist collides with {target_name}'s chest like a hammer. Their feet stay still. Everything else lurches.",
-            "victim_msg": "{attacker_name}'s fist collides with your chest like a hammer. Your feet stay still. Everything else lurches.",
-            "observer_msg": "{attacker_name}'s fist collides with {target_name}'s chest like a hammer. Their feet stay still. Everything else lurches."
+            "attacker_msg": "Your fist collides with {target_name}'s {hit_location} like a hammer. Their feet stay still. Everything else lurches.",
+            "victim_msg": "{attacker_name}'s fist collides with your {hit_location} like a hammer. Your feet stay still. Everything else lurches.",
+            "observer_msg": "{attacker_name}'s fist collides with {target_name}'s {hit_location} like a hammer. Their feet stay still. Everything else lurches."
         },
         {
             "attacker_msg": "Your hit lands like a bad secret finally spoken. {target_name} reacts like they’ve heard it before — but never this loud.",
@@ -284,7 +284,7 @@ MESSAGES = {
         },
         {
             "attacker_msg": "The sound of your impact is dull but wet — a kind of hush. {target_name} drops their guard, their breath, and finally their knees.",
-            "victim_msg": "The sound of {attacker_name}'s impact is dull but wet — a kind of hush. You drop your guard, your breath, and finally your knees.",
+            "victim_msg": "The sound of {attacker_name}'s impact is dull but wet — a kind of hush. You drop your guard, your breath, and finally your {hit_location}s.",
             "observer_msg": "The sound of {attacker_name}'s impact is dull but wet — a kind of hush. {target_name} drops their guard, their breath, and finally their knees."
         },
         {
@@ -298,14 +298,14 @@ MESSAGES = {
             "observer_msg": "The sound of {attacker_name}'s impact isn't theatrical. It’s real. It’s the crack of violence made personal against {target_name}."
         },
         {
-            "attacker_msg": "Your strike comes from nowhere. Brass, bone, and gravity find consensus in {target_name}'s stomach.",
-            "victim_msg": "The strike from {attacker_name} comes from nowhere. Brass, bone, and gravity find consensus in your stomach.",
-            "observer_msg": "The strike from {attacker_name} comes from nowhere. Brass, bone, and gravity find consensus in {target_name}'s stomach."
+            "attacker_msg": "Your strike comes from nowhere. Brass, bone, and gravity find consensus in {target_name}'s {hit_location}.",
+            "victim_msg": "The strike from {attacker_name} comes from nowhere. Brass, bone, and gravity find consensus in your {hit_location}.",
+            "observer_msg": "The strike from {attacker_name} comes from nowhere. Brass, bone, and gravity find consensus in {target_name}'s {hit_location}."
         },
         {
-            "attacker_msg": "There's a crunch, sick and final, as your fist connects with {target_name}'s cheekbone. Bone and brass argue. Your brass wins.",
-            "victim_msg": "There's a crunch, sick and final, as {attacker_name}'s fist connects with your cheekbone. Bone and brass argue. Brass wins.",
-            "observer_msg": "There's a crunch, sick and final, as {attacker_name}'s fist connects with {target_name}'s cheekbone. Bone and brass argue. Brass wins."
+            "attacker_msg": "There's a crunch, sick and final, as your fist connects with {target_name}'s {hit_location}bone. Bone and brass argue. Your brass wins.",
+            "victim_msg": "There's a crunch, sick and final, as {attacker_name}'s fist connects with your {hit_location}bone. Bone and brass argue. Brass wins.",
+            "observer_msg": "There's a crunch, sick and final, as {attacker_name}'s fist connects with {target_name}'s {hit_location}bone. Bone and brass argue. Brass wins."
         },
         {
             "attacker_msg": "You feel the impact through the floor as {target_name} collapses — a low thud. You don’t stop to admire it.",
@@ -313,19 +313,19 @@ MESSAGES = {
             "observer_msg": "You can feel it through the floor — a low thud, a muffled collapse. {attacker_name} doesn’t stop to admire it as {target_name} goes down."
         },
         {
-            "attacker_msg": "You drive a hook into {target_name}'s ribs, your brass sinking in like a grudge. Bone strains beneath the impact, and {target_name} lets out a sharp exhale — not pain, but *surprise*. They weren’t ready for this kind of honesty.",
-            "victim_msg": "{attacker_name} drives a hook into your ribs, the brass sinking in like a grudge. Bone strains beneath the impact, and you let out a sharp exhale — not pain, but *surprise*. You weren’t ready for this kind of honesty.",
-            "observer_msg": "{attacker_name} drives a hook into {target_name}'s ribs, the brass sinking in like a grudge. Bone strains beneath the impact, and {target_name} lets out a sharp exhale — not pain, but *surprise*. They weren’t ready for this kind of honesty."
+            "attacker_msg": "You drive a hook into {target_name}'s {hit_location}, your brass sinking in like a grudge. Bone strains beneath the impact, and {target_name} lets out a sharp exhale — not pain, but *surprise*. They weren’t ready for this kind of honesty.",
+            "victim_msg": "{attacker_name} drives a hook into your {hit_location}, the brass sinking in like a grudge. Bone strains beneath the impact, and you let out a sharp exhale — not pain, but *surprise*. You weren’t ready for this kind of honesty.",
+            "observer_msg": "{attacker_name} drives a hook into {target_name}'s {hit_location}, the brass sinking in like a grudge. Bone strains beneath the impact, and {target_name} lets out a sharp exhale — not pain, but *surprise*. They weren’t ready for this kind of honesty."
         },
         {
-            "attacker_msg": "You drive your brass into {target_name}'s ribs, again and again, each strike sounding more like punishment than strategy.",
-            "victim_msg": "{attacker_name} drives brass into your ribs, again and again, each strike sounding more like punishment than strategy.",
-            "observer_msg": "{attacker_name} drives brass into {target_name}'s ribs, again and again, each strike sounding more like punishment than strategy."
+            "attacker_msg": "You drive your brass into {target_name}'s {hit_location}, again and again, each strike sounding more like punishment than strategy.",
+            "victim_msg": "{attacker_name} drives brass into your {hit_location}, again and again, each strike sounding more like punishment than strategy.",
+            "observer_msg": "{attacker_name} drives brass into {target_name}'s {hit_location}, again and again, each strike sounding more like punishment than strategy."
         },
         {
-            "attacker_msg": "You drive your fist into {target_name}'s ribs, and the sound is less 'punch' and more 'collapse.' Breathing becomes optional for them.",
-            "victim_msg": "{attacker_name} drives their fist into your ribs, and the sound is less 'punch' and more 'collapse.' Breathing becomes optional for you.",
-            "observer_msg": "{attacker_name} drives their fist into {target_name}'s ribs, and the sound is less 'punch' and more 'collapse.' Breathing becomes optional for them."
+            "attacker_msg": "You drive your fist into {target_name}'s {hit_location}, and the sound is less 'punch' and more 'collapse.' Breathing becomes optional for them.",
+            "victim_msg": "{attacker_name} drives their fist into your {hit_location}, and the sound is less 'punch' and more 'collapse.' Breathing becomes optional for you.",
+            "observer_msg": "{attacker_name} drives their fist into {target_name}'s {hit_location}, and the sound is less 'punch' and more 'collapse.' Breathing becomes optional for them."
         },
         {
             "attacker_msg": "You land a hook that crumples {target_name}'s mouth into a jagged shape. Something white flies — tooth or lie.",
@@ -333,9 +333,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name} lands a hook that crumples {target_name}'s mouth into a jagged shape. Something white flies — tooth or lie."
         },
         {
-            "attacker_msg": "You slam your fist into {target_name}'s sternum with a sound like breaking furniture. Your brass amplifies the blow, turning flesh into percussion. {target_name} doubles over, coughing something dark onto the floor — blood or resolve, it doesn’t matter. Both are leaking.",
-            "victim_msg": "{attacker_name} slams their fist into your sternum with a sound like breaking furniture. The brass amplifies the blow, turning flesh into percussion. You double over, coughing something dark onto the floor — blood or resolve, it doesn’t matter. Both are leaking.",
-            "observer_msg": "{attacker_name} slams their fist into {target_name}'s sternum with a sound like breaking furniture. The brass amplifies the blow, turning flesh into percussion. {target_name} doubles over, coughing something dark onto the floor — blood or resolve, it doesn’t matter. Both are leaking."
+            "attacker_msg": "You slam your fist into {target_name}'s {hit_location} with a sound like breaking furniture. Your brass amplifies the blow, turning flesh into percussion. {target_name} doubles over, coughing something dark onto the floor — blood or resolve, it doesn’t matter. Both are leaking.",
+            "victim_msg": "{attacker_name} slams their fist into your {hit_location} with a sound like breaking furniture. The brass amplifies the blow, turning flesh into percussion. You double over, coughing something dark onto the floor — blood or resolve, it doesn’t matter. Both are leaking.",
+            "observer_msg": "{attacker_name} slams their fist into {target_name}'s {hit_location} with a sound like breaking furniture. The brass amplifies the blow, turning flesh into percussion. {target_name} doubles over, coughing something dark onto the floor — blood or resolve, it doesn’t matter. Both are leaking."
         },
         {
             "attacker_msg": "Your fist drives into {target_name}'s solar plexus. The sound is dry and wrong. Breathing becomes optional for them.",
@@ -343,19 +343,19 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s fist drives into {target_name}'s solar plexus. The sound is dry and wrong. Breathing becomes optional for them."
         },
         {
-            "attacker_msg": "Your follow-through is textbook — wrist firm, elbow tight. Your brass hums with impact. {target_name} slumps against the blow like it explained something to them.",
-            "victim_msg": "{attacker_name}'s follow-through is textbook — wrist firm, elbow tight. The brass hums with impact. You slump against the blow like it explained something to you.",
-            "observer_msg": "{attacker_name}'s follow-through is textbook — wrist firm, elbow tight. The brass hums with impact. {target_name} slumps against the blow like it explained something to them."
+            "attacker_msg": "Your follow-through is textbook — {hit_location} firm, {hit_location} tight. Your brass hums with impact. {target_name} slumps against the blow like it explained something to them.",
+            "victim_msg": "{attacker_name}'s follow-through is textbook — {hit_location} firm, {hit_location} tight. The brass hums with impact. You slump against the blow like it explained something to you.",
+            "observer_msg": "{attacker_name}'s follow-through is textbook — {hit_location} firm, {hit_location} tight. The brass hums with impact. {target_name} slumps against the blow like it explained something to them."
         },
         {
-            "attacker_msg": "Your punch lands flush with {target_name}'s jaw. There’s no drama — just consequence and a spray of blood.",
-            "victim_msg": "{attacker_name}'s punch lands flush with your jaw. There’s no drama — just consequence and a spray of blood.",
-            "observer_msg": "{attacker_name}'s punch lands flush with {target_name}'s jaw. There’s no drama — just consequence and a spray of blood."
+            "attacker_msg": "Your punch lands flush with {target_name}'s {hit_location}. There’s no drama — just consequence and a spray of blood.",
+            "victim_msg": "{attacker_name}'s punch lands flush with your {hit_location}. There’s no drama — just consequence and a spray of blood.",
+            "observer_msg": "{attacker_name}'s punch lands flush with {target_name}'s {hit_location}. There’s no drama — just consequence and a spray of blood."
         },
         {
-            "attacker_msg": "Your strike is almost surgical. Almost. But the blood running down {target_name}'s face makes it look more like performance art.",
-            "victim_msg": "{attacker_name}'s strike is almost surgical. Almost. But the blood running down your face makes it look more like performance art.",
-            "observer_msg": "{attacker_name}'s strike is almost surgical. Almost. But the blood running down {target_name}'s face makes it look more like performance art."
+            "attacker_msg": "Your strike is almost surgical. Almost. But the blood running down {target_name}'s {hit_location} makes it look more like performance art.",
+            "victim_msg": "{attacker_name}'s strike is almost surgical. Almost. But the blood running down your {hit_location} makes it look more like performance art.",
+            "observer_msg": "{attacker_name}'s strike is almost surgical. Almost. But the blood running down {target_name}'s {hit_location} makes it look more like performance art."
         },
         {
             "attacker_msg": "Your uppercut lifts {target_name} just slightly, like punctuation to a long conversation that just ended.",

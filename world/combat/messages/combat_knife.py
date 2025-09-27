@@ -153,154 +153,154 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "A clean stab to the gut. You twist, then rip sideways. {target_name} buckles violently.",
-            "victim_msg": "A clean stab to the gut. {attacker_name} twists, then rips sideways. You buckle violently.",
-            "observer_msg": "A clean stab to the gut. {attacker_name} twists, then rips sideways. {target_name} buckles violently."
+            "attacker_msg": "A clean stab to the {hit_location}. You twist, then rip sideways. {target_name} buckles violently.",
+            "victim_msg": "A clean stab to the {hit_location}. {attacker_name} twists, then rips sideways. You buckle violently.",
+            "observer_msg": "A clean stab to the {hit_location}. {attacker_name} twists, then rips sideways. {target_name} buckles violently."
         },
         {
-            "attacker_msg": "A reverse-grip jab lands just beneath the sternum. {target_name} gasps, eyes wide with realization.",
-            "victim_msg": "A reverse-grip jab lands just beneath the sternum. You gasp, eyes wide with realization.",
-            "observer_msg": "A reverse-grip jab lands just beneath the sternum. {target_name} gasps, eyes wide with realization."
+            "attacker_msg": "A reverse-grip jab lands at the {hit_location}. {target_name} gasps, eyes wide with realization.",
+            "victim_msg": "A reverse-grip jab lands at the {hit_location}. You gasp, eyes wide with realization.",
+            "observer_msg": "A reverse-grip jab lands at the {hit_location}. {target_name} gasps, eyes wide with realization."
         },
         {
-            "attacker_msg": "A short jab opens the soft flesh of the inner arm. {target_name}'s grip fails immediately.",
-            "victim_msg": "A short jab opens the soft flesh of the inner arm. Your grip fails immediately.",
-            "observer_msg": "A short jab opens the soft flesh of the inner arm. {target_name}'s grip fails immediately."
+            "attacker_msg": "A short jab opens the soft flesh of the {hit_location}. {target_name}'s grip fails immediately.",
+            "victim_msg": "A short jab opens the soft flesh of the {hit_location}. Your grip fails immediately.",
+            "observer_msg": "A short jab opens the soft flesh of the {hit_location}. {target_name}'s grip fails immediately."
         },
         {
-            "attacker_msg": "A single slash to the lower back leaves {target_name} paralyzed in panic and blood.",
-            "victim_msg": "A single slash to the lower back leaves you paralyzed in panic and blood.",
-            "observer_msg": "A single slash to the lower back leaves {target_name} paralyzed in panic and blood."
+            "attacker_msg": "A single slash to the {hit_location} leaves {target_name} paralyzed in panic and blood.",
+            "victim_msg": "A single slash to the {hit_location} leaves you paralyzed in panic and blood.",
+            "observer_msg": "A single slash to the {hit_location} leaves {target_name} paralyzed in panic and blood."
         },
         {
-            "attacker_msg": "A spinning jab hits the thigh. {target_name} buckles, red blooming like a flower under pressure.",
-            "victim_msg": "A spinning jab hits the thigh. You buckle, red blooming like a flower under pressure.",
-            "observer_msg": "A spinning jab hits the thigh. {target_name} buckles, red blooming like a flower under pressure."
+            "attacker_msg": "A spinning jab hits the {hit_location}. {target_name} buckles, red blooming like a flower under pressure.",
+            "victim_msg": "A spinning jab hits the {hit_location}. You buckle, red blooming like a flower under pressure.",
+            "observer_msg": "A spinning jab hits the {hit_location}. {target_name} buckles, red blooming like a flower under pressure."
         },
         {
-            "attacker_msg": "A swift jab lands in the soft spot below the ribs. {target_name} gasps and falls sideways.",
-            "victim_msg": "A swift jab lands in the soft spot below the ribs. You gasp and fall sideways.",
-            "observer_msg": "A swift jab lands in the soft spot below the ribs. {target_name} gasps and falls sideways."
+            "attacker_msg": "A swift jab lands in the {hit_location}. {target_name} gasps and falls sideways.",
+            "victim_msg": "A swift jab lands in the {hit_location}. You gasp and fall sideways.",
+            "observer_msg": "A swift jab lands in the {hit_location}. {target_name} gasps and falls sideways."
         },
         {
-            "attacker_msg": "A twisting slash lands across the ribs. Blood wells in uneven rhythm.",
-            "victim_msg": "A twisting slash lands across the ribs. Blood wells in uneven rhythm.",
-            "observer_msg": "A twisting slash lands across the ribs. Blood wells in uneven rhythm."
+            "attacker_msg": "A twisting slash lands across the {hit_location}. Blood wells in uneven rhythm.",
+            "victim_msg": "A twisting slash lands across the {hit_location}. Blood wells in uneven rhythm.",
+            "observer_msg": "A twisting slash lands across the {hit_location}. Blood wells in uneven rhythm."
         },
         {
-            "attacker_msg": "One hard stab to the gut. {target_name} jerks and tries to breathe. It doesn't work.",
-            "victim_msg": "One hard stab to the gut. You jerk and try to breathe. It doesn't work.",
-            "observer_msg": "One hard stab to the gut. {target_name} jerks and tries to breathe. It doesn't work."
+            "attacker_msg": "One hard stab to the {hit_location}. {target_name} jerks and tries to breathe. It doesn't work.",
+            "victim_msg": "One hard stab to the {hit_location}. You jerk and try to breathe. It doesn't work.",
+            "observer_msg": "One hard stab to the {hit_location}. {target_name} jerks and tries to breathe. It doesn't work."
         },
         {
-            "attacker_msg": "One jab lands in the armpit — a dirty, brutal strike that turns legs to jelly.",
-            "victim_msg": "One jab lands in the armpit — a dirty, brutal strike that turns legs to jelly.",
-            "observer_msg": "One jab lands in the armpit — a dirty, brutal strike that turns legs to jelly."
+            "attacker_msg": "One jab lands in the {hit_location} — a dirty, brutal strike that turns legs to jelly.",
+            "victim_msg": "One jab lands in the {hit_location} — a dirty, brutal strike that turns legs to jelly.",
+            "observer_msg": "One jab lands in the {hit_location} — a dirty, brutal strike that turns legs to jelly."
         },
         {
-            "attacker_msg": "One swift jab to the side of the neck sends {target_name} spinning and falling hard.",
-            "victim_msg": "One swift jab to the side of the neck sends you spinning and falling hard.",
-            "observer_msg": "One swift jab to the side of the neck sends {target_name} spinning and falling hard."
+            "attacker_msg": "One swift jab to the {hit_location} sends {target_name} spinning and falling hard.",
+            "victim_msg": "One swift jab to the {hit_location} sends you spinning and falling hard.",
+            "observer_msg": "One swift jab to the {hit_location} sends {target_name} spinning and falling hard."
         },
         {
-            "attacker_msg": "The blade flicks out, then back. {target_name} stares down at the blood before realizing it's theirs.",
-            "victim_msg": "The blade flicks out, then back. You stare down at the blood before realizing it's yours.",
-            "observer_msg": "The blade flicks out, then back. {target_name} stares down at the blood before realizing it's theirs."
+            "attacker_msg": "The blade flicks out toward the {hit_location}, then back. {target_name} stares down at the blood before realizing it's theirs.",
+            "victim_msg": "The blade flicks out toward your {hit_location}, then back. You stare down at the blood before realizing it's yours.",
+            "observer_msg": "The blade flicks out toward {target_name}'s {hit_location}, then back. {target_name} stares down at the blood before realizing it's theirs."
         },
         {
-            "attacker_msg": "The blade punches into the kidney. {target_name} howls and collapses sideways.",
-            "victim_msg": "The blade punches into the kidney. You howl and collapse sideways.",
-            "observer_msg": "The blade punches into the kidney. {target_name} howls and collapses sideways."
+            "attacker_msg": "The blade punches into the {hit_location}. {target_name} howls and collapses sideways.",
+            "victim_msg": "The blade punches into the {hit_location}. You howl and collapse sideways.",
+            "observer_msg": "The blade punches into the {hit_location}. {target_name} howls and collapses sideways."
         },
         {
-            "attacker_msg": "The blade slips under the clavicle and carves outward. {target_name} drops whatever they were holding.",
-            "victim_msg": "The blade slips under the clavicle and carves outward. You drop whatever you were holding.",
-            "observer_msg": "The blade slips under the clavicle and carves outward. {target_name} drops whatever they were holding."
+            "attacker_msg": "The blade slips under the {hit_location} and carves outward. {target_name} drops whatever they were holding.",
+            "victim_msg": "The blade slips under the {hit_location} and carves outward. You drop whatever you were holding.",
+            "observer_msg": "The blade slips under the {hit_location} and carves outward. {target_name} drops whatever they were holding."
         },
         {
-            "attacker_msg": "The combat knife punches through soft muscle at the base of the neck. {target_name} gurgles and stumbles.",
-            "victim_msg": "The combat knife punches through soft muscle at the base of the neck. You gurgle and stumble.",
-            "observer_msg": "The combat knife punches through soft muscle at the base of the neck. {target_name} gurgles and stumbles."
+            "attacker_msg": "The combat knife punches through soft muscle at the {hit_location}. {target_name} gurgles and stumbles.",
+            "victim_msg": "The combat knife punches through soft muscle at the {hit_location}. You gurgle and stumble.",
+            "observer_msg": "The combat knife punches through soft muscle at the {hit_location}. {target_name} gurgles and stumbles."
         },
         {
-            "attacker_msg": "The edge hooks the inside of the knee. {target_name} crumples like a marionette cut mid-twist.",
-            "victim_msg": "The edge hooks the inside of the knee. You crumple like a marionette cut mid-twist.",
-            "observer_msg": "The edge hooks the inside of the knee. {target_name} crumples like a marionette cut mid-twist."
+            "attacker_msg": "The edge hooks the {hit_location}. {target_name} crumples like a marionette cut mid-twist.",
+            "victim_msg": "The edge hooks the {hit_location}. You crumple like a marionette cut mid-twist.",
+            "observer_msg": "The edge hooks the {hit_location}. {target_name} crumples like a marionette cut mid-twist."
         },
         {
-            "attacker_msg": "The edge sinks into the shoulder socket. {target_name} howls as their arm falls slack.",
-            "victim_msg": "The edge sinks into the shoulder socket. You howl as your arm falls slack.",
-            "observer_msg": "The edge sinks into the shoulder socket. {target_name} howls as their arm falls slack."
+            "attacker_msg": "The edge sinks into the {hit_location}. {target_name} howls as their arm falls slack.",
+            "victim_msg": "The edge sinks into the {hit_location}. You howl as your arm falls slack.",
+            "observer_msg": "The edge sinks into the {hit_location}. {target_name} howls as their arm falls slack."
         },
         {
-            "attacker_msg": "The edge slices a long red line down {target_name}'s chest. Not fatal — yet.",
-            "victim_msg": "The edge slices a long red line down your chest. Not fatal — yet.",
-            "observer_msg": "The edge slices a long red line down {target_name}'s chest. Not fatal — yet."
+            "attacker_msg": "The edge slices a long red line down {target_name}'s {hit_location}. Not fatal — yet.",
+            "victim_msg": "The edge slices a long red line down your {hit_location}. Not fatal — yet.",
+            "observer_msg": "The edge slices a long red line down {target_name}'s {hit_location}. Not fatal — yet."
         },
         {
-            "attacker_msg": "The knife buries itself under {target_name}'s ribs with a single, efficient thrust. They jerk once, then sag.",
-            "victim_msg": "The knife buries itself under your ribs with a single, efficient thrust. You jerk once, then sag.",
-            "observer_msg": "The knife buries itself under {target_name}'s ribs with a single, efficient thrust. They jerk once, then sag."
+            "attacker_msg": "The knife buries itself into {target_name}'s {hit_location} with a single, efficient thrust. They jerk once, then sag.",
+            "victim_msg": "The knife buries itself into your {hit_location} with a single, efficient thrust. You jerk once, then sag.",
+            "observer_msg": "The knife buries itself into {target_name}'s {hit_location} with a single, efficient thrust. They jerk once, then sag."
         },
         {
-            "attacker_msg": "The knife digs into the meat of the bicep. A red bloom follows, fast and ugly.",
-            "victim_msg": "The knife digs into the meat of the bicep. A red bloom follows, fast and ugly.",
-            "observer_msg": "The knife digs into the meat of the bicep. A red bloom follows, fast and ugly."
+            "attacker_msg": "The knife digs into the {hit_location}. A red bloom follows, fast and ugly.",
+            "victim_msg": "The knife digs into the {hit_location}. A red bloom follows, fast and ugly.",
+            "observer_msg": "The knife digs into the {hit_location}. A red bloom follows, fast and ugly."
         },
         {
-            "attacker_msg": "The knife glides across {target_name}'s belly. Not deep, but devastatingly precise.",
-            "victim_msg": "The knife glides across your belly. Not deep, but devastatingly precise.",
-            "observer_msg": "The knife glides across {target_name}'s belly. Not deep, but devastatingly precise."
+            "attacker_msg": "The knife glides across {target_name}'s {hit_location}. Not deep, but devastatingly precise.",
+            "victim_msg": "The knife glides across your {hit_location}. Not deep, but devastatingly precise.",
+            "observer_msg": "The knife glides across {target_name}'s {hit_location}. Not deep, but devastatingly precise."
         },
         {
-            "attacker_msg": "The knife slashes the jawline. Blood flows down the neck like a ribbon of failure.",
-            "victim_msg": "The knife slashes the jawline. Blood flows down the neck like a ribbon of failure.",
-            "observer_msg": "The knife slashes the jawline. Blood flows down the neck like a ribbon of failure."
+            "attacker_msg": "The knife slashes the {hit_location}. Blood flows like a ribbon of failure.",
+            "victim_msg": "The knife slashes the {hit_location}. Blood flows like a ribbon of failure.",
+            "observer_msg": "The knife slashes the {hit_location}. Blood flows like a ribbon of failure."
         },
         {
-            "attacker_msg": "The serrated back tears skin along the forearm. {target_name} drops their guard — and maybe more.",
-            "victim_msg": "The serrated back tears skin along the forearm. You drop your guard — and maybe more.",
-            "observer_msg": "The serrated back tears skin along the forearm. {target_name} drops their guard — and maybe more."
+            "attacker_msg": "The serrated back tears skin along the {hit_location}. {target_name} drops their guard — and maybe more.",
+            "victim_msg": "The serrated back tears skin along the {hit_location}. You drop your guard — and maybe more.",
+            "observer_msg": "The serrated back tears skin along the {hit_location}. {target_name} drops their guard — and maybe more."
         },
         {
-            "attacker_msg": "The serrated edge saws into the thigh. {target_name} collapses, clawing at the wound.",
-            "victim_msg": "The serrated edge saws into the thigh. You collapse, clawing at the wound.",
-            "observer_msg": "The serrated edge saws into the thigh. {target_name} collapses, clawing at the wound."
+            "attacker_msg": "The serrated edge saws into the {hit_location}. {target_name} collapses, clawing at the wound.",
+            "victim_msg": "The serrated edge saws into the {hit_location}. You collapse, clawing at the wound.",
+            "observer_msg": "The serrated edge saws into the {hit_location}. {target_name} collapses, clawing at the wound."
         },
         {
-            "attacker_msg": "The serrated edge tears across {target_name}'s chest. The wound sings and bleeds in equal measure.",
-            "victim_msg": "The serrated edge tears across your chest. The wound sings and bleeds in equal measure.",
-            "observer_msg": "The serrated edge tears across {target_name}'s chest. The wound sings and bleeds in equal measure."
+            "attacker_msg": "The serrated edge tears across {target_name}'s {hit_location}. The wound sings and bleeds in equal measure.",
+            "victim_msg": "The serrated edge tears across your {hit_location}. The wound sings and bleeds in equal measure.",
+            "observer_msg": "The serrated edge tears across {target_name}'s {hit_location}. The wound sings and bleeds in equal measure."
         },
         {
-            "attacker_msg": "You cut deep into the shoulder. {target_name} howls, arm going limp mid-swing.",
-            "victim_msg": "{attacker_name} cuts deep into the shoulder. You howl, arm going limp mid-swing.",
-            "observer_msg": "{attacker_name} cuts deep into the shoulder. {target_name} howls, arm going limp mid-swing."
+            "attacker_msg": "You cut deep into the {hit_location}. {target_name} howls, arm going limp mid-swing.",
+            "victim_msg": "{attacker_name} cuts deep into the {hit_location}. You howl, arm going limp mid-swing.",
+            "observer_msg": "{attacker_name} cuts deep into the {hit_location}. {target_name} howls, arm going limp mid-swing."
         },
         {
-            "attacker_msg": "You cut high and shallow, just below the collar. Blood runs fast.",
-            "victim_msg": "{attacker_name} cuts high and shallow, just below the collar. Blood runs fast.",
-            "observer_msg": "{attacker_name} cuts high and shallow, just below the collar. Blood runs fast."
+            "attacker_msg": "You cut high and shallow at the {hit_location}. Blood runs fast.",
+            "victim_msg": "{attacker_name} cuts high and shallow at the {hit_location}. Blood runs fast.",
+            "observer_msg": "{attacker_name} cuts high and shallow at the {hit_location}. Blood runs fast."
         },
         {
-            "attacker_msg": "You deliver a downward thrust into the chest. The pullout leaves steam and silence.",
-            "victim_msg": "{attacker_name} delivers a downward thrust into the chest. The pullout leaves steam and silence.",
-            "observer_msg": "{attacker_name} delivers a downward thrust into the chest. The pullout leaves steam and silence."
+            "attacker_msg": "You deliver a downward thrust into the {hit_location}. The pullout leaves steam and silence.",
+            "victim_msg": "{attacker_name} delivers a downward thrust into the {hit_location}. The pullout leaves steam and silence.",
+            "observer_msg": "{attacker_name} delivers a downward thrust into the {hit_location}. The pullout leaves steam and silence."
         },
         {
-            "attacker_msg": "You drive the knife up into the sternum. The scream is swallowed mid-breath.",
-            "victim_msg": "{attacker_name} drives the knife up into the sternum. The scream is swallowed mid-breath.",
-            "observer_msg": "{attacker_name} drives the knife up into the sternum. The scream is swallowed mid-breath."
+            "attacker_msg": "You drive the knife up into the {hit_location}. The scream is swallowed mid-breath.",
+            "victim_msg": "{attacker_name} drives the knife up into the {hit_location}. The scream is swallowed mid-breath.",
+            "observer_msg": "{attacker_name} drives the knife up into the {hit_location}. The scream is swallowed mid-breath."
         },
         {
-            "attacker_msg": "You jam the blade into the side and pull. Blood sprays. {target_name} screams like they mean it.",
-            "victim_msg": "{attacker_name} jams the blade into the side and pulls. Blood sprays. You scream like you mean it.",
-            "observer_msg": "{attacker_name} jams the blade into the side and pulls. Blood sprays. {target_name} screams like they mean it."
+            "attacker_msg": "You jam the blade into the {hit_location} and pull. Blood sprays. {target_name} screams like they mean it.",
+            "victim_msg": "{attacker_name} jams the blade into the {hit_location} and pulls. Blood sprays. You scream like you mean it.",
+            "observer_msg": "{attacker_name} jams the blade into the {hit_location} and pulls. Blood sprays. {target_name} screams like they mean it."
         },
         {
-            "attacker_msg": "You step in and stab beneath the chin. The blade jerks. {target_name} stumbles backward, choking.",
-            "victim_msg": "{attacker_name} steps in and stabs beneath the chin. The blade jerks. You stumble backward, choking.",
-            "observer_msg": "{attacker_name} steps in and stabs beneath the chin. The blade jerks. {target_name} stumbles backward, choking."
+            "attacker_msg": "You step in and stab at the {hit_location}. The blade jerks. {target_name} stumbles backward, choking.",
+            "victim_msg": "{attacker_name} steps in and stabs at the {hit_location}. The blade jerks. You stumble backward, choking.",
+            "observer_msg": "{attacker_name} steps in and stabs at the {hit_location}. The blade jerks. {target_name} stumbles backward, choking."
         },
     ],
     "miss": [

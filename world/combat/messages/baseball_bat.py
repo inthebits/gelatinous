@@ -153,9 +153,9 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "Your swift, hard swing with your baseball bat connects with {target_name}'s arm with a sickening crack.",
-            "victim_msg": "A swift, hard swing from {attacker_name}'s baseball bat connects with your arm with a sickening crack!",
-            "observer_msg": "A swift, hard swing from {attacker_name}'s baseball bat connects with {target_name}'s arm with a sickening crack."
+            "attacker_msg": "Your swift, hard swing with your baseball bat connects with {target_name}'s {hit_location} with a sickening crack.",
+            "victim_msg": "A swift, hard swing from {attacker_name}'s baseball bat connects with your {hit_location} with a sickening crack!",
+            "observer_msg": "A swift, hard swing from {attacker_name}'s baseball bat connects with {target_name}'s {hit_location} with a sickening crack."
         },
         {
             "attacker_msg": "Your baseball bat connects with a dull thud as your blow finds a gap in {target_name}'s defense.",
@@ -163,19 +163,19 @@ MESSAGES = {
             "observer_msg": "The baseball bat connects with a dull thud, {attacker_name}’s blow finding a gap in {target_name}'s defense."
         },
         {
-            "attacker_msg": "Your bat smashes into {target_name}'s shoulder, drawing a cry of pain and the sound of breaking bone.",
-            "victim_msg": "{attacker_name}'s bat smashes into your shoulder, drawing a cry of pain from you and the sound of breaking bone!",
-            "observer_msg": "{attacker_name}'s bat smashes into {target_name}'s shoulder, drawing a cry of pain and the sound of breaking bone."
+            "attacker_msg": "Your bat smashes into {target_name}'s {hit_location}, drawing a cry of pain and the sound of breaking bone.",
+            "victim_msg": "{attacker_name}'s bat smashes into your {hit_location}, drawing a cry of pain from you and the sound of breaking bone!",
+            "observer_msg": "{attacker_name}'s bat smashes into {target_name}'s {hit_location}, drawing a cry of pain and the sound of breaking bone."
         },
         {
-            "attacker_msg": "Wood/Metal impacts flesh as your baseball bat deflects a blow and delivers a painful counter to {target_name}'s side.",
-            "victim_msg": "Wood/Metal impacts your flesh as {attacker_name}'s baseball bat deflects your blow and delivers a painful counter to your side!",
-            "observer_msg": "Wood/Metal impacts flesh as {attacker_name}'s baseball bat deflects a blow and delivers a painful counter to {target_name}'s side."
+            "attacker_msg": "Wood/Metal impacts flesh as your baseball bat deflects a blow and delivers a painful counter to {target_name}'s {hit_location}.",
+            "victim_msg": "Wood/Metal impacts your flesh as {attacker_name}'s baseball bat deflects your blow and delivers a painful counter to your {hit_location}!",
+            "observer_msg": "Wood/Metal impacts flesh as {attacker_name}'s baseball bat deflects a blow and delivers a painful counter to {target_name}'s {hit_location}."
         },
         {
-            "attacker_msg": "Your heavy baseball bat strikes {target_name}'s leg, making them stumble and howl as the limb gives way.",
-            "victim_msg": "{attacker_name}'s heavy baseball bat strikes your leg, making you stumble and howl as the limb gives way!",
-            "observer_msg": "The heavy baseball bat strikes {target_name}'s leg, making them stumble and howl as the limb gives way."
+            "attacker_msg": "Your heavy baseball bat strikes {target_name}'s {hit_location}, making them stumble and howl as they give way.",
+            "victim_msg": "{attacker_name}'s heavy baseball bat strikes your {hit_location}, making you stumble and howl as you give way!",
+            "observer_msg": "The heavy baseball bat strikes {target_name}'s {hit_location}, making them stumble and howl as they give way."
         },
         {
             "attacker_msg": "Your powerful swing connects, the baseball bat delivering a bone-jarring impact to {target_name}.",
@@ -183,9 +183,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s powerful swing connects, the baseball bat delivering a bone-jarring impact to {target_name}."
         },
         {
-            "attacker_msg": "A well-aimed feint, then your baseball bat cracks against {target_name}'s ribs with brutal force.",
-            "victim_msg": "A well-aimed feint from {attacker_name}, then their baseball bat cracks against your ribs with brutal force!",
-            "observer_msg": "A well-aimed feint, then {attacker_name}'s baseball bat cracks against {target_name}'s ribs with brutal force."
+            "attacker_msg": "A well-aimed feint, then your baseball bat cracks against {target_name}'s {hit_location} with brutal force.",
+            "victim_msg": "A well-aimed feint from {attacker_name}, then their baseball bat cracks against your {hit_location} with brutal force!",
+            "observer_msg": "A well-aimed feint, then {attacker_name}'s baseball bat cracks against {target_name}'s {hit_location} with brutal force."
         },
         {
             "attacker_msg": "Your bat’s unyielding surface strikes {target_name}'s defenses, the force of your blow staggering them.",
@@ -203,9 +203,9 @@ MESSAGES = {
             "observer_msg": "With a grunt of effort, {attacker_name} drives the baseball bat against {target_name}, the impact echoing dully."
         },
         {
-            "attacker_msg": "Your baseball bat scores a heavy hit on {target_name}'s weapon arm, numbing it with the jarring impact.",
-            "victim_msg": "{attacker_name}'s baseball bat scores a heavy hit on your weapon arm, numbing it with the jarring impact!",
-            "observer_msg": "The baseball bat scores a heavy hit on {target_name}'s weapon arm, numbing it with the jarring impact."
+            "attacker_msg": "Your baseball bat scores a heavy hit on {target_name}'s {hit_location}, numbing it with the jarring impact.",
+            "victim_msg": "{attacker_name}'s baseball bat scores a heavy hit on your {hit_location}, numbing it with the jarring impact!",
+            "observer_msg": "The baseball bat scores a heavy hit on {target_name}'s {hit_location}, numbing it with the jarring impact."
         },
         {
             "attacker_msg": "Your precise swing opens a livid bruise on {target_name}'s brow, stunning them and blurring their vision.",
@@ -218,9 +218,9 @@ MESSAGES = {
             "observer_msg": "A resounding crack as {attacker_name}'s baseball bat smashes against {target_name}, the force felt by both."
         },
         {
-            "attacker_msg": "The unyielding surface of your baseball bat leaves a deep, painful bruise on {target_name}'s torso.",
-            "victim_msg": "The unyielding surface of {attacker_name}'s baseball bat leaves a deep, painful bruise on your torso!",
-            "observer_msg": "The unyielding surface of the baseball bat leaves a deep, painful bruise on {target_name}'s torso."
+            "attacker_msg": "The unyielding surface of your baseball bat leaves a deep, painful bruise on {target_name}'s {hit_location}.",
+            "victim_msg": "The unyielding surface of {attacker_name}'s baseball bat leaves a deep, painful bruise on your {hit_location}!",
+            "observer_msg": "The unyielding surface of the baseball bat leaves a deep, painful bruise on {target_name}'s {hit_location}."
         },
         {
             "attacker_msg": "Your follow-through swing with the baseball bat catches {target_name} off-balance and in considerable pain.",
@@ -228,9 +228,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s follow-through swing with the baseball bat catches {target_name} off-balance and in considerable pain."
         },
         {
-            "attacker_msg": "A flick of your wrist sends the end of your baseball bat into {target_name}'s hand with a sharp crack.",
-            "victim_msg": "A flick of {attacker_name}'s wrist sends the end of their baseball bat into your hand with a sharp crack!",
-            "observer_msg": "A flick of {attacker_name}'s wrist sends the end of the baseball bat into {target_name}'s hand with a sharp crack."
+            "attacker_msg": "A flick of your wrist sends the end of your baseball bat into {target_name}'s {hit_location} with a sharp crack.",
+            "victim_msg": "A flick of {attacker_name}'s wrist sends the end of their baseball bat into your {hit_location} with a sharp crack!",
+            "observer_msg": "A flick of {attacker_name}'s wrist sends the end of the baseball bat into {target_name}'s {hit_location} with a sharp crack."
         },
         {
             "attacker_msg": "Your baseball bat thuds heavily as it connects with {target_name}, driving the air from their lungs.",
@@ -263,9 +263,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s swing is true, the baseball bat striking {target_name} squarely with concussive force."
         },
         {
-            "attacker_msg": "A downward strike from your baseball bat impacts {target_name}'s collarbone with a sickening crunch.",
-            "victim_msg": "A downward strike from {attacker_name}'s baseball bat impacts your collarbone with a sickening crunch!",
-            "observer_msg": "A downward strike from {attacker_name}'s baseball bat impacts {target_name}'s collarbone with a sickening crunch."
+            "attacker_msg": "A downward strike from your baseball bat impacts {target_name}'s {hit_location} with a sickening crunch.",
+            "victim_msg": "A downward strike from {attacker_name}'s baseball bat impacts your {hit_location} with a sickening crunch!",
+            "observer_msg": "A downward strike from {attacker_name}'s baseball bat impacts {target_name}'s {hit_location} with a sickening crunch."
         },
         {
             "attacker_msg": "Your baseball bat, though a simple tool, moves with deadly speed in your grip, its surface finding an opening on {target_name}.",

@@ -153,9 +153,9 @@ MESSAGES = {
     ],
     'hit': [
         {
-            'attacker_msg': "A swift, brutal chop from your kukri lands on {target_name}'s arm with a sickening thud, biting deep.",
-            'victim_msg': "A swift, brutal chop from {attacker_name}'s kukri lands on your arm with a sickening thud, biting deep.",
-            'observer_msg': "A swift, brutal chop from {attacker_name}'s kukri lands on {target_name}'s arm with a sickening thud, biting deep."
+            'attacker_msg': "A swift, brutal chop from your kukri lands on {target_name}'s {hit_location} with a sickening thud, biting deep.",
+            'victim_msg': "A swift, brutal chop from {attacker_name}'s kukri lands on your {hit_location} with a sickening thud, biting deep.",
+            'observer_msg': "A swift, brutal chop from {attacker_name}'s kukri lands on {target_name}'s {hit_location} with a sickening thud, biting deep."
         },
         {
             'attacker_msg': "The kukri connects with a dull crack, your blow finding a gap and shearing through {target_name}'s defense.",
@@ -163,19 +163,19 @@ MESSAGES = {
             'observer_msg': "The kukri connects with a dull crack, {attacker_name}'s blow finding a gap and shearing through {target_name}'s defense."
         },
         {
-            'attacker_msg': "Your curved blade smashes into {target_name}'s shoulder, drawing a cry of agony as bone splinters.",
-            'victim_msg': "{attacker_name}'s curved blade smashes into your shoulder, drawing a cry of agony as bone splinters.",
-            'observer_msg': "{attacker_name}'s curved blade smashes into {target_name}'s shoulder, drawing a cry of agony as bone splinters."
+            'attacker_msg': "Your curved blade smashes into {target_name}'s {hit_location}, drawing a cry of agony as bone splinters.",
+            'victim_msg': "{attacker_name}'s curved blade smashes into your {hit_location}, drawing a cry of agony as bone splinters.",
+            'observer_msg': "{attacker_name}'s curved blade smashes into {target_name}'s {hit_location}, drawing a cry of agony as bone splinters."
         },
         {
-            'attacker_msg': "Steel impacts flesh as your kukri deflects a blow and delivers a vicious, disfiguring slash to {target_name}'s side.",
-            'victim_msg': "Steel impacts flesh as {attacker_name}'s kukri deflects a blow and delivers a vicious, disfiguring slash to your side.",
-            'observer_msg': "Steel impacts flesh as {attacker_name}'s kukri deflects a blow and delivers a vicious, disfiguring slash to {target_name}'s side."
+            'attacker_msg': "Steel impacts flesh as your kukri deflects a blow and delivers a vicious, disfiguring slash to {target_name}'s {hit_location}.",
+            'victim_msg': "Steel impacts flesh as {attacker_name}'s kukri deflects a blow and delivers a vicious, disfiguring slash to your {hit_location}.",
+            'observer_msg': "Steel impacts flesh as {attacker_name}'s kukri deflects a blow and delivers a vicious, disfiguring slash to {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "The heavy kukri strikes {target_name}'s leg, the force of the chop nearly severing it, making them scream and collapse.",
-            'victim_msg': "The heavy kukri strikes your leg, the force of the chop nearly severing it, making you scream and collapse.",
-            'observer_msg': "The heavy kukri strikes {target_name}'s leg, the force of the chop nearly severing it, making them scream and collapse."
+            'attacker_msg': "The heavy kukri strikes {target_name}'s {hit_location}, the force of the chop nearly severing it, making them scream and collapse.",
+            'victim_msg': "The heavy kukri strikes your {hit_location}, the force of the chop nearly severing it, making you scream and collapse.",
+            'observer_msg': "The heavy kukri strikes {target_name}'s {hit_location}, the force of the chop nearly severing it, making them scream and collapse."
         },
         {
             'attacker_msg': "Your powerful swing connects, the kukri delivering a bone-jarring impact that shatters {target_name}'s guard.",
@@ -183,9 +183,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s powerful swing connects, the kukri delivering a bone-jarring impact that shatters {target_name}'s guard."
         },
         {
-            'attacker_msg': "A well-aimed feint, then your kukri hacks into {target_name}'s ribs with brutal force.",
-            'victim_msg': "A well-aimed feint, then {attacker_name}'s kukri hacks into your ribs with brutal force.",
-            'observer_msg': "A well-aimed feint, then {attacker_name}'s kukri hacks into {target_name}'s ribs with brutal force."
+            'attacker_msg': "A well-aimed feint, then your kukri hacks into {target_name}'s {hit_location} with brutal force.",
+            'victim_msg': "A well-aimed feint, then {attacker_name}'s kukri hacks into your {hit_location} with brutal force.",
+            'observer_msg': "A well-aimed feint, then {attacker_name}'s kukri hacks into {target_name}'s {hit_location} with brutal force."
         },
         {
             'attacker_msg': "The kukri's unyielding edge strikes {target_name}'s defenses, the force of the blow staggering them and drawing blood.",
@@ -193,9 +193,9 @@ MESSAGES = {
             'observer_msg': "The kukri's unyielding edge strikes {target_name}'s defenses, the force of the blow staggering them and drawing blood."
         },
         {
-            'attacker_msg': "Your kukri whistles through the air before striking {target_name}'s exposed flank with brutal, chopping power.",
-            'victim_msg': "{attacker_name}'s kukri whistles through the air before striking your exposed flank with brutal, chopping power.",
-            'observer_msg': "{attacker_name}'s kukri whistles through the air before striking {target_name}'s exposed flank with brutal, chopping power."
+            'attacker_msg': "Your kukri whistles through the air before striking {target_name}'s exposed {hit_location} with brutal, chopping power.",
+            'victim_msg': "{attacker_name}'s kukri whistles through the air before striking your exposed {hit_location} with brutal, chopping power.",
+            'observer_msg': "{attacker_name}'s kukri whistles through the air before striking {target_name}'s exposed {hit_location} with brutal, chopping power."
         },
         {
             'attacker_msg': "With a grunt of effort, you drive the kukri against {target_name}, the impact echoing as flesh and bone give way.",
@@ -203,14 +203,14 @@ MESSAGES = {
             'observer_msg': "With a grunt of effort, {attacker_name} drives the kukri against {target_name}, the impact echoing as flesh and bone give way."
         },
         {
-            'attacker_msg': "The kukri scores a heavy hit on {target_name}'s weapon arm, the chopping force numbing it and sending their weapon flying.",
-            'victim_msg': "The kukri scores a heavy hit on your weapon arm, the chopping force numbing it and sending your weapon flying.",
-            'observer_msg': "The kukri scores a heavy hit on {target_name}'s weapon arm, the chopping force numbing it and sending their weapon flying."
+            'attacker_msg': "The kukri scores a heavy hit on {target_name}'s weapon {hit_location}, the chopping force numbing it and sending their weapon flying.",
+            'victim_msg': "The kukri scores a heavy hit on your weapon {hit_location}, the chopping force numbing it and sending your weapon flying.",
+            'observer_msg': "The kukri scores a heavy hit on {target_name}'s weapon {hit_location}, the chopping force numbing it and sending their weapon flying."
         },
         {
-            'attacker_msg': "Your precise strike opens a livid, gaping wound on {target_name}'s brow, stunning them with pain and blood.",
-            'victim_msg': "{attacker_name}'s precise strike opens a livid, gaping wound on your brow, stunning you with pain and blood.",
-            'observer_msg': "{attacker_name}'s precise strike opens a livid, gaping wound on {target_name}'s brow, stunning them with pain and blood."
+            'attacker_msg': "Your precise strike opens a livid, gaping wound on {target_name}'s {hit_location}, stunning them with pain and blood.",
+            'victim_msg': "{attacker_name}'s precise strike opens a livid, gaping wound on your {hit_location}, stunning you with pain and blood.",
+            'observer_msg': "{attacker_name}'s precise strike opens a livid, gaping wound on {target_name}'s {hit_location}, stunning them with pain and blood."
         },
         {
             'attacker_msg': "A resounding crack as your kukri smashes against {target_name}, the force felt by both as the blade bites.",
@@ -218,9 +218,9 @@ MESSAGES = {
             'observer_msg': "A resounding crack as {attacker_name}'s kukri smashes against {target_name}, the force felt by both as the blade bites."
         },
         {
-            'attacker_msg': "The unyielding steel of the kukri leaves a deep, painful gash on {target_name}'s torso, blood pouring freely.",
-            'victim_msg': "The unyielding steel of the kukri leaves a deep, painful gash on your torso, blood pouring freely.",
-            'observer_msg': "The unyielding steel of the kukri leaves a deep, painful gash on {target_name}'s torso, blood pouring freely."
+            'attacker_msg': "The unyielding steel of the kukri leaves a deep, painful gash on {target_name}'s {hit_location}, blood pouring freely.",
+            'victim_msg': "The unyielding steel of the kukri leaves a deep, painful gash on your {hit_location}, blood pouring freely.",
+            'observer_msg': "The unyielding steel of the kukri leaves a deep, painful gash on {target_name}'s {hit_location}, blood pouring freely."
         },
         {
             'attacker_msg': "Your follow-through strike with the kukri catches {target_name} off-balance, inflicting another grievous wound.",
@@ -228,9 +228,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s follow-through strike with the kukri catches {target_name} off-balance, inflicting another grievous wound."
         },
         {
-            'attacker_msg': "A flick of your wrist sends the kukri's point into {target_name}'s hand with a sharp crack, disabling it.",
-            'victim_msg': "A flick of {attacker_name}'s wrist sends the kukri's point into your hand with a sharp crack, disabling it.",
-            'observer_msg': "A flick of {attacker_name}'s wrist sends the kukri's point into {target_name}'s hand with a sharp crack, disabling it."
+            'attacker_msg': "A flick of your {hit_location} sends the kukri's point into {target_name}'s {hit_location} with a sharp crack, disabling it.",
+            'victim_msg': "A flick of {attacker_name}'s {hit_location} sends the kukri's point into your {hit_location} with a sharp crack, disabling it.",
+            'observer_msg': "A flick of {attacker_name}'s {hit_location} sends the kukri's point into {target_name}'s {hit_location} with a sharp crack, disabling it."
         },
         {
             'attacker_msg': "The kukri thuds heavily as it connects with {target_name}, driving the air from their lungs and leaving a horrific injury.",
@@ -238,9 +238,9 @@ MESSAGES = {
             'observer_msg': "The kukri thuds heavily as it connects with {target_name}, driving the air from their lungs and leaving a horrific injury."
         },
         {
-            'attacker_msg': "Your curved blade finds purchase, delivering a crushing chop to {target_name}'s thigh, felling them.",
-            'victim_msg': "{attacker_name}'s curved blade finds purchase, delivering a crushing chop to your thigh, felling you.",
-            'observer_msg': "{attacker_name}'s curved blade finds purchase, delivering a crushing chop to {target_name}'s thigh, felling them."
+            'attacker_msg': "Your curved blade finds purchase, delivering a crushing chop to {target_name}'s {hit_location}, felling them.",
+            'victim_msg': "{attacker_name}'s curved blade finds purchase, delivering a crushing chop to your {hit_location}, felling you.",
+            'observer_msg': "{attacker_name}'s curved blade finds purchase, delivering a crushing chop to {target_name}'s {hit_location}, felling them."
         },
         {
             'attacker_msg': "A glancing blow from the kukri still manages to leave {target_name} reeling and bleeding profusely from a deep cut.",
@@ -263,9 +263,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s thrust is true, the kukri's point striking {target_name} squarely with concussive, piercing force."
         },
         {
-            'attacker_msg': "A downward strike from your kukri impacts {target_name}'s collarbone with a sickening crunch, shattering it.",
-            'victim_msg': "A downward strike from {attacker_name}'s kukri impacts your collarbone with a sickening crunch, shattering it.",
-            'observer_msg': "A downward strike from {attacker_name}'s kukri impacts {target_name}'s collarbone with a sickening crunch, shattering it."
+            'attacker_msg': "A downward strike from your kukri impacts {target_name}'s {hit_location} with a sickening crunch, shattering it.",
+            'victim_msg': "A downward strike from {attacker_name}'s kukri impacts your {hit_location} with a sickening crunch, shattering it.",
+            'observer_msg': "A downward strike from {attacker_name}'s kukri impacts {target_name}'s {hit_location} with a sickening crunch, shattering it."
         },
         {
             'attacker_msg': "The kukri, though relatively short, moves with deadly speed in your grip, its edge finding an opening on {target_name}.",
@@ -283,14 +283,14 @@ MESSAGES = {
             'observer_msg': "A powerful strike from the kukri forces {target_name} to give ground, wincing from the heavy, chopping blow."
         },
         {
-            'attacker_msg': "The tip of your kukri connects like a pickaxe, striking {target_name}'s forearm and breaking it.",
-            'victim_msg': "The tip of {attacker_name}'s kukri connects like a pickaxe, striking your forearm and breaking it.",
-            'observer_msg': "The tip of {attacker_name}'s kukri connects like a pickaxe, striking {target_name}'s forearm and breaking it."
+            'attacker_msg': "The tip of your kukri connects like a pickaxe, striking {target_name}'s {hit_location} and breaking it.",
+            'victim_msg': "The tip of {attacker_name}'s kukri connects like a pickaxe, striking your {hit_location} and breaking it.",
+            'observer_msg': "The tip of {attacker_name}'s kukri connects like a pickaxe, striking {target_name}'s {hit_location} and breaking it."
         },
         {
-            'attacker_msg': "Your kukri delivers a brutal blow to {target_name}'s side, the steel unforgiving and savagely effective.",
-            'victim_msg': "{attacker_name}'s kukri delivers a brutal blow to your side, the steel unforgiving and savagely effective.",
-            'observer_msg': "{attacker_name}'s kukri delivers a brutal blow to {target_name}'s side, the steel unforgiving and savagely effective."
+            'attacker_msg': "Your kukri delivers a brutal blow to {target_name}'s {hit_location}, the steel unforgiving and savagely effective.",
+            'victim_msg': "{attacker_name}'s kukri delivers a brutal blow to your {hit_location}, the steel unforgiving and savagely effective.",
+            'observer_msg': "{attacker_name}'s kukri delivers a brutal blow to {target_name}'s {hit_location}, the steel unforgiving and savagely effective."
         },
         {
             'attacker_msg': "A well-placed strike from the kukri leaves {target_name} momentarily breathless, seeing stars, and clutching a grievous wound.",

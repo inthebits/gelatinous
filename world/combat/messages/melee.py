@@ -213,9 +213,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s relentless assault pays off as {item} strikes {target_name}."
         },
         {
-            'attacker_msg': "{target_name} stumbles back, rocked by the force of {item}.",
-            'victim_msg': "You stumble back, rocked by the force of {item}.",
-            'observer_msg': "{target_name} stumbles back, rocked by the force of {item}."
+            'attacker_msg': "{target_name} stumbles {hit_location}, rocked by the force of {item}.",
+            'victim_msg': "You stumble {hit_location}, rocked by the force of {item}.",
+            'observer_msg': "{target_name} stumbles {hit_location}, rocked by the force of {item}."
         },
         {
             'attacker_msg': "A sharp crack rings out as {item} impacts {target_name}.",
@@ -228,9 +228,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s {item} carves a path, connecting solidly with {target_name}."
         },
         {
-            'attacker_msg': "Pain flashes across {target_name}'s face as {item} hits home.",
-            'victim_msg': "Pain flashes across your face as {item} hits home.",
-            'observer_msg': "Pain flashes across {target_name}'s face as {item} hits home."
+            'attacker_msg': "Pain flashes across {target_name}'s {hit_location} as {item} hits home.",
+            'victim_msg': "Pain flashes across your {hit_location} as {item} hits home.",
+            'observer_msg': "Pain flashes across {target_name}'s {hit_location} as {item} hits home."
         },
         {
             'attacker_msg': "The force of your {item} throws {target_name} off balance.",

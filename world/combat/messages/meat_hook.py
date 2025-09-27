@@ -153,89 +153,89 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "The meat hook sinks into {target_name}'s thigh with a wet crunch, and you jerk it free sideways.",
-            'victim_msg': "The meat hook sinks into your thigh with a wet crunch, and {attacker_name} jerks it free sideways.",
-            'observer_msg': "The meat hook sinks into {target_name}'s thigh with a wet crunch, and {attacker_name} jerks it free sideways."
+            'attacker_msg': "The meat hook sinks into {target_name}'s {hit_location} with a wet crunch, and you jerk it free sideways.",
+            'victim_msg': "The meat hook sinks into your {hit_location} with a wet crunch, and {attacker_name} jerks it free sideways.",
+            'observer_msg': "The meat hook sinks into {target_name}'s {hit_location} with a wet crunch, and {attacker_name} jerks it free sideways."
         },
         {
-            'attacker_msg': "You drive the hook deep into {target_name}'s shoulder, twisting until the scream breaks free.",
-            'victim_msg': "{attacker_name} drives the hook deep into your shoulder, twisting until the scream breaks free.",
-            'observer_msg': "{attacker_name} drives the hook deep into {target_name}'s shoulder, twisting until the scream breaks free."
+            'attacker_msg': "You drive the hook deep into {target_name}'s {hit_location}, twisting until the scream breaks free.",
+            'victim_msg': "{attacker_name} drives the hook deep into your {hit_location}, twisting until the scream breaks free.",
+            'observer_msg': "{attacker_name} drives the hook deep into {target_name}'s {hit_location}, twisting until the scream breaks free."
         },
         {
-            'attacker_msg': "A brutal backswing buries the point in {target_name}'s gut—fabric, skin, and dignity part like wet paper.",
-            'victim_msg': "A brutal backswing buries the point in your gut—fabric, skin, and dignity part like wet paper.",
-            'observer_msg': "A brutal backswing buries the point in {target_name}'s gut—fabric, skin, and dignity part like wet paper."
+            'attacker_msg': "A brutal backswing buries the point in {target_name}'s {hit_location}—fabric, skin, and dignity part like wet paper.",
+            'victim_msg': "A brutal backswing buries the point in your {hit_location}—fabric, skin, and dignity part like wet paper.",
+            'observer_msg': "A brutal backswing buries the point in {target_name}'s {hit_location}—fabric, skin, and dignity part like wet paper."
         },
         {
-            'attacker_msg': "The hook slams into {target_name}'s ribs with a meaty crunch. Bones don't bend like that.",
-            'victim_msg': "The hook slams into your ribs with a meaty crunch. Bones don't bend like that.",
-            'observer_msg': "The hook slams into {target_name}'s ribs with a meaty crunch. Bones don't bend like that."
+            'attacker_msg': "The hook slams into {target_name}'s {hit_location} with a meaty crunch. Bones don't bend like that.",
+            'victim_msg': "The hook slams into your {hit_location} with a meaty crunch. Bones don't bend like that.",
+            'observer_msg': "The hook slams into {target_name}'s {hit_location} with a meaty crunch. Bones don't bend like that."
         },
         {
-            'attacker_msg': "You yank the hook through {target_name}'s bicep, flesh tearing like soaked parchment.",
-            'victim_msg': "{attacker_name} yanks the hook through your bicep, flesh tearing like soaked parchment.",
-            'observer_msg': "{attacker_name} yanks the hook through {target_name}'s bicep, flesh tearing like soaked parchment."
+            'attacker_msg': "You yank the hook through {target_name}'s {hit_location}, flesh tearing like soaked parchment.",
+            'victim_msg': "{attacker_name} yanks the hook through your {hit_location}, flesh tearing like soaked parchment.",
+            'observer_msg': "{attacker_name} yanks the hook through {target_name}'s {hit_location}, flesh tearing like soaked parchment."
         },
         {
-            'attacker_msg': "The point lodges just beneath {target_name}'s clavicle. You don't pull it out clean.",
-            'victim_msg': "The point lodges just beneath your clavicle. {attacker_name} doesn't pull it out clean.",
-            'observer_msg': "The point lodges just beneath {target_name}'s clavicle. {attacker_name} doesn't pull it out clean."
+            'attacker_msg': "The point lodges just beneath {target_name}'s {hit_location}. You don't pull it out clean.",
+            'victim_msg': "The point lodges just beneath your {hit_location}. {attacker_name} doesn't pull it out clean.",
+            'observer_msg': "The point lodges just beneath {target_name}'s {hit_location}. {attacker_name} doesn't pull it out clean."
         },
         {
-            'attacker_msg': "A downward rip carves a red crescent across {target_name}'s back. The scream is hoarse and late.",
-            'victim_msg': "A downward rip carves a red crescent across your back. The scream is hoarse and late.",
-            'observer_msg': "A downward rip carves a red crescent across {target_name}'s back. The scream is hoarse and late."
+            'attacker_msg': "A downward rip carves a red crescent across {target_name}'s {hit_location}. The scream is hoarse and late.",
+            'victim_msg': "A downward rip carves a red crescent across your {hit_location}. The scream is hoarse and late.",
+            'observer_msg': "A downward rip carves a red crescent across {target_name}'s {hit_location}. The scream is hoarse and late."
         },
         {
-            'attacker_msg': "You slam the blunt edge into {target_name}'s face, then follow through with the hook end.",
-            'victim_msg': "{attacker_name} slams the blunt edge into your face, then follows through with the hook end.",
-            'observer_msg': "{attacker_name} slams the blunt edge into {target_name}'s face, then follows through with the hook end."
+            'attacker_msg': "You slam the blunt edge into {target_name}'s {hit_location}, then follow through with the hook end.",
+            'victim_msg': "{attacker_name} slams the blunt edge into your {hit_location}, then follows through with the hook end.",
+            'observer_msg': "{attacker_name} slams the blunt edge into {target_name}'s {hit_location}, then follows through with the hook end."
         },
         {
-            'attacker_msg': "The hook punches through {target_name}'s hip. They drop like something broken inside a bag.",
-            'victim_msg': "The hook punches through your hip. You drop like something broken inside a bag.",
-            'observer_msg': "The hook punches through {target_name}'s hip. They drop like something broken inside a bag."
+            'attacker_msg': "The hook punches through {target_name}'s {hit_location}. They drop like something broken inside a bag.",
+            'victim_msg': "The hook punches through your {hit_location}. You drop like something broken inside a bag.",
+            'observer_msg': "The hook punches through {target_name}'s {hit_location}. They drop like something broken inside a bag."
         },
         {
-            'attacker_msg': "You catch {target_name} mid-turn, the hook tearing a chunk from their side in a spray of red.",
-            'victim_msg': "{attacker_name} catches you mid-turn, the hook tearing a chunk from your side in a spray of red.",
-            'observer_msg': "{attacker_name} catches {target_name} mid-turn, the hook tearing a chunk from their side in a spray of red."
+            'attacker_msg': "You catch {target_name} mid-turn, the hook tearing a chunk from their {hit_location} in a spray of red.",
+            'victim_msg': "{attacker_name} catches you mid-turn, the hook tearing a chunk from your {hit_location} in a spray of red.",
+            'observer_msg': "{attacker_name} catches {target_name} mid-turn, the hook tearing a chunk from their {hit_location} in a spray of red."
         },
         {
-            'attacker_msg': "The meat hook lodges in {target_name}'s forearm. You twist, and something vital gives.",
-            'victim_msg': "The meat hook lodges in your forearm. {attacker_name} twists, and something vital gives.",
-            'observer_msg': "The meat hook lodges in {target_name}'s forearm. {attacker_name} twists, and something vital gives."
+            'attacker_msg': "The meat hook lodges in {target_name}'s {hit_location}. You twist, and something vital gives.",
+            'victim_msg': "The meat hook lodges in your {hit_location}. {attacker_name} twists, and something vital gives.",
+            'observer_msg': "The meat hook lodges in {target_name}'s {hit_location}. {attacker_name} twists, and something vital gives."
         },
         {
-            'attacker_msg': "Steel bites into {target_name}'s neck—not deep, but deep enough to leave a message.",
-            'victim_msg': "Steel bites into your neck—not deep, but deep enough to leave a message.",
-            'observer_msg': "Steel bites into {target_name}'s neck—not deep, but deep enough to leave a message."
+            'attacker_msg': "Steel bites into {target_name}'s {hit_location}—not deep, but deep enough to leave a message.",
+            'victim_msg': "Steel bites into your {hit_location}—not deep, but deep enough to leave a message.",
+            'observer_msg': "Steel bites into {target_name}'s {hit_location}—not deep, but deep enough to leave a message."
         },
         {
-            'attacker_msg': "A spinning slash across {target_name}'s back leaves bloody lines and ragged screams.",
-            'victim_msg': "A spinning slash across your back leaves bloody lines and ragged screams.",
-            'observer_msg': "A spinning slash across {target_name}'s back leaves bloody lines and ragged screams."
+            'attacker_msg': "A spinning slash across {target_name}'s {hit_location} leaves bloody lines and ragged screams.",
+            'victim_msg': "A spinning slash across your {hit_location} leaves bloody lines and ragged screams.",
+            'observer_msg': "A spinning slash across {target_name}'s {hit_location} leaves bloody lines and ragged screams."
         },
         {
-            'attacker_msg': "The chain swings wide, the hook catching {target_name} across the ribs with a shriek of impact.",
-            'victim_msg': "The chain swings wide, the hook catching you across the ribs with a shriek of impact.",
-            'observer_msg': "The chain swings wide, the hook catching {target_name} across the ribs with a shriek of impact."
+            'attacker_msg': "The chain swings wide, the hook catching {target_name} across the {hit_location} with a shriek of impact.",
+            'victim_msg': "The chain swings wide, the hook catching you across the {hit_location} with a shriek of impact.",
+            'observer_msg': "The chain swings wide, the hook catching {target_name} across the {hit_location} with a shriek of impact."
         },
         {
-            'attacker_msg': "You stab upward under {target_name}'s ribs—short, sharp, and personal.",
-            'victim_msg': "{attacker_name} stabs upward under your ribs—short, sharp, and personal.",
-            'observer_msg': "{attacker_name} stabs upward under {target_name}'s ribs—short, sharp, and personal."
+            'attacker_msg': "You stab upward under {target_name}'s {hit_location}—short, sharp, and personal.",
+            'victim_msg': "{attacker_name} stabs upward under your {hit_location}—short, sharp, and personal.",
+            'observer_msg': "{attacker_name} stabs upward under {target_name}'s {hit_location}—short, sharp, and personal."
         },
         {
-            'attacker_msg': "A nasty gash opens along {target_name}'s jaw as the hook rakes across their face.",
-            'victim_msg': "A nasty gash opens along your jaw as the hook rakes across your face.",
-            'observer_msg': "A nasty gash opens along {target_name}'s jaw as the hook rakes across their face."
+            'attacker_msg': "A nasty gash opens along {target_name}'s {hit_location} as the hook rakes across their face.",
+            'victim_msg': "A nasty gash opens along your {hit_location} as the hook rakes across your face.",
+            'observer_msg': "A nasty gash opens along {target_name}'s {hit_location} as the hook rakes across their face."
         },
         {
-            'attacker_msg': "The hook gouges a trench through {target_name}'s calf. They fall, kicking blood.",
-            'victim_msg': "The hook gouges a trench through your calf. You fall, kicking blood.",
-            'observer_msg': "The hook gouges a trench through {target_name}'s calf. They fall, kicking blood."
+            'attacker_msg': "The hook gouges a trench through {target_name}'s {hit_location}. They fall, kicking blood.",
+            'victim_msg': "The hook gouges a trench through your {hit_location}. You fall, kicking blood.",
+            'observer_msg': "The hook gouges a trench through {target_name}'s {hit_location}. They fall, kicking blood."
         },
         {
             'attacker_msg': "A rib breaks under the weight of the strike. {target_name} crumples with a mouthful of blood.",
@@ -243,39 +243,39 @@ MESSAGES = {
             'observer_msg': "A rib breaks under the weight of the strike. {target_name} crumples with a mouthful of blood."
         },
         {
-            'attacker_msg': "The hook arcs in and rips a flap of skin from {target_name}'s side. The wound steams in cold air.",
-            'victim_msg': "The hook arcs in and rips a flap of skin from your side. The wound steams in cold air.",
-            'observer_msg': "The hook arcs in and rips a flap of skin from {target_name}'s side. The wound steams in cold air."
+            'attacker_msg': "The hook arcs in and rips a flap of skin from {target_name}'s {hit_location}. The wound steams in cold air.",
+            'victim_msg': "The hook arcs in and rips a flap of skin from your {hit_location}. The wound steams in cold air.",
+            'observer_msg': "The hook arcs in and rips a flap of skin from {target_name}'s {hit_location}. The wound steams in cold air."
         },
         {
-            'attacker_msg': "One clean shot to the shoulder joint makes {target_name}'s arm useless and trembling.",
-            'victim_msg': "One clean shot to the shoulder joint makes your arm useless and trembling.",
-            'observer_msg': "One clean shot to the shoulder joint makes {target_name}'s arm useless and trembling."
+            'attacker_msg': "One clean shot to the {hit_location} makes {target_name}'s arm useless and trembling.",
+            'victim_msg': "One clean shot to the {hit_location} makes your arm useless and trembling.",
+            'observer_msg': "One clean shot to the {hit_location} makes {target_name}'s arm useless and trembling."
         },
         {
-            'attacker_msg': "A whipping blow lands in the stomach. The hook catches and pulls something that shouldn't come loose.",
-            'victim_msg': "A whipping blow lands in the stomach. The hook catches and pulls something that shouldn't come loose.",
-            'observer_msg': "A whipping blow lands in the stomach. The hook catches and pulls something that shouldn't come loose."
+            'attacker_msg': "A whipping blow lands in the {hit_location}. The hook catches and pulls something that shouldn't come loose.",
+            'victim_msg': "A whipping blow lands in the {hit_location}. The hook catches and pulls something that shouldn't come loose.",
+            'observer_msg': "A whipping blow lands in the {hit_location}. The hook catches and pulls something that shouldn't come loose."
         },
         {
-            'attacker_msg': "The strike lands hard across {target_name}'s back. The hook clings for a moment before tearing away.",
-            'victim_msg': "The strike lands hard across your back. The hook clings for a moment before tearing away.",
-            'observer_msg': "The strike lands hard across {target_name}'s back. The hook clings for a moment before tearing away."
+            'attacker_msg': "The strike lands hard across {target_name}'s {hit_location}. The hook clings for a moment before tearing away.",
+            'victim_msg': "The strike lands hard across your {hit_location}. The hook clings for a moment before tearing away.",
+            'observer_msg': "The strike lands hard across {target_name}'s {hit_location}. The hook clings for a moment before tearing away."
         },
         {
-            'attacker_msg': "A full-body heave slams the hook into {target_name}'s abdomen. It's not meant to be removed—you do anyway.",
-            'victim_msg': "A full-body heave slams the hook into your abdomen. It's not meant to be removed—{attacker_name} does anyway.",
-            'observer_msg': "A full-body heave slams the hook into {target_name}'s abdomen. It's not meant to be removed—{attacker_name} does anyway."
+            'attacker_msg': "A full-body heave slams the hook into {target_name}'s {hit_location}. It's not meant to be removed—you do anyway.",
+            'victim_msg': "A full-body heave slams the hook into your {hit_location}. It's not meant to be removed—{attacker_name} does anyway.",
+            'observer_msg': "A full-body heave slams the hook into {target_name}'s {hit_location}. It's not meant to be removed—{attacker_name} does anyway."
         },
         {
-            'attacker_msg': "{target_name} gasps as the point glides beneath their ribs. You just grin.",
-            'victim_msg': "You gasp as the point glides beneath your ribs. {attacker_name} just grins.",
-            'observer_msg': "{target_name} gasps as the point glides beneath their ribs. {attacker_name} just grins."
+            'attacker_msg': "{target_name} gasps as the point glides beneath their {hit_location}. You just grin.",
+            'victim_msg': "You gasp as the point glides beneath your {hit_location}. {attacker_name} just grins.",
+            'observer_msg': "{target_name} gasps as the point glides beneath their {hit_location}. {attacker_name} just grins."
         },
         {
-            'attacker_msg': "You slash across the chest, the hook carving three uneven gashes in {target_name}'s flesh.",
-            'victim_msg': "{attacker_name} slashes across the chest, the hook carving three uneven gashes in your flesh.",
-            'observer_msg': "{attacker_name} slashes across the chest, the hook carving three uneven gashes in {target_name}'s flesh."
+            'attacker_msg': "You slash across the {hit_location}, the hook carving three uneven gashes in {target_name}'s flesh.",
+            'victim_msg': "{attacker_name} slashes across the {hit_location}, the hook carving three uneven gashes in your flesh.",
+            'observer_msg': "{attacker_name} slashes across the {hit_location}, the hook carving three uneven gashes in {target_name}'s flesh."
         },
         {
             'attacker_msg': "The hook catches a tendon. {target_name} buckles. The follow-up is immediate.",
@@ -283,9 +283,9 @@ MESSAGES = {
             'observer_msg': "The hook catches a tendon. {target_name} buckles. The follow-up is immediate."
         },
         {
-            'attacker_msg': "You carve into the meat of {target_name}'s thigh and leave the hook swinging on the way out.",
-            'victim_msg': "{attacker_name} carves into the meat of your thigh and leaves the hook swinging on the way out.",
-            'observer_msg': "{attacker_name} carves into the meat of {target_name}'s thigh and leaves the hook swinging on the way out."
+            'attacker_msg': "You carve into the meat of {target_name}'s {hit_location} and leave the hook swinging on the way out.",
+            'victim_msg': "{attacker_name} carves into the meat of your {hit_location} and leaves the hook swinging on the way out.",
+            'observer_msg': "{attacker_name} carves into the meat of {target_name}'s {hit_location} and leaves the hook swinging on the way out."
         },
         {
             'attacker_msg': "Steel crunches against bone. The sound is sickening. The pain worse.",

@@ -153,9 +153,9 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "A swift, hard swing from your cricket bat connects with {target_name}'s arm with a flat, sickening crack.",
-            "victim_msg": "A swift, hard swing from {attacker_name}'s cricket bat connects with your arm with a flat, sickening crack.",
-            "observer_msg": "A swift, hard swing from {attacker_name}'s cricket bat connects with {target_name}'s arm with a flat, sickening crack."
+            "attacker_msg": "A swift, hard swing from your cricket bat connects with {target_name}'s {hit_location} with a flat, sickening crack.",
+            "victim_msg": "A swift, hard swing from {attacker_name}'s cricket bat connects with your {hit_location} with a flat, sickening crack.",
+            "observer_msg": "A swift, hard swing from {attacker_name}'s cricket bat connects with {target_name}'s {hit_location} with a flat, sickening crack."
         },
         {
             "attacker_msg": "The cricket bat connects with a solid thwack, your blow finding an opening in {target_name}'s defense.",
@@ -163,29 +163,29 @@ MESSAGES = {
             "observer_msg": "The cricket bat connects with a solid thwack, {attacker_name}'s blow finding an opening in {target_name}'s defense."
         },
         {
-            "attacker_msg": "Your bat smashes into {target_name}'s shoulder, drawing a cry of pain and the sound of splintering bone.",
-            "victim_msg": "{attacker_name}'s bat smashes into your shoulder, drawing a cry of pain and the sound of splintering bone.",
-            "observer_msg": "{attacker_name}'s bat smashes into {target_name}'s shoulder, drawing a cry of pain and the sound of splintering bone."
+            "attacker_msg": "Your bat smashes into {target_name}'s {hit_location}, drawing a cry of pain and the sound of splintering bone.",
+            "victim_msg": "{attacker_name}'s bat smashes into your {hit_location}, drawing a cry of pain and the sound of splintering bone.",
+            "observer_msg": "{attacker_name}'s bat smashes into {target_name}'s {hit_location}, drawing a cry of pain and the sound of splintering bone."
         },
         {
-            "attacker_msg": "Willow impacts flesh as your cricket bat deflects a blow and delivers a painful counter-strike to {target_name}'s side.",
-            "victim_msg": "Willow impacts flesh as {attacker_name}'s cricket bat deflects a blow and delivers a painful counter-strike to your side.",
-            "observer_msg": "Willow impacts flesh as {attacker_name}'s cricket bat deflects a blow and delivers a painful counter-strike to {target_name}'s side."
+            "attacker_msg": "Willow impacts flesh as your cricket bat deflects a blow and delivers a painful counter-strike to {target_name}'s {hit_location}.",
+            "victim_msg": "Willow impacts flesh as {attacker_name}'s cricket bat deflects a blow and delivers a painful counter-strike to your {hit_location}.",
+            "observer_msg": "Willow impacts flesh as {attacker_name}'s cricket bat deflects a blow and delivers a painful counter-strike to {target_name}'s {hit_location}."
         },
         {
-            "attacker_msg": "The heavy cricket bat strikes {target_name}'s leg, making them buckle and cry out as the limb is crushed.",
-            "victim_msg": "The heavy cricket bat strikes your leg, making you buckle and cry out as the limb is crushed.",
-            "observer_msg": "The heavy cricket bat strikes {target_name}'s leg, making them buckle and cry out as the limb is crushed."
+            "attacker_msg": "The heavy cricket bat strikes {target_name}'s {hit_location}, making them buckle and cry out as the limb is crushed.",
+            "victim_msg": "The heavy cricket bat strikes your {hit_location}, making you buckle and cry out as the limb is crushed.",
+            "observer_msg": "The heavy cricket bat strikes {target_name}'s {hit_location}, making them buckle and cry out as the limb is crushed."
         },
         {
-            "attacker_msg": "Your powerful swing connects, the cricket bat delivering a bone-jarring impact to {target_name}'s torso.",
-            "victim_msg": "{attacker_name}'s powerful swing connects, the cricket bat delivering a bone-jarring impact to your torso.",
-            "observer_msg": "{attacker_name}'s powerful swing connects, the cricket bat delivering a bone-jarring impact to {target_name}'s torso."
+            "attacker_msg": "Your powerful swing connects, the cricket bat delivering a bone-jarring impact to {target_name}'s {hit_location}.",
+            "victim_msg": "{attacker_name}'s powerful swing connects, the cricket bat delivering a bone-jarring impact to your {hit_location}.",
+            "observer_msg": "{attacker_name}'s powerful swing connects, the cricket bat delivering a bone-jarring impact to {target_name}'s {hit_location}."
         },
         {
-            "attacker_msg": "A well-aimed stroke, then your cricket bat cracks against {target_name}'s ribs with brutal, flat force.",
-            "victim_msg": "A well-aimed stroke, then {attacker_name}'s cricket bat cracks against your ribs with brutal, flat force.",
-            "observer_msg": "A well-aimed stroke, then {attacker_name}'s cricket bat cracks against {target_name}'s ribs with brutal, flat force."
+            "attacker_msg": "A well-aimed stroke, then your cricket bat cracks against {target_name}'s {hit_location} with brutal, flat force.",
+            "victim_msg": "A well-aimed stroke, then {attacker_name}'s cricket bat cracks against your {hit_location} with brutal, flat force.",
+            "observer_msg": "A well-aimed stroke, then {attacker_name}'s cricket bat cracks against {target_name}'s {hit_location} with brutal, flat force."
         },
         {
             "attacker_msg": "The bat's broad surface strikes {target_name}'s defenses, the force of the blow staggering them and leaving a wide welt.",
@@ -193,9 +193,9 @@ MESSAGES = {
             "observer_msg": "The bat's broad surface strikes {target_name}'s defenses, the force of the blow staggering them and leaving a wide welt."
         },
         {
-            "attacker_msg": "Your cricket bat whistles through the air before striking {target_name}'s exposed head with brutal force.",
-            "victim_msg": "{attacker_name}'s cricket bat whistles through the air before striking your exposed head with brutal force.",
-            "observer_msg": "{attacker_name}'s cricket bat whistles through the air before striking {target_name}'s exposed head with brutal force."
+            "attacker_msg": "Your cricket bat whistles through the air before striking {target_name}'s exposed {hit_location} with brutal force.",
+            "victim_msg": "{attacker_name}'s cricket bat whistles through the air before striking your exposed {hit_location} with brutal force.",
+            "observer_msg": "{attacker_name}'s cricket bat whistles through the air before striking {target_name}'s exposed {hit_location} with brutal force."
         },
         {
             "attacker_msg": "With a grunt of effort, you drive the cricket bat against {target_name}, the impact echoing with a dull thud.",
@@ -203,14 +203,14 @@ MESSAGES = {
             "observer_msg": "With a grunt of effort, {attacker_name} drives the cricket bat against {target_name}, the impact echoing with a dull thud."
         },
         {
-            "attacker_msg": "The cricket bat scores a heavy hit on {target_name}'s weapon arm, numbing it with the jarring, wide impact.",
-            "victim_msg": "The cricket bat scores a heavy hit on your weapon arm, numbing it with the jarring, wide impact.",
-            "observer_msg": "The cricket bat scores a heavy hit on {target_name}'s weapon arm, numbing it with the jarring, wide impact."
+            "attacker_msg": "The cricket bat scores a heavy hit on {target_name}'s weapon {hit_location}, numbing it with the jarring, wide impact.",
+            "victim_msg": "The cricket bat scores a heavy hit on your weapon {hit_location}, numbing it with the jarring, wide impact.",
+            "observer_msg": "The cricket bat scores a heavy hit on {target_name}'s weapon {hit_location}, numbing it with the jarring, wide impact."
         },
         {
-            "attacker_msg": "Your precise swing leaves a massive, painful bruise on {target_name}'s brow, stunning them.",
-            "victim_msg": "{attacker_name}'s precise swing leaves a massive, painful bruise on your brow, stunning you.",
-            "observer_msg": "{attacker_name}'s precise swing leaves a massive, painful bruise on {target_name}'s brow, stunning them."
+            "attacker_msg": "Your precise swing leaves a massive, painful bruise on {target_name}'s {hit_location}, stunning them.",
+            "victim_msg": "{attacker_name}'s precise swing leaves a massive, painful bruise on your {hit_location}, stunning you.",
+            "observer_msg": "{attacker_name}'s precise swing leaves a massive, painful bruise on {target_name}'s {hit_location}, stunning them."
         },
         {
             "attacker_msg": "A resounding thwack as your cricket bat smashes against {target_name}, the force felt by both.",
@@ -218,9 +218,9 @@ MESSAGES = {
             "observer_msg": "A resounding thwack as {attacker_name}'s cricket bat smashes against {target_name}, the force felt by both."
         },
         {
-            "attacker_msg": "The unyielding surface of the cricket bat leaves a deep, painful bruise across {target_name}'s back.",
-            "victim_msg": "The unyielding surface of the cricket bat leaves a deep, painful bruise across your back.",
-            "observer_msg": "The unyielding surface of the cricket bat leaves a deep, painful bruise across {target_name}'s back."
+            "attacker_msg": "The unyielding surface of the cricket bat leaves a deep, painful bruise across {target_name}'s {hit_location}.",
+            "victim_msg": "The unyielding surface of the cricket bat leaves a deep, painful bruise across your {hit_location}.",
+            "observer_msg": "The unyielding surface of the cricket bat leaves a deep, painful bruise across {target_name}'s {hit_location}."
         },
         {
             "attacker_msg": "Your follow-through swing with the cricket bat catches {target_name} off-balance, sending them sprawling.",
@@ -228,19 +228,19 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s follow-through swing with the cricket bat catches {target_name} off-balance, sending them sprawling."
         },
         {
-            "attacker_msg": "A quick jab with the toe of the cricket bat strikes {target_name}'s hand with a sharp crack.",
-            "victim_msg": "A quick jab with the toe of the cricket bat strikes your hand with a sharp crack.",
-            "observer_msg": "A quick jab with the toe of the cricket bat strikes {target_name}'s hand with a sharp crack."
+            "attacker_msg": "A quick jab with the toe of the cricket bat strikes {target_name}'s {hit_location} with a sharp crack.",
+            "victim_msg": "A quick jab with the toe of the cricket bat strikes your {hit_location} with a sharp crack.",
+            "observer_msg": "A quick jab with the toe of the cricket bat strikes {target_name}'s {hit_location} with a sharp crack."
         },
         {
-            "attacker_msg": "The cricket bat thuds heavily as it connects with {target_name}'s chest, driving the air from their lungs.",
-            "victim_msg": "The cricket bat thuds heavily as it connects with your chest, driving the air from your lungs.",
-            "observer_msg": "The cricket bat thuds heavily as it connects with {target_name}'s chest, driving the air from their lungs."
+            "attacker_msg": "The cricket bat thuds heavily as it connects with {target_name}'s {hit_location}, driving the air from their lungs.",
+            "victim_msg": "The cricket bat thuds heavily as it connects with your {hit_location}, driving the air from your lungs.",
+            "observer_msg": "The cricket bat thuds heavily as it connects with {target_name}'s {hit_location}, driving the air from their lungs."
         },
         {
-            "attacker_msg": "Your bat finds purchase, delivering a crushing blow to {target_name}'s thigh, dropping them instantly.",
-            "victim_msg": "{attacker_name}'s bat finds purchase, delivering a crushing blow to your thigh, dropping you instantly.",
-            "observer_msg": "{attacker_name}'s bat finds purchase, delivering a crushing blow to {target_name}'s thigh, dropping them instantly."
+            "attacker_msg": "Your bat finds purchase, delivering a crushing blow to {target_name}'s {hit_location}, dropping them instantly.",
+            "victim_msg": "{attacker_name}'s bat finds purchase, delivering a crushing blow to your {hit_location}, dropping you instantly.",
+            "observer_msg": "{attacker_name}'s bat finds purchase, delivering a crushing blow to {target_name}'s {hit_location}, dropping them instantly."
         },
         {
             "attacker_msg": "A glancing blow from the cricket bat still manages to leave {target_name} reeling and painfully bruised.",
@@ -263,9 +263,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s swing is true, the cricket bat striking {target_name} squarely with stunning, concussive force."
         },
         {
-            "attacker_msg": "A downward strike from your cricket bat impacts {target_name}'s collarbone with a sickening, flat crunch.",
-            "victim_msg": "A downward strike from {attacker_name}'s cricket bat impacts your collarbone with a sickening, flat crunch.",
-            "observer_msg": "A downward strike from {attacker_name}'s cricket bat impacts {target_name}'s collarbone with a sickening, flat crunch."
+            "attacker_msg": "A downward strike from your cricket bat impacts {target_name}'s {hit_location} with a sickening, flat crunch.",
+            "victim_msg": "A downward strike from {attacker_name}'s cricket bat impacts your {hit_location} with a sickening, flat crunch.",
+            "observer_msg": "A downward strike from {attacker_name}'s cricket bat impacts {target_name}'s {hit_location} with a sickening, flat crunch."
         },
         {
             "attacker_msg": "The cricket bat, though a sporting tool, moves with surprising speed in your grip, its surface finding an opening.",
@@ -283,14 +283,14 @@ MESSAGES = {
             "observer_msg": "A powerful strike from the cricket bat forces {target_name} to give ground, wincing from the heavy, broad blow."
         },
         {
-            "attacker_msg": "The edge of your cricket bat connects like an axe, striking {target_name}'s forearm with a sharp crack.",
-            "victim_msg": "The edge of {attacker_name}'s cricket bat connects like an axe, striking your forearm with a sharp crack.",
-            "observer_msg": "The edge of {attacker_name}'s cricket bat connects like an axe, striking {target_name}'s forearm with a sharp crack."
+            "attacker_msg": "The edge of your cricket bat connects like an axe, striking {target_name}'s {hit_location} with a sharp crack.",
+            "victim_msg": "The edge of {attacker_name}'s cricket bat connects like an axe, striking your {hit_location} with a sharp crack.",
+            "observer_msg": "The edge of {attacker_name}'s cricket bat connects like an axe, striking {target_name}'s {hit_location} with a sharp crack."
         },
         {
-            "attacker_msg": "Your cricket bat delivers a brutal blow to {target_name}'s side, the willow unforgiving.",
-            "victim_msg": "{attacker_name}'s cricket bat delivers a brutal blow to your side, the willow unforgiving.",
-            "observer_msg": "{attacker_name}'s cricket bat delivers a brutal blow to {target_name}'s side, the willow unforgiving."
+            "attacker_msg": "Your cricket bat delivers a brutal blow to {target_name}'s {hit_location}, the willow unforgiving.",
+            "victim_msg": "{attacker_name}'s cricket bat delivers a brutal blow to your {hit_location}, the willow unforgiving.",
+            "observer_msg": "{attacker_name}'s cricket bat delivers a brutal blow to {target_name}'s {hit_location}, the willow unforgiving."
         },
         {
             "attacker_msg": "A well-placed strike from the cricket bat leaves {target_name} momentarily breathless, seeing stars and clutching a wide bruise.",

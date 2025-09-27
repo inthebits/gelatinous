@@ -153,9 +153,9 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A swift, hard swing from your metal pipe connects with {target_name}'s arm with a sickening, metallic crack.",
-            'victim_msg': "A swift, hard swing from {attacker_name}'s metal pipe connects with your arm with a sickening, metallic crack.",
-            'observer_msg': "A swift, hard swing from {attacker_name}'s metal pipe connects with {target_name}'s arm with a sickening, metallic crack."
+            'attacker_msg': "A swift, hard swing from your metal pipe connects with {target_name}'s {hit_location} with a sickening, metallic crack.",
+            'victim_msg': "A swift, hard swing from {attacker_name}'s metal pipe connects with your {hit_location} with a sickening, metallic crack.",
+            'observer_msg': "A swift, hard swing from {attacker_name}'s metal pipe connects with {target_name}'s {hit_location} with a sickening, metallic crack."
         },
         {
             'attacker_msg': "The metal pipe connects with a dull, heavy thud, your blow smashing through {target_name}'s defense.",
@@ -163,19 +163,19 @@ MESSAGES = {
             'observer_msg': "The metal pipe connects with a dull, heavy thud, {attacker_name}'s blow smashing through {target_name}'s defense."
         },
         {
-            'attacker_msg': "Your pipe smashes into {target_name}'s shoulder, drawing a choked cry of agony and the sound of breaking bone.",
-            'victim_msg': "{attacker_name}'s pipe smashes into your shoulder, drawing a choked cry of agony and the sound of breaking bone.",
-            'observer_msg': "{attacker_name}'s pipe smashes into {target_name}'s shoulder, drawing a choked cry of agony and the sound of breaking bone."
+            'attacker_msg': "Your pipe smashes into {target_name}'s {hit_location}, drawing a choked cry of agony and the sound of breaking bone.",
+            'victim_msg': "{attacker_name}'s pipe smashes into your {hit_location}, drawing a choked cry of agony and the sound of breaking bone.",
+            'observer_msg': "{attacker_name}'s pipe smashes into {target_name}'s {hit_location}, drawing a choked cry of agony and the sound of breaking bone."
         },
         {
-            'attacker_msg': "Steel impacts flesh as your metal pipe deflects a blow and delivers a crushing counter to {target_name}'s side.",
-            'victim_msg': "Steel impacts flesh as {attacker_name}'s metal pipe deflects a blow and delivers a crushing counter to your side.",
-            'observer_msg': "Steel impacts flesh as {attacker_name}'s metal pipe deflects a blow and delivers a crushing counter to {target_name}'s side."
+            'attacker_msg': "Steel impacts flesh as your metal pipe deflects a blow and delivers a crushing counter to {target_name}'s {hit_location}.",
+            'victim_msg': "Steel impacts flesh as {attacker_name}'s metal pipe deflects a blow and delivers a crushing counter to your {hit_location}.",
+            'observer_msg': "Steel impacts flesh as {attacker_name}'s metal pipe deflects a blow and delivers a crushing counter to {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "The heavy metal pipe strikes {target_name}'s leg, making them scream and collapse as the limb is shattered.",
-            'victim_msg': "The heavy metal pipe strikes your leg, making you scream and collapse as the limb is shattered.",
-            'observer_msg': "The heavy metal pipe strikes {target_name}'s leg, making them scream and collapse as the limb is shattered."
+            'attacker_msg': "The heavy metal pipe strikes {target_name}'s {hit_location}, making them scream and collapse as the limb is shattered.",
+            'victim_msg': "The heavy metal pipe strikes your {hit_location}, making you scream and collapse as the limb is shattered.",
+            'observer_msg': "The heavy metal pipe strikes {target_name}'s {hit_location}, making them scream and collapse as the limb is shattered."
         },
         {
             'attacker_msg': "Your powerful swing connects, the metal pipe delivering a bone-jarring, organ-bruising impact to {target_name}.",
@@ -183,9 +183,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s powerful swing connects, the metal pipe delivering a bone-jarring, organ-bruising impact to {target_name}."
         },
         {
-            'attacker_msg': "A well-aimed feint, then your metal pipe cracks against {target_name}'s ribs with brutal, unyielding force.",
-            'victim_msg': "A well-aimed feint, then {attacker_name}'s metal pipe cracks against your ribs with brutal, unyielding force.",
-            'observer_msg': "A well-aimed feint, then {attacker_name}'s metal pipe cracks against {target_name}'s ribs with brutal, unyielding force."
+            'attacker_msg': "A well-aimed feint, then your metal pipe cracks against {target_name}'s {hit_location} with brutal, unyielding force.",
+            'victim_msg': "A well-aimed feint, then {attacker_name}'s metal pipe cracks against your {hit_location} with brutal, unyielding force.",
+            'observer_msg': "A well-aimed feint, then {attacker_name}'s metal pipe cracks against {target_name}'s {hit_location} with brutal, unyielding force."
         },
         {
             'attacker_msg': "The pipe's unforgiving surface strikes {target_name}'s defenses, the force of the blow staggering them and denting armor.",
@@ -193,9 +193,9 @@ MESSAGES = {
             'observer_msg': "The pipe's unforgiving surface strikes {target_name}'s defenses, the force of the blow staggering them and denting armor."
         },
         {
-            'attacker_msg': "Your metal pipe whistles through the air before striking {target_name}'s exposed head with brutal, concussive force.",
-            'victim_msg': "{attacker_name}'s metal pipe whistles through the air before striking your exposed head with brutal, concussive force.",
-            'observer_msg': "{attacker_name}'s metal pipe whistles through the air before striking {target_name}'s exposed head with brutal, concussive force."
+            'attacker_msg': "Your metal pipe whistles through the air before striking {target_name}'s exposed {hit_location} with brutal, concussive force.",
+            'victim_msg': "{attacker_name}'s metal pipe whistles through the air before striking your exposed {hit_location} with brutal, concussive force.",
+            'observer_msg': "{attacker_name}'s metal pipe whistles through the air before striking {target_name}'s exposed {hit_location} with brutal, concussive force."
         },
         {
             'attacker_msg': "With a grunt of effort, you drive the metal pipe against {target_name}, the impact echoing with a sickening thud.",
@@ -203,14 +203,14 @@ MESSAGES = {
             'observer_msg': "With a grunt of effort, {attacker_name} drives the metal pipe against {target_name}, the impact echoing with a sickening thud."
         },
         {
-            'attacker_msg': "The metal pipe scores a heavy hit on {target_name}'s weapon arm, numbing it with the jarring, crushing impact.",
-            'victim_msg': "The metal pipe scores a heavy hit on your weapon arm, numbing it with the jarring, crushing impact.",
-            'observer_msg': "The metal pipe scores a heavy hit on {target_name}'s weapon arm, numbing it with the jarring, crushing impact."
+            'attacker_msg': "The metal pipe scores a heavy hit on {target_name}'s weapon {hit_location}, numbing it with the jarring, crushing impact.",
+            'victim_msg': "The metal pipe scores a heavy hit on your weapon {hit_location}, numbing it with the jarring, crushing impact.",
+            'observer_msg': "The metal pipe scores a heavy hit on {target_name}'s weapon {hit_location}, numbing it with the jarring, crushing impact."
         },
         {
-            'attacker_msg': "Your precise swing leaves a deep, painful welt on {target_name}'s brow, stunning them and blurring their vision.",
-            'victim_msg': "{attacker_name}'s precise swing leaves a deep, painful welt on your brow, stunning you and blurring your vision.",
-            'observer_msg': "{attacker_name}'s precise swing leaves a deep, painful welt on {target_name}'s brow, stunning them and blurring their vision."
+            'attacker_msg': "Your precise swing leaves a deep, painful welt on {target_name}'s {hit_location}, stunning them and blurring their vision.",
+            'victim_msg': "{attacker_name}'s precise swing leaves a deep, painful welt on your {hit_location}, stunning you and blurring your vision.",
+            'observer_msg': "{attacker_name}'s precise swing leaves a deep, painful welt on {target_name}'s {hit_location}, stunning them and blurring their vision."
         },
         {
             'attacker_msg': "A resounding clang as your metal pipe smashes against {target_name}, the force felt by both as bone gives way.",
@@ -218,9 +218,9 @@ MESSAGES = {
             'observer_msg': "A resounding clang as {attacker_name}'s metal pipe smashes against {target_name}, the force felt by both as bone gives way."
         },
         {
-            'attacker_msg': "The unyielding surface of the metal pipe leaves a deep, painful bruise and likely broken bones on {target_name}'s torso.",
-            'victim_msg': "The unyielding surface of the metal pipe leaves a deep, painful bruise and likely broken bones on your torso.",
-            'observer_msg': "The unyielding surface of the metal pipe leaves a deep, painful bruise and likely broken bones on {target_name}'s torso."
+            'attacker_msg': "The unyielding surface of the metal pipe leaves a deep, painful bruise and likely broken bones on {target_name}'s {hit_location}.",
+            'victim_msg': "The unyielding surface of the metal pipe leaves a deep, painful bruise and likely broken bones on your {hit_location}.",
+            'observer_msg': "The unyielding surface of the metal pipe leaves a deep, painful bruise and likely broken bones on {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "Your follow-through swing with the metal pipe catches {target_name} off-balance, inflicting considerable, crushing pain.",
@@ -228,19 +228,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s follow-through swing with the metal pipe catches {target_name} off-balance, inflicting considerable, crushing pain."
         },
         {
-            'attacker_msg': "A quick jab with the end of the metal pipe strikes {target_name}'s hand with a sharp, bone-breaking crack.",
-            'victim_msg': "A quick jab with the end of the metal pipe strikes your hand with a sharp, bone-breaking crack.",
-            'observer_msg': "A quick jab with the end of the metal pipe strikes {target_name}'s hand with a sharp, bone-breaking crack."
+            'attacker_msg': "A quick jab with the end of the metal pipe strikes {target_name}'s {hit_location} with a sharp, bone-breaking crack.",
+            'victim_msg': "A quick jab with the end of the metal pipe strikes your {hit_location} with a sharp, bone-breaking crack.",
+            'observer_msg': "A quick jab with the end of the metal pipe strikes {target_name}'s {hit_location} with a sharp, bone-breaking crack."
         },
         {
-            'attacker_msg': "The metal pipe thuds heavily as it connects with {target_name}'s chest, driving the air from their lungs and cracking ribs.",
-            'victim_msg': "The metal pipe thuds heavily as it connects with your chest, driving the air from your lungs and cracking ribs.",
-            'observer_msg': "The metal pipe thuds heavily as it connects with {target_name}'s chest, driving the air from their lungs and cracking ribs."
+            'attacker_msg': "The metal pipe thuds heavily as it connects with {target_name}'s {hit_location}, driving the air from their lungs and cracking {hit_location}.",
+            'victim_msg': "The metal pipe thuds heavily as it connects with your {hit_location}, driving the air from your lungs and cracking {hit_location}.",
+            'observer_msg': "The metal pipe thuds heavily as it connects with {target_name}'s {hit_location}, driving the air from their lungs and cracking {hit_location}."
         },
         {
-            'attacker_msg': "Your pipe finds purchase, delivering a crushing blow to {target_name}'s thigh, dropping them instantly.",
-            'victim_msg': "{attacker_name}'s pipe finds purchase, delivering a crushing blow to your thigh, dropping you instantly.",
-            'observer_msg': "{attacker_name}'s pipe finds purchase, delivering a crushing blow to {target_name}'s thigh, dropping them instantly."
+            'attacker_msg': "Your pipe finds purchase, delivering a crushing blow to {target_name}'s {hit_location}, dropping them instantly.",
+            'victim_msg': "{attacker_name}'s pipe finds purchase, delivering a crushing blow to your {hit_location}, dropping you instantly.",
+            'observer_msg': "{attacker_name}'s pipe finds purchase, delivering a crushing blow to {target_name}'s {hit_location}, dropping them instantly."
         },
         {
             'attacker_msg': "A glancing blow from the metal pipe still manages to leave {target_name} reeling, bruised, and with ringing ears.",
@@ -263,9 +263,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s swing is true, the metal pipe striking {target_name} squarely with stunning, concussive force."
         },
         {
-            'attacker_msg': "A downward strike from your metal pipe impacts {target_name}'s collarbone with a sickening, metallic crunch, shattering it.",
-            'victim_msg': "A downward strike from {attacker_name}'s metal pipe impacts your collarbone with a sickening, metallic crunch, shattering it.",
-            'observer_msg': "A downward strike from {attacker_name}'s metal pipe impacts {target_name}'s collarbone with a sickening, metallic crunch, shattering it."
+            'attacker_msg': "A downward strike from your metal pipe impacts {target_name}'s {hit_location} with a sickening, metallic crunch, shattering it.",
+            'victim_msg': "A downward strike from {attacker_name}'s metal pipe impacts your {hit_location} with a sickening, metallic crunch, shattering it.",
+            'observer_msg': "A downward strike from {attacker_name}'s metal pipe impacts {target_name}'s {hit_location} with a sickening, metallic crunch, shattering it."
         },
         {
             'attacker_msg': "The metal pipe, though a simple tool, moves with deadly speed in your grip, its surface finding an opening on {target_name}.",
@@ -283,14 +283,14 @@ MESSAGES = {
             'observer_msg': "A powerful strike from the metal pipe forces {target_name} to give ground, wincing from the heavy, crushing blow."
         },
         {
-            'attacker_msg': "The end of your metal pipe connects like a hammer, striking {target_name}'s forearm and snapping the bone.",
-            'victim_msg': "The end of {attacker_name}'s metal pipe connects like a hammer, striking your forearm and snapping the bone.",
-            'observer_msg': "The end of {attacker_name}'s metal pipe connects like a hammer, striking {target_name}'s forearm and snapping the bone."
+            'attacker_msg': "The end of your metal pipe connects like a hammer, striking {target_name}'s {hit_location} and snapping the bone.",
+            'victim_msg': "The end of {attacker_name}'s metal pipe connects like a hammer, striking your {hit_location} and snapping the bone.",
+            'observer_msg': "The end of {attacker_name}'s metal pipe connects like a hammer, striking {target_name}'s {hit_location} and snapping the bone."
         },
         {
-            'attacker_msg': "Your metal pipe delivers a brutal blow to {target_name}'s side, the cold steel unforgiving and crushing.",
-            'victim_msg': "{attacker_name}'s metal pipe delivers a brutal blow to your side, the cold steel unforgiving and crushing.",
-            'observer_msg': "{attacker_name}'s metal pipe delivers a brutal blow to {target_name}'s side, the cold steel unforgiving and crushing."
+            'attacker_msg': "Your metal pipe delivers a brutal blow to {target_name}'s {hit_location}, the cold steel unforgiving and crushing.",
+            'victim_msg': "{attacker_name}'s metal pipe delivers a brutal blow to your {hit_location}, the cold steel unforgiving and crushing.",
+            'observer_msg': "{attacker_name}'s metal pipe delivers a brutal blow to {target_name}'s {hit_location}, the cold steel unforgiving and crushing."
         },
         {
             'attacker_msg': "A well-placed strike from the metal pipe leaves {target_name} momentarily breathless, seeing stars, and clutching a grievous injury.",

@@ -153,34 +153,34 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "You drive the broken bottle into {target_name}'s side, dragging it across fabric and flesh with a wet rip.",
-            "victim_msg": "{attacker_name} drives the broken bottle into your side, dragging it across fabric and flesh with a wet rip.",
-            "observer_msg": "{attacker_name} drives the broken bottle into {target_name}'s side, dragging it across fabric and flesh with a wet rip."
+            "attacker_msg": "You drive the broken bottle into {target_name}'s {hit_location}, dragging it across fabric and flesh with a wet rip.",
+            "victim_msg": "{attacker_name} drives the broken bottle into your {hit_location}, dragging it across fabric and flesh with a wet rip.",
+            "observer_msg": "{attacker_name} drives the broken bottle into {target_name}'s {hit_location}, dragging it across fabric and flesh with a wet rip."
         },
         {
-            "attacker_msg": "Glass plunges into {target_name}'s thigh—jagged, unforgiving, and deep. You twist it for good measure.",
-            "victim_msg": "Glass plunges into your thigh—jagged, unforgiving, and deep. {attacker_name} twists it for good measure.",
-            "observer_msg": "Glass plunges into {target_name}'s thigh—jagged, unforgiving, and deep. {attacker_name} twists it for good measure."
+            "attacker_msg": "Glass plunges into {target_name}'s {hit_location}—jagged, unforgiving, and deep. You twist it for good measure.",
+            "victim_msg": "Glass plunges into your {hit_location}—jagged, unforgiving, and deep. {attacker_name} twists it for good measure.",
+            "observer_msg": "Glass plunges into {target_name}'s {hit_location}—jagged, unforgiving, and deep. {attacker_name} twists it for good measure."
         },
         {
-            "attacker_msg": "You stab the bottle into {target_name}'s shoulder, twisting the jagged edge like a cruel screw.",
-            "victim_msg": "{attacker_name} stabs the bottle into your shoulder, twisting the jagged edge like a cruel screw.",
-            "observer_msg": "{attacker_name} stabs the bottle into {target_name}'s shoulder, twisting the jagged edge like a cruel screw."
+            "attacker_msg": "You stab the bottle into {target_name}'s {hit_location}, twisting the jagged edge like a cruel screw.",
+            "victim_msg": "{attacker_name} stabs the bottle into your {hit_location}, twisting the jagged edge like a cruel screw.",
+            "observer_msg": "{attacker_name} stabs the bottle into {target_name}'s {hit_location}, twisting the jagged edge like a cruel screw."
         },
         {
-            "attacker_msg": "The glass rakes down {target_name}'s forearm, tearing cloth and skin in equal measure. You smile.",
-            "victim_msg": "The glass rakes down your forearm, tearing cloth and skin in equal measure. {attacker_name} smiles.",
-            "observer_msg": "The glass rakes down {target_name}'s forearm, tearing cloth and skin in equal measure. {attacker_name} smiles."
+            "attacker_msg": "The glass rakes down {target_name}'s {hit_location}, tearing cloth and skin in equal measure. You smile.",
+            "victim_msg": "The glass rakes down your {hit_location}, tearing cloth and skin in equal measure. {attacker_name} smiles.",
+            "observer_msg": "The glass rakes down {target_name}'s {hit_location}, tearing cloth and skin in equal measure. {attacker_name} smiles."
         },
         {
-            "attacker_msg": "You jab the neck into {target_name}'s gut. Blood and glass both stick around.",
-            "victim_msg": "{attacker_name} jabs the neck into your gut. Blood and glass both stick around.",
-            "observer_msg": "{attacker_name} jabs the neck into {target_name}'s gut. Blood and glass both stick around."
+            "attacker_msg": "You jab the {hit_location} into {target_name}'s {hit_location}. Blood and glass both stick around.",
+            "victim_msg": "{attacker_name} jabs the {hit_location} into your {hit_location}. Blood and glass both stick around.",
+            "observer_msg": "{attacker_name} jabs the {hit_location} into {target_name}'s {hit_location}. Blood and glass both stick around."
         },
         {
-            "attacker_msg": "A wide slash from your bottle opens a red smile across {target_name}'s chest.",
-            "victim_msg": "A wide slash from {attacker_name}'s bottle opens a red smile across your chest.",
-            "observer_msg": "A wide slash from {attacker_name}'s bottle opens a red smile across {target_name}'s chest."
+            "attacker_msg": "A wide slash from your bottle opens a red smile across {target_name}'s {hit_location}.",
+            "victim_msg": "A wide slash from {attacker_name}'s bottle opens a red smile across your {hit_location}.",
+            "observer_msg": "A wide slash from {attacker_name}'s bottle opens a red smile across {target_name}'s {hit_location}."
         },
         {
             "attacker_msg": "The jagged edge punches through {target_name}'s coat and into something vital beneath. You feel it give.",
@@ -188,49 +188,49 @@ MESSAGES = {
             "observer_msg": "The jagged edge punches through {target_name}'s coat and into something vital beneath. {attacker_name} feels it give."
         },
         {
-            "attacker_msg": "You slash across {target_name}'s face. Blood sprays. The scream follows.",
-            "victim_msg": "{attacker_name} slashes across your face. Blood sprays. The scream follows.",
-            "observer_msg": "{attacker_name} slashes across {target_name}'s face. Blood sprays. The scream follows."
+            "attacker_msg": "You slash across {target_name}'s {hit_location}. Blood sprays. The scream follows.",
+            "victim_msg": "{attacker_name} slashes across your {hit_location}. Blood sprays. The scream follows.",
+            "observer_msg": "{attacker_name} slashes across {target_name}'s {hit_location}. Blood sprays. The scream follows."
         },
         {
-            "attacker_msg": "Glass embeds into {target_name}'s ribs. You wrench it free with a jerk.",
-            "victim_msg": "Glass embeds into your ribs. {attacker_name} wrenches it free with a jerk.",
-            "observer_msg": "Glass embeds into {target_name}'s ribs. {attacker_name} wrenches it free with a jerk."
+            "attacker_msg": "Glass embeds into {target_name}'s {hit_location}. You wrench it free with a jerk.",
+            "victim_msg": "Glass embeds into your {hit_location}. {attacker_name} wrenches it free with a jerk.",
+            "observer_msg": "Glass embeds into {target_name}'s {hit_location}. {attacker_name} wrenches it free with a jerk."
         },
         {
-            "attacker_msg": "A sharp jab from your bottle into the collarbone leaves {target_name} shrieking in pain and panic.",
-            "victim_msg": "A sharp jab from {attacker_name}'s bottle into the collarbone leaves you shrieking in pain and panic.",
-            "observer_msg": "A sharp jab from {attacker_name}'s bottle into the collarbone leaves {target_name} shrieking in pain and panic."
+            "attacker_msg": "A sharp jab from your bottle into the {hit_location} leaves {target_name} shrieking in pain and panic.",
+            "victim_msg": "A sharp jab from {attacker_name}'s bottle into the {hit_location} leaves you shrieking in pain and panic.",
+            "observer_msg": "A sharp jab from {attacker_name}'s bottle into the {hit_location} leaves {target_name} shrieking in pain and panic."
         },
         {
-            "attacker_msg": "The bottle sinks into {target_name}'s abdomen, scraping bone on the way in. You hear it.",
-            "victim_msg": "The bottle sinks into your abdomen, scraping bone on the way in. You hear it.",
-            "observer_msg": "The bottle sinks into {target_name}'s abdomen, scraping bone on the way in. {attacker_name} hears it."
+            "attacker_msg": "The bottle sinks into {target_name}'s {hit_location}, scraping bone on the way in. You hear it.",
+            "victim_msg": "The bottle sinks into your {hit_location}, scraping bone on the way in. You hear it.",
+            "observer_msg": "The bottle sinks into {target_name}'s {hit_location}, scraping bone on the way in. {attacker_name} hears it."
         },
         {
-            "attacker_msg": "The base crunches against {target_name}'s jaw, glass slicing as it shatters further. You feel the impact.",
-            "victim_msg": "The base crunches against your jaw, glass slicing as it shatters further. You feel the impact.",
-            "observer_msg": "The base crunches against {target_name}'s jaw, glass slicing as it shatters further. {attacker_name} feels the impact."
+            "attacker_msg": "The base crunches against {target_name}'s {hit_location}, glass slicing as it shatters further. You feel the impact.",
+            "victim_msg": "The base crunches against your {hit_location}, glass slicing as it shatters further. You feel the impact.",
+            "observer_msg": "The base crunches against {target_name}'s {hit_location}, glass slicing as it shatters further. {attacker_name} feels the impact."
         },
         {
-            "attacker_msg": "You hook the bottle into {target_name}'s side and pull away a mess.",
-            "victim_msg": "{attacker_name} hooks the bottle into your side and pulls away a mess.",
-            "observer_msg": "{attacker_name} hooks the bottle into {target_name}'s side and pulls away a mess."
+            "attacker_msg": "You hook the bottle into {target_name}'s {hit_location} and pull away a mess.",
+            "victim_msg": "{attacker_name} hooks the bottle into your {hit_location} and pulls away a mess.",
+            "observer_msg": "{attacker_name} hooks the bottle into {target_name}'s {hit_location} and pulls away a mess."
         },
         {
-            "attacker_msg": "The edge rips into {target_name}'s hip. They stagger, leaking. You watch.",
-            "victim_msg": "The edge rips into your hip. You stagger, leaking. {attacker_name} watches.",
-            "observer_msg": "The edge rips into {target_name}'s hip. They stagger, leaking. {attacker_name} watches."
+            "attacker_msg": "The edge rips into {target_name}'s {hit_location}. They stagger, leaking. You watch.",
+            "victim_msg": "The edge rips into your {hit_location}. You stagger, leaking. {attacker_name} watches.",
+            "observer_msg": "The edge rips into {target_name}'s {hit_location}. They stagger, leaking. {attacker_name} watches."
         },
         {
-            "attacker_msg": "You plunge the broken neck into {target_name}'s upper chest. Their scream cuts off halfway.",
-            "victim_msg": "{attacker_name} plunges the broken neck into your upper chest. Your scream cuts off halfway.",
-            "observer_msg": "{attacker_name} plunges the broken neck into {target_name}'s upper chest. Their scream cuts off halfway."
+            "attacker_msg": "You plunge the broken {hit_location} into {target_name}'s upper {hit_location}. Their scream cuts off halfway.",
+            "victim_msg": "{attacker_name} plunges the broken {hit_location} into your upper {hit_location}. Your scream cuts off halfway.",
+            "observer_msg": "{attacker_name} plunges the broken {hit_location} into {target_name}'s upper {hit_location}. Their scream cuts off halfway."
         },
         {
-            "attacker_msg": "A quick slash along the arm leaves red lines and a ruined sleeve on {target_name}.",
-            "victim_msg": "A quick slash along the arm leaves red lines and a ruined sleeve on you.",
-            "observer_msg": "A quick slash along the arm leaves red lines and a ruined sleeve on {target_name}."
+            "attacker_msg": "A quick slash along the {hit_location} leaves red lines and a ruined sleeve on {target_name}.",
+            "victim_msg": "A quick slash along the {hit_location} leaves red lines and a ruined sleeve on you.",
+            "observer_msg": "A quick slash along the {hit_location} leaves red lines and a ruined sleeve on {target_name}."
         },
         {
             "attacker_msg": "The jagged edge punctures flesh, tears muscle, and leaves a story behind on {target_name}. You authored it.",
@@ -238,9 +238,9 @@ MESSAGES = {
             "observer_msg": "The jagged edge punctures flesh, tears muscle, and leaves a story behind on {target_name}. {attacker_name} authored it."
         },
         {
-            "attacker_msg": "The bottle strikes like a claw, catching {target_name}'s cheekbone and splitting it wide.",
-            "victim_msg": "The bottle strikes like a claw, catching your cheekbone and splitting it wide.",
-            "observer_msg": "The bottle strikes like a claw, catching {target_name}'s cheekbone and splitting it wide."
+            "attacker_msg": "The bottle strikes like a claw, catching {target_name}'s {hit_location}bone and splitting it wide.",
+            "victim_msg": "The bottle strikes like a claw, catching your {hit_location}bone and splitting it wide.",
+            "observer_msg": "The bottle strikes like a claw, catching {target_name}'s {hit_location}bone and splitting it wide."
         },
         {
             "attacker_msg": "You jab again and again, shallow wounds mapping panic across {target_name}'s body.",
@@ -248,44 +248,44 @@ MESSAGES = {
             "observer_msg": "{attacker_name} jabs again and again, shallow wounds mapping panic across {target_name}'s body."
         },
         {
-            "attacker_msg": "A downward stab lands in {target_name}'s foot. Their balance is the first to go. You press the advantage.",
-            "victim_msg": "A downward stab lands in your foot. Your balance is the first to go. {attacker_name} presses the advantage.",
-            "observer_msg": "A downward stab lands in {target_name}'s foot. Their balance is the first to go. {attacker_name} presses the advantage."
+            "attacker_msg": "A downward stab lands in {target_name}'s {hit_location}. Their balance is the first to go. You press the advantage.",
+            "victim_msg": "A downward stab lands in your {hit_location}. Your balance is the first to go. {attacker_name} presses the advantage.",
+            "observer_msg": "A downward stab lands in {target_name}'s {hit_location}. Their balance is the first to go. {attacker_name} presses the advantage."
         },
         {
-            "attacker_msg": "Glass glints as it slashes across {target_name}'s throat—shallow, but not clean. You see the fear.",
-            "victim_msg": "Glass glints as it slashes across your throat—shallow, but not clean. You feel the fear.",
-            "observer_msg": "Glass glints as it slashes across {target_name}'s throat—shallow, but not clean. {attacker_name} sees the fear."
+            "attacker_msg": "Glass glints as it slashes across {target_name}'s {hit_location}—shallow, but not clean. You see the fear.",
+            "victim_msg": "Glass glints as it slashes across your {hit_location}—shallow, but not clean. You feel the fear.",
+            "observer_msg": "Glass glints as it slashes across {target_name}'s {hit_location}—shallow, but not clean. {attacker_name} sees the fear."
         },
         {
-            "attacker_msg": "You dig the bottle into {target_name}'s back and yank sideways with a grunt.",
-            "victim_msg": "{attacker_name} digs the bottle into your back and yanks sideways with a grunt.",
-            "observer_msg": "{attacker_name} digs the bottle into {target_name}'s back and yanks sideways with a grunt."
+            "attacker_msg": "You dig the bottle into {target_name}'s {hit_location} and yank sideways with a grunt.",
+            "victim_msg": "{attacker_name} digs the bottle into your {hit_location} and yanks sideways with a grunt.",
+            "observer_msg": "{attacker_name} digs the bottle into {target_name}'s {hit_location} and yanks sideways with a grunt."
         },
         {
-            "attacker_msg": "A hooking slash tears at {target_name}'s stomach. Their hands can’t cover it fast enough. You know it's bad.",
-            "victim_msg": "A hooking slash tears at your stomach. Your hands can’t cover it fast enough. You know it's bad.",
-            "observer_msg": "A hooking slash tears at {target_name}'s stomach. Their hands can’t cover it fast enough. {attacker_name} knows it's bad."
+            "attacker_msg": "A hooking slash tears at {target_name}'s {hit_location}. Their hands can’t cover it fast enough. You know it's bad.",
+            "victim_msg": "A hooking slash tears at your {hit_location}. Your hands can’t cover it fast enough. You know it's bad.",
+            "observer_msg": "A hooking slash tears at {target_name}'s {hit_location}. Their hands can’t cover it fast enough. {attacker_name} knows it's bad."
         },
         {
-            "attacker_msg": "The base crashes into {target_name}'s temple, dazing them before the shards follow up. You see the opening.",
-            "victim_msg": "The base crashes into your temple, dazing you before the shards follow up. You feel the opening.",
-            "observer_msg": "The base crashes into {target_name}'s temple, dazing them before the shards follow up. {attacker_name} sees the opening."
+            "attacker_msg": "The base crashes into {target_name}'s {hit_location}, dazing them before the shards follow up. You see the opening.",
+            "victim_msg": "The base crashes into your {hit_location}, dazing you before the shards follow up. You feel the opening.",
+            "observer_msg": "The base crashes into {target_name}'s {hit_location}, dazing them before the shards follow up. {attacker_name} sees the opening."
         },
         {
-            "attacker_msg": "You bury the neck into {target_name}'s hand mid-punch. The fight leaves with the blood.",
-            "victim_msg": "{attacker_name} buries the neck into your hand mid-punch. The fight leaves with the blood.",
-            "observer_msg": "{attacker_name} buries the neck into {target_name}'s hand mid-punch. The fight leaves with the blood."
+            "attacker_msg": "You bury the {hit_location} into {target_name}'s {hit_location} mid-punch. The fight leaves with the blood.",
+            "victim_msg": "{attacker_name} buries the {hit_location} into your {hit_location} mid-punch. The fight leaves with the blood.",
+            "observer_msg": "{attacker_name} buries the {hit_location} into {target_name}'s {hit_location} mid-punch. The fight leaves with the blood."
         },
         {
-            "attacker_msg": "A short-range stab to the chest halts {target_name} mid-motion. You feel the resistance.",
-            "victim_msg": "A short-range stab to the chest halts you mid-motion. You feel the resistance.",
-            "observer_msg": "A short-range stab to the chest halts {target_name} mid-motion. {attacker_name} feels the resistance."
+            "attacker_msg": "A short-range stab to the {hit_location} halts {target_name} mid-motion. You feel the resistance.",
+            "victim_msg": "A short-range stab to the {hit_location} halts you mid-motion. You feel the resistance.",
+            "observer_msg": "A short-range stab to the {hit_location} halts {target_name} mid-motion. {attacker_name} feels the resistance."
         },
         {
-            "attacker_msg": "Glass gouges {target_name}'s knee. The leg doesn’t work right after that. You kick it out.",
-            "victim_msg": "Glass gouges your knee. The leg doesn’t work right after that. {attacker_name} kicks it out.",
-            "observer_msg": "Glass gouges {target_name}'s knee. The leg doesn’t work right after that. {attacker_name} kicks it out."
+            "attacker_msg": "Glass gouges {target_name}'s {hit_location}. The {hit_location} doesn’t work right after that. You kick it out.",
+            "victim_msg": "Glass gouges your {hit_location}. The {hit_location} doesn’t work right after that. {attacker_name} kicks it out.",
+            "observer_msg": "Glass gouges {target_name}'s {hit_location}. The {hit_location} doesn’t work right after that. {attacker_name} kicks it out."
         },
         {
             "attacker_msg": "A quick upward slash opens the chin and splashes the wall. You see {target_name}'s surprise.",
@@ -293,14 +293,14 @@ MESSAGES = {
             "observer_msg": "A quick upward slash opens the chin and splashes the wall. {attacker_name} sees {target_name}'s surprise."
         },
         {
-            "attacker_msg": "The bottle goes in under the ribs and comes out redder. You pull it free.",
-            "victim_msg": "The bottle goes in under your ribs and comes out redder. {attacker_name} pulls it free.",
-            "observer_msg": "The bottle goes in under {target_name}'s ribs and comes out redder. {attacker_name} pulls it free."
+            "attacker_msg": "The bottle goes in under the {hit_location} and comes out redder. You pull it free.",
+            "victim_msg": "The bottle goes in under your {hit_location} and comes out redder. {attacker_name} pulls it free.",
+            "observer_msg": "The bottle goes in under {target_name}'s {hit_location} and comes out redder. {attacker_name} pulls it free."
         },
         {
-            "attacker_msg": "You carve a shallow arc across {target_name}'s back as they turn to run.",
-            "victim_msg": "{attacker_name} carves a shallow arc across your back as you turn to run.",
-            "observer_msg": "{attacker_name} carves a shallow arc across {target_name}'s back as they turn to run."
+            "attacker_msg": "You carve a shallow arc across {target_name}'s {hit_location} as they turn to run.",
+            "victim_msg": "{attacker_name} carves a shallow arc across your {hit_location} as you turn to run.",
+            "observer_msg": "{attacker_name} carves a shallow arc across {target_name}'s {hit_location} as they turn to run."
         }
     ],
     "miss": [

@@ -153,14 +153,14 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "You hook {target_name} with brutal force, dragging them off balance as pain blossoms along their side.",
-            "victim_msg": "{attacker_name} hooks you with brutal force, dragging you off balance as pain blossoms along your side.",
-            "observer_msg": "{attacker_name} hooks {target_name} with brutal force, dragging them off balance as pain blossoms along their side."
+            "attacker_msg": "You hook {target_name} with brutal force, dragging them off balance as pain blossoms along their {hit_location}.",
+            "victim_msg": "{attacker_name} hooks you with brutal force, dragging you off balance as pain blossoms along your {hit_location}.",
+            "observer_msg": "{attacker_name} hooks {target_name} with brutal force, dragging them off balance as pain blossoms along their {hit_location}."
         },
         {
-            "attacker_msg": "You yank the catchpole free with a sickening crack, tearing flesh as {target_name} staggers back.",
-            "victim_msg": "{attacker_name} yanks the catchpole free with a sickening crack, tearing flesh as you stagger back.",
-            "observer_msg": "{attacker_name} yanks the catchpole free with a sickening crack, tearing flesh as {target_name} staggers back."
+            "attacker_msg": "You yank the catchpole free with a sickening crack, tearing flesh as {target_name} staggers {hit_location}.",
+            "victim_msg": "{attacker_name} yanks the catchpole free with a sickening crack, tearing flesh as you stagger {hit_location}.",
+            "observer_msg": "{attacker_name} yanks the catchpole free with a sickening crack, tearing flesh as {target_name} staggers {hit_location}."
         },
         {
             "attacker_msg": "You jerk the catchpole violently, the barbed hook hacking through muscle and sending {target_name} crashing to the ground.",
@@ -168,9 +168,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name} jerks the catchpole violently, the barbed hook hacking through muscle and sending {target_name} crashing to the ground."
         },
         {
-            "attacker_msg": "You spin the catchpole in a vicious arc, the hook slicing across {target_name}'s arm in a spray of dark ichor.",
-            "victim_msg": "{attacker_name} spins the catchpole in a vicious arc, the hook slicing across your arm in a spray of dark ichor.",
-            "observer_msg": "{attacker_name} spins the catchpole in a vicious arc, the hook slicing across {target_name}'s arm in a spray of dark ichor."
+            "attacker_msg": "You spin the catchpole in a vicious arc, the hook slicing across {target_name}'s {hit_location} in a spray of dark ichor.",
+            "victim_msg": "{attacker_name} spins the catchpole in a vicious arc, the hook slicing across your {hit_location} in a spray of dark ichor.",
+            "observer_msg": "{attacker_name} spins the catchpole in a vicious arc, the hook slicing across {target_name}'s {hit_location} in a spray of dark ichor."
         },
         {
             "attacker_msg": "You drive the catchpole's hook deep, snagging bone and eliciting a strangled gasp from {target_name}.",
@@ -178,19 +178,19 @@ MESSAGES = {
             "observer_msg": "{attacker_name} drives the catchpole's hook deep, snagging bone and eliciting a strangled gasp from {target_name}."
         },
         {
-            "attacker_msg": "You twist the catchpole with cruel precision, the hook tearing cloth and flesh from {target_name}'s shoulder.",
-            "victim_msg": "{attacker_name} twists the catchpole with cruel precision, the hook tearing cloth and flesh from your shoulder.",
-            "observer_msg": "{attacker_name} twists the catchpole with cruel precision, the hook tearing cloth and flesh from {target_name}'s shoulder."
+            "attacker_msg": "You twist the catchpole with cruel precision, the hook tearing cloth and flesh from {target_name}'s {hit_location}.",
+            "victim_msg": "{attacker_name} twists the catchpole with cruel precision, the hook tearing cloth and flesh from your {hit_location}.",
+            "observer_msg": "{attacker_name} twists the catchpole with cruel precision, the hook tearing cloth and flesh from {target_name}'s {hit_location}."
         },
         {
-            "attacker_msg": "You slam the catchpole into {target_name}'s calf, the impact buckling their leg beneath them.",
-            "victim_msg": "{attacker_name} slams the catchpole into your calf, the impact buckling your leg beneath you.",
-            "observer_msg": "{attacker_name} slams the catchpole into {target_name}'s calf, the impact buckling their leg beneath them."
+            "attacker_msg": "You slam the catchpole into {target_name}'s {hit_location}, the impact buckling their {hit_location} beneath them.",
+            "victim_msg": "{attacker_name} slams the catchpole into your {hit_location}, the impact buckling your {hit_location} beneath you.",
+            "observer_msg": "{attacker_name} slams the catchpole into {target_name}'s {hit_location}, the impact buckling their {hit_location} beneath them."
         },
         {
-            "attacker_msg": "You hammer the hook into {target_name}'s side, a wet tearing sound marking each inch of steel.",
-            "victim_msg": "{attacker_name} hammers the hook into your side, a wet tearing sound marking each inch of steel.",
-            "observer_msg": "{attacker_name} hammers the hook into {target_name}'s side, a wet tearing sound marking each inch of steel."
+            "attacker_msg": "You hammer the hook into {target_name}'s {hit_location}, a wet tearing sound marking each inch of steel.",
+            "victim_msg": "{attacker_name} hammers the hook into your {hit_location}, a wet tearing sound marking each inch of steel.",
+            "observer_msg": "{attacker_name} hammers the hook into {target_name}'s {hit_location}, a wet tearing sound marking each inch of steel."
         },
         {
             "attacker_msg": "You rip the catchpole free, dragging {target_name}'s skin in a heated rush of agony.",
@@ -198,24 +198,24 @@ MESSAGES = {
             "observer_msg": "{attacker_name} rips the catchpole free, dragging {target_name}'s skin in a heated rush of agony."
         },
         {
-            "attacker_msg": "You shove the catchpole forward, the hook snapping in {target_name}'s chest with bone-shuddering force.",
-            "victim_msg": "{attacker_name} shoves the catchpole forward, the hook snapping in your chest with bone-shuddering force.",
-            "observer_msg": "{attacker_name} shoves the catchpole forward, the hook snapping in {target_name}'s chest with bone-shuddering force."
+            "attacker_msg": "You shove the catchpole forward, the hook snapping in {target_name}'s {hit_location} with bone-shuddering force.",
+            "victim_msg": "{attacker_name} shoves the catchpole forward, the hook snapping in your {hit_location} with bone-shuddering force.",
+            "observer_msg": "{attacker_name} shoves the catchpole forward, the hook snapping in {target_name}'s {hit_location} with bone-shuddering force."
         },
         {
-            "attacker_msg": "You sweep the catchpole low and the hook catches {target_name}'s ankle, sending them sprawling face-first.",
-            "victim_msg": "{attacker_name} sweeps the catchpole low and the hook catches your ankle, sending you sprawling face-first.",
-            "observer_msg": "{attacker_name} sweeps the catchpole low and the hook catches {target_name}'s ankle, sending them sprawling face-first."
+            "attacker_msg": "You sweep the catchpole low and the hook catches {target_name}'s {hit_location}, sending them sprawling face-first.",
+            "victim_msg": "{attacker_name} sweeps the catchpole low and the hook catches your {hit_location}, sending you sprawling face-first.",
+            "observer_msg": "{attacker_name} sweeps the catchpole low and the hook catches {target_name}'s {hit_location}, sending them sprawling face-first."
         },
         {
-            "attacker_msg": "You plant the catchpole's hook in {target_name}'s thigh and twist savagely, eliciting a howl of torment.",
-            "victim_msg": "{attacker_name} plants the catchpole's hook in your thigh and twists savagely, eliciting a howl of torment.",
-            "observer_msg": "{attacker_name} plants the catchpole's hook in {target_name}'s thigh and twists savagely, eliciting a howl of torment."
+            "attacker_msg": "You plant the catchpole's hook in {target_name}'s {hit_location} and twist savagely, eliciting a howl of torment.",
+            "victim_msg": "{attacker_name} plants the catchpole's hook in your {hit_location} and twists savagely, eliciting a howl of torment.",
+            "observer_msg": "{attacker_name} plants the catchpole's hook in {target_name}'s {hit_location} and twists savagely, eliciting a howl of torment."
         },
         {
-            "attacker_msg": "You stagger {target_name} with a savage hook to the ribs, bone cracking beneath steel.",
-            "victim_msg": "{attacker_name} staggers you with a savage hook to the ribs, bone cracking beneath steel.",
-            "observer_msg": "{attacker_name} staggers {target_name} with a savage hook to the ribs, bone cracking beneath steel."
+            "attacker_msg": "You stagger {target_name} with a savage hook to the {hit_location}, bone cracking beneath steel.",
+            "victim_msg": "{attacker_name} staggers you with a savage hook to the {hit_location}, bone cracking beneath steel.",
+            "observer_msg": "{attacker_name} staggers {target_name} with a savage hook to the {hit_location}, bone cracking beneath steel."
         },
         {
             "attacker_msg": "You jerk the catchpole so hard that {target_name} is lifted clear off their feet before slamming down again.",
@@ -223,14 +223,14 @@ MESSAGES = {
             "observer_msg": "{attacker_name} jerks the catchpole so hard that {target_name} is lifted clear off their feet before slamming down again."
         },
         {
-            "attacker_msg": "You rake the catchpole's hook along {target_name}'s cheek, carving a dripping scar across their flesh.",
-            "victim_msg": "{attacker_name} rakes the catchpole's hook along your cheek, carving a dripping scar across your flesh.",
-            "observer_msg": "{attacker_name} rakes the catchpole's hook along {target_name}'s cheek, carving a dripping scar across their flesh."
+            "attacker_msg": "You rake the catchpole's hook along {target_name}'s {hit_location}, carving a dripping scar across their flesh.",
+            "victim_msg": "{attacker_name} rakes the catchpole's hook along your {hit_location}, carving a dripping scar across your flesh.",
+            "observer_msg": "{attacker_name} rakes the catchpole's hook along {target_name}'s {hit_location}, carving a dripping scar across their flesh."
         },
         {
-            "attacker_msg": "You drive the hook into {target_name}'s abdomen, the blade sinking home with a wet, final thud.",
-            "victim_msg": "{attacker_name} drives the hook into your abdomen, the blade sinking home with a wet, final thud.",
-            "observer_msg": "{attacker_name} drives the hook into {target_name}'s abdomen, the blade sinking home with a wet, final thud."
+            "attacker_msg": "You drive the hook into {target_name}'s {hit_location}, the blade sinking home with a wet, final thud.",
+            "victim_msg": "{attacker_name} drives the hook into your {hit_location}, the blade sinking home with a wet, final thud.",
+            "observer_msg": "{attacker_name} drives the hook into {target_name}'s {hit_location}, the blade sinking home with a wet, final thud."
         },
         {
             "attacker_msg": "You rip the catchpole free and {target_name} staggers, clutching a wound blossoming with crimson.",
@@ -243,14 +243,14 @@ MESSAGES = {
             "observer_msg": "{attacker_name} drags {target_name} by the hook along the ground, flesh and fabric shredding beneath steel."
         },
         {
-            "attacker_msg": "You slam the catchpole into {target_name}'s shoulder, snapping the bone with a deafening crack.",
-            "victim_msg": "{attacker_name} slams the catchpole into your shoulder, snapping the bone with a deafening crack.",
-            "observer_msg": "{attacker_name} slams the catchpole into {target_name}'s shoulder, snapping the bone with a deafening crack."
+            "attacker_msg": "You slam the catchpole into {target_name}'s {hit_location}, snapping the bone with a deafening crack.",
+            "victim_msg": "{attacker_name} slams the catchpole into your {hit_location}, snapping the bone with a deafening crack.",
+            "observer_msg": "{attacker_name} slams the catchpole into {target_name}'s {hit_location}, snapping the bone with a deafening crack."
         },
         {
-            "attacker_msg": "You pull back hard and the catchpole's hook tears through {target_name}'s side in a jagged, explosive arc.",
-            "victim_msg": "{attacker_name} pulls back hard and the catchpole's hook tears through your side in a jagged, explosive arc.",
-            "observer_msg": "{attacker_name} pulls back hard and the catchpole's hook tears through {target_name}'s side in a jagged, explosive arc."
+            "attacker_msg": "You pull {hit_location} hard and the catchpole's hook tears through {target_name}'s {hit_location} in a jagged, explosive arc.",
+            "victim_msg": "{attacker_name} pulls {hit_location} hard and the catchpole's hook tears through your {hit_location} in a jagged, explosive arc.",
+            "observer_msg": "{attacker_name} pulls {hit_location} hard and the catchpole's hook tears through {target_name}'s {hit_location} in a jagged, explosive arc."
         },
         {
             "attacker_msg": "You hook {target_name} under the chin and jerk upward, the impact rattling {target_name}'s skull.",
@@ -263,39 +263,39 @@ MESSAGES = {
             "observer_msg": "{attacker_name} jabs the catchpole near {target_name}'s heart, the hook sinking deep before being ripped free."
         },
         {
-            "attacker_msg": "You slam the catchpole into {target_name}'s knee, the joint collapsing under the crushing blow.",
-            "victim_msg": "{attacker_name} slams the catchpole into your knee, the joint collapsing under the crushing blow.",
-            "observer_msg": "{attacker_name} slams the catchpole into {target_name}'s knee, the joint collapsing under the crushing blow."
+            "attacker_msg": "You slam the catchpole into {target_name}'s {hit_location}, the joint collapsing under the crushing blow.",
+            "victim_msg": "{attacker_name} slams the catchpole into your {hit_location}, the joint collapsing under the crushing blow.",
+            "observer_msg": "{attacker_name} slams the catchpole into {target_name}'s {hit_location}, the joint collapsing under the crushing blow."
         },
         {
-            "attacker_msg": "You drag the catchpole across {target_name}'s chest, each tooth on the hook grazing bone.",
-            "victim_msg": "{attacker_name} drags the catchpole across your chest, each tooth on the hook grazing bone.",
-            "observer_msg": "{attacker_name} drags the catchpole across {target_name}'s chest, each tooth on the hook grazing bone."
+            "attacker_msg": "You drag the catchpole across {target_name}'s {hit_location}, each tooth on the hook grazing bone.",
+            "victim_msg": "{attacker_name} drags the catchpole across your {hit_location}, each tooth on the hook grazing bone.",
+            "observer_msg": "{attacker_name} drags the catchpole across {target_name}'s {hit_location}, each tooth on the hook grazing bone."
         },
         {
-            "attacker_msg": "You wrest {target_name} off their feet with the catchpole, their scream growing hoarse in their throat.",
-            "victim_msg": "{attacker_name} wrests you off your feet with the catchpole, your scream growing hoarse in your throat.",
-            "observer_msg": "{attacker_name} wrests {target_name} off their feet with the catchpole, their scream growing hoarse in their throat."
+            "attacker_msg": "You wrest {target_name} off their feet with the catchpole, their scream growing hoarse in their {hit_location}.",
+            "victim_msg": "{attacker_name} wrests you off your feet with the catchpole, your scream growing hoarse in your {hit_location}.",
+            "observer_msg": "{attacker_name} wrests {target_name} off their feet with the catchpole, their scream growing hoarse in their {hit_location}."
         },
         {
-            "attacker_msg": "You ram the catchpole's hook into {target_name}'s side, a shuddering gasp escaping them.",
-            "victim_msg": "{attacker_name} rams the catchpole's hook into your side, a shuddering gasp escaping you.",
-            "observer_msg": "{attacker_name} rams the catchpole's hook into {target_name}'s side, a shuddering gasp escaping them."
+            "attacker_msg": "You ram the catchpole's hook into {target_name}'s {hit_location}, a shuddering gasp escaping them.",
+            "victim_msg": "{attacker_name} rams the catchpole's hook into your {hit_location}, a shuddering gasp escaping you.",
+            "observer_msg": "{attacker_name} rams the catchpole's hook into {target_name}'s {hit_location}, a shuddering gasp escaping them."
         },
         {
-            "attacker_msg": "You twist sharply, the catchpole carving a bloody arc across {target_name}'s hip.",
-            "victim_msg": "{attacker_name} twists sharply, the catchpole carving a bloody arc across your hip.",
-            "observer_msg": "{attacker_name} twists sharply, the catchpole carving a bloody arc across {target_name}'s hip."
+            "attacker_msg": "You twist sharply, the catchpole carving a bloody arc across {target_name}'s {hit_location}.",
+            "victim_msg": "{attacker_name} twists sharply, the catchpole carving a bloody arc across your {hit_location}.",
+            "observer_msg": "{attacker_name} twists sharply, the catchpole carving a bloody arc across {target_name}'s {hit_location}."
         },
         {
-            "attacker_msg": "You drive the hook into {target_name}'s forearm and pull back, the sudden resistance ripping muscle.",
-            "victim_msg": "{attacker_name} drives the hook into your forearm and pulls back, the sudden resistance ripping muscle.",
-            "observer_msg": "{attacker_name} drives the hook into {target_name}'s forearm and pulls back, the sudden resistance ripping muscle."
+            "attacker_msg": "You drive the hook into {target_name}'s {hit_location} and pull {hit_location}, the sudden resistance ripping muscle.",
+            "victim_msg": "{attacker_name} drives the hook into your {hit_location} and pulls {hit_location}, the sudden resistance ripping muscle.",
+            "observer_msg": "{attacker_name} drives the hook into {target_name}'s {hit_location} and pulls {hit_location}, the sudden resistance ripping muscle."
         },
         {
-            "attacker_msg": "You plant the catchpole's hook in {target_name}'s back, the rip of flesh audible over the chaos.",
-            "victim_msg": "{attacker_name} plants the catchpole's hook in your back, the rip of flesh audible over the chaos.",
-            "observer_msg": "{attacker_name} plants the catchpole's hook in {target_name}'s back, the rip of flesh audible over the chaos."
+            "attacker_msg": "You plant the catchpole's hook in {target_name}'s {hit_location}, the rip of flesh audible over the chaos.",
+            "victim_msg": "{attacker_name} plants the catchpole's hook in your {hit_location}, the rip of flesh audible over the chaos.",
+            "observer_msg": "{attacker_name} plants the catchpole's hook in {target_name}'s {hit_location}, the rip of flesh audible over the chaos."
         }
     ],
     "miss": [
