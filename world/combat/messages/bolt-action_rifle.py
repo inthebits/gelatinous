@@ -153,29 +153,29 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "A single, deafening *CRACK* as your bolt-action rifle fires, the heavy bullet striking {target_name}'s arm with bone-jarring force. You work the bolt, *clack-clack*, ejecting a spent casing.",
-            "victim_msg": "A single, deafening *CRACK* as {attacker_name}'s bolt-action rifle fires, the heavy bullet striking your arm with bone-jarring force. {attacker_name} works the bolt, *clack-clack*, ejecting a spent casing.",
-            "observer_msg": "A single, deafening *CRACK* as {attacker_name}'s bolt-action rifle fires, the heavy bullet striking {target_name}'s arm with bone-jarring force. {attacker_name} works the bolt, *clack-clack*, ejecting a spent casing."
+            "attacker_msg": "A single, deafening *CRACK* as your bolt-action rifle fires, the heavy bullet striking {target_name}'s {hit_location} with bone-jarring force. You work the bolt, *clack-clack*, ejecting a spent casing.",
+            "victim_msg": "A single, deafening *CRACK* as {attacker_name}'s bolt-action rifle fires, the heavy bullet striking your {hit_location} with bone-jarring force. {attacker_name} works the bolt, *clack-clack*, ejecting a spent casing.",
+            "observer_msg": "A single, deafening *CRACK* as {attacker_name}'s bolt-action rifle fires, the heavy bullet striking {target_name}'s {hit_location} with bone-jarring force. {attacker_name} works the bolt, *clack-clack*, ejecting a spent casing."
         },
         {
-            "attacker_msg": "The bolt-action rifle roars, and a high-velocity slug tears a devastating hole in {target_name}'s leg, sending them sprawling. You smoothly cycle the action, readying another shot.",
-            "victim_msg": "The bolt-action rifle roars, and a high-velocity slug tears a devastating hole in your leg, sending you sprawling. {attacker_name} smoothly cycles the action, readying another shot.",
-            "observer_msg": "The bolt-action rifle roars, and a high-velocity slug tears a devastating hole in {target_name}'s leg, sending them sprawling. {attacker_name} smoothly cycles the action, readying another shot."
+            "attacker_msg": "The bolt-action rifle roars, and a high-velocity slug tears a devastating hole in {target_name}'s {hit_location}, sending them sprawling. You smoothly cycle the action, readying another shot.",
+            "victim_msg": "The bolt-action rifle roars, and a high-velocity slug tears a devastating hole in your {hit_location}, sending you sprawling. {attacker_name} smoothly cycles the action, readying another shot.",
+            "observer_msg": "The bolt-action rifle roars, and a high-velocity slug tears a devastating hole in {target_name}'s {hit_location}, sending them sprawling. {attacker_name} smoothly cycles the action, readying another shot."
         },
         {
-            "attacker_msg": "Your carefully aimed shot from the bolt-action rifle hits {target_name}'s shoulder, the impact spinning them violently. A brass casing flips through the air as the bolt is worked.",
-            "victim_msg": "{attacker_name}'s carefully aimed shot from the bolt-action rifle hits your shoulder, the impact spinning you violently. A brass casing flips through the air as the bolt is worked.",
-            "observer_msg": "{attacker_name}'s carefully aimed shot from the bolt-action rifle hits {target_name}'s shoulder, the impact spinning them violently. A brass casing flips through the air as the bolt is worked."
+            "attacker_msg": "Your carefully aimed shot from the bolt-action rifle hits {target_name}'s {hit_location}, the impact spinning them violently. A brass casing flips through the air as the bolt is worked.",
+            "victim_msg": "{attacker_name}'s carefully aimed shot from the bolt-action rifle hits your {hit_location}, the impact spinning you violently. A brass casing flips through the air as the bolt is worked.",
+            "observer_msg": "{attacker_name}'s carefully aimed shot from the bolt-action rifle hits {target_name}'s {hit_location}, the impact spinning them violently. A brass casing flips through the air as the bolt is worked."
         },
         {
-            "attacker_msg": "Lead meets flesh with brutal efficiency as the bullet from your bolt-action rifle slams into {target_name}'s side, punching through with a heavy thud. You chamber another round with a decisive *shk-THUNK*.",
-            "victim_msg": "Lead meets flesh with brutal efficiency as the bullet from {attacker_name}'s bolt-action rifle slams into your side, punching through with a heavy thud. {attacker_name} chambers another round with a decisive *shk-THUNK*.",
-            "observer_msg": "Lead meets flesh with brutal efficiency as the bullet from {attacker_name}'s bolt-action rifle slams into {target_name}'s side, punching through with a heavy thud. {attacker_name} chambers another round with a decisive *shk-THUNK*."
+            "attacker_msg": "Lead meets flesh with brutal efficiency as the bullet from your bolt-action rifle slams into {target_name}'s {hit_location}, punching through with a heavy thud. You chamber another round with a decisive *shk-THUNK*.",
+            "victim_msg": "Lead meets flesh with brutal efficiency as the bullet from {attacker_name}'s bolt-action rifle slams into your {hit_location}, punching through with a heavy thud. {attacker_name} chambers another round with a decisive *shk-THUNK*.",
+            "observer_msg": "Lead meets flesh with brutal efficiency as the bullet from {attacker_name}'s bolt-action rifle slams into {target_name}'s {hit_location}, punching through with a heavy thud. {attacker_name} chambers another round with a decisive *shk-THUNK*."
         },
         {
-            "attacker_msg": "The bolt-action rifle's bullet strikes {target_name}'s thigh, the massive impact shattering bone. You quickly work the bolt, ejecting the hot brass.",
-            "victim_msg": "The bolt-action rifle's bullet strikes your thigh, the massive impact shattering bone. {attacker_name} quickly works the bolt, ejecting the hot brass.",
-            "observer_msg": "The bolt-action rifle's bullet strikes {target_name}'s thigh, the massive impact shattering bone. {attacker_name} quickly works the bolt, ejecting the hot brass."
+            "attacker_msg": "The bolt-action rifle's bullet strikes {target_name}'s {hit_location}, the massive impact shattering bone. You quickly work the bolt, ejecting the hot brass.",
+            "victim_msg": "The bolt-action rifle's bullet strikes your {hit_location}, the massive impact shattering bone. {attacker_name} quickly works the bolt, ejecting the hot brass.",
+            "observer_msg": "The bolt-action rifle's bullet strikes {target_name}'s {hit_location}, the massive impact shattering bone. {attacker_name} quickly works the bolt, ejecting the hot brass."
         },
         {
             "attacker_msg": "Your precise shot with the bolt-action rifle leaves a horrific, bleeding wound in {target_name}. The bolt is cycled, another round sliding home.",
@@ -183,9 +183,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s precise shot with the bolt-action rifle leaves a horrific, bleeding wound in {target_name}. The bolt is cycled, another round sliding home."
         },
         {
-            "attacker_msg": "A direct hit! The bolt-action rifle's bullet smashes into {target_name}'s chest with the force of a sledgehammer, driving the air from their lungs. You work the bolt, preparing for a follow-up if needed.",
-            "victim_msg": "A direct hit! The bolt-action rifle's bullet smashes into your chest with the force of a sledgehammer, driving the air from your lungs. {attacker_name} works the bolt, preparing for a follow-up if needed.",
-            "observer_msg": "A direct hit! The bolt-action rifle's bullet smashes into {target_name}'s chest with the force of a sledgehammer, driving the air from their lungs. {attacker_name} works the bolt, preparing for a follow-up if needed."
+            "attacker_msg": "A direct hit! The bolt-action rifle's bullet smashes into {target_name}'s {hit_location} with the force of a sledgehammer, driving the air from their lungs. You work the bolt, preparing for a follow-up if needed.",
+            "victim_msg": "A direct hit! The bolt-action rifle's bullet smashes into your {hit_location} with the force of a sledgehammer, driving the air from your lungs. {attacker_name} works the bolt, preparing for a follow-up if needed.",
+            "observer_msg": "A direct hit! The bolt-action rifle's bullet smashes into {target_name}'s {hit_location} with the force of a sledgehammer, driving the air from their lungs. {attacker_name} works the bolt, preparing for a follow-up if needed."
         },
         {
             "attacker_msg": "The bolt-action rifle’s projectile punches into {target_name} with incredible force, its impact marked by a shocking spray of blood. A single spent casing is ejected as you reload.",
@@ -193,24 +193,24 @@ MESSAGES = {
             "observer_msg": "The bolt-action rifle’s projectile punches into {target_name} with incredible force, its impact marked by a shocking spray of blood. {attacker_name} reloads."
         },
         {
-            "attacker_msg": "Your bolt-action rifle fires with a thunderous report, and {target_name} is struck with overwhelming power. The bolt handle is lifted and drawn back, then slammed forward.",
-            "victim_msg": "{attacker_name}’s bolt-action rifle fires with a thunderous report, and you are struck with overwhelming power. The bolt handle is lifted and drawn back, then slammed forward.",
-            "observer_msg": "{attacker_name}’s bolt-action rifle fires with a thunderous report, and {target_name} is struck with overwhelming power. The bolt handle is lifted and drawn back, then slammed forward."
+            "attacker_msg": "Your bolt-action rifle fires with a thunderous report, and {target_name} is struck with overwhelming power. The bolt handle is lifted and drawn {hit_location}, then slammed forward.",
+            "victim_msg": "{attacker_name}’s bolt-action rifle fires with a thunderous report, and you are struck with overwhelming power. The bolt handle is lifted and drawn {hit_location}, then slammed forward.",
+            "observer_msg": "{attacker_name}’s bolt-action rifle fires with a thunderous report, and {target_name} is struck with overwhelming power. The bolt handle is lifted and drawn {hit_location}, then slammed forward."
         },
         {
-            "attacker_msg": "With a deafening crack, the bullet from your bolt-action rifle hits {target_name}'s abdomen, the catastrophic wound instantly felling them. You cycle the bolt methodically.",
-            "victim_msg": "With a deafening crack, the bullet from {attacker_name}'s bolt-action rifle hits your abdomen, the catastrophic wound instantly felling you. {attacker_name} cycles the bolt methodically.",
-            "observer_msg": "With a deafening crack, the bullet from {attacker_name}'s bolt-action rifle hits {target_name}'s abdomen, the catastrophic wound instantly felling them. {attacker_name} cycles the bolt methodically."
+            "attacker_msg": "With a deafening crack, the bullet from your bolt-action rifle hits {target_name}'s {hit_location}, the catastrophic wound instantly felling them. You cycle the bolt methodically.",
+            "victim_msg": "With a deafening crack, the bullet from {attacker_name}'s bolt-action rifle hits your {hit_location}, the catastrophic wound instantly felling you. {attacker_name} cycles the bolt methodically.",
+            "observer_msg": "With a deafening crack, the bullet from {attacker_name}'s bolt-action rifle hits {target_name}'s {hit_location}, the catastrophic wound instantly felling them. {attacker_name} cycles the bolt methodically."
         },
         {
-            "attacker_msg": "The bolt-action rifle scores a devastating hit, the bullet tearing through {target_name}'s arm, nearly severing it. A hot casing is ejected as you prepare another shot.",
-            "victim_msg": "The bolt-action rifle scores a devastating hit, the bullet tearing through your arm, nearly severing it. A hot casing is ejected as {attacker_name} prepares another shot.",
-            "observer_msg": "The bolt-action rifle scores a devastating hit, the bullet tearing through {target_name}'s arm, nearly severing it. A hot casing is ejected as {attacker_name} prepares another shot."
+            "attacker_msg": "The bolt-action rifle scores a devastating hit, the bullet tearing through {target_name}'s {hit_location}, nearly severing it. A hot casing is ejected as you prepare another shot.",
+            "victim_msg": "The bolt-action rifle scores a devastating hit, the bullet tearing through your {hit_location}, nearly severing it. A hot casing is ejected as {attacker_name} prepares another shot.",
+            "observer_msg": "The bolt-action rifle scores a devastating hit, the bullet tearing through {target_name}'s {hit_location}, nearly severing it. A hot casing is ejected as {attacker_name} prepares another shot."
         },
         {
-            "attacker_msg": "Your well-aimed shot from the bolt-action rifle strikes {target_name}'s hip, the bone exploding into fragments. The bolt is worked with smooth efficiency.",
-            "victim_msg": "{attacker_name}’s well-aimed shot from the bolt-action rifle strikes your hip, the bone exploding into fragments. The bolt is worked with smooth efficiency.",
-            "observer_msg": "{attacker_name}’s well-aimed shot from the bolt-action rifle strikes {target_name}'s hip, the bone exploding into fragments. The bolt is worked with smooth efficiency."
+            "attacker_msg": "Your well-aimed shot from the bolt-action rifle strikes {target_name}'s {hit_location}, the bone exploding into fragments. The bolt is worked with smooth efficiency.",
+            "victim_msg": "{attacker_name}’s well-aimed shot from the bolt-action rifle strikes your {hit_location}, the bone exploding into fragments. The bolt is worked with smooth efficiency.",
+            "observer_msg": "{attacker_name}’s well-aimed shot from the bolt-action rifle strikes {target_name}'s {hit_location}, the bone exploding into fragments. The bolt is worked with smooth efficiency."
         },
         {
             "attacker_msg": "A thunderous crack and a horrific spray of blood as the bolt-action rifle's bullet finds its mark on {target_name} with brutal effect. You cycle the action, eyes still on {target_name}.",
@@ -228,19 +228,19 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s bolt-action rifle bullet slams into {target_name}, the sheer kinetic energy lifting them off their feet. Another round is chambered with a solid sound."
         },
         {
-            "attacker_msg": "A shot from the bolt-action rifle hits {target_name}'s hand, obliterating it in a spray of bone and blood. You cycle the bolt, unflinching.",
-            "victim_msg": "A shot from the bolt-action rifle hits your hand, obliterating it in a spray of bone and blood. {attacker_name} cycles the bolt, unflinching.",
-            "observer_msg": "A shot from the bolt-action rifle hits {target_name}'s hand, obliterating it in a spray of bone and blood. {attacker_name} cycles the bolt, unflinching."
+            "attacker_msg": "A shot from the bolt-action rifle hits {target_name}'s {hit_location}, obliterating it in a spray of bone and blood. You cycle the bolt, unflinching.",
+            "victim_msg": "A shot from the bolt-action rifle hits your {hit_location}, obliterating it in a spray of bone and blood. {attacker_name} cycles the bolt, unflinching.",
+            "observer_msg": "A shot from the bolt-action rifle hits {target_name}'s {hit_location}, obliterating it in a spray of bone and blood. {attacker_name} cycles the bolt, unflinching."
         },
         {
-            "attacker_msg": "The bolt-action rifle's bullet makes solid contact with {target_name}'s torso, the shockwave of impact staggering them. You work the bolt, chambering a fresh round.",
-            "victim_msg": "The bolt-action rifle's bullet makes solid contact with your torso, the shockwave of impact staggering you. {attacker_name} works the bolt, chambering a fresh round.",
-            "observer_msg": "The bolt-action rifle's bullet makes solid contact with {target_name}'s torso, the shockwave of impact staggering them. {attacker_name} works the bolt, chambering a fresh round."
+            "attacker_msg": "The bolt-action rifle's bullet makes solid contact with {target_name}'s {hit_location}, the shockwave of impact staggering them. You work the bolt, chambering a fresh round.",
+            "victim_msg": "The bolt-action rifle's bullet makes solid contact with your {hit_location}, the shockwave of impact staggering you. {attacker_name} works the bolt, chambering a fresh round.",
+            "observer_msg": "The bolt-action rifle's bullet makes solid contact with {target_name}'s {hit_location}, the shockwave of impact staggering them. {attacker_name} works the bolt, chambering a fresh round."
         },
         {
-            "attacker_msg": "Your bolt-action rifle projectile finds its mark, delivering a devastating, crippling wound to {target_name}'s leg. A single brass casing arcs away.",
-            "victim_msg": "{attacker_name}’s bolt-action rifle projectile finds its mark, delivering a devastating, crippling wound to your leg. A single brass casing arcs away.",
-            "observer_msg": "{attacker_name}’s bolt-action rifle projectile finds its mark, delivering a devastating, crippling wound to {target_name}'s leg. A single brass casing arcs away."
+            "attacker_msg": "Your bolt-action rifle projectile finds its mark, delivering a devastating, crippling wound to {target_name}'s {hit_location}. A single brass casing arcs away.",
+            "victim_msg": "{attacker_name}’s bolt-action rifle projectile finds its mark, delivering a devastating, crippling wound to your {hit_location}. A single brass casing arcs away.",
+            "observer_msg": "{attacker_name}’s bolt-action rifle projectile finds its mark, delivering a devastating, crippling wound to {target_name}'s {hit_location}. A single brass casing arcs away."
         },
         {
             "attacker_msg": "Even a glancing blow from the bolt-action rifle's bullet tears a massive, ragged gash in {target_name}'s skin, exposing bone. You cycle the action, ready again.",
@@ -258,14 +258,14 @@ MESSAGES = {
             "observer_msg": "The bolt-action rifle’s thunderous report is followed by {target_name}'s choked scream as the bullet embeds itself deep within. {attacker_name} chambers another round with practiced ease."
         },
         {
-            "attacker_msg": "Your shot is true, the bolt-action rifle's bullet striking {target_name} squarely in the gut, the exit wound enormous. The bolt is cycled, ready for the next target.",
-            "victim_msg": "{attacker_name}’s shot is true, the bolt-action rifle's bullet striking you squarely in the gut, the exit wound enormous. The bolt is cycled, ready for the next target.",
-            "observer_msg": "{attacker_name}’s shot is true, the bolt-action rifle's bullet striking {target_name} squarely in the gut, the exit wound enormous. The bolt is cycled, ready for the next target."
+            "attacker_msg": "Your shot is true, the bolt-action rifle's bullet striking {target_name} squarely in the {hit_location}, the exit wound enormous. The bolt is cycled, ready for the next target.",
+            "victim_msg": "{attacker_name}’s shot is true, the bolt-action rifle's bullet striking you squarely in the {hit_location}, the exit wound enormous. The bolt is cycled, ready for the next target.",
+            "observer_msg": "{attacker_name}’s shot is true, the bolt-action rifle's bullet striking {target_name} squarely in the {hit_location}, the exit wound enormous. The bolt is cycled, ready for the next target."
         },
         {
-            "attacker_msg": "A close-range blast from your bolt-action rifle tears a horrific, fist-sized hole in {target_name}'s side. You work the bolt, the sound sharp and distinct.",
-            "victim_msg": "A close-range blast from {attacker_name}'s bolt-action rifle tears a horrific, fist-sized hole in your side. {attacker_name} works the bolt, the sound sharp and distinct.",
-            "observer_msg": "A close-range blast from {attacker_name}'s bolt-action rifle tears a horrific, fist-sized hole in {target_name}'s side. {attacker_name} works the bolt, the sound sharp and distinct."
+            "attacker_msg": "A close-range blast from your bolt-action rifle tears a horrific, fist-sized hole in {target_name}'s {hit_location}. You work the bolt, the sound sharp and distinct.",
+            "victim_msg": "A close-range blast from {attacker_name}'s bolt-action rifle tears a horrific, fist-sized hole in your {hit_location}. {attacker_name} works the bolt, the sound sharp and distinct.",
+            "observer_msg": "A close-range blast from {attacker_name}'s bolt-action rifle tears a horrific, fist-sized hole in {target_name}'s {hit_location}. {attacker_name} works the bolt, the sound sharp and distinct."
         },
         {
             "attacker_msg": "The bolt-action rifle proves brutally effective as you land another devastating hit on {target_name}. The action is cycled with a metallic *clack-THUNK*.",
@@ -278,19 +278,19 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s bolt-action rifle bullet makes impact, leaving another catastrophic, bleeding puncture. A single spent casing hits the ground as the bolt is worked."
         },
         {
-            "attacker_msg": "A painful, echoing crack as the bullet from your bolt-action rifle strikes {target_name}'s ribs, shattering them. You cycle the bolt, chambering another heavy round.",
-            "victim_msg": "A painful, echoing crack as the bullet from {attacker_name}'s bolt-action rifle strikes your ribs, shattering them. {attacker_name} cycles the bolt, chambering another heavy round.",
-            "observer_msg": "A painful, echoing crack as the bullet from {attacker_name}'s bolt-action rifle strikes {target_name}'s ribs, shattering them. {attacker_name} cycles the bolt, chambering another heavy round."
+            "attacker_msg": "A painful, echoing crack as the bullet from your bolt-action rifle strikes {target_name}'s {hit_location}, shattering them. You cycle the bolt, chambering another heavy round.",
+            "victim_msg": "A painful, echoing crack as the bullet from {attacker_name}'s bolt-action rifle strikes your {hit_location}, shattering them. {attacker_name} cycles the bolt, chambering another heavy round.",
+            "observer_msg": "A painful, echoing crack as the bullet from {attacker_name}'s bolt-action rifle strikes {target_name}'s {hit_location}, shattering them. {attacker_name} cycles the bolt, chambering another heavy round."
         },
         {
-            "attacker_msg": "The projectile from your bolt-action rifle hits {target_name}’s collarbone, the bone exploding outward. The bolt is worked, ejecting the casing with a flick of the wrist.",
-            "victim_msg": "The projectile from {attacker_name}'s bolt-action rifle hits your collarbone, the bone exploding outward. The bolt is worked, ejecting the casing with a flick of the wrist.",
-            "observer_msg": "The projectile from {attacker_name}'s bolt-action rifle hits {target_name}’s collarbone, the bone exploding outward. The bolt is worked, ejecting the casing with a flick of the wrist."
+            "attacker_msg": "The projectile from your bolt-action rifle hits {target_name}’s {hit_location}, the bone exploding outward. The bolt is worked, ejecting the casing with a flick of the {hit_location}.",
+            "victim_msg": "The projectile from {attacker_name}'s bolt-action rifle hits your {hit_location}, the bone exploding outward. The bolt is worked, ejecting the casing with a flick of the {hit_location}.",
+            "observer_msg": "The projectile from {attacker_name}'s bolt-action rifle hits {target_name}’s {hit_location}, the bone exploding outward. The bolt is worked, ejecting the casing with a flick of the {hit_location}."
         },
         {
-            "attacker_msg": "Your bolt-action rifle delivers another brutal, penetrating impact to {target_name}’s torso. The bolt is cycled, the sound a grim promise.",
-            "victim_msg": "{attacker_name}’s bolt-action rifle delivers another brutal, penetrating impact to your torso. The bolt is cycled, the sound a grim promise.",
-            "observer_msg": "{attacker_name}’s bolt-action rifle delivers another brutal, penetrating impact to {target_name}’s torso. The bolt is cycled, the sound a grim promise."
+            "attacker_msg": "Your bolt-action rifle delivers another brutal, penetrating impact to {target_name}’s {hit_location}. The bolt is cycled, the sound a grim promise.",
+            "victim_msg": "{attacker_name}’s bolt-action rifle delivers another brutal, penetrating impact to your {hit_location}. The bolt is cycled, the sound a grim promise.",
+            "observer_msg": "{attacker_name}’s bolt-action rifle delivers another brutal, penetrating impact to {target_name}’s {hit_location}. The bolt is cycled, the sound a grim promise."
         },
         {
             "attacker_msg": "A well-placed shot from the bolt-action rifle leaves {target_name} stunned and dying, gasping from a massive wound. You work the bolt, ready if needed.",

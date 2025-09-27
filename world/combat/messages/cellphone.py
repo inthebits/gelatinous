@@ -153,9 +153,9 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "A swift, brutal swing from your cellphone connects with {target_name}'s arm with a sickening, hard plastic *CRACK* and a jolt.",
-            "victim_msg": "A swift, brutal swing from {attacker_name}'s cellphone connects with your arm with a sickening, hard plastic *CRACK* and a jolt.",
-            "observer_msg": "A swift, brutal swing from {attacker_name}'s cellphone connects with {target_name}'s arm with a sickening, hard plastic *CRACK* and a jolt."
+            "attacker_msg": "A swift, brutal swing from your cellphone connects with {target_name}'s {hit_location} with a sickening, hard plastic *CRACK* and a jolt.",
+            "victim_msg": "A swift, brutal swing from {attacker_name}'s cellphone connects with your {hit_location} with a sickening, hard plastic *CRACK* and a jolt.",
+            "observer_msg": "A swift, brutal swing from {attacker_name}'s cellphone connects with {target_name}'s {hit_location} with a sickening, hard plastic *CRACK* and a jolt."
         },
         {
             "attacker_msg": "The cellphone connects with a heavy, jarring *CLACK*, your desperate attack finding bone and flesh with surprising, solid force.",
@@ -163,9 +163,9 @@ MESSAGES = {
             "observer_msg": "The cellphone connects with a heavy, jarring *CLACK*, {attacker_name}'s desperate attack finding bone and flesh with surprising, solid force."
         },
         {
-            "attacker_msg": "Your cellphone smashes against {target_name}'s face, its hard casing and keypad imprinting a painful, rapidly swelling bruise.",
-            "victim_msg": "{attacker_name}'s cellphone smashes against your face, its hard casing and keypad imprinting a painful, rapidly swelling bruise.",
-            "observer_msg": "{attacker_name}'s cellphone smashes against {target_name}'s face, its hard casing and keypad imprinting a painful, rapidly swelling bruise."
+            "attacker_msg": "Your cellphone smashes against {target_name}'s {hit_location}, its hard casing and keypad imprinting a painful, rapidly swelling bruise.",
+            "victim_msg": "{attacker_name}'s cellphone smashes against your {hit_location}, its hard casing and keypad imprinting a painful, rapidly swelling bruise.",
+            "observer_msg": "{attacker_name}'s cellphone smashes against {target_name}'s {hit_location}, its hard casing and keypad imprinting a painful, rapidly swelling bruise."
         },
         {
             "attacker_msg": "Hard plastic impacts flesh as your cellphone connects, {target_name} recoiling from the sudden, intense, jarring pain.",
@@ -173,9 +173,9 @@ MESSAGES = {
             "observer_msg": "Hard plastic impacts flesh as {attacker_name}'s cellphone connects, {target_name} recoiling from the sudden, intense, jarring pain."
         },
         {
-            "attacker_msg": "The corner of the cellphone slams into {target_name}'s leg, the antenna scraping skin as they grunt and stumble from the solid, unyielding impact.",
-            "victim_msg": "The corner of the cellphone slams into your leg, the antenna scraping skin as you grunt and stumble from the solid, unyielding impact.",
-            "observer_msg": "The corner of the cellphone slams into {target_name}'s leg, the antenna scraping skin as they grunt and stumble from the solid, unyielding impact."
+            "attacker_msg": "The corner of the cellphone slams into {target_name}'s {hit_location}, the antenna scraping skin as they grunt and stumble from the solid, unyielding impact.",
+            "victim_msg": "The corner of the cellphone slams into your {hit_location}, the antenna scraping skin as you grunt and stumble from the solid, unyielding impact.",
+            "observer_msg": "The corner of the cellphone slams into {target_name}'s {hit_location}, the antenna scraping skin as they grunt and stumble from the solid, unyielding impact."
         },
         {
             "attacker_msg": "Your desperate lunge with the cellphone leaves a nasty, throbbing bruise and a scrape from its hard edges and antenna on {target_name}.",
@@ -183,9 +183,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s desperate lunge with the cellphone leaves a nasty, throbbing bruise and a scrape from its hard edges and antenna on {target_name}."
         },
         {
-            "attacker_msg": "A quick, powerful blow, and the cellphone cracks against {target_name}'s side, drawing a choked cry, its sheer bulk bruising ribs.",
-            "victim_msg": "A quick, powerful blow, and the cellphone cracks against your side, drawing a choked cry, its sheer bulk bruising ribs.",
-            "observer_msg": "A quick, powerful blow, and the cellphone cracks against {target_name}'s side, drawing a choked cry, its sheer bulk bruising ribs."
+            "attacker_msg": "A quick, powerful blow, and the cellphone cracks against {target_name}'s {hit_location}, drawing a choked cry, its sheer bulk bruising {hit_location}.",
+            "victim_msg": "A quick, powerful blow, and the cellphone cracks against your {hit_location}, drawing a choked cry, its sheer bulk bruising {hit_location}.",
+            "observer_msg": "A quick, powerful blow, and the cellphone cracks against {target_name}'s {hit_location}, drawing a choked cry, its sheer bulk bruising {hit_location}."
         },
         {
             "attacker_msg": "The cellphone's unyielding surface smashes through {target_name}'s defenses and into flesh with painful efficiency, the antenna digging in.",
@@ -193,9 +193,9 @@ MESSAGES = {
             "observer_msg": "The cellphone's unyielding surface smashes through {target_name}'s defenses and into flesh with painful efficiency, the antenna digging in."
         },
         {
-            "attacker_msg": "Your cellphone makes a glancing hit, but still slams hard against {target_name}'s ribs, sending a jolt of pain and leaving a red welt.",
-            "victim_msg": "{attacker_name}'s cellphone makes a glancing hit, but still slams hard against your ribs, sending a jolt of pain and leaving a red welt.",
-            "observer_msg": "{attacker_name}'s cellphone makes a glancing hit, but still slams hard against {target_name}'s ribs, sending a jolt of pain and leaving a red welt."
+            "attacker_msg": "Your cellphone makes a glancing hit, but still slams hard against {target_name}'s {hit_location}, sending a jolt of pain and leaving a red welt.",
+            "victim_msg": "{attacker_name}'s cellphone makes a glancing hit, but still slams hard against your {hit_location}, sending a jolt of pain and leaving a red welt.",
+            "observer_msg": "{attacker_name}'s cellphone makes a glancing hit, but still slams hard against {target_name}'s {hit_location}, sending a jolt of pain and leaving a red welt."
         },
         {
             "attacker_msg": "With a savage grunt, you drive the cellphone into {target_name}, who stumbles, trying to escape the jarring, repeated agony of the heavy plastic.",
@@ -203,24 +203,24 @@ MESSAGES = {
             "observer_msg": "With a savage grunt, {attacker_name} drives the cellphone into {target_name}, who stumbles, trying to escape the jarring, repeated agony of the heavy plastic."
         },
         {
-            "attacker_msg": "The cellphone scores a heavy hit on {target_name}'s hand, the impact of its solid mass making their fingers go numb and possibly breaking them.",
-            "victim_msg": "The cellphone scores a heavy hit on your hand, the impact of its solid mass making your fingers go numb and possibly breaking them.",
-            "observer_msg": "The cellphone scores a heavy hit on {target_name}'s hand, the impact of its solid mass making their fingers go numb and possibly breaking them."
+            "attacker_msg": "The cellphone scores a heavy hit on {target_name}'s {hit_location}, the impact of its solid mass making their fingers go numb and possibly breaking them.",
+            "victim_msg": "The cellphone scores a heavy hit on your {hit_location}, the impact of its solid mass making your fingers go numb and possibly breaking them.",
+            "observer_msg": "The cellphone scores a heavy hit on {target_name}'s {hit_location}, the impact of its solid mass making their fingers go numb and possibly breaking them."
         },
         {
-            "attacker_msg": "Your well-aimed blow with the cellphone leaves it impacting {target_name}'s shoulder with a solid, painful *THWACK*, the antenna gouging flesh.",
-            "victim_msg": "{attacker_name}'s well-aimed blow with the cellphone leaves it impacting your shoulder with a solid, painful *THWACK*, the antenna gouging flesh.",
-            "observer_msg": "{attacker_name}'s well-aimed blow with the cellphone leaves it impacting {target_name}'s shoulder with a solid, painful *THWACK*, the antenna gouging flesh."
+            "attacker_msg": "Your well-aimed blow with the cellphone leaves it impacting {target_name}'s {hit_location} with a solid, painful *THWACK*, the antenna gouging flesh.",
+            "victim_msg": "{attacker_name}'s well-aimed blow with the cellphone leaves it impacting your {hit_location} with a solid, painful *THWACK*, the antenna gouging flesh.",
+            "observer_msg": "{attacker_name}'s well-aimed blow with the cellphone leaves it impacting {target_name}'s {hit_location} with a solid, painful *THWACK*, the antenna gouging flesh."
         },
         {
-            "attacker_msg": "A sharp cracking sound of bone and a cry of pain as your cellphone smashes into {target_name}'s collarbone.",
-            "victim_msg": "A sharp cracking sound of bone and a cry of pain as {attacker_name}'s cellphone smashes into your collarbone.",
-            "observer_msg": "A sharp cracking sound of bone and a cry of pain as {attacker_name}'s cellphone smashes into {target_name}'s collarbone."
+            "attacker_msg": "A sharp cracking sound of bone and a cry of pain as your cellphone smashes into {target_name}'s {hit_location}.",
+            "victim_msg": "A sharp cracking sound of bone and a cry of pain as {attacker_name}'s cellphone smashes into your {hit_location}.",
+            "observer_msg": "A sharp cracking sound of bone and a cry of pain as {attacker_name}'s cellphone smashes into {target_name}'s {hit_location}."
         },
         {
-            "attacker_msg": "The unyielding weight of your cellphone leaves a deep, painful bruise and a ringing sensation on {target_name}'s torso, the keypad pattern visible.",
-            "victim_msg": "The unyielding weight of {attacker_name}'s cellphone leaves a deep, painful bruise and a ringing sensation on your torso, the keypad pattern visible.",
-            "observer_msg": "The unyielding weight of {attacker_name}'s cellphone leaves a deep, painful bruise and a ringing sensation on {target_name}'s torso, the keypad pattern visible."
+            "attacker_msg": "The unyielding weight of your cellphone leaves a deep, painful bruise and a ringing sensation on {target_name}'s {hit_location}, the keypad pattern visible.",
+            "victim_msg": "The unyielding weight of {attacker_name}'s cellphone leaves a deep, painful bruise and a ringing sensation on your {hit_location}, the keypad pattern visible.",
+            "observer_msg": "The unyielding weight of {attacker_name}'s cellphone leaves a deep, painful bruise and a ringing sensation on {target_name}'s {hit_location}, the keypad pattern visible."
         },
         {
             "attacker_msg": "Your follow-up attack with the cellphone catches {target_name} again, adding another grievous, jarring wound from the hard plastic.",
@@ -228,19 +228,19 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s follow-up attack with the cellphone catches {target_name} again, adding another grievous, jarring wound from the hard plastic."
         },
         {
-            "attacker_msg": "A desperate block by {target_name} is met with the full force of the cellphone, numbing their arm with its solid, heavy impact.",
-            "victim_msg": "A desperate block by you is met with the full force of the cellphone, numbing your arm with its solid, heavy impact.",
-            "observer_msg": "A desperate block by {target_name} is met with the full force of the cellphone, numbing their arm with its solid, heavy impact."
+            "attacker_msg": "A desperate block by {target_name} is met with the full force of the cellphone, numbing their {hit_location} with its solid, heavy impact.",
+            "victim_msg": "A desperate block by you is met with the full force of the cellphone, numbing your {hit_location} with its solid, heavy impact.",
+            "observer_msg": "A desperate block by {target_name} is met with the full force of the cellphone, numbing their {hit_location} with its solid, heavy impact."
         },
         {
-            "attacker_msg": "The cellphone makes solid contact with {target_name}'s chest, the blunt force knocking the wind out of them with a surprising *WHUMP*.",
-            "victim_msg": "The cellphone makes solid contact with your chest, the blunt force knocking the wind out of you with a surprising *WHUMP*.",
-            "observer_msg": "The cellphone makes solid contact with {target_name}'s chest, the blunt force knocking the wind out of them with a surprising *WHUMP*."
+            "attacker_msg": "The cellphone makes solid contact with {target_name}'s {hit_location}, the blunt force knocking the wind out of them with a surprising *WHUMP*.",
+            "victim_msg": "The cellphone makes solid contact with your {hit_location}, the blunt force knocking the wind out of you with a surprising *WHUMP*.",
+            "observer_msg": "The cellphone makes solid contact with {target_name}'s {hit_location}, the blunt force knocking the wind out of them with a surprising *WHUMP*."
         },
         {
-            "attacker_msg": "Your cellphone finds purchase, delivering a painful, debilitating blow to {target_name}'s side, making them gasp from the sheer, unexpected weight.",
-            "victim_msg": "{attacker_name}'s cellphone finds purchase, delivering a painful, debilitating blow to your side, making you gasp from the sheer, unexpected weight.",
-            "observer_msg": "{attacker_name}'s cellphone finds purchase, delivering a painful, debilitating blow to {target_name}'s side, making them gasp from the sheer, unexpected weight."
+            "attacker_msg": "Your cellphone finds purchase, delivering a painful, debilitating blow to {target_name}'s {hit_location}, making them gasp from the sheer, unexpected weight.",
+            "victim_msg": "{attacker_name}'s cellphone finds purchase, delivering a painful, debilitating blow to your {hit_location}, making you gasp from the sheer, unexpected weight.",
+            "observer_msg": "{attacker_name}'s cellphone finds purchase, delivering a painful, debilitating blow to {target_name}'s {hit_location}, making them gasp from the sheer, unexpected weight."
         },
         {
             "attacker_msg": "Even a glancing blow from the cellphone leaves {target_name} with a significant, throbbing bruise and seeing stars from the hard, solid impact.",
@@ -263,9 +263,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s strike is true, the cellphone smashing {target_name} squarely and causing immediate, disorienting trauma with its sheer, surprising mass."
         },
         {
-            "attacker_msg": "A close-quarters struggle, and you manage to bring the cellphone down hard on {target_name}'s head with a sickening, plastic-on-bone *CRUNCH*.",
-            "victim_msg": "A close-quarters struggle, and {attacker_name} manages to bring the cellphone down hard on your head with a sickening, plastic-on-bone *CRUNCH*.",
-            "observer_msg": "A close-quarters struggle, and {attacker_name} manages to bring the cellphone down hard on {target_name}'s head with a sickening, plastic-on-bone *CRUNCH*."
+            "attacker_msg": "A close-quarters struggle, and you manage to bring the cellphone down hard on {target_name}'s {hit_location} with a sickening, plastic-on-bone *CRUNCH*.",
+            "victim_msg": "A close-quarters struggle, and {attacker_name} manages to bring the cellphone down hard on your {hit_location} with a sickening, plastic-on-bone *CRUNCH*.",
+            "observer_msg": "A close-quarters struggle, and {attacker_name} manages to bring the cellphone down hard on {target_name}'s {hit_location} with a sickening, plastic-on-bone *CRUNCH*."
         },
         {
             "attacker_msg": "The cellphone, a communication device, proves brutally effective as you inflict a stunning injury on {target_name} with its bulk.",
@@ -278,19 +278,19 @@ MESSAGES = {
             "observer_msg": "{attacker_name}'s cellphone makes contact again, leaving another deep, painful bruise and a ringing in {target_name}'s ears from the solid, heavy hit."
         },
         {
-            "attacker_msg": "A painful thudding sound as the cellphone from you smashes into {target_name}'s ribs, making them wheeze from the heavy, unyielding impact.",
-            "victim_msg": "A painful thudding sound as the cellphone from {attacker_name} smashes into your ribs, making you wheeze from the heavy, unyielding impact.",
-            "observer_msg": "A painful thudding sound as the cellphone from {attacker_name} smashes into {target_name}'s ribs, making them wheeze from the heavy, unyielding impact."
+            "attacker_msg": "A painful thudding sound as the cellphone from you smashes into {target_name}'s {hit_location}, making them wheeze from the heavy, unyielding impact.",
+            "victim_msg": "A painful thudding sound as the cellphone from {attacker_name} smashes into your {hit_location}, making you wheeze from the heavy, unyielding impact.",
+            "observer_msg": "A painful thudding sound as the cellphone from {attacker_name} smashes into {target_name}'s {hit_location}, making them wheeze from the heavy, unyielding impact."
         },
         {
-            "attacker_msg": "The corner of your cellphone, perhaps the antenna base, impacts {target_name}'s temple, the pain and shock overwhelming and blurring their vision.",
-            "victim_msg": "The corner of {attacker_name}'s cellphone, perhaps the antenna base, impacts your temple, the pain and shock overwhelming and blurring your vision.",
-            "observer_msg": "The corner of {attacker_name}'s cellphone, perhaps the antenna base, impacts {target_name}'s temple, the pain and shock overwhelming and blurring their vision."
+            "attacker_msg": "The corner of your cellphone, perhaps the antenna base, impacts {target_name}'s {hit_location}, the pain and shock overwhelming and blurring their vision.",
+            "victim_msg": "The corner of {attacker_name}'s cellphone, perhaps the antenna base, impacts your {hit_location}, the pain and shock overwhelming and blurring your vision.",
+            "observer_msg": "The corner of {attacker_name}'s cellphone, perhaps the antenna base, impacts {target_name}'s {hit_location}, the pain and shock overwhelming and blurring their vision."
         },
         {
-            "attacker_msg": "Your cellphone delivers another brutal blow to {target_name}'s torso, the unyielding plastic and its sharp edges unforgiving.",
-            "victim_msg": "{attacker_name}'s cellphone delivers another brutal blow to your torso, the unyielding plastic and its sharp edges unforgiving.",
-            "observer_msg": "{attacker_name}'s cellphone delivers another brutal blow to {target_name}'s torso, the unyielding plastic and its sharp edges unforgiving."
+            "attacker_msg": "Your cellphone delivers another brutal blow to {target_name}'s {hit_location}, the unyielding plastic and its sharp edges unforgiving.",
+            "victim_msg": "{attacker_name}'s cellphone delivers another brutal blow to your {hit_location}, the unyielding plastic and its sharp edges unforgiving.",
+            "observer_msg": "{attacker_name}'s cellphone delivers another brutal blow to {target_name}'s {hit_location}, the unyielding plastic and its sharp edges unforgiving."
         },
         {
             "attacker_msg": "A well-placed strike with the cellphone leaves {target_name} momentarily stunned, vision swimming from the solid, heavy impact, a taste of plastic in their mouth.",

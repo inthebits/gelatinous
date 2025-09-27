@@ -153,9 +153,9 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A powerful chop from you, and the falchion's heavy blade bites deep into {target_name}'s arm.",
-            'victim_msg': "A powerful chop from {attacker_name}, and the falchion's heavy blade bites deep into your arm.",
-            'observer_msg': "A powerful chop from {attacker_name}, and the falchion's heavy blade bites deep into {target_name}'s arm."
+            'attacker_msg': "A powerful chop from you, and the falchion's heavy blade bites deep into {target_name}'s {hit_location}.",
+            'victim_msg': "A powerful chop from {attacker_name}, and the falchion's heavy blade bites deep into your {hit_location}.",
+            'observer_msg': "A powerful chop from {attacker_name}, and the falchion's heavy blade bites deep into {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "The falchion flashes, your brutal hack shearing through {target_name}'s guard to land heavily.",
@@ -163,29 +163,29 @@ MESSAGES = {
             'observer_msg': "The falchion flashes, {attacker_name}'s brutal hack shearing through {target_name}'s guard to land heavily."
         },
         {
-            'attacker_msg': "Your blade smashes down, the falchion cleaving into {target_name}'s shoulder with a sickening thud.",
-            'victim_msg': "{attacker_name}'s blade smashes down, the falchion cleaving into your shoulder with a sickening thud.",
-            'observer_msg': "{attacker_name}'s blade smashes down, the falchion cleaving into {target_name}'s shoulder with a sickening thud."
+            'attacker_msg': "Your blade smashes down, the falchion cleaving into {target_name}'s {hit_location} with a sickening thud.",
+            'victim_msg': "{attacker_name}'s blade smashes down, the falchion cleaving into your {hit_location} with a sickening thud.",
+            'observer_msg': "{attacker_name}'s blade smashes down, the falchion cleaving into {target_name}'s {hit_location} with a sickening thud."
         },
         {
-            'attacker_msg': "Steel rings as your falchion deflects a blow and delivers a savage counter-chop to {target_name}'s ribs.",
-            'victim_msg': "Steel rings as {attacker_name}'s falchion deflects a blow and delivers a savage counter-chop to your ribs.",
-            'observer_msg': "Steel rings as {attacker_name}'s falchion deflects a blow and delivers a savage counter-chop to {target_name}'s ribs."
+            'attacker_msg': "Steel rings as your falchion deflects a blow and delivers a savage counter-chop to {target_name}'s {hit_location}.",
+            'victim_msg': "Steel rings as {attacker_name}'s falchion deflects a blow and delivers a savage counter-chop to your {hit_location}.",
+            'observer_msg': "Steel rings as {attacker_name}'s falchion deflects a blow and delivers a savage counter-chop to {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "The broad edge of the falchion slices across {target_name}'s leg, leaving a horrific, gaping wound.",
-            'victim_msg': "The broad edge of the falchion slices across your leg, leaving a horrific, gaping wound.",
-            'observer_msg': "The broad edge of the falchion slices across {target_name}'s leg, leaving a horrific, gaping wound."
+            'attacker_msg': "The broad edge of the falchion slices across {target_name}'s {hit_location}, leaving a horrific, gaping wound.",
+            'victim_msg': "The broad edge of the falchion slices across your {hit_location}, leaving a horrific, gaping wound.",
+            'observer_msg': "The broad edge of the falchion slices across {target_name}'s {hit_location}, leaving a horrific, gaping wound."
         },
         {
-            'attacker_msg': "Your raw power connects, the falchion finding an opening and burying itself in {target_name}'s side.",
-            'victim_msg': "{attacker_name}'s raw power connects, the falchion finding an opening and burying itself in your side.",
-            'observer_msg': "{attacker_name}'s raw power connects, the falchion finding an opening and burying itself in {target_name}'s side."
+            'attacker_msg': "Your raw power connects, the falchion finding an opening and burying itself in {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name}'s raw power connects, the falchion finding an opening and burying itself in your {hit_location}.",
+            'observer_msg': "{attacker_name}'s raw power connects, the falchion finding an opening and burying itself in {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "A quick, brutal feint, then your falchion hacks across {target_name}'s face, spraying blood.",
-            'victim_msg': "A quick, brutal feint, then {attacker_name}'s falchion hacks across your face, spraying blood.",
-            'observer_msg': "A quick, brutal feint, then {attacker_name}'s falchion hacks across {target_name}'s face, spraying blood."
+            'attacker_msg': "A quick, brutal feint, then your falchion hacks across {target_name}'s {hit_location}, spraying blood.",
+            'victim_msg': "A quick, brutal feint, then {attacker_name}'s falchion hacks across your {hit_location}, spraying blood.",
+            'observer_msg': "A quick, brutal feint, then {attacker_name}'s falchion hacks across {target_name}'s {hit_location}, spraying blood."
         },
         {
             'attacker_msg': "The falchion's wicked edge crashes through {target_name}'s defenses, leaving a deep, ragged gash.",
@@ -193,9 +193,9 @@ MESSAGES = {
             'observer_msg': "The falchion's wicked edge crashes through {target_name}'s defenses, leaving a deep, ragged gash."
         },
         {
-            'attacker_msg': "Your blade whistles in a heavy arc before striking {target_name}'s exposed knee, shattering it.",
-            'victim_msg': "{attacker_name}'s blade whistles in a heavy arc before striking your exposed knee, shattering it.",
-            'observer_msg': "{attacker_name}'s blade whistles in a heavy arc before striking {target_name}'s exposed knee, shattering it."
+            'attacker_msg': "Your blade whistles in a heavy arc before striking {target_name}'s exposed {hit_location}, shattering it.",
+            'victim_msg': "{attacker_name}'s blade whistles in a heavy arc before striking your exposed {hit_location}, shattering it.",
+            'observer_msg': "{attacker_name}'s blade whistles in a heavy arc before striking {target_name}'s exposed {hit_location}, shattering it."
         },
         {
             'attacker_msg': "With a grunt of exertion, you drive the falchion against {target_name}, the force of the blow staggering them.",
@@ -203,24 +203,24 @@ MESSAGES = {
             'observer_msg': "With a grunt of exertion, {attacker_name} drives the falchion against {target_name}, the force of the blow staggering them."
         },
         {
-            'attacker_msg': "The falchion scores a brutal hit on {target_name}'s shield arm, the impact nearly severing it.",
-            'victim_msg': "The falchion scores a brutal hit on your shield arm, the impact nearly severing it.",
-            'observer_msg': "The falchion scores a brutal hit on {target_name}'s shield arm, the impact nearly severing it."
+            'attacker_msg': "The falchion scores a brutal hit on {target_name}'s shield {hit_location}, the impact nearly severing it.",
+            'victim_msg': "The falchion scores a brutal hit on your shield {hit_location}, the impact nearly severing it.",
+            'observer_msg': "The falchion scores a brutal hit on {target_name}'s shield {hit_location}, the impact nearly severing it."
         },
         {
-            'attacker_msg': "Your savage chop opens a wide, bleeding wound on {target_name}'s chest.",
-            'victim_msg': "{attacker_name}'s savage chop opens a wide, bleeding wound on your chest.",
-            'observer_msg': "{attacker_name}'s savage chop opens a wide, bleeding wound on {target_name}'s chest."
+            'attacker_msg': "Your savage chop opens a wide, bleeding wound on {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name}'s savage chop opens a wide, bleeding wound on your {hit_location}.",
+            'observer_msg': "{attacker_name}'s savage chop opens a wide, bleeding wound on {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "A resounding thwack as your falchion smashes against {target_name}'s armor, denting it and breaking bones.",
-            'victim_msg': "A resounding thwack as {attacker_name}'s falchion smashes against your armor, denting it and breaking bones.",
-            'observer_msg': "A resounding thwack as {attacker_name}'s falchion smashes against {target_name}'s armor, denting it and breaking bones."
+            'attacker_msg': "A resounding thwack as your falchion smashes against {target_name}'s {hit_location}or, denting it and breaking bones.",
+            'victim_msg': "A resounding thwack as {attacker_name}'s falchion smashes against your {hit_location}or, denting it and breaking bones.",
+            'observer_msg': "A resounding thwack as {attacker_name}'s falchion smashes against {target_name}'s {hit_location}or, denting it and breaking bones."
         },
         {
-            'attacker_msg': "The keen, heavy blade of the falchion leaves a wide, bloody trail along {target_name}'s torso.",
-            'victim_msg': "The keen, heavy blade of the falchion leaves a wide, bloody trail along your torso.",
-            'observer_msg': "The keen, heavy blade of the falchion leaves a wide, bloody trail along {target_name}'s torso."
+            'attacker_msg': "The keen, heavy blade of the falchion leaves a wide, bloody trail along {target_name}'s {hit_location}.",
+            'victim_msg': "The keen, heavy blade of the falchion leaves a wide, bloody trail along your {hit_location}.",
+            'observer_msg': "The keen, heavy blade of the falchion leaves a wide, bloody trail along {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "Your follow-through chop with the falchion catches {target_name} with brutal, crippling force.",
@@ -228,9 +228,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s follow-through chop with the falchion catches {target_name} with brutal, crippling force."
         },
         {
-            'attacker_msg': "A downward hack from your falchion crushes {target_name}'s exposed hand against their weapon hilt.",
-            'victim_msg': "A downward hack from {attacker_name}'s falchion crushes your exposed hand against your weapon hilt.",
-            'observer_msg': "A downward hack from {attacker_name}'s falchion crushes {target_name}'s exposed hand against their weapon hilt."
+            'attacker_msg': "A downward hack from your falchion crushes {target_name}'s exposed {hit_location} against their weapon hilt.",
+            'victim_msg': "A downward hack from {attacker_name}'s falchion crushes your exposed {hit_location} against your weapon hilt.",
+            'observer_msg': "A downward hack from {attacker_name}'s falchion crushes {target_name}'s exposed {hit_location} against their weapon hilt."
         },
         {
             'attacker_msg': "The falchion sings its grim song as it connects with {target_name}, tearing flesh and splintering bone.",
@@ -238,9 +238,9 @@ MESSAGES = {
             'observer_msg': "The falchion sings its grim song as it connects with {target_name}, tearing flesh and splintering bone."
         },
         {
-            'attacker_msg': "Your blade finds purchase, carving a horrific, chopping wound into {target_name}'s thigh.",
-            'victim_msg': "{attacker_name}'s blade finds purchase, carving a horrific, chopping wound into your thigh.",
-            'observer_msg': "{attacker_name}'s blade finds purchase, carving a horrific, chopping wound into {target_name}'s thigh."
+            'attacker_msg': "Your blade finds purchase, carving a horrific, chopping wound into {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name}'s blade finds purchase, carving a horrific, chopping wound into your {hit_location}.",
+            'observer_msg': "{attacker_name}'s blade finds purchase, carving a horrific, chopping wound into {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "A glancing blow from the falchion still manages to rip through armor and draw significant blood from {target_name}.",
@@ -263,9 +263,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s chop is brutally effective, the falchion's weight striking {target_name} with devastating force."
         },
         {
-            'attacker_msg': "A downward hack from your falchion impacts {target_name}'s collarbone, shattering it with a wet crunch.",
-            'victim_msg': "A downward hack from {attacker_name}'s falchion impacts your collarbone, shattering it with a wet crunch.",
-            'observer_msg': "A downward hack from {attacker_name}'s falchion impacts {target_name}'s collarbone, shattering it with a wet crunch."
+            'attacker_msg': "A downward hack from your falchion impacts {target_name}'s {hit_location}, shattering it with a wet crunch.",
+            'victim_msg': "A downward hack from {attacker_name}'s falchion impacts your {hit_location}, shattering it with a wet crunch.",
+            'observer_msg': "A downward hack from {attacker_name}'s falchion impacts {target_name}'s {hit_location}, shattering it with a wet crunch."
         },
         {
             'attacker_msg': "The falchion, heavy and vicious, is swung with brutal intent by you, its edge finding an opening on {target_name}.",
@@ -283,14 +283,14 @@ MESSAGES = {
             'observer_msg': "A powerful chop from the falchion forces {target_name} to give ground, blood welling from the terrible injury."
         },
         {
-            'attacker_msg': "The point of your falchion, driven by a powerful chop, bites into {target_name}'s exposed neck.",
-            'victim_msg': "The point of {attacker_name}'s falchion, driven by a powerful chop, bites into your exposed neck.",
-            'observer_msg': "The point of {attacker_name}'s falchion, driven by a powerful chop, bites into {target_name}'s exposed neck."
+            'attacker_msg': "The point of your falchion, driven by a powerful chop, bites into {target_name}'s exposed {hit_location}.",
+            'victim_msg': "The point of {attacker_name}'s falchion, driven by a powerful chop, bites into your exposed {hit_location}.",
+            'observer_msg': "The point of {attacker_name}'s falchion, driven by a powerful chop, bites into {target_name}'s exposed {hit_location}."
         },
         {
-            'attacker_msg': "Your falchion opens a savage cut on {target_name}'s side, the steel unforgiving and brutally sharp.",
-            'victim_msg': "{attacker_name}'s falchion opens a savage cut on your side, the steel unforgiving and brutally sharp.",
-            'observer_msg': "{attacker_name}'s falchion opens a savage cut on {target_name}'s side, the steel unforgiving and brutally sharp."
+            'attacker_msg': "Your falchion opens a savage cut on {target_name}'s {hit_location}, the steel unforgiving and brutally sharp.",
+            'victim_msg': "{attacker_name}'s falchion opens a savage cut on your {hit_location}, the steel unforgiving and brutally sharp.",
+            'observer_msg': "{attacker_name}'s falchion opens a savage cut on {target_name}'s {hit_location}, the steel unforgiving and brutally sharp."
         },
         {
             'attacker_msg': "A well-placed chop from the falchion leaves {target_name} winded, bleeding, and broken.",

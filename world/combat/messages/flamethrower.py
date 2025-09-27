@@ -153,29 +153,29 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A deafening *WHOOSH-ROAR* as your flamethrower erupts, engulfing {target_name}'s arm in a torrent of clinging, searing fire. {target_name} screams, flailing as flesh blackens and melts, the air filled with the stench of burning fuel and cooked meat.",
-            'victim_msg': "A deafening *WHOOSH-ROAR* as {attacker_name}'s flamethrower erupts, engulfing your arm in a torrent of clinging, searing fire. You scream, flailing as flesh blackens and melts, the air filled with the stench of burning fuel and cooked meat.",
-            'observer_msg': "A deafening *WHOOSH-ROAR* as {attacker_name}'s flamethrower erupts, engulfing {target_name}'s arm in a torrent of clinging, searing fire. {target_name} screams, flailing as flesh blackens and melts, the air filled with the stench of burning fuel and cooked meat."
+            'attacker_msg': "A deafening *WHOOSH-ROAR* as your flamethrower erupts, engulfing {target_name}'s {hit_location} in a torrent of clinging, searing fire. {target_name} screams, flailing as flesh blackens and melts, the air filled with the stench of burning fuel and cooked meat.",
+            'victim_msg': "A deafening *WHOOSH-ROAR* as {attacker_name}'s flamethrower erupts, engulfing your {hit_location} in a torrent of clinging, searing fire. You scream, flailing as flesh blackens and melts, the air filled with the stench of burning fuel and cooked meat.",
+            'observer_msg': "A deafening *WHOOSH-ROAR* as {attacker_name}'s flamethrower erupts, engulfing {target_name}'s {hit_location} in a torrent of clinging, searing fire. {target_name} screams, flailing as flesh blackens and melts, the air filled with the stench of burning fuel and cooked meat."
         },
         {
-            'attacker_msg': "The flamethrower unleashes a jet of liquid flame that splashes across {target_name}'s leg, which instantly ignites. {target_name} collapses, shrieking in unimaginable agony as the fire consumes them, the heat intense even from a distance.",
-            'victim_msg': "The flamethrower unleashes a jet of liquid flame that splashes across your leg, which instantly ignites. You collapse, shrieking in unimaginable agony as the fire consumes you, the heat intense even from a distance.",
-            'observer_msg': "The flamethrower unleashes a jet of liquid flame that splashes across {target_name}'s leg, which instantly ignites. {target_name} collapses, shrieking in unimaginable agony as the fire consumes them, the heat intense even from a distance."
+            'attacker_msg': "The flamethrower unleashes a jet of liquid flame that splashes across {target_name}'s {hit_location}, which instantly ignites. {target_name} collapses, shrieking in unimaginable agony as the fire consumes them, the heat intense even from a distance.",
+            'victim_msg': "The flamethrower unleashes a jet of liquid flame that splashes across your {hit_location}, which instantly ignites. You collapse, shrieking in unimaginable agony as the fire consumes you, the heat intense even from a distance.",
+            'observer_msg': "The flamethrower unleashes a jet of liquid flame that splashes across {target_name}'s {hit_location}, which instantly ignites. {target_name} collapses, shrieking in unimaginable agony as the fire consumes them, the heat intense even from a distance."
         },
         {
-            'attacker_msg': "Your sweeping burst from the flamethrower catches {target_name}'s shoulder; clothing vaporizes, and skin blisters and chars in seconds. The roar of the flames is punctuated by {target_name}'s horrifying screams.",
-            'victim_msg': "{attacker_name}'s sweeping burst from the flamethrower catches your shoulder; clothing vaporizes, and skin blisters and chars in seconds. The roar of the flames is punctuated by your horrifying screams.",
-            'observer_msg': "{attacker_name}'s sweeping burst from the flamethrower catches {target_name}'s shoulder; clothing vaporizes, and skin blisters and chars in seconds. The roar of the flames is punctuated by {target_name}'s horrifying screams."
+            'attacker_msg': "Your sweeping burst from the flamethrower catches {target_name}'s {hit_location}; clothing vaporizes, and skin blisters and chars in seconds. The roar of the flames is punctuated by {target_name}'s horrifying screams.",
+            'victim_msg': "{attacker_name}'s sweeping burst from the flamethrower catches your {hit_location}; clothing vaporizes, and skin blisters and chars in seconds. The roar of the flames is punctuated by your horrifying screams.",
+            'observer_msg': "{attacker_name}'s sweeping burst from the flamethrower catches {target_name}'s {hit_location}; clothing vaporizes, and skin blisters and chars in seconds. The roar of the flames is punctuated by {target_name}'s horrifying screams."
         },
         {
-            'attacker_msg': "A stream of burning fuel from your flamethrower blankets {target_name}'s side, the intense heat and clinging fire causing them to writhe on the ground, a living inferno. Black, oily smoke billows upwards.",
-            'victim_msg': "A stream of burning fuel from {attacker_name}'s flamethrower blankets your side, the intense heat and clinging fire causing you to writhe on the ground, a living inferno. Black, oily smoke billows upwards.",
-            'observer_msg': "A stream of burning fuel from {attacker_name}'s flamethrower blankets {target_name}'s side, the intense heat and clinging fire causing them to writhe on the ground, a living inferno. Black, oily smoke billows upwards."
+            'attacker_msg': "A stream of burning fuel from your flamethrower blankets {target_name}'s {hit_location}, the intense heat and clinging fire causing them to writhe on the ground, a living inferno. Black, oily smoke billows upwards.",
+            'victim_msg': "A stream of burning fuel from {attacker_name}'s flamethrower blankets your {hit_location}, the intense heat and clinging fire causing you to writhe on the ground, a living inferno. Black, oily smoke billows upwards.",
+            'observer_msg': "A stream of burning fuel from {attacker_name}'s flamethrower blankets {target_name}'s {hit_location}, the intense heat and clinging fire causing them to writhe on the ground, a living inferno. Black, oily smoke billows upwards."
         },
         {
-            'attacker_msg': "The flamethrower's fiery breath washes over {target_name}'s thigh; the fire sticks and spreads with terrifying speed, turning tissue into a bubbling, blackened ruin. {target_name}'s cries are drowned out by the weapon's roar.",
-            'victim_msg': "The flamethrower's fiery breath washes over your thigh; the fire sticks and spreads with terrifying speed, turning tissue into a bubbling, blackened ruin. Your cries are drowned out by the weapon's roar.",
-            'observer_msg': "The flamethrower's fiery breath washes over {target_name}'s thigh; the fire sticks and spreads with terrifying speed, turning tissue into a bubbling, blackened ruin. {target_name}'s cries are drowned out by the weapon's roar."
+            'attacker_msg': "The flamethrower's fiery breath washes over {target_name}'s {hit_location}; the fire sticks and spreads with terrifying speed, turning tissue into a bubbling, blackened ruin. {target_name}'s cries are drowned out by the weapon's roar.",
+            'victim_msg': "The flamethrower's fiery breath washes over your {hit_location}; the fire sticks and spreads with terrifying speed, turning tissue into a bubbling, blackened ruin. Your cries are drowned out by the weapon's roar.",
+            'observer_msg': "The flamethrower's fiery breath washes over {target_name}'s {hit_location}; the fire sticks and spreads with terrifying speed, turning tissue into a bubbling, blackened ruin. {target_name}'s cries are drowned out by the weapon's roar."
         },
         {
             'attacker_msg': "Your well-aimed blast with the flamethrower engulfs {target_name} in a cocoon of fire, their form becoming a writhing silhouette within the searing orange glow. The smell of burning is overwhelming.",
@@ -183,9 +183,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s well-aimed blast with the flamethrower engulfs {target_name} in a cocoon of fire, their form becoming a writhing silhouette within the searing orange glow. The smell of burning is overwhelming."
         },
         {
-            'attacker_msg': "A direct hit! The flamethrower's stream smashes into {target_name}'s chest, and they are instantly wreathed in flames, stumbling blindly as the fire consumes their oxygen and cooks them alive. You hold the trigger, ensuring complete immolation.",
-            'victim_msg': "A direct hit! The flamethrower's stream smashes into your chest, and you are instantly wreathed in flames, stumbling blindly as the fire consumes your oxygen and cooks you alive. {attacker_name} holds the trigger, ensuring complete immolation.",
-            'observer_msg': "A direct hit! The flamethrower's stream smashes into {target_name}'s chest, and they are instantly wreathed in flames, stumbling blindly as the fire consumes their oxygen and cooks them alive. {attacker_name} holds the trigger, ensuring complete immolation."
+            'attacker_msg': "A direct hit! The flamethrower's stream smashes into {target_name}'s {hit_location}, and they are instantly wreathed in flames, stumbling blindly as the fire consumes their oxygen and cooks them alive. You hold the trigger, ensuring complete immolation.",
+            'victim_msg': "A direct hit! The flamethrower's stream smashes into your {hit_location}, and you are instantly wreathed in flames, stumbling blindly as the fire consumes your oxygen and cooks you alive. {attacker_name} holds the trigger, ensuring complete immolation.",
+            'observer_msg': "A direct hit! The flamethrower's stream smashes into {target_name}'s {hit_location}, and they are instantly wreathed in flames, stumbling blindly as the fire consumes their oxygen and cooks them alive. {attacker_name} holds the trigger, ensuring complete immolation."
         },
         {
             'attacker_msg': "The flamethrower's fiery payload sticks to {target_name}, turning them into a human torch. Their screams are cut short as the flames sear their lungs. The heat haze distorts the horrific scene.",
@@ -198,19 +198,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s flamethrower fires with a terrifying roar, and {target_name} is caught in the heart of the inferno, their body convulsing as the flames melt flesh from bone. The ground around them smokes and chars."
         },
         {
-            'attacker_msg': "With a sustained blast, the burning napalm from your flamethrower coats {target_name}'s abdomen; they fall, screaming, as the fire eats through them with relentless, agonizing efficiency. The air shimmers with heat.",
-            'victim_msg': "With a sustained blast, the burning napalm from {attacker_name}'s flamethrower coats your abdomen; you fall, screaming, as the fire eats through you with relentless, agonizing efficiency. The air shimmers with heat.",
-            'observer_msg': "With a sustained blast, the burning napalm from {attacker_name}'s flamethrower coats {target_name}'s abdomen; they fall, screaming, as the fire eats through them with relentless, agonizing efficiency. The air shimmers with heat."
+            'attacker_msg': "With a sustained blast, the burning napalm from your flamethrower coats {target_name}'s {hit_location}; they fall, screaming, as the fire eats through them with relentless, agonizing efficiency. The air shimmers with heat.",
+            'victim_msg': "With a sustained blast, the burning napalm from {attacker_name}'s flamethrower coats your {hit_location}; you fall, screaming, as the fire eats through you with relentless, agonizing efficiency. The air shimmers with heat.",
+            'observer_msg': "With a sustained blast, the burning napalm from {attacker_name}'s flamethrower coats {target_name}'s {hit_location}; they fall, screaming, as the fire eats through them with relentless, agonizing efficiency. The air shimmers with heat."
         },
         {
-            'attacker_msg': "The flamethrower scores a horrific hit, fire clinging to {target_name}'s arm and spreading rapidly. The stench of burnt hair and flesh fills the air as {target_name} desperately tries to beat out the flames.",
-            'victim_msg': "The flamethrower scores a horrific hit, fire clinging to your arm and spreading rapidly. The stench of burnt hair and flesh fills the air as you desperately try to beat out the flames.",
-            'observer_msg': "The flamethrower scores a horrific hit, fire clinging to {target_name}'s arm and spreading rapidly. The stench of burnt hair and flesh fills the air as {target_name} desperately tries to beat out the flames."
+            'attacker_msg': "The flamethrower scores a horrific hit, fire clinging to {target_name}'s {hit_location} and spreading rapidly. The stench of burnt hair and flesh fills the air as {target_name} desperately tries to beat out the flames.",
+            'victim_msg': "The flamethrower scores a horrific hit, fire clinging to your {hit_location} and spreading rapidly. The stench of burnt hair and flesh fills the air as you desperately try to beat out the flames.",
+            'observer_msg': "The flamethrower scores a horrific hit, fire clinging to {target_name}'s {hit_location} and spreading rapidly. The stench of burnt hair and flesh fills the air as {target_name} desperately tries to beat out the flames."
         },
         {
-            'attacker_msg': "Your aimed burst from the flamethrower engulfs {target_name}'s hip in a ball of fire. The intense heat alone is enough to cause severe burns even before the flames take hold.",
-            'victim_msg': "{attacker_name}'s aimed burst from the flamethrower engulfs your hip in a ball of fire. The intense heat alone is enough to cause severe burns even before the flames take hold.",
-            'observer_msg': "{attacker_name}'s aimed burst from the flamethrower engulfs {target_name}'s hip in a ball of fire. The intense heat alone is enough to cause severe burns even before the flames take hold."
+            'attacker_msg': "Your aimed burst from the flamethrower engulfs {target_name}'s {hit_location} in a ball of fire. The intense heat alone is enough to cause severe burns even before the flames take hold.",
+            'victim_msg': "{attacker_name}'s aimed burst from the flamethrower engulfs your {hit_location} in a ball of fire. The intense heat alone is enough to cause severe burns even before the flames take hold.",
+            'observer_msg': "{attacker_name}'s aimed burst from the flamethrower engulfs {target_name}'s {hit_location} in a ball of fire. The intense heat alone is enough to cause severe burns even before the flames take hold."
         },
         {
             'attacker_msg': "A loud *FWOOSH* and a gout of orange flame, and {target_name} is alight, their agonized screams a testament to the flamethrower's horrific power. Black smoke pours from their burning form.",
@@ -228,19 +228,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s flamethrower blast engulfs {target_name}, the intense heat charring them instantly. The roar of the flames is the only sound besides {target_name}'s choked cries."
         },
         {
-            'attacker_msg': "A burst of fire from the flamethrower hits {target_name}'s hands; they drop everything, screaming as their hands are instantly cooked and blackened by the intense, clinging flames.",
-            'victim_msg': "A burst of fire from the flamethrower hits your hands; you drop everything, screaming as your hands are instantly cooked and blackened by the intense, clinging flames.",
-            'observer_msg': "A burst of fire from the flamethrower hits {target_name}'s hands; they drop everything, screaming as their hands are instantly cooked and blackened by the intense, clinging flames."
+            'attacker_msg': "A burst of fire from the flamethrower hits {target_name}'s {hit_location}s; they drop everything, screaming as their hands are instantly cooked and blackened by the intense, clinging flames.",
+            'victim_msg': "A burst of fire from the flamethrower hits your {hit_location}s; you drop everything, screaming as your {hit_location}s are instantly cooked and blackened by the intense, clinging flames.",
+            'observer_msg': "A burst of fire from the flamethrower hits {target_name}'s {hit_location}s; they drop everything, screaming as their hands are instantly cooked and blackened by the intense, clinging flames."
         },
         {
-            'attacker_msg': "The flamethrower's fiery stream makes horrific contact with {target_name}'s torso, the flames spreading across their body like a malevolent liquid. Their struggles become weaker as the fire consumes them.",
-            'victim_msg': "The flamethrower's fiery stream makes horrific contact with your torso, the flames spreading across your body like a malevolent liquid. Your struggles become weaker as the fire consumes you.",
-            'observer_msg': "The flamethrower's fiery stream makes horrific contact with {target_name}'s torso, the flames spreading across their body like a malevolent liquid. Their struggles become weaker as the fire consumes them."
+            'attacker_msg': "The flamethrower's fiery stream makes horrific contact with {target_name}'s {hit_location}, the flames spreading across their body like a malevolent liquid. Their struggles become weaker as the fire consumes them.",
+            'victim_msg': "The flamethrower's fiery stream makes horrific contact with your {hit_location}, the flames spreading across your body like a malevolent liquid. Your struggles become weaker as the fire consumes you.",
+            'observer_msg': "The flamethrower's fiery stream makes horrific contact with {target_name}'s {hit_location}, the flames spreading across their body like a malevolent liquid. Their struggles become weaker as the fire consumes them."
         },
         {
-            'attacker_msg': "Your flamethrower jet finds its mark, delivering an agonizing, fiery baptism to {target_name}'s leg, which is quickly reduced to a charred, smoking ruin. The heat is unbearable.",
-            'victim_msg': "{attacker_name}'s flamethrower jet finds its mark, delivering an agonizing, fiery baptism to your leg, which is quickly reduced to a charred, smoking ruin. The heat is unbearable.",
-            'observer_msg': "{attacker_name}'s flamethrower jet finds its mark, delivering an agonizing, fiery baptism to {target_name}'s leg, which is quickly reduced to a charred, smoking ruin. The heat is unbearable."
+            'attacker_msg': "Your flamethrower jet finds its mark, delivering an agonizing, fiery baptism to {target_name}'s {hit_location}, which is quickly reduced to a charred, smoking ruin. The heat is unbearable.",
+            'victim_msg': "{attacker_name}'s flamethrower jet finds its mark, delivering an agonizing, fiery baptism to your {hit_location}, which is quickly reduced to a charred, smoking ruin. The heat is unbearable.",
+            'observer_msg': "{attacker_name}'s flamethrower jet finds its mark, delivering an agonizing, fiery baptism to {target_name}'s {hit_location}, which is quickly reduced to a charred, smoking ruin. The heat is unbearable."
         },
         {
             'attacker_msg': "Even a glancing spray from the flamethrower's fiery stream causes horrific, rapidly spreading burns on {target_name}'s skin. The oily fuel ensures the fire clings and burns deeper.",
@@ -278,19 +278,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s flamethrower blast makes impact, and {target_name} is instantly consumed by a raging inferno. The fire dances and licks at their form, leaving only char behind."
         },
         {
-            'attacker_msg': "A painful, roaring gout of flame from your flamethrower strikes {target_name}'s ribs, the fire burning through clothing and flesh in an instant. Their screams are cut short by the searing heat.",
-            'victim_msg': "A painful, roaring gout of flame from {attacker_name}'s flamethrower strikes your ribs, the fire burning through clothing and flesh in an instant. Your screams are cut short by the searing heat.",
-            'observer_msg': "A painful, roaring gout of flame from {attacker_name}'s flamethrower strikes {target_name}'s ribs, the fire burning through clothing and flesh in an instant. Their screams are cut short by the searing heat."
+            'attacker_msg': "A painful, roaring gout of flame from your flamethrower strikes {target_name}'s {hit_location}, the fire burning through clothing and flesh in an instant. Their screams are cut short by the searing heat.",
+            'victim_msg': "A painful, roaring gout of flame from {attacker_name}'s flamethrower strikes your {hit_location}, the fire burning through clothing and flesh in an instant. Your screams are cut short by the searing heat.",
+            'observer_msg': "A painful, roaring gout of flame from {attacker_name}'s flamethrower strikes {target_name}'s {hit_location}, the fire burning through clothing and flesh in an instant. Their screams are cut short by the searing heat."
         },
         {
-            'attacker_msg': "The fiery stream from your flamethrower hits {target_name}'s collarbone, and the flames rapidly spread upwards, engulfing their head and torso. The sight is horrifying.",
-            'victim_msg': "The fiery stream from {attacker_name}'s flamethrower hits your collarbone, and the flames rapidly spread upwards, engulfing your head and torso. The sight is horrifying.",
-            'observer_msg': "The fiery stream from {attacker_name}'s flamethrower hits {target_name}'s collarbone, and the flames rapidly spread upwards, engulfing their head and torso. The sight is horrifying."
+            'attacker_msg': "The fiery stream from your flamethrower hits {target_name}'s {hit_location}, and the flames rapidly spread upwards, engulfing their {hit_location} and {hit_location}. The sight is horrifying.",
+            'victim_msg': "The fiery stream from {attacker_name}'s flamethrower hits your {hit_location}, and the flames rapidly spread upwards, engulfing your {hit_location} and {hit_location}. The sight is horrifying.",
+            'observer_msg': "The fiery stream from {attacker_name}'s flamethrower hits {target_name}'s {hit_location}, and the flames rapidly spread upwards, engulfing their {hit_location} and {hit_location}. The sight is horrifying."
         },
         {
-            'attacker_msg': "Your flamethrower delivers another wave of burning agony to {target_name}'s torso, the flames greedily consuming them. Their form slumps, still burning fiercely.",
-            'victim_msg': "{attacker_name}'s flamethrower delivers another wave of burning agony to your torso, the flames greedily consuming you. Your form slumps, still burning fiercely.",
-            'observer_msg': "{attacker_name}'s flamethrower delivers another wave of burning agony to {target_name}'s torso, the flames greedily consuming them. Their form slumps, still burning fiercely."
+            'attacker_msg': "Your flamethrower delivers another wave of burning agony to {target_name}'s {hit_location}, the flames greedily consuming them. Their form slumps, still burning fiercely.",
+            'victim_msg': "{attacker_name}'s flamethrower delivers another wave of burning agony to your {hit_location}, the flames greedily consuming you. Your form slumps, still burning fiercely.",
+            'observer_msg': "{attacker_name}'s flamethrower delivers another wave of burning agony to {target_name}'s {hit_location}, the flames greedily consuming them. Their form slumps, still burning fiercely."
         },
         {
             'attacker_msg': "A well-aimed burst from the flamethrower leaves {target_name} writhing in a sea of fire, their body blackening and smoking. The heat radiating from them is intense.",

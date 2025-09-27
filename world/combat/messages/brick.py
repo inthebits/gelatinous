@@ -153,39 +153,39 @@ MESSAGES = {
     ],
     'hit': [
         {
-            "attacker_msg": "A brutal blow across the chest leaves {target_name} stunned, wheezing, and bleeding from somewhere new.",
-            "victim_msg": "A brutal blow across the chest leaves you stunned, wheezing, and bleeding from somewhere new.",
-            "observer_msg": "A brutal blow across the chest leaves {target_name} stunned, wheezing, and bleeding from somewhere new."
+            "attacker_msg": "A brutal blow across the {hit_location} leaves {target_name} stunned, wheezing, and bleeding from somewhere new.",
+            "victim_msg": "A brutal blow across the {hit_location} leaves you stunned, wheezing, and bleeding from somewhere new.",
+            "observer_msg": "A brutal blow across the {hit_location} leaves {target_name} stunned, wheezing, and bleeding from somewhere new."
         },
         {
-            "attacker_msg": "A crack to the side knocks out balance, blood, and two teeth. {target_name} doesn’t recover cleanly.",
-            "victim_msg": "A crack to the side knocks out balance, blood, and two teeth. You don’t recover cleanly.",
-            "observer_msg": "A crack to the side knocks out balance, blood, and two teeth. {target_name} doesn’t recover cleanly."
+            "attacker_msg": "A crack to the {hit_location} knocks out balance, blood, and two teeth. {target_name} doesn’t recover cleanly.",
+            "victim_msg": "A crack to the {hit_location} knocks out balance, blood, and two teeth. You don’t recover cleanly.",
+            "observer_msg": "A crack to the {hit_location} knocks out balance, blood, and two teeth. {target_name} doesn’t recover cleanly."
         },
         {
-            "attacker_msg": "A diagonal smash lands against the ribs. The noise is wet and final.",
-            "victim_msg": "A diagonal smash lands against the ribs. The noise is wet and final.",
-            "observer_msg": "A diagonal smash lands against the ribs. The noise is wet and final."
+            "attacker_msg": "A diagonal smash lands against the {hit_location}. The noise is wet and final.",
+            "victim_msg": "A diagonal smash lands against the {hit_location}. The noise is wet and final.",
+            "observer_msg": "A diagonal smash lands against the {hit_location}. The noise is wet and final."
         },
         {
-            "attacker_msg": "A sharp blow to the spine drops {target_name} like a marionette with its strings cut.",
-            "victim_msg": "A sharp blow to the spine drops you like a marionette with its strings cut.",
-            "observer_msg": "A sharp blow to the spine drops {target_name} like a marionette with its strings cut."
+            "attacker_msg": "A sharp blow to the {hit_location} drops {target_name} like a marionette with its strings cut.",
+            "victim_msg": "A sharp blow to the {hit_location} drops you like a marionette with its strings cut.",
+            "observer_msg": "A sharp blow to the {hit_location} drops {target_name} like a marionette with its strings cut."
         },
         {
-            "attacker_msg": "A sharp smash to the knee sends {target_name} down in an ugly twist. The bone didn’t like that.",
-            "victim_msg": "A sharp smash to the knee sends you down in an ugly twist. The bone didn’t like that.",
-            "observer_msg": "A sharp smash to the knee sends {target_name} down in an ugly twist. The bone didn’t like that."
+            "attacker_msg": "A sharp smash to the {hit_location} sends {target_name} down in an ugly twist. The bone didn’t like that.",
+            "victim_msg": "A sharp smash to the {hit_location} sends you down in an ugly twist. The bone didn’t like that.",
+            "observer_msg": "A sharp smash to the {hit_location} sends {target_name} down in an ugly twist. The bone didn’t like that."
         },
         {
-            "attacker_msg": "A side strike catches {target_name} in the mouth. Blood and teeth scatter like dice on pavement.",
-            "victim_msg": "A side strike catches you in the mouth. Blood and teeth scatter like dice on pavement.",
-            "observer_msg": "A side strike catches {target_name} in the mouth. Blood and teeth scatter like dice on pavement."
+            "attacker_msg": "A {hit_location} strike catches {target_name} in the mouth. Blood and teeth scatter like dice on pavement.",
+            "victim_msg": "A {hit_location} strike catches you in the mouth. Blood and teeth scatter like dice on pavement.",
+            "observer_msg": "A {hit_location} strike catches {target_name} in the mouth. Blood and teeth scatter like dice on pavement."
         },
         {
-            "attacker_msg": "A sideways arc takes {target_name} in the ribs. The brick sticks for a second. Then comes loose.",
-            "victim_msg": "A sideways arc takes you in the ribs. The brick sticks for a second. Then comes loose.",
-            "observer_msg": "A sideways arc takes {target_name} in the ribs. The brick sticks for a second. Then comes loose."
+            "attacker_msg": "A sideways arc takes {target_name} in the {hit_location}. The brick sticks for a second. Then comes loose.",
+            "victim_msg": "A sideways arc takes you in the {hit_location}. The brick sticks for a second. Then comes loose.",
+            "observer_msg": "A sideways arc takes {target_name} in the {hit_location}. The brick sticks for a second. Then comes loose."
         },
         {
             "attacker_msg": "A sideways swing catches {target_name} in the ear. They cry out, ears ringing, vision blurred.",
@@ -203,24 +203,24 @@ MESSAGES = {
             "observer_msg": "One hard swing and {target_name}'s ear is a ruin of cartilage and memory."
         },
         {
-            "attacker_msg": "The brick bounces off the shoulder but leaves a dent in pride and bone.",
-            "victim_msg": "The brick bounces off the shoulder but leaves a dent in pride and bone.",
-            "observer_msg": "The brick bounces off the shoulder but leaves a dent in pride and bone."
+            "attacker_msg": "The brick bounces off the {hit_location} but leaves a dent in pride and bone.",
+            "victim_msg": "The brick bounces off the {hit_location} but leaves a dent in pride and bone.",
+            "observer_msg": "The brick bounces off the {hit_location} but leaves a dent in pride and bone."
         },
         {
-            "attacker_msg": "The brick bounces off {target_name}'s brow, leaving a split and a blank stare.",
-            "victim_msg": "The brick bounces off your brow, leaving a split and a blank stare.",
-            "observer_msg": "The brick bounces off {target_name}'s brow, leaving a split and a blank stare."
+            "attacker_msg": "The brick bounces off {target_name}'s {hit_location}, leaving a split and a blank stare.",
+            "victim_msg": "The brick bounces off your {hit_location}, leaving a split and a blank stare.",
+            "observer_msg": "The brick bounces off {target_name}'s {hit_location}, leaving a split and a blank stare."
         },
         {
-            "attacker_msg": "The brick bounces off {target_name}'s jaw. They spin, disoriented, drooling blood and regret.",
-            "victim_msg": "The brick bounces off your jaw. You spin, disoriented, drooling blood and regret.",
-            "observer_msg": "The brick bounces off {target_name}'s jaw. They spin, disoriented, drooling blood and regret."
+            "attacker_msg": "The brick bounces off {target_name}'s {hit_location}. They spin, disoriented, drooling blood and regret.",
+            "victim_msg": "The brick bounces off your {hit_location}. You spin, disoriented, drooling blood and regret.",
+            "observer_msg": "The brick bounces off {target_name}'s {hit_location}. They spin, disoriented, drooling blood and regret."
         },
         {
-            "attacker_msg": "The brick is driven into {target_name}'s gut. They fold around it like it’s a truth they can’t swallow.",
-            "victim_msg": "The brick is driven into your gut. You fold around it like it’s a truth they can’t swallow.",
-            "observer_msg": "The brick is driven into {target_name}'s gut. They fold around it like it’s a truth they can’t swallow."
+            "attacker_msg": "The brick is driven into {target_name}'s {hit_location}. They fold around it like it’s a truth they can’t swallow.",
+            "victim_msg": "The brick is driven into your {hit_location}. You fold around it like it’s a truth they can’t swallow.",
+            "observer_msg": "The brick is driven into {target_name}'s {hit_location}. They fold around it like it’s a truth they can’t swallow."
         },
         {
             "attacker_msg": "The brick lands low and nasty. {target_name} groans and drops, clutching parts that shouldn’t hurt this much.",
@@ -228,59 +228,59 @@ MESSAGES = {
             "observer_msg": "The brick lands low and nasty. {target_name} groans and drops, clutching parts that shouldn’t hurt this much."
         },
         {
-            "attacker_msg": "The brick punches into the thigh, halting {target_name}'s escape with a scream and a thud.",
-            "victim_msg": "The brick punches into the thigh, halting your escape with a scream and a thud.",
-            "observer_msg": "The brick punches into the thigh, halting {target_name}'s escape with a scream and a thud."
+            "attacker_msg": "The brick punches into the {hit_location}, halting {target_name}'s escape with a scream and a thud.",
+            "victim_msg": "The brick punches into the {hit_location}, halting your escape with a scream and a thud.",
+            "observer_msg": "The brick punches into the {hit_location}, halting {target_name}'s escape with a scream and a thud."
         },
         {
-            "attacker_msg": "The brick punches into {target_name}'s hand. Bones fracture. Control flees.",
-            "victim_msg": "The brick punches into your hand. Bones fracture. Control flees.",
-            "observer_msg": "The brick punches into {target_name}'s hand. Bones fracture. Control flees."
+            "attacker_msg": "The brick punches into {target_name}'s {hit_location}. Bones fracture. Control flees.",
+            "victim_msg": "The brick punches into your {hit_location}. Bones fracture. Control flees.",
+            "observer_msg": "The brick punches into {target_name}'s {hit_location}. Bones fracture. Control flees."
         },
         {
-            "attacker_msg": "The brick slams into {target_name}'s chest. They stagger back, gasping, fingers clawing at nothing.",
-            "victim_msg": "The brick slams into your chest. You stagger back, gasping, fingers clawing at nothing.",
-            "observer_msg": "The brick slams into {target_name}'s chest. They stagger back, gasping, fingers clawing at nothing."
+            "attacker_msg": "The brick slams into {target_name}'s {hit_location}. They stagger {hit_location}, gasping, fingers clawing at nothing.",
+            "victim_msg": "The brick slams into your {hit_location}. You stagger {hit_location}, gasping, fingers clawing at nothing.",
+            "observer_msg": "The brick slams into {target_name}'s {hit_location}. They stagger {hit_location}, gasping, fingers clawing at nothing."
         },
         {
-            "attacker_msg": "The brick slams into {target_name}'s temple with a sickening crack. Blood flies in a red arc as they stumble.",
-            "victim_msg": "The brick slams into your temple with a sickening crack. Blood flies in a red arc as you stumble.",
-            "observer_msg": "The brick slams into {target_name}'s temple with a sickening crack. Blood flies in a red arc as they stumble."
+            "attacker_msg": "The brick slams into {target_name}'s {hit_location} with a sickening crack. Blood flies in a red arc as they stumble.",
+            "victim_msg": "The brick slams into your {hit_location} with a sickening crack. Blood flies in a red arc as you stumble.",
+            "observer_msg": "The brick slams into {target_name}'s {hit_location} with a sickening crack. Blood flies in a red arc as they stumble."
         },
         {
-            "attacker_msg": "The edge of the brick slices the brow. Blood pours into {target_name}'s eye as they shriek in confusion.",
-            "victim_msg": "The edge of the brick slices the brow. Blood pours into your eye as you shriek in confusion.",
-            "observer_msg": "The edge of the brick slices the brow. Blood pours into {target_name}'s eye as they shriek in confusion."
+            "attacker_msg": "The edge of the brick slices the {hit_location}. Blood pours into {target_name}'s eye as they shriek in confusion.",
+            "victim_msg": "The edge of the brick slices the {hit_location}. Blood pours into your eye as you shriek in confusion.",
+            "observer_msg": "The edge of the brick slices the {hit_location}. Blood pours into {target_name}'s eye as they shriek in confusion."
         },
         {
-            "attacker_msg": "You bash {target_name} across the cheek. The skin splits open like fruit past its time.",
-            "victim_msg": "{attacker_name} bashes you across the cheek. The skin splits open like fruit past its time.",
-            "observer_msg": "{attacker_name} bashes {target_name} across the cheek. The skin splits open like fruit past its time."
+            "attacker_msg": "You bash {target_name} across the {hit_location}. The skin splits open like fruit past its time.",
+            "victim_msg": "{attacker_name} bashes you across the {hit_location}. The skin splits open like fruit past its time.",
+            "observer_msg": "{attacker_name} bashes {target_name} across the {hit_location}. The skin splits open like fruit past its time."
         },
         {
-            "attacker_msg": "You bring the brick down on {target_name}'s hand. The crunch is sharp and immediate.",
-            "victim_msg": "{attacker_name} brings the brick down on your hand. The crunch is sharp and immediate.",
-            "observer_msg": "{attacker_name} brings the brick down on {target_name}'s hand. The crunch is sharp and immediate."
+            "attacker_msg": "You bring the brick down on {target_name}'s {hit_location}. The crunch is sharp and immediate.",
+            "victim_msg": "{attacker_name} brings the brick down on your {hit_location}. The crunch is sharp and immediate.",
+            "observer_msg": "{attacker_name} brings the brick down on {target_name}'s {hit_location}. The crunch is sharp and immediate."
         },
         {
-            "attacker_msg": "You connect with the sternum. The breath rushes out of {target_name} like a popped tire.",
-            "victim_msg": "{attacker_name} connects with the sternum. The breath rushes out of you like a popped tire.",
-            "observer_msg": "{attacker_name} connects with the sternum. The breath rushes out of {target_name} like a popped tire."
+            "attacker_msg": "You connect with the {hit_location}. The breath rushes out of {target_name} like a popped tire.",
+            "victim_msg": "{attacker_name} connects with the {hit_location}. The breath rushes out of you like a popped tire.",
+            "observer_msg": "{attacker_name} connects with the {hit_location}. The breath rushes out of {target_name} like a popped tire."
         },
         {
-            "attacker_msg": "You drive the brick down on {target_name}'s collarbone. Something gives with a dull snap.",
-            "victim_msg": "{attacker_name} drives the brick down on your collarbone. Something gives with a dull snap.",
-            "observer_msg": "{attacker_name} drives the brick down on {target_name}'s collarbone. Something gives with a dull snap."
+            "attacker_msg": "You drive the brick down on {target_name}'s {hit_location}. Something gives with a dull snap.",
+            "victim_msg": "{attacker_name} drives the brick down on your {hit_location}. Something gives with a dull snap.",
+            "observer_msg": "{attacker_name} drives the brick down on {target_name}'s {hit_location}. Something gives with a dull snap."
         },
         {
-            "attacker_msg": "You drive the edge into {target_name}'s shoulder. It sinks deep enough to draw sound from bone.",
-            "victim_msg": "{attacker_name} drives the edge into your shoulder. It sinks deep enough to draw sound from bone.",
-            "observer_msg": "{attacker_name} drives the edge into {target_name}'s shoulder. It sinks deep enough to draw sound from bone."
+            "attacker_msg": "You drive the edge into {target_name}'s {hit_location}. It sinks deep enough to draw sound from bone.",
+            "victim_msg": "{attacker_name} drives the edge into your {hit_location}. It sinks deep enough to draw sound from bone.",
+            "observer_msg": "{attacker_name} drives the edge into {target_name}'s {hit_location}. It sinks deep enough to draw sound from bone."
         },
         {
-            "attacker_msg": "You smash the brick into {target_name}'s hand. Bones crunch. The weapon clatters to the floor.",
-            "victim_msg": "{attacker_name} smashes the brick into your hand. Bones crunch. The weapon clatters to the floor.",
-            "observer_msg": "{attacker_name} smashes the brick into {target_name}'s hand. Bones crunch. The weapon clatters to the floor."
+            "attacker_msg": "You smash the brick into {target_name}'s {hit_location}. Bones crunch. The weapon clatters to the floor.",
+            "victim_msg": "{attacker_name} smashes the brick into your {hit_location}. Bones crunch. The weapon clatters to the floor.",
+            "observer_msg": "{attacker_name} smashes the brick into {target_name}'s {hit_location}. Bones crunch. The weapon clatters to the floor."
         },
         {
             "attacker_msg": "You smash the brick into {target_name}'s nose. It doesn’t break — it *detonates*.",
@@ -288,19 +288,19 @@ MESSAGES = {
             "observer_msg": "{attacker_name} smashes the brick into {target_name}'s nose. It doesn’t break — it *detonates*."
         },
         {
-            "attacker_msg": "You swing from the hip and crash the brick into {target_name}'s ribs. The sound is wet. The scream worse.",
-            "victim_msg": "{attacker_name} swings from the hip and crashes the brick into your ribs. The sound is wet. The scream worse.",
-            "observer_msg": "{attacker_name} swings from the hip and crashes the brick into {target_name}'s ribs. The sound is wet. The scream worse."
+            "attacker_msg": "You swing from the {hit_location} and crash the brick into {target_name}'s {hit_location}. The sound is wet. The scream worse.",
+            "victim_msg": "{attacker_name} swings from the {hit_location} and crashes the brick into your {hit_location}. The sound is wet. The scream worse.",
+            "observer_msg": "{attacker_name} swings from the {hit_location} and crashes the brick into {target_name}'s {hit_location}. The sound is wet. The scream worse."
         },
         {
-            "attacker_msg": "You swing low and crack the brick into {target_name}'s shin. A howl follows. Then a collapse.",
-            "victim_msg": "{attacker_name} swings low and cracks the brick into your shin. A howl follows. Then a collapse.",
-            "observer_msg": "{attacker_name} swings low and cracks the brick into {target_name}'s shin. A howl follows. Then a collapse."
+            "attacker_msg": "You swing low and crack the brick into {target_name}'s {hit_location}. A howl follows. Then a collapse.",
+            "victim_msg": "{attacker_name} swings low and cracks the brick into your {hit_location}. A howl follows. Then a collapse.",
+            "observer_msg": "{attacker_name} swings low and cracks the brick into {target_name}'s {hit_location}. A howl follows. Then a collapse."
         },
         {
-            "attacker_msg": "You throw your weight into the brick and connect with {target_name}'s back. The breath leaves them in a wheeze.",
-            "victim_msg": "{attacker_name} throws their weight into the brick and connect with your back. The breath leaves you in a wheeze.",
-            "observer_msg": "{attacker_name} throws their weight into the brick and connect with {target_name}'s back. The breath leaves them in a wheeze."
+            "attacker_msg": "You throw your weight into the brick and connect with {target_name}'s {hit_location}. The breath leaves them in a wheeze.",
+            "victim_msg": "{attacker_name} throws their weight into the brick and connect with your {hit_location}. The breath leaves you in a wheeze.",
+            "observer_msg": "{attacker_name} throws their weight into the brick and connect with {target_name}'s {hit_location}. The breath leaves them in a wheeze."
         }
     ],
     'miss': [

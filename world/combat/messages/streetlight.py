@@ -243,9 +243,9 @@ STREETLIGHT_MESSAGES = {
             'observer_msg': "{target_name} staggers under the devastating weight of {attacker_name}'s streetlight strike."
         },
         {
-            'attacker_msg': "The lamp head explodes in a shower of glass as it hits {target_name}.",
-            'victim_msg': "The lamp head explodes in a shower of glass as it hits you.",
-            'observer_msg': "The lamp head explodes in a shower of glass as it hits {target_name}."
+            'attacker_msg': "The lamp {hit_location} explodes in a shower of glass as it hits {target_name}.",
+            'victim_msg': "The lamp {hit_location} explodes in a shower of glass as it hits you.",
+            'observer_msg': "The lamp {hit_location} explodes in a shower of glass as it hits {target_name}."
         },
         {
             'attacker_msg': "Your streetlight blow crumples {target_name} like an accordion.",
@@ -254,7 +254,7 @@ STREETLIGHT_MESSAGES = {
         },
         {
             'attacker_msg': "The streetlight's weight drives {target_name} to their knees.",
-            'victim_msg': "The streetlight's weight drives you to your knees.",
+            'victim_msg': "The streetlight's weight drives you to your {hit_location}s.",
             'observer_msg': "The streetlight's weight drives {target_name} to their knees."
         },
         {
@@ -273,9 +273,9 @@ STREETLIGHT_MESSAGES = {
             'observer_msg': "{target_name} is hammered flat by the streetlight's devastating impact."
         },
         {
-            'attacker_msg': "The streetlight caves in {target_name}'s chest with a sickening crunch.",
-            'victim_msg': "The streetlight caves in your chest with a sickening crunch.",
-            'observer_msg': "The streetlight caves in {target_name}'s chest with a sickening crunch."
+            'attacker_msg': "The streetlight caves in {target_name}'s {hit_location} with a sickening crunch.",
+            'victim_msg': "The streetlight caves in your {hit_location} with a sickening crunch.",
+            'observer_msg': "The streetlight caves in {target_name}'s {hit_location} with a sickening crunch."
         },
         {
             'attacker_msg': "Your streetlight strike leaves {target_name} embedded in the pavement.",

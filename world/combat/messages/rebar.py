@@ -164,29 +164,29 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "The rebar slams into {target_name}'s ribs with a dull crunch, stealing their breath and something more.",
-            'victim_msg': "The rebar slams into your ribs with a dull crunch, stealing your breath and something more.",
-            'observer_msg': "The rebar slams into {target_name}'s ribs with a dull crunch, stealing their breath and something more."
+            'attacker_msg': "The rebar slams into {target_name}'s {hit_location} with a dull crunch, stealing their breath and something more.",
+            'victim_msg': "The rebar slams into your {hit_location} with a dull crunch, stealing your breath and something more.",
+            'observer_msg': "The rebar slams into {target_name}'s {hit_location} with a dull crunch, stealing their breath and something more."
         },
         {
-            'attacker_msg': "You swing low, connecting with {target_name}'s knee. The joint bends, then breaks.",
-            'victim_msg': "{attacker_name} swings low, connecting with your knee. The joint bends, then breaks.",
-            'observer_msg': "{attacker_name} swings low, connecting with {target_name}'s knee. The joint bends, then breaks."
+            'attacker_msg': "You swing low, connecting with {target_name}'s {hit_location}. The joint bends, then breaks.",
+            'victim_msg': "{attacker_name} swings low, connecting with your {hit_location}. The joint bends, then breaks.",
+            'observer_msg': "{attacker_name} swings low, connecting with {target_name}'s {hit_location}. The joint bends, then breaks."
         },
         {
-            'attacker_msg': "A wide arc crashes into {target_name}'s shoulder. Bone cracks under rusted steel.",
-            'victim_msg': "A wide arc crashes into your shoulder. Bone cracks under rusted steel.",
-            'observer_msg': "A wide arc crashes into {target_name}'s shoulder. Bone cracks under rusted steel."
+            'attacker_msg': "A wide arc crashes into {target_name}'s {hit_location}. Bone cracks under rusted steel.",
+            'victim_msg': "A wide arc crashes into your {hit_location}. Bone cracks under rusted steel.",
+            'observer_msg': "A wide arc crashes into {target_name}'s {hit_location}. Bone cracks under rusted steel."
         },
         {
-            'attacker_msg': "You drive the rebar into {target_name}'s side, sending them staggering with blood in their mouth.",
-            'victim_msg': "{attacker_name} drives the rebar into your side, sending you staggering with blood in your mouth.",
-            'observer_msg': "{attacker_name} drives the rebar into {target_name}'s side, sending them staggering with blood in their mouth."
+            'attacker_msg': "You drive the rebar into {target_name}'s {hit_location}, sending them staggering with blood in their mouth.",
+            'victim_msg': "{attacker_name} drives the rebar into your {hit_location}, sending you staggering with blood in your mouth.",
+            'observer_msg': "{attacker_name} drives the rebar into {target_name}'s {hit_location}, sending them staggering with blood in their mouth."
         },
         {
-            'attacker_msg': "The bar whistles before striking {target_name}'s back. They buckle like steel under pressure.",
-            'victim_msg': "The bar whistles before striking your back. You buckle like steel under pressure.",
-            'observer_msg': "The bar whistles before striking {target_name}'s back. They buckle like steel under pressure."
+            'attacker_msg': "The bar whistles before striking {target_name}'s {hit_location}. They buckle like steel under pressure.",
+            'victim_msg': "The bar whistles before striking your {hit_location}. You buckle like steel under pressure.",
+            'observer_msg': "The bar whistles before striking {target_name}'s {hit_location}. They buckle like steel under pressure."
         },
         {
             'attacker_msg': "You bring the bar down hard. It bounces off {target_name}'s skull with a sickening thunk.",
@@ -194,99 +194,99 @@ MESSAGES = {
             'observer_msg': "{attacker_name} brings the bar down hard. It bounces off {target_name}'s skull with a sickening thunk."
         },
         {
-            'attacker_msg': "Steel meets spine. {target_name} drops instantly, breath escaping like steam from a pipe.",
-            'victim_msg': "Steel meets spine. You drop instantly, breath escaping like steam from a pipe.",
-            'observer_msg': "Steel meets spine. {target_name} drops instantly, breath escaping like steam from a pipe."
+            'attacker_msg': "Steel meets {hit_location}. {target_name} drops instantly, breath escaping like steam from a pipe.",
+            'victim_msg': "Steel meets {hit_location}. You drop instantly, breath escaping like steam from a pipe.",
+            'observer_msg': "Steel meets {hit_location}. {target_name} drops instantly, breath escaping like steam from a pipe."
         },
         {
-            'attacker_msg': "You slam the bar into {target_name}'s stomach. Air and bile explode from their mouth.",
-            'victim_msg': "{attacker_name} slams the bar into your stomach. Air and bile explode from your mouth.",
-            'observer_msg': "{attacker_name} slams the bar into {target_name}'s stomach. Air and bile explode from their mouth."
+            'attacker_msg': "You slam the bar into {target_name}'s {hit_location}. Air and bile explode from their mouth.",
+            'victim_msg': "{attacker_name} slams the bar into your {hit_location}. Air and bile explode from your mouth.",
+            'observer_msg': "{attacker_name} slams the bar into {target_name}'s {hit_location}. Air and bile explode from their mouth."
         },
         {
-            'attacker_msg': "The rebar strikes {target_name}'s collarbone. It doesn't break the skin—but something inside gives way.",
-            'victim_msg': "The rebar strikes your collarbone. It doesn't break the skin—but something inside gives way.",
-            'observer_msg': "The rebar strikes {target_name}'s collarbone. It doesn't break the skin—but something inside gives way."
+            'attacker_msg': "The rebar strikes {target_name}'s {hit_location}. It doesn't break the skin—but something inside gives way.",
+            'victim_msg': "The rebar strikes your {hit_location}. It doesn't break the skin—but something inside gives way.",
+            'observer_msg': "The rebar strikes {target_name}'s {hit_location}. It doesn't break the skin—but something inside gives way."
         },
         {
-            'attacker_msg': "A hook strike lands across {target_name}'s jaw. They spin and drop.",
-            'victim_msg': "A hook strike lands across your jaw. You spin and drop.",
-            'observer_msg': "A hook strike lands across {target_name}'s jaw. They spin and drop."
+            'attacker_msg': "A hook strike lands across {target_name}'s {hit_location}. They spin and drop.",
+            'victim_msg': "A hook strike lands across your {hit_location}. You spin and drop.",
+            'observer_msg': "A hook strike lands across {target_name}'s {hit_location}. They spin and drop."
         },
         {
-            'attacker_msg': "You jab the blunt end into {target_name}'s chest. The sound that comes out isn't human.",
-            'victim_msg': "{attacker_name} jabs the blunt end into your chest. The sound that comes out isn't human.",
-            'observer_msg': "{attacker_name} jabs the blunt end into {target_name}'s chest. The sound that comes out isn't human."
+            'attacker_msg': "You jab the blunt end into {target_name}'s {hit_location}. The sound that comes out isn't human.",
+            'victim_msg': "{attacker_name} jabs the blunt end into your {hit_location}. The sound that comes out isn't human.",
+            'observer_msg': "{attacker_name} jabs the blunt end into {target_name}'s {hit_location}. The sound that comes out isn't human."
         },
         {
-            'attacker_msg': "The bar smashes {target_name}'s thigh. They crumple sideways, clutching dead weight.",
-            'victim_msg': "The bar smashes your thigh. You crumple sideways, clutching dead weight.",
-            'observer_msg': "The bar smashes {target_name}'s thigh. They crumple sideways, clutching dead weight."
+            'attacker_msg': "The bar smashes {target_name}'s {hit_location}. They crumple sideways, clutching dead weight.",
+            'victim_msg': "The bar smashes your {hit_location}. You crumple sideways, clutching dead weight.",
+            'observer_msg': "The bar smashes {target_name}'s {hit_location}. They crumple sideways, clutching dead weight."
         },
         {
-            'attacker_msg': "You drive the bar up into {target_name}'s ribs. It lodges, then yanks free with effort.",
-            'victim_msg': "{attacker_name} drives the bar up into your ribs. It lodges, then yanks free with effort.",
-            'observer_msg': "{attacker_name} drives the bar up into {target_name}'s ribs. It lodges, then yanks free with effort."
+            'attacker_msg': "You drive the bar up into {target_name}'s {hit_location}. It lodges, then yanks free with effort.",
+            'victim_msg': "{attacker_name} drives the bar up into your {hit_location}. It lodges, then yanks free with effort.",
+            'observer_msg': "{attacker_name} drives the bar up into {target_name}'s {hit_location}. It lodges, then yanks free with effort."
         },
         {
-            'attacker_msg': "A short strike to the gut leaves {target_name} coughing blood and memories.",
-            'victim_msg': "A short strike to the gut leaves you coughing blood and memories.",
-            'observer_msg': "A short strike to the gut leaves {target_name} coughing blood and memories."
+            'attacker_msg': "A short strike to the {hit_location} leaves {target_name} coughing blood and memories.",
+            'victim_msg': "A short strike to the {hit_location} leaves you coughing blood and memories.",
+            'observer_msg': "A short strike to the {hit_location} leaves {target_name} coughing blood and memories."
         },
         {
-            'attacker_msg': "The bar rakes across {target_name}'s face. The scream is delayed but deafening.",
-            'victim_msg': "The bar rakes across your face. The scream is delayed but deafening.",
-            'observer_msg': "The bar rakes across {target_name}'s face. The scream is delayed but deafening."
+            'attacker_msg': "The bar rakes across {target_name}'s {hit_location}. The scream is delayed but deafening.",
+            'victim_msg': "The bar rakes across your {hit_location}. The scream is delayed but deafening.",
+            'observer_msg': "The bar rakes across {target_name}'s {hit_location}. The scream is delayed but deafening."
         },
         {
-            'attacker_msg': "You shatter {target_name}'s grip with a heavy strike to the forearm.",
-            'victim_msg': "{attacker_name} shatters your grip with a heavy strike to the forearm.",
-            'observer_msg': "{attacker_name} shatters {target_name}'s grip with a heavy strike to the forearm."
+            'attacker_msg': "You shatter {target_name}'s grip with a heavy strike to the {hit_location}.",
+            'victim_msg': "{attacker_name} shatters your grip with a heavy strike to the {hit_location}.",
+            'observer_msg': "{attacker_name} shatters {target_name}'s grip with a heavy strike to the {hit_location}."
         },
         {
-            'attacker_msg': "You bring the bar down on {target_name}'s foot. Bones explode beneath boot leather.",
-            'victim_msg': "{attacker_name} brings the bar down on your foot. Bones explode beneath boot leather.",
-            'observer_msg': "{attacker_name} brings the bar down on {target_name}'s foot. Bones explode beneath boot leather."
+            'attacker_msg': "You bring the bar down on {target_name}'s {hit_location}. Bones explode beneath boot leather.",
+            'victim_msg': "{attacker_name} brings the bar down on your {hit_location}. Bones explode beneath boot leather.",
+            'observer_msg': "{attacker_name} brings the bar down on {target_name}'s {hit_location}. Bones explode beneath boot leather."
         },
         {
-            'attacker_msg': "The tip of the bar jabs under {target_name}'s chin, snapping their head back violently.",
-            'victim_msg': "The tip of the bar jabs under your chin, snapping your head back violently.",
-            'observer_msg': "The tip of the bar jabs under {target_name}'s chin, snapping their head back violently."
+            'attacker_msg': "The tip of the bar jabs under {target_name}'s chin, snapping their {hit_location} {hit_location} violently.",
+            'victim_msg': "The tip of the bar jabs under your chin, snapping your {hit_location} {hit_location} violently.",
+            'observer_msg': "The tip of the bar jabs under {target_name}'s chin, snapping their {hit_location} {hit_location} violently."
         },
         {
-            'attacker_msg': "A thrust to the stomach sends {target_name} stumbling, eyes wide and watery.",
-            'victim_msg': "A thrust to the stomach sends you stumbling, eyes wide and watery.",
-            'observer_msg': "A thrust to the stomach sends {target_name} stumbling, eyes wide and watery."
+            'attacker_msg': "A thrust to the {hit_location} sends {target_name} stumbling, eyes wide and watery.",
+            'victim_msg': "A thrust to the {hit_location} sends you stumbling, eyes wide and watery.",
+            'observer_msg': "A thrust to the {hit_location} sends {target_name} stumbling, eyes wide and watery."
         },
         {
-            'attacker_msg': "You spin the bar like a bat and land it hard across {target_name}'s hip.",
-            'victim_msg': "{attacker_name} spins the bar like a bat and lands it hard across your hip.",
-            'observer_msg': "{attacker_name} spins the bar like a bat and lands it hard across {target_name}'s hip."
+            'attacker_msg': "You spin the bar like a bat and land it hard across {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name} spins the bar like a bat and lands it hard across your {hit_location}.",
+            'observer_msg': "{attacker_name} spins the bar like a bat and lands it hard across {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "A sickening blow lands in the center of {target_name}'s back. They collapse to all fours.",
-            'victim_msg': "A sickening blow lands in the center of your back. You collapse to all fours.",
-            'observer_msg': "A sickening blow lands in the center of {target_name}'s back. They collapse to all fours."
+            'attacker_msg': "A sickening blow lands in the center of {target_name}'s {hit_location}. They collapse to all fours.",
+            'victim_msg': "A sickening blow lands in the center of your {hit_location}. You collapse to all fours.",
+            'observer_msg': "A sickening blow lands in the center of {target_name}'s {hit_location}. They collapse to all fours."
         },
         {
-            'attacker_msg': "The bar tears through clothing and leaves a deep bruise across {target_name}'s ribs.",
-            'victim_msg': "The bar tears through clothing and leaves a deep bruise across your ribs.",
-            'observer_msg': "The bar tears through clothing and leaves a deep bruise across {target_name}'s ribs."
+            'attacker_msg': "The bar tears through clothing and leaves a deep bruise across {target_name}'s {hit_location}.",
+            'victim_msg': "The bar tears through clothing and leaves a deep bruise across your {hit_location}.",
+            'observer_msg': "The bar tears through clothing and leaves a deep bruise across {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "A brutal crack echoes as the bar hits {target_name}'s elbow mid-swing.",
-            'victim_msg': "A brutal crack echoes as the bar hits your elbow mid-swing.",
-            'observer_msg': "A brutal crack echoes as the bar hits {target_name}'s elbow mid-swing."
+            'attacker_msg': "A brutal crack echoes as the bar hits {target_name}'s {hit_location} mid-swing.",
+            'victim_msg': "A brutal crack echoes as the bar hits your {hit_location} mid-swing.",
+            'observer_msg': "A brutal crack echoes as the bar hits {target_name}'s {hit_location} mid-swing."
         },
         {
-            'attacker_msg': "You catch {target_name} off balance and land a heavy shot to their side.",
-            'victim_msg': "{attacker_name} catches you off balance and lands a heavy shot to your side.",
-            'observer_msg': "{attacker_name} catches {target_name} off balance and lands a heavy shot to their side."
+            'attacker_msg': "You catch {target_name} off balance and land a heavy shot to their {hit_location}.",
+            'victim_msg': "{attacker_name} catches you off balance and lands a heavy shot to your {hit_location}.",
+            'observer_msg': "{attacker_name} catches {target_name} off balance and lands a heavy shot to their {hit_location}."
         },
         {
-            'attacker_msg': "A sharp jab lands in {target_name}'s chest. Something caves in.",
-            'victim_msg': "A sharp jab lands in your chest. Something caves in.",
-            'observer_msg': "A sharp jab lands in {target_name}'s chest. Something caves in."
+            'attacker_msg': "A sharp jab lands in {target_name}'s {hit_location}. Something caves in.",
+            'victim_msg': "A sharp jab lands in your {hit_location}. Something caves in.",
+            'observer_msg': "A sharp jab lands in {target_name}'s {hit_location}. Something caves in."
         },
         {
             'attacker_msg': "The rebar hits like a train—fast, loud, final.",
@@ -294,19 +294,19 @@ MESSAGES = {
             'observer_msg': "The rebar hits like a train—fast, loud, final."
         },
         {
-            'attacker_msg': "You pound the bar across {target_name}'s shin. The leg no longer supports them.",
-            'victim_msg': "{attacker_name} pounds the bar across your shin. The leg no longer supports you.",
-            'observer_msg': "{attacker_name} pounds the bar across {target_name}'s shin. The leg no longer supports them."
+            'attacker_msg': "You pound the bar across {target_name}'s {hit_location}. The {hit_location} no longer supports them.",
+            'victim_msg': "{attacker_name} pounds the bar across your {hit_location}. The {hit_location} no longer supports you.",
+            'observer_msg': "{attacker_name} pounds the bar across {target_name}'s {hit_location}. The {hit_location} no longer supports them."
         },
         {
-            'attacker_msg': "A cruel upward swing cracks {target_name}'s jaw sideways.",
-            'victim_msg': "A cruel upward swing cracks your jaw sideways.",
-            'observer_msg': "A cruel upward swing cracks {target_name}'s jaw sideways."
+            'attacker_msg': "A cruel upward swing cracks {target_name}'s {hit_location} sideways.",
+            'victim_msg': "A cruel upward swing cracks your {hit_location} sideways.",
+            'observer_msg': "A cruel upward swing cracks {target_name}'s {hit_location} sideways."
         },
         {
-            'attacker_msg': "The bar loops under {target_name}'s arm and into their ribs. The crunch is wet and sharp.",
-            'victim_msg': "The bar loops under your arm and into your ribs. The crunch is wet and sharp.",
-            'observer_msg': "The bar loops under {target_name}'s arm and into their ribs. The crunch is wet and sharp."
+            'attacker_msg': "The bar loops under {target_name}'s {hit_location} and into their {hit_location}. The crunch is wet and sharp.",
+            'victim_msg': "The bar loops under your {hit_location} and into your {hit_location}. The crunch is wet and sharp.",
+            'observer_msg': "The bar loops under {target_name}'s {hit_location} and into their {hit_location}. The crunch is wet and sharp."
         },
         {
             'attacker_msg': "You land a backhanded blow that lifts {target_name} an inch off the ground.",

@@ -163,19 +163,19 @@ MESSAGES = {
             'observer_msg': "The flare impacts {target_name} with surprising force, then ignites, engulfing them in searing, colored flames and acrid smoke."
         },
         {
-            'attacker_msg': "Your flare gun shot hits {target_name}'s chest, the flare burning fiercely and setting clothes alight, causing screams of agony.",
-            'victim_msg': "{attacker_name}'s flare gun shot hits your chest, the flare burning fiercely and setting clothes alight, causing you to scream in agony.",
-            'observer_msg': "{attacker_name}'s flare gun shot hits {target_name}'s chest, the flare burning fiercely and setting clothes alight, causing screams of agony."
+            'attacker_msg': "Your flare gun shot hits {target_name}'s {hit_location}, the flare burning fiercely and setting clothes alight, causing screams of agony.",
+            'victim_msg': "{attacker_name}'s flare gun shot hits your {hit_location}, the flare burning fiercely and setting clothes alight, causing you to scream in agony.",
+            'observer_msg': "{attacker_name}'s flare gun shot hits {target_name}'s {hit_location}, the flare burning fiercely and setting clothes alight, causing screams of agony."
         },
         {
-            'attacker_msg': "Sparks and burning magnesium fly as the flare from your gun strikes {target_name}, who stumbles back, beating at the flames.",
-            'victim_msg': "Sparks and burning magnesium fly as the flare from {attacker_name}'s gun strikes you, and you stumble back, beating at the flames.",
-            'observer_msg': "Sparks and burning magnesium fly as the flare from {attacker_name}'s gun strikes {target_name}, who stumbles back, beating at the flames."
+            'attacker_msg': "Sparks and burning magnesium fly as the flare from your gun strikes {target_name}, who stumbles {hit_location}, beating at the flames.",
+            'victim_msg': "Sparks and burning magnesium fly as the flare from {attacker_name}'s gun strikes you, and you stumble {hit_location}, beating at the flames.",
+            'observer_msg': "Sparks and burning magnesium fly as the flare from {attacker_name}'s gun strikes {target_name}, who stumbles {hit_location}, beating at the flames."
         },
         {
-            'attacker_msg': "The burning projectile from the flare gun embeds itself shallowly in {target_name}'s leg, the intense heat searing flesh and bone.",
-            'victim_msg': "The burning projectile from the flare gun embeds itself shallowly in your leg, the intense heat searing flesh and bone.",
-            'observer_msg': "The burning projectile from the flare gun embeds itself shallowly in {target_name}'s leg, the intense heat searing flesh and bone."
+            'attacker_msg': "The burning projectile from the flare gun embeds itself shallowly in {target_name}'s {hit_location}, the intense heat searing flesh and bone.",
+            'victim_msg': "The burning projectile from the flare gun embeds itself shallowly in your {hit_location}, the intense heat searing flesh and bone.",
+            'observer_msg': "The burning projectile from the flare gun embeds itself shallowly in {target_name}'s {hit_location}, the intense heat searing flesh and bone."
         },
         {
             'attacker_msg': "Your accurate shot with the flare gun leaves {target_name} wreathed in painful, clinging chemical fire.",
@@ -198,9 +198,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s flare gun fires, and {target_name} is struck by a miniature sun, the heat and light overwhelming as they catch fire."
         },
         {
-            'attacker_msg': "With a fiery *whoosh*, the flare from your gun hits {target_name}'s arm, which immediately erupts in searing flames.",
-            'victim_msg': "With a fiery *whoosh*, the flare from {attacker_name}'s gun hits your arm, which immediately erupts in searing flames.",
-            'observer_msg': "With a fiery *whoosh*, the flare from {attacker_name}'s gun hits {target_name}'s arm, which immediately erupts in searing flames."
+            'attacker_msg': "With a fiery *whoosh*, the flare from your gun hits {target_name}'s {hit_location}, which immediately erupts in searing flames.",
+            'victim_msg': "With a fiery *whoosh*, the flare from {attacker_name}'s gun hits your {hit_location}, which immediately erupts in searing flames.",
+            'observer_msg': "With a fiery *whoosh*, the flare from {attacker_name}'s gun hits {target_name}'s {hit_location}, which immediately erupts in searing flames."
         },
         {
             'attacker_msg': "The flare gun scores a painful hit, the burning mass sticking to {target_name} and causing deep, excruciating burns.",
@@ -208,9 +208,9 @@ MESSAGES = {
             'observer_msg': "The flare gun scores a painful hit, the burning mass sticking to {target_name} and causing deep, excruciating burns."
         },
         {
-            'attacker_msg': "Your well-aimed shot from the flare gun strikes {target_name}'s face, a horrific explosion of light, heat, and burning chemicals.",
-            'victim_msg': "{attacker_name}'s well-aimed shot from the flare gun strikes your face, a horrific explosion of light, heat, and burning chemicals.",
-            'observer_msg': "{attacker_name}'s well-aimed shot from the flare gun strikes {target_name}'s face, a horrific explosion of light, heat, and burning chemicals."
+            'attacker_msg': "Your well-aimed shot from the flare gun strikes {target_name}'s {hit_location}, a horrific explosion of light, heat, and burning chemicals.",
+            'victim_msg': "{attacker_name}'s well-aimed shot from the flare gun strikes your {hit_location}, a horrific explosion of light, heat, and burning chemicals.",
+            'observer_msg': "{attacker_name}'s well-aimed shot from the flare gun strikes {target_name}'s {hit_location}, a horrific explosion of light, heat, and burning chemicals."
         },
         {
             'attacker_msg': "A sharp crack as the flare gun fires, and {target_name} is engulfed in a cloud of smoke and brilliant, agonizing fire.",
@@ -223,19 +223,19 @@ MESSAGES = {
             'observer_msg': "The unyielding chemical fire from {attacker_name}'s flare projectile sears {target_name}'s flesh on impact, the smell of burning filling the air."
         },
         {
-            'attacker_msg': "Your flare slams into {target_name}, the impact knocking them back as the flare's payload ignites, burning them severely.",
-            'victim_msg': "{attacker_name}'s flare slams into you, the impact knocking you back as the flare's payload ignites, burning you severely.",
-            'observer_msg': "{attacker_name}'s flare slams into {target_name}, the impact knocking them back as the flare's payload ignites, burning them severely."
+            'attacker_msg': "Your flare slams into {target_name}, the impact knocking them {hit_location} as the flare's payload ignites, burning them severely.",
+            'victim_msg': "{attacker_name}'s flare slams into you, the impact knocking you {hit_location} as the flare's payload ignites, burning you severely.",
+            'observer_msg': "{attacker_name}'s flare slams into {target_name}, the impact knocking them {hit_location} as the flare's payload ignites, burning them severely."
         },
         {
-            'attacker_msg': "A desperate shot from the flare gun hits {target_name}'s hand, which is instantly wreathed in searing, chemical flames.",
-            'victim_msg': "A desperate shot from the flare gun hits your hand, which is instantly wreathed in searing, chemical flames.",
-            'observer_msg': "A desperate shot from the flare gun hits {target_name}'s hand, which is instantly wreathed in searing, chemical flames."
+            'attacker_msg': "A desperate shot from the flare gun hits {target_name}'s {hit_location}, which is instantly wreathed in searing, chemical flames.",
+            'victim_msg': "A desperate shot from the flare gun hits your {hit_location}, which is instantly wreathed in searing, chemical flames.",
+            'observer_msg': "A desperate shot from the flare gun hits {target_name}'s {hit_location}, which is instantly wreathed in searing, chemical flames."
         },
         {
-            'attacker_msg': "The flare makes solid contact with {target_name}'s torso, the intense heat and burning compounds causing them to collapse in agony.",
-            'victim_msg': "The flare makes solid contact with your torso, the intense heat and burning compounds causing you to collapse in agony.",
-            'observer_msg': "The flare makes solid contact with {target_name}'s torso, the intense heat and burning compounds causing them to collapse in agony."
+            'attacker_msg': "The flare makes solid contact with {target_name}'s {hit_location}, the intense heat and burning compounds causing them to collapse in agony.",
+            'victim_msg': "The flare makes solid contact with your {hit_location}, the intense heat and burning compounds causing you to collapse in agony.",
+            'observer_msg': "The flare makes solid contact with {target_name}'s {hit_location}, the intense heat and burning compounds causing them to collapse in agony."
         },
         {
             'attacker_msg': "Your flare gun projectile finds its mark, delivering a painful, debilitating burn and setting {target_name} alight.",
@@ -278,19 +278,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s flare gun projectile makes impact, leaving another patch of {target_name} burning fiercely."
         },
         {
-            'attacker_msg': "A painful thud as the flare from your flare gun strikes {target_name}'s ribs, then bursts into searing flame.",
-            'victim_msg': "A painful thud as the flare from {attacker_name}'s flare gun strikes your ribs, then bursts into searing flame.",
-            'observer_msg': "A painful thud as the flare from {attacker_name}'s flare gun strikes {target_name}'s ribs, then bursts into searing flame."
+            'attacker_msg': "A painful thud as the flare from your flare gun strikes {target_name}'s {hit_location}, then bursts into searing flame.",
+            'victim_msg': "A painful thud as the flare from {attacker_name}'s flare gun strikes your {hit_location}, then bursts into searing flame.",
+            'observer_msg': "A painful thud as the flare from {attacker_name}'s flare gun strikes {target_name}'s {hit_location}, then bursts into searing flame."
         },
         {
-            'attacker_msg': "The projectile from your flare gun hits {target_name}'s neck, erupting in a horrific display of light, smoke, and burning flesh.",
-            'victim_msg': "The projectile from {attacker_name}'s flare gun hits your neck, erupting in a horrific display of light, smoke, and burning flesh.",
-            'observer_msg': "The projectile from {attacker_name}'s flare gun hits {target_name}'s neck, erupting in a horrific display of light, smoke, and burning flesh."
+            'attacker_msg': "The projectile from your flare gun hits {target_name}'s {hit_location}, erupting in a horrific display of light, smoke, and burning flesh.",
+            'victim_msg': "The projectile from {attacker_name}'s flare gun hits your {hit_location}, erupting in a horrific display of light, smoke, and burning flesh.",
+            'observer_msg': "The projectile from {attacker_name}'s flare gun hits {target_name}'s {hit_location}, erupting in a horrific display of light, smoke, and burning flesh."
         },
         {
-            'attacker_msg': "Your flare gun delivers another brutal, burning impact to {target_name}'s side, the chemical fire unforgiving.",
-            'victim_msg': "{attacker_name}'s flare gun delivers another brutal, burning impact to your side, the chemical fire unforgiving.",
-            'observer_msg': "{attacker_name}'s flare gun delivers another brutal, burning impact to {target_name}'s side, the chemical fire unforgiving."
+            'attacker_msg': "Your flare gun delivers another brutal, burning impact to {target_name}'s {hit_location}, the chemical fire unforgiving.",
+            'victim_msg': "{attacker_name}'s flare gun delivers another brutal, burning impact to your {hit_location}, the chemical fire unforgiving.",
+            'observer_msg': "{attacker_name}'s flare gun delivers another brutal, burning impact to {target_name}'s {hit_location}, the chemical fire unforgiving."
         },
         {
             'attacker_msg': "A well-placed shot from the flare gun leaves {target_name} momentarily blinded, screaming, and on fire.",

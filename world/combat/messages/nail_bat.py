@@ -153,49 +153,49 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "You bring the bat down hard on {target_name}'s shoulder, nails tearing fabric and skin alike.",
-            'victim_msg': "{attacker_name} brings the bat down hard on your shoulder, nails tearing fabric and skin alike.",
-            'observer_msg': "{attacker_name} brings the bat down hard on {target_name}'s shoulder, nails tearing fabric and skin alike."
+            'attacker_msg': "You bring the bat down hard on {target_name}'s {hit_location}, nails tearing fabric and skin alike.",
+            'victim_msg': "{attacker_name} brings the bat down hard on your {hit_location}, nails tearing fabric and skin alike.",
+            'observer_msg': "{attacker_name} brings the bat down hard on {target_name}'s {hit_location}, nails tearing fabric and skin alike."
         },
         {
-            'attacker_msg': "The impact echoes like a thunderclap as your swing lands square in {target_name}'s ribs.",
-            'victim_msg': "The impact echoes like a thunderclap as {attacker_name}'s swing lands square in your ribs.",
-            'observer_msg': "The impact echoes like a thunderclap as {attacker_name}'s swing lands square in {target_name}'s ribs."
+            'attacker_msg': "The impact echoes like a thunderclap as your swing lands square in {target_name}'s {hit_location}.",
+            'victim_msg': "The impact echoes like a thunderclap as {attacker_name}'s swing lands square in your {hit_location}.",
+            'observer_msg': "The impact echoes like a thunderclap as {attacker_name}'s swing lands square in {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "A heavy arc crashes into {target_name}'s thigh, the nails biting deep before ripping out with a squelch.",
-            'victim_msg': "A heavy arc crashes into your thigh, the nails biting deep before ripping out with a squelch.",
-            'observer_msg': "A heavy arc crashes into {target_name}'s thigh, the nails biting deep before ripping out with a squelch."
+            'attacker_msg': "A heavy arc crashes into {target_name}'s {hit_location}, the nails biting deep before ripping out with a squelch.",
+            'victim_msg': "A heavy arc crashes into your {hit_location}, the nails biting deep before ripping out with a squelch.",
+            'observer_msg': "A heavy arc crashes into {target_name}'s {hit_location}, the nails biting deep before ripping out with a squelch."
         },
         {
-            'attacker_msg': "You smash the bat across {target_name}'s back, sending them sprawling with a spray of blood.",
-            'victim_msg': "{attacker_name} smashes the bat across your back, sending you sprawling with a spray of blood.",
-            'observer_msg': "{attacker_name} smashes the bat across {target_name}'s back, sending them sprawling with a spray of blood."
+            'attacker_msg': "You smash the bat across {target_name}'s {hit_location}, sending them sprawling with a spray of blood.",
+            'victim_msg': "{attacker_name} smashes the bat across your {hit_location}, sending you sprawling with a spray of blood.",
+            'observer_msg': "{attacker_name} smashes the bat across {target_name}'s {hit_location}, sending them sprawling with a spray of blood."
         },
         {
-            'attacker_msg': "The nails sink into {target_name}'s forearm and drag downward, leaving a trail of ragged meat.",
-            'victim_msg': "The nails sink into your forearm and drag downward, leaving a trail of ragged meat.",
-            'observer_msg': "The nails sink into {target_name}'s forearm and drag downward, leaving a trail of ragged meat."
+            'attacker_msg': "The nails sink into {target_name}'s {hit_location} and drag downward, leaving a trail of ragged meat.",
+            'victim_msg': "The nails sink into your {hit_location} and drag downward, leaving a trail of ragged meat.",
+            'observer_msg': "The nails sink into {target_name}'s {hit_location} and drag downward, leaving a trail of ragged meat."
         },
         {
-            'attacker_msg': "A burst of red follows as the bat caves in part of {target_name}'s side, nails crunching into bone.",
-            'victim_msg': "A burst of red follows as the bat caves in part of your side, nails crunching into bone.",
-            'observer_msg': "A burst of red follows as the bat caves in part of {target_name}'s side, nails crunching into bone."
+            'attacker_msg': "A burst of red follows as the bat caves in part of {target_name}'s {hit_location}, nails crunching into bone.",
+            'victim_msg': "A burst of red follows as the bat caves in part of your {hit_location}, nails crunching into bone.",
+            'observer_msg': "A burst of red follows as the bat caves in part of {target_name}'s {hit_location}, nails crunching into bone."
         },
         {
-            'attacker_msg': "You spin once and land a two-handed strike to {target_name}'s gut, folding them in half.",
-            'victim_msg': "{attacker_name} spins once and lands a two-handed strike to your gut, folding you in half.",
-            'observer_msg': "{attacker_name} spins once and lands a two-handed strike to {target_name}'s gut, folding them in half."
+            'attacker_msg': "You spin once and land a two-handed strike to {target_name}'s {hit_location}, folding them in half.",
+            'victim_msg': "{attacker_name} spins once and lands a two-handed strike to your {hit_location}, folding you in half.",
+            'observer_msg': "{attacker_name} spins once and lands a two-handed strike to {target_name}'s {hit_location}, folding them in half."
         },
         {
-            'attacker_msg': "The nails hook into {target_name}'s shoulder—you yank back, tearing flesh with a wet pop.",
-            'victim_msg': "The nails hook into your shoulder—{attacker_name} yanks back, tearing flesh with a wet pop.",
-            'observer_msg': "The nails hook into {target_name}'s shoulder—{attacker_name} yanks back, tearing flesh with a wet pop."
+            'attacker_msg': "The nails hook into {target_name}'s {hit_location}—you yank {hit_location}, tearing flesh with a wet pop.",
+            'victim_msg': "The nails hook into your {hit_location}—{attacker_name} yanks {hit_location}, tearing flesh with a wet pop.",
+            'observer_msg': "The nails hook into {target_name}'s {hit_location}—{attacker_name} yanks {hit_location}, tearing flesh with a wet pop."
         },
         {
-            'attacker_msg': "A brutal overhead slam hits {target_name} between the collarbones, and they crumple like trash.",
-            'victim_msg': "A brutal overhead slam hits you between the collarbones, and you crumple like trash.",
-            'observer_msg': "A brutal overhead slam hits {target_name} between the collarbones, and they crumple like trash."
+            'attacker_msg': "A brutal overhead slam hits {target_name} between the {hit_location}s, and they crumple like trash.",
+            'victim_msg': "A brutal overhead slam hits you between the {hit_location}s, and you crumple like trash.",
+            'observer_msg': "A brutal overhead slam hits {target_name} between the {hit_location}s, and they crumple like trash."
         },
         {
             'attacker_msg': "A sideways swing sends {target_name} reeling, the bat leaving a lattice of bloody holes behind.",
@@ -203,64 +203,64 @@ MESSAGES = {
             'observer_msg': "A sideways swing sends {target_name} reeling, the bat leaving a lattice of bloody holes behind."
         },
         {
-            'attacker_msg': "The bat collides with {target_name}'s knee, shattering the joint in a spray of fluid and screams.",
-            'victim_msg': "The bat collides with your knee, shattering the joint in a spray of fluid and screams.",
-            'observer_msg': "The bat collides with {target_name}'s knee, shattering the joint in a spray of fluid and screams."
+            'attacker_msg': "The bat collides with {target_name}'s {hit_location}, shattering the joint in a spray of fluid and screams.",
+            'victim_msg': "The bat collides with your {hit_location}, shattering the joint in a spray of fluid and screams.",
+            'observer_msg': "The bat collides with {target_name}'s {hit_location}, shattering the joint in a spray of fluid and screams."
         },
         {
-            'attacker_msg': "A full-body swing lands in {target_name}'s ribs, nails cracking through like a chef scoring pork skin.",
-            'victim_msg': "A full-body swing lands in your ribs, nails cracking through like a chef scoring pork skin.",
-            'observer_msg': "A full-body swing lands in {target_name}'s ribs, nails cracking through like a chef scoring pork skin."
+            'attacker_msg': "A full-body swing lands in {target_name}'s {hit_location}, nails cracking through like a chef scoring pork skin.",
+            'victim_msg': "A full-body swing lands in your {hit_location}, nails cracking through like a chef scoring pork skin.",
+            'observer_msg': "A full-body swing lands in {target_name}'s {hit_location}, nails cracking through like a chef scoring pork skin."
         },
         {
-            'attacker_msg': "The bat lands with a squishy thud, and {target_name} gasps as rusted spikes lodge in their hip.",
-            'victim_msg': "The bat lands with a squishy thud, and you gasp as rusted spikes lodge in your hip.",
-            'observer_msg': "The bat lands with a squishy thud, and {target_name} gasps as rusted spikes lodge in their hip."
+            'attacker_msg': "The bat lands with a squishy thud, and {target_name} gasps as rusted spikes lodge in their {hit_location}.",
+            'victim_msg': "The bat lands with a squishy thud, and you gasp as rusted spikes lodge in your {hit_location}.",
+            'observer_msg': "The bat lands with a squishy thud, and {target_name} gasps as rusted spikes lodge in their {hit_location}."
         },
         {
-            'attacker_msg': "You slam the bat down onto {target_name}'s foot, pinning them in place in a bloom of pain.",
-            'victim_msg': "{attacker_name} slams the bat down onto your foot, pinning you in place in a bloom of pain.",
-            'observer_msg': "{attacker_name} slams the bat down onto {target_name}'s foot, pinning them in place in a bloom of pain."
+            'attacker_msg': "You slam the bat down onto {target_name}'s {hit_location}, pinning them in place in a bloom of pain.",
+            'victim_msg': "{attacker_name} slams the bat down onto your {hit_location}, pinning you in place in a bloom of pain.",
+            'observer_msg': "{attacker_name} slams the bat down onto {target_name}'s {hit_location}, pinning them in place in a bloom of pain."
         },
         {
-            'attacker_msg': "A crunch, a scream, and {target_name}'s hand is no longer a functional thing.",
-            'victim_msg': "A crunch, a scream, and your hand is no longer a functional thing.",
-            'observer_msg': "A crunch, a scream, and {target_name}'s hand is no longer a functional thing."
+            'attacker_msg': "A crunch, a scream, and {target_name}'s {hit_location} is no longer a functional thing.",
+            'victim_msg': "A crunch, a scream, and your {hit_location} is no longer a functional thing.",
+            'observer_msg': "A crunch, a scream, and {target_name}'s {hit_location} is no longer a functional thing."
         },
         {
-            'attacker_msg': "The arc of the bat ends in {target_name}'s face. Nails don't just break the skin—they take it.",
-            'victim_msg': "The arc of the bat ends in your face. Nails don't just break the skin—they take it.",
-            'observer_msg': "The arc of the bat ends in {target_name}'s face. Nails don't just break the skin—they take it."
+            'attacker_msg': "The arc of the bat ends in {target_name}'s {hit_location}. Nails don't just break the skin—they take it.",
+            'victim_msg': "The arc of the bat ends in your {hit_location}. Nails don't just break the skin—they take it.",
+            'observer_msg': "The arc of the bat ends in {target_name}'s {hit_location}. Nails don't just break the skin—they take it."
         },
         {
-            'attacker_msg': "The bat connects with the side of {target_name}'s head, sending teeth skittering across the floor.",
-            'victim_msg': "The bat connects with the side of your head, sending teeth skittering across the floor.",
-            'observer_msg': "The bat connects with the side of {target_name}'s head, sending teeth skittering across the floor."
+            'attacker_msg': "The bat connects with the {hit_location} of {target_name}'s {hit_location}, sending teeth skittering across the floor.",
+            'victim_msg': "The bat connects with the {hit_location} of your {hit_location}, sending teeth skittering across the floor.",
+            'observer_msg': "The bat connects with the {hit_location} of {target_name}'s {hit_location}, sending teeth skittering across the floor."
         },
         {
-            'attacker_msg': "You catch {target_name} mid-dodge, bat slamming into their spine with a sickening crack.",
-            'victim_msg': "{attacker_name} catches you mid-dodge, bat slamming into your spine with a sickening crack.",
-            'observer_msg': "{attacker_name} catches {target_name} mid-dodge, bat slamming into their spine with a sickening crack."
+            'attacker_msg': "You catch {target_name} mid-dodge, bat slamming into their {hit_location} with a sickening crack.",
+            'victim_msg': "{attacker_name} catches you mid-dodge, bat slamming into your {hit_location} with a sickening crack.",
+            'observer_msg': "{attacker_name} catches {target_name} mid-dodge, bat slamming into their {hit_location} with a sickening crack."
         },
         {
-            'attacker_msg': "A backhanded swing cuts across {target_name}'s chest, nails dragging bloody trails behind them.",
-            'victim_msg': "A backhanded swing cuts across your chest, nails dragging bloody trails behind them.",
-            'observer_msg': "A backhanded swing cuts across {target_name}'s chest, nails dragging bloody trails behind them."
+            'attacker_msg': "A backhanded swing cuts across {target_name}'s {hit_location}, nails dragging bloody trails behind them.",
+            'victim_msg': "A backhanded swing cuts across your {hit_location}, nails dragging bloody trails behind them.",
+            'observer_msg': "A backhanded swing cuts across {target_name}'s {hit_location}, nails dragging bloody trails behind them."
         },
         {
-            'attacker_msg': "You jab forward like a spear, driving rusty tips deep into {target_name}'s belly.",
-            'victim_msg': "{attacker_name} jabs forward like a spear, driving rusty tips deep into your belly.",
-            'observer_msg': "{attacker_name} jabs forward like a spear, driving rusty tips deep into {target_name}'s belly."
+            'attacker_msg': "You jab forward like a spear, driving rusty tips deep into {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name} jabs forward like a spear, driving rusty tips deep into your {hit_location}.",
+            'observer_msg': "{attacker_name} jabs forward like a spear, driving rusty tips deep into {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "One nail embeds itself in {target_name}'s cheek as the bat crashes in—a souvenir.",
-            'victim_msg': "One nail embeds itself in your cheek as the bat crashes in—a souvenir.",
-            'observer_msg': "One nail embeds itself in {target_name}'s cheek as the bat crashes in—a souvenir."
+            'attacker_msg': "One nail embeds itself in {target_name}'s {hit_location} as the bat crashes in—a souvenir.",
+            'victim_msg': "One nail embeds itself in your {hit_location} as the bat crashes in—a souvenir.",
+            'observer_msg': "One nail embeds itself in {target_name}'s {hit_location} as the bat crashes in—a souvenir."
         },
         {
-            'attacker_msg': "The impact folds {target_name}'s elbow the wrong way. They won't be throwing punches soon.",
-            'victim_msg': "The impact folds your elbow the wrong way. You won't be throwing punches soon.",
-            'observer_msg': "The impact folds {target_name}'s elbow the wrong way. They won't be throwing punches soon."
+            'attacker_msg': "The impact folds {target_name}'s {hit_location} the wrong way. They won't be throwing punches soon.",
+            'victim_msg': "The impact folds your {hit_location} the wrong way. You won't be throwing punches soon.",
+            'observer_msg': "The impact folds {target_name}'s {hit_location} the wrong way. They won't be throwing punches soon."
         },
         {
             'attacker_msg': "Blood arcs into the air like spray paint as the bat tears into {target_name}'s collar.",
@@ -273,24 +273,24 @@ MESSAGES = {
             'observer_msg': "The wood splinters slightly on impact, but it's {target_name} who breaks more visibly."
         },
         {
-            'attacker_msg': "Nails rake across {target_name}'s neck—not deep, but enough to paint their shirt red.",
-            'victim_msg': "Nails rake across your neck—not deep, but enough to paint your shirt red.",
-            'observer_msg': "Nails rake across {target_name}'s neck—not deep, but enough to paint their shirt red."
+            'attacker_msg': "Nails rake across {target_name}'s {hit_location}—not deep, but enough to paint their shirt red.",
+            'victim_msg': "Nails rake across your {hit_location}—not deep, but enough to paint your shirt red.",
+            'observer_msg': "Nails rake across {target_name}'s {hit_location}—not deep, but enough to paint their shirt red."
         },
         {
-            'attacker_msg': "The bat lands hard in {target_name}'s ribs. The crunch is audible. The scream, more so.",
-            'victim_msg': "The bat lands hard in your ribs. The crunch is audible. The scream, more so.",
-            'observer_msg': "The bat lands hard in {target_name}'s ribs. The crunch is audible. The scream, more so."
+            'attacker_msg': "The bat lands hard in {target_name}'s {hit_location}. The crunch is audible. The scream, more so.",
+            'victim_msg': "The bat lands hard in your {hit_location}. The crunch is audible. The scream, more so.",
+            'observer_msg': "The bat lands hard in {target_name}'s {hit_location}. The crunch is audible. The scream, more so."
         },
         {
-            'attacker_msg': "You swing in a tight arc, the bat thudding into {target_name}'s jaw with meat-hook efficiency.",
-            'victim_msg': "{attacker_name} swings in a tight arc, the bat thudding into your jaw with meat-hook efficiency.",
-            'observer_msg': "{attacker_name} swings in a tight arc, the bat thudding into {target_name}'s jaw with meat-hook efficiency."
+            'attacker_msg': "You swing in a tight arc, the bat thudding into {target_name}'s {hit_location} with meat-hook efficiency.",
+            'victim_msg': "{attacker_name} swings in a tight arc, the bat thudding into your {hit_location} with meat-hook efficiency.",
+            'observer_msg': "{attacker_name} swings in a tight arc, the bat thudding into {target_name}'s {hit_location} with meat-hook efficiency."
         },
         {
-            'attacker_msg': "The bat bites into {target_name}'s thigh and drags—leaving a mess only a surgeon could understand.",
-            'victim_msg': "The bat bites into your thigh and drags—leaving a mess only a surgeon could understand.",
-            'observer_msg': "The bat bites into {target_name}'s thigh and drags—leaving a mess only a surgeon could understand."
+            'attacker_msg': "The bat bites into {target_name}'s {hit_location} and drags—leaving a mess only a surgeon could understand.",
+            'victim_msg': "The bat bites into your {hit_location} and drags—leaving a mess only a surgeon could understand.",
+            'observer_msg': "The bat bites into {target_name}'s {hit_location} and drags—leaving a mess only a surgeon could understand."
         },
         {
             'attacker_msg': "Nails catch in {target_name}'s gear and rip backward, leaving skin behind.",

@@ -153,29 +153,29 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A rapid series of *BOOM-BOOMs* as your semi-automatic shotgun unleashes two quick blasts, pellets tearing into {target_name}'s arm. The action cycles with a metallic *CHLACK-CHLACK*, ejecting smoking shells.",
-            'victim_msg': "A rapid series of *BOOM-BOOMs* as {attacker_name}'s semi-automatic shotgun unleashes two quick blasts, pellets tearing into your arm. The action cycles with a metallic *CHLACK-CHLACK*, ejecting smoking shells.",
-            'observer_msg': "A rapid series of *BOOM-BOOMs* as {attacker_name}'s semi-automatic shotgun unleashes two quick blasts, pellets tearing into {target_name}'s arm. The action cycles with a metallic *CHLACK-CHLACK*, ejecting smoking shells."
+            'attacker_msg': "A rapid series of *BOOM-BOOMs* as your semi-automatic shotgun unleashes two quick blasts, pellets tearing into {target_name}'s {hit_location}. The action cycles with a metallic *CHLACK-CHLACK*, ejecting smoking shells.",
+            'victim_msg': "A rapid series of *BOOM-BOOMs* as {attacker_name}'s semi-automatic shotgun unleashes two quick blasts, pellets tearing into your {hit_location}. The action cycles with a metallic *CHLACK-CHLACK*, ejecting smoking shells.",
+            'observer_msg': "A rapid series of *BOOM-BOOMs* as {attacker_name}'s semi-automatic shotgun unleashes two quick blasts, pellets tearing into {target_name}'s {hit_location}. The action cycles with a metallic *CHLACK-CHLACK*, ejecting smoking shells."
         },
         {
-            'attacker_msg': "The semi-automatic shotgun roars, a heavy slug striking {target_name}'s leg, immediately followed by the *CHUNK* of the bolt cycling as you prepare another quick shot.",
-            'victim_msg': "The semi-automatic shotgun roars, a heavy slug striking your leg, immediately followed by the *CHUNK* of the bolt cycling as {attacker_name} prepares another quick shot.",
-            'observer_msg': "The semi-automatic shotgun roars, a heavy slug striking {target_name}'s leg, immediately followed by the *CHUNK* of the bolt cycling as {attacker_name} prepares another quick shot."
+            'attacker_msg': "The semi-automatic shotgun roars, a heavy slug striking {target_name}'s {hit_location}, immediately followed by the *CHUNK* of the bolt cycling as you prepare another quick shot.",
+            'victim_msg': "The semi-automatic shotgun roars, a heavy slug striking your {hit_location}, immediately followed by the *CHUNK* of the bolt cycling as {attacker_name} prepares another quick shot.",
+            'observer_msg': "The semi-automatic shotgun roars, a heavy slug striking {target_name}'s {hit_location}, immediately followed by the *CHUNK* of the bolt cycling as {attacker_name} prepares another quick shot."
         },
         {
-            'attacker_msg': "Your controlled pair from the semi-automatic shotgun hits {target_name}'s shoulder, the one-two punch staggering them. Spent shells are flung out as the action cycles automatically.",
-            'victim_msg': "{attacker_name}'s controlled pair from the semi-automatic shotgun hits your shoulder, the one-two punch staggering you. Spent shells are flung out as the action cycles automatically.",
-            'observer_msg': "{attacker_name}'s controlled pair from the semi-automatic shotgun hits {target_name}'s shoulder, the one-two punch staggering them. Spent shells are flung out as the action cycles automatically."
+            'attacker_msg': "Your controlled pair from the semi-automatic shotgun hits {target_name}'s {hit_location}, the one-two punch staggering them. Spent shells are flung out as the action cycles automatically.",
+            'victim_msg': "{attacker_name}'s controlled pair from the semi-automatic shotgun hits your {hit_location}, the one-two punch staggering you. Spent shells are flung out as the action cycles automatically.",
+            'observer_msg': "{attacker_name}'s controlled pair from the semi-automatic shotgun hits {target_name}'s {hit_location}, the one-two punch staggering them. Spent shells are flung out as the action cycles automatically."
         },
         {
-            'attacker_msg': "A quick volley of lead from your semi-automatic shotgun peppers {target_name}'s side, the impacts almost simultaneous. The shotgun's bolt slams back and forth, ejecting brass.",
-            'victim_msg': "A quick volley of lead from {attacker_name}'s semi-automatic shotgun peppers your side, the impacts almost simultaneous. The shotgun's bolt slams back and forth, ejecting brass.",
-            'observer_msg': "A quick volley of lead from {attacker_name}'s semi-automatic shotgun peppers {target_name}'s side, the impacts almost simultaneous. The shotgun's bolt slams back and forth, ejecting brass."
+            'attacker_msg': "A quick volley of lead from your semi-automatic shotgun peppers {target_name}'s {hit_location}, the impacts almost simultaneous. The shotgun's bolt slams {hit_location} and forth, ejecting brass.",
+            'victim_msg': "A quick volley of lead from {attacker_name}'s semi-automatic shotgun peppers your {hit_location}, the impacts almost simultaneous. The shotgun's bolt slams {hit_location} and forth, ejecting brass.",
+            'observer_msg': "A quick volley of lead from {attacker_name}'s semi-automatic shotgun peppers {target_name}'s {hit_location}, the impacts almost simultaneous. The shotgun's bolt slams {hit_location} and forth, ejecting brass."
         },
         {
-            'attacker_msg': "The semi-automatic shotgun's blasts strike {target_name}'s thigh in rapid succession, the concentrated fire devastating. The shotgun ejects shells, ready for more without pause.",
-            'victim_msg': "The semi-automatic shotgun's blasts strike your thigh in rapid succession, the concentrated fire devastating. The shotgun ejects shells, ready for more without pause.",
-            'observer_msg': "The semi-automatic shotgun's blasts strike {target_name}'s thigh in rapid succession, the concentrated fire devastating. The shotgun ejects shells, ready for more without pause."
+            'attacker_msg': "The semi-automatic shotgun's blasts strike {target_name}'s {hit_location} in rapid succession, the concentrated fire devastating. The shotgun ejects shells, ready for more without pause.",
+            'victim_msg': "The semi-automatic shotgun's blasts strike your {hit_location} in rapid succession, the concentrated fire devastating. The shotgun ejects shells, ready for more without pause.",
+            'observer_msg': "The semi-automatic shotgun's blasts strike {target_name}'s {hit_location} in rapid succession, the concentrated fire devastating. The shotgun ejects shells, ready for more without pause."
         },
         {
             'attacker_msg': "Your well-aimed shots with the semi-automatic shotgun leave a cluster of bleeding wounds on {target_name}. The action cycles with a smooth, fast mechanical rhythm.",
@@ -183,9 +183,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s well-aimed shots with the semi-automatic shotgun leave a cluster of bleeding wounds on {target_name}. The action cycles with a smooth, fast mechanical rhythm."
         },
         {
-            'attacker_msg': "A direct hit! The semi-automatic shotgun's rapid blasts slam into {target_name}'s chest, the multiple impacts overwhelming. The shotgun ejects casings, you maintaining sight picture for follow-ups.",
-            'victim_msg': "A direct hit! The semi-automatic shotgun's rapid blasts slam into your chest, the multiple impacts overwhelming. The shotgun ejects casings, {attacker_name} maintaining sight picture for follow-ups.",
-            'observer_msg': "A direct hit! The semi-automatic shotgun's rapid blasts slam into {target_name}'s chest, the multiple impacts overwhelming. The shotgun ejects casings, {attacker_name} maintaining sight picture for follow-ups."
+            'attacker_msg': "A direct hit! The semi-automatic shotgun's rapid blasts slam into {target_name}'s {hit_location}, the multiple impacts overwhelming. The shotgun ejects casings, you maintaining sight picture for follow-ups.",
+            'victim_msg': "A direct hit! The semi-automatic shotgun's rapid blasts slam into your {hit_location}, the multiple impacts overwhelming. The shotgun ejects casings, {attacker_name} maintaining sight picture for follow-ups.",
+            'observer_msg': "A direct hit! The semi-automatic shotgun's rapid blasts slam into {target_name}'s {hit_location}, the multiple impacts overwhelming. The shotgun ejects casings, {attacker_name} maintaining sight picture for follow-ups."
         },
         {
             'attacker_msg': "The semi-automatic shotgun's projectiles punch into {target_name} in a quick series, their impacts like angry sledgehammers. Multiple spent shells are ejected as the bolt cycles.",
@@ -198,19 +198,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s semi-automatic shotgun spits a three-shot volley, and {target_name} is struck by the full force. The bolt cycles with a sharp *clack-clack-clack*, ejecting and loading."
         },
         {
-            'attacker_msg': "With a staccato roar, several blasts from your semi-automatic shotgun hit {target_name}'s abdomen. The shotgun cycles, ready for another precise, rapid volley.",
-            'victim_msg': "With a staccato roar, several blasts from {attacker_name}'s semi-automatic shotgun hit your abdomen. The shotgun cycles, ready for another precise, rapid volley.",
-            'observer_msg': "With a staccato roar, several blasts from {attacker_name}'s semi-automatic shotgun hit {target_name}'s abdomen. The shotgun cycles, ready for another precise, rapid volley."
+            'attacker_msg': "With a staccato roar, several blasts from your semi-automatic shotgun hit {target_name}'s {hit_location}. The shotgun cycles, ready for another precise, rapid volley.",
+            'victim_msg': "With a staccato roar, several blasts from {attacker_name}'s semi-automatic shotgun hit your {hit_location}. The shotgun cycles, ready for another precise, rapid volley.",
+            'observer_msg': "With a staccato roar, several blasts from {attacker_name}'s semi-automatic shotgun hit {target_name}'s {hit_location}. The shotgun cycles, ready for another precise, rapid volley."
         },
         {
-            'attacker_msg': "The semi-automatic shotgun scores multiple painful hits in quick succession, pellets tearing through {target_name}'s arm. A shower of hot casings is ejected as the shotgun continues to fire.",
-            'victim_msg': "The semi-automatic shotgun scores multiple painful hits in quick succession, pellets tearing through your arm. A shower of hot casings is ejected as the shotgun continues to fire.",
-            'observer_msg': "The semi-automatic shotgun scores multiple painful hits in quick succession, pellets tearing through {target_name}'s arm. A shower of hot casings is ejected as the shotgun continues to fire."
+            'attacker_msg': "The semi-automatic shotgun scores multiple painful hits in quick succession, pellets tearing through {target_name}'s {hit_location}. A shower of hot casings is ejected as the shotgun continues to fire.",
+            'victim_msg': "The semi-automatic shotgun scores multiple painful hits in quick succession, pellets tearing through your {hit_location}. A shower of hot casings is ejected as the shotgun continues to fire.",
+            'observer_msg': "The semi-automatic shotgun scores multiple painful hits in quick succession, pellets tearing through {target_name}'s {hit_location}. A shower of hot casings is ejected as the shotgun continues to fire."
         },
         {
-            'attacker_msg': "Your aimed blasts from the semi-automatic shotgun strike {target_name}'s hip. The action cycles with efficient, rapid metallic sounds, *CHLACK-THUNK*.",
-            'victim_msg': "{attacker_name}'s aimed blasts from the semi-automatic shotgun strike your hip. The action cycles with efficient, rapid metallic sounds, *CHLACK-THUNK*.",
-            'observer_msg': "{attacker_name}'s aimed blasts from the semi-automatic shotgun strike {target_name}'s hip. The action cycles with efficient, rapid metallic sounds, *CHLACK-THUNK*."
+            'attacker_msg': "Your aimed blasts from the semi-automatic shotgun strike {target_name}'s {hit_location}. The action cycles with efficient, rapid metallic sounds, *CHLACK-THUNK*.",
+            'victim_msg': "{attacker_name}'s aimed blasts from the semi-automatic shotgun strike your {hit_location}. The action cycles with efficient, rapid metallic sounds, *CHLACK-THUNK*.",
+            'observer_msg': "{attacker_name}'s aimed blasts from the semi-automatic shotgun strike {target_name}'s {hit_location}. The action cycles with efficient, rapid metallic sounds, *CHLACK-THUNK*."
         },
         {
             'attacker_msg': "A sharp series of booms and a spray of blood as the semi-automatic shotgun's pellets find their mark on {target_name}. The shotgun cycles, your finger still near the trigger.",
@@ -228,19 +228,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s semi-automatic shotgun blasts slam into {target_name} one after another. More rounds are chambered automatically with a series of solid sounds."
         },
         {
-            'attacker_msg': "A rapid burst from the semi-automatic shotgun hits {target_name}'s hands, making them drop what they're holding. The shotgun cycles, you pressing the advantage with another quick shot.",
-            'victim_msg': "A rapid burst from the semi-automatic shotgun hits your hands, making you drop what you're holding. The shotgun cycles, {attacker_name} pressing the advantage with another quick shot.",
-            'observer_msg': "A rapid burst from the semi-automatic shotgun hits {target_name}'s hands, making them drop what they're holding. The shotgun cycles, {attacker_name} pressing the advantage with another quick shot."
+            'attacker_msg': "A rapid burst from the semi-automatic shotgun hits {target_name}'s {hit_location}s, making them drop what they're holding. The shotgun cycles, you pressing the advantage with another quick shot.",
+            'victim_msg': "A rapid burst from the semi-automatic shotgun hits your {hit_location}s, making you drop what you're holding. The shotgun cycles, {attacker_name} pressing the advantage with another quick shot.",
+            'observer_msg': "A rapid burst from the semi-automatic shotgun hits {target_name}'s {hit_location}s, making them drop what they're holding. The shotgun cycles, {attacker_name} pressing the advantage with another quick shot."
         },
         {
-            'attacker_msg': "The semi-automatic shotgun's payload makes a series of solid thuds against {target_name}'s torso. The shotgun cycles, chambering fresh rounds with a blur of motion.",
-            'victim_msg': "The semi-automatic shotgun's payload makes a series of solid thuds against your torso. The shotgun cycles, chambering fresh rounds with a blur of motion.",
-            'observer_msg': "The semi-automatic shotgun's payload makes a series of solid thuds against {target_name}'s torso. The shotgun cycles, chambering fresh rounds with a blur of motion."
+            'attacker_msg': "The semi-automatic shotgun's payload makes a series of solid thuds against {target_name}'s {hit_location}. The shotgun cycles, chambering fresh rounds with a blur of motion.",
+            'victim_msg': "The semi-automatic shotgun's payload makes a series of solid thuds against your {hit_location}. The shotgun cycles, chambering fresh rounds with a blur of motion.",
+            'observer_msg': "The semi-automatic shotgun's payload makes a series of solid thuds against {target_name}'s {hit_location}. The shotgun cycles, chambering fresh rounds with a blur of motion."
         },
         {
-            'attacker_msg': "Your semi-automatic shotgun projectiles find their mark, delivering a series of debilitating wounds to {target_name}'s leg. Brass casings arc away as the shotgun cycles.",
-            'victim_msg': "{attacker_name}'s semi-automatic shotgun projectiles find their mark, delivering a series of debilitating wounds to your leg. Brass casings arc away as the shotgun cycles.",
-            'observer_msg': "{attacker_name}'s semi-automatic shotgun projectiles find their mark, delivering a series of debilitating wounds to {target_name}'s leg. Brass casings arc away as the shotgun cycles."
+            'attacker_msg': "Your semi-automatic shotgun projectiles find their mark, delivering a series of debilitating wounds to {target_name}'s {hit_location}. Brass casings arc away as the shotgun cycles.",
+            'victim_msg': "{attacker_name}'s semi-automatic shotgun projectiles find their mark, delivering a series of debilitating wounds to your {hit_location}. Brass casings arc away as the shotgun cycles.",
+            'observer_msg': "{attacker_name}'s semi-automatic shotgun projectiles find their mark, delivering a series of debilitating wounds to {target_name}'s {hit_location}. Brass casings arc away as the shotgun cycles."
         },
         {
             'attacker_msg': "Even a short, rapid volley from the semi-automatic shotgun's pellets tears multiple nasty gashes. The shotgun cycles, ready again in an instant.",
@@ -263,9 +263,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s volley is true, the semi-automatic shotgun's blasts striking {target_name} in a tight pattern. The bolt cycles, ready for the next command."
         },
         {
-            'attacker_msg': "A close-range flurry from your semi-automatic shotgun tears multiple holes in {target_name}'s side. The shotgun cycles, the sound a sharp, angry chatter.",
-            'victim_msg': "A close-range flurry from {attacker_name}'s semi-automatic shotgun tears multiple holes in your side. The shotgun cycles, the sound a sharp, angry chatter.",
-            'observer_msg': "A close-range flurry from {attacker_name}'s semi-automatic shotgun tears multiple holes in {target_name}'s side. The shotgun cycles, the sound a sharp, angry chatter."
+            'attacker_msg': "A close-range flurry from your semi-automatic shotgun tears multiple holes in {target_name}'s {hit_location}. The shotgun cycles, the sound a sharp, angry chatter.",
+            'victim_msg': "A close-range flurry from {attacker_name}'s semi-automatic shotgun tears multiple holes in your {hit_location}. The shotgun cycles, the sound a sharp, angry chatter.",
+            'observer_msg': "A close-range flurry from {attacker_name}'s semi-automatic shotgun tears multiple holes in {target_name}'s {hit_location}. The shotgun cycles, the sound a sharp, angry chatter."
         },
         {
             'attacker_msg': "The semi-automatic shotgun proves brutally effective as you land another flurry of hits on {target_name}. The action cycles with a swift, continuous *CHLACK-clack-CHLACK*.",
@@ -278,19 +278,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s semi-automatic shotgun blasts make impact, leaving a series of bleeding punctures. Spent casings litter the ground as the shotgun cycles."
         },
         {
-            'attacker_msg': "A painful succession of cracks as blasts from your semi-automatic shotgun strike {target_name}'s ribs. The shotgun cycles, chambering more rounds.",
-            'victim_msg': "A painful succession of cracks as blasts from {attacker_name}'s semi-automatic shotgun strike your ribs. The shotgun cycles, chambering more rounds.",
-            'observer_msg': "A painful succession of cracks as blasts from {attacker_name}'s semi-automatic shotgun strike {target_name}'s ribs. The shotgun cycles, chambering more rounds."
+            'attacker_msg': "A painful succession of cracks as blasts from your semi-automatic shotgun strike {target_name}'s {hit_location}. The shotgun cycles, chambering more rounds.",
+            'victim_msg': "A painful succession of cracks as blasts from {attacker_name}'s semi-automatic shotgun strike your {hit_location}. The shotgun cycles, chambering more rounds.",
+            'observer_msg': "A painful succession of cracks as blasts from {attacker_name}'s semi-automatic shotgun strike {target_name}'s {hit_location}. The shotgun cycles, chambering more rounds."
         },
         {
-            'attacker_msg': "Projectiles from your semi-automatic shotgun hit {target_name}'s collarbone in a rapid sequence. The action cycles, ejecting casings smartly.",
-            'victim_msg': "Projectiles from {attacker_name}'s semi-automatic shotgun hit your collarbone in a rapid sequence. The action cycles, ejecting casings smartly.",
-            'observer_msg': "Projectiles from {attacker_name}'s semi-automatic shotgun hit {target_name}'s collarbone in a rapid sequence. The action cycles, ejecting casings smartly."
+            'attacker_msg': "Projectiles from your semi-automatic shotgun hit {target_name}'s {hit_location} in a rapid sequence. The action cycles, ejecting casings smartly.",
+            'victim_msg': "Projectiles from {attacker_name}'s semi-automatic shotgun hit your {hit_location} in a rapid sequence. The action cycles, ejecting casings smartly.",
+            'observer_msg': "Projectiles from {attacker_name}'s semi-automatic shotgun hit {target_name}'s {hit_location} in a rapid sequence. The action cycles, ejecting casings smartly."
         },
         {
-            'attacker_msg': "Your semi-automatic shotgun delivers another series of penetrating impacts to {target_name}'s torso. The shotgun cycles, ready for more punishment.",
-            'victim_msg': "{attacker_name}'s semi-automatic shotgun delivers another series of penetrating impacts to your torso. The shotgun cycles, ready for more punishment.",
-            'observer_msg': "{attacker_name}'s semi-automatic shotgun delivers another series of penetrating impacts to {target_name}'s torso. The shotgun cycles, ready for more punishment."
+            'attacker_msg': "Your semi-automatic shotgun delivers another series of penetrating impacts to {target_name}'s {hit_location}. The shotgun cycles, ready for more punishment.",
+            'victim_msg': "{attacker_name}'s semi-automatic shotgun delivers another series of penetrating impacts to your {hit_location}. The shotgun cycles, ready for more punishment.",
+            'observer_msg': "{attacker_name}'s semi-automatic shotgun delivers another series of penetrating impacts to {target_name}'s {hit_location}. The shotgun cycles, ready for more punishment."
         },
         {
             'attacker_msg': "A well-placed volley from the semi-automatic shotgun leaves {target_name} reeling from multiple wounds. The shotgun cycles, you assessing for another quick volley.",

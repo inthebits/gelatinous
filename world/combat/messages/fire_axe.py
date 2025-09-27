@@ -153,49 +153,49 @@ MESSAGES = {
     ],
     'hit': [
         {
-            'attacker_msg': "A cleave to the thigh severs not just flesh, but mobility. {target_name} drops to one knee, disbelief painted in crimson.",
-            'victim_msg': "A cleave to the thigh severs not just flesh, but mobility. You drop to one knee, disbelief painted in crimson.",
-            'observer_msg': "A cleave to the thigh severs not just flesh, but mobility. {target_name} drops to one knee, disbelief painted in crimson."
+            'attacker_msg': "A cleave to the {hit_location} severs not just flesh, but mobility. {target_name} drops to one {hit_location}, disbelief painted in crimson.",
+            'victim_msg': "A cleave to the {hit_location} severs not just flesh, but mobility. You drop to one {hit_location}, disbelief painted in crimson.",
+            'observer_msg': "A cleave to the {hit_location} severs not just flesh, but mobility. {target_name} drops to one {hit_location}, disbelief painted in crimson."
         },
         {
-            'attacker_msg': "A downward cleave crashes through {target_name}'s shoulder and stays. You let go. The axe holds itself now.",
-            'victim_msg': "A downward cleave crashes through your shoulder and stays. {attacker_name} lets go. The axe holds itself now.",
-            'observer_msg': "A downward cleave crashes through {target_name}'s shoulder and stays. {attacker_name} lets go. The axe holds itself now."
+            'attacker_msg': "A downward cleave crashes through {target_name}'s {hit_location} and stays. You let go. The axe holds itself now.",
+            'victim_msg': "A downward cleave crashes through your {hit_location} and stays. {attacker_name} lets go. The axe holds itself now.",
+            'observer_msg': "A downward cleave crashes through {target_name}'s {hit_location} and stays. {attacker_name} lets go. The axe holds itself now."
         },
         {
-            'attacker_msg': "A low swing catches {target_name} across the gut. Blood fountains. Their knees buckle as if even their body knows what comes next.",
-            'victim_msg': "A low swing catches you across the gut. Blood fountains. Your knees buckle as if even your body knows what comes next.",
-            'observer_msg': "A low swing catches {target_name} across the gut. Blood fountains. Their knees buckle as if even their body knows what comes next."
+            'attacker_msg': "A low swing catches {target_name} across the {hit_location}. Blood fountains. Their knees buckle as if even their body knows what comes next.",
+            'victim_msg': "A low swing catches you across the {hit_location}. Blood fountains. Your knees buckle as if even your body knows what comes next.",
+            'observer_msg': "A low swing catches {target_name} across the {hit_location}. Blood fountains. Their knees buckle as if even their body knows what comes next."
         },
         {
-            'attacker_msg': "A quick, rising swing lands in the gut. {target_name} folds, then drops, their insides trying to catch up to the blade.",
-            'victim_msg': "A quick, rising swing lands in the gut. You fold, then drop, your insides trying to catch up to the blade.",
-            'observer_msg': "A quick, rising swing lands in the gut. {target_name} folds, then drops, their insides trying to catch up to the blade."
+            'attacker_msg': "A quick, rising swing lands in the {hit_location}. {target_name} folds, then drops, their insides trying to catch up to the blade.",
+            'victim_msg': "A quick, rising swing lands in the {hit_location}. You fold, then drop, your insides trying to catch up to the blade.",
+            'observer_msg': "A quick, rising swing lands in the {hit_location}. {target_name} folds, then drops, their insides trying to catch up to the blade."
         },
         {
-            'attacker_msg': "A sharp strike to the shoulder severs more than muscle. {target_name}'s arm drops — and so does their will.",
-            'victim_msg': "A sharp strike to the shoulder severs more than muscle. Your arm drops — and so does your will.",
-            'observer_msg': "A sharp strike to the shoulder severs more than muscle. {target_name}'s arm drops — and so does their will."
+            'attacker_msg': "A sharp strike to the {hit_location} severs more than muscle. {target_name}'s {hit_location} drops — and so does their will.",
+            'victim_msg': "A sharp strike to the {hit_location} severs more than muscle. Your {hit_location} drops — and so does your will.",
+            'observer_msg': "A sharp strike to the {hit_location} severs more than muscle. {target_name}'s {hit_location} drops — and so does their will."
         },
         {
-            'attacker_msg': "A sideways swing catches {target_name} across the ribs. They stagger like someone unplugged their spine.",
-            'victim_msg': "A sideways swing catches you across the ribs. You stagger like someone unplugged your spine.",
-            'observer_msg': "A sideways swing catches {target_name} across the ribs. They stagger like someone unplugged their spine."
+            'attacker_msg': "A sideways swing catches {target_name} across the {hit_location}. They stagger like someone unplugged their {hit_location}.",
+            'victim_msg': "A sideways swing catches you across the {hit_location}. You stagger like someone unplugged your {hit_location}.",
+            'observer_msg': "A sideways swing catches {target_name} across the {hit_location}. They stagger like someone unplugged their {hit_location}."
         },
         {
-            'attacker_msg': "A vertical swing lands square on {target_name}'s collarbone. There's a wet crack — and then screaming.",
-            'victim_msg': "A vertical swing lands square on your collarbone. There's a wet crack — and then screaming.",
-            'observer_msg': "A vertical swing lands square on {target_name}'s collarbone. There's a wet crack — and then screaming."
+            'attacker_msg': "A vertical swing lands square on {target_name}'s {hit_location}. There's a wet crack — and then screaming.",
+            'victim_msg': "A vertical swing lands square on your {hit_location}. There's a wet crack — and then screaming.",
+            'observer_msg': "A vertical swing lands square on {target_name}'s {hit_location}. There's a wet crack — and then screaming."
         },
         {
-            'attacker_msg': "Blood mists the air as the edge bites into {target_name}'s leg. They scream and stumble, dragging red across the floor.",
-            'victim_msg': "Blood mists the air as the edge bites into your leg. You scream and stumble, dragging red across the floor.",
-            'observer_msg': "Blood mists the air as the edge bites into {target_name}'s leg. They scream and stumble, dragging red across the floor."
+            'attacker_msg': "Blood mists the air as the edge bites into {target_name}'s {hit_location}. They scream and stumble, dragging red across the floor.",
+            'victim_msg': "Blood mists the air as the edge bites into your {hit_location}. You scream and stumble, dragging red across the floor.",
+            'observer_msg': "Blood mists the air as the edge bites into {target_name}'s {hit_location}. They scream and stumble, dragging red across the floor."
         },
         {
-            'attacker_msg': "It hits with the sound of demolition. {target_name}'s chest caves, and for a moment their body forgets how to stand.",
-            'victim_msg': "It hits with the sound of demolition. Your chest caves, and for a moment your body forgets how to stand.",
-            'observer_msg': "It hits with the sound of demolition. {target_name}'s chest caves, and for a moment their body forgets how to stand."
+            'attacker_msg': "It hits with the sound of demolition. {target_name}'s {hit_location} caves, and for a moment their body forgets how to stand.",
+            'victim_msg': "It hits with the sound of demolition. Your {hit_location} caves, and for a moment your body forgets how to stand.",
+            'observer_msg': "It hits with the sound of demolition. {target_name}'s {hit_location} caves, and for a moment their body forgets how to stand."
         },
         {
             'attacker_msg': "It lands hard — not fast. The edge crunches bone and everything behind it. {target_name}'s cry is short-lived, smothered in red.",
@@ -203,24 +203,24 @@ MESSAGES = {
             'observer_msg': "It lands hard — not fast. The edge crunches bone and everything behind it. {target_name}'s cry is short-lived, smothered in red."
         },
         {
-            'attacker_msg': "It's not the edge but the weight that ruins {target_name}. They're struck flat, breath gone, ribs shattered.",
-            'victim_msg': "It's not the edge but the weight that ruins you. You're struck flat, breath gone, ribs shattered.",
-            'observer_msg': "It's not the edge but the weight that ruins {target_name}. They're struck flat, breath gone, ribs shattered."
+            'attacker_msg': "It's not the edge but the weight that ruins {target_name}. They're struck flat, breath gone, {hit_location} shattered.",
+            'victim_msg': "It's not the edge but the weight that ruins you. You're struck flat, breath gone, {hit_location} shattered.",
+            'observer_msg': "It's not the edge but the weight that ruins {target_name}. They're struck flat, breath gone, {hit_location} shattered."
         },
         {
-            'attacker_msg': "Steel bites deep, lodging into flesh before you pull back hard. {target_name} falls, clutching what's left.",
-            'victim_msg': "Steel bites deep, lodging into flesh before {attacker_name} pulls back hard. You fall, clutching what's left.",
-            'observer_msg': "Steel bites deep, lodging into flesh before {attacker_name} pulls back hard. {target_name} falls, clutching what's left."
+            'attacker_msg': "Steel bites deep, lodging into flesh before you pull {hit_location} hard. {target_name} falls, clutching what's left.",
+            'victim_msg': "Steel bites deep, lodging into flesh before {attacker_name} pulls {hit_location} hard. You fall, clutching what's left.",
+            'observer_msg': "Steel bites deep, lodging into flesh before {attacker_name} pulls {hit_location} hard. {target_name} falls, clutching what's left."
         },
         {
-            'attacker_msg': "Steel meets spine, and the sound is unforgettable. {target_name} jerks forward and collapses in half-silhouette.",
-            'victim_msg': "Steel meets spine, and the sound is unforgettable. You jerk forward and collapse in half-silhouette.",
-            'observer_msg': "Steel meets spine, and the sound is unforgettable. {target_name} jerks forward and collapses in half-silhouette."
+            'attacker_msg': "Steel meets {hit_location}, and the sound is unforgettable. {target_name} jerks forward and collapses in half-silhouette.",
+            'victim_msg': "Steel meets {hit_location}, and the sound is unforgettable. You jerk forward and collapse in half-silhouette.",
+            'observer_msg': "Steel meets {hit_location}, and the sound is unforgettable. {target_name} jerks forward and collapses in half-silhouette."
         },
         {
-            'attacker_msg': "The axe bites through muscle like wet cloth. {target_name} chokes on blood and disbelief as you pull back with something more than strength.",
-            'victim_msg': "The axe bites through muscle like wet cloth. You choke on blood and disbelief as {attacker_name} pulls back with something more than strength.",
-            'observer_msg': "The axe bites through muscle like wet cloth. {target_name} chokes on blood and disbelief as {attacker_name} pulls back with something more than strength."
+            'attacker_msg': "The axe bites through muscle like wet cloth. {target_name} chokes on blood and disbelief as you pull {hit_location} with something more than strength.",
+            'victim_msg': "The axe bites through muscle like wet cloth. You choke on blood and disbelief as {attacker_name} pulls {hit_location} with something more than strength.",
+            'observer_msg': "The axe bites through muscle like wet cloth. {target_name} chokes on blood and disbelief as {attacker_name} pulls {hit_location} with something more than strength."
         },
         {
             'attacker_msg': "The axe connects with brutal, direct force. There's no finesse. Just raw correction.",
@@ -228,9 +228,9 @@ MESSAGES = {
             'observer_msg': "The axe connects with brutal, direct force. There's no finesse. Just raw correction."
         },
         {
-            'attacker_msg': "The axe hits the thigh and doesn't stop. {target_name} screams as bone yields with a reluctant snap.",
-            'victim_msg': "The axe hits the thigh and doesn't stop. You scream as bone yields with a reluctant snap.",
-            'observer_msg': "The axe hits the thigh and doesn't stop. {target_name} screams as bone yields with a reluctant snap."
+            'attacker_msg': "The axe hits the {hit_location} and doesn't stop. {target_name} screams as bone yields with a reluctant snap.",
+            'victim_msg': "The axe hits the {hit_location} and doesn't stop. You scream as bone yields with a reluctant snap.",
+            'observer_msg': "The axe hits the {hit_location} and doesn't stop. {target_name} screams as bone yields with a reluctant snap."
         },
         {
             'attacker_msg': "The axe slams into {target_name} with a noise that's more *impact* than sound. Something inside them gives way.",
@@ -268,14 +268,14 @@ MESSAGES = {
             'observer_msg': "The sound isn't metal on flesh — it's metal through flesh. {target_name}'s scream trails the blade's exit."
         },
         {
-            'attacker_msg': "You bury the axe in {target_name}'s side. It takes a twist to dislodge. The spray that follows is arterial and blinding.",
-            'victim_msg': "{attacker_name} buries the axe in your side. It takes a twist to dislodge. The spray that follows is arterial and blinding.",
-            'observer_msg': "{attacker_name} buries the axe in {target_name}'s side. It takes a twist to dislodge. The spray that follows is arterial and blinding."
+            'attacker_msg': "You bury the axe in {target_name}'s {hit_location}. It takes a twist to dislodge. The spray that follows is arterial and blinding.",
+            'victim_msg': "{attacker_name} buries the axe in your {hit_location}. It takes a twist to dislodge. The spray that follows is arterial and blinding.",
+            'observer_msg': "{attacker_name} buries the axe in {target_name}'s {hit_location}. It takes a twist to dislodge. The spray that follows is arterial and blinding."
         },
         {
-            'attacker_msg': "You bury the blade into {target_name}'s side, wrenching it free with a spray of blood and a sickening twist.",
-            'victim_msg': "{attacker_name} buries the blade into your side, wrenching it free with a spray of blood and a sickening twist.",
-            'observer_msg': "{attacker_name} buries the blade into {target_name}'s side, wrenching it free with a spray of blood and a sickening twist."
+            'attacker_msg': "You bury the blade into {target_name}'s {hit_location}, wrenching it free with a spray of blood and a sickening twist.",
+            'victim_msg': "{attacker_name} buries the blade into your {hit_location}, wrenching it free with a spray of blood and a sickening twist.",
+            'observer_msg': "{attacker_name} buries the blade into {target_name}'s {hit_location}, wrenching it free with a spray of blood and a sickening twist."
         },
         {
             'attacker_msg': "You carve through clothing, skin, and willpower in one clean motion. {target_name} reacts like something broke inside — because something did.",
@@ -288,19 +288,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name} doesn't hesitate — they cleave into {target_name} with the weight of a decision made long ago."
         },
         {
-            'attacker_msg': "You drive the axe down into {target_name}'s shoulder. The joint caves with a squelch and a crunch, like collapsing scaffolding.",
-            'victim_msg': "{attacker_name} drives the axe down into your shoulder. The joint caves with a squelch and a crunch, like collapsing scaffolding.",
-            'observer_msg': "{attacker_name} drives the axe down into {target_name}'s shoulder. The joint caves with a squelch and a crunch, like collapsing scaffolding."
+            'attacker_msg': "You drive the axe down into {target_name}'s {hit_location}. The joint caves with a squelch and a crunch, like collapsing scaffolding.",
+            'victim_msg': "{attacker_name} drives the axe down into your {hit_location}. The joint caves with a squelch and a crunch, like collapsing scaffolding.",
+            'observer_msg': "{attacker_name} drives the axe down into {target_name}'s {hit_location}. The joint caves with a squelch and a crunch, like collapsing scaffolding."
         },
         {
-            'attacker_msg': "You drive the axe in low, into the gut. The wound bubbles before the blood does.",
-            'victim_msg': "{attacker_name} drives the axe in low, into the gut. The wound bubbles before the blood does.",
-            'observer_msg': "{attacker_name} drives the axe in low, into the gut. The wound bubbles before the blood does."
+            'attacker_msg': "You drive the axe in low, into the {hit_location}. The wound bubbles before the blood does.",
+            'victim_msg': "{attacker_name} drives the axe in low, into the {hit_location}. The wound bubbles before the blood does.",
+            'observer_msg': "{attacker_name} drives the axe in low, into the {hit_location}. The wound bubbles before the blood does."
         },
         {
-            'attacker_msg': "You twist as you swing, driving the weight of the axe into {target_name}'s ribs. Something snaps. Everything else follows.",
-            'victim_msg': "{attacker_name} twists as they swing, driving the weight of the axe into your ribs. Something snaps. Everything else follows.",
-            'observer_msg': "{attacker_name} twists as they swing, driving the weight of the axe into {target_name}'s ribs. Something snaps. Everything else follows."
+            'attacker_msg': "You twist as you swing, driving the weight of the axe into {target_name}'s {hit_location}. Something snaps. Everything else follows.",
+            'victim_msg': "{attacker_name} twists as they swing, driving the weight of the axe into your {hit_location}. Something snaps. Everything else follows.",
+            'observer_msg': "{attacker_name} twists as they swing, driving the weight of the axe into {target_name}'s {hit_location}. Something snaps. Everything else follows."
         }
     ],
     'miss': [

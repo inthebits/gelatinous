@@ -153,154 +153,154 @@ MESSAGES = {
     ],
     'hit': [
         {
-            'attacker_msg': "A downward whip crashes against {target_name}'s spine. They arch in agony.",
-            'victim_msg': "A downward whip crashes against your spine. You arch in agony.",
-            'observer_msg': "A downward whip crashes against {target_name}'s spine. They arch in agony."
+            'attacker_msg': "A downward whip crashes against {target_name}'s {hit_location}. They arch in agony.",
+            'victim_msg': "A downward whip crashes against your {hit_location}. You arch in agony.",
+            'observer_msg': "A downward whip crashes against {target_name}'s {hit_location}. They arch in agony."
         },
         {
-            'attacker_msg': "A fast double-strike to {target_name}'s shoulders makes them stagger and wheeze.",
-            'victim_msg': "A fast double-strike to your shoulders makes you stagger and wheeze.",
-            'observer_msg': "A fast double-strike to {target_name}'s shoulders makes them stagger and wheeze."
+            'attacker_msg': "A fast double-strike to {target_name}'s {hit_location}s makes them stagger and wheeze.",
+            'victim_msg': "A fast double-strike to your {hit_location}s makes you stagger and wheeze.",
+            'observer_msg': "A fast double-strike to {target_name}'s {hit_location}s makes them stagger and wheeze."
         },
         {
-            'attacker_msg': "A feint high ends in a crushing blow to {target_name}'s ribs. They buckle with a gasp.",
-            'victim_msg': "A feint high ends in a crushing blow to your ribs. You buckle with a gasp.",
-            'observer_msg': "A feint high ends in a crushing blow to {target_name}'s ribs. They buckle with a gasp."
+            'attacker_msg': "A feint high ends in a crushing blow to {target_name}'s {hit_location}. They buckle with a gasp.",
+            'victim_msg': "A feint high ends in a crushing blow to your {hit_location}. You buckle with a gasp.",
+            'observer_msg': "A feint high ends in a crushing blow to {target_name}'s {hit_location}. They buckle with a gasp."
         },
         {
-            'attacker_msg': "A quick twist drives the weapon into {target_name}'s throat. They stagger, choking.",
-            'victim_msg': "A quick twist drives the weapon into your throat. You stagger, choking.",
-            'observer_msg': "A quick twist drives the weapon into {target_name}'s throat. They stagger, choking."
+            'attacker_msg': "A quick twist drives the weapon into {target_name}'s {hit_location}. They stagger, choking.",
+            'victim_msg': "A quick twist drives the weapon into your {hit_location}. You stagger, choking.",
+            'observer_msg': "A quick twist drives the weapon into {target_name}'s {hit_location}. They stagger, choking."
         },
         {
-            'attacker_msg': "A rising spin claps {target_name}'s ribs. The sound is hollow. The effect is not.",
-            'victim_msg': "A rising spin claps your ribs. The sound is hollow. The effect is not.",
-            'observer_msg': "A rising spin claps {target_name}'s ribs. The sound is hollow. The effect is not."
+            'attacker_msg': "A rising spin claps {target_name}'s {hit_location}. The sound is hollow. The effect is not.",
+            'victim_msg': "A rising spin claps your {hit_location}. The sound is hollow. The effect is not.",
+            'observer_msg': "A rising spin claps {target_name}'s {hit_location}. The sound is hollow. The effect is not."
         },
         {
-            'attacker_msg': "A sharp crack to {target_name}'s jaw sends blood and teeth scattering.",
-            'victim_msg': "A sharp crack to your jaw sends blood and teeth scattering.",
-            'observer_msg': "A sharp crack to {target_name}'s jaw sends blood and teeth scattering."
+            'attacker_msg': "A sharp crack to {target_name}'s {hit_location} sends blood and teeth scattering.",
+            'victim_msg': "A sharp crack to your {hit_location} sends blood and teeth scattering.",
+            'observer_msg': "A sharp crack to {target_name}'s {hit_location} sends blood and teeth scattering."
         },
         {
-            'attacker_msg': "A snap of the chain brings wood against {target_name}'s temple. They stumble, blinking stars.",
-            'victim_msg': "A snap of the chain brings wood against your temple. You stumble, blinking stars.",
-            'observer_msg': "A snap of the chain brings wood against {target_name}'s temple. They stumble, blinking stars."
+            'attacker_msg': "A snap of the chain brings wood against {target_name}'s {hit_location}. They stumble, blinking stars.",
+            'victim_msg': "A snap of the chain brings wood against your {hit_location}. You stumble, blinking stars.",
+            'observer_msg': "A snap of the chain brings wood against {target_name}'s {hit_location}. They stumble, blinking stars."
         },
         {
-            'attacker_msg': "A sweeping arc connects with {target_name}'s thigh. They drop with a shout.",
-            'victim_msg': "A sweeping arc connects with your thigh. You drop with a shout.",
-            'observer_msg': "A sweeping arc connects with {target_name}'s thigh. They drop with a shout."
+            'attacker_msg': "A sweeping arc connects with {target_name}'s {hit_location}. They drop with a shout.",
+            'victim_msg': "A sweeping arc connects with your {hit_location}. You drop with a shout.",
+            'observer_msg': "A sweeping arc connects with {target_name}'s {hit_location}. They drop with a shout."
         },
         {
-            'attacker_msg': "A vertical slam smashes into {target_name}'s collarbone. Something pops. It's not coming back right.",
-            'victim_msg': "A vertical slam smashes into your collarbone. Something pops. It's not coming back right.",
-            'observer_msg': "A vertical slam smashes into {target_name}'s collarbone. Something pops. It's not coming back right."
+            'attacker_msg': "A vertical slam smashes into {target_name}'s {hit_location}. Something pops. It's not coming {hit_location} right.",
+            'victim_msg': "A vertical slam smashes into your {hit_location}. Something pops. It's not coming {hit_location} right.",
+            'observer_msg': "A vertical slam smashes into {target_name}'s {hit_location}. Something pops. It's not coming {hit_location} right."
         },
         {
-            'attacker_msg': "A whip-fast strike hits {target_name}'s wrist. They cry out and stagger back, clutching raw nerve.",
-            'victim_msg': "A whip-fast strike hits your wrist. You cry out and stagger back, clutching raw nerve.",
-            'observer_msg': "A whip-fast strike hits {target_name}'s wrist. They cry out and stagger back, clutching raw nerve."
+            'attacker_msg': "A whip-fast strike hits {target_name}'s {hit_location}. They cry out and stagger {hit_location}, clutching raw nerve.",
+            'victim_msg': "A whip-fast strike hits your {hit_location}. You cry out and stagger {hit_location}, clutching raw nerve.",
+            'observer_msg': "A whip-fast strike hits {target_name}'s {hit_location}. They cry out and stagger {hit_location}, clutching raw nerve."
         },
         {
-            'attacker_msg': "One stick crashes into {target_name}'s jaw, the other follows with sick rhythm.",
-            'victim_msg': "One stick crashes into your jaw, the other follows with sick rhythm.",
-            'observer_msg': "One stick crashes into {target_name}'s jaw, the other follows with sick rhythm."
+            'attacker_msg': "One stick crashes into {target_name}'s {hit_location}, the other follows with sick rhythm.",
+            'victim_msg': "One stick crashes into your {hit_location}, the other follows with sick rhythm.",
+            'observer_msg': "One stick crashes into {target_name}'s {hit_location}, the other follows with sick rhythm."
         },
         {
-            'attacker_msg': "The chain slaps across {target_name}'s forearm, followed by wood — and pain.",
-            'victim_msg': "The chain slaps across your forearm, followed by wood — and pain.",
-            'observer_msg': "The chain slaps across {target_name}'s forearm, followed by wood — and pain."
+            'attacker_msg': "The chain slaps across {target_name}'s {hit_location}, followed by wood — and pain.",
+            'victim_msg': "The chain slaps across your {hit_location}, followed by wood — and pain.",
+            'observer_msg': "The chain slaps across {target_name}'s {hit_location}, followed by wood — and pain."
         },
         {
-            'attacker_msg': "The chain tangles briefly before slamming into {target_name}'s side. Improvised — but effective.",
-            'victim_msg': "The chain tangles briefly before slamming into your side. Improvised — but effective.",
-            'observer_msg': "The chain tangles briefly before slamming into {target_name}'s side. Improvised — but effective."
+            'attacker_msg': "The chain tangles briefly before slamming into {target_name}'s {hit_location}. Improvised — but effective.",
+            'victim_msg': "The chain tangles briefly before slamming into your {hit_location}. Improvised — but effective.",
+            'observer_msg': "The chain tangles briefly before slamming into {target_name}'s {hit_location}. Improvised — but effective."
         },
         {
-            'attacker_msg': "The nunchaku catch {target_name}'s hip. A red bruise blooms. They barely stay upright.",
-            'victim_msg': "The nunchaku catch your hip. A red bruise blooms. You barely stay upright.",
-            'observer_msg': "The nunchaku catch {target_name}'s hip. A red bruise blooms. They barely stay upright."
+            'attacker_msg': "The nunchaku catch {target_name}'s {hit_location}. A red bruise blooms. They barely stay upright.",
+            'victim_msg': "The nunchaku catch your {hit_location}. A red bruise blooms. You barely stay upright.",
+            'observer_msg': "The nunchaku catch {target_name}'s {hit_location}. A red bruise blooms. They barely stay upright."
         },
         {
-            'attacker_msg': "The nunchaku snap into {target_name}'s temple. Their eyes roll before their knees even know to buckle.",
-            'victim_msg': "The nunchaku snap into your temple. Your eyes roll before your knees even know to buckle.",
-            'observer_msg': "The nunchaku snap into {target_name}'s temple. Their eyes roll before their knees even know to buckle."
+            'attacker_msg': "The nunchaku snap into {target_name}'s {hit_location}. Their eyes roll before their knees even know to buckle.",
+            'victim_msg': "The nunchaku snap into your {hit_location}. Your eyes roll before your {hit_location}s even know to buckle.",
+            'observer_msg': "The nunchaku snap into {target_name}'s {hit_location}. Their eyes roll before their knees even know to buckle."
         },
         {
-            'attacker_msg': "The nunchaku whip across {target_name}'s wrist. Their weapon clatters to the floor.",
-            'victim_msg': "The nunchaku whip across your wrist. Your weapon clatters to the floor.",
-            'observer_msg': "The nunchaku whip across {target_name}'s wrist. Their weapon clatters to the floor."
+            'attacker_msg': "The nunchaku whip across {target_name}'s {hit_location}. Their weapon clatters to the floor.",
+            'victim_msg': "The nunchaku whip across your {hit_location}. Your weapon clatters to the floor.",
+            'observer_msg': "The nunchaku whip across {target_name}'s {hit_location}. Their weapon clatters to the floor."
         },
         {
-            'attacker_msg': "The nunchaku wrap around {target_name}'s ankle and jerk. The fall is ugly. The pain is worse.",
-            'victim_msg': "The nunchaku wrap around your ankle and jerk. The fall is ugly. The pain is worse.",
-            'observer_msg': "The nunchaku wrap around {target_name}'s ankle and jerk. The fall is ugly. The pain is worse."
+            'attacker_msg': "The nunchaku wrap around {target_name}'s {hit_location} and jerk. The fall is ugly. The pain is worse.",
+            'victim_msg': "The nunchaku wrap around your {hit_location} and jerk. The fall is ugly. The pain is worse.",
+            'observer_msg': "The nunchaku wrap around {target_name}'s {hit_location} and jerk. The fall is ugly. The pain is worse."
         },
         {
-            'attacker_msg': "The stick spins over your shoulder, then crashes into {target_name}'s chest with a thud.",
-            'victim_msg': "The stick spins over {attacker_name}'s shoulder, then crashes into your chest with a thud.",
-            'observer_msg': "The stick spins over {attacker_name}'s shoulder, then crashes into {target_name}'s chest with a thud."
+            'attacker_msg': "The stick spins over your {hit_location}, then crashes into {target_name}'s {hit_location} with a thud.",
+            'victim_msg': "The stick spins over {attacker_name}'s {hit_location}, then crashes into your {hit_location} with a thud.",
+            'observer_msg': "The stick spins over {attacker_name}'s {hit_location}, then crashes into {target_name}'s {hit_location} with a thud."
         },
         {
-            'attacker_msg': "The sticks blur and land against {target_name}'s jaw. Blood spits through broken teeth.",
-            'victim_msg': "The sticks blur and land against your jaw. Blood spits through broken teeth.",
-            'observer_msg': "The sticks blur and land against {target_name}'s jaw. Blood spits through broken teeth."
+            'attacker_msg': "The sticks blur and land against {target_name}'s {hit_location}. Blood spits through broken teeth.",
+            'victim_msg': "The sticks blur and land against your {hit_location}. Blood spits through broken teeth.",
+            'observer_msg': "The sticks blur and land against {target_name}'s {hit_location}. Blood spits through broken teeth."
         },
         {
-            'attacker_msg': "The weapon blurs and strikes {target_name}'s ankle. They crumple awkwardly.",
-            'victim_msg': "The weapon blurs and strikes your ankle. You crumple awkwardly.",
-            'observer_msg': "The weapon blurs and strikes {target_name}'s ankle. They crumple awkwardly."
+            'attacker_msg': "The weapon blurs and strikes {target_name}'s {hit_location}. They crumple awkwardly.",
+            'victim_msg': "The weapon blurs and strikes your {hit_location}. You crumple awkwardly.",
+            'observer_msg': "The weapon blurs and strikes {target_name}'s {hit_location}. They crumple awkwardly."
         },
         {
-            'attacker_msg': "The weapon bounces off {target_name}'s clavicle. They shriek. Something shifted inside.",
-            'victim_msg': "The weapon bounces off your clavicle. You shriek. Something shifted inside.",
-            'observer_msg': "The weapon bounces off {target_name}'s clavicle. They shriek. Something shifted inside."
+            'attacker_msg': "The weapon bounces off {target_name}'s {hit_location}. They shriek. Something shifted inside.",
+            'victim_msg': "The weapon bounces off your {hit_location}. You shriek. Something shifted inside.",
+            'observer_msg': "The weapon bounces off {target_name}'s {hit_location}. They shriek. Something shifted inside."
         },
         {
-            'attacker_msg': "The weapon lashes across {target_name}'s back. Their spine arches in unwilling reaction.",
-            'victim_msg': "The weapon lashes across your back. Your spine arches in unwilling reaction.",
-            'observer_msg': "The weapon lashes across {target_name}'s back. Their spine arches in unwilling reaction."
+            'attacker_msg': "The weapon lashes across {target_name}'s {hit_location}. Their {hit_location} arches in unwilling reaction.",
+            'victim_msg': "The weapon lashes across your {hit_location}. Your {hit_location} arches in unwilling reaction.",
+            'observer_msg': "The weapon lashes across {target_name}'s {hit_location}. Their {hit_location} arches in unwilling reaction."
         },
         {
-            'attacker_msg': "The weapon strikes the side of {target_name}'s ribcage. The sound is wet and wooden.",
-            'victim_msg': "The weapon strikes the side of your ribcage. The sound is wet and wooden.",
-            'observer_msg': "The weapon strikes the side of {target_name}'s ribcage. The sound is wet and wooden."
+            'attacker_msg': "The weapon strikes the {hit_location} of {target_name}'s ribcage. The sound is wet and wooden.",
+            'victim_msg': "The weapon strikes the {hit_location} of your ribcage. The sound is wet and wooden.",
+            'observer_msg': "The weapon strikes the {hit_location} of {target_name}'s ribcage. The sound is wet and wooden."
         },
         {
-            'attacker_msg': "You land a sharp blow to {target_name}'s shin. They hop back, cursing through gritted teeth.",
-            'victim_msg': "{attacker_name} lands a sharp blow to your shin. You hop back, cursing through gritted teeth.",
-            'observer_msg': "{attacker_name} lands a sharp blow to {target_name}'s shin. They hop back, cursing through gritted teeth."
+            'attacker_msg': "You land a sharp blow to {target_name}'s {hit_location}. They hop {hit_location}, cursing through gritted teeth.",
+            'victim_msg': "{attacker_name} lands a sharp blow to your {hit_location}. You hop {hit_location}, cursing through gritted teeth.",
+            'observer_msg': "{attacker_name} lands a sharp blow to {target_name}'s {hit_location}. They hop {hit_location}, cursing through gritted teeth."
         },
         {
-            'attacker_msg': "You lash the nunchaku across {target_name}'s back. A line of red blossoms under cloth.",
-            'victim_msg': "{attacker_name} lashes the nunchaku across your back. A line of red blossoms under cloth.",
-            'observer_msg': "{attacker_name} lashes the nunchaku across {target_name}'s back. A line of red blossoms under cloth."
+            'attacker_msg': "You lash the nunchaku across {target_name}'s {hit_location}. A line of red blossoms under cloth.",
+            'victim_msg': "{attacker_name} lashes the nunchaku across your {hit_location}. A line of red blossoms under cloth.",
+            'observer_msg': "{attacker_name} lashes the nunchaku across {target_name}'s {hit_location}. A line of red blossoms under cloth."
         },
         {
-            'attacker_msg': "You pivot and deliver a strike to the back of {target_name}'s knee. They fold inward.",
-            'victim_msg': "{attacker_name} pivots and delivers a strike to the back of your knee. You fold inward.",
-            'observer_msg': "{attacker_name} pivots and delivers a strike to the back of {target_name}'s knee. They fold inward."
+            'attacker_msg': "You pivot and deliver a strike to the {hit_location} of {target_name}'s {hit_location}. They fold inward.",
+            'victim_msg': "{attacker_name} pivots and delivers a strike to the {hit_location} of your {hit_location}. You fold inward.",
+            'observer_msg': "{attacker_name} pivots and delivers a strike to the {hit_location} of {target_name}'s {hit_location}. They fold inward."
         },
         {
-            'attacker_msg': "You spin into a strike that lands on {target_name}'s side. The sound is flat and final.",
-            'victim_msg': "{attacker_name} spins into a strike that lands on your side. The sound is flat and final.",
-            'observer_msg': "{attacker_name} spins into a strike that lands on {target_name}'s side. The sound is flat and final."
+            'attacker_msg': "You spin into a strike that lands on {target_name}'s {hit_location}. The sound is flat and final.",
+            'victim_msg': "{attacker_name} spins into a strike that lands on your {hit_location}. The sound is flat and final.",
+            'observer_msg': "{attacker_name} spins into a strike that lands on {target_name}'s {hit_location}. The sound is flat and final."
         },
         {
-            'attacker_msg': "You spin the nunchaku low and crack them across {target_name}'s shin.",
-            'victim_msg': "{attacker_name} spins the nunchaku low and cracks them across your shin.",
-            'observer_msg': "{attacker_name} spins the nunchaku low and cracks them across {target_name}'s shin."
+            'attacker_msg': "You spin the nunchaku low and crack them across {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name} spins the nunchaku low and cracks them across your {hit_location}.",
+            'observer_msg': "{attacker_name} spins the nunchaku low and cracks them across {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "You spin under and strike {target_name}'s kneecap. They buckle, screaming.",
-            'victim_msg': "{attacker_name} spins under and strikes your kneecap. You buckle, screaming.",
-            'observer_msg': "{attacker_name} spins under and strikes {target_name}'s kneecap. They buckle, screaming."
+            'attacker_msg': "You spin under and strike {target_name}'s {hit_location}cap. They buckle, screaming.",
+            'victim_msg': "{attacker_name} spins under and strikes your {hit_location}cap. You buckle, screaming.",
+            'observer_msg': "{attacker_name} spins under and strikes {target_name}'s {hit_location}cap. They buckle, screaming."
         },
         {
-            'attacker_msg': "You whip the sticks into {target_name}'s wrist. The crunch is sharp and immediate.",
-            'victim_msg': "{attacker_name} whips the sticks into your wrist. The crunch is sharp and immediate.",
-            'observer_msg': "{attacker_name} whips the sticks into {target_name}'s wrist. The crunch is sharp and immediate."
+            'attacker_msg': "You whip the sticks into {target_name}'s {hit_location}. The crunch is sharp and immediate.",
+            'victim_msg': "{attacker_name} whips the sticks into your {hit_location}. The crunch is sharp and immediate.",
+            'observer_msg': "{attacker_name} whips the sticks into {target_name}'s {hit_location}. The crunch is sharp and immediate."
         }
     ],
     'miss': [

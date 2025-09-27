@@ -164,9 +164,9 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A lightning-fast lunge from you, and the rapier's point bites {target_name}'s arm.",
-            'victim_msg': "A lightning-fast lunge from {attacker_name}, and the rapier's point bites your arm.",
-            'observer_msg': "A lightning-fast lunge from {attacker_name}, and the rapier's point bites {target_name}'s arm."
+            'attacker_msg': "A lightning-fast lunge from you, and the rapier's point bites {target_name}'s {hit_location}.",
+            'victim_msg': "A lightning-fast lunge from {attacker_name}, and the rapier's point bites your {hit_location}.",
+            'observer_msg': "A lightning-fast lunge from {attacker_name}, and the rapier's point bites {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "The rapier flashes, your thrust slipping past {target_name}'s guard to score a hit.",
@@ -174,19 +174,19 @@ MESSAGES = {
             'observer_msg': "The rapier flashes, {attacker_name}'s thrust slipping past {target_name}'s guard to score a hit."
         },
         {
-            'attacker_msg': "Your blade darts in, leaving a stinging red line on {target_name}'s shoulder.",
-            'victim_msg': "{attacker_name}'s blade darts in, leaving a stinging red line on your shoulder.",
-            'observer_msg': "{attacker_name}'s blade darts in, leaving a stinging red line on {target_name}'s shoulder."
+            'attacker_msg': "Your blade darts in, leaving a stinging red line on {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name}'s blade darts in, leaving a stinging red line on your {hit_location}.",
+            'observer_msg': "{attacker_name}'s blade darts in, leaving a stinging red line on {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "Steel whispers as your rapier parries and ripostes, its tip finding {target_name}'s side.",
-            'victim_msg': "Steel whispers as {attacker_name}'s rapier parries and ripostes, its tip finding your side.",
-            'observer_msg': "Steel whispers as {attacker_name}'s rapier parries and ripostes, its tip finding {target_name}'s side."
+            'attacker_msg': "Steel whispers as your rapier parries and ripostes, its tip finding {target_name}'s {hit_location}.",
+            'victim_msg': "Steel whispers as {attacker_name}'s rapier parries and ripostes, its tip finding your {hit_location}.",
+            'observer_msg': "Steel whispers as {attacker_name}'s rapier parries and ripostes, its tip finding {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "The sharp point of the rapier pierces {target_name}'s leg, making them hiss in pain.",
-            'victim_msg': "The sharp point of the rapier pierces your leg, making you hiss in pain.",
-            'observer_msg': "The sharp point of the rapier pierces {target_name}'s leg, making them hiss in pain."
+            'attacker_msg': "The sharp point of the rapier pierces {target_name}'s {hit_location}, making them hiss in pain.",
+            'victim_msg': "The sharp point of the rapier pierces your {hit_location}, making you hiss in pain.",
+            'observer_msg': "The sharp point of the rapier pierces {target_name}'s {hit_location}, making them hiss in pain."
         },
         {
             'attacker_msg': "Your precise attack connects, the rapier finding an opening in {target_name}'s defense.",
@@ -194,19 +194,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s precise attack connects, the rapier finding an opening in {target_name}'s defense."
         },
         {
-            'attacker_msg': "A well-aimed feint, then your rapier darts out to prick {target_name}'s cheek.",
-            'victim_msg': "A well-aimed feint, then {attacker_name}'s rapier darts out to prick your cheek.",
-            'observer_msg': "A well-aimed feint, then {attacker_name}'s rapier darts out to prick {target_name}'s cheek."
+            'attacker_msg': "A well-aimed feint, then your rapier darts out to prick {target_name}'s {hit_location}.",
+            'victim_msg': "A well-aimed feint, then {attacker_name}'s rapier darts out to prick your {hit_location}.",
+            'observer_msg': "A well-aimed feint, then {attacker_name}'s rapier darts out to prick {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "The rapier's needle point finds a chink in {target_name}'s armor, leaving a telling mark.",
-            'victim_msg': "The rapier's needle point finds a chink in your armor, leaving a telling mark.",
-            'observer_msg': "The rapier's needle point finds a chink in {target_name}'s armor, leaving a telling mark."
+            'attacker_msg': "The rapier's needle point finds a chink in {target_name}'s {hit_location}or, leaving a telling mark.",
+            'victim_msg': "The rapier's needle point finds a chink in your {hit_location}or, leaving a telling mark.",
+            'observer_msg': "The rapier's needle point finds a chink in {target_name}'s {hit_location}or, leaving a telling mark."
         },
         {
-            'attacker_msg': "Your blade flickers like a serpent's tongue before striking {target_name}'s exposed wrist.",
-            'victim_msg': "{attacker_name}'s blade flickers like a serpent's tongue before striking your exposed wrist.",
-            'observer_msg': "{attacker_name}'s blade flickers like a serpent's tongue before striking {target_name}'s exposed wrist."
+            'attacker_msg': "Your blade flickers like a serpent's tongue before striking {target_name}'s exposed {hit_location}.",
+            'victim_msg': "{attacker_name}'s blade flickers like a serpent's tongue before striking your exposed {hit_location}.",
+            'observer_msg': "{attacker_name}'s blade flickers like a serpent's tongue before striking {target_name}'s exposed {hit_location}."
         },
         {
             'attacker_msg': "With a subtle movement, you guide the rapier to {target_name}, forcing a pained retreat.",
@@ -214,14 +214,14 @@ MESSAGES = {
             'observer_msg': "With a subtle movement, {attacker_name} guides the rapier to {target_name}, forcing a pained retreat."
         },
         {
-            'attacker_msg': "The rapier scores a hit on {target_name}'s weapon hand, a disarming touch.",
-            'victim_msg': "The rapier scores a hit on your weapon hand, a disarming touch.",
-            'observer_msg': "The rapier scores a hit on {target_name}'s weapon hand, a disarming touch."
+            'attacker_msg': "The rapier scores a hit on {target_name}'s weapon {hit_location}, a disarming touch.",
+            'victim_msg': "The rapier scores a hit on your weapon {hit_location}, a disarming touch.",
+            'observer_msg': "The rapier scores a hit on {target_name}'s weapon {hit_location}, a disarming touch."
         },
         {
-            'attacker_msg': "Your precise thrust opens a small, bleeding wound on {target_name}'s brow.",
-            'victim_msg': "{attacker_name}'s precise thrust opens a small, bleeding wound on your brow.",
-            'observer_msg': "{attacker_name}'s precise thrust opens a small, bleeding wound on {target_name}'s brow."
+            'attacker_msg': "Your precise thrust opens a small, bleeding wound on {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name}'s precise thrust opens a small, bleeding wound on your {hit_location}.",
+            'observer_msg': "{attacker_name}'s precise thrust opens a small, bleeding wound on {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "A sharp *tink* as your rapier finds a gap, the point jarring against {target_name}.",
@@ -229,9 +229,9 @@ MESSAGES = {
             'observer_msg': "A sharp *tink* as {attacker_name}'s rapier finds a gap, the point jarring against {target_name}."
         },
         {
-            'attacker_msg': "The keen blade of the rapier leaves a swift, clean cut along {target_name}'s ribs.",
-            'victim_msg': "The keen blade of the rapier leaves a swift, clean cut along your ribs.",
-            'observer_msg': "The keen blade of the rapier leaves a swift, clean cut along {target_name}'s ribs."
+            'attacker_msg': "The keen blade of the rapier leaves a swift, clean cut along {target_name}'s {hit_location}.",
+            'victim_msg': "The keen blade of the rapier leaves a swift, clean cut along your {hit_location}.",
+            'observer_msg': "The keen blade of the rapier leaves a swift, clean cut along {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "Your follow-up lunge with the rapier catches {target_name} as they recoil.",
@@ -239,9 +239,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s follow-up lunge with the rapier catches {target_name} as they recoil."
         },
         {
-            'attacker_msg': "A flick of your wrist sends the rapier's tip into {target_name}'s exposed hand.",
-            'victim_msg': "A flick of {attacker_name}'s wrist sends the rapier's tip into your exposed hand.",
-            'observer_msg': "A flick of {attacker_name}'s wrist sends the rapier's tip into {target_name}'s exposed hand."
+            'attacker_msg': "A flick of your {hit_location} sends the rapier's tip into {target_name}'s exposed {hit_location}.",
+            'victim_msg': "A flick of {attacker_name}'s {hit_location} sends the rapier's tip into your exposed {hit_location}.",
+            'observer_msg': "A flick of {attacker_name}'s {hit_location} sends the rapier's tip into {target_name}'s exposed {hit_location}."
         },
         {
             'attacker_msg': "The rapier sings its deadly tune as it connects with {target_name}, drawing a bead of blood.",
@@ -249,9 +249,9 @@ MESSAGES = {
             'observer_msg': "The rapier sings its deadly tune as it connects with {target_name}, drawing a bead of blood."
         },
         {
-            'attacker_msg': "Your blade finds its mark, leaving a painful puncture on {target_name}'s thigh.",
-            'victim_msg': "{attacker_name}'s blade finds its mark, leaving a painful puncture on your thigh.",
-            'observer_msg': "{attacker_name}'s blade finds its mark, leaving a painful puncture on {target_name}'s thigh."
+            'attacker_msg': "Your blade finds its mark, leaving a painful puncture on {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name}'s blade finds its mark, leaving a painful puncture on your {hit_location}.",
+            'observer_msg': "{attacker_name}'s blade finds its mark, leaving a painful puncture on {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "A glancing blow from the rapier still manages to tear fabric and draw blood from {target_name}.",
@@ -274,9 +274,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s thrust is perfectly aimed, the rapier's point striking {target_name} with precision."
         },
         {
-            'attacker_msg': "A quick disengage and thrust from your rapier impacts {target_name}'s chest.",
-            'victim_msg': "A quick disengage and thrust from {attacker_name}'s rapier impacts your chest.",
-            'observer_msg': "A quick disengage and thrust from {attacker_name}'s rapier impacts {target_name}'s chest."
+            'attacker_msg': "A quick disengage and thrust from your rapier impacts {target_name}'s {hit_location}.",
+            'victim_msg': "A quick disengage and thrust from {attacker_name}'s rapier impacts your {hit_location}.",
+            'observer_msg': "A quick disengage and thrust from {attacker_name}'s rapier impacts {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "The rapier dances in your grip, its point finding an unguarded spot on {target_name}.",
@@ -289,19 +289,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s blade slides past {target_name}'s clumsy defense, leaving a stinging reminder."
         },
         {
-            'attacker_msg': "A swift lunge with the rapier forces {target_name} back, a new wound marking their retreat.",
-            'victim_msg': "A swift lunge with the rapier forces you back, a new wound marking your retreat.",
-            'observer_msg': "A swift lunge with the rapier forces {target_name} back, a new wound marking their retreat."
+            'attacker_msg': "A swift lunge with the rapier forces {target_name} {hit_location}, a new wound marking their retreat.",
+            'victim_msg': "A swift lunge with the rapier forces you {hit_location}, a new wound marking your retreat.",
+            'observer_msg': "A swift lunge with the rapier forces {target_name} {hit_location}, a new wound marking their retreat."
         },
         {
-            'attacker_msg': "The tip of your rapier darts like a wasp, stinging {target_name}'s forearm.",
-            'victim_msg': "The tip of {attacker_name}'s rapier darts like a wasp, stinging your forearm.",
-            'observer_msg': "The tip of {attacker_name}'s rapier darts like a wasp, stinging {target_name}'s forearm."
+            'attacker_msg': "The tip of your rapier darts like a wasp, stinging {target_name}'s {hit_location}.",
+            'victim_msg': "The tip of {attacker_name}'s rapier darts like a wasp, stinging your {hit_location}.",
+            'observer_msg': "The tip of {attacker_name}'s rapier darts like a wasp, stinging {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "Your rapier opens a thin cut on {target_name}'s side, the steel cold and sharp.",
-            'victim_msg': "{attacker_name}'s rapier opens a thin cut on your side, the steel cold and sharp.",
-            'observer_msg': "{attacker_name}'s rapier opens a thin cut on {target_name}'s side, the steel cold and sharp."
+            'attacker_msg': "Your rapier opens a thin cut on {target_name}'s {hit_location}, the steel cold and sharp.",
+            'victim_msg': "{attacker_name}'s rapier opens a thin cut on your {hit_location}, the steel cold and sharp.",
+            'observer_msg': "{attacker_name}'s rapier opens a thin cut on {target_name}'s {hit_location}, the steel cold and sharp."
         },
         {
             'attacker_msg': "A well-placed thrust from the rapier leaves {target_name} gasping from the sudden impact.",

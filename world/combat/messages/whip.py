@@ -153,34 +153,34 @@ MESSAGES = {
     ],
     'hit': [
         {
-            'attacker_msg': "A crack to the thigh drops {target_name} with a twisted shout.",
-            'victim_msg': "A crack to your thigh drops you with a twisted shout.",
-            'observer_msg': "A crack to the thigh drops {target_name} with a twisted shout."
+            'attacker_msg': "A crack to the {hit_location} drops {target_name} with a twisted shout.",
+            'victim_msg': "A crack to your {hit_location} drops you with a twisted shout.",
+            'observer_msg': "A crack to the {hit_location} drops {target_name} with a twisted shout."
         },
         {
-            'attacker_msg': "A looping snap breaks open the cheek. {target_name} stumbles through crimson.",
-            'victim_msg': "A looping snap breaks open your cheek. You stumble through crimson.",
-            'observer_msg': "A looping snap breaks open the cheek. {target_name} stumbles through crimson."
+            'attacker_msg': "A looping snap breaks open the {hit_location}. {target_name} stumbles through crimson.",
+            'victim_msg': "A looping snap breaks open your {hit_location}. You stumble through crimson.",
+            'observer_msg': "A looping snap breaks open the {hit_location}. {target_name} stumbles through crimson."
         },
         {
-            'attacker_msg': "A precise crack tags the hand. {target_name}'s grip falters and something metal clatters.",
-            'victim_msg': "A precise crack tags your hand. Your grip falters and something metal clatters.",
-            'observer_msg': "A precise crack tags the hand. {target_name}'s grip falters and something metal clatters."
+            'attacker_msg': "A precise crack tags the {hit_location}. {target_name}'s grip falters and something metal clatters.",
+            'victim_msg': "A precise crack tags your {hit_location}. Your grip falters and something metal clatters.",
+            'observer_msg': "A precise crack tags the {hit_location}. {target_name}'s grip falters and something metal clatters."
         },
         {
-            'attacker_msg': "A quick flick wraps the leather around {target_name}'s wrist — then tears it free, skin and all.",
-            'victim_msg': "A quick flick wraps the leather around your wrist — then tears it free, skin and all.",
-            'observer_msg': "A quick flick wraps the leather around {target_name}'s wrist — then tears it free, skin and all."
+            'attacker_msg': "A quick flick wraps the leather around {target_name}'s {hit_location} — then tears it free, skin and all.",
+            'victim_msg': "A quick flick wraps the leather around your {hit_location} — then tears it free, skin and all.",
+            'observer_msg': "A quick flick wraps the leather around {target_name}'s {hit_location} — then tears it free, skin and all."
         },
         {
-            'attacker_msg': "A sharp strike lands across the face. The welt blooms bright and wet.",
-            'victim_msg': "A sharp strike lands across your face. The welt blooms bright and wet.",
-            'observer_msg': "A sharp strike lands across the face. The welt blooms bright and wet."
+            'attacker_msg': "A sharp strike lands across the {hit_location}. The welt blooms bright and wet.",
+            'victim_msg': "A sharp strike lands across your {hit_location}. The welt blooms bright and wet.",
+            'observer_msg': "A sharp strike lands across the {hit_location}. The welt blooms bright and wet."
         },
         {
-            'attacker_msg': "A sideways flick stings the ribs. Breath leaves {target_name} in a rush.",
-            'victim_msg': "A sideways flick stings your ribs. Breath leaves you in a rush.",
-            'observer_msg': "A sideways flick stings the ribs. Breath leaves {target_name} in a rush."
+            'attacker_msg': "A sideways flick stings the {hit_location}. Breath leaves {target_name} in a rush.",
+            'victim_msg': "A sideways flick stings your {hit_location}. Breath leaves you in a rush.",
+            'observer_msg': "A sideways flick stings the {hit_location}. Breath leaves {target_name} in a rush."
         },
         {
             'attacker_msg': "A snap against the knuckles leaves blood and dropped steel.",
@@ -188,109 +188,109 @@ MESSAGES = {
             'observer_msg': "A snap against the knuckles leaves blood and dropped steel."
         },
         {
-            'attacker_msg': "A strike slices the top of the hand. The weapon drops. So does the fight.",
-            'victim_msg': "A strike slices the top of your hand. Your weapon drops. So does the fight.",
-            'observer_msg': "A strike slices the top of the hand. The weapon drops. So does the fight."
+            'attacker_msg': "A strike slices the top of the {hit_location}. The weapon drops. So does the fight.",
+            'victim_msg': "A strike slices the top of your {hit_location}. Your weapon drops. So does the fight.",
+            'observer_msg': "A strike slices the top of the {hit_location}. The weapon drops. So does the fight."
         },
         {
-            'attacker_msg': "A twist of your wrist and the whip cracks against the lower back. {target_name} arches in pain.",
-            'victim_msg': "A twist of the wrist and the whip cracks against your lower back. You arch in pain.",
-            'observer_msg': "A twist of the wrist and the whip cracks against the lower back. {target_name} arches in pain."
+            'attacker_msg': "A twist of your {hit_location} and the whip cracks against the lower {hit_location}. {target_name} arches in pain.",
+            'victim_msg': "A twist of the {hit_location} and the whip cracks against your lower {hit_location}. You arch in pain.",
+            'observer_msg': "A twist of the {hit_location} and the whip cracks against the lower {hit_location}. {target_name} arches in pain."
         },
         {
-            'attacker_msg': "A twisting snap slashes the shoulder. {target_name}'s skin opens like paper.",
-            'victim_msg': "A twisting snap slashes your shoulder. Your skin opens like paper.",
-            'observer_msg': "A twisting snap slashes the shoulder. {target_name}'s skin opens like paper."
+            'attacker_msg': "A twisting snap slashes the {hit_location}. {target_name}'s skin opens like paper.",
+            'victim_msg': "A twisting snap slashes your {hit_location}. Your skin opens like paper.",
+            'observer_msg': "A twisting snap slashes the {hit_location}. {target_name}'s skin opens like paper."
         },
         {
-            'attacker_msg': "Leather bites into the ribs. {target_name} staggers, breath stolen by pain.",
-            'victim_msg': "Leather bites into your ribs. You stagger, breath stolen by pain.",
-            'observer_msg': "Leather bites into the ribs. {target_name} staggers, breath stolen by pain."
+            'attacker_msg': "Leather bites into the {hit_location}. {target_name} staggers, breath stolen by pain.",
+            'victim_msg': "Leather bites into your {hit_location}. You stagger, breath stolen by pain.",
+            'observer_msg': "Leather bites into the {hit_location}. {target_name} staggers, breath stolen by pain."
         },
         {
-            'attacker_msg': "Leather lashes the ribs. The welt raises like a brand.",
-            'victim_msg': "Leather lashes your ribs. The welt raises like a brand.",
-            'observer_msg': "Leather lashes the ribs. The welt raises like a brand."
+            'attacker_msg': "Leather lashes the {hit_location}. The welt raises like a brand.",
+            'victim_msg': "Leather lashes your {hit_location}. The welt raises like a brand.",
+            'observer_msg': "Leather lashes the {hit_location}. The welt raises like a brand."
         },
         {
-            'attacker_msg': "Leather snakes around the forearm. {target_name} yanks back, too late.",
-            'victim_msg': "Leather snakes around your forearm. You yank back, too late.",
-            'observer_msg': "Leather snakes around the forearm. {target_name} yanks back, too late."
+            'attacker_msg': "Leather snakes around the {hit_location}. {target_name} yanks {hit_location}, too late.",
+            'victim_msg': "Leather snakes around your {hit_location}. You yank {hit_location}, too late.",
+            'observer_msg': "Leather snakes around the {hit_location}. {target_name} yanks {hit_location}, too late."
         },
         {
-            'attacker_msg': "The lash coils around {target_name}'s neck for half a breath. That's all it needs.",
-            'victim_msg': "The lash coils around your neck for half a breath. That's all it needs.",
-            'observer_msg': "The lash coils around {target_name}'s neck for half a breath. That's all it needs."
+            'attacker_msg': "The lash coils around {target_name}'s {hit_location} for half a breath. That's all it needs.",
+            'victim_msg': "The lash coils around your {hit_location} for half a breath. That's all it needs.",
+            'observer_msg': "The lash coils around {target_name}'s {hit_location} for half a breath. That's all it needs."
         },
         {
-            'attacker_msg': "The lash finds the shoulder. Blood stains the shirt instantly.",
-            'victim_msg': "The lash finds your shoulder. Blood stains your shirt instantly.",
-            'observer_msg': "The lash finds the shoulder. Blood stains the shirt instantly."
+            'attacker_msg': "The lash finds the {hit_location}. Blood stains the shirt instantly.",
+            'victim_msg': "The lash finds your {hit_location}. Blood stains your shirt instantly.",
+            'observer_msg': "The lash finds the {hit_location}. Blood stains the shirt instantly."
         },
         {
-            'attacker_msg': "The lash rips through a shoulder. The scream is sharp. The injury sharper.",
-            'victim_msg': "The lash rips through your shoulder. Your scream is sharp. The injury sharper.",
-            'observer_msg': "The lash rips through a shoulder. The scream is sharp. The injury sharper."
+            'attacker_msg': "The lash rips through a {hit_location}. The scream is sharp. The injury sharper.",
+            'victim_msg': "The lash rips through your {hit_location}. Your scream is sharp. The injury sharper.",
+            'observer_msg': "The lash rips through a {hit_location}. The scream is sharp. The injury sharper."
         },
         {
-            'attacker_msg': "The strike cuts across the cheek. The welt pulses red. So does {target_name}'s eye.",
-            'victim_msg': "The strike cuts across your cheek. The welt pulses red. So does your eye.",
-            'observer_msg': "The strike cuts across the cheek. The welt pulses red. So does {target_name}'s eye."
+            'attacker_msg': "The strike cuts across the {hit_location}. The welt pulses red. So does {target_name}'s eye.",
+            'victim_msg': "The strike cuts across your {hit_location}. The welt pulses red. So does your eye.",
+            'observer_msg': "The strike cuts across the {hit_location}. The welt pulses red. So does {target_name}'s eye."
         },
         {
-            'attacker_msg': "The tip finds the neck. The sound is wet. The reaction louder.",
-            'victim_msg': "The tip finds your neck. The sound is wet. Your reaction louder.",
-            'observer_msg': "The tip finds the neck. The sound is wet. The reaction louder."
+            'attacker_msg': "The tip finds the {hit_location}. The sound is wet. The reaction louder.",
+            'victim_msg': "The tip finds your {hit_location}. The sound is wet. Your reaction louder.",
+            'observer_msg': "The tip finds the {hit_location}. The sound is wet. The reaction louder."
         },
         {
-            'attacker_msg': "The whip carves across {target_name}'s back. Red lines trail behind like ghost stories.",
-            'victim_msg': "The whip carves across your back. Red lines trail behind like ghost stories.",
-            'observer_msg': "The whip carves across {target_name}'s back. Red lines trail behind like ghost stories."
+            'attacker_msg': "The whip carves across {target_name}'s {hit_location}. Red lines trail behind like ghost stories.",
+            'victim_msg': "The whip carves across your {hit_location}. Red lines trail behind like ghost stories.",
+            'observer_msg': "The whip carves across {target_name}'s {hit_location}. Red lines trail behind like ghost stories."
         },
         {
-            'attacker_msg': "The whip lashes across {target_name}'s chest. Red lines follow like cruel handwriting.",
-            'victim_msg': "The whip lashes across your chest. Red lines follow like cruel handwriting.",
-            'observer_msg': "The whip lashes across {target_name}'s chest. Red lines follow like cruel handwriting."
+            'attacker_msg': "The whip lashes across {target_name}'s {hit_location}. Red lines follow like cruel handwriting.",
+            'victim_msg': "The whip lashes across your {hit_location}. Red lines follow like cruel handwriting.",
+            'observer_msg': "The whip lashes across {target_name}'s {hit_location}. Red lines follow like cruel handwriting."
         },
         {
-            'attacker_msg': "The whip slams across {target_name}'s stomach. The air leaves in a rush.",
-            'victim_msg': "The whip slams across your stomach. The air leaves in a rush.",
-            'observer_msg': "The whip slams across {target_name}'s stomach. The air leaves in a rush."
+            'attacker_msg': "The whip slams across {target_name}'s {hit_location}. The air leaves in a rush.",
+            'victim_msg': "The whip slams across your {hit_location}. The air leaves in a rush.",
+            'observer_msg': "The whip slams across {target_name}'s {hit_location}. The air leaves in a rush."
         },
         {
-            'attacker_msg': "The whip slashes the back of {target_name}'s calf. They buckle immediately.",
-            'victim_msg': "The whip slashes the back of your calf. You buckle immediately.",
-            'observer_msg': "The whip slashes the back of {target_name}'s calf. They buckle immediately."
+            'attacker_msg': "The whip slashes the {hit_location} of {target_name}'s {hit_location}. They buckle immediately.",
+            'victim_msg': "The whip slashes the {hit_location} of your {hit_location}. You buckle immediately.",
+            'observer_msg': "The whip slashes the {hit_location} of {target_name}'s {hit_location}. They buckle immediately."
         },
         {
-            'attacker_msg': "The whip snaps against {target_name}'s thigh. They drop, limping and loud.",
-            'victim_msg': "The whip snaps against your thigh. You drop, limping and loud.",
-            'observer_msg': "The whip snaps against {target_name}'s thigh. They drop, limping and loud."
+            'attacker_msg': "The whip snaps against {target_name}'s {hit_location}. They drop, limping and loud.",
+            'victim_msg': "The whip snaps against your {hit_location}. You drop, limping and loud.",
+            'observer_msg': "The whip snaps against {target_name}'s {hit_location}. They drop, limping and loud."
         },
         {
-            'attacker_msg': "The whip tears into the side. The echo hangs longer than the breath.",
-            'victim_msg': "The whip tears into your side. The echo hangs longer than your breath.",
-            'observer_msg': "The whip tears into the side. The echo hangs longer than the breath."
+            'attacker_msg': "The whip tears into the {hit_location}. The echo hangs longer than the breath.",
+            'victim_msg': "The whip tears into your {hit_location}. The echo hangs longer than your breath.",
+            'observer_msg': "The whip tears into the {hit_location}. The echo hangs longer than the breath."
         },
         {
-            'attacker_msg': "You coil the whip around {target_name}'s elbow and pull — hard.",
-            'victim_msg': "{attacker_name} coils the whip around your elbow and pulls — hard.",
-            'observer_msg': "{attacker_name} coils the whip around {target_name}'s elbow and pulls — hard."
+            'attacker_msg': "You coil the whip around {target_name}'s {hit_location} and pull — hard.",
+            'victim_msg': "{attacker_name} coils the whip around your {hit_location} and pulls — hard.",
+            'observer_msg': "{attacker_name} coils the whip around {target_name}'s {hit_location} and pulls — hard."
         },
         {
-            'attacker_msg': "You crack the whip across {target_name}'s back. The howl that follows is raw.",
-            'victim_msg': "{attacker_name} cracks the whip across your back. The howl that follows is raw.",
-            'observer_msg': "{attacker_name} cracks the whip across {target_name}'s back. The howl that follows is raw."
+            'attacker_msg': "You crack the whip across {target_name}'s {hit_location}. The howl that follows is raw.",
+            'victim_msg': "{attacker_name} cracks the whip across your {hit_location}. The howl that follows is raw.",
+            'observer_msg': "{attacker_name} cracks the whip across {target_name}'s {hit_location}. The howl that follows is raw."
         },
         {
             'attacker_msg': "You deliver a strike that lashes across both thighs. {target_name} hits the floor hard.",
-            'victim_msg': "{attacker_name} delivers a strike that lashes across both your thighs. You hit the floor hard.",
+            'victim_msg': "{attacker_name} delivers a strike that lashes across both your {hit_location}s. You hit the floor hard.",
             'observer_msg': "{attacker_name} delivers a strike that lashes across both thighs. {target_name} hits the floor hard."
         },
         {
-            'attacker_msg': "You hook the wrist and yank. The scream follows the arc.",
-            'victim_msg': "{attacker_name} hooks your wrist and yanks. Your scream follows the arc.",
-            'observer_msg': "{attacker_name} hooks the wrist and yanks. The scream follows the arc."
+            'attacker_msg': "You hook the {hit_location} and yank. The scream follows the arc.",
+            'victim_msg': "{attacker_name} hooks your {hit_location} and yanks. Your scream follows the arc.",
+            'observer_msg': "{attacker_name} hooks the {hit_location} and yanks. The scream follows the arc."
         },
         {
             'attacker_msg': "You loop the whip and jerk it tight. {target_name} spins, disoriented and bleeding.",
@@ -298,9 +298,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name} loops the whip and jerks it tight. {target_name} spins, disoriented and bleeding."
         },
         {
-            'attacker_msg': "You loop the whip around {target_name}'s ankle and yank. They crash down hard.",
-            'victim_msg': "{attacker_name} loops the whip around your ankle and yanks. You crash down hard.",
-            'observer_msg': "{attacker_name} loops the whip around {target_name}'s ankle and yanks. They crash down hard."
+            'attacker_msg': "You loop the whip around {target_name}'s {hit_location} and yank. They crash down hard.",
+            'victim_msg': "{attacker_name} loops the whip around your {hit_location} and yanks. You crash down hard.",
+            'observer_msg': "{attacker_name} loops the whip around {target_name}'s {hit_location} and yanks. They crash down hard."
         },
     ],
     'miss': [

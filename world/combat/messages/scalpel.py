@@ -153,59 +153,59 @@ SCALPEL_MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "You slice {target_name}'s wrist, blood welling in a thin line.",
-            'victim_msg': "{attacker_name}'s scalpel opens your wrist with surgical precision.",
-            'observer_msg': "The scalpel draws a thin red line across {target_name}'s wrist."
+            'attacker_msg': "You slice {target_name}'s {hit_location}, blood welling in a thin line.",
+            'victim_msg': "{attacker_name}'s scalpel opens your {hit_location} with surgical precision.",
+            'observer_msg': "The scalpel draws a thin red line across {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "The scalpel bites into {target_name}'s palm, nerves screaming.",
             'victim_msg': "Pain explodes through your palm as {attacker_name}'s scalpel finds nerve clusters.",
-            'observer_msg': "{target_name}'s hand jerks as the scalpel finds sensitive tissue."
+            'observer_msg': "{target_name}'s {hit_location} jerks as the scalpel finds sensitive tissue."
         },
         {
-            'attacker_msg': "You puncture {target_name}'s thigh, the blade sliding between muscle fibers.",
+            'attacker_msg': "You puncture {target_name}'s {hit_location}, the blade sliding between muscle fibers.",
             'victim_msg': "The scalpel parts your muscle fibers with disturbing ease.",
-            'observer_msg': "The blade disappears into {target_name}'s thigh with clinical precision."
+            'observer_msg': "The blade disappears into {target_name}'s {hit_location} with clinical precision."
         },
         {
-            'attacker_msg': "A quick flick opens {target_name}'s forearm from elbow to wrist.",
-            'victim_msg': "Your forearm opens in a long, precise line under {attacker_name}'s blade.",
-            'observer_msg': "A single motion of the scalpel opens {target_name}'s forearm like a zipper."
+            'attacker_msg': "A quick flick opens {target_name}'s {hit_location} from {hit_location} to {hit_location}.",
+            'victim_msg': "Your {hit_location} opens in a long, precise line under {attacker_name}'s blade.",
+            'observer_msg': "A single motion of the scalpel opens {target_name}'s {hit_location} like a zipper."
         },
         {
-            'attacker_msg': "The scalpel carves a neat circle around {target_name}'s ankle.",
-            'victim_msg': "You feel the blade trace a perfect circle of fire around your ankle.",
-            'observer_msg': "The scalpel etches a precise circular cut around {target_name}'s ankle."
+            'attacker_msg': "The scalpel carves a neat circle around {target_name}'s {hit_location}.",
+            'victim_msg': "You feel the blade trace a perfect circle of fire around your {hit_location}.",
+            'observer_msg': "The scalpel etches a precise circular cut around {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "You puncture {target_name}'s shoulder, twisting the blade for emphasis.",
-            'victim_msg': "The scalpel pierces your shoulder and twists, grinding against bone.",
-            'observer_msg': "The blade enters {target_name}'s shoulder and turns, blood welling around it."
+            'attacker_msg': "You puncture {target_name}'s {hit_location}, twisting the blade for emphasis.",
+            'victim_msg': "The scalpel pierces your {hit_location} and twists, grinding against bone.",
+            'observer_msg': "The blade enters {target_name}'s {hit_location} and turns, blood welling around it."
         },
         {
-            'attacker_msg': "A surgical slash opens {target_name}'s bicep to the bone.",
-            'victim_msg': "Your bicep parts under the scalpel, revealing white bone beneath.",
-            'observer_msg': "The scalpel cleaves through {target_name}'s bicep with surgical efficiency."
+            'attacker_msg': "A surgical slash opens {target_name}'s {hit_location} to the bone.",
+            'victim_msg': "Your {hit_location} parts under the scalpel, revealing white bone beneath.",
+            'observer_msg': "The scalpel cleaves through {target_name}'s {hit_location} with surgical efficiency."
         },
         {
-            'attacker_msg': "The blade slips between {target_name}'s ribs, missing the lung by millimeters.",
-            'victim_msg': "You feel the scalpel slide between your ribs, impossibly close to puncturing lung.",
-            'observer_msg': "The scalpel disappears between {target_name}'s ribs with terrifying precision."
+            'attacker_msg': "The blade slips between {target_name}'s {hit_location}, missing the lung by millimeters.",
+            'victim_msg': "You feel the scalpel slide between your {hit_location}, impossibly close to puncturing lung.",
+            'observer_msg': "The scalpel disappears between {target_name}'s {hit_location} with terrifying precision."
         },
         {
-            'attacker_msg': "You draw the scalpel across {target_name}'s collarbone, the cut deep and clean.",
-            'victim_msg': "The blade traces your collarbone, cutting to the bone with surgical accuracy.",
-            'observer_msg': "A clean line appears across {target_name}'s collarbone as the scalpel bites deep."
+            'attacker_msg': "You draw the scalpel across {target_name}'s {hit_location}, the cut deep and clean.",
+            'victim_msg': "The blade traces your {hit_location}, cutting to the bone with surgical accuracy.",
+            'observer_msg': "A clean line appears across {target_name}'s {hit_location} as the scalpel bites deep."
         },
         {
-            'attacker_msg': "The scalpel opens {target_name}'s calf muscle like a anatomy textbook.",
-            'victim_msg': "Your calf muscle parts under the blade, exposing layers of tissue.",
-            'observer_msg': "The scalpel reveals the anatomy of {target_name}'s calf with clinical precision."
+            'attacker_msg': "The scalpel opens {target_name}'s {hit_location} muscle like a anatomy textbook.",
+            'victim_msg': "Your {hit_location} muscle parts under the blade, exposing layers of tissue.",
+            'observer_msg': "The scalpel reveals the anatomy of {target_name}'s {hit_location} with clinical precision."
         },
         {
-            'attacker_msg': "A quick jab punctures {target_name}'s side, blood pooling instantly.",
-            'victim_msg': "The scalpel pierces your side, blood welling around the entry wound.",
-            'observer_msg': "The blade disappears into {target_name}'s side, blood flowing freely."
+            'attacker_msg': "A quick jab punctures {target_name}'s {hit_location}, blood pooling instantly.",
+            'victim_msg': "The scalpel pierces your {hit_location}, blood welling around the entry wound.",
+            'observer_msg': "The blade disappears into {target_name}'s {hit_location}, blood flowing freely."
         },
         {
             'attacker_msg': "You slice {target_name}'s hamstring, the tendon parting with a wet snap.",
@@ -213,29 +213,29 @@ SCALPEL_MESSAGES = {
             'observer_msg': "The scalpel severs {target_name}'s hamstring with surgical precision."
         },
         {
-            'attacker_msg': "The blade carves a spiral up {target_name}'s forearm—artistic and agonizing.",
-            'victim_msg': "You watch in horror as the scalpel traces a spiral of pain up your arm.",
-            'observer_msg': "The scalpel etches a deliberate spiral pattern into {target_name}'s forearm."
+            'attacker_msg': "The blade carves a spiral up {target_name}'s {hit_location}—artistic and agonizing.",
+            'victim_msg': "You watch in horror as the scalpel traces a spiral of pain up your {hit_location}.",
+            'observer_msg': "The scalpel etches a deliberate spiral pattern into {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "A precise cut opens {target_name}'s Achilles tendon.",
-            'victim_msg': "Your Achilles tendon parts under the surgical blade, dropping you to one knee.",
+            'victim_msg': "Your Achilles tendon parts under the surgical blade, dropping you to one {hit_location}.",
             'observer_msg': "The scalpel severs {target_name}'s Achilles tendon with one precise cut."
         },
         {
-            'attacker_msg': "The scalpel glides across {target_name}'s jaw, leaving a red smile.",
-            'victim_msg': "You feel the blade trace a grotesque smile across your jaw.",
-            'observer_msg': "The scalpel carves a red smile across {target_name}'s jaw line."
+            'attacker_msg': "The scalpel glides across {target_name}'s {hit_location}, leaving a red smile.",
+            'victim_msg': "You feel the blade trace a grotesque smile across your {hit_location}.",
+            'observer_msg': "The scalpel carves a red smile across {target_name}'s {hit_location} line."
         },
         {
-            'attacker_msg': "You puncture {target_name}'s shoulder, twisting the blade before pulling it free.",
-            'victim_msg': "The scalpel pierces your shoulder, twists cruelly, then withdraws.",
-            'observer_msg': "The blade enters {target_name}'s shoulder, turns, and pulls free with wet finality."
+            'attacker_msg': "You puncture {target_name}'s {hit_location}, twisting the blade before pulling it free.",
+            'victim_msg': "The scalpel pierces your {hit_location}, twists cruelly, then withdraws.",
+            'observer_msg': "The blade enters {target_name}'s {hit_location}, turns, and pulls free with wet finality."
         },
         {
-            'attacker_msg': "A shallow cut across the ribs leaves {target_name} gasping.",
-            'victim_msg': "The scalpel traces your ribs, each breath now a reminder of the cut.",
-            'observer_msg': "{target_name} gasps as the scalpel draws a line across their ribs."
+            'attacker_msg': "A shallow cut across the {hit_location} leaves {target_name} gasping.",
+            'victim_msg': "The scalpel traces your {hit_location}, each breath now a reminder of the cut.",
+            'observer_msg': "{target_name} gasps as the scalpel draws a line across their {hit_location}."
         },
         {
             'attacker_msg': "The blade slips between fingers, nerves and blood both spilling.",
@@ -243,34 +243,34 @@ SCALPEL_MESSAGES = {
             'observer_msg': "The scalpel parts {target_name}'s fingers, blood and nerve function flowing away."
         },
         {
-            'attacker_msg': "You draw the scalpel across {target_name}'s throat—shallow, but terrifying.",
-            'victim_msg': "The cold blade traces your throat, shallow but promising deeper cuts to come.",
-            'observer_msg': "The scalpel draws a thin red line across {target_name}'s throat."
+            'attacker_msg': "You draw the scalpel across {target_name}'s {hit_location}—shallow, but terrifying.",
+            'victim_msg': "The cold blade traces your {hit_location}, shallow but promising deeper cuts to come.",
+            'observer_msg': "The scalpel draws a thin red line across {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "A quick flick opens {target_name}'s ear. Blood pours down their neck.",
-            'victim_msg': "Your ear erupts in pain as the scalpel finds its mark, blood streaming down your neck.",
-            'observer_msg': "The scalpel opens {target_name}'s ear, blood cascading down their neck."
+            'attacker_msg': "A quick flick opens {target_name}'s ear. Blood pours down their {hit_location}.",
+            'victim_msg': "Your ear erupts in pain as the scalpel finds its mark, blood streaming down your {hit_location}.",
+            'observer_msg': "The scalpel opens {target_name}'s ear, blood cascading down their {hit_location}."
         },
         {
-            'attacker_msg': "The scalpel bites into {target_name}'s knee. The joint gives way.",
-            'victim_msg': "Your knee buckles as the scalpel finds crucial ligaments.",
-            'observer_msg': "{target_name}'s knee collapses as the scalpel severs vital connections."
+            'attacker_msg': "The scalpel bites into {target_name}'s {hit_location}. The joint gives way.",
+            'victim_msg': "Your {hit_location} buckles as the scalpel finds crucial ligaments.",
+            'observer_msg': "{target_name}'s {hit_location} collapses as the scalpel severs vital connections."
         },
         {
-            'attacker_msg': "A slice across the back of the hand leaves {target_name} howling.",
-            'victim_msg': "The scalpel opens the back of your hand, tendons and nerves screaming in unison.",
-            'observer_msg': "{target_name} howls as the scalpel parts tendons in the back of their hand."
+            'attacker_msg': "A slice across the {hit_location} of the {hit_location} leaves {target_name} howling.",
+            'victim_msg': "The scalpel opens the {hit_location} of your {hit_location}, tendons and nerves screaming in unison.",
+            'observer_msg': "{target_name} howls as the scalpel parts tendons in the {hit_location} of their {hit_location}."
         },
         {
-            'attacker_msg': "You jab the blade into {target_name}'s side, twisting for emphasis.",
-            'victim_msg': "The scalpel pierces your side and grinds against your ribs.",
-            'observer_msg': "The blade slides into {target_name}'s side and twists with surgical precision."
+            'attacker_msg': "You jab the blade into {target_name}'s {hit_location}, twisting for emphasis.",
+            'victim_msg': "The scalpel pierces your {hit_location} and grinds against your {hit_location}.",
+            'observer_msg': "The blade slides into {target_name}'s {hit_location} and twists with surgical precision."
         },
         {
             'attacker_msg': "The scalpel slips under {target_name}'s chin, drawing a thin red line.",
             'victim_msg': "You feel the blade trace a delicate line of fire under your chin.",
-            'observer_msg': "The scalpel draws a precise red line beneath {target_name}'s jaw."
+            'observer_msg': "The scalpel draws a precise red line beneath {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "A cut across the Achilles leaves {target_name} stumbling.",
@@ -278,29 +278,29 @@ SCALPEL_MESSAGES = {
             'observer_msg': "The scalpel severs {target_name}'s Achilles, dropping them to the ground."
         },
         {
-            'attacker_msg': "You carve a spiral up {target_name}'s forearm. The pattern is deliberate.",
-            'victim_msg': "The scalpel etches a deliberate spiral of agony up your forearm.",
-            'observer_msg': "The blade traces an artistic spiral into {target_name}'s forearm with disturbing precision."
+            'attacker_msg': "You carve a spiral up {target_name}'s {hit_location}. The pattern is deliberate.",
+            'victim_msg': "The scalpel etches a deliberate spiral of agony up your {hit_location}.",
+            'observer_msg': "The blade traces an artistic spiral into {target_name}'s {hit_location} with disturbing precision."
         },
         {
-            'attacker_msg': "The blade slips between ribs, blood welling with every breath.",
-            'victim_msg': "Each breath pushes blood from the wound as the scalpel finds space between your ribs.",
-            'observer_msg': "Blood wells from between {target_name}'s ribs with each labored breath."
+            'attacker_msg': "The blade slips between {hit_location}, blood welling with every breath.",
+            'victim_msg': "Each breath pushes blood from the wound as the scalpel finds space between your {hit_location}.",
+            'observer_msg': "Blood wells from between {target_name}'s {hit_location} with each labored breath."
         },
         {
-            'attacker_msg': "A quick slash opens {target_name}'s cheek, teeth showing through the wound.",
-            'victim_msg': "Your cheek parts under the blade, exposing teeth through the gash.",
-            'observer_msg': "The scalpel opens {target_name}'s cheek, revealing teeth through the surgical cut."
+            'attacker_msg': "A quick slash opens {target_name}'s {hit_location}, teeth showing through the wound.",
+            'victim_msg': "Your {hit_location} parts under the blade, exposing teeth through the gash.",
+            'observer_msg': "The scalpel opens {target_name}'s {hit_location}, revealing teeth through the surgical cut."
         },
         {
-            'attacker_msg': "The scalpel finds the gap in {target_name}'s armor, sliding home with wet finality.",
+            'attacker_msg': "The scalpel finds the gap in {target_name}'s {hit_location}or, sliding home with wet finality.",
             'victim_msg': "You feel the blade find the weak point in your protection and slide deep.",
             'observer_msg': "The scalpel bypasses {target_name}'s defenses with surgical precision."
         },
         {
-            'attacker_msg': "A precise incision opens {target_name}'s wrist, blood flowing in steady pulses.",
-            'victim_msg': "Your wrist opens under the blade, blood pulsing out in rhythm with your heartbeat.",
-            'observer_msg': "The scalpel opens {target_name}'s wrist, blood pulsing out in arterial spurts."
+            'attacker_msg': "A precise incision opens {target_name}'s {hit_location}, blood flowing in steady pulses.",
+            'victim_msg': "Your {hit_location} opens under the blade, blood pulsing out in rhythm with your heartbeat.",
+            'observer_msg': "The scalpel opens {target_name}'s {hit_location}, blood pulsing out in arterial spurts."
         }
     ],
     "miss": [

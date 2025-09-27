@@ -153,9 +153,9 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A searing pain as you thrust the burning flare against {target_name}'s arm, leaving an instant, angry burn.",
-            'victim_msg': "A searing pain as {attacker_name} thrusts the burning flare against your arm, leaving an instant, angry burn.",
-            'observer_msg': "A searing pain as {attacker_name} thrusts the burning flare against {target_name}'s arm, leaving an instant, angry burn."
+            'attacker_msg': "A searing pain as you thrust the burning flare against {target_name}'s {hit_location}, leaving an instant, angry burn.",
+            'victim_msg': "A searing pain as {attacker_name} thrusts the burning flare against your {hit_location}, leaving an instant, angry burn.",
+            'observer_msg': "A searing pain as {attacker_name} thrusts the burning flare against {target_name}'s {hit_location}, leaving an instant, angry burn."
         },
         {
             'attacker_msg': "The flare makes contact, and {target_name} screams as clothing begins to smolder and flesh blisters beneath.",
@@ -163,9 +163,9 @@ MESSAGES = {
             'observer_msg': "The flare makes contact, and {target_name} screams as clothing begins to smolder and flesh blisters beneath."
         },
         {
-            'attacker_msg': "Your flare grazes {target_name}'s face, the intense heat and light momentarily blinding them and scorching skin.",
-            'victim_msg': "{attacker_name}'s flare grazes your face, the intense heat and light momentarily blinding you and scorching skin.",
-            'observer_msg': "{attacker_name}'s flare grazes {target_name}'s face, the intense heat and light momentarily blinding them and scorching skin."
+            'attacker_msg': "Your flare grazes {target_name}'s {hit_location}, the intense heat and light momentarily blinding them and scorching skin.",
+            'victim_msg': "{attacker_name}'s flare grazes your {hit_location}, the intense heat and light momentarily blinding you and scorching skin.",
+            'observer_msg': "{attacker_name}'s flare grazes {target_name}'s {hit_location}, the intense heat and light momentarily blinding them and scorching skin."
         },
         {
             'attacker_msg': "Sparks fly as your flare connects, {target_name} recoiling from the intense, localized heat and acrid smoke.",
@@ -173,9 +173,9 @@ MESSAGES = {
             'observer_msg': "Sparks fly as {attacker_name}'s flare connects, {target_name} recoiling from the intense, localized heat and acrid smoke."
         },
         {
-            'attacker_msg': "The burning tip of the flare is pressed against {target_name}'s leg, who howls and tries to beat out the spreading heat.",
-            'victim_msg': "The burning tip of the flare is pressed against your leg, and you howl and try to beat out the spreading heat.",
-            'observer_msg': "The burning tip of the flare is pressed against {target_name}'s leg, who howls and tries to beat out the spreading heat."
+            'attacker_msg': "The burning tip of the flare is pressed against {target_name}'s {hit_location}, who howls and tries to beat out the spreading heat.",
+            'victim_msg': "The burning tip of the flare is pressed against your {hit_location}, and you howl and try to beat out the spreading heat.",
+            'observer_msg': "The burning tip of the flare is pressed against {target_name}'s {hit_location}, who howls and tries to beat out the spreading heat."
         },
         {
             'attacker_msg': "Your aggressive jab with the flare leaves a painful, searing burn on {target_name}.",
@@ -193,9 +193,9 @@ MESSAGES = {
             'observer_msg': "The flare's intense heat washes over {target_name} as {attacker_name} manages to make contact, causing immediate, blistering pain."
         },
         {
-            'attacker_msg': "Your flare makes a glancing hit, but the heat is enough to make {target_name} cry out and stumble back.",
-            'victim_msg': "{attacker_name}'s flare makes a glancing hit, but the heat is enough to make you cry out and stumble back.",
-            'observer_msg': "{attacker_name}'s flare makes a glancing hit, but the heat is enough to make {target_name} cry out and stumble back."
+            'attacker_msg': "Your flare makes a glancing hit, but the heat is enough to make {target_name} cry out and stumble {hit_location}.",
+            'victim_msg': "{attacker_name}'s flare makes a glancing hit, but the heat is enough to make you cry out and stumble {hit_location}.",
+            'observer_msg': "{attacker_name}'s flare makes a glancing hit, but the heat is enough to make {target_name} cry out and stumble {hit_location}."
         },
         {
             'attacker_msg': "With a savage push, you hold the flare against {target_name}, who thrashes wildly, trying to escape the searing burn.",
@@ -203,14 +203,14 @@ MESSAGES = {
             'observer_msg': "With a savage push, {attacker_name} holds the flare against {target_name}, who thrashes wildly, trying to escape the searing burn."
         },
         {
-            'attacker_msg': "The flare scores a painful hit on {target_name}'s hand, the heat making them drop their weapon with a yelp.",
-            'victim_msg': "The flare scores a painful hit on your hand, the heat making you drop your weapon with a yelp.",
-            'observer_msg': "The flare scores a painful hit on {target_name}'s hand, the heat making them drop their weapon with a yelp."
+            'attacker_msg': "The flare scores a painful hit on {target_name}'s {hit_location}, the heat making them drop their weapon with a yelp.",
+            'victim_msg': "The flare scores a painful hit on your {hit_location}, the heat making you drop your weapon with a yelp.",
+            'observer_msg': "The flare scores a painful hit on {target_name}'s {hit_location}, the heat making them drop their weapon with a yelp."
         },
         {
-            'attacker_msg': "Your well-aimed thrust with the flare leaves a nasty burn on {target_name}'s exposed neck.",
-            'victim_msg': "{attacker_name}'s well-aimed thrust with the flare leaves a nasty burn on your exposed neck.",
-            'observer_msg': "{attacker_name}'s well-aimed thrust with the flare leaves a nasty burn on {target_name}'s exposed neck."
+            'attacker_msg': "Your well-aimed thrust with the flare leaves a nasty burn on {target_name}'s exposed {hit_location}.",
+            'victim_msg': "{attacker_name}'s well-aimed thrust with the flare leaves a nasty burn on your exposed {hit_location}.",
+            'observer_msg': "{attacker_name}'s well-aimed thrust with the flare leaves a nasty burn on {target_name}'s exposed {hit_location}."
         },
         {
             'attacker_msg': "A sharp hiss and a cry of pain as your flare burns {target_name}, leaving a blackened, smoking mark.",
@@ -228,19 +228,19 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s follow-up attack with the flare catches {target_name} again, adding another agonizing burn."
         },
         {
-            'attacker_msg': "A desperate block by {target_name} is met with the burning end of the flare, scorching their arm.",
-            'victim_msg': "Your desperate block is met with the burning end of the flare, scorching your arm.",
-            'observer_msg': "A desperate block by {target_name} is met with the burning end of the flare, scorching their arm."
+            'attacker_msg': "A desperate block by {target_name} is met with the burning end of the flare, scorching their {hit_location}.",
+            'victim_msg': "Your desperate block is met with the burning end of the flare, scorching your {hit_location}.",
+            'observer_msg': "A desperate block by {target_name} is met with the burning end of the flare, scorching their {hit_location}."
         },
         {
-            'attacker_msg': "The flare makes solid contact with {target_name}'s chest, the intense heat causing them to gasp and fall back.",
-            'victim_msg': "The flare makes solid contact with your chest, the intense heat causing you to gasp and fall back.",
-            'observer_msg': "The flare makes solid contact with {target_name}'s chest, the intense heat causing them to gasp and fall back."
+            'attacker_msg': "The flare makes solid contact with {target_name}'s {hit_location}, the intense heat causing them to gasp and fall {hit_location}.",
+            'victim_msg': "The flare makes solid contact with your {hit_location}, the intense heat causing you to gasp and fall {hit_location}.",
+            'observer_msg': "The flare makes solid contact with {target_name}'s {hit_location}, the intense heat causing them to gasp and fall {hit_location}."
         },
         {
-            'attacker_msg': "Your flare finds purchase, delivering a painful, debilitating burn to {target_name}'s side.",
-            'victim_msg': "{attacker_name}'s flare finds purchase, delivering a painful, debilitating burn to your side.",
-            'observer_msg': "{attacker_name}'s flare finds purchase, delivering a painful, debilitating burn to {target_name}'s side."
+            'attacker_msg': "Your flare finds purchase, delivering a painful, debilitating burn to {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name}'s flare finds purchase, delivering a painful, debilitating burn to your {hit_location}.",
+            'observer_msg': "{attacker_name}'s flare finds purchase, delivering a painful, debilitating burn to {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "Even a brief touch from the flare leaves {target_name} with a significant, throbbing burn.",
@@ -263,9 +263,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s strike is true, the flare burning {target_name} squarely and causing immediate, severe pain."
         },
         {
-            'attacker_msg': "A close-quarters struggle, and you manage to press the flare against {target_name}'s face, causing horrific burns.",
-            'victim_msg': "A close-quarters struggle, and {attacker_name} manages to press the flare against your face, causing horrific burns.",
-            'observer_msg': "A close-quarters struggle, and {attacker_name} manages to press the flare against {target_name}'s face, causing horrific burns."
+            'attacker_msg': "A close-quarters struggle, and you manage to press the flare against {target_name}'s {hit_location}, causing horrific burns.",
+            'victim_msg': "A close-quarters struggle, and {attacker_name} manages to press the flare against your {hit_location}, causing horrific burns.",
+            'observer_msg': "A close-quarters struggle, and {attacker_name} manages to press the flare against {target_name}'s {hit_location}, causing horrific burns."
         },
         {
             'attacker_msg': "The flare, though not a conventional weapon, proves brutally effective as you burn {target_name} badly.",
@@ -283,14 +283,14 @@ MESSAGES = {
             'observer_msg': "A painful hiss as the flare from {attacker_name} touches {target_name}'s clothing, which begins to catch fire."
         },
         {
-            'attacker_msg': "The tip of your flare sears {target_name}'s cheek, the pain and smell of burning flesh overwhelming.",
-            'victim_msg': "The tip of {attacker_name}'s flare sears your cheek, the pain and smell of burning flesh overwhelming.",
-            'observer_msg': "The tip of {attacker_name}'s flare sears {target_name}'s cheek, the pain and smell of burning flesh overwhelming."
+            'attacker_msg': "The tip of your flare sears {target_name}'s {hit_location}, the pain and smell of burning flesh overwhelming.",
+            'victim_msg': "The tip of {attacker_name}'s flare sears your {hit_location}, the pain and smell of burning flesh overwhelming.",
+            'observer_msg': "The tip of {attacker_name}'s flare sears {target_name}'s {hit_location}, the pain and smell of burning flesh overwhelming."
         },
         {
-            'attacker_msg': "Your flare delivers another brutal burn to {target_name}'s torso, the heat unforgiving.",
-            'victim_msg': "{attacker_name}'s flare delivers another brutal burn to your torso, the heat unforgiving.",
-            'observer_msg': "{attacker_name}'s flare delivers another brutal burn to {target_name}'s torso, the heat unforgiving."
+            'attacker_msg': "Your flare delivers another brutal burn to {target_name}'s {hit_location}, the heat unforgiving.",
+            'victim_msg': "{attacker_name}'s flare delivers another brutal burn to your {hit_location}, the heat unforgiving.",
+            'observer_msg': "{attacker_name}'s flare delivers another brutal burn to {target_name}'s {hit_location}, the heat unforgiving."
         },
         {
             'attacker_msg': "A well-placed thrust with the flare leaves {target_name} momentarily blinded and screaming from a fresh burn.",

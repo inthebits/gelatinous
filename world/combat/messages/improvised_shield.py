@@ -153,29 +153,29 @@ MESSAGES = {
     ],
     'hit': [
         {
-            'attacker_msg': "A bash to the sternum knocks the wind out of {target_name}. The second hit doesn't wait.",
-            'victim_msg': "A bash to your sternum knocks the wind out of you. The second hit doesn't wait.",
-            'observer_msg': "A bash to the sternum knocks the wind out of {target_name}. The second hit doesn't wait."
+            'attacker_msg': "A bash to the {hit_location} knocks the wind out of {target_name}. The second hit doesn't wait.",
+            'victim_msg': "A bash to your {hit_location} knocks the wind out of you. The second hit doesn't wait.",
+            'observer_msg': "A bash to the {hit_location} knocks the wind out of {target_name}. The second hit doesn't wait."
         },
         {
-            'attacker_msg': "A brutal strike catches the shoulder. Something cracks beneath.",
-            'victim_msg': "A brutal strike catches your shoulder. Something cracks beneath.",
-            'observer_msg': "A brutal strike catches the shoulder. Something cracks beneath."
+            'attacker_msg': "A brutal strike catches the {hit_location}. Something cracks beneath.",
+            'victim_msg': "A brutal strike catches your {hit_location}. Something cracks beneath.",
+            'observer_msg': "A brutal strike catches the {hit_location}. Something cracks beneath."
         },
         {
-            'attacker_msg': "A full-bodied shove launches {target_name} back across the floor. Scrapes. Groans. Red.",
-            'victim_msg': "A full-bodied shove launches you back across the floor. Scrapes. Groans. Red.",
-            'observer_msg': "A full-bodied shove launches {target_name} back across the floor. Scrapes. Groans. Red."
+            'attacker_msg': "A full-bodied shove launches {target_name} {hit_location} across the floor. Scrapes. Groans. Red.",
+            'victim_msg': "A full-bodied shove launches you {hit_location} across the floor. Scrapes. Groans. Red.",
+            'observer_msg': "A full-bodied shove launches {target_name} {hit_location} across the floor. Scrapes. Groans. Red."
         },
         {
-            'attacker_msg': "A quick shove plants the slab square into {target_name}'s face. Blood blossoms on metal.",
-            'victim_msg': "A quick shove plants the slab square into your face. Blood blossoms on metal.",
-            'observer_msg': "A quick shove plants the slab square into {target_name}'s face. Blood blossoms on metal."
+            'attacker_msg': "A quick shove plants the slab square into {target_name}'s {hit_location}. Blood blossoms on metal.",
+            'victim_msg': "A quick shove plants the slab square into your {hit_location}. Blood blossoms on metal.",
+            'observer_msg': "A quick shove plants the slab square into {target_name}'s {hit_location}. Blood blossoms on metal."
         },
         {
-            'attacker_msg': "A ringing blow to the jaw sends {target_name} reeling, arms pinwheeling in panic.",
-            'victim_msg': "A ringing blow to your jaw sends you reeling, arms pinwheeling in panic.",
-            'observer_msg': "A ringing blow to the jaw sends {target_name} reeling, arms pinwheeling in panic."
+            'attacker_msg': "A ringing blow to the {hit_location} sends {target_name} reeling, arms pinwheeling in panic.",
+            'victim_msg': "A ringing blow to your {hit_location} sends you reeling, arms pinwheeling in panic.",
+            'observer_msg': "A ringing blow to the {hit_location} sends {target_name} reeling, arms pinwheeling in panic."
         },
         {
             'attacker_msg': "A shove flattens {target_name} against the wall. The second hit leaves them there.",
@@ -183,44 +183,44 @@ MESSAGES = {
             'observer_msg': "A shove flattens {target_name} against the wall. The second hit leaves them there."
         },
         {
-            'attacker_msg': "A slam to the stomach folds {target_name} in half. The sound is breath leaving a body.",
-            'victim_msg': "A slam to your stomach folds you in half. The sound is breath leaving a body.",
-            'observer_msg': "A slam to the stomach folds {target_name} in half. The sound is breath leaving a body."
+            'attacker_msg': "A slam to the {hit_location} folds {target_name} in half. The sound is breath leaving a body.",
+            'victim_msg': "A slam to your {hit_location} folds you in half. The sound is breath leaving a body.",
+            'observer_msg': "A slam to the {hit_location} folds {target_name} in half. The sound is breath leaving a body."
         },
         {
-            'attacker_msg': "One hard swing bashes the forearm. {target_name} drops what they were holding.",
-            'victim_msg': "One hard swing bashes your forearm. You drop what you were holding.",
-            'observer_msg': "One hard swing bashes the forearm. {target_name} drops what they were holding."
+            'attacker_msg': "One hard swing bashes the {hit_location}. {target_name} drops what they were holding.",
+            'victim_msg': "One hard swing bashes your {hit_location}. You drop what you were holding.",
+            'observer_msg': "One hard swing bashes the {hit_location}. {target_name} drops what they were holding."
         },
         {
-            'attacker_msg': "The corner catches {target_name}'s knee. It bends the wrong way.",
-            'victim_msg': "The corner catches your knee. It bends the wrong way.",
-            'observer_msg': "The corner catches {target_name}'s knee. It bends the wrong way."
+            'attacker_msg': "The corner catches {target_name}'s {hit_location}. It bends the wrong way.",
+            'victim_msg': "The corner catches your {hit_location}. It bends the wrong way.",
+            'observer_msg': "The corner catches {target_name}'s {hit_location}. It bends the wrong way."
         },
         {
-            'attacker_msg': "The corner of the shield hooks {target_name}'s ankle and yanks. Gravity does the rest.",
-            'victim_msg': "The corner of the shield hooks your ankle and yanks. Gravity does the rest.",
-            'observer_msg': "The corner of the shield hooks {target_name}'s ankle and yanks. Gravity does the rest."
+            'attacker_msg': "The corner of the shield hooks {target_name}'s {hit_location} and yanks. Gravity does the rest.",
+            'victim_msg': "The corner of the shield hooks your {hit_location} and yanks. Gravity does the rest.",
+            'observer_msg': "The corner of the shield hooks {target_name}'s {hit_location} and yanks. Gravity does the rest."
         },
         {
-            'attacker_msg': "The edge of the shield cuts the cheekbone. Skin splits. {target_name} cries out.",
-            'victim_msg': "The edge of the shield cuts your cheekbone. Skin splits. You cry out.",
-            'observer_msg': "The edge of the shield cuts the cheekbone. Skin splits. {target_name} cries out."
+            'attacker_msg': "The edge of the shield cuts the {hit_location}bone. Skin splits. {target_name} cries out.",
+            'victim_msg': "The edge of the shield cuts your {hit_location}bone. Skin splits. You cry out.",
+            'observer_msg': "The edge of the shield cuts the {hit_location}bone. Skin splits. {target_name} cries out."
         },
         {
-            'attacker_msg': "The edge of the shield slams into the side of {target_name}'s head. Blood blooms. So does confusion.",
-            'victim_msg': "The edge of the shield slams into the side of your head. Blood blooms. So does confusion.",
-            'observer_msg': "The edge of the shield slams into the side of {target_name}'s head. Blood blooms. So does confusion."
+            'attacker_msg': "The edge of the shield slams into the {hit_location} of {target_name}'s {hit_location}. Blood blooms. So does confusion.",
+            'victim_msg': "The edge of the shield slams into the {hit_location} of your {hit_location}. Blood blooms. So does confusion.",
+            'observer_msg': "The edge of the shield slams into the {hit_location} of {target_name}'s {hit_location}. Blood blooms. So does confusion."
         },
         {
-            'attacker_msg': "The edge slams into {target_name}'s temple. Eyes roll back. Knees follow.",
-            'victim_msg': "The edge slams into your temple. Eyes roll back. Knees follow.",
-            'observer_msg': "The edge slams into {target_name}'s temple. Eyes roll back. Knees follow."
+            'attacker_msg': "The edge slams into {target_name}'s {hit_location}. Eyes roll {hit_location}. Knees follow.",
+            'victim_msg': "The edge slams into your {hit_location}. Eyes roll {hit_location}. Knees follow.",
+            'observer_msg': "The edge slams into {target_name}'s {hit_location}. Eyes roll {hit_location}. Knees follow."
         },
         {
-            'attacker_msg': "The improvised weight crashes into the ribs. Breath exits. Hope follows.",
-            'victim_msg': "The improvised weight crashes into your ribs. Breath exits. Hope follows.",
-            'observer_msg': "The improvised weight crashes into the ribs. Breath exits. Hope follows."
+            'attacker_msg': "The improvised weight crashes into the {hit_location}. Breath exits. Hope follows.",
+            'victim_msg': "The improvised weight crashes into your {hit_location}. Breath exits. Hope follows.",
+            'observer_msg': "The improvised weight crashes into the {hit_location}. Breath exits. Hope follows."
         },
         {
             'attacker_msg': "The rim clips {target_name}'s nose. Cartilage crumples. So does resolve.",
@@ -228,39 +228,39 @@ MESSAGES = {
             'observer_msg': "The rim clips {target_name}'s nose. Cartilage crumples. So does resolve."
         },
         {
-            'attacker_msg': "The rim connects with {target_name}'s jaw. They reel, teeth clicking together.",
-            'victim_msg': "The rim connects with your jaw. You reel, teeth clicking together.",
-            'observer_msg': "The rim connects with {target_name}'s jaw. They reel, teeth clicking together."
+            'attacker_msg': "The rim connects with {target_name}'s {hit_location}. They reel, teeth clicking together.",
+            'victim_msg': "The rim connects with your {hit_location}. You reel, teeth clicking together.",
+            'observer_msg': "The rim connects with {target_name}'s {hit_location}. They reel, teeth clicking together."
         },
         {
-            'attacker_msg': "The shield catches the ribs and follows through. Something vital shifts inside.",
-            'victim_msg': "The shield catches your ribs and follows through. Something vital shifts inside.",
-            'observer_msg': "The shield catches the ribs and follows through. Something vital shifts inside."
+            'attacker_msg': "The shield catches the {hit_location} and follows through. Something vital shifts inside.",
+            'victim_msg': "The shield catches your {hit_location} and follows through. Something vital shifts inside.",
+            'observer_msg': "The shield catches the {hit_location} and follows through. Something vital shifts inside."
         },
         {
-            'attacker_msg': "The shield lifts like a blade, then drops like a judgment — flat across the spine.",
-            'victim_msg': "The shield lifts like a blade, then drops like a judgment — flat across your spine.",
-            'observer_msg': "The shield lifts like a blade, then drops like a judgment — flat across the spine."
+            'attacker_msg': "The shield lifts like a blade, then drops like a judgment — flat across the {hit_location}.",
+            'victim_msg': "The shield lifts like a blade, then drops like a judgment — flat across your {hit_location}.",
+            'observer_msg': "The shield lifts like a blade, then drops like a judgment — flat across the {hit_location}."
         },
         {
-            'attacker_msg': "The shield smashes into the gut. {target_name} vomits red and goes down.",
-            'victim_msg': "The shield smashes into your gut. You vomit red and go down.",
-            'observer_msg': "The shield smashes into the gut. {target_name} vomits red and goes down."
+            'attacker_msg': "The shield smashes into the {hit_location}. {target_name} vomits red and goes down.",
+            'victim_msg': "The shield smashes into your {hit_location}. You vomit red and go down.",
+            'observer_msg': "The shield smashes into the {hit_location}. {target_name} vomits red and goes down."
         },
         {
-            'attacker_msg': "The shield smashes into {target_name}'s chest like a wrecking ball. They gasp and stagger back.",
-            'victim_msg': "The shield smashes into your chest like a wrecking ball. You gasp and stagger back.",
-            'observer_msg': "The shield smashes into {target_name}'s chest like a wrecking ball. They gasp and stagger back."
+            'attacker_msg': "The shield smashes into {target_name}'s {hit_location} like a wrecking ball. They gasp and stagger {hit_location}.",
+            'victim_msg': "The shield smashes into your {hit_location} like a wrecking ball. You gasp and stagger {hit_location}.",
+            'observer_msg': "The shield smashes into {target_name}'s {hit_location} like a wrecking ball. They gasp and stagger {hit_location}."
         },
         {
-            'attacker_msg': "The slab crashes down onto the foot. A howl follows like thunder.",
-            'victim_msg': "The slab crashes down onto your foot. A howl follows like thunder.",
-            'observer_msg': "The slab crashes down onto the foot. A howl follows like thunder."
+            'attacker_msg': "The slab crashes down onto the {hit_location}. A howl follows like thunder.",
+            'victim_msg': "The slab crashes down onto your {hit_location}. A howl follows like thunder.",
+            'observer_msg': "The slab crashes down onto the {hit_location}. A howl follows like thunder."
         },
         {
-            'attacker_msg': "The slab crunches down on {target_name}'s wrist. Their fingers twitch and release everything.",
-            'victim_msg': "The slab crunches down on your wrist. Your fingers twitch and release everything.",
-            'observer_msg': "The slab crunches down on {target_name}'s wrist. Their fingers twitch and release everything."
+            'attacker_msg': "The slab crunches down on {target_name}'s {hit_location}. Their fingers twitch and release everything.",
+            'victim_msg': "The slab crunches down on your {hit_location}. Your fingers twitch and release everything.",
+            'observer_msg': "The slab crunches down on {target_name}'s {hit_location}. Their fingers twitch and release everything."
         },
         {
             'attacker_msg': "With a rising arc, the shield slaps the chin. Blood spatters and silence echoes.",
@@ -268,24 +268,24 @@ MESSAGES = {
             'observer_msg': "With a rising arc, the shield slaps the chin. Blood spatters and silence echoes."
         },
         {
-            'attacker_msg': "With two hands, you drive the shield into the ribs. Something cracks deep.",
-            'victim_msg': "With two hands, {attacker_name} drives the shield into your ribs. Something cracks deep.",
-            'observer_msg': "With two hands, {attacker_name} drives the shield into the ribs. Something cracks deep."
+            'attacker_msg': "With two hands, you drive the shield into the {hit_location}. Something cracks deep.",
+            'victim_msg': "With two hands, {attacker_name} drives the shield into your {hit_location}. Something cracks deep.",
+            'observer_msg': "With two hands, {attacker_name} drives the shield into the {hit_location}. Something cracks deep."
         },
         {
-            'attacker_msg': "You bash the edge of the shield into {target_name}'s shoulder. The crunch is sickening.",
-            'victim_msg': "{attacker_name} bashes the edge of the shield into your shoulder. The crunch is sickening.",
-            'observer_msg': "{attacker_name} bashes the edge of the shield into {target_name}'s shoulder. The crunch is sickening."
+            'attacker_msg': "You bash the edge of the shield into {target_name}'s {hit_location}. The crunch is sickening.",
+            'victim_msg': "{attacker_name} bashes the edge of the shield into your {hit_location}. The crunch is sickening.",
+            'observer_msg': "{attacker_name} bashes the edge of the shield into {target_name}'s {hit_location}. The crunch is sickening."
         },
         {
-            'attacker_msg': "You crash forward, slamming the full weight of the shield into {target_name}'s chest.",
-            'victim_msg': "{attacker_name} crashes forward, slamming the full weight of the shield into your chest.",
-            'observer_msg': "{attacker_name} crashes forward, slamming the full weight of the shield into {target_name}'s chest."
+            'attacker_msg': "You crash forward, slamming the full weight of the shield into {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name} crashes forward, slamming the full weight of the shield into your {hit_location}.",
+            'observer_msg': "{attacker_name} crashes forward, slamming the full weight of the shield into {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "You hammer the shield edge-first into the hip. {target_name} crumples with a shriek.",
-            'victim_msg': "{attacker_name} hammers the shield edge-first into your hip. You crumple with a shriek.",
-            'observer_msg': "{attacker_name} hammers the shield edge-first into the hip. {target_name} crumples with a shriek."
+            'attacker_msg': "You hammer the shield edge-first into the {hit_location}. {target_name} crumples with a shriek.",
+            'victim_msg': "{attacker_name} hammers the shield edge-first into your {hit_location}. You crumple with a shriek.",
+            'observer_msg': "{attacker_name} hammers the shield edge-first into the {hit_location}. {target_name} crumples with a shriek."
         },
         {
             'attacker_msg': "You rush forward and pancake {target_name} into the wall with a grunt.",

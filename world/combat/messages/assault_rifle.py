@@ -153,29 +153,29 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "A rapid *BRRRT*! Your assault rifle unleashes a short burst, stitching a line of holes across {target_name}'s arm. They shriek as hot brass ejects from your rifle.",
-            "victim_msg": "A rapid *BRRRT*! {attacker_name}'s assault rifle unleashes a short burst, stitching a painful line of holes across your arm! You shriek in pain as hot brass ejects.",
-            "observer_msg": "A rapid *BRRRT* as {attacker_name}'s assault rifle unleashes a short burst, stitching a line of holes across {target_name}'s arm, drawing a pained shriek. A stream of hot brass ejects from the rifle."
+            "attacker_msg": "A rapid *BRRRT*! Your assault rifle unleashes a short burst, stitching a line of holes across {target_name}'s {hit_location}. They shriek as hot brass ejects from your rifle.",
+            "victim_msg": "A rapid *BRRRT*! {attacker_name}'s assault rifle unleashes a short burst, stitching a painful line of holes across your {hit_location}! You shriek in pain as hot brass ejects.",
+            "observer_msg": "A rapid *BRRRT* as {attacker_name}'s assault rifle unleashes a short burst, stitching a line of holes across {target_name}'s {hit_location}, drawing a pained shriek. A stream of hot brass ejects from the rifle."
         },
         {
-            "attacker_msg": "Your assault rifle barks a quick double-tap, two high-velocity rounds striking {target_name}'s leg in quick succession, causing them to buckle. Your rifle's action cycles with blinding speed.",
-            "victim_msg": "{attacker_name}'s assault rifle barks a quick double-tap, two high-velocity rounds striking your leg in quick succession, causing you to buckle! The rifle's action cycles with blinding speed.",
-            "observer_msg": "The assault rifle barks a quick double-tap, two high-velocity rounds striking {target_name}'s leg in quick succession, causing them to buckle. The rifle's action cycles with blinding speed."
+            "attacker_msg": "Your assault rifle barks a quick double-tap, two high-velocity rounds striking {target_name}'s {hit_location} in quick succession, causing them to buckle. Your rifle's action cycles with blinding speed.",
+            "victim_msg": "{attacker_name}'s assault rifle barks a quick double-tap, two high-velocity rounds striking your {hit_location} in quick succession, causing you to buckle! The rifle's action cycles with blinding speed.",
+            "observer_msg": "The assault rifle barks a quick double-tap, two high-velocity rounds striking {target_name}'s {hit_location} in quick succession, causing them to buckle. The rifle's action cycles with blinding speed."
         },
         {
-            "attacker_msg": "Your controlled burst from your assault rifle peppers {target_name}'s shoulder, the multiple impacts spinning them around. Empty casings clatter on the ground.",
-            "victim_msg": "{attacker_name}'s controlled burst from an assault rifle peppers your shoulder, the multiple impacts spinning you around! Empty casings clatter on the ground.",
-            "observer_msg": "{attacker_name}'s controlled burst from the assault rifle peppers {target_name}'s shoulder, the multiple impacts spinning them around. Empty casings clatter on the ground."
+            "attacker_msg": "Your controlled burst from your assault rifle peppers {target_name}'s {hit_location}, the multiple impacts spinning them around. Empty casings clatter on the ground.",
+            "victim_msg": "{attacker_name}'s controlled burst from an assault rifle peppers your {hit_location}, the multiple impacts spinning you around! Empty casings clatter on the ground.",
+            "observer_msg": "{attacker_name}'s controlled burst from the assault rifle peppers {target_name}'s {hit_location}, the multiple impacts spinning them around. Empty casings clatter on the ground."
         },
         {
-            "attacker_msg": "You send a stream of lead from your assault rifle chewing into {target_name}'s side, the staccato impacts audible. Your rifle's muzzle flashes rapidly as it cycles.",
-            "victim_msg": "A stream of lead from {attacker_name}'s assault rifle chews into your side, the staccato impacts painfully audible! The rifle's muzzle flashes rapidly as it cycles.",
-            "observer_msg": "A stream of lead from {attacker_name}'s assault rifle chews into {target_name}'s side, the staccato impacts audible. The rifle's muzzle flashes rapidly as it cycles."
+            "attacker_msg": "You send a stream of lead from your assault rifle chewing into {target_name}'s {hit_location}, the staccato impacts audible. Your rifle's muzzle flashes rapidly as it cycles.",
+            "victim_msg": "A stream of lead from {attacker_name}'s assault rifle chews into your {hit_location}, the staccato impacts painfully audible! The rifle's muzzle flashes rapidly as it cycles.",
+            "observer_msg": "A stream of lead from {attacker_name}'s assault rifle chews into {target_name}'s {hit_location}, the staccato impacts audible. The rifle's muzzle flashes rapidly as it cycles."
         },
         {
-            "attacker_msg": "Your assault rifle's bullets strike {target_name}'s thigh in a tight group, the concentrated fire tearing through flesh. Your rifle ejects brass, ready for more.",
-            "victim_msg": "{attacker_name}'s assault rifle's bullets strike your thigh in a tight group, the concentrated fire tearing through your flesh! The rifle ejects brass, ready for more.",
-            "observer_msg": "The assault rifle's bullets strike {target_name}'s thigh in a tight group, the concentrated fire tearing through flesh. {attacker_name}'s rifle ejects brass, ready for more."
+            "attacker_msg": "Your assault rifle's bullets strike {target_name}'s {hit_location} in a tight group, the concentrated fire tearing through flesh. Your rifle ejects brass, ready for more.",
+            "victim_msg": "{attacker_name}'s assault rifle's bullets strike your {hit_location} in a tight group, the concentrated fire tearing through your flesh! The rifle ejects brass, ready for more.",
+            "observer_msg": "The assault rifle's bullets strike {target_name}'s {hit_location} in a tight group, the concentrated fire tearing through flesh. {attacker_name}'s rifle ejects brass, ready for more."
         },
         {
             "attacker_msg": "Your well-aimed burst with your assault rifle leaves a cluster of bleeding wounds on {target_name}. The action cycles with a smooth, mechanical rhythm.",
@@ -183,9 +183,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s well-aimed burst with the assault rifle leaves a cluster of bleeding wounds on {target_name}. The action cycles with a smooth, mechanical rhythm."
         },
         {
-            "attacker_msg": "A direct hit! Your assault rifle's burst slams into {target_name}'s chest, the multiple projectiles creating a devastating pattern. Your rifle ejects casings as you maintain sight picture.",
-            "victim_msg": "A direct hit! {attacker_name}'s assault rifle's burst slams into your chest, the multiple projectiles creating a devastating pattern! The rifle ejects casings as they maintain sight picture.",
-            "observer_msg": "A direct hit! The assault rifle's burst slams into {target_name}'s chest, the multiple projectiles creating a devastating pattern. The rifle ejects casings, {attacker_name} maintaining sight picture."
+            "attacker_msg": "A direct hit! Your assault rifle's burst slams into {target_name}'s {hit_location}, the multiple projectiles creating a devastating pattern. Your rifle ejects casings as you maintain sight picture.",
+            "victim_msg": "A direct hit! {attacker_name}'s assault rifle's burst slams into your {hit_location}, the multiple projectiles creating a devastating pattern! The rifle ejects casings as they maintain sight picture.",
+            "observer_msg": "A direct hit! The assault rifle's burst slams into {target_name}'s {hit_location}, the multiple projectiles creating a devastating pattern. The rifle ejects casings, {attacker_name} maintaining sight picture."
         },
         {
             "attacker_msg": "Your assault rifle’s projectiles punch into {target_name} in a rapid series, their impacts like angry hornets. Multiple spent casings are ejected as your rifle cycles.",
@@ -198,19 +198,19 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s assault rifle spits a three-round burst, and {target_name} is struck by all of them. The bolt cycles with a sharp *chak-chak-chak*, ejecting and loading."
         },
         {
-            "attacker_msg": "With a staccato roar, several bullets from your assault rifle hit {target_name}'s abdomen. Your rifle cycles, ready for another precise burst.",
-            "victim_msg": "With a staccato roar, several bullets from {attacker_name}'s assault rifle hit your abdomen! The rifle cycles, ready for another precise burst.",
-            "observer_msg": "With a staccato roar, several bullets from {attacker_name}'s assault rifle hit {target_name}'s abdomen. The rifle cycles, ready for another precise burst."
+            "attacker_msg": "With a staccato roar, several bullets from your assault rifle hit {target_name}'s {hit_location}. Your rifle cycles, ready for another precise burst.",
+            "victim_msg": "With a staccato roar, several bullets from {attacker_name}'s assault rifle hit your {hit_location}! The rifle cycles, ready for another precise burst.",
+            "observer_msg": "With a staccato roar, several bullets from {attacker_name}'s assault rifle hit {target_name}'s {hit_location}. The rifle cycles, ready for another precise burst."
         },
         {
-            "attacker_msg": "Your assault rifle scores multiple painful hits, bullets tearing through {target_name}'s arm. A shower of hot casings is ejected as your rifle continues to fire.",
-            "victim_msg": "{attacker_name}'s assault rifle scores multiple painful hits, bullets tearing through your arm! A shower of hot casings is ejected as the rifle continues to fire.",
-            "observer_msg": "The assault rifle scores multiple painful hits, bullets tearing through {target_name}'s arm. A shower of hot casings is ejected as the rifle continues to fire."
+            "attacker_msg": "Your assault rifle scores multiple painful hits, bullets tearing through {target_name}'s {hit_location}. A shower of hot casings is ejected as your rifle continues to fire.",
+            "victim_msg": "{attacker_name}'s assault rifle scores multiple painful hits, bullets tearing through your {hit_location}! A shower of hot casings is ejected as the rifle continues to fire.",
+            "observer_msg": "The assault rifle scores multiple painful hits, bullets tearing through {target_name}'s {hit_location}. A shower of hot casings is ejected as the rifle continues to fire."
         },
         {
-            "attacker_msg": "Your aimed burst from your assault rifle strikes {target_name}'s hip. The action cycles with efficient, rapid metallic sounds.",
-            "victim_msg": "{attacker_name}’s aimed burst from an assault rifle strikes your hip! The action cycles with efficient, rapid metallic sounds.",
-            "observer_msg": "{attacker_name}’s aimed burst from the assault rifle strikes {target_name}'s hip. The action cycles with efficient, rapid metallic sounds."
+            "attacker_msg": "Your aimed burst from your assault rifle strikes {target_name}'s {hit_location}. The action cycles with efficient, rapid metallic sounds.",
+            "victim_msg": "{attacker_name}’s aimed burst from an assault rifle strikes your {hit_location}! The action cycles with efficient, rapid metallic sounds.",
+            "observer_msg": "{attacker_name}’s aimed burst from the assault rifle strikes {target_name}'s {hit_location}. The action cycles with efficient, rapid metallic sounds."
         },
         {
             "attacker_msg": "A sharp burst of fire from your rifle and a spray of blood as your bullets find their mark on {target_name}. Your rifle cycles, your finger still near the trigger.",
@@ -228,19 +228,19 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s assault rifle bullets slam into {target_name} in quick succession. More rounds are chambered automatically with a series of solid sounds."
         },
         {
-            "attacker_msg": "A burst from your assault rifle hits {target_name}'s hands, making them drop what they're holding. Your rifle cycles as you press the advantage.",
-            "victim_msg": "A burst from {attacker_name}'s assault rifle hits your hands, making you drop what you're holding! The rifle cycles as they press the advantage.",
-            "observer_msg": "A burst from the assault rifle hits {target_name}'s hands, making them drop what they're holding. The rifle cycles, {attacker_name} pressing the advantage."
+            "attacker_msg": "A burst from your assault rifle hits {target_name}'s {hit_location}s, making them drop what they're holding. Your rifle cycles as you press the advantage.",
+            "victim_msg": "A burst from {attacker_name}'s assault rifle hits your {hit_location}s, making you drop what you're holding! The rifle cycles as they press the advantage.",
+            "observer_msg": "A burst from the assault rifle hits {target_name}'s {hit_location}s, making them drop what they're holding. The rifle cycles, {attacker_name} pressing the advantage."
         },
         {
-            "attacker_msg": "Your assault rifle's bullets make a series of solid thuds against {target_name}'s torso. Your rifle cycles, chambering fresh rounds with a blur of motion.",
-            "victim_msg": "{attacker_name}'s assault rifle's bullets make a series of solid thuds against your torso! The rifle cycles, chambering fresh rounds with a blur of motion.",
-            "observer_msg": "The assault rifle's bullets make a series of solid thuds against {target_name}'s torso. The rifle cycles, chambering fresh rounds with a blur of motion."
+            "attacker_msg": "Your assault rifle's bullets make a series of solid thuds against {target_name}'s {hit_location}. Your rifle cycles, chambering fresh rounds with a blur of motion.",
+            "victim_msg": "{attacker_name}'s assault rifle's bullets make a series of solid thuds against your {hit_location}! The rifle cycles, chambering fresh rounds with a blur of motion.",
+            "observer_msg": "The assault rifle's bullets make a series of solid thuds against {target_name}'s {hit_location}. The rifle cycles, chambering fresh rounds with a blur of motion."
         },
         {
-            "attacker_msg": "Your assault rifle projectiles find their mark, delivering a series of debilitating wounds to {target_name}'s leg. Brass casings arc away as your rifle cycles.",
-            "victim_msg": "{attacker_name}’s assault rifle projectiles find their mark, delivering a series of debilitating wounds to your leg! Brass casings arc away as the rifle cycles.",
-            "observer_msg": "{attacker_name}’s assault rifle projectiles find their mark, delivering a series of debilitating wounds to {target_name}'s leg. Brass casings arc away as the rifle cycles."
+            "attacker_msg": "Your assault rifle projectiles find their mark, delivering a series of debilitating wounds to {target_name}'s {hit_location}. Brass casings arc away as your rifle cycles.",
+            "victim_msg": "{attacker_name}’s assault rifle projectiles find their mark, delivering a series of debilitating wounds to your {hit_location}! Brass casings arc away as the rifle cycles.",
+            "observer_msg": "{attacker_name}’s assault rifle projectiles find their mark, delivering a series of debilitating wounds to {target_name}'s {hit_location}. Brass casings arc away as the rifle cycles."
         },
         {
             "attacker_msg": "Even a short burst from your assault rifle's bullets tears multiple nasty gashes in {target_name}. Your rifle cycles, ready again in an instant.",
@@ -263,9 +263,9 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s burst is true, the assault rifle's bullets striking {target_name} in a tight pattern. The bolt cycles, ready for the next command."
         },
         {
-            "attacker_msg": "A close-range burst from your assault rifle tears multiple holes in {target_name}'s side. Your rifle cycles, the sound a sharp, angry chatter.",
-            "victim_msg": "A close-range burst from {attacker_name}'s assault rifle tears multiple holes in your side! The rifle cycles, the sound a sharp, angry chatter.",
-            "observer_msg": "A close-range burst from {attacker_name}'s assault rifle tears multiple holes in {target_name}'s side. The rifle cycles, the sound a sharp, angry chatter."
+            "attacker_msg": "A close-range burst from your assault rifle tears multiple holes in {target_name}'s {hit_location}. Your rifle cycles, the sound a sharp, angry chatter.",
+            "victim_msg": "A close-range burst from {attacker_name}'s assault rifle tears multiple holes in your {hit_location}! The rifle cycles, the sound a sharp, angry chatter.",
+            "observer_msg": "A close-range burst from {attacker_name}'s assault rifle tears multiple holes in {target_name}'s {hit_location}. The rifle cycles, the sound a sharp, angry chatter."
         },
         {
             "attacker_msg": "Your assault rifle proves brutally effective as you land another flurry of hits on {target_name}. The action cycles with a swift, continuous *CHING-clack-CHING*.",
@@ -278,19 +278,19 @@ MESSAGES = {
             "observer_msg": "{attacker_name}’s assault rifle bullets make impact, leaving a series of bleeding punctures on {target_name}. Spent casings litter the ground as the rifle cycles."
         },
         {
-            "attacker_msg": "A painful burst of cracks as bullets from your assault rifle strike {target_name}'s ribs. Your rifle cycles, chambering more rounds.",
-            "victim_msg": "A painful burst of cracks as bullets from {attacker_name}'s assault rifle strike your ribs! The rifle cycles, chambering more rounds.",
-            "observer_msg": "A painful burst of cracks as bullets from {attacker_name}'s assault rifle strike {target_name}'s ribs. The rifle cycles, chambering more rounds."
+            "attacker_msg": "A painful burst of cracks as bullets from your assault rifle strike {target_name}'s {hit_location}. Your rifle cycles, chambering more rounds.",
+            "victim_msg": "A painful burst of cracks as bullets from {attacker_name}'s assault rifle strike your {hit_location}! The rifle cycles, chambering more rounds.",
+            "observer_msg": "A painful burst of cracks as bullets from {attacker_name}'s assault rifle strike {target_name}'s {hit_location}. The rifle cycles, chambering more rounds."
         },
         {
-            "attacker_msg": "Projectiles from your assault rifle hit {target_name}’s collarbone in a rapid sequence. The action cycles, ejecting casings smartly.",
-            "victim_msg": "Projectiles from {attacker_name}'s assault rifle hit your collarbone in a rapid sequence! The action cycles, ejecting casings smartly.",
-            "observer_msg": "Projectiles from {attacker_name}'s assault rifle hit {target_name}’s collarbone in a rapid sequence. The action cycles, ejecting casings smartly."
+            "attacker_msg": "Projectiles from your assault rifle hit {target_name}’s {hit_location} in a rapid sequence. The action cycles, ejecting casings smartly.",
+            "victim_msg": "Projectiles from {attacker_name}'s assault rifle hit your {hit_location} in a rapid sequence! The action cycles, ejecting casings smartly.",
+            "observer_msg": "Projectiles from {attacker_name}'s assault rifle hit {target_name}’s {hit_location} in a rapid sequence. The action cycles, ejecting casings smartly."
         },
         {
-            "attacker_msg": "You deliver another series of penetrating impacts to {target_name}’s torso with your assault rifle. Your rifle cycles, ready for more punishment.",
-            "victim_msg": "{attacker_name}’s assault rifle delivers another series of penetrating impacts to your torso! The rifle cycles, ready for more punishment.",
-            "observer_msg": "{attacker_name}’s assault rifle delivers another series of penetrating impacts to {target_name}’s torso. The rifle cycles, ready for more punishment."
+            "attacker_msg": "You deliver another series of penetrating impacts to {target_name}’s {hit_location} with your assault rifle. Your rifle cycles, ready for more punishment.",
+            "victim_msg": "{attacker_name}’s assault rifle delivers another series of penetrating impacts to your {hit_location}! The rifle cycles, ready for more punishment.",
+            "observer_msg": "{attacker_name}’s assault rifle delivers another series of penetrating impacts to {target_name}’s {hit_location}. The rifle cycles, ready for more punishment."
         },
         {
             "attacker_msg": "A well-placed burst from your assault rifle leaves {target_name} reeling from multiple wounds. Your rifle cycles as you assess for another volley.",

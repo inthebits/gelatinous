@@ -153,29 +153,29 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A sharp *thwack* and hiss as your nail gun drives a nail deep into {target_name}'s arm.",
-            'victim_msg': "A sharp *thwack* and hiss as {attacker_name}'s nail gun drives a nail deep into your arm.",
-            'observer_msg': "A sharp *thwack* and hiss as {attacker_name}'s nail gun drives a nail deep into {target_name}'s arm."
+            'attacker_msg': "A sharp *thwack* and hiss as your nail gun drives a nail deep into {target_name}'s {hit_location}.",
+            'victim_msg': "A sharp *thwack* and hiss as {attacker_name}'s nail gun drives a nail deep into your {hit_location}.",
+            'observer_msg': "A sharp *thwack* and hiss as {attacker_name}'s nail gun drives a nail deep into {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "The nail gun fires, and a nail embeds itself in {target_name}'s leg with a sickening punch.",
-            'victim_msg': "The nail gun fires, and a nail embeds itself in your leg with a sickening punch.",
-            'observer_msg': "The nail gun fires, and a nail embeds itself in {target_name}'s leg with a sickening punch."
+            'attacker_msg': "The nail gun fires, and a nail embeds itself in {target_name}'s {hit_location} with a sickening punch.",
+            'victim_msg': "The nail gun fires, and a nail embeds itself in your {hit_location} with a sickening punch.",
+            'observer_msg': "The nail gun fires, and a nail embeds itself in {target_name}'s {hit_location} with a sickening punch."
         },
         {
-            'attacker_msg': "Your nail gun spits a projectile that pierces {target_name}'s shoulder, drawing a cry of agony.",
-            'victim_msg': "{attacker_name}'s nail gun spits a projectile that pierces your shoulder, drawing a cry of agony.",
-            'observer_msg': "{attacker_name}'s nail gun spits a projectile that pierces {target_name}'s shoulder, drawing a cry of agony."
+            'attacker_msg': "Your nail gun spits a projectile that pierces {target_name}'s {hit_location}, drawing a cry of agony.",
+            'victim_msg': "{attacker_name}'s nail gun spits a projectile that pierces your {hit_location}, drawing a cry of agony.",
+            'observer_msg': "{attacker_name}'s nail gun spits a projectile that pierces {target_name}'s {hit_location}, drawing a cry of agony."
         },
         {
-            'attacker_msg': "Steel meets flesh as your nail gun lands a hit, a long nail sticking out of {target_name}'s side.",
-            'victim_msg': "Steel meets flesh as {attacker_name}'s nail gun lands a hit, a long nail sticking out of your side.",
-            'observer_msg': "Steel meets flesh as {attacker_name}'s nail gun lands a hit, a long nail sticking out of {target_name}'s side."
+            'attacker_msg': "Steel meets flesh as your nail gun lands a hit, a long nail sticking out of {target_name}'s {hit_location}.",
+            'victim_msg': "Steel meets flesh as {attacker_name}'s nail gun lands a hit, a long nail sticking out of your {hit_location}.",
+            'observer_msg': "Steel meets flesh as {attacker_name}'s nail gun lands a hit, a long nail sticking out of {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "The nail gun strikes, and {target_name} stumbles, a nail protruding from their thigh like a vicious metal thorn.",
-            'victim_msg': "The nail gun strikes, and you stumble, a nail protruding from your thigh like a vicious metal thorn.",
-            'observer_msg': "The nail gun strikes, and {target_name} stumbles, a nail protruding from their thigh like a vicious metal thorn."
+            'attacker_msg': "The nail gun strikes, and {target_name} stumbles, a nail protruding from their {hit_location} like a vicious metal thorn.",
+            'victim_msg': "The nail gun strikes, and you stumble, a nail protruding from your {hit_location} like a vicious metal thorn.",
+            'observer_msg': "The nail gun strikes, and {target_name} stumbles, a nail protruding from their {hit_location} like a vicious metal thorn."
         },
         {
             'attacker_msg': "Your aim is true, the nail gun delivering a painful, puncturing wound to {target_name}.",
@@ -193,24 +193,24 @@ MESSAGES = {
             'observer_msg': "The nail gun's projectile punches through {target_name}'s clothing and into the flesh beneath with brutal efficiency."
         },
         {
-            'attacker_msg': "Your nail gun fires, and {target_name} clutches their chest where a nail has embedded itself.",
-            'victim_msg': "{attacker_name}'s nail gun fires, and you clutch your chest where a nail has embedded itself.",
-            'observer_msg': "{attacker_name}'s nail gun fires, and {target_name} clutches their chest where a nail has embedded itself."
+            'attacker_msg': "Your nail gun fires, and {target_name} clutches their {hit_location} where a nail has embedded itself.",
+            'victim_msg': "{attacker_name}'s nail gun fires, and you clutch your {hit_location} where a nail has embedded itself.",
+            'observer_msg': "{attacker_name}'s nail gun fires, and {target_name} clutches their {hit_location} where a nail has embedded itself."
         },
         {
-            'attacker_msg': "With a sharp report, you drive a nail from the nail gun into {target_name}'s foot, pinning it.",
-            'victim_msg': "With a sharp report, {attacker_name} drives a nail from the nail gun into your foot, pinning it.",
-            'observer_msg': "With a sharp report, {attacker_name} drives a nail from the nail gun into {target_name}'s foot, pinning it."
+            'attacker_msg': "With a sharp report, you drive a nail from the nail gun into {target_name}'s {hit_location}, pinning it.",
+            'victim_msg': "With a sharp report, {attacker_name} drives a nail from the nail gun into your {hit_location}, pinning it.",
+            'observer_msg': "With a sharp report, {attacker_name} drives a nail from the nail gun into {target_name}'s {hit_location}, pinning it."
         },
         {
-            'attacker_msg': "The nail gun scores a painful hit on {target_name}'s hand, the nail transfixing it with a spurt of blood.",
-            'victim_msg': "The nail gun scores a painful hit on your hand, the nail transfixing it with a spurt of blood.",
-            'observer_msg': "The nail gun scores a painful hit on {target_name}'s hand, the nail transfixing it with a spurt of blood."
+            'attacker_msg': "The nail gun scores a painful hit on {target_name}'s {hit_location}, the nail transfixing it with a spurt of blood.",
+            'victim_msg': "The nail gun scores a painful hit on your {hit_location}, the nail transfixing it with a spurt of blood.",
+            'observer_msg': "The nail gun scores a painful hit on {target_name}'s {hit_location}, the nail transfixing it with a spurt of blood."
         },
         {
-            'attacker_msg': "Your precise shot from the nail gun leaves a nail quivering in {target_name}'s bicep.",
-            'victim_msg': "{attacker_name}'s precise shot from the nail gun leaves a nail quivering in your bicep.",
-            'observer_msg': "{attacker_name}'s precise shot from the nail gun leaves a nail quivering in {target_name}'s bicep."
+            'attacker_msg': "Your precise shot from the nail gun leaves a nail quivering in {target_name}'s {hit_location}.",
+            'victim_msg': "{attacker_name}'s precise shot from the nail gun leaves a nail quivering in your {hit_location}.",
+            'observer_msg': "{attacker_name}'s precise shot from the nail gun leaves a nail quivering in {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "A sharp *crack-hiss* as your nail gun drives a nail into {target_name}, who howls in pain.",
@@ -218,9 +218,9 @@ MESSAGES = {
             'observer_msg': "A sharp *crack-hiss* as {attacker_name}'s nail gun drives a nail into {target_name}, who howls in pain."
         },
         {
-            'attacker_msg': "The unyielding steel of a nail from your nail gun leaves a deep, bleeding puncture in {target_name}'s torso.",
-            'victim_msg': "The unyielding steel of a nail from {attacker_name}'s nail gun leaves a deep, bleeding puncture in your torso.",
-            'observer_msg': "The unyielding steel of a nail from {attacker_name}'s nail gun leaves a deep, bleeding puncture in {target_name}'s torso."
+            'attacker_msg': "The unyielding steel of a nail from your nail gun leaves a deep, bleeding puncture in {target_name}'s {hit_location}.",
+            'victim_msg': "The unyielding steel of a nail from {attacker_name}'s nail gun leaves a deep, bleeding puncture in your {hit_location}.",
+            'observer_msg': "The unyielding steel of a nail from {attacker_name}'s nail gun leaves a deep, bleeding puncture in {target_name}'s {hit_location}."
         },
         {
             'attacker_msg': "Your follow-up shot with the nail gun catches {target_name} again, another nail finding its mark.",
@@ -228,14 +228,14 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s follow-up shot with the nail gun catches {target_name} again, another nail finding its mark."
         },
         {
-            'attacker_msg': "A well-aimed shot from the nail gun sends a nail into {target_name}'s knee, eliciting a scream.",
-            'victim_msg': "A well-aimed shot from the nail gun sends a nail into your knee, eliciting a scream.",
-            'observer_msg': "A well-aimed shot from the nail gun sends a nail into {target_name}'s knee, eliciting a scream."
+            'attacker_msg': "A well-aimed shot from the nail gun sends a nail into {target_name}'s {hit_location}, eliciting a scream.",
+            'victim_msg': "A well-aimed shot from the nail gun sends a nail into your {hit_location}, eliciting a scream.",
+            'observer_msg': "A well-aimed shot from the nail gun sends a nail into {target_name}'s {hit_location}, eliciting a scream."
         },
         {
-            'attacker_msg': "The nail gun thuds as it fires, driving a nail into {target_name}'s gut, doubling them over.",
-            'victim_msg': "The nail gun thuds as it fires, driving a nail into your gut, doubling you over.",
-            'observer_msg': "The nail gun thuds as it fires, driving a nail into {target_name}'s gut, doubling them over."
+            'attacker_msg': "The nail gun thuds as it fires, driving a nail into {target_name}'s {hit_location}, doubling them over.",
+            'victim_msg': "The nail gun thuds as it fires, driving a nail into your {hit_location}, doubling you over.",
+            'observer_msg': "The nail gun thuds as it fires, driving a nail into {target_name}'s {hit_location}, doubling them over."
         },
         {
             'attacker_msg': "Your nail gun finds purchase, delivering a series of sharp, painful impacts to {target_name}.",
@@ -258,14 +258,14 @@ MESSAGES = {
             'observer_msg': "The nail gun's sharp report is followed by {target_name}'s cry as a nail embeds itself deeply."
         },
         {
-            'attacker_msg': "Your shot is accurate, a nail from the nail gun striking {target_name} squarely in the calf.",
-            'victim_msg': "{attacker_name}'s shot is accurate, a nail from the nail gun striking you squarely in the calf.",
-            'observer_msg': "{attacker_name}'s shot is accurate, a nail from the nail gun striking {target_name} squarely in the calf."
+            'attacker_msg': "Your shot is accurate, a nail from the nail gun striking {target_name} squarely in the {hit_location}.",
+            'victim_msg': "{attacker_name}'s shot is accurate, a nail from the nail gun striking you squarely in the {hit_location}.",
+            'observer_msg': "{attacker_name}'s shot is accurate, a nail from the nail gun striking {target_name} squarely in the {hit_location}."
         },
         {
-            'attacker_msg': "A close-range blast from your nail gun drives a nail through {target_name}'s cheek with a wet tearing sound.",
-            'victim_msg': "A close-range blast from {attacker_name}'s nail gun drives a nail through your cheek with a wet tearing sound.",
-            'observer_msg': "A close-range blast from {attacker_name}'s nail gun drives a nail through {target_name}'s cheek with a wet tearing sound."
+            'attacker_msg': "A close-range blast from your nail gun drives a nail through {target_name}'s {hit_location} with a wet tearing sound.",
+            'victim_msg': "A close-range blast from {attacker_name}'s nail gun drives a nail through your {hit_location} with a wet tearing sound.",
+            'observer_msg': "A close-range blast from {attacker_name}'s nail gun drives a nail through {target_name}'s {hit_location} with a wet tearing sound."
         },
         {
             'attacker_msg': "The nail gun, though an improvised weapon, proves brutally effective as you land another hit on {target_name}.",
@@ -278,24 +278,24 @@ MESSAGES = {
             'observer_msg': "{attacker_name}'s nail gun spits another projectile, leaving a fresh, bleeding puncture in {target_name}'s defenses."
         },
         {
-            'attacker_msg': "A painful thud as a nail from your nail gun strikes {target_name}'s ribs, making them gasp.",
-            'victim_msg': "A painful thud as a nail from {attacker_name}'s nail gun strikes your ribs, making you gasp.",
-            'observer_msg': "A painful thud as a nail from {attacker_name}'s nail gun strikes {target_name}'s ribs, making them gasp."
+            'attacker_msg': "A painful thud as a nail from your nail gun strikes {target_name}'s {hit_location}, making them gasp.",
+            'victim_msg': "A painful thud as a nail from {attacker_name}'s nail gun strikes your {hit_location}, making you gasp.",
+            'observer_msg': "A painful thud as a nail from {attacker_name}'s nail gun strikes {target_name}'s {hit_location}, making them gasp."
         },
         {
-            'attacker_msg': "The tip of a nail from your nail gun pierces {target_name}'s neck, drawing a gout of dark blood.",
-            'victim_msg': "The tip of a nail from {attacker_name}'s nail gun pierces your neck, drawing a gout of dark blood.",
-            'observer_msg': "The tip of a nail from {attacker_name}'s nail gun pierces {target_name}'s neck, drawing a gout of dark blood."
+            'attacker_msg': "The tip of a nail from your nail gun pierces {target_name}'s {hit_location}, drawing a gout of dark blood.",
+            'victim_msg': "The tip of a nail from {attacker_name}'s nail gun pierces your {hit_location}, drawing a gout of dark blood.",
+            'observer_msg': "The tip of a nail from {attacker_name}'s nail gun pierces {target_name}'s {hit_location}, drawing a gout of dark blood."
         },
         {
-            'attacker_msg': "Your nail gun delivers another brutal puncture to {target_name}'s side, the steel unforgiving.",
-            'victim_msg': "{attacker_name}'s nail gun delivers another brutal puncture to your side, the steel unforgiving.",
-            'observer_msg': "{attacker_name}'s nail gun delivers another brutal puncture to {target_name}'s side, the steel unforgiving."
+            'attacker_msg': "Your nail gun delivers another brutal puncture to {target_name}'s {hit_location}, the steel unforgiving.",
+            'victim_msg': "{attacker_name}'s nail gun delivers another brutal puncture to your {hit_location}, the steel unforgiving.",
+            'observer_msg': "{attacker_name}'s nail gun delivers another brutal puncture to {target_name}'s {hit_location}, the steel unforgiving."
         },
         {
-            'attacker_msg': "A well-placed shot from the nail gun leaves {target_name} momentarily stunned, a nail protruding from their shoulder.",
-            'victim_msg': "A well-placed shot from the nail gun leaves you momentarily stunned, a nail protruding from your shoulder.",
-            'observer_msg': "A well-placed shot from the nail gun leaves {target_name} momentarily stunned, a nail protruding from their shoulder."
+            'attacker_msg': "A well-placed shot from the nail gun leaves {target_name} momentarily stunned, a nail protruding from their {hit_location}.",
+            'victim_msg': "A well-placed shot from the nail gun leaves you momentarily stunned, a nail protruding from your {hit_location}.",
+            'observer_msg': "A well-placed shot from the nail gun leaves {target_name} momentarily stunned, a nail protruding from their {hit_location}."
         },
         {
             'attacker_msg': "The nail gun, guided by your grim aim, inflicts a series of telling, painful punctures upon {target_name}.",

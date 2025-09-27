@@ -158,24 +158,24 @@ MESSAGES = {
             "observer_msg": "A blast of heat sends {target_name} reeling. Their clothes catch, and panic outpaces pain for just a moment."
         },
         {
-            "attacker_msg": "A burst of flame scorches across {target_name}'s back. They cry out, smoke trailing behind them.",
-            "victim_msg": "A burst of flame scorches across your back. You cry out, smoke trailing behind you.",
-            "observer_msg": "A burst of flame scorches across {target_name}'s back. They cry out, smoke trailing behind them."
+            "attacker_msg": "A burst of flame scorches across {target_name}'s {hit_location}. They cry out, smoke trailing behind them.",
+            "victim_msg": "A burst of flame scorches across your {hit_location}. You cry out, smoke trailing behind you.",
+            "observer_msg": "A burst of flame scorches across {target_name}'s {hit_location}. They cry out, smoke trailing behind them."
         },
         {
-            "attacker_msg": "A direct blast to the shin leaves {target_name} hopping, swearing, and leaving a trail of scorched boot rubber.",
-            "victim_msg": "A direct blast to your shin leaves you hopping, swearing, and leaving a trail of scorched boot rubber.",
-            "observer_msg": "A direct blast to the shin leaves {target_name} hopping, swearing, and leaving a trail of scorched boot rubber."
+            "attacker_msg": "A direct blast to the {hit_location} leaves {target_name} hopping, swearing, and leaving a trail of scorched boot rubber.",
+            "victim_msg": "A direct blast to your {hit_location} leaves you hopping, swearing, and leaving a trail of scorched boot rubber.",
+            "observer_msg": "A direct blast to the {hit_location} leaves {target_name} hopping, swearing, and leaving a trail of scorched boot rubber."
         },
         {
-            "attacker_msg": "A jet of flame catches {target_name} across the side of the face. Their hands shoot up, but too late — the damage is done.",
-            "victim_msg": "A jet of flame catches you across the side of the face. Your hands shoot up, but too late — the damage is done.",
-            "observer_msg": "A jet of flame catches {target_name} across the side of the face. Their hands shoot up, but too late — the damage is done."
+            "attacker_msg": "A jet of flame catches {target_name} across the {hit_location} of the {hit_location}. Their hands shoot up, but too late — the damage is done.",
+            "victim_msg": "A jet of flame catches you across the {hit_location} of the {hit_location}. Your hands shoot up, but too late — the damage is done.",
+            "observer_msg": "A jet of flame catches {target_name} across the {hit_location} of the {hit_location}. Their hands shoot up, but too late — the damage is done."
         },
         {
-            "attacker_msg": "A short jet of fire sears {target_name}'s thigh. They stumble, dropping into a crouch and slapping at their own leg.",
-            "victim_msg": "A short jet of fire sears your thigh. You stumble, dropping into a crouch and slapping at your own leg.",
-            "observer_msg": "A short jet of fire sears {target_name}'s thigh. They stumble, dropping into a crouch and slapping at their own leg."
+            "attacker_msg": "A short jet of fire sears {target_name}'s {hit_location}. They stumble, dropping into a crouch and slapping at their own {hit_location}.",
+            "victim_msg": "A short jet of fire sears your {hit_location}. You stumble, dropping into a crouch and slapping at your own {hit_location}.",
+            "observer_msg": "A short jet of fire sears {target_name}'s {hit_location}. They stumble, dropping into a crouch and slapping at their own {hit_location}."
         },
         {
             "attacker_msg": "Clothes catch fire. {target_name} panics, patting themselves uselessly as the heat spreads.",
@@ -183,19 +183,19 @@ MESSAGES = {
             "observer_msg": "Clothes catch fire. {target_name} panics, patting themselves uselessly as the heat spreads."
         },
         {
-            "attacker_msg": "Fire lances across {target_name}'s cheek. One second of contact, and the skin balloons, red and ruined.",
-            "victim_msg": "Fire lances across your cheek. One second of contact, and the skin balloons, red and ruined.",
-            "observer_msg": "Fire lances across {target_name}'s cheek. One second of contact, and the skin balloons, red and ruined."
+            "attacker_msg": "Fire lances across {target_name}'s {hit_location}. One second of contact, and the skin balloons, red and ruined.",
+            "victim_msg": "Fire lances across your {hit_location}. One second of contact, and the skin balloons, red and ruined.",
+            "observer_msg": "Fire lances across {target_name}'s {hit_location}. One second of contact, and the skin balloons, red and ruined."
         },
         {
-            "attacker_msg": "Fire licks up {target_name}'s neck, blistering skin instantly. They paw at the wound like it’ll matter.",
-            "victim_msg": "Fire licks up your neck, blistering skin instantly. You paw at the wound like it’ll matter.",
-            "observer_msg": "Fire licks up {target_name}'s neck, blistering skin instantly. They paw at the wound like it’ll matter."
+            "attacker_msg": "Fire licks up {target_name}'s {hit_location}, blistering skin instantly. They paw at the wound like it’ll matter.",
+            "victim_msg": "Fire licks up your {hit_location}, blistering skin instantly. You paw at the wound like it’ll matter.",
+            "observer_msg": "Fire licks up {target_name}'s {hit_location}, blistering skin instantly. They paw at the wound like it’ll matter."
         },
         {
-            "attacker_msg": "Fire wraps around {target_name}'s arm, blistering with surgical cruelty. They howl and stagger back, steaming.",
-            "victim_msg": "Fire wraps around your arm, blistering with surgical cruelty. You howl and stagger back, steaming.",
-            "observer_msg": "Fire wraps around {target_name}'s arm, blistering with surgical cruelty. They howl and stagger back, steaming."
+            "attacker_msg": "Fire wraps around {target_name}'s {hit_location}, blistering with surgical cruelty. They howl and stagger {hit_location}, steaming.",
+            "victim_msg": "Fire wraps around your {hit_location}, blistering with surgical cruelty. You howl and stagger {hit_location}, steaming.",
+            "observer_msg": "Fire wraps around {target_name}'s {hit_location}, blistering with surgical cruelty. They howl and stagger {hit_location}, steaming."
         },
         {
             "attacker_msg": "The blowtorch finds skin beneath {target_name}'s torn shirt. The result is instant, horrific, and red.",
@@ -203,39 +203,39 @@ MESSAGES = {
             "observer_msg": "The blowtorch finds skin beneath {target_name}'s torn shirt. The result is instant, horrific, and red."
         },
         {
-            "attacker_msg": "The blowtorch hisses like a snake as it roasts a path up {target_name}'s leg. They fall, rolling, trying to smother agony.",
-            "victim_msg": "The blowtorch hisses like a snake as it roasts a path up your leg. You fall, rolling, trying to smother agony.",
-            "observer_msg": "The blowtorch hisses like a snake as it roasts a path up {target_name}'s leg. They fall, rolling, trying to smother agony."
+            "attacker_msg": "The blowtorch hisses like a snake as it roasts a path up {target_name}'s {hit_location}. They fall, rolling, trying to smother agony.",
+            "victim_msg": "The blowtorch hisses like a snake as it roasts a path up your {hit_location}. You fall, rolling, trying to smother agony.",
+            "observer_msg": "The blowtorch hisses like a snake as it roasts a path up {target_name}'s {hit_location}. They fall, rolling, trying to smother agony."
         },
         {
-            "attacker_msg": "The blowtorch kisses {target_name}'s stomach. Their shirt melts. The flesh underneath bubbles, pink to black.",
-            "victim_msg": "The blowtorch kisses your stomach. Your shirt melts. The flesh underneath bubbles, pink to black.",
-            "observer_msg": "The blowtorch kisses {target_name}'s stomach. Their shirt melts. The flesh underneath bubbles, pink to black."
+            "attacker_msg": "The blowtorch kisses {target_name}'s {hit_location}. Their shirt melts. The flesh underneath bubbles, pink to black.",
+            "victim_msg": "The blowtorch kisses your {hit_location}. Your shirt melts. The flesh underneath bubbles, pink to black.",
+            "observer_msg": "The blowtorch kisses {target_name}'s {hit_location}. Their shirt melts. The flesh underneath bubbles, pink to black."
         },
         {
-            "attacker_msg": "The blowtorch rakes along the ribs. {target_name} gasps, the shock arriving after the smell.",
-            "victim_msg": "The blowtorch rakes along your ribs. You gasp, the shock arriving after the smell.",
-            "observer_msg": "The blowtorch rakes along {target_name}'s ribs. They gasp, the shock arriving after the smell."
+            "attacker_msg": "The blowtorch rakes along the {hit_location}. {target_name} gasps, the shock arriving after the smell.",
+            "victim_msg": "The blowtorch rakes along your {hit_location}. You gasp, the shock arriving after the smell.",
+            "observer_msg": "The blowtorch rakes along {target_name}'s {hit_location}. They gasp, the shock arriving after the smell."
         },
         {
-            "attacker_msg": "The fire kisses {target_name}'s neck. Just a second — enough to blacken the skin and scramble the nerves underneath.",
-            "victim_msg": "The fire kisses your neck. Just a second — enough to blacken the skin and scramble the nerves underneath.",
-            "observer_msg": "The fire kisses {target_name}'s neck. Just a second — enough to blacken the skin and scramble the nerves underneath."
+            "attacker_msg": "The fire kisses {target_name}'s {hit_location}. Just a second — enough to blacken the skin and scramble the nerves underneath.",
+            "victim_msg": "The fire kisses your {hit_location}. Just a second — enough to blacken the skin and scramble the nerves underneath.",
+            "observer_msg": "The fire kisses {target_name}'s {hit_location}. Just a second — enough to blacken the skin and scramble the nerves underneath."
         },
         {
-            "attacker_msg": "The flame bites deep into {target_name}'s wrist. Their weapon clatters to the floor as nerves scream louder than logic.",
-            "victim_msg": "The flame bites deep into your wrist. Your weapon clatters to the floor as nerves scream louder than logic.",
-            "observer_msg": "The flame bites deep into {target_name}'s wrist. Their weapon clatters to the floor as nerves scream louder than logic."
+            "attacker_msg": "The flame bites deep into {target_name}'s {hit_location}. Their weapon clatters to the floor as nerves scream louder than logic.",
+            "victim_msg": "The flame bites deep into your {hit_location}. Your weapon clatters to the floor as nerves scream louder than logic.",
+            "observer_msg": "The flame bites deep into {target_name}'s {hit_location}. Their weapon clatters to the floor as nerves scream louder than logic."
         },
         {
-            "attacker_msg": "The flame cuts across {target_name}'s hand. Their weapon drops. The pain stays.",
-            "victim_msg": "The flame cuts across your hand. Your weapon drops. The pain stays.",
-            "observer_msg": "The flame cuts across {target_name}'s hand. Their weapon drops. The pain stays."
+            "attacker_msg": "The flame cuts across {target_name}'s {hit_location}. Their weapon drops. The pain stays.",
+            "victim_msg": "The flame cuts across your {hit_location}. Your weapon drops. The pain stays.",
+            "observer_msg": "The flame cuts across {target_name}'s {hit_location}. Their weapon drops. The pain stays."
         },
         {
-            "attacker_msg": "The flame sears across {target_name}'s arm. Skin bubbles instantly, and the scream is immediate, involuntary, ragged.",
-            "victim_msg": "The flame sears across your arm. Skin bubbles instantly, and your scream is immediate, involuntary, ragged.",
-            "observer_msg": "The flame sears across {target_name}'s arm. Skin bubbles instantly, and the scream is immediate, involuntary, ragged."
+            "attacker_msg": "The flame sears across {target_name}'s {hit_location}. Skin bubbles instantly, and the scream is immediate, involuntary, ragged.",
+            "victim_msg": "The flame sears across your {hit_location}. Skin bubbles instantly, and your scream is immediate, involuntary, ragged.",
+            "observer_msg": "The flame sears across {target_name}'s {hit_location}. Skin bubbles instantly, and the scream is immediate, involuntary, ragged."
         },
         {
             "attacker_msg": "The torch arcs upward, catching {target_name} under the chin. The pain is fast and radiant.",
@@ -248,59 +248,59 @@ MESSAGES = {
             "observer_msg": "The torch hisses as it sears through {target_name}'s jacket and flesh. Their reaction is primal, their body unsure what to protect."
         },
         {
-            "attacker_msg": "The torch hits the back of {target_name}'s hand. They shriek, skin curling away from bone like burnt paper.",
-            "victim_msg": "The torch hits the back of your hand. You shriek, skin curling away from bone like burnt paper.",
-            "observer_msg": "The torch hits the back of {target_name}'s hand. They shriek, skin curling away from bone like burnt paper."
+            "attacker_msg": "The torch hits the {hit_location} of {target_name}'s {hit_location}. They shriek, skin curling away from bone like burnt paper.",
+            "victim_msg": "The torch hits the {hit_location} of your {hit_location}. You shriek, skin curling away from bone like burnt paper.",
+            "observer_msg": "The torch hits the {hit_location} of {target_name}'s {hit_location}. They shriek, skin curling away from bone like burnt paper."
         },
         {
-            "attacker_msg": "The torch sweeps low, catching {target_name}'s calf. The hair sizzles. The scream sounds like betrayal.",
-            "victim_msg": "The torch sweeps low, catching your calf. The hair sizzles. Your scream sounds like betrayal.",
-            "observer_msg": "The torch sweeps low, catching {target_name}'s calf. The hair sizzles. The scream sounds like betrayal."
+            "attacker_msg": "The torch sweeps low, catching {target_name}'s {hit_location}. The hair sizzles. The scream sounds like betrayal.",
+            "victim_msg": "The torch sweeps low, catching your {hit_location}. The hair sizzles. Your scream sounds like betrayal.",
+            "observer_msg": "The torch sweeps low, catching {target_name}'s {hit_location}. The hair sizzles. The scream sounds like betrayal."
         },
         {
-            "attacker_msg": "You hold the flame against {target_name}'s chest for a heartbeat. The blistering begins immediately.",
-            "victim_msg": "{attacker_name} holds the flame against your chest for a heartbeat. The blistering begins immediately.",
-            "observer_msg": "{attacker_name} holds the flame against {target_name}'s chest for a heartbeat. The blistering begins immediately."
+            "attacker_msg": "You hold the flame against {target_name}'s {hit_location} for a heartbeat. The blistering begins immediately.",
+            "victim_msg": "{attacker_name} holds the flame against your {hit_location} for a heartbeat. The blistering begins immediately.",
+            "observer_msg": "{attacker_name} holds the flame against {target_name}'s {hit_location} for a heartbeat. The blistering begins immediately."
         },
         {
-            "attacker_msg": "You jab the flame into the pit of {target_name}'s elbow. The nerves there light up like a power grid failing.",
-            "victim_msg": "{attacker_name} jabs the flame into the pit of your elbow. The nerves there light up like a power grid failing.",
-            "observer_msg": "{attacker_name} jabs the flame into the pit of {target_name}'s elbow. The nerves there light up like a power grid failing."
+            "attacker_msg": "You jab the flame into the pit of {target_name}'s {hit_location}. The nerves there light up like a power grid failing.",
+            "victim_msg": "{attacker_name} jabs the flame into the pit of your {hit_location}. The nerves there light up like a power grid failing.",
+            "observer_msg": "{attacker_name} jabs the flame into the pit of {target_name}'s {hit_location}. The nerves there light up like a power grid failing."
         },
         {
-            "attacker_msg": "You jab the torch forward. The cone of fire licks up {target_name}'s torso, charring cloth and flesh alike.",
-            "victim_msg": "{attacker_name} jabs the torch forward. The cone of fire licks up your torso, charring cloth and flesh alike.",
-            "observer_msg": "{attacker_name} jabs the torch forward. The cone of fire licks up {target_name}'s torso, charring cloth and flesh alike."
+            "attacker_msg": "You jab the torch forward. The cone of fire licks up {target_name}'s {hit_location}, charring cloth and flesh alike.",
+            "victim_msg": "{attacker_name} jabs the torch forward. The cone of fire licks up your {hit_location}, charring cloth and flesh alike.",
+            "observer_msg": "{attacker_name} jabs the torch forward. The cone of fire licks up {target_name}'s {hit_location}, charring cloth and flesh alike."
         },
         {
-            "attacker_msg": "You lash with the torch, catching the edge of {target_name}'s shoulder. Fabric chars. Flesh follows.",
-            "victim_msg": "{attacker_name} lashes with the torch, catching the edge of your shoulder. Fabric chars. Flesh follows.",
-            "observer_msg": "{attacker_name} lashes with the torch, catching the edge of {target_name}'s shoulder. Fabric chars. Flesh follows."
+            "attacker_msg": "You lash with the torch, catching the edge of {target_name}'s {hit_location}. Fabric chars. Flesh follows.",
+            "victim_msg": "{attacker_name} lashes with the torch, catching the edge of your {hit_location}. Fabric chars. Flesh follows.",
+            "observer_msg": "{attacker_name} lashes with the torch, catching the edge of {target_name}'s {hit_location}. Fabric chars. Flesh follows."
         },
         {
-            "attacker_msg": "You plant a hand on {target_name} and guide the flame to their shoulder. They twist and scream, trying to escape the slow ruin.",
-            "victim_msg": "{attacker_name} plants a hand on you and guides the flame to your shoulder. You twist and scream, trying to escape the slow ruin.",
-            "observer_msg": "{attacker_name} plants a hand on {target_name} and guides the flame to their shoulder. They twist and scream, trying to escape the slow ruin."
+            "attacker_msg": "You plant a {hit_location} on {target_name} and guide the flame to their {hit_location}. They twist and scream, trying to escape the slow ruin.",
+            "victim_msg": "{attacker_name} plants a {hit_location} on you and guides the flame to your {hit_location}. You twist and scream, trying to escape the slow ruin.",
+            "observer_msg": "{attacker_name} plants a {hit_location} on {target_name} and guides the flame to their {hit_location}. They twist and scream, trying to escape the slow ruin."
         },
         {
-            "attacker_msg": "You press the flame near {target_name}'s shoulder. The skin blackens, and the smell makes everyone recoil.",
-            "victim_msg": "{attacker_name} presses the flame near your shoulder. The skin blackens, and the smell makes everyone recoil.",
-            "observer_msg": "{attacker_name} presses the flame near {target_name}'s shoulder. The skin blackens, and the smell makes everyone recoil."
+            "attacker_msg": "You press the flame near {target_name}'s {hit_location}. The skin blackens, and the smell makes everyone recoil.",
+            "victim_msg": "{attacker_name} presses the flame near your {hit_location}. The skin blackens, and the smell makes everyone recoil.",
+            "observer_msg": "{attacker_name} presses the flame near {target_name}'s {hit_location}. The skin blackens, and the smell makes everyone recoil."
         },
         {
-            "attacker_msg": "You rake the flame across {target_name}'s chest, igniting fabric and searing through to skin with a sound like frying meat.",
-            "victim_msg": "{attacker_name} rakes the flame across your chest, igniting fabric and searing through to skin with a sound like frying meat.",
-            "observer_msg": "{attacker_name} rakes the flame across {target_name}'s chest, igniting fabric and searing through to skin with a sound like frying meat."
+            "attacker_msg": "You rake the flame across {target_name}'s {hit_location}, igniting fabric and searing through to skin with a sound like frying meat.",
+            "victim_msg": "{attacker_name} rakes the flame across your {hit_location}, igniting fabric and searing through to skin with a sound like frying meat.",
+            "observer_msg": "{attacker_name} rakes the flame across {target_name}'s {hit_location}, igniting fabric and searing through to skin with a sound like frying meat."
         },
         {
-            "attacker_msg": "You sweep the torch in a lazy arc. {target_name} screams as fire licks across their ribs, bubbling flesh in uneven lines.",
-            "victim_msg": "{attacker_name} sweeps the torch in a lazy arc. You scream as fire licks across your ribs, bubbling flesh in uneven lines.",
-            "observer_msg": "{attacker_name} sweeps the torch in a lazy arc. {target_name} screams as fire licks across their ribs, bubbling flesh in uneven lines."
+            "attacker_msg": "You sweep the torch in a lazy arc. {target_name} screams as fire licks across their {hit_location}, bubbling flesh in uneven lines.",
+            "victim_msg": "{attacker_name} sweeps the torch in a lazy arc. You scream as fire licks across your {hit_location}, bubbling flesh in uneven lines.",
+            "observer_msg": "{attacker_name} sweeps the torch in a lazy arc. {target_name} screams as fire licks across their {hit_location}, bubbling flesh in uneven lines."
         },
         {
-            "attacker_msg": "{target_name} screams as the blowtorch burns a line across their forearm. The pain is instant. The smell, worse.",
-            "victim_msg": "You scream as the blowtorch burns a line across your forearm. The pain is instant. The smell, worse.",
-            "observer_msg": "{target_name} screams as the blowtorch burns a line across their forearm. The pain is instant. The smell, worse."
+            "attacker_msg": "{target_name} screams as the blowtorch burns a line across their {hit_location}. The pain is instant. The smell, worse.",
+            "victim_msg": "You scream as the blowtorch burns a line across your {hit_location}. The pain is instant. The smell, worse.",
+            "observer_msg": "{target_name} screams as the blowtorch burns a line across their {hit_location}. The pain is instant. The smell, worse."
         }
     ],
     'miss': [
