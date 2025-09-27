@@ -609,6 +609,13 @@ def add_combatant(handler, char, target=None, initial_grappling=None, initial_gr
     # Set the character's handler reference
     setattr(char.ndb, NDB_COMBAT_HANDLER, handler)
     
+    # Set combat override_place (only if not already set to something more specific)
+    if not hasattr(char, 'override_place') or not char.override_place or char.override_place == "":
+        char.override_place = "locked in combat."
+        splattercast.msg(f"ADD_COMB: Set {char.key} override_place to 'locked in combat.'")
+    else:
+        splattercast.msg(f"ADD_COMB: {char.key} already has override_place: '{char.override_place}' - not overriding")
+    
     splattercast.msg(f"ADD_COMB: {char.key} added to combat in {handler.key} with initiative {entry['initiative']}.")
     
     # Establish proximity for grappled pairs when adding to new handler
@@ -869,6 +876,15 @@ def cleanup_combatant_state(char, entry, handler):
     from .constants import NDB_COMBAT_HANDLER
     if hasattr(char.ndb, NDB_COMBAT_HANDLER):
         delattr(char.ndb, NDB_COMBAT_HANDLER)
+    
+    # Clear combat override_place (only if it's the generic combat state)
+    if (hasattr(char, 'override_place') and 
+        char.override_place == "locked in combat."):
+        char.override_place = ""
+        from evennia.comms.models import ChannelDB
+        from .constants import SPLATTERCAST_CHANNEL
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"CLEANUP_COMB: Cleared combat override_place for {char.key}")
     
     # No need to set charge flags to False after deletion - this was causing race conditions
     # The delattr above already removed them, setting them to False recreates them
