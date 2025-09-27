@@ -707,8 +707,8 @@ def remove_combatant(handler, char):
             splattercast.msg(f"RMV_COMB: Auto-retarget analysis for {other_char.key}: weapon_ranged={other_char_is_ranged}, proximity_attackers={len(proximity_attackers)}, total_attackers={len(ranged_attackers)}, reason='{retarget_reason}'")
             
             if new_target:
-                # Auto-retarget found - set new target and show initiate messages
-                other_entry[DB_TARGET_DBREF] = get_character_dbref(new_target)
+                # Auto-retarget found - use handler's set_target method (handles both DB and active list)
+                handler.set_target(other_char, new_target)
                 splattercast.msg(f"RMV_COMB: Auto-retargeted {other_char.key} to {new_target.key} ({retarget_reason})")
                 
                 # Get weapon info for initiate message
