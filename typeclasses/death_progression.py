@@ -249,13 +249,8 @@ class DeathProgressionScript(DefaultScript):
         centered_dying_msg = dying_line1 + "\n" + dying_line2 + "\n" + dying_line3 + "\n"
         character.msg(centered_dying_msg, from_obj=self)
         
-        # Message to observers in the room
-        if character.location:
-            observer_msg = (
-                f"|n{character.key} lies at death's door, their life hanging by a thread.|n\n"
-                f"|n{character.key}'s breathing is labored and irregular - they may still be saved.|n"
-            )
-            character.location.msg_contents(observer_msg, exclude=[character])
+        # Don't send observer messages - they were overwhelming and redundant
+        # The death curtain already provides a vivid death notification
             
     def _send_progression_message(self, interval):
         """Send a message at specific intervals during death progression."""
@@ -275,9 +270,7 @@ class DeathProgressionScript(DefaultScript):
         # Send message to dying character with death progression script as from_obj
         character.msg(message_data["dying"], from_obj=self)
         
-        # Send message to observers
-        if character.location:
-            character.location.msg_contents(message_data["observer"].format(name=character.key), exclude=[character])
+        # Skip observer messages during progression - they tick too fast and overwhelm
             
         # Log progression
         try:
@@ -367,8 +360,9 @@ class DeathProgressionScript(DefaultScript):
         centered_final_msg = final_line1 + "\n" + final_line2 + "\n"
         character.msg(centered_final_msg, from_obj=self)
         
+        # Send final death rattle to observers - this is the transition to permanent death
         if character.location:
-            observer_msg = f"|r{character.key} takes their final breath and passes into death.|n"
+            observer_msg = f"|r{character.key}'s form grows utterly still, life's final spark extinguished forever.|n"
             character.location.msg_contents(observer_msg, exclude=[character])
             
         # Apply final death state (if not already done)
