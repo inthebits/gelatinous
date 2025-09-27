@@ -98,14 +98,14 @@ MESSAGES = {
     ],
     "hit": [
         {
-            "attacker_msg": "Your tennis racket connects with {target_name}'s side in a perfect backhand, the impact echoing like a tennis ball off strings.",
-            "victim_msg": "{attacker_name}'s tennis racket connects with your side in a perfect backhand, the impact echoing like a tennis ball off strings!",
-            "observer_msg": "The tennis racket connects with {target_name}'s side in a perfect backhand, the impact echoing like a tennis ball off strings."
+            "attacker_msg": "Your tennis racket connects with {target_name}'s {hit_location} in a perfect backhand, the impact echoing like a tennis ball off strings.",
+            "victim_msg": "{attacker_name}'s tennis racket connects with your {hit_location} in a perfect backhand, the impact echoing like a tennis ball off strings!",
+            "observer_msg": "The tennis racket connects with {target_name}'s {hit_location} in a perfect backhand, the impact echoing like a tennis ball off strings."
         },
         {
-            "attacker_msg": "A devastating overhead smash with your tennis racket crashes into {target_name}'s shoulder with surprising force.",
-            "victim_msg": "A devastating overhead smash from {attacker_name}'s tennis racket crashes into your shoulder with surprising force!",
-            "observer_msg": "A devastating overhead smash from the tennis racket crashes into {target_name}'s shoulder with surprising force."
+            "attacker_msg": "A devastating overhead smash with your tennis racket crashes into {target_name}'s {hit_location} with surprising force.",
+            "victim_msg": "A devastating overhead smash from {attacker_name}'s tennis racket crashes into your {hit_location} with surprising force!",
+            "observer_msg": "A devastating overhead smash from the tennis racket crashes into {target_name}'s {hit_location} with surprising force."
         },
         {
             "attacker_msg": "Your tennis racket's frame strikes {target_name} with a sharp crack, the aluminum/carbon fiber unforgiving.",
@@ -118,19 +118,19 @@ MESSAGES = {
             "observer_msg": "A perfectly executed forehand from the tennis racket sends {target_name} reeling from the unexpected power."
         },
         {
-            "attacker_msg": "Your tennis racket slices through the air and connects with {target_name}'s arm, the strings leaving angry welts.",
-            "victim_msg": "{attacker_name}'s tennis racket slices through the air and connects with your arm, the strings leaving angry welts!",
-            "observer_msg": "The tennis racket slices through the air and connects with {target_name}'s arm, the strings leaving angry welts."
+            "attacker_msg": "Your tennis racket slices through the air and connects with {target_name}'s {hit_location}, the strings leaving angry welts.",
+            "victim_msg": "{attacker_name}'s tennis racket slices through the air and connects with your {hit_location}, the strings leaving angry welts!",
+            "observer_msg": "The tennis racket slices through the air and connects with {target_name}'s {hit_location}, the strings leaving angry welts."
         },
         {
-            "attacker_msg": "A vicious cross-court shot with your tennis racket catches {target_name} off-guard, striking their ribs solidly.",
-            "victim_msg": "A vicious cross-court shot from {attacker_name}'s tennis racket catches you off-guard, striking your ribs solidly!",
-            "observer_msg": "A vicious cross-court shot from the tennis racket catches {target_name} off-guard, striking their ribs solidly."
+            "attacker_msg": "A vicious cross-court shot with your tennis racket catches {target_name} off-guard, striking their {hit_location} solidly.",
+            "victim_msg": "A vicious cross-court shot from {attacker_name}'s tennis racket catches you off-guard, striking your {hit_location} solidly!",
+            "observer_msg": "A vicious cross-court shot from the tennis racket catches {target_name} off-guard, striking their {hit_location} solidly."
         },
         {
-            "attacker_msg": "Your tennis racket's sweet spot finds {target_name}'s head with a resounding *crack* that echoes like a perfect serve.",
-            "victim_msg": "{attacker_name}'s tennis racket's sweet spot finds your head with a resounding *crack* that echoes like a perfect serve!",
-            "observer_msg": "The tennis racket's sweet spot finds {target_name}'s head with a resounding *crack* that echoes like a perfect serve."
+            "attacker_msg": "Your tennis racket's sweet spot finds {target_name}'s {hit_location} with a resounding *crack* that echoes like a perfect serve.",
+            "victim_msg": "{attacker_name}'s tennis racket's sweet spot finds your {hit_location} with a resounding *crack* that echoes like a perfect serve!",
+            "observer_msg": "The tennis racket's sweet spot finds {target_name}'s {hit_location} with a resounding *crack* that echoes like a perfect serve."
         },
         {
             "attacker_msg": "A lightning-fast volley with your tennis racket strikes {target_name} before they can react.",
@@ -143,14 +143,14 @@ MESSAGES = {
             "observer_msg": "The tennis racket connects with a satisfying *thwack* as {attacker_name} delivers a punishing body shot to {target_name}."
         },
         {
-            "attacker_msg": "Your backhand swing with the tennis racket catches {target_name} across the face, strings singing with contact.",
-            "victim_msg": "{attacker_name}'s backhand swing with their tennis racket catches you across the face, strings singing with contact!",
-            "observer_msg": "{attacker_name}'s backhand swing with the tennis racket catches {target_name} across the face, strings singing with contact."
+            "attacker_msg": "Your backhand swing with the tennis racket catches {target_name} across the {hit_location}, strings singing with contact.",
+            "victim_msg": "{attacker_name}'s {hit_location}hand swing with their tennis racket catches you across the {hit_location}, strings singing with contact!",
+            "observer_msg": "{attacker_name}'s {hit_location}hand swing with the tennis racket catches {target_name} across the {hit_location}, strings singing with contact."
         },
         {
-            "attacker_msg": "The lightweight frame of your tennis racket proves deceptively painful as it strikes {target_name}'s knee.",
-            "victim_msg": "The lightweight frame of {attacker_name}'s tennis racket proves deceptively painful as it strikes your knee!",
-            "observer_msg": "The lightweight frame of the tennis racket proves deceptively painful as it strikes {target_name}'s knee."
+            "attacker_msg": "The lightweight frame of your tennis racket proves deceptively painful as it strikes {target_name}'s {hit_location}.",
+            "victim_msg": "The lightweight frame of {attacker_name}'s tennis racket proves deceptively painful as it strikes your {hit_location}!",
+            "observer_msg": "The lightweight frame of the tennis racket proves deceptively painful as it strikes {target_name}'s {hit_location}."
         },
         {
             "attacker_msg": "A drop shot turned deadly as your tennis racket clips {target_name} under the chin with precision.",
@@ -158,9 +158,9 @@ MESSAGES = {
             "observer_msg": "A drop shot turned deadly as the tennis racket clips {target_name} under the chin with precision."
         },
         {
-            "attacker_msg": "Your tennis racket's grip tape provides perfect control as you land a solid hit on {target_name}'s torso.",
-            "victim_msg": "{attacker_name}'s tennis racket's grip tape provides them perfect control as they land a solid hit on your torso!",
-            "observer_msg": "The tennis racket's grip tape provides perfect control as {attacker_name} lands a solid hit on {target_name}'s torso."
+            "attacker_msg": "Your tennis racket's grip tape provides perfect control as you land a solid hit on {target_name}'s {hit_location}.",
+            "victim_msg": "{attacker_name}'s tennis racket's grip tape provides them perfect control as they land a solid hit on your {hit_location}!",
+            "observer_msg": "The tennis racket's grip tape provides perfect control as {attacker_name} lands a solid hit on {target_name}'s {hit_location}."
         },
         {
             "attacker_msg": "A serve-like motion drives your tennis racket into {target_name} with athletic precision and surprising force.",
@@ -173,24 +173,24 @@ MESSAGES = {
             "observer_msg": "The tennis racket finds the baseline of {target_name}'s defenses and scores a clean winner."
         },
         {
-            "attacker_msg": "A perfect topspin lob with your tennis racket catches {target_name} on the retreat, striking their back painfully.",
-            "victim_msg": "A perfect topspin lob from {attacker_name}'s tennis racket catches you on the retreat, striking your back painfully!",
-            "observer_msg": "A perfect topspin lob from the tennis racket catches {target_name} on the retreat, striking their back painfully."
+            "attacker_msg": "A perfect topspin lob with your tennis racket catches {target_name} on the retreat, striking their {hit_location} painfully.",
+            "victim_msg": "A perfect topspin lob from {attacker_name}'s tennis racket catches you on the retreat, striking your {hit_location} painfully!",
+            "observer_msg": "A perfect topspin lob from the tennis racket catches {target_name} on the retreat, striking their {hit_location} painfully."
         },
         {
-            "attacker_msg": "Your tennis racket delivers a blistering down-the-line winner, striking {target_name}'s leg with devastating accuracy.",
-            "victim_msg": "{attacker_name}'s tennis racket delivers a blistering down-the-line winner, striking your leg with devastating accuracy!",
-            "observer_msg": "The tennis racket delivers a blistering down-the-line winner, striking {target_name}'s leg with devastating accuracy."
+            "attacker_msg": "Your tennis racket delivers a blistering down-the-line winner, striking {target_name}'s {hit_location} with devastating accuracy.",
+            "victim_msg": "{attacker_name}'s tennis racket delivers a blistering down-the-line winner, striking your {hit_location} with devastating accuracy!",
+            "observer_msg": "The tennis racket delivers a blistering down-the-line winner, striking {target_name}'s {hit_location} with devastating accuracy."
         },
         {
-            "attacker_msg": "A wicked slice with your tennis racket spins unexpectedly, catching {target_name} off-balance and striking their hip.",
-            "victim_msg": "A wicked slice from {attacker_name}'s tennis racket spins unexpectedly, catching you off-balance and striking your hip!",
-            "observer_msg": "A wicked slice from the tennis racket spins unexpectedly, catching {target_name} off-balance and striking their hip."
+            "attacker_msg": "A wicked slice with your tennis racket spins unexpectedly, catching {target_name} off-balance and striking their {hit_location}.",
+            "victim_msg": "A wicked slice from {attacker_name}'s tennis racket spins unexpectedly, catching you off-balance and striking your {hit_location}!",
+            "observer_msg": "A wicked slice from the tennis racket spins unexpectedly, catching {target_name} off-balance and striking their {hit_location}."
         },
         {
-            "attacker_msg": "Your tennis racket's handle becomes a weapon as you drive the butt end into {target_name}'s solar plexus.",
-            "victim_msg": "{attacker_name}'s tennis racket's handle becomes a weapon as they drive the butt end into your solar plexus!",
-            "observer_msg": "The tennis racket's handle becomes a weapon as {attacker_name} drives the butt end into {target_name}'s solar plexus."
+            "attacker_msg": "Your tennis racket's {hit_location}le becomes a weapon as you drive the butt end into {target_name}'s solar plexus.",
+            "victim_msg": "{attacker_name}'s tennis racket's {hit_location}le becomes a weapon as they drive the butt end into your solar plexus!",
+            "observer_msg": "The tennis racket's {hit_location}le becomes a weapon as {attacker_name} drives the butt end into {target_name}'s solar plexus."
         },
         {
             "attacker_msg": "A championship-caliber stroke with your tennis racket leaves red welts across {target_name}'s exposed skin.",
@@ -203,14 +203,14 @@ MESSAGES = {
             "observer_msg": "The tennis racket's edge strikes {target_name} like a blade, the frame cutting deeper than expected."
         },
         {
-            "attacker_msg": "A devastating approach shot with your tennis racket connects with {target_name}'s jaw, snapping their head back.",
-            "victim_msg": "A devastating approach shot from {attacker_name}'s tennis racket connects with your jaw, snapping your head back!",
-            "observer_msg": "A devastating approach shot from the tennis racket connects with {target_name}'s jaw, snapping their head back."
+            "attacker_msg": "A devastating approach shot with your tennis racket connects with {target_name}'s {hit_location}, snapping their {hit_location} {hit_location}.",
+            "victim_msg": "A devastating approach shot from {attacker_name}'s tennis racket connects with your {hit_location}, snapping your {hit_location} back!",
+            "observer_msg": "A devastating approach shot from the tennis racket connects with {target_name}'s {hit_location}, snapping their {hit_location} {hit_location}."
         },
         {
-            "attacker_msg": "Your tennis racket hums through the air before connecting with {target_name}'s ankle, toppling them.",
-            "victim_msg": "{attacker_name}'s tennis racket hums through the air before connecting with your ankle, toppling you!",
-            "observer_msg": "The tennis racket hums through the air before connecting with {target_name}'s ankle, toppling them."
+            "attacker_msg": "Your tennis racket hums through the air before connecting with {target_name}'s {hit_location}, toppling them.",
+            "victim_msg": "{attacker_name}'s tennis racket hums through the air before connecting with your {hit_location}, toppling you!",
+            "observer_msg": "The tennis racket hums through the air before connecting with {target_name}'s {hit_location}, toppling them."
         },
         {
             "attacker_msg": "A perfectly placed half-volley with your tennis racket clips {target_name} behind the ear with surgical precision.",
@@ -223,9 +223,9 @@ MESSAGES = {
             "observer_msg": "The tennis racket's strings bite into {target_name}'s flesh like a net catching prey, leaving painful marks."
         },
         {
-            "attacker_msg": "A return-of-serve motion drives your tennis racket into {target_name}'s chest with professional force.",
-            "victim_msg": "A return-of-serve motion drives {attacker_name}'s tennis racket into your chest with professional force!",
-            "observer_msg": "A return-of-serve motion drives the tennis racket into {target_name}'s chest with professional force."
+            "attacker_msg": "A return-of-serve motion drives your tennis racket into {target_name}'s {hit_location} with professional force.",
+            "victim_msg": "A return-of-serve motion drives {attacker_name}'s tennis racket into your {hit_location} with professional force!",
+            "observer_msg": "A return-of-serve motion drives the tennis racket into {target_name}'s {hit_location} with professional force."
         },
         {
             "attacker_msg": "Your tennis racket finds its mark with a satisfying *ping*, the aluminum frame ringing against {target_name}'s skull.",
@@ -233,14 +233,14 @@ MESSAGES = {
             "observer_msg": "The tennis racket finds its mark with a satisfying *ping*, the aluminum frame ringing against {target_name}'s skull."
         },
         {
-            "attacker_msg": "A textbook groundstroke with your tennis racket sweeps {target_name}'s legs, sending them crashing down.",
-            "victim_msg": "A textbook groundstroke from {attacker_name}'s tennis racket sweeps your legs, sending you crashing down!",
-            "observer_msg": "A textbook groundstroke from the tennis racket sweeps {target_name}'s legs, sending them crashing down."
+            "attacker_msg": "A textbook groundstroke with your tennis racket sweeps {target_name}'s {hit_location}s, sending them crashing down.",
+            "victim_msg": "A textbook groundstroke from {attacker_name}'s tennis racket sweeps your {hit_location}s, sending you crashing down!",
+            "observer_msg": "A textbook groundstroke from the tennis racket sweeps {target_name}'s {hit_location}s, sending them crashing down."
         },
         {
-            "attacker_msg": "Your tennis racket's grip tape provides perfect traction as you deliver a bone-jarring blow to {target_name}'s spine.",
-            "victim_msg": "{attacker_name}'s tennis racket's grip tape provides them perfect traction as they deliver a bone-jarring blow to your spine!",
-            "observer_msg": "The tennis racket's grip tape provides perfect traction as {attacker_name} delivers a bone-jarring blow to {target_name}'s spine."
+            "attacker_msg": "Your tennis racket's grip tape provides perfect traction as you deliver a bone-jarring blow to {target_name}'s {hit_location}.",
+            "victim_msg": "{attacker_name}'s tennis racket's grip tape provides them perfect traction as they deliver a bone-jarring blow to your {hit_location}!",
+            "observer_msg": "The tennis racket's grip tape provides perfect traction as {attacker_name} delivers a bone-jarring blow to {target_name}'s {hit_location}."
         }
     ],
     "miss": [

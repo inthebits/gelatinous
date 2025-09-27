@@ -153,59 +153,59 @@ MESSAGES = {
     ],
     'hit': [
         {
-            'attacker_msg': "A blow to the side sends {target_name} flying. The landing breaks more.",
-            'victim_msg': "A blow to the side sends you flying. The landing breaks more.",
-            'observer_msg': "A blow to the side sends {target_name} flying. The landing breaks more."
+            'attacker_msg': "A blow to the {hit_location} sends {target_name} flying. The landing breaks more.",
+            'victim_msg': "A blow to the {hit_location} sends you flying. The landing breaks more.",
+            'observer_msg': "A blow to the {hit_location} sends {target_name} flying. The landing breaks more."
         },
         {
-            'attacker_msg': "A brutal swing lands on the collarbone. It snaps loud and wrong.",
-            'victim_msg': "A brutal swing lands on your collarbone. It snaps loud and wrong.",
-            'observer_msg': "A brutal swing lands on {target_name}'s collarbone. It snaps loud and wrong."
+            'attacker_msg': "A brutal swing lands on the {hit_location}. It snaps loud and wrong.",
+            'victim_msg': "A brutal swing lands on your {hit_location}. It snaps loud and wrong.",
+            'observer_msg': "A brutal swing lands on {target_name}'s {hit_location}. It snaps loud and wrong."
         },
         {
-            'attacker_msg': "A diagonal arc hacks through the ribs. {target_name} screams until they can't.",
-            'victim_msg': "A diagonal arc hacks through your ribs. You scream until you can't.",
-            'observer_msg': "A diagonal arc hacks through {target_name}'s ribs. {target_name} screams until they can't."
+            'attacker_msg': "A diagonal arc hacks through the {hit_location}. {target_name} screams until they can't.",
+            'victim_msg': "A diagonal arc hacks through your {hit_location}. You scream until you can't.",
+            'observer_msg': "A diagonal arc hacks through {target_name}'s {hit_location}. {target_name} screams until they can't."
         },
         {
-            'attacker_msg': "A downward blow splits the forearm. The limb sags like a wet rope.",
-            'victim_msg': "A downward blow splits your forearm. The limb sags like a wet rope.",
-            'observer_msg': "A downward blow splits {target_name}'s forearm. The limb sags like a wet rope."
+            'attacker_msg': "A downward blow splits the {hit_location}. The limb sags like a wet rope.",
+            'victim_msg': "A downward blow splits your {hit_location}. The limb sags like a wet rope.",
+            'observer_msg': "A downward blow splits {target_name}'s {hit_location}. The limb sags like a wet rope."
         },
         {
-            'attacker_msg': "A downward strike crushes the collarbone. {target_name}'s arm goes slack.",
-            'victim_msg': "A downward strike crushes your collarbone. Your arm goes slack.",
-            'observer_msg': "A downward strike crushes {target_name}'s collarbone. {target_name}'s arm goes slack."
+            'attacker_msg': "A downward strike crushes the {hit_location}. {target_name}'s {hit_location} goes slack.",
+            'victim_msg': "A downward strike crushes your {hit_location}. Your {hit_location} goes slack.",
+            'observer_msg': "A downward strike crushes {target_name}'s {hit_location}. {target_name}'s {hit_location} goes slack."
         },
         {
-            'attacker_msg': "A heavy chop slams into the arm. The limb dangles. Hope does too.",
-            'victim_msg': "A heavy chop slams into your arm. The limb dangles. Hope does too.",
-            'observer_msg': "A heavy chop slams into {target_name}'s arm. The limb dangles. Hope does too."
+            'attacker_msg': "A heavy chop slams into the {hit_location}. The limb dangles. Hope does too.",
+            'victim_msg': "A heavy chop slams into your {hit_location}. The limb dangles. Hope does too.",
+            'observer_msg': "A heavy chop slams into {target_name}'s {hit_location}. The limb dangles. Hope does too."
         },
         {
-            'attacker_msg': "A wild arc slams into {target_name}'s ribs. They buckle like cheap tin.",
-            'victim_msg': "A wild arc slams into your ribs. They buckle like cheap tin.",
-            'observer_msg': "A wild arc slams into {target_name}'s ribs. They buckle like cheap tin."
+            'attacker_msg': "A wild arc slams into {target_name}'s {hit_location}. They buckle like cheap tin.",
+            'victim_msg': "A wild arc slams into your {hit_location}. They buckle like cheap tin.",
+            'observer_msg': "A wild arc slams into {target_name}'s {hit_location}. They buckle like cheap tin."
         },
         {
-            'attacker_msg': "One low arc cuts across the thigh. {target_name} topples, howling.",
-            'victim_msg': "One low arc cuts across your thigh. You topple, howling.",
-            'observer_msg': "One low arc cuts across {target_name}'s thigh. {target_name} topples, howling."
+            'attacker_msg': "One low arc cuts across the {hit_location}. {target_name} topples, howling.",
+            'victim_msg': "One low arc cuts across your {hit_location}. You topple, howling.",
+            'observer_msg': "One low arc cuts across {target_name}'s {hit_location}. {target_name} topples, howling."
         },
         {
-            'attacker_msg': "One savage hit tears open the back. The wound won't wait.",
-            'victim_msg': "One savage hit tears open your back. The wound won't wait.",
-            'observer_msg': "One savage hit tears open {target_name}'s back. The wound won't wait."
+            'attacker_msg': "One savage hit tears open the {hit_location}. The wound won't wait.",
+            'victim_msg': "One savage hit tears open your {hit_location}. The wound won't wait.",
+            'observer_msg': "One savage hit tears open {target_name}'s {hit_location}. The wound won't wait."
         },
         {
-            'attacker_msg': "One thud to the spine. {target_name} folds over like punctuation.",
-            'victim_msg': "One thud to your spine. You fold over like punctuation.",
-            'observer_msg': "One thud to {target_name}'s spine. {target_name} folds over like punctuation."
+            'attacker_msg': "One thud to the {hit_location}. {target_name} folds over like punctuation.",
+            'victim_msg': "One thud to your {hit_location}. You fold over like punctuation.",
+            'observer_msg': "One thud to {target_name}'s {hit_location}. {target_name} folds over like punctuation."
         },
         {
-            'attacker_msg': "Steel clips the face. {target_name}'s scream is toothless — literally.",
-            'victim_msg': "Steel clips your face. Your scream is toothless — literally.",
-            'observer_msg': "Steel clips {target_name}'s face. {target_name}'s scream is toothless — literally."
+            'attacker_msg': "Steel clips the {hit_location}. {target_name}'s scream is toothless — literally.",
+            'victim_msg': "Steel clips your {hit_location}. Your scream is toothless — literally.",
+            'observer_msg': "Steel clips {target_name}'s {hit_location}. {target_name}'s scream is toothless — literally."
         },
         {
             'attacker_msg': "Steel grazes the scalp. Red follows in a thick line.",
@@ -213,94 +213,94 @@ MESSAGES = {
             'observer_msg': "Steel grazes {target_name}'s scalp. Red follows in a thick line."
         },
         {
-            'attacker_msg': "Steel rakes across the back. {target_name} arches, then falls.",
-            'victim_msg': "Steel rakes across your back. You arch, then fall.",
-            'observer_msg': "Steel rakes across {target_name}'s back. {target_name} arches, then falls."
+            'attacker_msg': "Steel rakes across the {hit_location}. {target_name} arches, then falls.",
+            'victim_msg': "Steel rakes across your {hit_location}. You arch, then fall.",
+            'observer_msg': "Steel rakes across {target_name}'s {hit_location}. {target_name} arches, then falls."
         },
         {
-            'attacker_msg': "The axe crashes down on the chest. Ribs buckle. So does resolve.",
-            'victim_msg': "The axe crashes down on your chest. Ribs buckle. So does resolve.",
-            'observer_msg': "The axe crashes down on {target_name}'s chest. Ribs buckle. So does resolve."
+            'attacker_msg': "The axe crashes down on the {hit_location}. Ribs buckle. So does resolve.",
+            'victim_msg': "The axe crashes down on your {hit_location}. Ribs buckle. So does resolve.",
+            'observer_msg': "The axe crashes down on {target_name}'s {hit_location}. Ribs buckle. So does resolve."
         },
         {
-            'attacker_msg': "The axe crashes into {target_name}'s side. The scream barely escapes.",
-            'victim_msg': "The axe crashes into your side. The scream barely escapes.",
-            'observer_msg': "The axe crashes into {target_name}'s side. The scream barely escapes."
+            'attacker_msg': "The axe crashes into {target_name}'s {hit_location}. The scream barely escapes.",
+            'victim_msg': "The axe crashes into your {hit_location}. The scream barely escapes.",
+            'observer_msg': "The axe crashes into {target_name}'s {hit_location}. The scream barely escapes."
         },
         {
-            'attacker_msg': "The axe lands mid-spine. {target_name}'s legs give out without argument.",
+            'attacker_msg': "The axe lands mid-spine. {target_name}'s {hit_location}s give out without argument.",
             'victim_msg': "The axe lands mid-spine. Your legs give out without argument.",
-            'observer_msg': "The axe lands mid-spine. {target_name}'s legs give out without argument."
+            'observer_msg': "The axe lands mid-spine. {target_name}'s {hit_location}s give out without argument."
         },
         {
-            'attacker_msg': "The axe punches into the gut. {target_name} folds around it, blood-first.",
-            'victim_msg': "The axe punches into your gut. You fold around it, blood-first.",
-            'observer_msg': "The axe punches into {target_name}'s gut. {target_name} folds around it, blood-first."
+            'attacker_msg': "The axe punches into the {hit_location}. {target_name} folds around it, blood-first.",
+            'victim_msg': "The axe punches into your {hit_location}. You fold around it, blood-first.",
+            'observer_msg': "The axe punches into {target_name}'s {hit_location}. {target_name} folds around it, blood-first."
         },
         {
-            'attacker_msg': "The axe slashes into the jaw. A red mist and two teeth fly together.",
-            'victim_msg': "The axe slashes into your jaw. A red mist and two teeth fly together.",
-            'observer_msg': "The axe slashes into {target_name}'s jaw. A red mist and two teeth fly together."
+            'attacker_msg': "The axe slashes into the {hit_location}. A red mist and two teeth fly together.",
+            'victim_msg': "The axe slashes into your {hit_location}. A red mist and two teeth fly together.",
+            'observer_msg': "The axe slashes into {target_name}'s {hit_location}. A red mist and two teeth fly together."
         },
         {
-            'attacker_msg': "The axe smashes into the side. Bone snaps, blood sprays, silence follows.",
-            'victim_msg': "The axe smashes into your side. Bone snaps, blood sprays, silence follows.",
-            'observer_msg': "The axe smashes into {target_name}'s side. Bone snaps, blood sprays, silence follows."
+            'attacker_msg': "The axe smashes into the {hit_location}. Bone snaps, blood sprays, silence follows.",
+            'victim_msg': "The axe smashes into your {hit_location}. Bone snaps, blood sprays, silence follows.",
+            'observer_msg': "The axe smashes into {target_name}'s {hit_location}. Bone snaps, blood sprays, silence follows."
         },
         {
-            'attacker_msg': "The blade digs into the thigh. {target_name} drops, screaming like it'll help.",
-            'victim_msg': "The blade digs into your thigh. You drop, screaming like it'll help.",
-            'observer_msg': "The blade digs into {target_name}'s thigh. {target_name} drops, screaming like it'll help."
+            'attacker_msg': "The blade digs into the {hit_location}. {target_name} drops, screaming like it'll help.",
+            'victim_msg': "The blade digs into your {hit_location}. You drop, screaming like it'll help.",
+            'observer_msg': "The blade digs into {target_name}'s {hit_location}. {target_name} drops, screaming like it'll help."
         },
         {
-            'attacker_msg': "The edge cleaves open the side. {target_name} spins and stumbles out of instinct.",
-            'victim_msg': "The edge cleaves open your side. You spin and stumble out of instinct.",
-            'observer_msg': "The edge cleaves open {target_name}'s side. {target_name} spins and stumbles out of instinct."
+            'attacker_msg': "The edge cleaves open the {hit_location}. {target_name} spins and stumbles out of instinct.",
+            'victim_msg': "The edge cleaves open your {hit_location}. You spin and stumble out of instinct.",
+            'observer_msg': "The edge cleaves open {target_name}'s {hit_location}. {target_name} spins and stumbles out of instinct."
         },
         {
-            'attacker_msg': "The edge slices from neck to chest. {target_name} shrieks and stumbles.",
-            'victim_msg': "The edge slices from your neck to chest. You shriek and stumble.",
-            'observer_msg': "The edge slices from {target_name}'s neck to chest. {target_name} shrieks and stumbles."
+            'attacker_msg': "The edge slices from {hit_location} to {hit_location}. {target_name} shrieks and stumbles.",
+            'victim_msg': "The edge slices from your {hit_location} to {hit_location}. You shriek and stumble.",
+            'observer_msg': "The edge slices from {target_name}'s {hit_location} to {hit_location}. {target_name} shrieks and stumbles."
         },
         {
-            'attacker_msg': "The flat of the blade smashes the temple. Blood follows a heartbeat later.",
-            'victim_msg': "The flat of the blade smashes your temple. Blood follows a heartbeat later.",
-            'observer_msg': "The flat of the blade smashes {target_name}'s temple. Blood follows a heartbeat later."
+            'attacker_msg': "The flat of the blade smashes the {hit_location}. Blood follows a heartbeat later.",
+            'victim_msg': "The flat of the blade smashes your {hit_location}. Blood follows a heartbeat later.",
+            'observer_msg': "The flat of the blade smashes {target_name}'s {hit_location}. Blood follows a heartbeat later."
         },
         {
-            'attacker_msg': "The haft strikes the jaw. Teeth fly like punctuation.",
-            'victim_msg': "The haft strikes your jaw. Teeth fly like punctuation.",
-            'observer_msg': "The haft strikes {target_name}'s jaw. Teeth fly like punctuation."
+            'attacker_msg': "The haft strikes the {hit_location}. Teeth fly like punctuation.",
+            'victim_msg': "The haft strikes your {hit_location}. Teeth fly like punctuation.",
+            'observer_msg': "The haft strikes {target_name}'s {hit_location}. Teeth fly like punctuation."
         },
         {
-            'attacker_msg': "The head of the axe strikes square in the chest. Breath exits, fast and final.",
-            'victim_msg': "The head of the axe strikes square in your chest. Breath exits, fast and final.",
-            'observer_msg': "The head of the axe strikes square in {target_name}'s chest. Breath exits, fast and final."
+            'attacker_msg': "The {hit_location} of the axe strikes square in the {hit_location}. Breath exits, fast and final.",
+            'victim_msg': "The {hit_location} of the axe strikes square in your {hit_location}. Breath exits, fast and final.",
+            'observer_msg': "The {hit_location} of the axe strikes square in {target_name}'s {hit_location}. Breath exits, fast and final."
         },
         {
-            'attacker_msg': "You bring the blade into the ribs. Red mists the air.",
-            'victim_msg': "{attacker_name} brings the blade into your ribs. Red mists the air.",
-            'observer_msg': "{attacker_name} brings the blade into {target_name}'s ribs. Red mists the air."
+            'attacker_msg': "You bring the blade into the {hit_location}. Red mists the air.",
+            'victim_msg': "{attacker_name} brings the blade into your {hit_location}. Red mists the air.",
+            'observer_msg': "{attacker_name} brings the blade into {target_name}'s {hit_location}. Red mists the air."
         },
         {
-            'attacker_msg': "You bury the blade in the thigh. The tear is meaty and merciless.",
-            'victim_msg': "{attacker_name} buries the blade in your thigh. The tear is meaty and merciless.",
-            'observer_msg': "{attacker_name} buries the blade in {target_name}'s thigh. The tear is meaty and merciless."
+            'attacker_msg': "You bury the blade in the {hit_location}. The tear is meaty and merciless.",
+            'victim_msg': "{attacker_name} buries the blade in your {hit_location}. The tear is meaty and merciless.",
+            'observer_msg': "{attacker_name} buries the blade in {target_name}'s {hit_location}. The tear is meaty and merciless."
         },
         {
-            'attacker_msg': "You cleave the shoulder open. The wound gapes and gushes.",
-            'victim_msg': "{attacker_name} cleaves your shoulder open. The wound gapes and gushes.",
-            'observer_msg': "{attacker_name} cleaves {target_name}'s shoulder open. The wound gapes and gushes."
+            'attacker_msg': "You cleave the {hit_location} open. The wound gapes and gushes.",
+            'victim_msg': "{attacker_name} cleaves your {hit_location} open. The wound gapes and gushes.",
+            'observer_msg': "{attacker_name} cleaves {target_name}'s {hit_location} open. The wound gapes and gushes."
         },
         {
-            'attacker_msg': "You hack into the shoulder. The spray paints the moment red.",
-            'victim_msg': "{attacker_name} hacks into your shoulder. The spray paints the moment red.",
-            'observer_msg': "{attacker_name} hacks into {target_name}'s shoulder. The spray paints the moment red."
+            'attacker_msg': "You hack into the {hit_location}. The spray paints the moment red.",
+            'victim_msg': "{attacker_name} hacks into your {hit_location}. The spray paints the moment red.",
+            'observer_msg': "{attacker_name} hacks into {target_name}'s {hit_location}. The spray paints the moment red."
         },
         {
-            'attacker_msg': "You land a savage hit behind the knee. {target_name} crumples instantly.",
-            'victim_msg': "{attacker_name} lands a savage hit behind your knee. You crumple instantly.",
-            'observer_msg': "{attacker_name} lands a savage hit behind {target_name}'s knee. {target_name} crumples instantly."
+            'attacker_msg': "You land a savage hit behind the {hit_location}. {target_name} crumples instantly.",
+            'victim_msg': "{attacker_name} lands a savage hit behind your {hit_location}. You crumple instantly.",
+            'observer_msg': "{attacker_name} lands a savage hit behind {target_name}'s {hit_location}. {target_name} crumples instantly."
         },
     ],
     'miss': [

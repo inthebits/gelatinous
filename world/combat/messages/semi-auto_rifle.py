@@ -153,29 +153,29 @@ SEMI_AUTO_RIFLE_MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A sharp *CRACK* as your semi-automatic rifle fires, the bullet striking {target_name}'s arm. The action cycles with a *CHING*, ejecting a casing, ready for another shot.",
-            'victim_msg': "A sharp *CRACK* as {attacker_name}'s semi-automatic rifle fires, the bullet striking your arm. The action cycles with a *CHING*, ejecting a casing, ready for another shot.",
-            'observer_msg': "A sharp *CRACK* as {attacker_name}'s semi-automatic rifle fires, the bullet striking {target_name}'s arm. The action cycles with a *CHING*, ejecting a casing, ready for another shot."
+            'attacker_msg': "A sharp *CRACK* as your semi-automatic rifle fires, the bullet striking {target_name}'s {hit_location}. The action cycles with a *CHING*, ejecting a casing, ready for another shot.",
+            'victim_msg': "A sharp *CRACK* as {attacker_name}'s semi-automatic rifle fires, the bullet striking your {hit_location}. The action cycles with a *CHING*, ejecting a casing, ready for another shot.",
+            'observer_msg': "A sharp *CRACK* as {attacker_name}'s semi-automatic rifle fires, the bullet striking {target_name}'s {hit_location}. The action cycles with a *CHING*, ejecting a casing, ready for another shot."
         },
         {
-            'attacker_msg': "The semi-automatic rifle barks, and a high-velocity slug tears into {target_name}'s leg. The rifle ejects a hot casing with a metallic sound as the bolt slams forward again.",
-            'victim_msg': "The semi-automatic rifle barks, and a high-velocity slug tears into your leg. The rifle ejects a hot casing with a metallic sound as the bolt slams forward again.",
-            'observer_msg': "The semi-automatic rifle barks, and a high-velocity slug tears into {target_name}'s leg. The rifle ejects a hot casing with a metallic sound as the bolt slams forward again."
+            'attacker_msg': "The semi-automatic rifle barks, and a high-velocity slug tears into {target_name}'s {hit_location}. The rifle ejects a hot casing with a metallic sound as the bolt slams forward again.",
+            'victim_msg': "The semi-automatic rifle barks, and a high-velocity slug tears into your {hit_location}. The rifle ejects a hot casing with a metallic sound as the bolt slams forward again.",
+            'observer_msg': "The semi-automatic rifle barks, and a high-velocity slug tears into {target_name}'s {hit_location}. The rifle ejects a hot casing with a metallic sound as the bolt slams forward again."
         },
         {
-            'attacker_msg': "Your quick shot from the semi-automatic rifle hits {target_name}'s shoulder, the impact noticeable. A brass casing spins away as the action cycles.",
-            'victim_msg': "{attacker_name}'s quick shot from the semi-automatic rifle hits your shoulder, the impact noticeable. A brass casing spins away as the action cycles.",
-            'observer_msg': "{attacker_name}'s quick shot from the semi-automatic rifle hits {target_name}'s shoulder, the impact noticeable. A brass casing spins away as the action cycles."
+            'attacker_msg': "Your quick shot from the semi-automatic rifle hits {target_name}'s {hit_location}, the impact noticeable. A brass casing spins away as the action cycles.",
+            'victim_msg': "{attacker_name}'s quick shot from the semi-automatic rifle hits your {hit_location}, the impact noticeable. A brass casing spins away as the action cycles.",
+            'observer_msg': "{attacker_name}'s quick shot from the semi-automatic rifle hits {target_name}'s {hit_location}, the impact noticeable. A brass casing spins away as the action cycles."
         },
         {
-            'attacker_msg': "Lead meets flesh as the bullet from your semi-automatic rifle slams into {target_name}'s side. The rifle's bolt carrier group cycles, *clack-CHINK*, chambering another round.",
-            'victim_msg': "Lead meets flesh as the bullet from {attacker_name}'s semi-automatic rifle slams into your side. The rifle's bolt carrier group cycles, *clack-CHINK*, chambering another round.",
-            'observer_msg': "Lead meets flesh as the bullet from {attacker_name}'s semi-automatic rifle slams into {target_name}'s side. The rifle's bolt carrier group cycles, *clack-CHINK*, chambering another round."
+            'attacker_msg': "Lead meets flesh as the bullet from your semi-automatic rifle slams into {target_name}'s {hit_location}. The rifle's bolt carrier group cycles, *clack-CHINK*, chambering another round.",
+            'victim_msg': "Lead meets flesh as the bullet from {attacker_name}'s semi-automatic rifle slams into your {hit_location}. The rifle's bolt carrier group cycles, *clack-CHINK*, chambering another round.",
+            'observer_msg': "Lead meets flesh as the bullet from {attacker_name}'s semi-automatic rifle slams into {target_name}'s {hit_location}. The rifle's bolt carrier group cycles, *clack-CHINK*, chambering another round."
         },
         {
-            'attacker_msg': "The semi-automatic rifle's bullet strikes {target_name}'s thigh, causing a yelp of pain. Your rifle ejects the spent brass, ready for an immediate follow-up.",
-            'victim_msg': "The semi-automatic rifle's bullet strikes your thigh, causing a yelp of pain. {attacker_name}'s rifle ejects the spent brass, ready for an immediate follow-up.",
-            'observer_msg': "The semi-automatic rifle's bullet strikes {target_name}'s thigh, causing a yelp of pain. {attacker_name}'s rifle ejects the spent brass, ready for an immediate follow-up."
+            'attacker_msg': "The semi-automatic rifle's bullet strikes {target_name}'s {hit_location}, causing a yelp of pain. Your rifle ejects the spent brass, ready for an immediate follow-up.",
+            'victim_msg': "The semi-automatic rifle's bullet strikes your {hit_location}, causing a yelp of pain. {attacker_name}'s rifle ejects the spent brass, ready for an immediate follow-up.",
+            'observer_msg': "The semi-automatic rifle's bullet strikes {target_name}'s {hit_location}, causing a yelp of pain. {attacker_name}'s rifle ejects the spent brass, ready for an immediate follow-up."
         },
         {
             'attacker_msg': "Your well-aimed shot with the semi-automatic rifle leaves a bleeding wound in {target_name}. The action cycles smoothly, another round ready.",
@@ -183,9 +183,9 @@ SEMI_AUTO_RIFLE_MESSAGES = {
             'observer_msg': "{attacker_name}'s well-aimed shot with the semi-automatic rifle leaves a bleeding wound in {target_name}. The action cycles smoothly, another round ready."
         },
         {
-            'attacker_msg': "A direct hit! The semi-automatic rifle's bullet smashes into {target_name}'s chest. The rifle ejects a casing, already reacquiring the target.",
-            'victim_msg': "A direct hit! The semi-automatic rifle's bullet smashes into your chest. The rifle ejects a casing, {attacker_name} already reacquiring the target.",
-            'observer_msg': "A direct hit! The semi-automatic rifle's bullet smashes into {target_name}'s chest. The rifle ejects a casing, {attacker_name} already reacquiring the target."
+            'attacker_msg': "A direct hit! The semi-automatic rifle's bullet smashes into {target_name}'s {hit_location}. The rifle ejects a casing, already reacquiring the target.",
+            'victim_msg': "A direct hit! The semi-automatic rifle's bullet smashes into your {hit_location}. The rifle ejects a casing, {attacker_name} already reacquiring the target.",
+            'observer_msg': "A direct hit! The semi-automatic rifle's bullet smashes into {target_name}'s {hit_location}. The rifle ejects a casing, {attacker_name} already reacquiring the target."
         },
         {
             'attacker_msg': "The semi-automatic rifle's projectile punches into {target_name}, its impact clear. A single spent casing is ejected as the rifle cycles automatically.",
@@ -198,19 +198,19 @@ SEMI_AUTO_RIFLE_MESSAGES = {
             'observer_msg': "{attacker_name}'s semi-automatic rifle fires with a sharp report, and {target_name} is struck. The bolt cycles, *shink*, ejecting and loading."
         },
         {
-            'attacker_msg': "With a loud crack, the bullet from your semi-automatic rifle hits {target_name}'s abdomen. The rifle cycles, ready for another precise shot.",
-            'victim_msg': "With a loud crack, the bullet from {attacker_name}'s semi-automatic rifle hits your abdomen. The rifle cycles, ready for another precise shot.",
-            'observer_msg': "With a loud crack, the bullet from {attacker_name}'s semi-automatic rifle hits {target_name}'s abdomen. The rifle cycles, ready for another precise shot."
+            'attacker_msg': "With a loud crack, the bullet from your semi-automatic rifle hits {target_name}'s {hit_location}. The rifle cycles, ready for another precise shot.",
+            'victim_msg': "With a loud crack, the bullet from {attacker_name}'s semi-automatic rifle hits your {hit_location}. The rifle cycles, ready for another precise shot.",
+            'observer_msg': "With a loud crack, the bullet from {attacker_name}'s semi-automatic rifle hits {target_name}'s {hit_location}. The rifle cycles, ready for another precise shot."
         },
         {
-            'attacker_msg': "The semi-automatic rifle scores a painful hit, the bullet tearing through {target_name}'s arm. A hot casing is ejected as the rifle prepares the next shot.",
-            'victim_msg': "The semi-automatic rifle scores a painful hit, the bullet tearing through your arm. A hot casing is ejected as the rifle prepares the next shot.",
-            'observer_msg': "The semi-automatic rifle scores a painful hit, the bullet tearing through {target_name}'s arm. A hot casing is ejected as the rifle prepares the next shot."
+            'attacker_msg': "The semi-automatic rifle scores a painful hit, the bullet tearing through {target_name}'s {hit_location}. A hot casing is ejected as the rifle prepares the next shot.",
+            'victim_msg': "The semi-automatic rifle scores a painful hit, the bullet tearing through your {hit_location}. A hot casing is ejected as the rifle prepares the next shot.",
+            'observer_msg': "The semi-automatic rifle scores a painful hit, the bullet tearing through {target_name}'s {hit_location}. A hot casing is ejected as the rifle prepares the next shot."
         },
         {
-            'attacker_msg': "Your well-aimed shot from the semi-automatic rifle strikes {target_name}'s hip. The action cycles with efficient, metallic sounds.",
-            'victim_msg': "{attacker_name}'s well-aimed shot from the semi-automatic rifle strikes your hip. The action cycles with efficient, metallic sounds.",
-            'observer_msg': "{attacker_name}'s well-aimed shot from the semi-automatic rifle strikes {target_name}'s hip. The action cycles with efficient, metallic sounds."
+            'attacker_msg': "Your well-aimed shot from the semi-automatic rifle strikes {target_name}'s {hit_location}. The action cycles with efficient, metallic sounds.",
+            'victim_msg': "{attacker_name}'s well-aimed shot from the semi-automatic rifle strikes your {hit_location}. The action cycles with efficient, metallic sounds.",
+            'observer_msg': "{attacker_name}'s well-aimed shot from the semi-automatic rifle strikes {target_name}'s {hit_location}. The action cycles with efficient, metallic sounds."
         },
         {
             'attacker_msg': "A sharp crack and a spray of blood as the semi-automatic rifle's bullet finds its mark on {target_name}. The rifle cycles, your finger still on the trigger.",
@@ -228,19 +228,19 @@ SEMI_AUTO_RIFLE_MESSAGES = {
             'observer_msg': "{attacker_name}'s semi-automatic rifle bullet slams into {target_name}. Another round is chambered automatically with a solid sound."
         },
         {
-            'attacker_msg': "A shot from the semi-automatic rifle hits {target_name}'s hand. The rifle cycles, maintaining your aim.",
-            'victim_msg': "A shot from the semi-automatic rifle hits your hand. The rifle cycles, {attacker_name} maintaining their aim.",
-            'observer_msg': "A shot from the semi-automatic rifle hits {target_name}'s hand. The rifle cycles, {attacker_name} maintaining their aim."
+            'attacker_msg': "A shot from the semi-automatic rifle hits {target_name}'s {hit_location}. The rifle cycles, maintaining your aim.",
+            'victim_msg': "A shot from the semi-automatic rifle hits your {hit_location}. The rifle cycles, {attacker_name} maintaining their aim.",
+            'observer_msg': "A shot from the semi-automatic rifle hits {target_name}'s {hit_location}. The rifle cycles, {attacker_name} maintaining their aim."
         },
         {
-            'attacker_msg': "The semi-automatic rifle's bullet makes solid contact with {target_name}'s torso. The rifle cycles, chambering a fresh round with a *clink*.",
-            'victim_msg': "The semi-automatic rifle's bullet makes solid contact with your torso. The rifle cycles, chambering a fresh round with a *clink*.",
-            'observer_msg': "The semi-automatic rifle's bullet makes solid contact with {target_name}'s torso. The rifle cycles, chambering a fresh round with a *clink*."
+            'attacker_msg': "The semi-automatic rifle's bullet makes solid contact with {target_name}'s {hit_location}. The rifle cycles, chambering a fresh round with a *clink*.",
+            'victim_msg': "The semi-automatic rifle's bullet makes solid contact with your {hit_location}. The rifle cycles, chambering a fresh round with a *clink*.",
+            'observer_msg': "The semi-automatic rifle's bullet makes solid contact with {target_name}'s {hit_location}. The rifle cycles, chambering a fresh round with a *clink*."
         },
         {
-            'attacker_msg': "Your semi-automatic rifle projectile finds its mark, delivering a debilitating wound to {target_name}'s leg. A brass casing arcs away as the rifle cycles.",
-            'victim_msg': "{attacker_name}'s semi-automatic rifle projectile finds its mark, delivering a debilitating wound to your leg. A brass casing arcs away as the rifle cycles.",
-            'observer_msg': "{attacker_name}'s semi-automatic rifle projectile finds its mark, delivering a debilitating wound to {target_name}'s leg. A brass casing arcs away as the rifle cycles."
+            'attacker_msg': "Your semi-automatic rifle projectile finds its mark, delivering a debilitating wound to {target_name}'s {hit_location}. A brass casing arcs away as the rifle cycles.",
+            'victim_msg': "{attacker_name}'s semi-automatic rifle projectile finds its mark, delivering a debilitating wound to your {hit_location}. A brass casing arcs away as the rifle cycles.",
+            'observer_msg': "{attacker_name}'s semi-automatic rifle projectile finds its mark, delivering a debilitating wound to {target_name}'s {hit_location}. A brass casing arcs away as the rifle cycles."
         },
         {
             'attacker_msg': "Even a glancing blow from the semi-automatic rifle's bullet tears a nasty gash. The rifle cycles, ready again in an instant.",
@@ -263,9 +263,9 @@ SEMI_AUTO_RIFLE_MESSAGES = {
             'observer_msg': "{attacker_name}'s shot is true, the semi-automatic rifle's bullet striking {target_name} squarely. The bolt cycles, ready for the next command."
         },
         {
-            'attacker_msg': "A close-range shot from your semi-automatic rifle tears a hole in {target_name}'s side. The rifle cycles, the sound sharp and mechanical.",
-            'victim_msg': "A close-range shot from {attacker_name}'s semi-automatic rifle tears a hole in your side. The rifle cycles, the sound sharp and mechanical.",
-            'observer_msg': "A close-range shot from {attacker_name}'s semi-automatic rifle tears a hole in {target_name}'s side. The rifle cycles, the sound sharp and mechanical."
+            'attacker_msg': "A close-range shot from your semi-automatic rifle tears a hole in {target_name}'s {hit_location}. The rifle cycles, the sound sharp and mechanical.",
+            'victim_msg': "A close-range shot from {attacker_name}'s semi-automatic rifle tears a hole in your {hit_location}. The rifle cycles, the sound sharp and mechanical.",
+            'observer_msg': "A close-range shot from {attacker_name}'s semi-automatic rifle tears a hole in {target_name}'s {hit_location}. The rifle cycles, the sound sharp and mechanical."
         },
         {
             'attacker_msg': "The semi-automatic rifle proves effective as you land another hit on {target_name}. The action cycles with a swift *CHING-clack*.",
@@ -278,19 +278,19 @@ SEMI_AUTO_RIFLE_MESSAGES = {
             'observer_msg': "{attacker_name}'s semi-automatic rifle bullet makes impact, leaving a bleeding puncture. A spent casing hits the ground as the rifle cycles."
         },
         {
-            'attacker_msg': "A painful crack as the bullet from your semi-automatic rifle strikes {target_name}'s ribs. The rifle cycles, chambering another round.",
-            'victim_msg': "A painful crack as the bullet from {attacker_name}'s semi-automatic rifle strikes your ribs. The rifle cycles, chambering another round.",
-            'observer_msg': "A painful crack as the bullet from {attacker_name}'s semi-automatic rifle strikes {target_name}'s ribs. The rifle cycles, chambering another round."
+            'attacker_msg': "A painful crack as the bullet from your semi-automatic rifle strikes {target_name}'s {hit_location}. The rifle cycles, chambering another round.",
+            'victim_msg': "A painful crack as the bullet from {attacker_name}'s semi-automatic rifle strikes your {hit_location}. The rifle cycles, chambering another round.",
+            'observer_msg': "A painful crack as the bullet from {attacker_name}'s semi-automatic rifle strikes {target_name}'s {hit_location}. The rifle cycles, chambering another round."
         },
         {
-            'attacker_msg': "The projectile from your semi-automatic rifle hits {target_name}'s collarbone. The action cycles, ejecting the casing smartly.",
-            'victim_msg': "The projectile from {attacker_name}'s semi-automatic rifle hits your collarbone. The action cycles, ejecting the casing smartly.",
-            'observer_msg': "The projectile from {attacker_name}'s semi-automatic rifle hits {target_name}'s collarbone. The action cycles, ejecting the casing smartly."
+            'attacker_msg': "The projectile from your semi-automatic rifle hits {target_name}'s {hit_location}. The action cycles, ejecting the casing smartly.",
+            'victim_msg': "The projectile from {attacker_name}'s semi-automatic rifle hits your {hit_location}. The action cycles, ejecting the casing smartly.",
+            'observer_msg': "The projectile from {attacker_name}'s semi-automatic rifle hits {target_name}'s {hit_location}. The action cycles, ejecting the casing smartly."
         },
         {
-            'attacker_msg': "Your semi-automatic rifle delivers another penetrating impact to {target_name}'s torso. The rifle cycles, ready for more.",
-            'victim_msg': "{attacker_name}'s semi-automatic rifle delivers another penetrating impact to your torso. The rifle cycles, ready for more.",
-            'observer_msg': "{attacker_name}'s semi-automatic rifle delivers another penetrating impact to {target_name}'s torso. The rifle cycles, ready for more."
+            'attacker_msg': "Your semi-automatic rifle delivers another penetrating impact to {target_name}'s {hit_location}. The rifle cycles, ready for more.",
+            'victim_msg': "{attacker_name}'s semi-automatic rifle delivers another penetrating impact to your {hit_location}. The rifle cycles, ready for more.",
+            'observer_msg': "{attacker_name}'s semi-automatic rifle delivers another penetrating impact to {target_name}'s {hit_location}. The rifle cycles, ready for more."
         },
         {
             'attacker_msg': "A well-placed shot from the semi-automatic rifle leaves {target_name} reeling. The rifle cycles, assessing for another shot.",

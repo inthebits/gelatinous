@@ -153,9 +153,9 @@ MESSAGES = {
     ],
     'hit': [
         {
-            'attacker_msg': "You drive the pick into {target_name}'s ribs, a sickening pop announcing its entrance.",
-            'victim_msg': "{attacker_name} drives the pick into your ribs, a sickening pop announcing its entrance.",
-            'observer_msg': "{attacker_name} drives the pick into {target_name}'s ribs, a sickening pop announcing its entrance."
+            'attacker_msg': "You drive the pick into {target_name}'s {hit_location}, a sickening pop announcing its entrance.",
+            'victim_msg': "{attacker_name} drives the pick into your {hit_location}, a sickening pop announcing its entrance.",
+            'observer_msg': "{attacker_name} drives the pick into {target_name}'s {hit_location}, a sickening pop announcing its entrance."
         },
         {
             'attacker_msg': "The pick sinks just beneath the skin, then deeper, your eyes never blinking.",
@@ -163,24 +163,24 @@ MESSAGES = {
             'observer_msg': "The pick sinks just beneath the skin, then deeper, {attacker_name}'s eyes never blinking."
         },
         {
-            'attacker_msg': "{target_name} howls as the pick punches into their thigh, a red bloom following.",
-            'victim_msg': "You howl as the pick punches into your thigh, a red bloom following.",
-            'observer_msg': "{target_name} howls as the pick punches into their thigh, a red bloom following."
+            'attacker_msg': "{target_name} howls as the pick punches into their {hit_location}, a red bloom following.",
+            'victim_msg': "You howl as the pick punches into your {hit_location}, a red bloom following.",
+            'observer_msg': "{target_name} howls as the pick punches into their {hit_location}, a red bloom following."
         },
         {
-            'attacker_msg': "You lunge forward and bury the point in {target_name}'s collarbone—metal meets bone with a crunch.",
-            'victim_msg': "{attacker_name} lunges forward and buries the point in your collarbone—metal meets bone with a crunch.",
-            'observer_msg': "{attacker_name} lunges forward and buries the point in {target_name}'s collarbone—metal meets bone with a crunch."
+            'attacker_msg': "You lunge forward and bury the point in {target_name}'s {hit_location}—metal meets bone with a crunch.",
+            'victim_msg': "{attacker_name} lunges forward and buries the point in your {hit_location}—metal meets bone with a crunch.",
+            'observer_msg': "{attacker_name} lunges forward and buries the point in {target_name}'s {hit_location}—metal meets bone with a crunch."
         },
         {
-            'attacker_msg': "A stabbing arc splits the space between {target_name}'s ribs. They wheeze, then bleed.",
-            'victim_msg': "A stabbing arc splits the space between your ribs. You wheeze, then bleed.",
-            'observer_msg': "A stabbing arc splits the space between {target_name}'s ribs. They wheeze, then bleed."
+            'attacker_msg': "A stabbing arc splits the space between {target_name}'s {hit_location}. They wheeze, then bleed.",
+            'victim_msg': "A stabbing arc splits the space between your {hit_location}. You wheeze, then bleed.",
+            'observer_msg': "A stabbing arc splits the space between {target_name}'s {hit_location}. They wheeze, then bleed."
         },
         {
-            'attacker_msg': "The pick glides into {target_name}'s forearm. Nerves snap. The hand goes limp.",
-            'victim_msg': "The pick glides into your forearm. Nerves snap. Your hand goes limp.",
-            'observer_msg': "The pick glides into {target_name}'s forearm. Nerves snap. The hand goes limp."
+            'attacker_msg': "The pick glides into {target_name}'s {hit_location}. Nerves snap. The {hit_location} goes limp.",
+            'victim_msg': "The pick glides into your {hit_location}. Nerves snap. Your {hit_location} goes limp.",
+            'observer_msg': "The pick glides into {target_name}'s {hit_location}. Nerves snap. The {hit_location} goes limp."
         },
         {
             'attacker_msg': "A burst of motion—you slam the pick through {target_name}'s palm.",
@@ -188,14 +188,14 @@ MESSAGES = {
             'observer_msg': "A burst of motion—{attacker_name} slams the pick through {target_name}'s palm."
         },
         {
-            'attacker_msg': "Steel slides under skin. The pick vanishes into {target_name}'s gut like it belongs there.",
-            'victim_msg': "Steel slides under skin. The pick vanishes into your gut like it belongs there.",
-            'observer_msg': "Steel slides under skin. The pick vanishes into {target_name}'s gut like it belongs there."
+            'attacker_msg': "Steel slides under skin. The pick vanishes into {target_name}'s {hit_location} like it belongs there.",
+            'victim_msg': "Steel slides under skin. The pick vanishes into your {hit_location} like it belongs there.",
+            'observer_msg': "Steel slides under skin. The pick vanishes into {target_name}'s {hit_location} like it belongs there."
         },
         {
-            'attacker_msg': "You dig the pick into {target_name}'s upper back. They stagger and choke.",
-            'victim_msg': "{attacker_name} digs the pick into your upper back. You stagger and choke.",
-            'observer_msg': "{attacker_name} digs the pick into {target_name}'s upper back. They stagger and choke."
+            'attacker_msg': "You dig the pick into {target_name}'s upper {hit_location}. They stagger and choke.",
+            'victim_msg': "{attacker_name} digs the pick into your upper {hit_location}. You stagger and choke.",
+            'observer_msg': "{attacker_name} digs the pick into {target_name}'s upper {hit_location}. They stagger and choke."
         },
         {
             'attacker_msg': "A tight jab lands beneath {target_name}'s eye socket. Vision dims. Screams rise.",
@@ -203,24 +203,24 @@ MESSAGES = {
             'observer_msg': "A tight jab lands beneath {target_name}'s eye socket. Vision dims. Screams rise."
         },
         {
-            'attacker_msg': "You scrape the pick along {target_name}'s shoulder, leaving a cruel red slash.",
-            'victim_msg': "{attacker_name} scrapes the pick along your shoulder, leaving a cruel red slash.",
-            'observer_msg': "{attacker_name} scrapes the pick along {target_name}'s shoulder, leaving a cruel red slash."
+            'attacker_msg': "You scrape the pick along {target_name}'s {hit_location}, leaving a cruel red slash.",
+            'victim_msg': "{attacker_name} scrapes the pick along your {hit_location}, leaving a cruel red slash.",
+            'observer_msg': "{attacker_name} scrapes the pick along {target_name}'s {hit_location}, leaving a cruel red slash."
         },
         {
-            'attacker_msg': "A downward strike embeds the pick in {target_name}'s foot. Movement becomes agony.",
-            'victim_msg': "A downward strike embeds the pick in your foot. Movement becomes agony.",
-            'observer_msg': "A downward strike embeds the pick in {target_name}'s foot. Movement becomes agony."
+            'attacker_msg': "A downward strike embeds the pick in {target_name}'s {hit_location}. Movement becomes agony.",
+            'victim_msg': "A downward strike embeds the pick in your {hit_location}. Movement becomes agony.",
+            'observer_msg': "A downward strike embeds the pick in {target_name}'s {hit_location}. Movement becomes agony."
         },
         {
-            'attacker_msg': "You lash sideways, the pick finding {target_name}'s kidney. Blood sprays hot.",
-            'victim_msg': "{attacker_name} lashes sideways, the pick finding your kidney. Blood sprays hot.",
-            'observer_msg': "{attacker_name} lashes sideways, the pick finding {target_name}'s kidney. Blood sprays hot."
+            'attacker_msg': "You lash sideways, the pick finding {target_name}'s {hit_location}. Blood sprays hot.",
+            'victim_msg': "{attacker_name} lashes sideways, the pick finding your {hit_location}. Blood sprays hot.",
+            'observer_msg': "{attacker_name} lashes sideways, the pick finding {target_name}'s {hit_location}. Blood sprays hot."
         },
         {
-            'attacker_msg': "A deep puncture to the thigh drops {target_name} with a gurgling sob.",
-            'victim_msg': "A deep puncture to your thigh drops you with a gurgling sob.",
-            'observer_msg': "A deep puncture to the thigh drops {target_name} with a gurgling sob."
+            'attacker_msg': "A deep puncture to the {hit_location} drops {target_name} with a gurgling sob.",
+            'victim_msg': "A deep puncture to your {hit_location} drops you with a gurgling sob.",
+            'observer_msg': "A deep puncture to the {hit_location} drops {target_name} with a gurgling sob."
         },
         {
             'attacker_msg': "You jam the pick behind {target_name}'s ear and yank out something wet.",
@@ -228,9 +228,9 @@ MESSAGES = {
             'observer_msg': "{attacker_name} jams the pick behind {target_name}'s ear and yanks out something wet."
         },
         {
-            'attacker_msg': "A surgical jab carves through {target_name}'s elbow. Tendons sing and snap.",
-            'victim_msg': "A surgical jab carves through your elbow. Tendons sing and snap.",
-            'observer_msg': "A surgical jab carves through {target_name}'s elbow. Tendons sing and snap."
+            'attacker_msg': "A surgical jab carves through {target_name}'s {hit_location}. Tendons sing and snap.",
+            'victim_msg': "A surgical jab carves through your {hit_location}. Tendons sing and snap.",
+            'observer_msg': "A surgical jab carves through {target_name}'s {hit_location}. Tendons sing and snap."
         },
         {
             'attacker_msg': "The pick hits low, finds meat, and tears. {target_name} buckles inward.",
@@ -238,59 +238,59 @@ MESSAGES = {
             'observer_msg': "The pick hits low, finds meat, and tears. {target_name} buckles inward."
         },
         {
-            'attacker_msg': "You bury the pick in {target_name}'s hip, twisting like you're unlocking a safe.",
-            'victim_msg': "{attacker_name} buries the pick in your hip, twisting like they're unlocking a safe.",
-            'observer_msg': "{attacker_name} buries the pick in {target_name}'s hip, twisting like they're unlocking a safe."
+            'attacker_msg': "You bury the pick in {target_name}'s {hit_location}, twisting like you're unlocking a safe.",
+            'victim_msg': "{attacker_name} buries the pick in your {hit_location}, twisting like they're unlocking a safe.",
+            'observer_msg': "{attacker_name} buries the pick in {target_name}'s {hit_location}, twisting like they're unlocking a safe."
         },
         {
-            'attacker_msg': "The strike drives into {target_name}'s abdomen. The pull-out makes it worse.",
-            'victim_msg': "The strike drives into your abdomen. The pull-out makes it worse.",
-            'observer_msg': "The strike drives into {target_name}'s abdomen. The pull-out makes it worse."
+            'attacker_msg': "The strike drives into {target_name}'s {hit_location}. The pull-out makes it worse.",
+            'victim_msg': "The strike drives into your {hit_location}. The pull-out makes it worse.",
+            'observer_msg': "The strike drives into {target_name}'s {hit_location}. The pull-out makes it worse."
         },
         {
-            'attacker_msg': "A backhanded stab slams into {target_name}'s bicep. The arm drops, useless.",
-            'victim_msg': "A backhanded stab slams into your bicep. Your arm drops, useless.",
-            'observer_msg': "A backhanded stab slams into {target_name}'s bicep. The arm drops, useless."
+            'attacker_msg': "A backhanded stab slams into {target_name}'s {hit_location}. The {hit_location} drops, useless.",
+            'victim_msg': "A backhanded stab slams into your {hit_location}. Your {hit_location} drops, useless.",
+            'observer_msg': "A backhanded stab slams into {target_name}'s {hit_location}. The {hit_location} drops, useless."
         },
         {
-            'attacker_msg': "You puncture {target_name}'s side, then push deeper with a grunt.",
-            'victim_msg': "{attacker_name} punctures your side, then pushes deeper with a grunt.",
-            'observer_msg': "{attacker_name} punctures {target_name}'s side, then pushes deeper with a grunt."
+            'attacker_msg': "You puncture {target_name}'s {hit_location}, then push deeper with a grunt.",
+            'victim_msg': "{attacker_name} punctures your {hit_location}, then pushes deeper with a grunt.",
+            'observer_msg': "{attacker_name} punctures {target_name}'s {hit_location}, then pushes deeper with a grunt."
         },
         {
-            'attacker_msg': "The ice pick tears through clothing and flesh, leaving a jagged wound in {target_name}'s chest.",
-            'victim_msg': "The ice pick tears through clothing and flesh, leaving a jagged wound in your chest.",
-            'observer_msg': "The ice pick tears through clothing and flesh, leaving a jagged wound in {target_name}'s chest."
+            'attacker_msg': "The ice pick tears through clothing and flesh, leaving a jagged wound in {target_name}'s {hit_location}.",
+            'victim_msg': "The ice pick tears through clothing and flesh, leaving a jagged wound in your {hit_location}.",
+            'observer_msg': "The ice pick tears through clothing and flesh, leaving a jagged wound in {target_name}'s {hit_location}."
         },
         {
-            'attacker_msg': "A short thrust lands in {target_name}'s calf. Their leg gives way instantly.",
-            'victim_msg': "A short thrust lands in your calf. Your leg gives way instantly.",
-            'observer_msg': "A short thrust lands in {target_name}'s calf. Their leg gives way instantly."
+            'attacker_msg': "A short thrust lands in {target_name}'s {hit_location}. Their {hit_location} gives way instantly.",
+            'victim_msg': "A short thrust lands in your {hit_location}. Your {hit_location} gives way instantly.",
+            'observer_msg': "A short thrust lands in {target_name}'s {hit_location}. Their {hit_location} gives way instantly."
         },
         {
-            'attacker_msg': "A gouging stab leaves a deep wound across {target_name}'s jawline.",
-            'victim_msg': "A gouging stab leaves a deep wound across your jawline.",
-            'observer_msg': "A gouging stab leaves a deep wound across {target_name}'s jawline."
+            'attacker_msg': "A gouging stab leaves a deep wound across {target_name}'s {hit_location}line.",
+            'victim_msg': "A gouging stab leaves a deep wound across your {hit_location}line.",
+            'observer_msg': "A gouging stab leaves a deep wound across {target_name}'s {hit_location}line."
         },
         {
-            'attacker_msg': "You jab the pick into the pit of {target_name}'s arm—arterial, precise, devastating.",
-            'victim_msg': "{attacker_name} jabs the pick into the pit of your arm—arterial, precise, devastating.",
-            'observer_msg': "{attacker_name} jabs the pick into the pit of {target_name}'s arm—arterial, precise, devastating."
+            'attacker_msg': "You jab the pick into the pit of {target_name}'s {hit_location}—arterial, precise, devastating.",
+            'victim_msg': "{attacker_name} jabs the pick into the pit of your {hit_location}—arterial, precise, devastating.",
+            'observer_msg': "{attacker_name} jabs the pick into the pit of {target_name}'s {hit_location}—arterial, precise, devastating."
         },
         {
-            'attacker_msg': "The pick punches through {target_name}'s abdomen, leaving a bubbling hole of pain.",
-            'victim_msg': "The pick punches through your abdomen, leaving a bubbling hole of pain.",
-            'observer_msg': "The pick punches through {target_name}'s abdomen, leaving a bubbling hole of pain."
+            'attacker_msg': "The pick punches through {target_name}'s {hit_location}, leaving a bubbling hole of pain.",
+            'victim_msg': "The pick punches through your {hit_location}, leaving a bubbling hole of pain.",
+            'observer_msg': "The pick punches through {target_name}'s {hit_location}, leaving a bubbling hole of pain."
         },
         {
-            'attacker_msg': "A jab to the clavicle unhooks {target_name}'s balance. They drop hard.",
-            'victim_msg': "A jab to your clavicle unhooks your balance. You drop hard.",
-            'observer_msg': "A jab to the clavicle unhooks {target_name}'s balance. They drop hard."
+            'attacker_msg': "A jab to the {hit_location} unhooks {target_name}'s balance. They drop hard.",
+            'victim_msg': "A jab to your {hit_location} unhooks your balance. You drop hard.",
+            'observer_msg': "A jab to the {hit_location} unhooks {target_name}'s balance. They drop hard."
         },
         {
-            'attacker_msg': "You drive the point between {target_name}'s ribs. It lodges—briefly.",
-            'victim_msg': "{attacker_name} drives the point between your ribs. It lodges—briefly.",
-            'observer_msg': "{attacker_name} drives the point between {target_name}'s ribs. It lodges—briefly."
+            'attacker_msg': "You drive the point between {target_name}'s {hit_location}. It lodges—briefly.",
+            'victim_msg': "{attacker_name} drives the point between your {hit_location}. It lodges—briefly.",
+            'observer_msg': "{attacker_name} drives the point between {target_name}'s {hit_location}. It lodges—briefly."
         },
         {
             'attacker_msg': "The pick finds a path through muscle and nerve. {target_name}'s scream confirms the hit.",
@@ -298,9 +298,9 @@ MESSAGES = {
             'observer_msg': "The pick finds a path through muscle and nerve. {target_name}'s scream confirms the hit."
         },
         {
-            'attacker_msg': "A twisting plunge under {target_name}'s shoulder sends them crashing backward.",
-            'victim_msg': "A twisting plunge under your shoulder sends you crashing backward.",
-            'observer_msg': "A twisting plunge under {target_name}'s shoulder sends them crashing backward."
+            'attacker_msg': "A twisting plunge under {target_name}'s {hit_location} sends them crashing backward.",
+            'victim_msg': "A twisting plunge under your {hit_location} sends you crashing backward.",
+            'observer_msg': "A twisting plunge under {target_name}'s {hit_location} sends them crashing backward."
         }
     ],
     'miss': [

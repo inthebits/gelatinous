@@ -153,84 +153,84 @@ MESSAGES = {
     ],
     "hit": [
         {
-            'attacker_msg': "A blind backswing clips the jaw. The sound is somewhere between wood and regret.",
-            'victim_msg': "A blind backswing clips the jaw. The sound is somewhere between wood and regret.",
-            'observer_msg': "A blind backswing clips the jaw. The sound is somewhere between wood and regret."
+            'attacker_msg': "A blind backswing clips the {hit_location}. The sound is somewhere between wood and regret.",
+            'victim_msg': "A blind backswing clips the {hit_location}. The sound is somewhere between wood and regret.",
+            'observer_msg': "A blind backswing clips the {hit_location}. The sound is somewhere between wood and regret."
         },
         {
-            'attacker_msg': "A brutal jab to the gut caves in muscle and air. {target_name} stumbles, gagging.",
-            'victim_msg': "A brutal jab to the gut caves in muscle and air. You stumble, gagging.",
-            'observer_msg': "A brutal jab to the gut caves in muscle and air. {target_name} stumbles, gagging."
+            'attacker_msg': "A brutal jab to the {hit_location} caves in muscle and air. {target_name} stumbles, gagging.",
+            'victim_msg': "A brutal jab to the {hit_location} caves in muscle and air. You stumble, gagging.",
+            'observer_msg': "A brutal jab to the {hit_location} caves in muscle and air. {target_name} stumbles, gagging."
         },
         {
-            'attacker_msg': "A downward smash into the foot earns a scream sharp enough to cut glass.",
-            'victim_msg': "A downward smash into the foot earns a scream sharp enough to cut glass.",
-            'observer_msg': "A downward smash into the foot earns a scream sharp enough to cut glass."
+            'attacker_msg': "A downward smash into the {hit_location} earns a scream sharp enough to cut glass.",
+            'victim_msg': "A downward smash into the {hit_location} earns a scream sharp enough to cut glass.",
+            'observer_msg': "A downward smash into the {hit_location} earns a scream sharp enough to cut glass."
         },
         {
-            'attacker_msg': "A low sweep crashes into {target_name}'s calf. The kneecap gives with a sickening shift.",
-            'victim_msg': "A low sweep crashes into your calf. The kneecap gives with a sickening shift.",
-            'observer_msg': "A low sweep crashes into {target_name}'s calf. The kneecap gives with a sickening shift."
+            'attacker_msg': "A low sweep crashes into {target_name}'s {hit_location}. The kneecap gives with a sickening shift.",
+            'victim_msg': "A low sweep crashes into your {hit_location}. The kneecap gives with a sickening shift.",
+            'observer_msg': "A low sweep crashes into {target_name}'s {hit_location}. The kneecap gives with a sickening shift."
         },
         {
-            'attacker_msg': "A quick step and a brutal swing lands across {target_name}'s hip. They scream and collapse like scaffolding.",
-            'victim_msg': "A quick step and a brutal swing lands across your hip. You scream and collapse like scaffolding.",
-            'observer_msg': "A quick step and a brutal swing lands across {target_name}'s hip. They scream and collapse like scaffolding."
+            'attacker_msg': "A quick step and a brutal swing lands across {target_name}'s {hit_location}. They scream and collapse like scaffolding.",
+            'victim_msg': "A quick step and a brutal swing lands across your {hit_location}. You scream and collapse like scaffolding.",
+            'observer_msg': "A quick step and a brutal swing lands across {target_name}'s {hit_location}. They scream and collapse like scaffolding."
         },
         {
-            'attacker_msg': "A side swing crashes into {target_name}'s arm. It's not broken — it's ruined.",
-            'victim_msg': "A side swing crashes into your arm. It's not broken — it's ruined.",
-            'observer_msg': "A side swing crashes into {target_name}'s arm. It's not broken — it's ruined."
+            'attacker_msg': "A {hit_location} swing crashes into {target_name}'s {hit_location}. It's not broken — it's ruined.",
+            'victim_msg': "A {hit_location} swing crashes into your {hit_location}. It's not broken — it's ruined.",
+            'observer_msg': "A {hit_location} swing crashes into {target_name}'s {hit_location}. It's not broken — it's ruined."
         },
         {
-            'attacker_msg': "A sudden backhand with the club rings off {target_name}'s jaw. Teeth clatter to the floor.",
-            'victim_msg': "A sudden backhand with the club rings off your jaw. Teeth clatter to the floor.",
-            'observer_msg': "A sudden backhand with the club rings off {target_name}'s jaw. Teeth clatter to the floor."
+            'attacker_msg': "A sudden backhand with the club rings off {target_name}'s {hit_location}. Teeth clatter to the floor.",
+            'victim_msg': "A sudden backhand with the club rings off your {hit_location}. Teeth clatter to the floor.",
+            'observer_msg': "A sudden backhand with the club rings off {target_name}'s {hit_location}. Teeth clatter to the floor."
         },
         {
-            'attacker_msg': "A two-handed swing flattens {target_name}'s hand against the wall. Blood and fragments follow.",
-            'victim_msg': "A two-handed swing flattens your hand against the wall. Blood and fragments follow.",
-            'observer_msg': "A two-handed swing flattens {target_name}'s hand against the wall. Blood and fragments follow."
+            'attacker_msg': "A two-handed swing flattens {target_name}'s {hit_location} against the wall. Blood and fragments follow.",
+            'victim_msg': "A two-handed swing flattens your {hit_location} against the wall. Blood and fragments follow.",
+            'observer_msg': "A two-handed swing flattens {target_name}'s {hit_location} against the wall. Blood and fragments follow."
         },
         {
-            'attacker_msg': "A wide swing connects with {target_name}'s ribs. The echo is deeper than it should be.",
-            'victim_msg': "A wide swing connects with your ribs. The echo is deeper than it should be.",
-            'observer_msg': "A wide swing connects with {target_name}'s ribs. The echo is deeper than it should be."
+            'attacker_msg': "A wide swing connects with {target_name}'s {hit_location}. The echo is deeper than it should be.",
+            'victim_msg': "A wide swing connects with your {hit_location}. The echo is deeper than it should be.",
+            'observer_msg': "A wide swing connects with {target_name}'s {hit_location}. The echo is deeper than it should be."
         },
         {
-            'attacker_msg': "The club arcs into the ribs and keeps going. Momentum and intent deliver punishment beyond bone.",
-            'victim_msg': "The club arcs into the ribs and keeps going. Momentum and intent deliver punishment beyond bone.",
-            'observer_msg': "The club arcs into the ribs and keeps going. Momentum and intent deliver punishment beyond bone."
+            'attacker_msg': "The club arcs into the {hit_location} and keeps going. Momentum and intent deliver punishment beyond bone.",
+            'victim_msg': "The club arcs into the {hit_location} and keeps going. Momentum and intent deliver punishment beyond bone.",
+            'observer_msg': "The club arcs into the {hit_location} and keeps going. Momentum and intent deliver punishment beyond bone."
         },
         {
-            'attacker_msg': "The club cracks across {target_name}'s collarbone. The scream is cut off by the ground.",
-            'victim_msg': "The club cracks across your collarbone. The scream is cut off by the ground.",
-            'observer_msg': "The club cracks across {target_name}'s collarbone. The scream is cut off by the ground."
+            'attacker_msg': "The club cracks across {target_name}'s {hit_location}. The scream is cut off by the ground.",
+            'victim_msg': "The club cracks across your {hit_location}. The scream is cut off by the ground.",
+            'observer_msg': "The club cracks across {target_name}'s {hit_location}. The scream is cut off by the ground."
         },
         {
-            'attacker_msg': "The club crashes into {target_name}'s ribs with a crunch. They buckle, mouth open, no sound escaping.",
-            'victim_msg': "The club crashes into your ribs with a crunch. You buckle, mouth open, no sound escaping.",
-            'observer_msg': "The club crashes into {target_name}'s ribs with a crunch. They buckle, mouth open, no sound escaping."
+            'attacker_msg': "The club crashes into {target_name}'s {hit_location} with a crunch. They buckle, mouth open, no sound escaping.",
+            'victim_msg': "The club crashes into your {hit_location} with a crunch. You buckle, mouth open, no sound escaping.",
+            'observer_msg': "The club crashes into {target_name}'s {hit_location} with a crunch. They buckle, mouth open, no sound escaping."
         },
         {
-            'attacker_msg': "The club crashes into {target_name}'s upper arm. It dangles weird after. Painfully so.",
-            'victim_msg': "The club crashes into your upper arm. It dangles weird after. Painfully so.",
-            'observer_msg': "The club crashes into {target_name}'s upper arm. It dangles weird after. Painfully so."
+            'attacker_msg': "The club crashes into {target_name}'s upper {hit_location}. It dangles weird after. Painfully so.",
+            'victim_msg': "The club crashes into your upper {hit_location}. It dangles weird after. Painfully so.",
+            'observer_msg': "The club crashes into {target_name}'s upper {hit_location}. It dangles weird after. Painfully so."
         },
         {
-            'attacker_msg': "The club lands low, against the shin. {target_name} drops hard, cursing between gasps.",
-            'victim_msg': "The club lands low, against the shin. You drop hard, cursing between gasps.",
-            'observer_msg': "The club lands low, against the shin. {target_name} drops hard, cursing between gasps."
+            'attacker_msg': "The club lands low, against the {hit_location}. {target_name} drops hard, cursing between gasps.",
+            'victim_msg': "The club lands low, against the {hit_location}. You drop hard, cursing between gasps.",
+            'observer_msg': "The club lands low, against the {hit_location}. {target_name} drops hard, cursing between gasps."
         },
         {
-            'attacker_msg': "The club slams into {target_name}'s sternum. They drop as if the gravity was suddenly personal.",
-            'victim_msg': "The club slams into your sternum. You drop as if the gravity was suddenly personal.",
-            'observer_msg': "The club slams into {target_name}'s sternum. They drop as if the gravity was suddenly personal."
+            'attacker_msg': "The club slams into {target_name}'s {hit_location}. They drop as if the gravity was suddenly personal.",
+            'victim_msg': "The club slams into your {hit_location}. You drop as if the gravity was suddenly personal.",
+            'observer_msg': "The club slams into {target_name}'s {hit_location}. They drop as if the gravity was suddenly personal."
         },
         {
-            'attacker_msg': "The club smashes into {target_name}'s thigh. They scream as their stance gives way, leg folding wrong.",
-            'victim_msg': "The club smashes into your thigh. You scream as your stance gives way, leg folding wrong.",
-            'observer_msg': "The club smashes into {target_name}'s thigh. They scream as their stance gives way, leg folding wrong."
+            'attacker_msg': "The club smashes into {target_name}'s {hit_location}. They scream as their stance gives way, {hit_location} folding wrong.",
+            'victim_msg': "The club smashes into your {hit_location}. You scream as your stance gives way, {hit_location} folding wrong.",
+            'observer_msg': "The club smashes into {target_name}'s {hit_location}. They scream as their stance gives way, {hit_location} folding wrong."
         },
         {
             'attacker_msg': "The club smashes through {target_name}'s grip. Their weapon clatters uselessly away.",
@@ -238,19 +238,19 @@ MESSAGES = {
             'observer_msg': "The club smashes through {target_name}'s grip. Their weapon clatters uselessly away."
         },
         {
-            'attacker_msg': "The club strikes a glancing blow across the head. Not fatal, but blood pours freely.",
-            'victim_msg': "The club strikes a glancing blow across the head. Not fatal, but blood pours freely.",
-            'observer_msg': "The club strikes a glancing blow across the head. Not fatal, but blood pours freely."
+            'attacker_msg': "The club strikes a glancing blow across the {hit_location}. Not fatal, but blood pours freely.",
+            'victim_msg': "The club strikes a glancing blow across the {hit_location}. Not fatal, but blood pours freely.",
+            'observer_msg': "The club strikes a glancing blow across the {hit_location}. Not fatal, but blood pours freely."
         },
         {
-            'attacker_msg': "The club strikes {target_name}'s clavicle with a clean, flat crunch. Their shoulder slumps — broken or surrendered, hard to say.",
-            'victim_msg': "The club strikes your clavicle with a clean, flat crunch. Your shoulder slumps — broken or surrendered, hard to say.",
-            'observer_msg': "The club strikes {target_name}'s clavicle with a clean, flat crunch. Their shoulder slumps — broken or surrendered, hard to say."
+            'attacker_msg': "The club strikes {target_name}'s {hit_location} with a clean, flat crunch. Their {hit_location} slumps — broken or surrendered, hard to say.",
+            'victim_msg': "The club strikes your {hit_location} with a clean, flat crunch. Your {hit_location} slumps — broken or surrendered, hard to say.",
+            'observer_msg': "The club strikes {target_name}'s {hit_location} with a clean, flat crunch. Their {hit_location} slumps — broken or surrendered, hard to say."
         },
         {
-            'attacker_msg': "The metal rams into the base of the spine. {target_name} screams and drops like a folding chair.",
-            'victim_msg': "The metal rams into the base of the spine. You scream and drop like a folding chair.",
-            'observer_msg': "The metal rams into the base of the spine. {target_name} screams and drops like a folding chair."
+            'attacker_msg': "The metal rams into the base of the {hit_location}. {target_name} screams and drops like a folding chair.",
+            'victim_msg': "The metal rams into the base of the {hit_location}. You scream and drop like a folding chair.",
+            'observer_msg': "The metal rams into the base of the {hit_location}. {target_name} screams and drops like a folding chair."
         },
         {
             'attacker_msg': "The metal rings out against the skull. {target_name} reels, eyes wide, blood already leaking from their ear.",
@@ -258,49 +258,49 @@ MESSAGES = {
             'observer_msg': "The metal rings out against the skull. {target_name} reels, eyes wide, blood already leaking from their ear."
         },
         {
-            'attacker_msg': "The metal rod catches the forearm mid-guard. Bones snap. The defense is over.",
-            'victim_msg': "The metal rod catches the forearm mid-guard. Bones snap. The defense is over.",
-            'observer_msg': "The metal rod catches the forearm mid-guard. Bones snap. The defense is over."
+            'attacker_msg': "The metal rod catches the {hit_location} mid-guard. Bones snap. The defense is over.",
+            'victim_msg': "The metal rod catches the {hit_location} mid-guard. Bones snap. The defense is over.",
+            'observer_msg': "The metal rod catches the {hit_location} mid-guard. Bones snap. The defense is over."
         },
         {
-            'attacker_msg': "The rod drives into the hip, and {target_name} folds awkwardly, hand clutching bone that's no longer whole.",
-            'victim_msg': "The rod drives into the hip, and you fold awkwardly, hand clutching bone that's no longer whole.",
-            'observer_msg': "The rod drives into the hip, and {target_name} folds awkwardly, hand clutching bone that's no longer whole."
+            'attacker_msg': "The rod drives into the {hit_location}, and {target_name} folds awkwardly, {hit_location} clutching bone that's no longer whole.",
+            'victim_msg': "The rod drives into the {hit_location}, and you fold awkwardly, {hit_location} clutching bone that's no longer whole.",
+            'observer_msg': "The rod drives into the {hit_location}, and {target_name} folds awkwardly, {hit_location} clutching bone that's no longer whole."
         },
         {
-            'attacker_msg': "You bring the club down on the foot. The crack is sharp. So is the cry.",
-            'victim_msg': "{attacker_name} brings the club down on the foot. The crack is sharp. So is the cry.",
-            'observer_msg': "{attacker_name} brings the club down on the foot. The crack is sharp. So is the cry."
+            'attacker_msg': "You bring the club down on the {hit_location}. The crack is sharp. So is the cry.",
+            'victim_msg': "{attacker_name} brings the club down on the {hit_location}. The crack is sharp. So is the cry.",
+            'observer_msg': "{attacker_name} brings the club down on the {hit_location}. The crack is sharp. So is the cry."
         },
         {
-            'attacker_msg': "You bring the metal down hard on the shoulder. Bone gives. So does the will to fight.",
-            'victim_msg': "{attacker_name} brings the metal down hard on the shoulder. Bone gives. So does the will to fight.",
-            'observer_msg': "{attacker_name} brings the metal down hard on the shoulder. Bone gives. So does the will to fight."
+            'attacker_msg': "You bring the metal down hard on the {hit_location}. Bone gives. So does the will to fight.",
+            'victim_msg': "{attacker_name} brings the metal down hard on the {hit_location}. Bone gives. So does the will to fight.",
+            'observer_msg': "{attacker_name} brings the metal down hard on the {hit_location}. Bone gives. So does the will to fight."
         },
         {
-            'attacker_msg': "You drive the club into the side of the head. {target_name} falls like a shelf giving out.",
-            'victim_msg': "{attacker_name} drives the club into the side of the head. You fall like a shelf giving out.",
-            'observer_msg': "{attacker_name} drives the club into the side of the head. {target_name} falls like a shelf giving out."
+            'attacker_msg': "You drive the club into the {hit_location} of the {hit_location}. {target_name} falls like a shelf giving out.",
+            'victim_msg': "{attacker_name} drives the club into the {hit_location} of the {hit_location}. You fall like a shelf giving out.",
+            'observer_msg': "{attacker_name} drives the club into the {hit_location} of the {hit_location}. {target_name} falls like a shelf giving out."
         },
         {
-            'attacker_msg': "You hook the end under the chin. {target_name}'s head whips back, and the knees follow.",
-            'victim_msg': "{attacker_name} hooks the end under the chin. Your head whips back, and the knees follow.",
-            'observer_msg': "{attacker_name} hooks the end under the chin. {target_name}'s head whips back, and the knees follow."
+            'attacker_msg': "You hook the end under the chin. {target_name}'s {hit_location} whips {hit_location}, and the {hit_location}s follow.",
+            'victim_msg': "{attacker_name} hooks the end under the chin. Your {hit_location} whips {hit_location}, and the {hit_location}s follow.",
+            'observer_msg': "{attacker_name} hooks the end under the chin. {target_name}'s {hit_location} whips {hit_location}, and the {hit_location}s follow."
         },
         {
-            'attacker_msg': "You jab the club into the ribs. Once. Twice. The third time knocks something loose.",
-            'victim_msg': "{attacker_name} jabs the club into the ribs. Once. Twice. The third time knocks something loose.",
-            'observer_msg': "{attacker_name} jabs the club into the ribs. Once. Twice. The third time knocks something loose."
+            'attacker_msg': "You jab the club into the {hit_location}. Once. Twice. The third time knocks something loose.",
+            'victim_msg': "{attacker_name} jabs the club into the {hit_location}. Once. Twice. The third time knocks something loose.",
+            'observer_msg': "{attacker_name} jabs the club into the {hit_location}. Once. Twice. The third time knocks something loose."
         },
         {
-            'attacker_msg': "You punch forward with the club's end. It lands square in the chest. {target_name} folds inward.",
-            'victim_msg': "{attacker_name} punches forward with the club's end. It lands square in the chest. You fold inward.",
-            'observer_msg': "{attacker_name} punches forward with the club's end. It lands square in the chest. {target_name} folds inward."
+            'attacker_msg': "You punch forward with the club's end. It lands square in the {hit_location}. {target_name} folds inward.",
+            'victim_msg': "{attacker_name} punches forward with the club's end. It lands square in the {hit_location}. You fold inward.",
+            'observer_msg': "{attacker_name} punches forward with the club's end. It lands square in the {hit_location}. {target_name} folds inward."
         },
         {
-            'attacker_msg': "You slam the club into {target_name}'s knee. Something pops. The ground meets them next.",
-            'victim_msg': "{attacker_name} slams the club into your knee. Something pops. The ground meets you next.",
-            'observer_msg': "{attacker_name} slams the club into {target_name}'s knee. Something pops. The ground meets them next."
+            'attacker_msg': "You slam the club into {target_name}'s {hit_location}. Something pops. The ground meets them next.",
+            'victim_msg': "{attacker_name} slams the club into your {hit_location}. Something pops. The ground meets you next.",
+            'observer_msg': "{attacker_name} slams the club into {target_name}'s {hit_location}. Something pops. The ground meets them next."
         }
     ],
     "miss": [

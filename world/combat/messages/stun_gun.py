@@ -153,29 +153,29 @@ MESSAGES = {
     ],
     'hit': [
         {
-            'attacker_msg': "A jolt to the shoulder flings {target_name} sideways. Their body spasms as they hit the ground.",
-            'victim_msg': "A jolt to your shoulder flings you sideways. Your body spasms as you hit the ground.",
-            'observer_msg': "A jolt to the shoulder flings {target_name} sideways. Their body spasms as they hit the ground."
+            'attacker_msg': "A jolt to the {hit_location} flings {target_name} sideways. Their body spasms as they hit the ground.",
+            'victim_msg': "A jolt to your {hit_location} flings you sideways. Your body spasms as you hit the ground.",
+            'observer_msg': "A jolt to the {hit_location} flings {target_name} sideways. Their body spasms as they hit the ground."
         },
         {
-            'attacker_msg': "A sharp click and thrust sends voltage into {target_name}'s chest. They fall like a marionette cut wrong.",
-            'victim_msg': "A sharp click and thrust sends voltage into your chest. You fall like a marionette cut wrong.",
-            'observer_msg': "A sharp click and thrust sends voltage into {target_name}'s chest. They fall like a marionette cut wrong."
+            'attacker_msg': "A sharp click and thrust sends voltage into {target_name}'s {hit_location}. They fall like a marionette cut wrong.",
+            'victim_msg': "A sharp click and thrust sends voltage into your {hit_location}. You fall like a marionette cut wrong.",
+            'observer_msg': "A sharp click and thrust sends voltage into {target_name}'s {hit_location}. They fall like a marionette cut wrong."
         },
         {
-            'attacker_msg': "A stab to the stomach sends convulsions up the spine. {target_name} can't catch their breath.",
-            'victim_msg': "A stab to your stomach sends convulsions up your spine. You can't catch your breath.",
-            'observer_msg': "A stab to the stomach sends convulsions up the spine. {target_name} can't catch their breath."
+            'attacker_msg': "A stab to the {hit_location} sends convulsions up the {hit_location}. {target_name} can't catch their breath.",
+            'victim_msg': "A stab to your {hit_location} sends convulsions up your {hit_location}. You can't catch your breath.",
+            'observer_msg': "A stab to the {hit_location} sends convulsions up the {hit_location}. {target_name} can't catch their breath."
         },
         {
-            'attacker_msg': "A sudden arc hits the shoulder. {target_name}'s muscles seize, then drop.",
-            'victim_msg': "A sudden arc hits your shoulder. Your muscles seize, then drop.",
-            'observer_msg': "A sudden arc hits the shoulder. {target_name}'s muscles seize, then drop."
+            'attacker_msg': "A sudden arc hits the {hit_location}. {target_name}'s muscles seize, then drop.",
+            'victim_msg': "A sudden arc hits your {hit_location}. Your muscles seize, then drop.",
+            'observer_msg': "A sudden arc hits the {hit_location}. {target_name}'s muscles seize, then drop."
         },
         {
-            'attacker_msg': "A tight jab to the side of the head. Lights out. Muscles fail.",
-            'victim_msg': "A tight jab to the side of your head. Lights out. Muscles fail.",
-            'observer_msg': "A tight jab to the side of {target_name}'s head. Lights out. Muscles fail."
+            'attacker_msg': "A tight jab to the {hit_location} of the {hit_location}. Lights out. Muscles fail.",
+            'victim_msg': "A tight jab to the {hit_location} of your {hit_location}. Lights out. Muscles fail.",
+            'observer_msg': "A tight jab to the {hit_location} of {target_name}'s {hit_location}. Lights out. Muscles fail."
         },
         {
             'attacker_msg': "A tight press to the base of the skull ends coordination. {target_name} folds.",
@@ -183,14 +183,14 @@ MESSAGES = {
             'observer_msg': "A tight press to the base of the skull ends coordination. {target_name} folds."
         },
         {
-            'attacker_msg': "Electricity erupts in the neck. {target_name}'s body seizes and slams to the floor.",
-            'victim_msg': "Electricity erupts in your neck. Your body seizes and slams to the floor.",
-            'observer_msg': "Electricity erupts in the neck. {target_name}'s body seizes and slams to the floor."
+            'attacker_msg': "Electricity erupts in the {hit_location}. {target_name}'s body seizes and slams to the floor.",
+            'victim_msg': "Electricity erupts in your {hit_location}. Your body seizes and slams to the floor.",
+            'observer_msg': "Electricity erupts in the {hit_location}. {target_name}'s body seizes and slams to the floor."
         },
         {
-            'attacker_msg': "Electricity surges into the ribs. {target_name} stutters forward, breathless.",
-            'victim_msg': "Electricity surges into your ribs. You stutter forward, breathless.",
-            'observer_msg': "Electricity surges into the ribs. {target_name} stutters forward, breathless."
+            'attacker_msg': "Electricity surges into the {hit_location}. {target_name} stutters forward, breathless.",
+            'victim_msg': "Electricity surges into your {hit_location}. You stutter forward, breathless.",
+            'observer_msg': "Electricity surges into the {hit_location}. {target_name} stutters forward, breathless."
         },
         {
             'attacker_msg': "One click and contact — {target_name}'s limbs jerk like a puppet caught mid-sentence.",
@@ -198,64 +198,64 @@ MESSAGES = {
             'observer_msg': "One click and contact — {target_name}'s limbs jerk like a puppet caught mid-sentence."
         },
         {
-            'attacker_msg': "One sharp zap to the back locks {target_name}'s legs. They topple stiffly.",
-            'victim_msg': "One sharp zap to your back locks your legs. You topple stiffly.",
-            'observer_msg': "One sharp zap to the back locks {target_name}'s legs. They topple stiffly."
+            'attacker_msg': "One sharp zap to the {hit_location} locks {target_name}'s {hit_location}s. They topple stiffly.",
+            'victim_msg': "One sharp zap to your {hit_location} locks your {hit_location}s. You topple stiffly.",
+            'observer_msg': "One sharp zap to the {hit_location} locks {target_name}'s {hit_location}s. They topple stiffly."
         },
         {
-            'attacker_msg': "Sparks fly as you drive the prongs into {target_name}'s ribs. They shudder and slump.",
-            'victim_msg': "Sparks fly as {attacker_name} drives the prongs into your ribs. You shudder and slump.",
-            'observer_msg': "Sparks fly as {attacker_name} drives the prongs into {target_name}'s ribs. They shudder and slump."
+            'attacker_msg': "Sparks fly as you drive the prongs into {target_name}'s {hit_location}. They shudder and slump.",
+            'victim_msg': "Sparks fly as {attacker_name} drives the prongs into your {hit_location}. You shudder and slump.",
+            'observer_msg': "Sparks fly as {attacker_name} drives the prongs into {target_name}'s {hit_location}. They shudder and slump."
         },
         {
-            'attacker_msg': "The arc dances along {target_name}'s arm. Muscles lock, then give out.",
-            'victim_msg': "The arc dances along your arm. Muscles lock, then give out.",
-            'observer_msg': "The arc dances along {target_name}'s arm. Muscles lock, then give out."
+            'attacker_msg': "The arc dances along {target_name}'s {hit_location}. Muscles lock, then give out.",
+            'victim_msg': "The arc dances along your {hit_location}. Muscles lock, then give out.",
+            'observer_msg': "The arc dances along {target_name}'s {hit_location}. Muscles lock, then give out."
         },
         {
-            'attacker_msg': "The arc races through the chest. {target_name} falls like their strings were cut mid-fight.",
-            'victim_msg': "The arc races through your chest. You fall like your strings were cut mid-fight.",
-            'observer_msg': "The arc races through the chest. {target_name} falls like their strings were cut mid-fight."
+            'attacker_msg': "The arc races through the {hit_location}. {target_name} falls like their strings were cut mid-fight.",
+            'victim_msg': "The arc races through your {hit_location}. You fall like your strings were cut mid-fight.",
+            'observer_msg': "The arc races through the {hit_location}. {target_name} falls like their strings were cut mid-fight."
         },
         {
-            'attacker_msg': "The current runs straight through {target_name}'s chest. Their feet lift before they fall.",
-            'victim_msg': "The current runs straight through your chest. Your feet lift before you fall.",
-            'observer_msg': "The current runs straight through {target_name}'s chest. Their feet lift before they fall."
+            'attacker_msg': "The current runs straight through {target_name}'s {hit_location}. Their feet lift before they fall.",
+            'victim_msg': "The current runs straight through your {hit_location}. Your feet lift before you fall.",
+            'observer_msg': "The current runs straight through {target_name}'s {hit_location}. Their feet lift before they fall."
         },
         {
-            'attacker_msg': "The device kisses the thigh. Electricity pours in like angry light.",
-            'victim_msg': "The device kisses your thigh. Electricity pours in like angry light.",
-            'observer_msg': "The device kisses {target_name}'s thigh. Electricity pours in like angry light."
+            'attacker_msg': "The device kisses the {hit_location}. Electricity pours in like angry light.",
+            'victim_msg': "The device kisses your {hit_location}. Electricity pours in like angry light.",
+            'observer_msg': "The device kisses {target_name}'s {hit_location}. Electricity pours in like angry light."
         },
         {
-            'attacker_msg': "The device sparks against {target_name}'s arm. The grip fails. The fight might too.",
-            'victim_msg': "The device sparks against your arm. Your grip fails. The fight might too.",
-            'observer_msg': "The device sparks against {target_name}'s arm. The grip fails. The fight might too."
+            'attacker_msg': "The device sparks against {target_name}'s {hit_location}. The grip fails. The fight might too.",
+            'victim_msg': "The device sparks against your {hit_location}. Your grip fails. The fight might too.",
+            'observer_msg': "The device sparks against {target_name}'s {hit_location}. The grip fails. The fight might too."
         },
         {
-            'attacker_msg': "The prongs find flesh at the base of the neck. {target_name} drops like a stone.",
-            'victim_msg': "The prongs find flesh at the base of your neck. You drop like a stone.",
-            'observer_msg': "The prongs find flesh at the base of the neck. {target_name} drops like a stone."
+            'attacker_msg': "The prongs find flesh at the base of the {hit_location}. {target_name} drops like a stone.",
+            'victim_msg': "The prongs find flesh at the base of your {hit_location}. You drop like a stone.",
+            'observer_msg': "The prongs find flesh at the base of the {hit_location}. {target_name} drops like a stone."
         },
         {
-            'attacker_msg': "The shock hits the kidney. {target_name} buckles forward, gasping.",
-            'victim_msg': "The shock hits your kidney. You buckle forward, gasping.",
-            'observer_msg': "The shock hits the kidney. {target_name} buckles forward, gasping."
+            'attacker_msg': "The shock hits the {hit_location}. {target_name} buckles forward, gasping.",
+            'victim_msg': "The shock hits your {hit_location}. You buckle forward, gasping.",
+            'observer_msg': "The shock hits the {hit_location}. {target_name} buckles forward, gasping."
         },
         {
-            'attacker_msg': "The stun gun bites into {target_name}'s side. Voltage floods through them.",
-            'victim_msg': "The stun gun bites into your side. Voltage floods through you.",
-            'observer_msg': "The stun gun bites into {target_name}'s side. Voltage floods through them."
+            'attacker_msg': "The stun gun bites into {target_name}'s {hit_location}. Voltage floods through them.",
+            'victim_msg': "The stun gun bites into your {hit_location}. Voltage floods through you.",
+            'observer_msg': "The stun gun bites into {target_name}'s {hit_location}. Voltage floods through them."
         },
         {
-            'attacker_msg': "The stun gun connects with the lower back. {target_name}'s legs give out instantly.",
-            'victim_msg': "The stun gun connects with your lower back. Your legs give out instantly.",
-            'observer_msg': "The stun gun connects with the lower back. {target_name}'s legs give out instantly."
+            'attacker_msg': "The stun gun connects with the lower {hit_location}. {target_name}'s {hit_location}s give out instantly.",
+            'victim_msg': "The stun gun connects with your lower {hit_location}. Your legs give out instantly.",
+            'observer_msg': "The stun gun connects with the lower {hit_location}. {target_name}'s {hit_location}s give out instantly."
         },
         {
-            'attacker_msg': "The voltage climbs up {target_name}'s spine. They arch, then collapse.",
-            'victim_msg': "The voltage climbs up your spine. You arch, then collapse.",
-            'observer_msg': "The voltage climbs up {target_name}'s spine. They arch, then collapse."
+            'attacker_msg': "The voltage climbs up {target_name}'s {hit_location}. They arch, then collapse.",
+            'victim_msg': "The voltage climbs up your {hit_location}. You arch, then collapse.",
+            'observer_msg': "The voltage climbs up {target_name}'s {hit_location}. They arch, then collapse."
         },
         {
             'attacker_msg': "The voltage dances through {target_name}'s nervous system. They twitch, then fall still.",
@@ -268,39 +268,39 @@ MESSAGES = {
             'observer_msg': "The voltage hits the solar plexus. {target_name} folds like bad origami."
         },
         {
-            'attacker_msg': "The voltage runs down {target_name}'s leg. They stumble, then topple sideways.",
-            'victim_msg': "The voltage runs down your leg. You stumble, then topple sideways.",
-            'observer_msg': "The voltage runs down {target_name}'s leg. They stumble, then topple sideways."
+            'attacker_msg': "The voltage runs down {target_name}'s {hit_location}. They stumble, then topple sideways.",
+            'victim_msg': "The voltage runs down your {hit_location}. You stumble, then topple sideways.",
+            'observer_msg': "The voltage runs down {target_name}'s {hit_location}. They stumble, then topple sideways."
         },
         {
-            'attacker_msg': "Two prongs meet flesh at the temple. {target_name}'s eyes roll back.",
-            'victim_msg': "Two prongs meet flesh at your temple. Your eyes roll back.",
-            'observer_msg': "Two prongs meet flesh at the temple. {target_name}'s eyes roll back."
+            'attacker_msg': "Two prongs meet flesh at the {hit_location}. {target_name}'s eyes roll {hit_location}.",
+            'victim_msg': "Two prongs meet flesh at your {hit_location}. Your eyes roll {hit_location}.",
+            'observer_msg': "Two prongs meet flesh at the {hit_location}. {target_name}'s eyes roll {hit_location}."
         },
         {
-            'attacker_msg': "Voltage arcs through the shoulder blade. {target_name} seizes, then goes limp.",
-            'victim_msg': "Voltage arcs through your shoulder blade. You seize, then go limp.",
-            'observer_msg': "Voltage arcs through the shoulder blade. {target_name} seizes, then goes limp."
+            'attacker_msg': "Voltage arcs through the {hit_location} blade. {target_name} seizes, then goes limp.",
+            'victim_msg': "Voltage arcs through your {hit_location} blade. You seize, then go limp.",
+            'observer_msg': "Voltage arcs through the {hit_location} blade. {target_name} seizes, then goes limp."
         },
         {
-            'attacker_msg': "Voltage cascades down {target_name}'s arm. The weapon clatters away.",
-            'victim_msg': "Voltage cascades down your arm. Your weapon clatters away.",
-            'observer_msg': "Voltage cascades down {target_name}'s arm. The weapon clatters away."
+            'attacker_msg': "Voltage cascades down {target_name}'s {hit_location}. The weapon clatters away.",
+            'victim_msg': "Voltage cascades down your {hit_location}. Your weapon clatters away.",
+            'observer_msg': "Voltage cascades down {target_name}'s {hit_location}. The weapon clatters away."
         },
         {
-            'attacker_msg': "Voltage floods the chest cavity. {target_name} convulses, then crumples.",
-            'victim_msg': "Voltage floods your chest cavity. You convulse, then crumple.",
-            'observer_msg': "Voltage floods the chest cavity. {target_name} convulses, then crumples."
+            'attacker_msg': "Voltage floods the {hit_location} cavity. {target_name} convulses, then crumples.",
+            'victim_msg': "Voltage floods your {hit_location} cavity. You convulse, then crumple.",
+            'observer_msg': "Voltage floods the {hit_location} cavity. {target_name} convulses, then crumples."
         },
         {
-            'attacker_msg': "Voltage pours into the hip. {target_name} staggers, then drops hard.",
-            'victim_msg': "Voltage pours into your hip. You stagger, then drop hard.",
-            'observer_msg': "Voltage pours into the hip. {target_name} staggers, then drops hard."
+            'attacker_msg': "Voltage pours into the {hit_location}. {target_name} staggers, then drops hard.",
+            'victim_msg': "Voltage pours into your {hit_location}. You stagger, then drop hard.",
+            'observer_msg': "Voltage pours into the {hit_location}. {target_name} staggers, then drops hard."
         },
         {
-            'attacker_msg': "You press the device to {target_name}'s throat. Current races through muscle.",
-            'victim_msg': "{attacker_name} presses the device to your throat. Current races through muscle.",
-            'observer_msg': "{attacker_name} presses the device to {target_name}'s throat. Current races through muscle."
+            'attacker_msg': "You press the device to {target_name}'s {hit_location}. Current races through muscle.",
+            'victim_msg': "{attacker_name} presses the device to your {hit_location}. Current races through muscle.",
+            'observer_msg': "{attacker_name} presses the device to {target_name}'s {hit_location}. Current races through muscle."
         }
     ],
     'miss': [
