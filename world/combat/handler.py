@@ -845,10 +845,8 @@ class CombatHandler(DefaultScript):
             # Clear the combat action after processing
             current_char_combat_entry["combat_action"] = None
 
-        # Clear active list tracking now that round processing is complete
-        self._active_combatants_list = None
-
         # Check for dead or unconscious combatants after all attacks are processed
+        # NOTE: Keep _active_combatants_list alive so remove_combatant can use it for auto-retargeting
         remaining_combatants = getattr(self.db, DB_COMBATANTS, [])
         incapacitated_combatants = []
         
@@ -864,6 +862,10 @@ class CombatHandler(DefaultScript):
         # Remove dead and unconscious combatants
         for incapacitated_char in incapacitated_combatants:
             self.remove_combatant(incapacitated_char)
+
+        # Now clear active list tracking since death/unconscious processing is complete
+        # and any auto-retargeting has been handled
+        self._active_combatants_list = None
 
         # Check if combat should continue
         remaining_combatants = getattr(self.db, DB_COMBATANTS, [])
