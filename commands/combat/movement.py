@@ -101,7 +101,17 @@ class CmdFlee(Command):
         splattercast.msg(f"{DEBUG_PREFIX_FLEE}_ATTEMPT: {caller.key} marked as having attempted flee this round.")
 
         # --- PRE-FLEE SAFETY CHECK: PINNED BY RANGED TARGETERS IN ADJACENT ROOMS ---
-        available_exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
+        # Filter out sky rooms - can't flee into the air!
+        all_exits = [ex for ex in caller.location.exits if ex.access(caller, 'traverse')]
+        available_exits = [
+            ex for ex in all_exits 
+            if ex.destination and not getattr(ex.destination.db, "is_sky_room", False)
+        ]
+        
+        # Debug log if sky rooms were filtered out
+        sky_exits_filtered = len(all_exits) - len(available_exits)
+        if sky_exits_filtered > 0:
+            splattercast.msg(f"{DEBUG_PREFIX_FLEE}_SKY_FILTER: {caller.key} - filtered out {sky_exits_filtered} sky room exits from {len(all_exits)} total exits.")
         
         if not available_exits:
             # No exits at all.
