@@ -517,18 +517,28 @@ class CmdThrow(Command):
                         # Cross-room throw - announce arrival
                         arrival_dir = self.get_arrival_direction(origin, destination)
                         if target and target.location == destination:
-                            message = MSG_THROW_ARRIVAL_TARGETED.format(object=obj.key, direction=arrival_dir, target=target.key)
+                            # Send personal message to victim
+                            target.msg(MSG_THROW_ARRIVAL_TARGETED_VICTIM.format(object=obj.key, direction=arrival_dir))
+                            # Send observer message to everyone else
+                            destination.msg_contents(
+                                MSG_THROW_ARRIVAL_TARGETED.format(object=obj.key, direction=arrival_dir, target=target.key),
+                                exclude=[target]
+                            )
                         else:
-                            message = MSG_THROW_ARRIVAL.format(object=obj.key, direction=arrival_dir)
-                        destination.msg_contents(message)
+                            destination.msg_contents(MSG_THROW_ARRIVAL.format(object=obj.key, direction=arrival_dir))
                         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Cross-room arrival message sent")
                     else:
                         # Same-room throw - show flight message
                         if target:
-                            message = MSG_THROW_FLIGHT_SAMEROOM_TARGET.format(object=obj.key, target=target.key)
+                            # Send personal message to victim
+                            target.msg(MSG_THROW_FLIGHT_SAMEROOM_TARGET_VICTIM.format(object=obj.key))
+                            # Send observer message to everyone else (excluding thrower and victim)
+                            destination.msg_contents(
+                                MSG_THROW_FLIGHT_SAMEROOM_TARGET.format(object=obj.key, target=target.key),
+                                exclude=[thrower, target]
+                            )
                         else:
-                            message = MSG_THROW_FLIGHT_SAMEROOM_GENERAL.format(object=obj.key)
-                        destination.msg_contents(message, exclude=thrower)
+                            destination.msg_contents(MSG_THROW_FLIGHT_SAMEROOM_GENERAL.format(object=obj.key), exclude=[thrower])
                         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Same-room flight message sent")
                     
                     # Check for grenade deflection before landing
@@ -624,8 +634,13 @@ class CmdThrow(Command):
             elif target and not is_weapon:
                 try:
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Utility object bounce")
-                    target.location.msg_contents(MSG_THROW_UTILITY_BOUNCE.format(
-                        object=obj.key, target=target.key))
+                    # Send personal message to victim
+                    target.msg(MSG_THROW_UTILITY_BOUNCE_VICTIM.format(object=obj.key))
+                    # Send observer message to room
+                    target.location.msg_contents(
+                        MSG_THROW_UTILITY_BOUNCE.format(object=obj.key, target=target.key),
+                        exclude=[target]
+                    )
                     showed_interaction = True  # Bounce message already shown
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Utility bounce message sent")
                 except Exception as e:
@@ -689,8 +704,15 @@ class CmdThrow(Command):
                 
                 target.take_damage(total_damage, location="chest", injury_type=damage_type)
                 
-                target.msg(MSG_THROW_WEAPON_HIT.format(weapon=weapon.key, target=target.key))
-                thrower.msg(f"Your {weapon.key} strikes {target.key}!")
+                # Send personal message to victim
+                target.msg(MSG_THROW_WEAPON_HIT_VICTIM.format(thrower=thrower.key, weapon=weapon.key))
+                # Send personal message to thrower
+                thrower.msg(MSG_THROW_WEAPON_HIT.format(weapon=weapon.key, target=target.key))
+                # Observer message (everyone else in room)
+                target.location.msg_contents(
+                    f"{thrower.key}'s {weapon.key} strikes {target.key}!",
+                    exclude=[thrower, target]
+                )
                 
                 # Establish proximity if hit (safe pattern)
                 proximity_list = getattr(target.ndb, NDB_PROXIMITY_UNIVERSAL, None)
@@ -707,9 +729,15 @@ class CmdThrow(Command):
                     proximity_list.append(thrower)
             
             else:
-                # Miss
-                target.msg(MSG_THROW_WEAPON_MISS.format(weapon=weapon.key, target=target.key))
-                thrower.msg(f"Your {weapon.key} misses {target.key}!")
+                # Miss - send personal message to victim
+                target.msg(MSG_THROW_WEAPON_MISS_VICTIM.format(thrower=thrower.key, weapon=weapon.key))
+                # Send personal message to thrower
+                thrower.msg(MSG_THROW_WEAPON_MISS.format(weapon=weapon.key, target=target.key))
+                # Observer message (everyone else in room)
+                target.location.msg_contents(
+                    f"{thrower.key}'s {weapon.key} narrowly misses {target.key} and clatters to the ground.",
+                    exclude=[thrower, target]
+                )
                 
         except Exception as e:
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)

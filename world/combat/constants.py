@@ -468,15 +468,30 @@ MSG_THROW_ORIGIN_TARGETED_SAME = "{thrower} throws a {object} at {target}"
 MSG_THROW_ORIGIN_TARGETED_CROSS = "{thrower} throws a {object} {direction} at someone"
 MSG_THROW_ORIGIN_HERE = "{thrower} tosses a {object} nearby"
 MSG_THROW_ORIGIN_FALLBACK = "{thrower} throws a {object} {direction}"
+
+# Flight messages - same room
 MSG_THROW_FLIGHT_SAMEROOM_TARGET = "The {object} flies through the air toward {target}."
+MSG_THROW_FLIGHT_SAMEROOM_TARGET_VICTIM = "The {object} flies through the air toward you!"
 MSG_THROW_FLIGHT_SAMEROOM_GENERAL = "The {object} flies through the air."
+
+# Arrival messages - cross room
 MSG_THROW_ARRIVAL = "A {object} flies in from {direction}"
 MSG_THROW_ARRIVAL_TARGETED = "A {object} flies in from {direction} heading toward {target}!"
+MSG_THROW_ARRIVAL_TARGETED_VICTIM = "A {object} flies in from {direction} heading toward you!"
+
+# Landing messages
 MSG_THROW_LANDING_PROXIMITY = "A {object} lands near {target}"
 MSG_THROW_LANDING_ROOM = "A {object} lands on the ground"
+
+# Weapon hit/miss messages
 MSG_THROW_WEAPON_HIT = "Your {weapon} strikes {target}!"
+MSG_THROW_WEAPON_HIT_VICTIM = "{thrower}'s {weapon} strikes you!"
 MSG_THROW_WEAPON_MISS = "Your {weapon} misses {target} and clatters to the ground."
+MSG_THROW_WEAPON_MISS_VICTIM = "{thrower}'s {weapon} narrowly misses you and clatters to the ground."
+
+# Utility bounce messages
 MSG_THROW_UTILITY_BOUNCE = "The {object} bounces harmlessly off {target}."
+MSG_THROW_UTILITY_BOUNCE_VICTIM = "The {object} bounces harmlessly off you."
 
 # Pull command messages
 MSG_PULL_WHAT = "Pull what? Use 'pull pin on <grenade>'."
