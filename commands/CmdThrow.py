@@ -215,7 +215,8 @@ class CmdThrow(Command):
     def determine_destination(self):
         """Determine destination room and target based on throw type."""
         if self.throw_type == "to_here":
-            return self.caller.location, self.select_random_target_in_room(self.caller.location)
+            # Just throw in current room with no specific target
+            return self.caller.location, None
         
         elif self.throw_type == "at_target":
             # Find target in current room or aimed room
