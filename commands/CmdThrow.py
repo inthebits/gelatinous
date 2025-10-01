@@ -1561,9 +1561,9 @@ class CmdRig(Command):
             delattr(grenade.ndb, NDB_GRENADE_TIMER)
         
         # Announce
-        self.caller.msg(MSG_RIG_SUCCESS.format(object=grenade.key, exit=self.exit_name))
+        self.caller.msg(MSG_RIG_SUCCESS.format(object=grenade.key, exit_name=exit_obj.key))
         self.caller.location.msg_contents(
-            MSG_RIG_SUCCESS_ROOM.format(rigger=self.caller.key, object=grenade.key, exit=self.exit_name),
+            MSG_RIG_SUCCESS_ROOM.format(rigger=self.caller.key, object=grenade.key, exit_name=exit_obj.key),
             exclude=self.caller
         )
         
