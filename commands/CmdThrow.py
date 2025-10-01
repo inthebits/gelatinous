@@ -510,18 +510,26 @@ class CmdThrow(Command):
             if destination:
                 try:
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Moving {obj} to destination {destination}")
-                    obj.move_to(destination)
+                    obj.move_to(destination, quiet=True)  # Use quiet=True to suppress auto-messages
                     
-                    # Announce arrival only for cross-room throws
+                    # Announce arrival based on room relationship
                     if destination != origin:
                         # Cross-room throw - announce arrival
                         arrival_dir = self.get_arrival_direction(origin, destination)
-                        message = MSG_THROW_ARRIVAL.format(object=obj.key, direction=arrival_dir)
+                        if target and target.location == destination:
+                            message = MSG_THROW_ARRIVAL_TARGETED.format(object=obj.key, direction=arrival_dir, target=target.key)
+                        else:
+                            message = MSG_THROW_ARRIVAL.format(object=obj.key, direction=arrival_dir)
                         destination.msg_contents(message)
                         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Cross-room arrival message sent")
                     else:
-                        # Same-room throw - no arrival message needed (already had throw announcement)
-                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Same-room throw - skipping arrival message")
+                        # Same-room throw - show flight message
+                        if target:
+                            message = MSG_THROW_FLIGHT_SAMEROOM_TARGET.format(object=obj.key, target=target.key)
+                        else:
+                            message = MSG_THROW_FLIGHT_SAMEROOM_GENERAL.format(object=obj.key)
+                        destination.msg_contents(message, exclude=thrower)
+                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Same-room flight message sent")
                     
                     # Check for grenade deflection before landing
                     if self.is_explosive(obj) and destination:
@@ -598,11 +606,15 @@ class CmdThrow(Command):
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: handle_landing called - obj: {obj}, destination: {destination}, target: {target}, is_weapon: {is_weapon}")
             
+            # Track whether we've shown a target interaction message
+            showed_interaction = False
+            
             # Weapon combat resolution
             if is_weapon and target:
                 try:
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Resolving weapon hit")
                     self.resolve_weapon_hit(obj, target, thrower)
+                    showed_interaction = True  # Weapon hit/miss shows its own message
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: resolve_weapon_hit completed")
                 except Exception as e:
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in resolve_weapon_hit: {e}")
@@ -614,6 +626,7 @@ class CmdThrow(Command):
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Utility object bounce")
                     target.location.msg_contents(MSG_THROW_UTILITY_BOUNCE.format(
                         object=obj.key, target=target.key))
+                    showed_interaction = True  # Bounce message already shown
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Utility bounce message sent")
                 except Exception as e:
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in utility bounce: {e}")
@@ -638,19 +651,22 @@ class CmdThrow(Command):
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in handle_grenade_landing: {e}")
                     # Continue with landing even if grenade landing fails
             
-            # General landing announcement
-            try:
-                if target:
-                    message = MSG_THROW_LANDING_PROXIMITY.format(object=obj.key, target=target.key)
-                else:
-                    message = MSG_THROW_LANDING_ROOM.format(object=obj.key)
-                
-                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Sending landing message: {message}")
-                destination.msg_contents(message)
-                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Landing message sent successfully")
-            except Exception as e:
-                splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in landing message: {e}")
-                # Continue even if landing message fails
+            # General landing announcement - only if no target interaction was shown
+            if not showed_interaction:
+                try:
+                    if target:
+                        message = MSG_THROW_LANDING_PROXIMITY.format(object=obj.key, target=target.key)
+                    else:
+                        message = MSG_THROW_LANDING_ROOM.format(object=obj.key)
+                    
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Sending landing message: {message}")
+                    destination.msg_contents(message)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Landing message sent successfully")
+                except Exception as e:
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in landing message: {e}")
+                    # Continue even if landing message fails
+            else:
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Skipping landing message - interaction already shown")
             
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: handle_landing completed successfully")
             
