@@ -1594,7 +1594,7 @@ def notify_adjacent_rooms_of_explosion(explosion_room):
         return
     
     # Get all exits from the explosion room
-    exits = explosion_room.exits.all()
+    exits = explosion_room.exits
     
     for exit_obj in exits:
         # Get the destination room
@@ -1602,7 +1602,7 @@ def notify_adjacent_rooms_of_explosion(explosion_room):
         if destination and destination != explosion_room:
             # Find the reverse direction for the message
             # Check if there's a return exit to determine direction
-            return_exits = destination.exits.all()
+            return_exits = destination.exits
             direction = None
             
             for return_exit in return_exits:
