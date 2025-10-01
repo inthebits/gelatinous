@@ -115,6 +115,17 @@ class CmdThrow(Command):
         if not obj:
             return
         
+        # Check if this is a dedicated throwing weapon that should use attack command
+        if getattr(obj.db, DB_IS_THROWING_WEAPON, False):
+            # If targeting someone, invoke attack command instead
+            if self.target_name:
+                self.caller.msg(f"You ready your {obj.key} to attack...")
+                # Execute the attack command with the target
+                self.caller.execute_cmd(f"attack {self.target_name}")
+            else:
+                self.caller.msg("Throwing weapons are designed for combat. Use 'attack <target>' to fight, or 'throw <weapon> to <direction/here>' to discard it.")
+            return
+        
         # Determine destination and target based on throw type
         destination, target = self.determine_destination()
         if destination is None:

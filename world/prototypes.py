@@ -242,6 +242,7 @@ THROWING_WEAPON_BASE = {
     "attrs": [
         ("is_ranged", True),  # Throwing weapons are ranged weapons
         ("is_explosive", False),
+        ("is_throwing_weapon", True),  # Dedicated throwing weapon - uses attack command
     ]
 }
 
