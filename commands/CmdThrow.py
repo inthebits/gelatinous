@@ -462,7 +462,7 @@ class CmdThrow(Command):
         
         # Broadcast to room
         self.caller.location.msg_contents(message, exclude=self.caller)
-        self.caller.msg(f"You throw {object_name}.")
+        self.caller.msg(f"You throw a {object_name}.")
     
     def complete_flight(self, obj):
         """Complete the flight and handle landing."""
