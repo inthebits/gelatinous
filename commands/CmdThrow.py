@@ -1216,6 +1216,8 @@ class CmdPull(Command):
                     explosion_msg = MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key)
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Sending explosion message to room {grenade.location}: {explosion_msg}")
                     grenade.location.msg_contents(explosion_msg)
+                    # Notify adjacent rooms
+                    notify_adjacent_rooms_of_explosion(grenade.location)
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: Explosion message sent to {grenade.location}")
                 else:
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Grenade has no location for explosion message")
@@ -1586,6 +1588,44 @@ class CmdRig(Command):
         return None
 
 
+def notify_adjacent_rooms_of_explosion(explosion_room):
+    """Send explosion sound notifications to all adjacent rooms."""
+    if not explosion_room:
+        return
+    
+    # Get all exits from the explosion room
+    exits = explosion_room.exits.all()
+    
+    for exit_obj in exits:
+        # Get the destination room
+        destination = exit_obj.destination
+        if destination and destination != explosion_room:
+            # Find the reverse direction for the message
+            # Check if there's a return exit to determine direction
+            return_exits = destination.exits.all()
+            direction = None
+            
+            for return_exit in return_exits:
+                if return_exit.destination == explosion_room:
+                    direction = return_exit.key
+                    break
+            
+            # If no return exit found, use the original exit's opposite direction
+            if not direction:
+                # Simple direction mapping
+                direction_map = {
+                    'north': 'south', 'south': 'north',
+                    'east': 'west', 'west': 'east',
+                    'up': 'down', 'down': 'up',
+                    'northeast': 'southwest', 'southwest': 'northeast',
+                    'northwest': 'southeast', 'southeast': 'northwest'
+                }
+                direction = direction_map.get(exit_obj.key, exit_obj.key)
+            
+            # Send the message to the adjacent room
+            destination.msg_contents(MSG_GRENADE_EXPLODE_ADJACENT.format(direction=direction))
+
+
 def check_rigged_grenade(character, exit_obj):
     """Check if character triggers a rigged grenade. Character should already be at destination."""
     from evennia.comms.models import ChannelDB
@@ -1636,9 +1676,6 @@ def check_rigged_grenade(character, exit_obj):
     if character not in proximity_list:
         proximity_list.append(character)
     
-    # Announce timer start
-    character.location.msg_contents(f"The {rigged_grenade.key} starts counting down! {fuse_time} seconds!")
-    
     splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
     splattercast.msg(f"{DEBUG_PREFIX_THROW}_RIGGED: Established proximity for {rigged_grenade.key}: {[char.key for char in proximity_list]}")
     
@@ -1660,6 +1697,8 @@ def check_rigged_grenade(character, exit_obj):
             # Room explosion
             if rigged_grenade.location:
                 rigged_grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=rigged_grenade.key))
+                # Notify adjacent rooms
+                notify_adjacent_rooms_of_explosion(rigged_grenade.location)
             
             # Get unified proximity list (includes current grappling relationships)
             proximity_list = get_unified_explosion_proximity(rigged_grenade)
@@ -1952,6 +1991,8 @@ def explode_standalone_grenade(grenade):
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Room occupants: {room_characters}")
                 
                 grenade.location.msg_contents(explosion_msg)
+                # Notify adjacent rooms
+                notify_adjacent_rooms_of_explosion(grenade.location)
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: Standalone explosion message sent to {grenade.location}")
             else:
                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Standalone explosion - grenade has no location")
@@ -2204,6 +2245,8 @@ def trigger_auto_defuse_explosion(grenade):
         # Room explosion
         if grenade.location:
             grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
+            # Notify adjacent rooms
+            notify_adjacent_rooms_of_explosion(grenade.location)
         
         # Get unified proximity list (includes current grappling relationships)
         proximity_list = get_unified_explosion_proximity(grenade)
@@ -2685,6 +2728,8 @@ class CmdDefuse(Command):
             # Room explosion
             if grenade.location:
                 grenade.location.msg_contents(MSG_GRENADE_EXPLODE_ROOM.format(grenade=grenade.key))
+                # Notify adjacent rooms
+                notify_adjacent_rooms_of_explosion(grenade.location)
             
             # Get unified proximity list (includes current grappling relationships)
             proximity_list = get_unified_explosion_proximity(grenade)
