@@ -417,12 +417,42 @@ class Character(ObjectParent, DefaultCharacter):
             installed_plates = getattr(carrier, 'installed_plates', {})
             slot_coverage = getattr(carrier, 'plate_slot_coverage', {})
             
+            # DEBUG: Log what we're working with
+            try:
+                from world.combat.utils import debug_broadcast
+                debug_broadcast(f"PLATE_LOOP: Processing {len(installed_plates)} slots for {location}", 
+                               "ARMOR_CALC", "DEBUG")
+                debug_broadcast(f"PLATE_LOOP: installed_plates type={type(installed_plates)}, value={installed_plates}", 
+                               "ARMOR_CALC", "DEBUG")
+            except:
+                pass
+            
             for slot_name, plate in installed_plates.items():
+                # DEBUG: Log each slot
+                try:
+                    from world.combat.utils import debug_broadcast
+                    plate_type = type(plate).__name__ if plate else "None"
+                    plate_key = plate.key if plate and hasattr(plate, 'key') else "N/A"
+                    plate_layer = getattr(plate, 'layer', 'MISSING') if plate else "N/A"
+                    debug_broadcast(f"PLATE_SLOT: slot={slot_name}, type={plate_type}, key={plate_key}, layer={plate_layer}, has_rating={hasattr(plate, 'armor_rating') if plate else False}", 
+                                   "ARMOR_CALC", "DEBUG")
+                except Exception as e:
+                    from world.combat.utils import debug_broadcast
+                    debug_broadcast(f"PLATE_SLOT_ERROR: {e}", "ARMOR_CALC", "ERROR")
+                    pass
+                    
                 if not plate or not hasattr(plate, 'armor_rating'):
                     continue
                 
                 # Check if this plate protects the hit location
                 protected_locations = slot_coverage.get(slot_name, [])
+                # DEBUG: Log coverage check
+                try:
+                    from world.combat.utils import debug_broadcast
+                    debug_broadcast(f"PLATE_COVERAGE: slot={slot_name}, protects={protected_locations}, location={location}, match={location in protected_locations}", 
+                                   "ARMOR_CALC", "DEBUG")
+                except:
+                    pass
                 if location not in protected_locations:
                     continue
                 
