@@ -87,7 +87,7 @@ class CmdArmor(Command):
         # Create armor status table with custom border
         table = EvTable(
             "Item", "Type", "Rating", "Durability", "Coverage",
-            border="tablecols",
+            border="cells",
             border_left_char=BOX_VERTICAL,
             border_right_char=BOX_VERTICAL,
             border_top_char=BOX_HORIZONTAL,
@@ -226,7 +226,7 @@ class CmdArmor(Command):
         # Create coverage table with custom border
         table = EvTable(
             "Body Location", "Protected By", "Type", "Rating",
-            border="tablecols",
+            border="cells",
             border_left_char=BOX_VERTICAL,
             border_right_char=BOX_VERTICAL,
             border_top_char=BOX_HORIZONTAL,
@@ -287,7 +287,7 @@ class CmdArmor(Command):
         
         table = EvTable(
             "Armor Type", "Bullet", "Stab", "Cut", "Blunt", "Laceration", "Burn",
-            border="tablecols",
+            border="cells",
             border_left_char=BOX_VERTICAL,
             border_right_char=BOX_VERTICAL,
             border_top_char=BOX_HORIZONTAL,
