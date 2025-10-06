@@ -88,11 +88,47 @@ class CmdArmor(Command):
             # Get armor stats
             armor_type = getattr(armor, 'armor_type', 'generic')
             
-            # Calculate total rating (includes plates for carriers)
+            # Calculate rating (handle plate carriers specially)
             if getattr(armor, 'is_plate_carrier', False):
-                rating = self._calculate_total_rating(armor)
+                base_rating = getattr(armor, 'armor_rating', 0)
+                installed_plates = getattr(armor, 'installed_plates', {})
+                
+                # Calculate min and max protection across body locations
+                min_rating = base_rating
+                max_rating = base_rating
+                
+                # Check front plate (chest)
+                front_plate = installed_plates.get('front')
+                if front_plate:
+                    chest_rating = base_rating + getattr(front_plate, 'armor_rating', 0)
+                    max_rating = max(max_rating, chest_rating)
+                
+                # Check back plate
+                back_plate = installed_plates.get('back')
+                if back_plate:
+                    back_rating = base_rating + getattr(back_plate, 'armor_rating', 0)
+                    max_rating = max(max_rating, back_rating)
+                
+                # Check side plates (abdomen protection)
+                left_plate = installed_plates.get('left_side')
+                right_plate = installed_plates.get('right_side')
+                side_protection = 0
+                if left_plate:
+                    side_protection += getattr(left_plate, 'armor_rating', 0)
+                if right_plate:
+                    side_protection += getattr(right_plate, 'armor_rating', 0)
+                if side_protection > 0:
+                    abdomen_rating = base_rating + (side_protection // 2)
+                    max_rating = max(max_rating, abdomen_rating)
+                
+                # Show as range if plates provide different protection levels
+                if max_rating > base_rating:
+                    rating_display = f"{base_rating}-{max_rating}/10"
+                else:
+                    rating_display = f"{base_rating}/10"
             else:
                 rating = getattr(armor, 'armor_rating', 0)
+                rating_display = f"{rating}/10"
             
             durability = getattr(armor, 'armor_durability', 0)
             max_durability = getattr(armor, 'max_armor_durability', 0)
@@ -128,7 +164,7 @@ class CmdArmor(Command):
             table.add_row(
                 armor.key,
                 armor_type.title(),
-                f"{rating}/10",
+                rating_display,
                 durability_str,
                 coverage_str
             )
@@ -183,11 +219,13 @@ class CmdArmor(Command):
                         if left_plate:
                             left_rating = getattr(left_plate, 'armor_rating', 0)
                             side_protection += left_rating
-                            plate_details.append(f"{left_plate.key} ({left_rating}/2)")
+                            # Show actual effective contribution
+                            plate_details.append(f"{left_plate.key} ({left_rating // 2})")
                         if right_plate:
                             right_rating = getattr(right_plate, 'armor_rating', 0)
                             side_protection += right_rating
-                            plate_details.append(f"{right_plate.key} ({right_rating}/2)")
+                            # Show actual effective contribution
+                            plate_details.append(f"{right_plate.key} ({right_rating // 2})")
                         # Average the side plates for abdomen
                         if side_protection > 0:
                             location_rating += side_protection // 2
