@@ -167,14 +167,14 @@ class CmdArmor(Command):
                         if front_plate:
                             plate_rating = getattr(front_plate, 'armor_rating', 0)
                             location_rating += plate_rating
-                            plate_details.append(f"{front_plate.key} (+{plate_rating})")
+                            plate_details.append(f"{front_plate.key} ({plate_rating})")
                     elif location == "back":
                         # Back plate protects back
                         back_plate = installed_plates.get('back')
                         if back_plate:
                             plate_rating = getattr(back_plate, 'armor_rating', 0)
                             location_rating += plate_rating
-                            plate_details.append(f"{back_plate.key} (+{plate_rating})")
+                            plate_details.append(f"{back_plate.key} ({plate_rating})")
                     elif location == "abdomen":
                         # Side plates contribute to abdomen (averaged)
                         side_protection = 0
@@ -183,11 +183,11 @@ class CmdArmor(Command):
                         if left_plate:
                             left_rating = getattr(left_plate, 'armor_rating', 0)
                             side_protection += left_rating
-                            plate_details.append(f"{left_plate.key} (+{left_rating}/2)")
+                            plate_details.append(f"{left_plate.key} ({left_rating}/2)")
                         if right_plate:
                             right_rating = getattr(right_plate, 'armor_rating', 0)
                             side_protection += right_rating
-                            plate_details.append(f"{right_plate.key} (+{right_rating}/2)")
+                            plate_details.append(f"{right_plate.key} ({right_rating}/2)")
                         # Average the side plates for abdomen
                         if side_protection > 0:
                             location_rating += side_protection // 2
