@@ -48,14 +48,50 @@ def calculate_hit_weights_for_location(location):
     return hit_weights
 
 
-def select_hit_location(character, success_margin=0):
+def _get_vital_locations(character):
+    """
+    Dynamically determine vital body locations based on organ criticality.
+    
+    A location is vital if it contains critical organs (organs whose failure causes death).
+    This allows for dynamic anatomy - characters with different body structures will have
+    different vital areas.
+    
+    Args:
+        character: Character object with medical state
+        
+    Returns:
+        set: Set of vital body location names
+    """
+    from .constants import ORGANS
+    
+    vital_locations = set()
+    
+    # Check each organ - if it's critical (failure causes death), its location is vital
+    for organ_name, organ_data in ORGANS.items():
+        if organ_data.get('critical', False):  # Critical organs
+            location = organ_data.get('location')
+            if location:
+                vital_locations.add(location)
+    
+    # Fallback to common vital areas if no critical organs found
+    if not vital_locations:
+        vital_locations = {"head", "chest", "neck", "abdomen"}
+    
+    return vital_locations
+
+
+def select_hit_location(character, success_margin=0, attacker=None):
     """
     Dynamically select a hit location based on character's anatomy and organ hit weights.
-    Success margin biases selection toward vital areas for skilled attacks.
+    If attacker is provided, uses Intellect to bias selection toward less armored areas.
+    Otherwise, uses success margin to bias toward vital areas for skilled attacks.
+    
+    Vital areas are determined dynamically based on organ criticality, not hardcoded.
     
     Args:
         character: Character object with longdesc anatomy structure
         success_margin (int): Attack roll margin (attacker_roll - target_roll)
+        attacker: Attacking character (optional, enables armor-aware targeting)
         
     Returns:
         str: Selected body location (e.g., "chest", "head", "left_arm")
@@ -74,18 +110,55 @@ def select_hit_location(character, success_margin=0):
     # Calculate total hit weights for each body location
     location_weights = {}
     
-    # Define vital areas for success margin bias
-    vital_areas = {"head", "chest", "neck", "abdomen"}
-    
-    # Calculate success margin bias multiplier
-    if success_margin <= 3:
-        vital_bias = 1.25  # +25% weight to vital areas
-    elif success_margin <= 8:
-        vital_bias = 1.5   # +50% weight to vital areas
-    elif success_margin <= 15:
-        vital_bias = 2.0   # +100% weight to vital areas
+    # Calculate targeting parameters based on attacker's abilities
+    if attacker:
+        from world.combat.utils import get_character_stat
+        attacker_grit = get_character_stat(attacker, "grit", 1)
+        attacker_motorics = get_character_stat(attacker, "motorics", 1)
+        attacker_intellect = get_character_stat(attacker, "intellect", 1)
+        
+        # Grit + Motorics determines ability to target vital areas effectively
+        vital_targeting_skill = attacker_grit + attacker_motorics
+        
+        # Calculate vital area bias based on skill + success margin
+        if vital_targeting_skill <= 4:
+            base_vital_bias = 1.1   # Poor vital targeting ability
+        elif vital_targeting_skill <= 6:
+            base_vital_bias = 1.3   # Moderate vital targeting ability
+        elif vital_targeting_skill <= 8:
+            base_vital_bias = 1.6   # Good vital targeting ability
+        else:
+            base_vital_bias = 2.0   # Excellent vital targeting ability
+        
+        # Success margin enhances the base ability
+        if success_margin > 0:
+            margin_multiplier = 1 + (success_margin * 0.1)  # +10% per point of margin
+            vital_bias = base_vital_bias * margin_multiplier
+        else:
+            vital_bias = base_vital_bias
+        
+        # Intellect determines tactical target selection wisdom
+        # High intellect = avoid heavily armored vitals in favor of unarmored vitals
+        tactical_wisdom = attacker_intellect
+        
+        # Dynamically determine vital areas based on organ criticality
+        vital_areas = _get_vital_locations(character)
+        use_targeting_style = "tactical_vital"
+        
     else:
-        vital_bias = 3.0   # +200% weight to vital areas
+        # No attacker provided - use traditional success margin vital targeting
+        use_targeting_style = "traditional_vital"
+        # Dynamically determine vital areas based on organ criticality
+        vital_areas = _get_vital_locations(character)
+        
+        if success_margin <= 3:
+            vital_bias = 1.25  # +25% weight to vital areas
+        elif success_margin <= 8:
+            vital_bias = 1.5   # +50% weight to vital areas
+        elif success_margin <= 15:
+            vital_bias = 2.0   # +100% weight to vital areas
+        else:
+            vital_bias = 3.0   # +200% weight to vital areas
     
     for location in available_locations:
         # Get all organs in this location and sum their hit weights
@@ -98,12 +171,64 @@ def select_hit_location(character, success_margin=0):
             weight_value = HIT_WEIGHTS.get(weight_category, HIT_WEIGHTS["common"])
             total_weight += weight_value
             
-        # Apply success margin bias to vital areas
-        if location in vital_areas and success_margin > 0:
-            total_weight = int(total_weight * vital_bias)
+        # Apply targeting bias based on combat style
+        if use_targeting_style == "tactical_vital":
+            # Tactical vital targeting: Intellect informs smart vital area selection
+            is_vital = location in vital_areas
+            armor_coverage = _get_location_armor_coverage(character, location)
+            
+            if is_vital:
+                # This is a vital area - apply base vital bias
+                adjusted_vital_bias = vital_bias
+                
+                # Intellect modifies targeting based on armor coverage
+                if tactical_wisdom >= 5:
+                    # High intellect: Heavily penalize armored vitals, boost unarmored vitals
+                    if armor_coverage == 0:
+                        # Unarmored vital = excellent target
+                        adjusted_vital_bias *= 1.5
+                    elif armor_coverage >= 4:
+                        # Heavily armored vital = poor target choice
+                        adjusted_vital_bias *= 0.6
+                elif tactical_wisdom >= 3:
+                    # Moderate intellect: Some armor awareness
+                    if armor_coverage == 0:
+                        # Unarmored vital = good target
+                        adjusted_vital_bias *= 1.3
+                    elif armor_coverage >= 4:
+                        # Heavily armored vital = less ideal target
+                        adjusted_vital_bias *= 0.8
+                # Low intellect: No armor consideration, just hit vitals
+                
+                total_weight = int(total_weight * adjusted_vital_bias)
+            # Non-vital areas keep base weight (no special targeting)
+            
+        else:  # traditional_vital
+            # Traditional vital area bias from success margin only
+            if location in vital_areas and success_margin > 0:
+                total_weight = int(total_weight * vital_bias)
             
         # Use a minimum weight to ensure all locations are possible targets
         location_weights[location] = max(total_weight, 1)
+    
+    # Debug output for targeting analysis
+    if attacker:
+        try:
+            from evennia.comms.models import ChannelDB
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            
+            # Show targeting abilities and top weighted locations
+            top_locations = sorted(location_weights.items(), key=lambda x: x[1], reverse=True)[:3]
+            location_info = ", ".join([f"{loc}:{weight}" for loc, weight in top_locations])
+            
+            if use_targeting_style == "tactical_vital":
+                skill_info = f"VitalSkill:{vital_targeting_skill}, Wisdom:{tactical_wisdom}"
+                splattercast.msg(f"TARGETING: {attacker.key} ({skill_info}) → {location_info}")
+            else:
+                splattercast.msg(f"TARGETING: {attacker.key} using {use_targeting_style} → {location_info}")
+        except (ImportError, AttributeError):
+            # Expected when channel doesn't exist or import fails
+            pass
     
     # Perform weighted random selection
     total_weight = sum(location_weights.values())
@@ -121,6 +246,51 @@ def select_hit_location(character, success_margin=0):
             
     # Fallback (should never reach here, but safety first)
     return available_locations[0]
+
+
+def _get_location_armor_coverage(character, location):
+    """
+    Calculate the total armor coverage for a specific body location.
+    
+    Args:
+        character: Character to analyze
+        location (str): Body location to check
+        
+    Returns:
+        int: Total armor rating covering this location (0 = unarmored)
+    """
+    if not hasattr(character, 'worn_items') or not character.worn_items:
+        return 0
+        
+    total_armor = 0
+    for loc, items in character.worn_items.items():
+        for item in items:
+            # Check if this item covers the specified location and has armor rating
+            current_coverage = getattr(item, 'get_current_coverage', lambda: getattr(item, 'coverage', []))()
+            if location in current_coverage:
+                # Get total armor rating including plates for carriers
+                if hasattr(character, '_get_total_armor_rating'):
+                    armor_rating = character._get_total_armor_rating(item, location=location)
+                else:
+                    # Fallback calculation with slot-specific protection
+                    armor_rating = getattr(item, 'armor_rating', 0)
+                    if (hasattr(item, 'is_plate_carrier') and 
+                        getattr(item, 'is_plate_carrier', False) and
+                        hasattr(item, 'installed_plates')):
+                        installed_plates = getattr(item, 'installed_plates', {})
+                        slot_coverage = getattr(item, 'plate_slot_coverage', {})
+                        for slot_name, plate in installed_plates.items():
+                            if plate and hasattr(plate, 'armor_rating'):
+                                # Only count plates that protect this location
+                                if slot_coverage:
+                                    protected_locations = slot_coverage.get(slot_name, [])
+                                    if location not in protected_locations:
+                                        continue
+                                armor_rating += getattr(plate, 'armor_rating', 0)
+                
+                total_armor += armor_rating
+    
+    return total_armor
 
 
 def select_target_organ(location, precision_roll=0, attacker_skill=1):

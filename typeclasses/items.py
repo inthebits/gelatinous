@@ -52,8 +52,46 @@ class Item(DefaultObject):
     # Examples: "leather", "steel", "silk", "kevlar", "titanium"
     material = AttributeProperty("", autocreate=True)
     
+    # Weight of item in pounds (for encumbrance system)
+    # Examples: t-shirt=0.2, jeans=1.2, kevlar vest=4.5, steel plate=12.0
+    weight = AttributeProperty(0.5, autocreate=True)  # Default 0.5 lbs
+    
     # Layer priority for stacking items (higher = outer layer)
     layer = AttributeProperty(DEFAULT_CLOTHING_LAYER, autocreate=True)
+    
+    # ===================================================================
+    # ARMOR SYSTEM ATTRIBUTES
+    # ===================================================================
+    
+    # Armor rating (0 = no armor, 10 = maximum protection)
+    armor_rating = AttributeProperty(0, autocreate=True)
+    
+    # Type of armor material (affects damage type effectiveness)
+    armor_type = AttributeProperty("", autocreate=True)
+    
+    # Current armor durability  
+    armor_durability = AttributeProperty(0, autocreate=True)
+    
+    # Maximum armor durability
+    max_armor_durability = AttributeProperty(0, autocreate=True)
+    
+    # Original armor rating (for repair calculations)
+    base_armor_rating = AttributeProperty(0, autocreate=True)
+    
+    # Plate carrier system - can accept armor plates
+    is_plate_carrier = AttributeProperty(False, autocreate=True)
+    
+    # Installed plates for plate carriers (dict of slot_name: plate_object)
+    installed_plates = AttributeProperty({}, autocreate=True)
+    
+    # Available plate slots for carriers (list of slot names)
+    plate_slots = AttributeProperty([], autocreate=True)
+    
+    # Is this item an armor plate that can be installed?
+    is_armor_plate = AttributeProperty(False, autocreate=True)
+    
+    # Plate size compatibility (small, medium, large, extra_large)
+    plate_size = AttributeProperty("", autocreate=True)
     
     # Multiple style properties for combination states
     style_properties = AttributeProperty({}, autocreate=True)
@@ -163,6 +201,31 @@ class Item(DefaultObject):
     def get_available_style_properties(self):
         """Get all available style properties and their states"""
         return {prop: list(states.keys()) for prop, states in self.style_configs.items()}
+    
+    def validate_plate_slot_coverage(self):
+        """
+        Validate that plate_slot_coverage keys match plate_slots.
+        
+        Returns:
+            tuple: (is_valid, error_message)
+        """
+        if not getattr(self, 'is_plate_carrier', False):
+            return (True, "")  # Not a plate carrier, no validation needed
+            
+        plate_slots = getattr(self, 'plate_slots', [])
+        slot_coverage = getattr(self, 'plate_slot_coverage', {})
+        
+        if not slot_coverage:
+            return (True, "")  # No coverage mapping, use default behavior
+            
+        # Check for slots in coverage that don't exist in plate_slots
+        invalid_slots = [slot for slot in slot_coverage.keys() if slot not in plate_slots]
+        
+        if invalid_slots:
+            error_msg = f"Invalid slots in plate_slot_coverage: {', '.join(invalid_slots)}. Valid slots: {', '.join(plate_slots)}"
+            return (False, error_msg)
+            
+        return (True, "")
 
     def get_current_worn_desc_with_perspective(self, looker=None, from_obj=None):
         """
@@ -233,6 +296,178 @@ class Item(DefaultObject):
 
         # Add a boolean attribute `is_ranged` to the `Item` class
         self.db.is_ranged = False
+
+    def return_appearance(self, looker, **kwargs):
+        """
+        Enhanced appearance method that shows armor information for armor items.
+        
+        Args:
+            looker: Character looking at the item
+            **kwargs: Additional appearance arguments
+            
+        Returns:
+            str: The formatted appearance string
+        """
+        # Get the basic appearance first
+        appearance = super().return_appearance(looker, **kwargs)
+        
+        # Check if this is an armor item and add armor information
+        if self._is_armor_item():
+            armor_info = self._get_armor_information()
+            if armor_info:
+                appearance += f"\n\n|w=== Armor Information ===|n\n{armor_info}"
+        
+        return appearance
+    
+    def _is_armor_item(self):
+        """Check if this item has armor properties."""
+        return (hasattr(self, 'armor_rating') and getattr(self, 'armor_rating', 0) > 0) or \
+               (hasattr(self, 'is_plate_carrier') and getattr(self, 'is_plate_carrier', False)) or \
+               hasattr(self, 'plate_type')
+    
+    def _get_armor_information(self):
+        """Generate armor information display."""
+        info_lines = []
+        
+        # Basic armor stats
+        armor_rating = getattr(self, 'armor_rating', 0)
+        armor_type = getattr(self, 'armor_type', 'generic')
+        weight = getattr(self, 'weight', 0)
+        
+        if armor_rating > 0:
+            rating_desc = self._get_rating_description(armor_rating)
+            info_lines.append(f"  Protection Rating: {armor_rating} ({rating_desc})")
+        
+        # Armor type information
+        if armor_type != 'generic':
+            type_info = self._get_armor_type_info(armor_type)
+            info_lines.append(f"  Armor Type: {armor_type.title()} {type_info}")
+        
+        # Weight
+        if weight > 0:
+            info_lines.append(f"  Weight: {weight} kg")
+        
+        # Plate carrier specific information
+        if hasattr(self, 'is_plate_carrier') and getattr(self, 'is_plate_carrier', False):
+            carrier_info = self._get_plate_carrier_details()
+            if carrier_info:
+                info_lines.extend(carrier_info)
+        
+        # Armor plate specific information  
+        elif hasattr(self, 'plate_type'):
+            plate_info = self._get_plate_details()
+            if plate_info:
+                info_lines.extend(plate_info)
+        
+        # Coverage information
+        if hasattr(self, 'get_current_coverage'):
+            coverage = self.get_current_coverage()
+        else:
+            coverage = getattr(self, 'coverage', [])
+        
+        if coverage:
+            coverage_str = ", ".join(coverage)
+            info_lines.append(f"  Coverage: {coverage_str}")
+        
+        # Condition
+        condition = self._get_condition_info()
+        if condition:
+            info_lines.append(f"  Condition: {condition}")
+        
+        return "\n".join(info_lines)
+    
+    def _get_rating_description(self, rating):
+        """Get descriptive text for armor rating."""
+        if rating <= 1:
+            return "Minimal"
+        elif rating <= 3:
+            return "Light"
+        elif rating <= 5:
+            return "Moderate"
+        elif rating <= 7:
+            return "Heavy"
+        else:
+            return "Excellent"
+    
+    def _get_armor_type_info(self, armor_type):
+        """Get information about armor type strengths/weaknesses."""
+        type_info = {
+            'kevlar': "(Strong vs bullets, weak vs blades)",
+            'ceramic': "(Excellent vs bullets, brittle vs blunt force)",
+            'steel': "(Good vs cuts/stabs, heavy)",
+            'leather': "(Flexible, moderate protection)",
+            'synthetic': "(Lightweight, basic protection)"
+        }
+        return type_info.get(armor_type, "")
+    
+    def _get_plate_carrier_details(self):
+        """Get plate carrier configuration details."""
+        info_lines = []
+        installed_plates = getattr(self, 'installed_plates', {})
+        base_rating = getattr(self, 'armor_rating', 0)
+        
+        info_lines.append(f"  Base Protection: {base_rating}")
+        
+        # Show slot configuration
+        total_plate_rating = 0
+        total_plate_weight = 0
+        
+        info_lines.append(f"  Current Configuration:")
+        for slot_name, plate in installed_plates.items():
+            if plate:
+                plate_rating = getattr(plate, 'armor_rating', 0)
+                plate_weight = getattr(plate, 'weight', 0)
+                total_plate_rating += plate_rating
+                total_plate_weight += plate_weight
+                info_lines.append(f"    {slot_name.title()} Slot: {plate.key} (+{plate_rating} protection, {plate_weight}kg)")
+            else:
+                info_lines.append(f"    {slot_name.title()} Slot: |y[Empty]|n")
+        
+        # Totals
+        total_protection = base_rating + total_plate_rating
+        total_weight = getattr(self, 'weight', 0) + total_plate_weight
+        
+        info_lines.append(f"")
+        info_lines.append(f"  Total Protection: {total_protection} (Base {base_rating} + Plates {total_plate_rating})")
+        info_lines.append(f"  Total Weight: {total_weight} kg")
+        
+        return info_lines
+    
+    def _get_plate_details(self):
+        """Get armor plate specific details."""
+        info_lines = []
+        plate_type = getattr(self, 'plate_type', 'unknown')
+        threat_level = getattr(self, 'threat_level', None)
+        
+        info_lines.append(f"  Plate Type: {plate_type.title()} plate")
+        
+        if threat_level:
+            info_lines.append(f"  Threat Level: {threat_level}")
+        
+        info_lines.append(f"  Slot Compatibility: Can be installed in {plate_type} slots of plate carriers.")
+        
+        return info_lines
+    
+    def _get_condition_info(self):
+        """Get armor condition information."""
+        durability = getattr(self, 'armor_durability', None)
+        max_durability = getattr(self, 'max_armor_durability', None)
+        
+        if durability is not None and max_durability is not None and max_durability > 0:
+            condition_percent = durability / max_durability
+            
+            if condition_percent > 0.9:
+                return "|gExcellent|n"
+            elif condition_percent > 0.7:
+                return "|GGood|n"
+            elif condition_percent > 0.5:
+                return "|yFair|n"
+            elif condition_percent > 0.3:
+                return "|YPoor|n"
+            else:
+                return "|rTerrible|n"
+        
+        return None
 
 
 class SprayCanItem(Item):

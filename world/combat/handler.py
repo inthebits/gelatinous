@@ -1215,8 +1215,8 @@ class CombatHandler(DefaultScript):
             # Calculate success margin for precision targeting
             success_margin = attacker_roll - target_roll
             
-            # Select hit location with success margin bias toward vital areas
-            hit_location = select_hit_location(target, success_margin)
+            # Select hit location - Intellect characters target less armored areas
+            hit_location = select_hit_location(target, success_margin, attacker)
             
             # Make precision roll for organ targeting within the location
             precision_roll = randint(1, 20)

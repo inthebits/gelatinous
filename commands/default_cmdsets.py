@@ -30,6 +30,7 @@ from commands.combat.special_actions import CmdAim, CmdGrapple
 from commands.CmdThrow import CmdThrow, CmdPull, CmdCatch, CmdRig, CmdDefuse
 from commands.CmdGraffiti import CmdGraffiti, CmdPress
 from commands.CmdCharacter import CmdLongdesc, CmdSkintone
+from commands.CmdArmor import CmdArmor, CmdArmorRepair, CmdSlot, CmdUnslot
 
 
 class UnconsciousCmdSet(CmdSet):
@@ -161,6 +162,12 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdClothing.CmdWear())
         self.add(CmdClothing.CmdRemove())
         self.add(CmdClothing.CmdRollUp())
+        
+        # Add armor system commands
+        self.add(CmdArmor())
+        self.add(CmdArmorRepair())
+        self.add(CmdSlot())
+        self.add(CmdUnslot())
         
         # Add medical system commands
         self.add(CmdMedical.CmdMedical())

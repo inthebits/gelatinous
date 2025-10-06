@@ -533,6 +533,7 @@ CODER_SOCKS = {
         ("layer", 1),  # Undergarment layer
         ("color", "bright_magenta"),
         ("material", "synthetic"),
+        ("weight", 0.2),  # Very light
         
         # Style configuration for incredible transformation power
         ("style_configs", {
@@ -585,6 +586,7 @@ DEV_HOODIE = {
         ("layer", 2),  # Base clothing
         ("color", "black"),
         ("material", "cotton"),
+        ("weight", 1.8),  # Moderate weight
         
         # Advanced styling - hood and LED modes
         ("style_configs", {
@@ -637,6 +639,7 @@ BLUE_JEANS = {
         ("layer", 2),
         ("color", "blue"),
         ("material", "denim"),
+        ("weight", 1.5),  # Moderate weight
         
         ("style_configs", {
             "adjustable": {
@@ -688,6 +691,7 @@ COTTON_TSHIRT = {
         ("layer", 2),
         ("color", "white"),
         ("material", "cotton"),
+        ("weight", 0.4),  # Light weight
         
         ("style_configs", {
             "adjustable": {
@@ -753,6 +757,442 @@ COMBAT_BOOTS = {
     # "tags": [("clothing", "type"), ("boots", "category"), ("leather", "material")]
 }
 
+
+# =============================================================================
+# ARMOR PROTOTYPES (CLOTHING WITH ARMOR ATTRIBUTES)
+# =============================================================================
+
+# =============================================================================
+# TACTICAL UNIFORM BASE LAYERS (Light Protection)
+# =============================================================================
+
+# Tactical Jumpsuit - Base layer with minimal protection
+TACTICAL_JUMPSUIT = {
+    "key": "tactical jumpsuit",
+    "aliases": ["jumpsuit", "coveralls", "tactical suit"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A form-fitting tactical jumpsuit made from reinforced synthetic weave. Provides minimal protection while maintaining maximum mobility and comfort.",
+    "attrs": [
+        # Clothing attributes
+        ("coverage", ["chest", "back", "abdomen", "groin", "left_arm", "right_arm", "left_thigh", "right_thigh"]),
+        ("worn_desc", "A sleek {color}black|n tactical jumpsuit that hugs their form like a second skin, its reinforced synthetic weave providing minimal protection while prioritizing mobility and tactical flexibility"),
+        ("layer", 1),  # Base layer
+        ("color", "black"),
+        ("material", "synthetic"),
+        ("weight", 1.8),  # Lightweight
+        
+        # Minimal armor
+        ("armor_rating", 1),
+        ("armor_type", "synthetic"),
+        ("armor_durability", 20),
+        ("max_armor_durability", 20),
+        ("base_armor_rating", 1),
+    ],
+}
+
+# Tactical Pants - Alternative to jumpsuit
+TACTICAL_PANTS = {
+    "key": "tactical pants",
+    "aliases": ["pants", "tactical trousers", "combat pants"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "Heavy-duty tactical pants with reinforced knees and multiple cargo pockets. Made from ripstop fabric with minimal ballistic protection.",
+    "attrs": [
+        # Clothing attributes
+        ("coverage", ["groin", "left_thigh", "right_thigh", "left_shin", "right_shin"]),
+        ("worn_desc", "Durable {color}black|n tactical pants with reinforced knees and cargo pockets, their ripstop fabric providing minimal protection while maintaining tactical functionality"),
+        ("layer", 1),  # Base layer
+        ("color", "black"),
+        ("material", "synthetic"),
+        ("weight", 1.2),
+        
+        # Minimal armor
+        ("armor_rating", 1),
+        ("armor_type", "synthetic"),
+        ("armor_durability", 20),
+        ("max_armor_durability", 20),
+        ("base_armor_rating", 1),
+    ],
+}
+
+# Tactical Shirt - Upper body base layer
+TACTICAL_SHIRT = {
+    "key": "tactical shirt",
+    "aliases": ["shirt", "tactical tee", "combat shirt"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A tactical shirt with moisture-wicking fabric and reinforced shoulders. Designed to be worn under armor systems.",
+    "attrs": [
+        # Clothing attributes
+        ("coverage", ["chest", "back", "abdomen", "left_arm", "right_arm"]),
+        ("worn_desc", "A practical {color}black|n tactical shirt with moisture-wicking fabric, its reinforced shoulders and minimal protection designed to serve as a foundation for armor systems"),
+        ("layer", 1),  # Base layer
+        ("color", "black"),
+        ("material", "synthetic"),
+        ("weight", 0.8),
+        
+        # Minimal armor
+        ("armor_rating", 1),
+        ("armor_type", "synthetic"),
+        ("armor_durability", 20),
+        ("max_armor_durability", 20),
+        ("base_armor_rating", 1),
+    ],
+}
+
+# =============================================================================
+# MODULAR PLATE CARRIER SYSTEM
+# =============================================================================
+
+# Basic Plate Carrier - Modular platform
+PLATE_CARRIER = {
+    "key": "plate carrier",
+    "aliases": ["carrier", "vest", "tactical vest"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A modular plate carrier system with front and back plate pockets, side plate slots, and tactical webbing. Designed to accept ballistic plates for customizable protection levels.",
+    "attrs": [
+        # Clothing attributes
+        ("coverage", ["chest", "back", "abdomen"]),
+        ("worn_desc", "A professional {color}tan|n plate carrier with tactical webbing and modular plate pockets, its adjustable straps and MOLLE system creating a foundation for serious ballistic protection"),
+        ("layer", 3),  # Outer armor layer
+        ("color", "tan"),
+        ("material", "nylon"),
+        ("weight", 2.5),  # Just the carrier itself
+        
+        # Base protection (carrier only)
+        ("armor_rating", 2),        # Minimal protection without plates
+        ("armor_type", "synthetic"), # Basic synthetic protection
+        ("armor_durability", 40),
+        ("max_armor_durability", 40),
+        ("base_armor_rating", 2),
+        
+        # Plate carrier system
+        ("is_plate_carrier", True),
+        ("plate_slots", ["front", "back", "left_side", "right_side"]),
+        ("installed_plates", {}),   # Empty initially
+        ("plate_slot_coverage", {
+            "front": ["chest"],
+            "back": ["back"],
+            "left_side": ["torso"],
+            "right_side": ["torso"]
+        }),
+        
+        # Style system for tactical adjustments
+        ("style_configs", {
+            "adjustable": {
+                "normal": {"coverage_mod": [], "desc_mod": ""},
+                "rolled": {"coverage_mod": ["-abdomen"], "desc_mod": "A professional {color}tan|n plate carrier with the lower section rolled up for improved mobility, its tactical webbing still providing modular attachment points"}
+            }
+        }),
+        ("style_properties", {"adjustable": "normal"}),
+    ],
+}
+
+# =============================================================================
+# ARMOR PLATES (For Plate Carriers)
+# =============================================================================
+
+# Medium Ballistic Plate - Standard protection
+BALLISTIC_PLATE_MEDIUM = {
+    "key": "medium ballistic plate",
+    "aliases": ["plate", "ballistic plate", "armor plate"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A Level IIIA ballistic plate made from advanced ceramic composite. Designed to stop rifle rounds while remaining relatively lightweight.",
+    "attrs": [
+        # Not worn directly - installed in carriers
+        ("coverage", []),
+        ("layer", 0),  # Not a clothing layer
+        ("weight", 3.2),  # Significant weight
+        ("material", "ceramic"),
+        
+        # Plate properties
+        ("is_armor_plate", True),
+        ("plate_size", "medium"),
+        ("armor_rating", 7),        # High protection when installed
+        ("armor_type", "ceramic"),
+        ("armor_durability", 140),
+        ("max_armor_durability", 140),
+        ("base_armor_rating", 7),
+    ],
+}
+
+# Large Steel Plate - Heavy protection
+STEEL_PLATE_LARGE = {
+    "key": "large steel plate",
+    "aliases": ["steel plate", "heavy plate"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A heavy steel ballistic plate with excellent all-around protection. Significantly heavier than ceramic alternatives but nearly indestructible.",
+    "attrs": [
+        ("coverage", []),
+        ("layer", 0),
+        ("weight", 8.5),  # Very heavy
+        ("material", "steel"),
+        
+        ("is_armor_plate", True),
+        ("plate_size", "large"),
+        ("armor_rating", 9),        # Maximum protection
+        ("armor_type", "steel"),
+        ("armor_durability", 180),
+        ("max_armor_durability", 180),
+        ("base_armor_rating", 9),
+    ],
+}
+
+# Small Side Plate - Flank protection
+SIDE_PLATE_SMALL = {
+    "key": "small side plate",
+    "aliases": ["side plate", "small plate"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A compact ballistic plate designed for side protection. Lighter than main plates but still provides significant protection against lateral threats.",
+    "attrs": [
+        ("coverage", []),
+        ("layer", 0),
+        ("weight", 1.8),  # Lighter for mobility
+        ("material", "ceramic"),
+        
+        ("is_armor_plate", True),
+        ("plate_size", "small"),
+        ("armor_rating", 5),        # Moderate protection
+        ("armor_type", "ceramic"),
+        ("armor_durability", 100),
+        ("max_armor_durability", 100),
+        ("base_armor_rating", 5),
+    ],
+}
+
+# =============================================================================
+# LEGACY ARMOR (Updated with Weight)
+# =============================================================================
+
+# Tactical Kevlar Vest - Excellent bullet protection
+KEVLAR_VEST = {
+    "prototype_parent": "MELEE_WEAPON_BASE",  # Base item properties
+    "key": "kevlar vest",
+    "aliases": ["vest", "body armor", "bulletproof vest"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A lightweight tactical kevlar vest with trauma plates. Designed to stop bullets while maintaining mobility.",
+    "attrs": [
+        # Clothing attributes
+        ("coverage", ["chest", "back", "abdomen"]),
+        ("worn_desc", "A professional {color}black|n kevlar vest with trauma plates, its tactical webbing and ballistic panels speaking of serious protection against projectile threats"),
+        ("layer", 3),  # Outer armor layer
+        ("color", "black"),
+        ("material", "kevlar"),
+        ("weight", 4.5),  # Moderate weight
+        
+        # Armor attributes
+        ("armor_rating", 8),        # High armor rating
+        ("armor_type", "kevlar"),   # Excellent vs bullets, poor vs stabs
+        ("armor_durability", 160),  # Rating * 20
+        ("max_armor_durability", 160),
+        ("base_armor_rating", 8),
+        
+        # Combat stats
+        ("deflection_bonus", -0.05),  # Slight penalty to deflection (bulky)
+    ],
+}
+
+# Steel Plate Armor - Medieval style, excellent all-around protection
+STEEL_PLATE = {
+    "prototype_parent": "MELEE_WEAPON_BASE",
+    "key": "steel plate armor",
+    "aliases": ["plate", "armor", "steel armor", "plate mail"],
+    "typeclass": "typeclasses.items.Item", 
+    "desc": "Heavy steel plate armor forged in overlapping segments. Provides excellent protection but restricts movement significantly.",
+    "attrs": [
+        # Clothing attributes
+        ("coverage", ["chest", "back", "abdomen", "left_arm", "right_arm"]),
+        ("worn_desc", "Imposing {color}steel|n plate armor that encases their torso and arms in overlapping metal segments, each piece precisely fitted and articulated for maximum protection while maintaining combat mobility"),
+        ("layer", 3),
+        ("color", "bright_white"),  # Polished steel
+        ("material", "steel"),
+        ("weight", 25.0),  # Very heavy
+        
+        # Armor attributes
+        ("armor_rating", 10),       # Maximum armor rating
+        ("armor_type", "steel"),    # Excellent vs everything except fire/chemicals
+        ("armor_durability", 200),  # Rating * 20
+        ("max_armor_durability", 200),
+        ("base_armor_rating", 10),
+        
+        # Combat penalties
+        ("deflection_bonus", -0.15),  # Significant deflection penalty (very bulky)
+    ],
+}
+
+# Leather Jacket - Light armor, good vs cuts
+ARMORED_LEATHER_JACKET = {
+    "prototype_parent": "MELEE_WEAPON_BASE",
+    "key": "armored leather jacket",
+    "aliases": ["jacket", "leather armor", "biker jacket"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A heavy leather jacket reinforced with steel studs and padding. Provides moderate protection while maintaining style.",
+    "attrs": [
+        # Clothing attributes  
+        ("coverage", ["chest", "back", "abdomen", "left_arm", "right_arm"]),
+        ("worn_desc", "A reinforced {color}black leather|n jacket studded with steel reinforcements, its thick hide and metal accents providing street-smart protection without sacrificing the rebellious aesthetic of urban warfare"),
+        ("layer", 2),
+        ("color", "black"),
+        ("material", "leather"),
+        ("weight", 3.2),  # Moderate weight
+        
+        # Style system for leather jacket
+        ("style_configs", {
+            "closure": {
+                "zipped": {
+                    "coverage_mod": [],
+                    "desc_mod": "A reinforced {color}black leather|n jacket zipped tight and studded with steel reinforcements, its thick hide creating a defensive shell around their torso"
+                },
+                "unzipped": {
+                    "coverage_mod": ["-chest", "-abdomen"],
+                    "desc_mod": "A reinforced {color}black leather|n jacket hanging open to reveal whatever lies beneath, steel studs and thick hide still providing partial protection to their back and arms"
+                }
+            }
+        }),
+        ("style_properties", {"closure": "zipped"}),
+        
+        # Armor attributes
+        ("armor_rating", 5),        # Moderate armor rating
+        ("armor_type", "leather"),  # Good vs cuts, poor vs bullets
+        ("armor_durability", 100),  # Rating * 20
+        ("max_armor_durability", 100),
+        ("base_armor_rating", 5),
+        
+        # Combat stats
+        ("deflection_bonus", 0.05),  # Slight deflection bonus (flexible)
+    ],
+}
+
+# Combat Helmet - Head protection
+COMBAT_HELMET = {
+    "prototype_parent": "MELEE_WEAPON_BASE",
+    "key": "combat helmet",
+    "aliases": ["helmet", "tactical helmet"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A military-grade combat helmet with ballistic protection and integrated communication systems.",
+    "attrs": [
+        # Clothing attributes
+        ("coverage", ["head"]),
+        ("worn_desc", "A menacing {color}matte black|n tactical helmet with ballistic protection, its angular design and integrated electronics creating an intimidating visage of military precision"),
+        ("layer", 2),
+        ("color", "black"),
+        ("material", "kevlar"),
+        ("weight", 1.8),  # Light weight
+        
+        # Armor attributes
+        ("armor_rating", 7),        # High head protection
+        ("armor_type", "kevlar"),   # Good vs bullets
+        ("armor_durability", 140),  # Rating * 20
+        ("max_armor_durability", 140),
+        ("base_armor_rating", 7),
+    ],
+}
+
+# Ceramic Trauma Plates - Insert armor for vests
+CERAMIC_PLATES = {
+    "prototype_parent": "MELEE_WEAPON_BASE", 
+    "key": "ceramic trauma plates",
+    "aliases": ["plates", "trauma plates", "ceramic insert"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "Advanced ceramic trauma plates designed to be inserted into tactical vests. Extremely effective against high-velocity rounds but brittle.",
+    "attrs": [
+        # Clothing attributes
+        ("coverage", ["chest", "back"]),  # Only covers vital organs
+        ("worn_desc", "Barely visible {color}white|n ceramic trauma plates integrated seamlessly into their protective gear, their advanced ballistic composition creating an nearly impenetrable barrier against projectile threats"),
+        ("layer", 4),  # Layer over other armor
+        ("color", "white"),
+        ("material", "ceramic"),
+        ("weight", 4.0),  # Heavy ceramic
+        
+        # Armor attributes - single-use super protection
+        ("armor_rating", 10),       # Maximum protection
+        ("armor_type", "ceramic"),  # Excellent vs bullets, degrades quickly
+        ("armor_durability", 50),   # Low durability - shatters after absorbing damage
+        ("max_armor_durability", 50),
+        ("base_armor_rating", 10),
+    ],
+}
+
+# =============================================================================  
+# REPAIR TOOL PROTOTYPES (FOR ARMOR MAINTENANCE)
+# =============================================================================
+
+# Sewing Kit - Best for leather armor
+SEWING_KIT = {
+    "key": "sewing kit",
+    "aliases": ["kit", "needles", "thread"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A comprehensive sewing kit with heavy-duty needles, reinforced thread, and leather patches. Perfect for repairing fabric and leather armor.",
+    "attrs": [
+        ("repair_tool_type", "sewing_kit"),
+        ("tool_durability", 25),
+        ("max_tool_durability", 25),
+    ],
+}
+
+# Metalworking Tools - Best for steel armor  
+METALWORK_TOOLS = {
+    "key": "metalworking tools",
+    "aliases": ["tools", "hammer", "anvil", "metalwork"],
+    "typeclass": "typeclasses.items.Item", 
+    "desc": "A set of metalworking tools including a small anvil, hammer, tongs, and files. Essential for repairing steel and metal armor components.",
+    "attrs": [
+        ("repair_tool_type", "metalwork_tools"),
+        ("tool_durability", 30),
+        ("max_tool_durability", 30),
+    ],
+}
+
+# Ballistic Repair Kit - Best for kevlar
+BALLISTIC_REPAIR_KIT = {
+    "key": "ballistic repair kit",
+    "aliases": ["ballistic kit", "kevlar kit", "fiber kit"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A specialized kit for repairing ballistic armor, containing aramid fibers, ballistic gel, and precision tools for working with advanced protective materials.",
+    "attrs": [
+        ("repair_tool_type", "ballistic_repair_kit"),
+        ("tool_durability", 15),  # Specialized but fragile
+        ("max_tool_durability", 15),
+    ],
+}
+
+# Ceramic Repair Compound - Best for ceramic plates
+CERAMIC_REPAIR_COMPOUND = {
+    "key": "ceramic repair compound",
+    "aliases": ["compound", "ceramic paste", "armor compound"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "An advanced ceramic repair compound that can restore cracked trauma plates. Requires precise application and technical expertise to use effectively.",
+    "attrs": [
+        ("repair_tool_type", "ceramic_repair_compound"),
+        ("tool_durability", 8),   # Very specialized, limited uses
+        ("max_tool_durability", 8),
+    ],
+}
+
+# Generic Tool Kit - Moderate for all armor types
+GENERIC_TOOL_KIT = {
+    "key": "tool kit",
+    "aliases": ["tools", "repair kit", "general tools"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A general-purpose tool kit with basic implements for field repairs. Not specialized for any particular material, but versatile enough for emergency fixes.",
+    "attrs": [
+        ("repair_tool_type", "generic_tools"),
+        ("tool_durability", 20),
+        ("max_tool_durability", 20),
+    ],
+}
+
+# Workshop Bench - For full repairs (location-based)
+ARMOR_WORKBENCH = {
+    "key": "armor workbench", 
+    "aliases": ["workbench", "bench", "workshop"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A professional armor repair workbench equipped with specialized tools, proper lighting, and workspace for comprehensive armor restoration. Enables full repair capabilities.",
+    "attrs": [
+        ("repair_tool_type", "workshop_bench"),
+        ("tool_durability", 1000),  # Extremely durable, permanent installation
+        ("max_tool_durability", 1000),
+        ("workshop_tool", True),    # Special flag for full repairs
+    ],
+}
 
 # =============================================================================
 # MEDICAL ITEM PROTOTYPES

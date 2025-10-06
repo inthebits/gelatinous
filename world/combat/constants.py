@@ -197,6 +197,64 @@ NDB_GRENADE_TIMER = "grenade_timer"
 NDB_COUNTDOWN_REMAINING = "countdown_remaining"
 
 # ===================================================================
+# ARMOR SYSTEM CONSTANTS
+# ===================================================================
+
+# Armor effectiveness matrix - armor_type vs damage_type
+# Values are base effectiveness percentages (0.0 to 1.0)
+# Final effectiveness = base_effectiveness * (armor_rating / 10.0)
+ARMOR_EFFECTIVENESS_MATRIX = {
+    'kevlar': {
+        'bullet': 0.8,      # Excellent vs bullets
+        'stab': 0.3,        # Poor vs stabbing
+        'cut': 0.4,         # Moderate vs cuts
+        'blunt': 0.2,       # Poor vs blunt force
+        'laceration': 0.5,  # Moderate vs lacerations
+        'burn': 0.1,        # Poor vs fire/chemicals
+    },
+    'steel': {
+        'bullet': 0.9,      # Excellent vs bullets
+        'stab': 0.8,        # Very good vs stabbing
+        'cut': 0.9,         # Excellent vs cuts
+        'blunt': 0.6,       # Good vs blunt force
+        'laceration': 0.7,  # Good vs lacerations
+        'burn': 0.3,        # Poor vs fire/chemicals
+    },
+    'leather': {
+        'bullet': 0.1,      # Poor vs bullets
+        'stab': 0.4,        # Moderate vs stabbing
+        'cut': 0.6,         # Good vs cuts
+        'blunt': 0.3,       # Moderate vs blunt force
+        'laceration': 0.5,  # Moderate vs lacerations
+        'burn': 0.2,        # Poor vs fire/chemicals
+    },
+    'ceramic': {
+        'bullet': 0.95,     # Excellent vs bullets (single hit)
+        'stab': 0.4,        # Moderate vs stabbing
+        'cut': 0.5,         # Moderate vs cuts
+        'blunt': 0.8,       # Very good vs blunt force
+        'laceration': 0.6,  # Good vs lacerations
+        'burn': 0.4,        # Moderate vs fire/chemicals
+    },
+    'synthetic': {
+        'bullet': 0.2,      # Poor vs bullets
+        'stab': 0.2,        # Poor vs stabbing
+        'cut': 0.3,         # Poor vs cuts
+        'blunt': 0.3,       # Poor vs blunt force
+        'laceration': 0.2,  # Poor vs lacerations
+        'burn': 0.1,        # Poor vs fire/chemicals
+    },
+    'generic': {
+        'bullet': 0.2,
+        'stab': 0.2,
+        'cut': 0.3,
+        'blunt': 0.3,
+        'laceration': 0.2,
+        'burn': 0.1,
+    }
+}
+
+# ===================================================================
 # DATABASE FIELD NAMES
 # ===================================================================
 
