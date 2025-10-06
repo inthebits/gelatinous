@@ -202,10 +202,10 @@ class Character(ObjectParent, DefaultCharacter):
             target_organ (str): If specified, target this specific organ
             
         Returns:
-            bool: True if character died from this damage, False otherwise
+            tuple: (died: bool, actual_damage: int) - Whether character died and actual damage applied after armor
         """
         if not isinstance(amount, int) or amount <= 0:
-            return False
+            return (False, 0)
 
         # Check for armor before applying damage
         final_damage = self._calculate_armor_damage_reduction(amount, location, injury_type)
@@ -233,7 +233,7 @@ class Character(ObjectParent, DefaultCharacter):
         # Debug broadcast damage application
         try:
             from world.combat.utils import debug_broadcast
-            debug_broadcast(f"Applied {amount} {injury_type} damage to {self.key}'s {location}", 
+            debug_broadcast(f"Applied {final_damage} {injury_type} damage to {self.key}'s {location}", 
                            "DAMAGE", "SUCCESS")
         except ImportError:
             pass  # debug_broadcast not available
@@ -247,8 +247,8 @@ class Character(ObjectParent, DefaultCharacter):
         elif unconscious:
             self._handle_unconsciousness()
         
-        # Return death status for combat system compatibility
-        return died
+        # Return death status and actual damage applied (after armor) for combat system
+        return (died, final_damage)
     
     def _calculate_armor_damage_reduction(self, damage, location, injury_type):
         """

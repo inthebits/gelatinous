@@ -1237,11 +1237,12 @@ class CombatHandler(DefaultScript):
                 weapon_type = weapon.db.weapon_type
             
             # Apply damage first to determine if this is a killing blow
-            target_died = target.take_damage(damage, location=hit_location, injury_type=injury_type, target_organ=target_organ)
+            # take_damage now returns (died, actual_damage_applied)
+            target_died, actual_damage = target.take_damage(damage, location=hit_location, injury_type=injury_type, target_organ=target_organ)
             
             if target_died:
                 # This was a killing blow - send kill messages instead of regular attack messages
-                kill_messages = get_combat_message(weapon_type, "kill", attacker=attacker, target=target, item=weapon, damage=damage, hit_location=hit_location)
+                kill_messages = get_combat_message(weapon_type, "kill", attacker=attacker, target=target, item=weapon, damage=actual_damage, hit_location=hit_location)
                 
                 # Send kill messages to establish lethal narrative before death curtain
                 if "attacker_msg" in kill_messages:
@@ -1250,7 +1251,7 @@ class CombatHandler(DefaultScript):
                     target.msg(kill_messages["victim_msg"])
                 attacker.location.msg_contents(kill_messages["observer_msg"], exclude=[attacker, target])
                 
-                splattercast.msg(f"KILLING_BLOW: {attacker.key} delivered killing blow to {target.key} for {damage} damage.")
+                splattercast.msg(f"KILLING_BLOW: {attacker.key} delivered killing blow to {target.key} for {actual_damage} damage.")
                 
                 # Check if death has already been processed to prevent double death curtains
                 if hasattr(target, 'ndb') and getattr(target.ndb, 'death_processed', False):
@@ -1277,14 +1278,14 @@ class CombatHandler(DefaultScript):
                 self.remove_combatant(target)
             else:
                 # Regular hit - send attack messages
-                hit_messages = get_combat_message(weapon_type, "hit", attacker=attacker, target=target, item=weapon, damage=damage, hit_location=hit_location)
+                hit_messages = get_combat_message(weapon_type, "hit", attacker=attacker, target=target, item=weapon, damage=actual_damage, hit_location=hit_location)
                 
                 # Send attack messages for non-fatal hits
                 attacker.msg(hit_messages["attacker_msg"])
                 target.msg(hit_messages["victim_msg"]) 
                 attacker.location.msg_contents(hit_messages["observer_msg"], exclude=[attacker, target])
                 
-                splattercast.msg(f"ATTACK_HIT: {attacker.key} hit {target.key} for {damage} damage.")
+                splattercast.msg(f"ATTACK_HIT: {attacker.key} hit {target.key} for {actual_damage} damage.")
                 
         else:
             # Miss - get miss messages from the message system
