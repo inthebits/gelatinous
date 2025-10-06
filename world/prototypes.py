@@ -915,7 +915,7 @@ BALLISTIC_PLATE_MEDIUM = {
 }
 
 # Large Steel Plate - Heavy protection
-STEEL_PLATE_LARGE = {
+STEEL_PLATE = {
     "key": "steel plate",
     "aliases": ["large steel plate", "heavy plate", "steel ballistic plate"],
     "typeclass": "typeclasses.items.Item",
@@ -991,7 +991,7 @@ KEVLAR_VEST = {
 }
 
 # Steel Plate Armor - Medieval style, excellent all-around protection
-STEEL_PLATE = {
+PLATE_MAIL = {
     "prototype_parent": "MELEE_WEAPON_BASE",
     "key": "plate mail",
     "aliases": ["steel plate mail", "steel plate armor", "plate armor", "steel armor"],
