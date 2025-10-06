@@ -890,23 +890,52 @@ PLATE_CARRIER = {
 # ARMOR PLATES (For Plate Carriers)
 # =============================================================================
 
-# Medium Ballistic Plate - Standard protection
-BALLISTIC_PLATE_MEDIUM = {
-    "key": "medium ballistic plate",
-    "aliases": ["plate", "ballistic plate", "armor plate"],
+# =============================================================================
+# ARMOR PLATES (For Plate Carriers)
+# Universal fit - trade protection for weight/durability
+# =============================================================================
+
+# Lightweight Plate - Mobility focused
+LIGHTWEIGHT_PLATE = {
+    "key": "lightweight plate",
+    "aliases": ["light plate", "mobility plate", "composite plate"],
     "typeclass": "typeclasses.items.Item",
-    "desc": "A Level IIIA ballistic plate made from advanced ceramic composite. Designed to stop rifle rounds while remaining relatively lightweight.",
+    "desc": "A lightweight composite armor plate prioritizing mobility. Sacrifices some protection for reduced weight, ideal for fast response scenarios.",
     "attrs": [
         # Not worn directly - installed in carriers
         ("coverage", []),
         ("layer", 0),  # Not a clothing layer
-        ("weight", 3.2),  # Significant weight
+        ("weight", 1.8),  # Lightest option
+        ("material", "composite"),
+        
+        # Plate properties
+        ("is_armor_plate", True),
+        ("plate_class", "lightweight"),  # Instead of size
+        ("armor_rating", 5),        # Lower protection
+        ("armor_type", "composite"),
+        ("armor_durability", 100),  # Lower durability
+        ("max_armor_durability", 100),
+        ("base_armor_rating", 5),
+    ],
+}
+
+# Standard Plate - Balanced protection
+STANDARD_PLATE = {
+    "key": "standard plate",
+    "aliases": ["plate", "ballistic plate", "armor plate", "ceramic plate"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A standard ballistic plate made from advanced ceramic composite. Offers excellent protection against rifle rounds while maintaining reasonable weight.",
+    "attrs": [
+        # Not worn directly - installed in carriers
+        ("coverage", []),
+        ("layer", 0),  # Not a clothing layer
+        ("weight", 3.2),  # Balanced weight
         ("material", "ceramic"),
         
         # Plate properties
         ("is_armor_plate", True),
-        ("plate_size", "medium"),
-        ("armor_rating", 7),        # High protection when installed
+        ("plate_class", "standard"),  # Instead of size
+        ("armor_rating", 7),        # Good protection
         ("armor_type", "ceramic"),
         ("armor_durability", 140),
         ("max_armor_durability", 140),
@@ -914,47 +943,49 @@ BALLISTIC_PLATE_MEDIUM = {
     ],
 }
 
-# Large Steel Plate - Heavy protection
-STEEL_PLATE = {
-    "key": "steel plate",
-    "aliases": ["large steel plate", "heavy plate", "steel ballistic plate"],
+# Reinforced Plate - Maximum protection
+REINFORCED_PLATE = {
+    "key": "reinforced plate",
+    "aliases": ["heavy plate", "steel plate", "assault plate"],
     "typeclass": "typeclasses.items.Item",
-    "desc": "A heavy steel ballistic plate with excellent all-around protection. Significantly heavier than ceramic alternatives but nearly indestructible.",
+    "desc": "A heavy reinforced steel ballistic plate offering maximum protection. Significantly heavier than alternatives but nearly indestructible in combat scenarios.",
     "attrs": [
         ("coverage", []),
         ("layer", 0),
-        ("weight", 8.5),  # Very heavy
+        ("weight", 8.5),  # Heaviest option
         ("material", "steel"),
         
         ("is_armor_plate", True),
-        ("plate_size", "large"),
+        ("plate_class", "reinforced"),  # Instead of size
         ("armor_rating", 9),        # Maximum protection
         ("armor_type", "steel"),
-        ("armor_durability", 180),
+        ("armor_durability", 180),  # Highest durability
         ("max_armor_durability", 180),
         ("base_armor_rating", 9),
     ],
 }
 
-# Small Side Plate - Flank protection
-SIDE_PLATE_SMALL = {
-    "key": "small side plate",
-    "aliases": ["side plate", "small plate"],
+# High-Performance Trauma Plate - Specialist option
+CERAMIC_PLATES = {
+    "key": "trauma plate",
+    "aliases": ["ceramic plate", "trauma insert", "ceramic insert"],
     "typeclass": "typeclasses.items.Item",
-    "desc": "A compact ballistic plate designed for side protection. Lighter than main plates but still provides significant protection against lateral threats.",
+    "desc": "An advanced ceramic trauma plate using cutting-edge materials. Extremely effective against high-velocity rounds but brittle - shatters after absorbing significant damage.",
     "attrs": [
+        # Not worn directly - installed in carriers
         ("coverage", []),
-        ("layer", 0),
-        ("weight", 1.8),  # Lighter for mobility
+        ("layer", 0),  # Not a clothing layer
+        ("weight", 4.0),  # Heavy ceramic
         ("material", "ceramic"),
         
+        # Plate properties
         ("is_armor_plate", True),
-        ("plate_size", "small"),
-        ("armor_rating", 5),        # Moderate protection
-        ("armor_type", "ceramic"),
-        ("armor_durability", 100),
-        ("max_armor_durability", 100),
-        ("base_armor_rating", 5),
+        ("plate_class", "trauma"),  # Specialist class
+        ("armor_rating", 10),       # Maximum protection
+        ("armor_type", "ceramic"),  # Excellent vs bullets, degrades quickly
+        ("armor_durability", 50),   # Low durability - shatters after absorbing damage
+        ("max_armor_durability", 50),
+        ("base_armor_rating", 10),
     ],
 }
 
