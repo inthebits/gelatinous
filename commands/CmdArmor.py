@@ -622,7 +622,7 @@ class CmdSlot(Command):
             plate_weight = sum(getattr(plate, 'weight', 0) for plate in installed_plates.values() if plate)
             total_weight = carrier_weight + plate_weight
             
-            caller.msg(f"\n|c{carrier_name}|n (Rating: {total_rating}/10, Weight: {total_weight:.1f} lbs)")
+            caller.msg(f"\n|c{carrier_name}|n (Total Protection: {total_rating}, Weight: {total_weight:.1f} lbs)")
             
             for slot in plate_slots:
                 if slot in installed_plates and installed_plates[slot]:
@@ -736,7 +736,7 @@ class CmdSlot(Command):
         
         # Show new rating
         total_rating = self._calculate_total_rating(carrier)
-        caller.msg(f"New total protection: {total_rating}/10")
+        caller.msg(f"New total protection: {total_rating}")
         
         # Location message
         if caller.location:
@@ -778,7 +778,7 @@ class CmdSlot(Command):
         
         # Show new rating
         total_rating = self._calculate_total_rating(carrier)
-        caller.msg(f"New total protection: {total_rating}/10")
+        caller.msg(f"New total protection: {total_rating}")
         
         # Location message
         if caller.location:
@@ -815,7 +815,7 @@ class CmdSlot(Command):
         
         # Show rating change
         total_rating = self._calculate_total_rating(old_carrier)
-        caller.msg(f"New total protection: {total_rating}/10")
+        caller.msg(f"New total protection: {total_rating}")
         
         # Location message
         if caller.location:
