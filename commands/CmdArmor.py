@@ -196,7 +196,8 @@ class CmdArmor(Command):
         # Find the armor item
         target_armor = None
         for armor in worn_armor:
-            if item_name.lower() in armor.key.lower() or item_name.lower() in [alias.lower() for alias in getattr(armor, 'aliases', [])]:
+            armor_aliases = armor.aliases.all() if hasattr(armor, 'aliases') else []
+            if item_name.lower() in armor.key.lower() or item_name.lower() in [alias.lower() for alias in armor_aliases]:
                 target_armor = armor
                 break
         
@@ -311,16 +312,18 @@ class CmdArmorRepair(Command):
         if hasattr(caller, 'worn_items') and caller.worn_items:
             for location, items in caller.worn_items.items():
                 for item in items:
+                    item_aliases = item.aliases.all() if hasattr(item, 'aliases') else []
                     if (hasattr(item, 'armor_rating') and 
                         (armor_name.lower() in item.key.lower() or 
-                         armor_name.lower() in [alias.lower() for alias in getattr(item, 'aliases', [])])):
+                         armor_name.lower() in [alias.lower() for alias in item_aliases])):
                         return item
         
         # Check inventory
         for item in caller.contents:
+            item_aliases = item.aliases.all() if hasattr(item, 'aliases') else []
             if (hasattr(item, 'armor_rating') and 
                 (armor_name.lower() in item.key.lower() or 
-                 armor_name.lower() in [alias.lower() for alias in getattr(item, 'aliases', [])])):
+                 armor_name.lower() in [alias.lower() for alias in item_aliases])):
                 return item
         
         caller.msg(f"You don't have any armor matching '{armor_name}'.")
@@ -329,9 +332,10 @@ class CmdArmorRepair(Command):
     def _find_repair_tool(self, caller, tool_name):
         """Find repair tool in inventory."""
         for item in caller.contents:
+            item_aliases = item.aliases.all() if hasattr(item, 'aliases') else []
             if (hasattr(item, 'repair_tool_type') and 
                 (tool_name.lower() in item.key.lower() or 
-                 tool_name.lower() in [alias.lower() for alias in getattr(item, 'aliases', [])])):
+                 tool_name.lower() in [alias.lower() for alias in item_aliases])):
                 return item
         
         caller.msg(f"You don't have a repair tool matching '{tool_name}'.")
@@ -751,8 +755,9 @@ class CmdSlot(Command):
         target_slot = None
         
         for slot, plate in installed_plates.items():
+            plate_aliases = plate.aliases.all() if plate and hasattr(plate, 'aliases') else []
             if plate and (plate_name.lower() in plate.key.lower() or 
-                         plate_name.lower() in [alias.lower() for alias in getattr(plate, 'aliases', [])]):
+                         plate_name.lower() in [alias.lower() for alias in plate_aliases]):
                 target_plate = plate
                 target_slot = slot
                 break
@@ -838,8 +843,9 @@ class CmdSlot(Command):
         """Find a specific carrier by name."""
         carriers = self._find_plate_carriers(caller)
         for carrier in carriers:
+            carrier_aliases = carrier.aliases.all() if hasattr(carrier, 'aliases') else []
             if (carrier_name.lower() in carrier.key.lower() or 
-                carrier_name.lower() in [alias.lower() for alias in getattr(carrier, 'aliases', [])]):
+                carrier_name.lower() in [alias.lower() for alias in carrier_aliases]):
                 return carrier
         
         caller.msg(f"You don't have a plate carrier matching '{carrier_name}'.")
@@ -848,9 +854,11 @@ class CmdSlot(Command):
     def _find_plate_by_name(self, caller, plate_name):
         """Find an armor plate by name in inventory."""
         for item in caller.contents:
+            # Get aliases properly - AliasHandler requires .all() to get the list
+            item_aliases = item.aliases.all() if hasattr(item, 'aliases') else []
             if (getattr(item, 'is_armor_plate', False) and
                 (plate_name.lower() in item.key.lower() or 
-                 plate_name.lower() in [alias.lower() for alias in getattr(item, 'aliases', [])])):
+                 plate_name.lower() in [alias.lower() for alias in item_aliases])):
                 return item
         
         caller.msg(f"You don't have an armor plate matching '{plate_name}'.")
@@ -862,8 +870,9 @@ class CmdSlot(Command):
         for carrier in carriers:
             installed_plates = getattr(carrier, 'installed_plates', {})
             for slot, plate in installed_plates.items():
+                plate_aliases = plate.aliases.all() if plate and hasattr(plate, 'aliases') else []
                 if plate and (plate_name.lower() in plate.key.lower() or
-                             plate_name.lower() in [alias.lower() for alias in getattr(plate, 'aliases', [])]):
+                             plate_name.lower() in [alias.lower() for alias in plate_aliases]):
                     return plate, carrier, slot
         
         return None, None, None
