@@ -83,8 +83,19 @@ class CmdArmor(Command):
             caller.msg("You are not wearing any armor.")
             return
         
-        # Create armor status table
-        table = EvTable("Item", "Type", "Rating", "Durability", "Coverage", border="cells")
+        # Create armor status table with custom border
+        table = EvTable("Item", "Type", "Rating", "Durability", "Coverage", 
+                       border="table",
+                       border_top_char=BOX_HORIZONTAL,
+                       border_bottom_char=BOX_HORIZONTAL,
+                       border_left_char=BOX_VERTICAL,
+                       border_right_char=BOX_VERTICAL,
+                       border_top_left_char=BOX_TOP_LEFT,
+                       border_top_right_char=BOX_TOP_RIGHT,
+                       border_bottom_left_char=BOX_BOTTOM_LEFT,
+                       border_bottom_right_char=BOX_BOTTOM_RIGHT,
+                       border_top_middle_char=BOX_TEE_DOWN,
+                       border_bottom_middle_char=BOX_TEE_UP)
         
         for armor in worn_armor:
             # Get armor stats
@@ -125,21 +136,8 @@ class CmdArmor(Command):
                 coverage_str
             )
         
-        # Format output with bracket design
-        table_str = str(table)
-        table_width = max(len(line) for line in table_str.split('\n'))
-        
-        output = f"{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * table_width}{BOX_TOP_RIGHT}{COLOR_NORMAL}\n"
-        output += f"{COLOR_SUCCESS}{BOX_VERTICAL} {'ARMOR STATUS':<{table_width-1}}{BOX_VERTICAL}{COLOR_NORMAL}\n"
-        output += f"{COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * table_width}{BOX_TEE_UP}{COLOR_NORMAL}\n"
-        
-        for line in table_str.split('\n'):
-            output += f"{COLOR_SUCCESS}{BOX_VERTICAL}{COLOR_NORMAL}{line.ljust(table_width)}{COLOR_SUCCESS}{BOX_VERTICAL}{COLOR_NORMAL}\n"
-        
-        output += f"{COLOR_SUCCESS}{BOX_BOTTOM_LEFT}{BOX_HORIZONTAL * table_width}{BOX_BOTTOM_RIGHT}{COLOR_NORMAL}\n"
-        output += f"{COLOR_SUCCESS}Durability: |g>70%{COLOR_SUCCESS}, |y30-70%{COLOR_SUCCESS}, |r<30%{COLOR_NORMAL}"
-        
-        caller.msg(f"\n{output}")
+        caller.msg(f"\n|gARMOR STATUS|n\n{table}")
+        caller.msg("|xDurability: |g>70%|x, |y30-70%|x, |r<30%|n")
     
     def _show_coverage_map(self, caller, worn_armor):
         """Show which body locations are protected by armor."""
@@ -223,8 +221,19 @@ class CmdArmor(Command):
                         'type': getattr(armor, 'armor_type', 'generic')
                     })
         
-        # Create coverage table
-        table = EvTable("Body Location", "Protected By", "Type", "Rating", border="cells")
+        # Create coverage table with custom border
+        table = EvTable("Body Location", "Protected By", "Type", "Rating",
+                       border="table",
+                       border_top_char=BOX_HORIZONTAL,
+                       border_bottom_char=BOX_HORIZONTAL,
+                       border_left_char=BOX_VERTICAL,
+                       border_right_char=BOX_VERTICAL,
+                       border_top_left_char=BOX_TOP_LEFT,
+                       border_top_right_char=BOX_TOP_RIGHT,
+                       border_bottom_left_char=BOX_BOTTOM_LEFT,
+                       border_bottom_right_char=BOX_BOTTOM_RIGHT,
+                       border_top_middle_char=BOX_TEE_DOWN,
+                       border_bottom_middle_char=BOX_TEE_UP)
         
         # Common body locations for display
         locations = [
@@ -257,20 +266,7 @@ class CmdArmor(Command):
                     "0/10"
                 )
         
-        # Format output with bracket design
-        table_str = str(table)
-        table_width = max(len(line) for line in table_str.split('\n'))
-        
-        output = f"{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * table_width}{BOX_TOP_RIGHT}{COLOR_NORMAL}\n"
-        output += f"{COLOR_SUCCESS}{BOX_VERTICAL} {'ARMOR COVERAGE MAP':<{table_width-1}}{BOX_VERTICAL}{COLOR_NORMAL}\n"
-        output += f"{COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * table_width}{BOX_TEE_UP}{COLOR_NORMAL}\n"
-        
-        for line in table_str.split('\n'):
-            output += f"{COLOR_SUCCESS}{BOX_VERTICAL}{COLOR_NORMAL}{line.ljust(table_width)}{COLOR_SUCCESS}{BOX_VERTICAL}{COLOR_NORMAL}\n"
-        
-        output += f"{COLOR_SUCCESS}{BOX_BOTTOM_LEFT}{BOX_HORIZONTAL * table_width}{BOX_BOTTOM_RIGHT}{COLOR_NORMAL}"
-        
-        caller.msg(f"\n{output}")
+        caller.msg(f"\n|gARMOR COVERAGE MAP|n\n{table}")
     
     def _show_effectiveness_matrix(self, caller):
         """Show armor effectiveness vs damage types."""
@@ -286,7 +282,18 @@ class CmdArmor(Command):
                 for damage_type, effectiveness in damage_types.items()
             }
         
-        table = EvTable("Armor Type", "Bullet", "Stab", "Cut", "Blunt", "Laceration", "Burn", border="cells")
+        table = EvTable("Armor Type", "Bullet", "Stab", "Cut", "Blunt", "Laceration", "Burn",
+                       border="table",
+                       border_top_char=BOX_HORIZONTAL,
+                       border_bottom_char=BOX_HORIZONTAL,
+                       border_left_char=BOX_VERTICAL,
+                       border_right_char=BOX_VERTICAL,
+                       border_top_left_char=BOX_TOP_LEFT,
+                       border_top_right_char=BOX_TOP_RIGHT,
+                       border_bottom_left_char=BOX_BOTTOM_LEFT,
+                       border_bottom_right_char=BOX_BOTTOM_RIGHT,
+                       border_top_middle_char=BOX_TEE_DOWN,
+                       border_bottom_middle_char=BOX_TEE_UP)
         
         for armor_type in ['Kevlar', 'Steel', 'Leather', 'Ceramic']:
             armor_key = armor_type.lower()
@@ -302,23 +309,10 @@ class CmdArmor(Command):
                     effectiveness.get('burn', 'N/A')
                 )
         
-        # Format output with bracket design
-        table_str = str(table)
-        table_width = max(len(line) for line in table_str.split('\n'))
-        
-        output = f"{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * table_width}{BOX_TOP_RIGHT}{COLOR_NORMAL}\n"
-        output += f"{COLOR_SUCCESS}{BOX_VERTICAL} {'ARMOR EFFECTIVENESS MATRIX':<{table_width-1}}{BOX_VERTICAL}{COLOR_NORMAL}\n"
-        output += f"{COLOR_SUCCESS}{BOX_VERTICAL} {'Shows base effectiveness % before armor rating multiplier':<{table_width-1}}{BOX_VERTICAL}{COLOR_NORMAL}\n"
-        output += f"{COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * table_width}{BOX_TEE_UP}{COLOR_NORMAL}\n"
-        
-        for line in table_str.split('\n'):
-            output += f"{COLOR_SUCCESS}{BOX_VERTICAL}{COLOR_NORMAL}{line.ljust(table_width)}{COLOR_SUCCESS}{BOX_VERTICAL}{COLOR_NORMAL}\n"
-        
-        output += f"{COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * table_width}{BOX_TEE_UP}{COLOR_NORMAL}\n"
-        output += f"{COLOR_SUCCESS}{BOX_VERTICAL} {'Note: Final effectiveness = Base % × (Armor Rating / 10)':<{table_width-1}}{BOX_VERTICAL}{COLOR_NORMAL}\n"
-        output += f"{COLOR_SUCCESS}{BOX_BOTTOM_LEFT}{BOX_HORIZONTAL * table_width}{BOX_BOTTOM_RIGHT}{COLOR_NORMAL}"
-        
-        caller.msg(f"\n{output}")
+        caller.msg(f"\n|gARMOR EFFECTIVENESS MATRIX|n")
+        caller.msg("Shows base effectiveness % before armor rating multiplier")
+        caller.msg(f"{table}")
+        caller.msg("\n|xNote: Final effectiveness = Base % × (Armor Rating / 10)|n")
     
     def _show_item_details(self, caller, item_name, worn_armor):
         """Show detailed information about a specific armor piece."""
