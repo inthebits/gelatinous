@@ -841,28 +841,52 @@ class CmdSlot(Command):
     
     def _find_carrier_by_name(self, caller, carrier_name):
         """Find a specific carrier by name."""
-        carriers = self._find_plate_carriers(caller)
-        for carrier in carriers:
-            carrier_aliases = carrier.aliases.all() if hasattr(carrier, 'aliases') else []
-            if (carrier_name.lower() in carrier.key.lower() or 
-                carrier_name.lower() in [alias.lower() for alias in carrier_aliases]):
-                return carrier
+        # Use Evennia's search to handle numbered objects
+        candidates = caller.search(
+            carrier_name,
+            location=caller,
+            quiet=True
+        )
         
-        caller.msg(f"You don't have a plate carrier matching '{carrier_name}'.")
-        return None
+        if not candidates:
+            caller.msg(f"You don't have a plate carrier matching '{carrier_name}'.")
+            return None
+        
+        # If multiple matches, return first one
+        if isinstance(candidates, list):
+            candidates = candidates[0]
+            
+        # Check if it's actually a plate carrier
+        if not getattr(candidates, 'is_plate_carrier', False):
+            caller.msg(f"The {candidates.key} is not a plate carrier.")
+            return None
+            
+        return candidates
     
     def _find_plate_by_name(self, caller, plate_name):
         """Find an armor plate by name in inventory."""
-        for item in caller.contents:
-            # Get aliases properly - AliasHandler requires .all() to get the list
-            item_aliases = item.aliases.all() if hasattr(item, 'aliases') else []
-            if (getattr(item, 'is_armor_plate', False) and
-                (plate_name.lower() in item.key.lower() or 
-                 plate_name.lower() in [alias.lower() for alias in item_aliases])):
-                return item
+        # Use Evennia's search to handle numbered objects (e.g., "plate-2", "2-plate", "2nd plate")
+        candidates = caller.search(
+            plate_name,
+            location=caller,
+            quiet=True
+        )
         
-        caller.msg(f"You don't have an armor plate matching '{plate_name}'.")
-        return None
+        # If search failed, return None
+        if not candidates:
+            caller.msg(f"You don't have an armor plate matching '{plate_name}'.")
+            return None
+        
+        # If multiple matches, return first one (caller.search handles ordinals automatically)
+        if isinstance(candidates, list):
+            candidates = candidates[0]
+            
+        # Check if the found item is actually an armor plate
+        if not getattr(candidates, 'is_armor_plate', False):
+            caller.msg(f"The {candidates.key} is not an armor plate.")
+            return None
+            
+        return candidates
     
     def _find_installed_plate(self, caller, plate_name):
         """Find an installed plate by name."""
@@ -870,9 +894,12 @@ class CmdSlot(Command):
         for carrier in carriers:
             installed_plates = getattr(carrier, 'installed_plates', {})
             for slot, plate in installed_plates.items():
-                plate_aliases = plate.aliases.all() if plate and hasattr(plate, 'aliases') else []
-                if plate and (plate_name.lower() in plate.key.lower() or
-                             plate_name.lower() in [alias.lower() for alias in plate_aliases]):
+                if not plate:
+                    continue
+                # Check if plate matches the search term
+                plate_aliases = plate.aliases.all() if hasattr(plate, 'aliases') else []
+                if (plate_name.lower() in plate.key.lower() or
+                    plate_name.lower() in [alias.lower() for alias in plate_aliases]):
                     return plate, carrier, slot
         
         return None, None, None
