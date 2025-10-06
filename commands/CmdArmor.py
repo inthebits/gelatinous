@@ -103,15 +103,25 @@ class CmdArmor(Command):
             if len(coverage) > 3:
                 coverage_str += f", +{len(coverage)-3} more"
             
-            # Format durability with color coding
+            # Format durability with color coding and 2-stripe bar
             if max_durability > 0:
                 durability_percent = durability / max_durability
+                
+                # Create 2-stripe progress bar
+                bar_length = 10  # Total characters in bar
+                filled = int(durability_percent * bar_length)
+                
+                # Color based on percentage
                 if durability_percent > 0.7:
-                    durability_str = f"|g{durability}/{max_durability}|n"
+                    bar_color = "|g"  # Green
                 elif durability_percent > 0.3:
-                    durability_str = f"|y{durability}/{max_durability}|n"
+                    bar_color = "|y"  # Yellow
                 else:
-                    durability_str = f"|r{durability}/{max_durability}|n"
+                    bar_color = "|r"  # Red
+                
+                # Build bar with ▓ for filled and ░ for empty
+                bar = bar_color + "▓" * filled + "░" * (bar_length - filled) + "|n"
+                durability_str = f"{bar} {durability}/{max_durability}"
             else:
                 durability_str = "N/A"
             
@@ -124,7 +134,7 @@ class CmdArmor(Command):
             )
         
         caller.msg(f"\n|gARMOR STATUS|n\n{table}")
-        caller.msg("|xDurability: |g>70%|x, |y30-70%|x, |r<30%|n")
+        caller.msg("|xDurability Bar: |g▓▓▓▓▓▓▓░░░|x >70%  |y▓▓▓▓▓░░░░░|x 30-70%  |r▓▓░░░░░░░░|x <30%|n")
     
     def _show_coverage_map(self, caller, worn_armor):
         """Show which body locations are protected by armor."""
