@@ -210,6 +210,19 @@ class Character(ObjectParent, DefaultCharacter):
         # Check for armor before applying damage
         final_damage = self._calculate_armor_damage_reduction(amount, location, injury_type)
         
+        # Debug log damage before and after armor
+        try:
+            from world.combat.utils import debug_broadcast
+            if final_damage < amount:
+                damage_absorbed = amount - final_damage
+                debug_broadcast(f"{self.key} took {amount} raw damage → armor absorbed {damage_absorbed} → {final_damage} damage applied", 
+                               "DAMAGE", "ARMOR_CALC")
+            else:
+                debug_broadcast(f"{self.key} took {amount} raw damage (no armor protection)", 
+                               "DAMAGE", "NO_ARMOR")
+        except ImportError:
+            pass
+        
         # Apply anatomical damage through medical system
         from world.medical.utils import apply_anatomical_damage
         damage_results = apply_anatomical_damage(self, final_damage, location, injury_type, target_organ)
