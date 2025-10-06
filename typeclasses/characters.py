@@ -414,8 +414,8 @@ class Character(ObjectParent, DefaultCharacter):
         
         # Layer 2+: Installed plates that protect this location
         if hasattr(carrier, 'installed_plates'):
-            installed_plates = getattr(carrier, 'installed_plates', {})
-            slot_coverage = getattr(carrier, 'plate_slot_coverage', {})
+            installed_plates = carrier.db.installed_plates or {}
+            slot_coverage = carrier.db.plate_slot_coverage or {}
             
             # DEBUG: Log what we're working with
             try:
