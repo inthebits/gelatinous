@@ -134,7 +134,6 @@ class CmdArmor(Command):
             )
         
         caller.msg(f"\n|gARMOR STATUS|n\n{table}")
-        caller.msg("|xDurability Bar: |g▓▓▓▓▓▓▓░░░|x >70%  |y▓▓▓▓▓░░░░░|x 30-70%  |r▓▓░░░░░░░░|x <30%|n")
     
     def _show_coverage_map(self, caller, worn_armor):
         """Show which body locations are protected by armor."""

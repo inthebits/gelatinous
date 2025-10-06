@@ -12,14 +12,14 @@ from evennia.utils.ansi import ANSIString
 
 class BoxTable(EvTable):
     """
-    Custom EvTable that uses Unicode box-drawing characters.
+    Custom EvTable that uses Unicode double-line box-drawing characters.
     
     This subclass overrides EvTable's border rendering to properly use
-    box-drawing characters including:
-    - Corners: ┌ ┐ └ ┘
-    - Lines: ─ │
-    - T-junctions: ┬ ┴ ├ ┤
-    - Cross: ┼
+    double-line box-drawing characters including:
+    - Corners: ╔ ╗ ╚ ╝
+    - Lines: ═ ║
+    - T-junctions: ╦ ╩ ╠ ╣
+    - Cross: ╬
     
     Usage:
         from world.utils.boxtable import BoxTable
@@ -37,17 +37,17 @@ class BoxTable(EvTable):
             *args: Column headers
             **kwargs: Same as EvTable, but border characters are preset
         """
-        # Set default box-drawing characters
+        # Set default box-drawing characters (double-line style to match @stats)
         kwargs.setdefault('border', 'cells')
-        kwargs.setdefault('border_left_char', '│')
-        kwargs.setdefault('border_right_char', '│')
-        kwargs.setdefault('border_top_char', '─')
-        kwargs.setdefault('border_bottom_char', '─')
-        kwargs.setdefault('corner_top_left_char', '┌')
-        kwargs.setdefault('corner_top_right_char', '┐')
-        kwargs.setdefault('corner_bottom_left_char', '└')
-        kwargs.setdefault('corner_bottom_right_char', '┘')
-        kwargs.setdefault('header_line_char', '─')
+        kwargs.setdefault('border_left_char', '║')
+        kwargs.setdefault('border_right_char', '║')
+        kwargs.setdefault('border_top_char', '═')
+        kwargs.setdefault('border_bottom_char', '═')
+        kwargs.setdefault('corner_top_left_char', '╔')
+        kwargs.setdefault('corner_top_right_char', '╗')
+        kwargs.setdefault('corner_bottom_left_char', '╚')
+        kwargs.setdefault('corner_bottom_right_char', '╝')
+        kwargs.setdefault('header_line_char', '═')
         
         # Initialize parent
         super().__init__(*args, **kwargs)
@@ -89,7 +89,7 @@ class BoxTable(EvTable):
         """
         Fix top line T-junctions.
         
-        Replaces + characters (except corners) with ┬ for downward T-junctions.
+        Replaces + characters (except corners) with ╦ for downward T-junctions.
         """
         if not line:
             return line
@@ -97,10 +97,10 @@ class BoxTable(EvTable):
         # Convert to list for easy manipulation
         chars = list(line)
         
-        # Find all + characters and replace with ┬ (except first and last)
+        # Find all + characters and replace with ╦ (except first and last)
         for i in range(1, len(chars) - 1):
             if chars[i] == '+':
-                chars[i] = '┬'
+                chars[i] = '╦'
         
         return ''.join(chars)
     
@@ -108,7 +108,7 @@ class BoxTable(EvTable):
         """
         Fix bottom line T-junctions.
         
-        Replaces + characters (except corners) with ┴ for upward T-junctions.
+        Replaces + characters (except corners) with ╩ for upward T-junctions.
         """
         if not line:
             return line
@@ -116,10 +116,10 @@ class BoxTable(EvTable):
         # Convert to list for easy manipulation
         chars = list(line)
         
-        # Find all + characters and replace with ┴ (except first and last)
+        # Find all + characters and replace with ╩ (except first and last)
         for i in range(1, len(chars) - 1):
             if chars[i] == '+':
-                chars[i] = '┴'
+                chars[i] = '╩'
         
         return ''.join(chars)
     
@@ -128,9 +128,9 @@ class BoxTable(EvTable):
         Fix middle line intersections.
         
         Replaces:
-        - + at start of line with ├
-        - + at end of line with ┤
-        - + in middle with ┼
+        - + at start of line with ╠
+        - + at end of line with ╣
+        - + in middle with ╬
         """
         if not line:
             return line
@@ -140,16 +140,16 @@ class BoxTable(EvTable):
         
         # Fix left edge T-junction
         if len(chars) > 0 and chars[0] == '+':
-            chars[0] = '├'
+            chars[0] = '╠'
         
         # Fix right edge T-junction
         if len(chars) > 1 and chars[-1] == '+':
-            chars[-1] = '┤'
+            chars[-1] = '╣'
         
         # Fix internal crosses
         for i in range(1, len(chars) - 1):
             if chars[i] == '+':
-                chars[i] = '┼'
+                chars[i] = '╬'
         
         return ''.join(chars)
 
