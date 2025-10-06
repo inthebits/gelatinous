@@ -5,12 +5,9 @@ Commands for checking armor condition, effectiveness, and coverage.
 """
 
 from evennia import Command
-from evennia.utils.evtable import EvTable
 from random import randint
+from world.utils.boxtable import BoxTable
 from world.combat.constants import (
-    BOX_TOP_LEFT, BOX_TOP_RIGHT, BOX_BOTTOM_LEFT, BOX_BOTTOM_RIGHT,
-    BOX_HORIZONTAL, BOX_VERTICAL, BOX_TEE_DOWN, BOX_TEE_UP,
-    BOX_TEE_RIGHT, BOX_TEE_LEFT, BOX_CROSS,
     COLOR_SUCCESS, COLOR_NORMAL
 )
 
@@ -84,20 +81,8 @@ class CmdArmor(Command):
             caller.msg("You are not wearing any armor.")
             return
         
-        # Create armor status table with custom border
-        table = EvTable(
-            "Item", "Type", "Rating", "Durability", "Coverage",
-            border="cells",
-            border_left_char=BOX_VERTICAL,
-            border_right_char=BOX_VERTICAL,
-            border_top_char=BOX_HORIZONTAL,
-            border_bottom_char=BOX_HORIZONTAL,
-            corner_top_left_char=BOX_TOP_LEFT,
-            corner_top_right_char=BOX_TOP_RIGHT,
-            corner_bottom_left_char=BOX_BOTTOM_LEFT,
-            corner_bottom_right_char=BOX_BOTTOM_RIGHT,
-            header_line_char=BOX_HORIZONTAL
-        )
+        # Create armor status table with box-drawing characters
+        table = BoxTable("Item", "Type", "Rating", "Durability", "Coverage")
         
         for armor in worn_armor:
             # Get armor stats
@@ -223,20 +208,8 @@ class CmdArmor(Command):
                         'type': getattr(armor, 'armor_type', 'generic')
                     })
         
-        # Create coverage table with custom border
-        table = EvTable(
-            "Body Location", "Protected By", "Type", "Rating",
-            border="cells",
-            border_left_char=BOX_VERTICAL,
-            border_right_char=BOX_VERTICAL,
-            border_top_char=BOX_HORIZONTAL,
-            border_bottom_char=BOX_HORIZONTAL,
-            corner_top_left_char=BOX_TOP_LEFT,
-            corner_top_right_char=BOX_TOP_RIGHT,
-            corner_bottom_left_char=BOX_BOTTOM_LEFT,
-            corner_bottom_right_char=BOX_BOTTOM_RIGHT,
-            header_line_char=BOX_HORIZONTAL
-        )
+        # Create coverage table with box-drawing characters
+        table = BoxTable("Body Location", "Protected By", "Type", "Rating")
         
         # Common body locations for display
         locations = [
@@ -285,19 +258,8 @@ class CmdArmor(Command):
                 for damage_type, effectiveness in damage_types.items()
             }
         
-        table = EvTable(
-            "Armor Type", "Bullet", "Stab", "Cut", "Blunt", "Laceration", "Burn",
-            border="cells",
-            border_left_char=BOX_VERTICAL,
-            border_right_char=BOX_VERTICAL,
-            border_top_char=BOX_HORIZONTAL,
-            border_bottom_char=BOX_HORIZONTAL,
-            corner_top_left_char=BOX_TOP_LEFT,
-            corner_top_right_char=BOX_TOP_RIGHT,
-            corner_bottom_left_char=BOX_BOTTOM_LEFT,
-            corner_bottom_right_char=BOX_BOTTOM_RIGHT,
-            header_line_char=BOX_HORIZONTAL
-        )
+        # Create effectiveness matrix table with box-drawing characters
+        table = BoxTable("Armor Type", "Bullet", "Stab", "Cut", "Blunt", "Laceration", "Burn")
         
         for armor_type in ['Kevlar', 'Steel', 'Leather', 'Ceramic']:
             armor_key = armor_type.lower()
