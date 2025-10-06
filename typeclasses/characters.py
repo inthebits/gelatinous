@@ -291,8 +291,26 @@ class Character(ObjectParent, DefaultCharacter):
                     # Check if this is a plate carrier - needs special handling
                     if (hasattr(item, 'is_plate_carrier') and 
                         getattr(item, 'is_plate_carrier', False)):
+                        # DEBUG: Log plate carrier detection
+                        try:
+                            from world.combat.utils import debug_broadcast
+                            installed = getattr(item, 'installed_plates', {})
+                            debug_broadcast(f"PLATE_CARRIER detected: {item.key} for {location}, installed_plates={list(installed.keys())}", 
+                                           "ARMOR_CALC", "DEBUG")
+                        except:
+                            pass
                         # Expand plate carrier into multiple sequential layers
                         carrier_layers = self._expand_plate_carrier_layers(item, location)
+                        # DEBUG: Log expansion results
+                        try:
+                            from world.combat.utils import debug_broadcast
+                            debug_broadcast(f"PLATE_EXPAND: {len(carrier_layers)} layers created from {item.key}", 
+                                           "ARMOR_CALC", "DEBUG")
+                            for layer in carrier_layers:
+                                debug_broadcast(f"  Layer {layer['layer']}: {layer['item'].key} ({layer['armor_type']}, rating={layer['armor_rating']})", 
+                                               "ARMOR_CALC", "DEBUG")
+                        except:
+                            pass
                         armor_layers.extend(carrier_layers)
                     else:
                         # Regular armor - single layer
