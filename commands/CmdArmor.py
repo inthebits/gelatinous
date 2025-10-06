@@ -84,7 +84,7 @@ class CmdArmor(Command):
             return
         
         # Create armor status table
-        table = EvTable("Item", "Type", "Rating", "Durability", "Coverage", border="table")
+        table = EvTable("Item", "Type", "Rating", "Durability", "Coverage", border="cells")
         
         for armor in worn_armor:
             # Get armor stats
@@ -224,7 +224,7 @@ class CmdArmor(Command):
                     })
         
         # Create coverage table
-        table = EvTable("Body Location", "Protected By", "Type", "Rating", border="table")
+        table = EvTable("Body Location", "Protected By", "Type", "Rating", border="cells")
         
         # Common body locations for display
         locations = [
@@ -286,7 +286,7 @@ class CmdArmor(Command):
                 for damage_type, effectiveness in damage_types.items()
             }
         
-        table = EvTable("Armor Type", "Bullet", "Stab", "Cut", "Blunt", "Laceration", "Burn", border="table")
+        table = EvTable("Armor Type", "Bullet", "Stab", "Cut", "Blunt", "Laceration", "Burn", border="cells")
         
         for armor_type in ['Kevlar', 'Steel', 'Leather', 'Ceramic']:
             armor_key = armor_type.lower()
