@@ -916,8 +916,8 @@ BALLISTIC_PLATE_MEDIUM = {
 
 # Large Steel Plate - Heavy protection
 STEEL_PLATE_LARGE = {
-    "key": "large steel plate",
-    "aliases": ["steel plate", "heavy plate"],
+    "key": "steel plate",
+    "aliases": ["large steel plate", "heavy plate", "steel ballistic plate"],
     "typeclass": "typeclasses.items.Item",
     "desc": "A heavy steel ballistic plate with excellent all-around protection. Significantly heavier than ceramic alternatives but nearly indestructible.",
     "attrs": [
@@ -993,8 +993,8 @@ KEVLAR_VEST = {
 # Steel Plate Armor - Medieval style, excellent all-around protection
 STEEL_PLATE = {
     "prototype_parent": "MELEE_WEAPON_BASE",
-    "key": "steel plate armor",
-    "aliases": ["plate", "armor", "steel armor", "plate mail"],
+    "key": "plate mail",
+    "aliases": ["steel plate mail", "steel plate armor", "plate armor", "steel armor"],
     "typeclass": "typeclasses.items.Item", 
     "desc": "Heavy steel plate armor forged in overlapping segments. Provides excellent protection but restricts movement significantly.",
     "attrs": [
@@ -1088,21 +1088,20 @@ COMBAT_HELMET = {
 
 # Ceramic Trauma Plates - Insert armor for vests
 CERAMIC_PLATES = {
-    "prototype_parent": "MELEE_WEAPON_BASE", 
     "key": "ceramic trauma plates",
-    "aliases": ["plates", "trauma plates", "ceramic insert"],
+    "aliases": ["plates", "trauma plates", "ceramic insert", "ceramic plate"],
     "typeclass": "typeclasses.items.Item",
     "desc": "Advanced ceramic trauma plates designed to be inserted into tactical vests. Extremely effective against high-velocity rounds but brittle.",
     "attrs": [
-        # Clothing attributes
-        ("coverage", ["chest", "back"]),  # Only covers vital organs
-        ("worn_desc", "Barely visible {color}white|n ceramic trauma plates integrated seamlessly into their protective gear, their advanced ballistic composition creating an nearly impenetrable barrier against projectile threats"),
-        ("layer", 4),  # Layer over other armor
-        ("color", "white"),
-        ("material", "ceramic"),
+        # Not worn directly - installed in carriers
+        ("coverage", []),
+        ("layer", 0),  # Not a clothing layer
         ("weight", 4.0),  # Heavy ceramic
+        ("material", "ceramic"),
         
-        # Armor attributes - single-use super protection
+        # Plate properties
+        ("is_armor_plate", True),
+        ("plate_size", "medium"),
         ("armor_rating", 10),       # Maximum protection
         ("armor_type", "ceramic"),  # Excellent vs bullets, degrades quickly
         ("armor_durability", 50),   # Low durability - shatters after absorbing damage
