@@ -85,16 +85,19 @@ class CmdArmor(Command):
             return
         
         # Create armor status table with custom border
-        table = EvTable("Item", "Type", "Rating", "Durability", "Coverage", 
-                       border="incantations",
-                       border_left_char=BOX_VERTICAL,
-                       border_right_char=BOX_VERTICAL,
-                       border_top_char=BOX_HORIZONTAL,
-                       border_bottom_char=BOX_HORIZONTAL,
-                       corner_top_left_char=BOX_TOP_LEFT,
-                       corner_top_right_char=BOX_TOP_RIGHT,
-                       corner_bottom_left_char=BOX_BOTTOM_LEFT,
-                       corner_bottom_right_char=BOX_BOTTOM_RIGHT)
+        table = EvTable(
+            "Item", "Type", "Rating", "Durability", "Coverage",
+            border="table",
+            border_left_char=BOX_VERTICAL,
+            border_right_char=BOX_VERTICAL,
+            border_top_char=BOX_HORIZONTAL,
+            border_bottom_char=BOX_HORIZONTAL,
+            corner_top_left_char=BOX_TOP_LEFT,
+            corner_top_right_char=BOX_TOP_RIGHT,
+            corner_bottom_left_char=BOX_BOTTOM_LEFT,
+            corner_bottom_right_char=BOX_BOTTOM_RIGHT,
+            header_line_char=BOX_HORIZONTAL
+        )
         
         for armor in worn_armor:
             # Get armor stats
@@ -221,16 +224,19 @@ class CmdArmor(Command):
                     })
         
         # Create coverage table with custom border
-        table = EvTable("Body Location", "Protected By", "Type", "Rating",
-                       border="incantations",
-                       border_left_char=BOX_VERTICAL,
-                       border_right_char=BOX_VERTICAL,
-                       border_top_char=BOX_HORIZONTAL,
-                       border_bottom_char=BOX_HORIZONTAL,
-                       corner_top_left_char=BOX_TOP_LEFT,
-                       corner_top_right_char=BOX_TOP_RIGHT,
-                       corner_bottom_left_char=BOX_BOTTOM_LEFT,
-                       corner_bottom_right_char=BOX_BOTTOM_RIGHT)
+        table = EvTable(
+            "Body Location", "Protected By", "Type", "Rating",
+            border="table",
+            border_left_char=BOX_VERTICAL,
+            border_right_char=BOX_VERTICAL,
+            border_top_char=BOX_HORIZONTAL,
+            border_bottom_char=BOX_HORIZONTAL,
+            corner_top_left_char=BOX_TOP_LEFT,
+            corner_top_right_char=BOX_TOP_RIGHT,
+            corner_bottom_left_char=BOX_BOTTOM_LEFT,
+            corner_bottom_right_char=BOX_BOTTOM_RIGHT,
+            header_line_char=BOX_HORIZONTAL
+        )
         
         # Common body locations for display
         locations = [
@@ -279,16 +285,19 @@ class CmdArmor(Command):
                 for damage_type, effectiveness in damage_types.items()
             }
         
-        table = EvTable("Armor Type", "Bullet", "Stab", "Cut", "Blunt", "Laceration", "Burn",
-                       border="incantations",
-                       border_left_char=BOX_VERTICAL,
-                       border_right_char=BOX_VERTICAL,
-                       border_top_char=BOX_HORIZONTAL,
-                       border_bottom_char=BOX_HORIZONTAL,
-                       corner_top_left_char=BOX_TOP_LEFT,
-                       corner_top_right_char=BOX_TOP_RIGHT,
-                       corner_bottom_left_char=BOX_BOTTOM_LEFT,
-                       corner_bottom_right_char=BOX_BOTTOM_RIGHT)
+        table = EvTable(
+            "Armor Type", "Bullet", "Stab", "Cut", "Blunt", "Laceration", "Burn",
+            border="table",
+            border_left_char=BOX_VERTICAL,
+            border_right_char=BOX_VERTICAL,
+            border_top_char=BOX_HORIZONTAL,
+            border_bottom_char=BOX_HORIZONTAL,
+            corner_top_left_char=BOX_TOP_LEFT,
+            corner_top_right_char=BOX_TOP_RIGHT,
+            corner_bottom_left_char=BOX_BOTTOM_LEFT,
+            corner_bottom_right_char=BOX_BOTTOM_RIGHT,
+            header_line_char=BOX_HORIZONTAL
+        )
         
         for armor_type in ['Kevlar', 'Steel', 'Leather', 'Ceramic']:
             armor_key = armor_type.lower()
