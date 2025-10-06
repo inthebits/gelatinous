@@ -7,6 +7,11 @@ Commands for checking armor condition, effectiveness, and coverage.
 from evennia import Command
 from evennia.utils.evtable import EvTable
 from random import randint
+from world.combat.constants import (
+    BOX_TOP_LEFT, BOX_TOP_RIGHT, BOX_BOTTOM_LEFT, BOX_BOTTOM_RIGHT,
+    BOX_HORIZONTAL, BOX_VERTICAL, BOX_TEE_DOWN, BOX_TEE_UP,
+    COLOR_SUCCESS, COLOR_NORMAL
+)
 
 
 class CmdArmor(Command):
@@ -120,8 +125,21 @@ class CmdArmor(Command):
                 coverage_str
             )
         
-        caller.msg(f"\n|wYour Armor:|n\n{table}")
-        caller.msg("|xDurability: |g>70%|x, |y30-70%|x, |r<30%|n")
+        # Format output with bracket design
+        table_str = str(table)
+        table_width = max(len(line) for line in table_str.split('\n'))
+        
+        output = f"{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * table_width}{BOX_TOP_RIGHT}{COLOR_NORMAL}\n"
+        output += f"{COLOR_SUCCESS}{BOX_VERTICAL} {'ARMOR STATUS':<{table_width-1}}{BOX_VERTICAL}{COLOR_NORMAL}\n"
+        output += f"{COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * table_width}{BOX_TEE_UP}{COLOR_NORMAL}\n"
+        
+        for line in table_str.split('\n'):
+            output += f"{COLOR_SUCCESS}{BOX_VERTICAL}{COLOR_NORMAL}{line.ljust(table_width)}{COLOR_SUCCESS}{BOX_VERTICAL}{COLOR_NORMAL}\n"
+        
+        output += f"{COLOR_SUCCESS}{BOX_BOTTOM_LEFT}{BOX_HORIZONTAL * table_width}{BOX_BOTTOM_RIGHT}{COLOR_NORMAL}\n"
+        output += f"{COLOR_SUCCESS}Durability: |g>70%{COLOR_SUCCESS}, |y30-70%{COLOR_SUCCESS}, |r<30%{COLOR_NORMAL}"
+        
+        caller.msg(f"\n{output}")
     
     def _show_coverage_map(self, caller, worn_armor):
         """Show which body locations are protected by armor."""
@@ -239,7 +257,20 @@ class CmdArmor(Command):
                     "0/10"
                 )
         
-        caller.msg(f"\n|wArmor Coverage Map:|n\n{table}")
+        # Format output with bracket design
+        table_str = str(table)
+        table_width = max(len(line) for line in table_str.split('\n'))
+        
+        output = f"{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * table_width}{BOX_TOP_RIGHT}{COLOR_NORMAL}\n"
+        output += f"{COLOR_SUCCESS}{BOX_VERTICAL} {'ARMOR COVERAGE MAP':<{table_width-1}}{BOX_VERTICAL}{COLOR_NORMAL}\n"
+        output += f"{COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * table_width}{BOX_TEE_UP}{COLOR_NORMAL}\n"
+        
+        for line in table_str.split('\n'):
+            output += f"{COLOR_SUCCESS}{BOX_VERTICAL}{COLOR_NORMAL}{line.ljust(table_width)}{COLOR_SUCCESS}{BOX_VERTICAL}{COLOR_NORMAL}\n"
+        
+        output += f"{COLOR_SUCCESS}{BOX_BOTTOM_LEFT}{BOX_HORIZONTAL * table_width}{BOX_BOTTOM_RIGHT}{COLOR_NORMAL}"
+        
+        caller.msg(f"\n{output}")
     
     def _show_effectiveness_matrix(self, caller):
         """Show armor effectiveness vs damage types."""
@@ -271,10 +302,23 @@ class CmdArmor(Command):
                     effectiveness.get('burn', 'N/A')
                 )
         
-        caller.msg(f"\n|wArmor Effectiveness Matrix:|n")
-        caller.msg("Shows base effectiveness % before armor rating multiplier")
-        caller.msg(f"{table}")
-        caller.msg("\n|xNote: Final effectiveness = Base % × (Armor Rating / 10)|n")
+        # Format output with bracket design
+        table_str = str(table)
+        table_width = max(len(line) for line in table_str.split('\n'))
+        
+        output = f"{COLOR_SUCCESS}{BOX_TOP_LEFT}{BOX_HORIZONTAL * table_width}{BOX_TOP_RIGHT}{COLOR_NORMAL}\n"
+        output += f"{COLOR_SUCCESS}{BOX_VERTICAL} {'ARMOR EFFECTIVENESS MATRIX':<{table_width-1}}{BOX_VERTICAL}{COLOR_NORMAL}\n"
+        output += f"{COLOR_SUCCESS}{BOX_VERTICAL} {'Shows base effectiveness % before armor rating multiplier':<{table_width-1}}{BOX_VERTICAL}{COLOR_NORMAL}\n"
+        output += f"{COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * table_width}{BOX_TEE_UP}{COLOR_NORMAL}\n"
+        
+        for line in table_str.split('\n'):
+            output += f"{COLOR_SUCCESS}{BOX_VERTICAL}{COLOR_NORMAL}{line.ljust(table_width)}{COLOR_SUCCESS}{BOX_VERTICAL}{COLOR_NORMAL}\n"
+        
+        output += f"{COLOR_SUCCESS}{BOX_TEE_DOWN}{BOX_HORIZONTAL * table_width}{BOX_TEE_UP}{COLOR_NORMAL}\n"
+        output += f"{COLOR_SUCCESS}{BOX_VERTICAL} {'Note: Final effectiveness = Base % × (Armor Rating / 10)':<{table_width-1}}{BOX_VERTICAL}{COLOR_NORMAL}\n"
+        output += f"{COLOR_SUCCESS}{BOX_BOTTOM_LEFT}{BOX_HORIZONTAL * table_width}{BOX_BOTTOM_RIGHT}{COLOR_NORMAL}"
+        
+        caller.msg(f"\n{output}")
     
     def _show_item_details(self, caller, item_name, worn_armor):
         """Show detailed information about a specific armor piece."""
