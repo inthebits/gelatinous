@@ -871,8 +871,8 @@ PLATE_CARRIER = {
         ("plate_slot_coverage", {
             "front": ["chest"],
             "back": ["back"],
-            "left_side": ["torso"],
-            "right_side": ["torso"]
+            "left_side": ["abdomen"],
+            "right_side": ["abdomen"]
         }),
         
         # Style system for tactical adjustments

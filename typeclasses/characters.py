@@ -270,24 +270,40 @@ class Character(ObjectParent, DefaultCharacter):
             
         # Find all armor covering this location, sorted by layer (outermost first)
         armor_layers = []
-        # Cache coverage calculations for performance
+        # Cache coverage calculations and track seen items to avoid duplicates
         coverage_cache = {}
+        seen_items = set()
+        
         for loc, items in self.worn_items.items():
             for item in items:
+                # Skip if we've already processed this item
+                if id(item) in seen_items:
+                    continue
+                seen_items.add(id(item))
+                
                 # Check if this item covers the hit location and has armor rating
                 # Use cached coverage to avoid repeated function calls
                 if item not in coverage_cache:
                     coverage_cache[item] = getattr(item, 'get_current_coverage', lambda: getattr(item, 'coverage', []))()
                 current_coverage = coverage_cache[item]
+                
                 if location in current_coverage:
-                    total_armor_rating = self._get_total_armor_rating(item, location=location)
-                    if total_armor_rating > 0:
-                        armor_layers.append({
-                            'item': item,
-                            'layer': getattr(item, 'layer', 2),
-                            'armor_rating': total_armor_rating,
-                            'armor_type': getattr(item, 'armor_type', 'generic')
-                        })
+                    # Check if this is a plate carrier - needs special handling
+                    if (hasattr(item, 'is_plate_carrier') and 
+                        getattr(item, 'is_plate_carrier', False)):
+                        # Expand plate carrier into multiple sequential layers
+                        carrier_layers = self._expand_plate_carrier_layers(item, location)
+                        armor_layers.extend(carrier_layers)
+                    else:
+                        # Regular armor - single layer
+                        armor_rating = getattr(item, 'armor_rating', 0)
+                        if armor_rating > 0:
+                            armor_layers.append({
+                                'item': item,
+                                'layer': getattr(item, 'layer', 2),
+                                'armor_rating': armor_rating,
+                                'armor_type': getattr(item, 'armor_type', 'generic')
+                            })
         
         if not armor_layers:
             return damage  # No armor at this location
@@ -348,8 +364,68 @@ class Character(ObjectParent, DefaultCharacter):
             
         return int(remaining_damage)  # Ensure return type is always int
     
-
-    
+    def _expand_plate_carrier_layers(self, carrier, location):
+        """
+        Expand a plate carrier into multiple armor layers for the specified location.
+        
+        Each layer (base carrier + each applicable plate) gets processed separately
+        with its own armor type and effectiveness calculation.
+        
+        Args:
+            carrier: The plate carrier item
+            location (str): Hit location (e.g., "chest", "back", "abdomen")
+            
+        Returns:
+            list: List of armor layer dicts, each with item, layer, armor_rating, armor_type
+        """
+        layers = []
+        base_layer_number = getattr(carrier, 'layer', 2)
+        
+        # Plates are outer layers (higher number = processed first)
+        plate_layer_number = base_layer_number + 1
+        
+        # Layer 1: Base carrier (always present if carrier has rating)
+        base_rating = getattr(carrier, 'armor_rating', 0)
+        if base_rating > 0:
+            layers.append({
+                'item': carrier,
+                'layer': base_layer_number,  # Inner layer
+                'armor_rating': base_rating,
+                'armor_type': getattr(carrier, 'armor_type', 'generic')
+            })
+        
+        # Layer 2+: Installed plates that protect this location
+        if hasattr(carrier, 'installed_plates'):
+            installed_plates = getattr(carrier, 'installed_plates', {})
+            slot_coverage = getattr(carrier, 'plate_slot_coverage', {})
+            
+            for slot_name, plate in installed_plates.items():
+                if not plate or not hasattr(plate, 'armor_rating'):
+                    continue
+                
+                # Check if this plate protects the hit location
+                protected_locations = slot_coverage.get(slot_name, [])
+                if location not in protected_locations:
+                    continue
+                
+                # Get plate's armor properties
+                plate_rating = getattr(plate, 'armor_rating', 0)
+                plate_type = getattr(plate, 'armor_type', 'generic')
+                
+                # For abdomen with 2 side plates, each contributes half its rating
+                # This is because side plates are angled and only partially cover abdomen
+                if location == "abdomen" and slot_name in ["left_side", "right_side"]:
+                    plate_rating = plate_rating // 2
+                
+                if plate_rating > 0:
+                    layers.append({
+                        'item': plate,  # Reference the plate itself for degradation
+                        'layer': plate_layer_number,  # Outer layer - processed before carrier
+                        'armor_rating': plate_rating,
+                        'armor_type': plate_type  # Use plate's material, not carrier's
+                    })
+        
+        return layers
 
     
     def _get_total_armor_rating(self, item, location=None):
