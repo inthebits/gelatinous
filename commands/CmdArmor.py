@@ -51,14 +51,17 @@ class CmdArmor(Command):
     def _get_worn_armor(self, character):
         """Get all worn items that have armor properties."""
         armor_items = []
+        seen_items = set()  # Track items we've already added
         
         if not hasattr(character, 'worn_items') or not character.worn_items:
             return armor_items
             
         for location, items in character.worn_items.items():
             for item in items:
-                if hasattr(item, 'armor_rating') and item.armor_rating > 0:
+                # Only add each unique item once
+                if item.id not in seen_items and hasattr(item, 'armor_rating') and item.armor_rating > 0:
                     armor_items.append(item)
+                    seen_items.add(item.id)
         
         return armor_items
     
@@ -74,7 +77,13 @@ class CmdArmor(Command):
         for armor in worn_armor:
             # Get armor stats
             armor_type = getattr(armor, 'armor_type', 'generic')
-            rating = getattr(armor, 'armor_rating', 0)
+            
+            # Calculate total rating (includes plates for carriers)
+            if getattr(armor, 'is_plate_carrier', False):
+                rating = self._calculate_total_rating(armor)
+            else:
+                rating = getattr(armor, 'armor_rating', 0)
+            
             durability = getattr(armor, 'armor_durability', 0)
             max_durability = getattr(armor, 'max_armor_durability', 0)
             
@@ -117,7 +126,13 @@ class CmdArmor(Command):
         coverage_map = {}
         for armor in worn_armor:
             coverage = getattr(armor, 'get_current_coverage', lambda: getattr(armor, 'coverage', []))()
-            rating = getattr(armor, 'armor_rating', 0)
+            
+            # Calculate total rating (includes plates for carriers)
+            if getattr(armor, 'is_plate_carrier', False):
+                rating = self._calculate_total_rating(armor)
+            else:
+                rating = getattr(armor, 'armor_rating', 0)
+            
             for location in coverage:
                 if location not in coverage_map or coverage_map[location]['rating'] < rating:
                     coverage_map[location] = {
