@@ -1111,8 +1111,8 @@ COMBAT_HELMET = {
         # Armor attributes
         ("armor_rating", 7),        # High head protection
         ("armor_type", "kevlar"),   # Good vs bullets
-        ("armor_durability", 140),  # Rating * 20
-        ("max_armor_durability", 140),
+        ("armor_durability", 20),   # Moderate durability
+        ("max_armor_durability", 20),
         ("base_armor_rating", 7),
     ],
 }
