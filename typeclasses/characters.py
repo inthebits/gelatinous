@@ -424,6 +424,8 @@ class Character(ObjectParent, DefaultCharacter):
                                "ARMOR_CALC", "DEBUG")
                 debug_broadcast(f"PLATE_LOOP: installed_plates type={type(installed_plates)}, value={installed_plates}", 
                                "ARMOR_CALC", "DEBUG")
+                debug_broadcast(f"PLATE_LOOP: slot_coverage={slot_coverage}", 
+                               "ARMOR_CALC", "DEBUG")
             except:
                 pass
             
