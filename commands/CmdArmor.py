@@ -552,7 +552,7 @@ class CmdSlot(Command):
     """
     
     key = "slot"
-    aliases = ["install"]
+    aliases = []
     locks = "cmd:all()"
     help_category = "Combat"
     
@@ -943,7 +943,7 @@ class CmdUnslot(Command):
     """
     
     key = "unslot" 
-    aliases = ["remove", "uninstall"]
+    aliases = []
     locks = "cmd:all()"
     help_category = "Combat"
     
