@@ -65,6 +65,13 @@ class CmdArmor(Command):
         
         return armor_items
     
+    def _calculate_total_rating(self, carrier):
+        """Calculate total armor rating for carrier including installed plates."""
+        base_rating = getattr(carrier, 'armor_rating', 0)
+        installed_plates = getattr(carrier, 'installed_plates', {})
+        plate_rating = sum(getattr(plate, 'armor_rating', 0) for plate in installed_plates.values() if plate)
+        return base_rating + plate_rating
+    
     def _list_armor(self, caller, worn_armor):
         """List all worn armor with basic stats."""
         if not worn_armor:
