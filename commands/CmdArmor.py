@@ -97,8 +97,9 @@ class CmdArmor(Command):
                        border_bottom_right_char=BOX_BOTTOM_RIGHT,
                        border_top_middle_char=BOX_TEE_DOWN,
                        border_bottom_middle_char=BOX_TEE_UP,
-                       border_left_middle_char=BOX_VERTICAL,
-                       border_right_middle_char=BOX_VERTICAL)
+                       border_left_middle_char=BOX_TEE_RIGHT,
+                       border_right_middle_char=BOX_TEE_LEFT,
+                       border_middle_char=BOX_CROSS)
         
         for armor in worn_armor:
             # Get armor stats
