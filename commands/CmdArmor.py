@@ -96,7 +96,6 @@ class CmdArmor(Command):
             corner_top_right_char=BOX_TOP_RIGHT,
             corner_bottom_left_char=BOX_BOTTOM_LEFT,
             corner_bottom_right_char=BOX_BOTTOM_RIGHT,
-            corner_char=BOX_CROSS,
             header_line_char=BOX_HORIZONTAL
         )
         
@@ -236,7 +235,6 @@ class CmdArmor(Command):
             corner_top_right_char=BOX_TOP_RIGHT,
             corner_bottom_left_char=BOX_BOTTOM_LEFT,
             corner_bottom_right_char=BOX_BOTTOM_RIGHT,
-            corner_char=BOX_CROSS,
             header_line_char=BOX_HORIZONTAL
         )
         
@@ -298,7 +296,6 @@ class CmdArmor(Command):
             corner_top_right_char=BOX_TOP_RIGHT,
             corner_bottom_left_char=BOX_BOTTOM_LEFT,
             corner_bottom_right_char=BOX_BOTTOM_RIGHT,
-            corner_char=BOX_CROSS,
             header_line_char=BOX_HORIZONTAL
         )
         
