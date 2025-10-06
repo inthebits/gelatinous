@@ -129,24 +129,81 @@ class CmdArmor(Command):
             caller.msg("You are not wearing any armor.")
             return
         
-        # Build coverage map
+        # Build coverage map - stores list of armor pieces per location
         coverage_map = {}
+        
         for armor in worn_armor:
             coverage = getattr(armor, 'get_current_coverage', lambda: getattr(armor, 'coverage', []))()
             
-            # Calculate total rating (includes plates for carriers)
+            # For plate carriers, calculate location-specific ratings
             if getattr(armor, 'is_plate_carrier', False):
-                rating = self._calculate_total_rating(armor)
-            else:
-                rating = getattr(armor, 'armor_rating', 0)
-            
-            for location in coverage:
-                if location not in coverage_map or coverage_map[location]['rating'] < rating:
-                    coverage_map[location] = {
+                base_rating = getattr(armor, 'armor_rating', 0)
+                installed_plates = getattr(armor, 'installed_plates', {})
+                
+                # Calculate protection for each body location
+                for location in coverage:
+                    if location not in coverage_map:
+                        coverage_map[location] = []
+                    
+                    location_rating = base_rating
+                    plate_details = []
+                    
+                    # Add plates that protect this specific location
+                    if location == "chest":
+                        # Front plate protects chest
+                        front_plate = installed_plates.get('front')
+                        if front_plate:
+                            plate_rating = getattr(front_plate, 'armor_rating', 0)
+                            location_rating += plate_rating
+                            plate_details.append(f"{front_plate.key} (+{plate_rating})")
+                    elif location == "back":
+                        # Back plate protects back
+                        back_plate = installed_plates.get('back')
+                        if back_plate:
+                            plate_rating = getattr(back_plate, 'armor_rating', 0)
+                            location_rating += plate_rating
+                            plate_details.append(f"{back_plate.key} (+{plate_rating})")
+                    elif location == "abdomen":
+                        # Side plates contribute to abdomen (averaged)
+                        side_protection = 0
+                        left_plate = installed_plates.get('left_side')
+                        right_plate = installed_plates.get('right_side')
+                        if left_plate:
+                            left_rating = getattr(left_plate, 'armor_rating', 0)
+                            side_protection += left_rating
+                            plate_details.append(f"{left_plate.key} (+{left_rating}/2)")
+                        if right_plate:
+                            right_rating = getattr(right_plate, 'armor_rating', 0)
+                            side_protection += right_rating
+                            plate_details.append(f"{right_plate.key} (+{right_rating}/2)")
+                        # Average the side plates for abdomen
+                        if side_protection > 0:
+                            location_rating += side_protection // 2
+                    
+                    # Build armor description
+                    armor_desc = armor.key
+                    if plate_details:
+                        armor_desc += " [" + ", ".join(plate_details) + "]"
+                    
+                    coverage_map[location].append({
                         'armor': armor,
+                        'description': armor_desc,
+                        'rating': location_rating,
+                        'type': getattr(armor, 'armor_type', 'generic')
+                    })
+            else:
+                # Regular armor uses standard rating for all covered locations
+                rating = getattr(armor, 'armor_rating', 0)
+                for location in coverage:
+                    if location not in coverage_map:
+                        coverage_map[location] = []
+                    
+                    coverage_map[location].append({
+                        'armor': armor,
+                        'description': armor.key,
                         'rating': rating,
                         'type': getattr(armor, 'armor_type', 'generic')
-                    }
+                    })
         
         # Create coverage table
         table = EvTable("Body Location", "Protected By", "Type", "Rating", border="table")
@@ -161,13 +218,19 @@ class CmdArmor(Command):
         
         for location in locations:
             if location in coverage_map:
-                armor_info = coverage_map[location]
-                table.add_row(
-                    location.replace('_', ' ').title(),
-                    armor_info['armor'].key,
-                    armor_info['type'].title(),
-                    f"{armor_info['rating']}/10"
-                )
+                armor_list = coverage_map[location]
+                # Sort by rating, highest first
+                armor_list.sort(key=lambda x: x['rating'], reverse=True)
+                
+                # Add each armor piece as a row
+                for i, armor_info in enumerate(armor_list):
+                    location_name = location.replace('_', ' ').title() if i == 0 else ""
+                    table.add_row(
+                        location_name,
+                        armor_info['description'],
+                        armor_info['type'].title(),
+                        f"{armor_info['rating']}/10"
+                    )
             else:
                 table.add_row(
                     location.replace('_', ' ').title(),
