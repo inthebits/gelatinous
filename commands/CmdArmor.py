@@ -10,6 +10,7 @@ from random import randint
 from world.combat.constants import (
     BOX_TOP_LEFT, BOX_TOP_RIGHT, BOX_BOTTOM_LEFT, BOX_BOTTOM_RIGHT,
     BOX_HORIZONTAL, BOX_VERTICAL, BOX_TEE_DOWN, BOX_TEE_UP,
+    BOX_TEE_RIGHT, BOX_TEE_LEFT, BOX_CROSS,
     COLOR_SUCCESS, COLOR_NORMAL
 )
 

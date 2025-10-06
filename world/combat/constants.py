@@ -317,8 +317,11 @@ BOX_BOTTOM_LEFT = "╚"
 BOX_BOTTOM_RIGHT = "╝"
 BOX_HORIZONTAL = "═"
 BOX_VERTICAL = "║"
-BOX_TEE_DOWN = "╠"
-BOX_TEE_UP = "╣"
+BOX_TEE_DOWN = "╦"      # Top edge T-junction
+BOX_TEE_UP = "╩"        # Bottom edge T-junction
+BOX_TEE_RIGHT = "╠"     # Left edge T-junction
+BOX_TEE_LEFT = "╣"      # Right edge T-junction
+BOX_CROSS = "╬"         # Center cross junction
 
 # ===================================================================
 # MOVEMENT & ACTIONS
