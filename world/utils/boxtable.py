@@ -176,8 +176,18 @@ class BoxTable(EvTable):
         if screen_width is None:
             screen_width = get_terminal_width(session)
         
-        # Get the table output
-        table_output = str(self)
+        # Get the table output (without header, we'll add it after centering)
+        has_header = self._header_title is not None
+        header_text = self._header_title
+        center_header = self._center_header
+        
+        # Temporarily remove header to get just the table
+        self._header_title = None
+        table_output = super().__str__()
+        
+        # Restore header for future calls
+        self._header_title = header_text
+        
         lines = table_output.split('\n')
         
         if not lines:
@@ -188,13 +198,30 @@ class BoxTable(EvTable):
         
         # Calculate left padding for centering
         if table_width >= screen_width:
-            return table_output  # Don't center if table is wider than screen
+            left_padding = 0  # Don't center if table is wider than screen
+        else:
+            left_padding = (screen_width - table_width) // 2
         
-        left_padding = (screen_width - table_width) // 2
         padding_str = " " * left_padding
         
-        # Add padding to each line
+        # Add padding to each table line
         centered_lines = [padding_str + line for line in lines]
+        
+        # If we have a header, add it centered with the same padding
+        if has_header:
+            if center_header:
+                # Center the header text relative to the table width
+                visible_len = len(ANSIString(header_text).clean())
+                header_padding = (table_width - visible_len) // 2
+                centered_header = " " * header_padding + header_text
+            else:
+                centered_header = header_text
+            
+            # Add the screen left padding to the header too
+            centered_header = padding_str + centered_header
+            
+            # Prepend header to output
+            centered_lines.insert(0, centered_header)
         
         return '\n'.join(centered_lines)
     
