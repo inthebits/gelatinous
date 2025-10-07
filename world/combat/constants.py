@@ -81,6 +81,34 @@ ANATOMICAL_REGIONS = {
     "leg_region": ["groin", "left_thigh", "right_thigh", "left_shin", "right_shin", "left_foot", "right_foot"]
 }
 
+# Coverage inheritance - parent locations can optionally cover their children
+# This is more for logical relationships where coverage naturally extends
+# Head locations (head, face, eyes, ears) are INDEPENDENT - no automatic inheritance
+# This allows for partial head protection (e.g., helmet without face protection)
+COVERAGE_INHERITANCE = {
+    "head": [],  # Head (skull/crown) is separate from face/eyes/ears
+    "face": [],  # Face is separate
+    "left_eye": [],  # Eyes are separate
+    "right_eye": [],
+    "left_ear": [],  # Ears are separate
+    "right_ear": [],
+    "neck": [],  # Neck is standalone
+    "chest": [],  # No sub-locations
+    "back": [],
+    "abdomen": [],
+    "left_arm": [],  # Arms don't automatically include hands
+    "right_arm": [],
+    "left_hand": [],
+    "right_hand": [],
+    "groin": [],
+    "left_thigh": [],  # Thighs don't automatically include shins
+    "right_thigh": [],
+    "left_shin": [],  # Shins don't automatically include feet
+    "right_shin": [],
+    "left_foot": [],
+    "right_foot": []
+}
+
 # ===================================================================
 # CLOTHING SYSTEM CONSTANTS  
 # ===================================================================

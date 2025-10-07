@@ -774,7 +774,7 @@ TACTICAL_JUMPSUIT = {
     "desc": "A form-fitting tactical jumpsuit made from reinforced synthetic weave. Provides minimal protection while maintaining maximum mobility and comfort.",
     "attrs": [
         # Clothing attributes
-        ("coverage", ["chest", "back", "abdomen", "groin", "left_arm", "right_arm", "left_thigh", "right_thigh"]),
+        ("coverage", ["chest", "back", "abdomen", "groin", "left_arm", "right_arm", "left_thigh", "right_thigh", "left_shin", "right_shin", "left_foot", "right_foot"]),
         ("worn_desc", "A sleek {color}black|n tactical jumpsuit that hugs their form like a second skin, its reinforced synthetic weave providing minimal protection while prioritizing mobility and tactical flexibility"),
         ("layer", 1),  # Base layer
         ("color", "black"),
@@ -1092,16 +1092,16 @@ ARMORED_LEATHER_JACKET = {
     ],
 }
 
-# Combat Helmet - Head protection
+# Combat Helmet - Head protection (skull/crown only, face exposed)
 COMBAT_HELMET = {
     "prototype_parent": "MELEE_WEAPON_BASE",
     "key": "combat helmet",
     "aliases": ["helmet", "tactical helmet"],
     "typeclass": "typeclasses.items.Item",
-    "desc": "A military-grade combat helmet with ballistic protection and integrated communication systems.",
+    "desc": "A military-grade combat helmet with ballistic protection for the skull. The open-face design provides excellent visibility and hearing while protecting the crown and sides of the head.",
     "attrs": [
         # Clothing attributes
-        ("coverage", ["head"]),
+        ("coverage", ["head", "left_ear", "right_ear"]),  # Protects skull and ears, but face/eyes/jaw exposed
         ("worn_desc", "A menacing {color}matte black|n tactical helmet with ballistic protection, its angular design and integrated electronics creating an intimidating visage of military precision"),
         ("layer", 2),
         ("color", "black"),

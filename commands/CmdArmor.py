@@ -191,8 +191,31 @@ class CmdArmor(Command):
             caller.msg("You are not wearing any armor.")
             return
         
+        # Helper function to check if armor covers a location (with inheritance)
+        def armor_covers_location(armor_coverage, target_location):
+            """Check if armor coverage list covers target location, including inherited coverage."""
+            from world.combat.constants import COVERAGE_INHERITANCE
+            
+            if target_location in armor_coverage:
+                return True
+            
+            # Check if any parent location in armor coverage covers this target
+            for parent_loc in armor_coverage:
+                children = COVERAGE_INHERITANCE.get(parent_loc, [])
+                if target_location in children:
+                    return True
+            
+            return False
+        
         # Build coverage map - stores list of armor pieces per location
         coverage_map = {}
+        
+        # Get all possible body locations from character
+        from world.combat.constants import ANATOMICAL_DISPLAY_ORDER
+        if hasattr(caller, 'longdesc') and caller.longdesc:
+            all_locations = [loc for loc in ANATOMICAL_DISPLAY_ORDER if loc in caller.longdesc]
+        else:
+            all_locations = ANATOMICAL_DISPLAY_ORDER
         
         for armor in worn_armor:
             coverage = getattr(armor, 'get_current_coverage', lambda: getattr(armor, 'coverage', []))()
@@ -202,8 +225,12 @@ class CmdArmor(Command):
                 base_rating = getattr(armor, 'armor_rating', 0)
                 installed_plates = getattr(armor, 'installed_plates', {})
                 
-                # Calculate protection for each body location
-                for location in coverage:
+                # Check each possible body location
+                for location in all_locations:
+                    # Skip if armor doesn't cover this location (with inheritance)
+                    if not armor_covers_location(coverage, location):
+                        continue
+                        
                     if location not in coverage_map:
                         coverage_map[location] = []
                     
@@ -211,7 +238,7 @@ class CmdArmor(Command):
                     plate_details = []
                     
                     # Add plates that protect this specific location
-                    if location == "chest":
+                    if location in ["chest"]:
                         # Front plate protects chest
                         front_plate = installed_plates.get('front')
                         if front_plate:
@@ -258,7 +285,13 @@ class CmdArmor(Command):
             else:
                 # Regular armor uses standard rating for all covered locations
                 rating = getattr(armor, 'armor_rating', 0)
-                for location in coverage:
+                
+                # Check each possible body location
+                for location in all_locations:
+                    # Skip if armor doesn't cover this location (with inheritance)
+                    if not armor_covers_location(coverage, location):
+                        continue
+                    
                     if location not in coverage_map:
                         coverage_map[location] = []
                     
@@ -277,15 +310,8 @@ class CmdArmor(Command):
         # Create coverage table with box-drawing characters
         table = BoxTable("Body Location", "Protected By", "Type", "Rating")
         
-        # Common body locations for display
-        locations = [
-            "head", "chest", "back", "abdomen", 
-            "left_arm", "right_arm", "left_hand", "right_hand",
-            "groin", "left_thigh", "right_thigh", 
-            "left_shin", "right_shin", "left_foot", "right_foot"
-        ]
-        
-        for location in locations:
+        # Use the all_locations list we already built above
+        for location in all_locations:
             if location in coverage_map:
                 armor_list = coverage_map[location]
                 # Sort by rating, highest first
