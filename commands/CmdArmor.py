@@ -137,7 +137,7 @@ class CmdArmor(Command):
             coverage = getattr(armor, 'get_current_coverage', lambda: getattr(armor, 'coverage', []))()
             coverage_str = ", ".join(coverage[:3])  # Show first 3 locations
             if len(coverage) > 3:
-                coverage_str += f", +{len(coverage)-3} more"
+                coverage_str += f", &{len(coverage)-3} more"
             
             # Format durability with color coding and 2-stripe bar
             if max_durability > 0:
