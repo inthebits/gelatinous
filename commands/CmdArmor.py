@@ -311,7 +311,11 @@ class CmdArmor(Command):
         # Add centered header
         table.add_header("|gARMOR COVERAGE MAP|n", center=center_headers)
         
-        caller.msg(f"\n{table}")
+        # Center the table on screen
+        session = caller.sessions.get()[0] if caller.sessions.get() else None
+        centered_table = table.center_on_screen(session=session)
+        
+        caller.msg(f"\n{centered_table}")
     
     def _show_effectiveness_matrix(self, caller):
         """Show armor effectiveness vs damage types."""
@@ -352,8 +356,11 @@ class CmdArmor(Command):
         # Add centered header
         table.add_header("|gARMOR EFFECTIVENESS MATRIX|n", center=center_headers)
         
-        caller.msg("\nShows base effectiveness % before armor rating multiplier")
-        caller.msg(f"{table}")
+        # Center the table on screen
+        session = caller.sessions.get()[0] if caller.sessions.get() else None
+        centered_table = table.center_on_screen(session=session)
+        
+        caller.msg(f"\n{centered_table}")
         caller.msg("\n|xNote: Final effectiveness = Base % × (Armor Rating / 10)|n")
     
     def _show_item_details(self, caller, item_name, worn_armor):
