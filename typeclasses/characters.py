@@ -1331,29 +1331,68 @@ class Character(ObjectParent, DefaultCharacter):
                             'message': f"You can't wear {item.key} (layer {item_layer}) under {worn_item.key} (layer {worn_layer}) - remove the outer layer first."
                         })
         
-        # If conflicts found, report them
+        # If conflicts found, report them concisely in natural language
         if conflicts:
-            # Group by type for clearer messaging
-            same_layer_conflicts = [c for c in conflicts if c['type'] == 'same_layer']
-            under_outer_conflicts = [c for c in conflicts if c['type'] == 'under_outer']
+            # Group conflicts by item (not by location) to reduce spam
+            conflicts_by_item = {}
+            for conflict in conflicts:
+                conflicting_item = conflict['item']
+                if conflicting_item not in conflicts_by_item:
+                    conflicts_by_item[conflicting_item] = {
+                        'type': conflict['type'],
+                        'locations': [],
+                        'layer': getattr(conflicting_item, 'layer', 2)
+                    }
+                conflicts_by_item[conflicting_item]['locations'].append(conflict['location'])
             
-            error_msg = f"You can't wear {item.key}:\n"
+            # Separate by conflict type
+            same_layer_items = [k for k, v in conflicts_by_item.items() if v['type'] == 'same_layer']
+            under_outer_items = [k for k, v in conflicts_by_item.items() if v['type'] == 'under_outer']
             
-            if same_layer_conflicts:
-                error_msg += "\n|yLayer conflicts:|n\n"
-                for conflict in same_layer_conflicts[:3]:  # Show max 3
-                    error_msg += f"  • {conflict['message']}\n"
-                if len(same_layer_conflicts) > 3:
-                    error_msg += f"  • ... and {len(same_layer_conflicts) - 3} more location(s)\n"
+            # Build natural language error message with proper grammar
+            if same_layer_items and under_outer_items:
+                # Both types of conflicts
+                if len(same_layer_items) == 1:
+                    same_part = f"the {same_layer_items[0].key}"
+                else:
+                    same_names = [i.key for i in same_layer_items]
+                    if len(same_names) == 2:
+                        same_part = f"the {same_names[0]} and the {same_names[1]}"
+                    else:
+                        same_part = ", ".join([f"the {n}" for n in same_names[:-1]]) + f", and the {same_names[-1]}"
+                
+                if len(under_outer_items) == 1:
+                    under_part = f"the {under_outer_items[0].key}"
+                else:
+                    under_names = [i.key for i in under_outer_items]
+                    if len(under_names) == 2:
+                        under_part = f"the {under_names[0]} and the {under_names[1]}"
+                    else:
+                        under_part = ", ".join([f"the {n}" for n in under_names[:-1]]) + f", and the {under_names[-1]}"
+                
+                error_msg = f"You are already wearing {same_part}, and you would need to wear the {item.key} under {under_part}."
+            elif same_layer_items:
+                # Only same-layer conflicts
+                if len(same_layer_items) == 1:
+                    error_msg = f"You are already wearing the {same_layer_items[0].key}."
+                elif len(same_layer_items) == 2:
+                    error_msg = f"You are already wearing the {same_layer_items[0].key} and the {same_layer_items[1].key}."
+                else:
+                    names = [i.key for i in same_layer_items]
+                    item_list = ", ".join([f"the {n}" for n in names[:-1]]) + f", and the {names[-1]}"
+                    error_msg = f"You are already wearing {item_list}."
+            else:
+                # Only under-outer conflicts
+                if len(under_outer_items) == 1:
+                    error_msg = f"You would need to wear the {item.key} under the {under_outer_items[0].key} - remove it first."
+                elif len(under_outer_items) == 2:
+                    error_msg = f"You would need to wear the {item.key} under the {under_outer_items[0].key} and the {under_outer_items[1].key} - remove them first."
+                else:
+                    names = [i.key for i in under_outer_items]
+                    item_list = ", ".join([f"the {n}" for n in names[:-1]]) + f", and the {names[-1]}"
+                    error_msg = f"You would need to wear the {item.key} under {item_list} - remove them first."
             
-            if under_outer_conflicts:
-                error_msg += "\n|yLayering violations:|n\n"
-                for conflict in under_outer_conflicts[:3]:  # Show max 3
-                    error_msg += f"  • {conflict['message']}\n"
-                if len(under_outer_conflicts) > 3:
-                    error_msg += f"  • ... and {len(under_outer_conflicts) - 3} more location(s)\n"
-            
-            return False, error_msg.rstrip()
+            return False, error_msg
         
         # No conflicts - proceed with wearing
         for location in item_coverage:
@@ -1402,29 +1441,33 @@ class Character(ObjectParent, DefaultCharacter):
                                 'layer': worn_layer
                             })
         
-        # If blocked, report it
+        # If blocked, report it in natural language
         if blocking_items:
             # Get unique items (may block at multiple locations)
             unique_blockers = {}
             for block in blocking_items:
                 blocker = block['item']
                 if blocker not in unique_blockers:
-                    unique_blockers[blocker] = []
-                unique_blockers[blocker].append(block['location'])
+                    unique_blockers[blocker] = {
+                        'layer': block['layer'],
+                        'locations': []
+                    }
+                unique_blockers[blocker]['locations'].append(block['location'])
             
-            error_msg = f"You can't remove {item.key} (layer {item_layer}) - outer layers are blocking it:\n"
-            for blocker, locations in list(unique_blockers.items())[:3]:  # Show max 3
-                blocker_layer = getattr(blocker, 'layer', 2)
-                loc_str = ", ".join([loc.replace('_', ' ') for loc in locations[:2]])
-                if len(locations) > 2:
-                    loc_str += f", +{len(locations)-2} more"
-                error_msg += f"  • {blocker.key} (layer {blocker_layer}) at {loc_str}\n"
+            # Natural language, single-sentence response - list all blockers with proper grammar
+            if len(unique_blockers) == 1:
+                blocker = list(unique_blockers.keys())[0]
+                error_msg = f"Remove the {blocker.key} first."
+            elif len(unique_blockers) == 2:
+                blocker1, blocker2 = list(unique_blockers.keys())
+                error_msg = f"Remove the {blocker1.key} and the {blocker2.key} first."
+            else:
+                # 3+ blockers
+                names = [b.key for b in unique_blockers.keys()]
+                item_list = ", ".join([f"the {n}" for n in names[:-1]]) + f", and the {names[-1]}"
+                error_msg = f"Remove {item_list} first."
             
-            if len(unique_blockers) > 3:
-                error_msg += f"  • ... and {len(unique_blockers) - 3} more item(s)\n"
-            
-            error_msg += "\nRemove outer layers first."
-            return False, error_msg.rstrip()
+            return False, error_msg
         
         # No blocking - proceed with removal
         if self.worn_items:
