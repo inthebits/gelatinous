@@ -150,6 +150,16 @@ class BoxTable(EvTable):
             else:
                 table_width = 78
             
+            # DEBUG: Print centering calculation
+            from evennia.comms.models import ChannelDB
+            try:
+                splatter = ChannelDB.objects.get_channel("Splattercast")
+                visible_len = len(ANSIString(self._header_title).clean())
+                padding = (table_width - visible_len) // 2
+                splatter.msg(f"BOXTABLE_HEADER: title='{self._header_title}' visible_len={visible_len} table_width={table_width} padding={padding}")
+            except:
+                pass
+            
             if self._center_header:
                 # Center the title based on table width
                 visible_len = len(ANSIString(self._header_title).clean())
