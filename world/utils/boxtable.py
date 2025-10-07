@@ -222,21 +222,22 @@ class BoxTable(EvTable):
         if has_header:
             # Create a boxed header that matches the table style
             # The bottom border needs to connect with the table's top border
-            # We'll need to replace the table's top border to connect properly
             
-            # Get the table's first line (top border) to find column positions
-            table_top = ANSIString(lines[0]).clean() if lines else ""
+            # Get the table's first line (top border) - use the actual line with any color codes
+            table_top_raw = lines[0] if lines else ""
+            # Also get clean version for width calculation
+            table_top_clean = ANSIString(table_top_raw).clean() if lines else ""
             
-            # Create header box top border
+            # Create header box top border (same width as table)
             top_border = self._corner_tl + self._border_top * (table_width - 2) + self._corner_tr
             
             # Create header bottom border that connects with table top
             # This replaces the table's top border with proper T-junctions
-            if table_top:
+            if table_top_clean:
                 # Replace the first line (table top) to connect with header
                 # Change corners to T-junctions: ╔ -> ╠, ╗ -> ╣
                 # Keep the column separators (╦) as T-junctions pointing down (╦)
-                bottom_border = table_top.replace('╔', '╠').replace('╗', '╣')
+                bottom_border = table_top_clean.replace('╔', '╠').replace('╗', '╣')
                 # Remove this line from centered_lines since we'll add it as part of header
                 centered_lines.pop(0)
             else:
@@ -250,16 +251,10 @@ class BoxTable(EvTable):
                 inner_width = table_width - 2
                 text_padding = (inner_width - visible_len) // 2
                 right_padding = inner_width - visible_len - text_padding
-                
-                # DEBUG
-                from evennia.comms.models import ChannelDB
-                try:
-                    splatter = ChannelDB.objects.get_channel("Splattercast")
-                    splatter.msg(f"HEADER_CENTER: text='{header_text}' visible={visible_len} inner_width={inner_width} left_pad={text_padding} right_pad={right_padding}")
-                except:
-                    pass
-                
                 header_line = self._border_left + " " * text_padding + header_text + " " * right_padding + self._border_right
+                
+                # DEBUG: Print to console
+                print(f"DEBUG CENTERING: visible={visible_len}, inner={inner_width}, pad={text_padding}")
             else:
                 # Left-align the header text within the box
                 visible_len = len(ANSIString(header_text).clean())
