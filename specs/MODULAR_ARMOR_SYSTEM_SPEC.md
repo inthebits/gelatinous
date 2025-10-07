@@ -356,9 +356,83 @@ BALLISTIC_PLATE_BACK = {
 
 ## Commands and Interface
 
+### Display System and UI Enhancements
+
+**BoxTable System** (`world/utils/boxtable.py`):
+- Enhanced EvTable with Unicode box-drawing characters (╔═╗║╚╝╠╣╦╩╬)
+- Screen-width detection via session protocol flags
+- Automatic table centering on player's screen
+- Centered boxed headers matching table styling
+- ANSI-aware text width calculations for accurate centering
+
+**Player Configuration**:
+- `caller.db.center_armor_headers` - Enable/disable table centering (default: `True`)
+- Automatically detects screen width with fallback to 78 columns
+- Minimum width of 60 columns enforced
+
+**Display Features**:
+- Tables automatically centered on screen based on detected terminal width
+- Headers presented in bordered boxes that connect seamlessly to table top
+- Consistent box-drawing character style across all armor displays
+- Color-aware width calculations prevent misalignment from ANSI codes
+
 ### Armor Inspection Commands
 
 #### `armor` - Comprehensive Armor Status
+```
+> armor
+                            ╔═══════════════════════════╗
+                            ║     ARMOR STATUS          ║
+                            ╠══════╦═══════╦════════╦═══╣
+                            ║ Item ║ Type  ║ Rating ║...║
+                            ╠══════╬═══════╬════════╬═══╣
+                            ║ ...  ║ ...   ║ ...    ║...║
+                            ╚══════╩═══════╩════════╩═══╝
+```
+
+Displays:
+- Item name, armor type, protection rating
+- Durability bar with visual indicator
+- Body coverage areas
+- All tables centered on screen with boxed headers
+
+#### `armor coverage` - Location-Specific Protection Map
+```
+> armor coverage
+                      ╔═══════════════════════════════╗
+                      ║   ARMOR COVERAGE MAP          ║
+                      ╠═══════════╦═════════╦════╦════╣
+                      ║ Location  ║ Armor   ║... ║... ║
+                      ╠═══════════╬═════════╬════╬════╣
+                      ║ ...       ║ ...     ║... ║... ║
+                      ╚═══════════╩═════════╩════╩════╝
+```
+
+Shows detailed protection for each body location:
+- Lists all armor pieces protecting each location
+- Shows armor type and rating per location
+- Highlights unprotected areas
+- For plate carriers, shows which plates protect which locations
+
+#### `armor effectiveness` - Damage Type Matrix
+```
+> armor effectiveness
+                ╔══════════════════════════════════╗
+                ║ ARMOR EFFECTIVENESS MATRIX       ║
+                ╠══════╦════════╦═══════╦═══════╦══╣
+                ║ Type ║ Bullet ║ Stab  ║ Cut   ║..║
+                ╠══════╬════════╬═══════╬═══════╬══╣
+                ║ ...  ║ ...    ║ ...   ║ ...   ║..║
+                ╚══════╩════════╩═══════╩═══════╩══╝
+```
+
+Displays effectiveness percentages for each armor type vs damage type:
+- Kevlar, Steel, Leather, Ceramic armor types
+- Bullet, Stab, Cut, Blunt, Laceration, Burn damage types
+- Shows base effectiveness percentage
+- Centered table presentation
+
+#### `armor` - Legacy Text Format (when centering disabled)
 ```
 > armor
 === ARMOR STATUS ===
