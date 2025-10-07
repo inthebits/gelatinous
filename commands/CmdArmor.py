@@ -83,6 +83,8 @@ class CmdArmor(Command):
         
         # Check if caller wants centered headers (default: True)
         center_headers = getattr(caller.db, 'center_armor_headers', True)
+        if center_headers is None:
+            center_headers = True
         
         # Create armor status table with box-drawing characters
         table = BoxTable("Item", "Type", "Rating", "Durability", "Coverage")
@@ -269,6 +271,8 @@ class CmdArmor(Command):
         
         # Check if caller wants centered headers (default: True)
         center_headers = getattr(caller.db, 'center_armor_headers', True)
+        if center_headers is None:
+            center_headers = True
         
         # Create coverage table with box-drawing characters
         table = BoxTable("Body Location", "Protected By", "Type", "Rating")
@@ -315,6 +319,8 @@ class CmdArmor(Command):
         
         # Check if caller wants centered headers (default: True)
         center_headers = getattr(caller.db, 'center_armor_headers', True)
+        if center_headers is None:
+            center_headers = True
         
         # Convert to percentage display format
         effectiveness_display = {}
