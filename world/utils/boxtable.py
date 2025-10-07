@@ -165,6 +165,12 @@ class BoxTable(EvTable):
                 visible_len = len(ANSIString(self._header_title).clean())
                 padding = (table_width - visible_len) // 2
                 centered_title = " " * padding + self._header_title
+                
+                # DEBUG: Show what we're actually creating
+                try:
+                    splatter.msg(f"BOXTABLE_CENTERED: centered_title='[{centered_title}]' len={len(centered_title)}")
+                except:
+                    pass
             else:
                 centered_title = self._header_title
             
