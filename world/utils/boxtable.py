@@ -150,33 +150,53 @@ class BoxTable(EvTable):
             else:
                 table_width = 78
             
-            # DEBUG: Print centering calculation
-            from evennia.comms.models import ChannelDB
-            try:
-                splatter = ChannelDB.objects.get_channel("Splattercast")
-                visible_len = len(ANSIString(self._header_title).clean())
-                padding = (table_width - visible_len) // 2
-                splatter.msg(f"BOXTABLE_HEADER: title='{self._header_title}' visible_len={visible_len} table_width={table_width} padding={padding}")
-            except:
-                pass
-            
             if self._center_header:
                 # Center the title based on table width
                 visible_len = len(ANSIString(self._header_title).clean())
                 padding = (table_width - visible_len) // 2
                 centered_title = " " * padding + self._header_title
-                
-                # DEBUG: Show what we're actually creating
-                try:
-                    splatter.msg(f"BOXTABLE_CENTERED: centered_title='[{centered_title}]' len={len(centered_title)}")
-                except:
-                    pass
             else:
                 centered_title = self._header_title
             
             return f"{centered_title}\n{table_str}"
         
         return table_str
+    
+    def center_on_screen(self, screen_width=None, session=None):
+        """
+        Center the entire table on screen.
+        
+        Args:
+            screen_width (int, optional): Width to center within. If None, auto-detect
+            session: Evennia session for width detection
+            
+        Returns:
+            str: Centered table output
+        """
+        if screen_width is None:
+            screen_width = get_terminal_width(session)
+        
+        # Get the table output
+        table_output = str(self)
+        lines = table_output.split('\n')
+        
+        if not lines:
+            return table_output
+        
+        # Calculate table width from first line
+        table_width = len(ANSIString(lines[0]).clean())
+        
+        # Calculate left padding for centering
+        if table_width >= screen_width:
+            return table_output  # Don't center if table is wider than screen
+        
+        left_padding = (screen_width - table_width) // 2
+        padding_str = " " * left_padding
+        
+        # Add padding to each line
+        centered_lines = [padding_str + line for line in lines]
+        
+        return '\n'.join(centered_lines)
     
     def _generate_lines(self):
         """

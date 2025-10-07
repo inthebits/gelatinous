@@ -175,7 +175,13 @@ class CmdArmor(Command):
         # Add centered header using BoxTable's built-in functionality
         table.add_header("ARMOR STATUS", center=center_headers)
         
-        caller.msg(f"\n{table}")
+        # Center the entire table on screen if caller has a session
+        if hasattr(caller, 'sessions') and caller.sessions.all():
+            session = caller.sessions.all()[0]
+            centered_output = table.center_on_screen(session=session)
+            caller.msg(f"\n{centered_output}")
+        else:
+            caller.msg(f"\n{table}")
     
     def _show_coverage_map(self, caller, worn_armor):
         """Show which body locations are protected by armor."""
