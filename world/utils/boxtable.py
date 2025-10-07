@@ -220,6 +220,8 @@ class BoxTable(EvTable):
         
         # If we have a header, add it centered with the same padding
         if has_header:
+            print(f"DEBUG: has_header=True, center_header={center_header}, header_text='{header_text}'")
+            
             # Create a boxed header that matches the table style
             # The bottom border needs to connect with the table's top border
             
@@ -245,6 +247,7 @@ class BoxTable(EvTable):
                 bottom_border = self._border_left + self._header_line * (table_width - 2) + self._border_right
             
             if center_header:
+                print(f"DEBUG: Entering center_header branch")
                 # Center the header text within the box
                 visible_len = len(ANSIString(header_text).clean())
                 # Account for the border characters (║ on each side = 2 chars)
@@ -253,8 +256,7 @@ class BoxTable(EvTable):
                 right_padding = inner_width - visible_len - text_padding
                 header_line = self._border_left + " " * text_padding + header_text + " " * right_padding + self._border_right
                 
-                # DEBUG: Print to console
-                print(f"DEBUG CENTERING: visible={visible_len}, inner={inner_width}, pad={text_padding}")
+                print(f"DEBUG CENTERING: visible={visible_len}, inner={inner_width}, pad={text_padding}, header_line_len={len(header_line)}")
             else:
                 # Left-align the header text within the box
                 visible_len = len(ANSIString(header_text).clean())
