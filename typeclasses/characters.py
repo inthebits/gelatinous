@@ -1300,11 +1300,62 @@ class Character(ObjectParent, DefaultCharacter):
         
         # Get item's current coverage (accounting for style states)
         item_coverage = item.get_current_coverage()
+        item_layer = getattr(item, 'layer', 2)
         
-        # Check for layer conflicts and build worn_items structure
+        # Check for layer conflicts before wearing
         if not self.worn_items:
             self.worn_items = {}
         
+        # Detect layer conflicts
+        conflicts = []
+        for location in item_coverage:
+            if location in self.worn_items:
+                for worn_item in self.worn_items[location]:
+                    worn_layer = getattr(worn_item, 'layer', 2)
+                    
+                    # CONFLICT 1: Trying to wear same layer at same location
+                    if worn_layer == item_layer:
+                        conflicts.append({
+                            'type': 'same_layer',
+                            'location': location,
+                            'item': worn_item,
+                            'message': f"You're already wearing {worn_item.key} on your {location.replace('_', ' ')} (both layer {item_layer})."
+                        })
+                    
+                    # CONFLICT 2: Trying to wear inner layer over outer layer
+                    elif item_layer < worn_layer:
+                        conflicts.append({
+                            'type': 'under_outer',
+                            'location': location,
+                            'item': worn_item,
+                            'message': f"You can't wear {item.key} (layer {item_layer}) under {worn_item.key} (layer {worn_layer}) - remove the outer layer first."
+                        })
+        
+        # If conflicts found, report them
+        if conflicts:
+            # Group by type for clearer messaging
+            same_layer_conflicts = [c for c in conflicts if c['type'] == 'same_layer']
+            under_outer_conflicts = [c for c in conflicts if c['type'] == 'under_outer']
+            
+            error_msg = f"You can't wear {item.key}:\n"
+            
+            if same_layer_conflicts:
+                error_msg += "\n|yLayer conflicts:|n\n"
+                for conflict in same_layer_conflicts[:3]:  # Show max 3
+                    error_msg += f"  • {conflict['message']}\n"
+                if len(same_layer_conflicts) > 3:
+                    error_msg += f"  • ... and {len(same_layer_conflicts) - 3} more location(s)\n"
+            
+            if under_outer_conflicts:
+                error_msg += "\n|yLayering violations:|n\n"
+                for conflict in under_outer_conflicts[:3]:  # Show max 3
+                    error_msg += f"  • {conflict['message']}\n"
+                if len(under_outer_conflicts) > 3:
+                    error_msg += f"  • ... and {len(under_outer_conflicts) - 3} more location(s)\n"
+            
+            return False, error_msg.rstrip()
+        
+        # No conflicts - proceed with wearing
         for location in item_coverage:
             if location not in self.worn_items:
                 self.worn_items[location] = []
@@ -1325,14 +1376,59 @@ class Character(ObjectParent, DefaultCharacter):
         return True, f"You put on {item.key}."
     
     def remove_item(self, item):
-        """Remove worn clothing item"""
+        """Remove worn clothing item, checking for outer layers blocking removal"""
         # Validate item is worn
         if not self.is_item_worn(item):
             return False, "You're not wearing that item."
         
-        # Remove from all worn_items locations
+        # Check if any outer layers are blocking removal
+        item_layer = getattr(item, 'layer', 2)
+        item_coverage = getattr(item, 'get_current_coverage', lambda: getattr(item, 'coverage', []))()
+        
+        blocking_items = []
         if self.worn_items:
-            for location, items in self.worn_items.items():
+            for location in item_coverage:
+                if location in self.worn_items:
+                    for worn_item in self.worn_items[location]:
+                        if worn_item == item:
+                            continue
+                        worn_layer = getattr(worn_item, 'layer', 2)
+                        
+                        # Outer layers (higher numbers) block removal of inner layers
+                        if worn_layer > item_layer:
+                            blocking_items.append({
+                                'item': worn_item,
+                                'location': location,
+                                'layer': worn_layer
+                            })
+        
+        # If blocked, report it
+        if blocking_items:
+            # Get unique items (may block at multiple locations)
+            unique_blockers = {}
+            for block in blocking_items:
+                blocker = block['item']
+                if blocker not in unique_blockers:
+                    unique_blockers[blocker] = []
+                unique_blockers[blocker].append(block['location'])
+            
+            error_msg = f"You can't remove {item.key} (layer {item_layer}) - outer layers are blocking it:\n"
+            for blocker, locations in list(unique_blockers.items())[:3]:  # Show max 3
+                blocker_layer = getattr(blocker, 'layer', 2)
+                loc_str = ", ".join([loc.replace('_', ' ') for loc in locations[:2]])
+                if len(locations) > 2:
+                    loc_str += f", +{len(locations)-2} more"
+                error_msg += f"  • {blocker.key} (layer {blocker_layer}) at {loc_str}\n"
+            
+            if len(unique_blockers) > 3:
+                error_msg += f"  • ... and {len(unique_blockers) - 3} more item(s)\n"
+            
+            error_msg += "\nRemove outer layers first."
+            return False, error_msg.rstrip()
+        
+        # No blocking - proceed with removal
+        if self.worn_items:
+            for location, items in list(self.worn_items.items()):
                 if item in items:
                     items.remove(item)
                     # Clean up empty lists
