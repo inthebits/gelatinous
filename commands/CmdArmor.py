@@ -137,7 +137,7 @@ class CmdArmor(Command):
             coverage = getattr(armor, 'get_current_coverage', lambda: getattr(armor, 'coverage', []))()
             coverage_str = ", ".join(coverage[:3])  # Show first 3 locations
             if len(coverage) > 3:
-                coverage_str += f", &{len(coverage)-3} more"
+                coverage_str += f", & {len(coverage)-3} more"
             
             # Format durability with color coding and 2-stripe bar
             if max_durability > 0:
@@ -169,7 +169,9 @@ class CmdArmor(Command):
                 coverage_str
             )
         
-        caller.msg(f"\n|gARMOR STATUS|n\n{table}")
+        # Add title as header
+        table.add_header("ARMOR STATUS")
+        caller.msg(f"\n{table}")
     
     def _show_coverage_map(self, caller, worn_armor):
         """Show which body locations are protected by armor."""
