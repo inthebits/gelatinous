@@ -102,11 +102,16 @@ class CmdDamageTest(Command):
         location = args[1] if len(args) > 1 else "chest"
         injury_type = args[2] if len(args) > 2 else "generic"
         
-        # Apply damage and check result
-        target_died = caller.take_damage(damage_amount, location, injury_type)
+        # Apply damage and check result - take_damage returns (died, actual_damage)
+        target_died, actual_damage = caller.take_damage(damage_amount, location, injury_type)
         
-        # Show basic damage message
-        caller.msg(f"|rYou take {damage_amount} {injury_type} damage to your {location}!|n")
+        # Show damage message with armor info if applicable
+        if actual_damage < damage_amount:
+            armor_absorbed = damage_amount - actual_damage
+            caller.msg(f"|rYou take {damage_amount} {injury_type} damage to your {location}!|n")
+            caller.msg(f"|gArmor absorbed {armor_absorbed} damage - {actual_damage} damage applied.|n")
+        else:
+            caller.msg(f"|rYou take {damage_amount} {injury_type} damage to your {location}!|n")
         
         # Show medical status after damage
         try:
@@ -137,11 +142,13 @@ class CmdDamageTest(Command):
                 if total_wounds > 0:
                     caller.msg(f"|yYou now have {total_wounds} total wounds.|n")
         
-        # Check for critical status
+        # Check for critical status - death and unconsciousness are handled by medical system
+        # but we show explicit test feedback here
         if target_died:
-            caller.msg("|R*** YOU ARE DEAD ***|n")
+            # Death progression script will handle actual death messages
+            caller.msg("|R[TEST] Death triggered - medical death progression active.|n")
         elif caller.is_unconscious():
-            caller.msg("|Y*** YOU ARE UNCONSCIOUS ***|n")
+            caller.msg("|Y[TEST] Unconsciousness triggered.|n")
 
 
 class CmdMedicalInfo(Command):
