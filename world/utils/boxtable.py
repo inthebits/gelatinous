@@ -221,9 +221,27 @@ class BoxTable(EvTable):
         # If we have a header, add it centered with the same padding
         if has_header:
             # Create a boxed header that matches the table style
-            # Use the stored box-drawing characters
+            # The bottom border needs to connect with the table's top border
+            # We'll need to replace the table's top border to connect properly
+            
+            # Get the table's first line (top border) to find column positions
+            table_top = lines[0] if lines else ""
+            
+            # Create header box top border
             top_border = self._corner_tl + self._border_top * (table_width - 2) + self._corner_tr
-            bottom_border = self._border_left + self._header_line * (table_width - 2) + self._border_right
+            
+            # Create header bottom border that connects with table top
+            # This replaces the table's top border with proper T-junctions
+            if table_top:
+                # Replace the first line (table top) to connect with header
+                # Change corners to T-junctions: ╔ -> ╠, ╗ -> ╣
+                # Keep the column separators (╦) as crosses (╬)
+                bottom_border = table_top.replace('╔', '╠').replace('╗', '╣').replace('╦', '╬')
+                # Remove this line from centered_lines since we'll add it as part of header
+                centered_lines.pop(0)
+            else:
+                # Fallback if no table top
+                bottom_border = self._border_left + self._header_line * (table_width - 2) + self._border_right
             
             if center_header:
                 # Center the header text within the box
@@ -237,8 +255,8 @@ class BoxTable(EvTable):
                 # Left-align the header text within the box
                 visible_len = len(ANSIString(header_text).clean())
                 inner_width = table_width - 2
-                right_padding = inner_width - visible_len
-                header_line = self._border_left + header_text + " " * right_padding + self._border_right
+                right_padding = inner_width - visible_len - 1  # -1 for left padding
+                header_line = self._border_left + " " + header_text + " " * right_padding + self._border_right
             
             # Add the screen left padding to all header lines
             boxed_header = [
@@ -247,7 +265,7 @@ class BoxTable(EvTable):
                 padding_str + bottom_border
             ]
             
-            # Prepend boxed header to output
+            # Prepend boxed header to output (table top is already removed)
             for i, line in enumerate(boxed_header):
                 centered_lines.insert(i, line)
         
