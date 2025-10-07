@@ -213,7 +213,9 @@ class BoxTable(EvTable):
                 # Center the header text relative to the table width
                 visible_len = len(ANSIString(header_text).clean())
                 header_padding = (table_width - visible_len) // 2
-                centered_header = " " * header_padding + header_text
+                # Create centered header with padding on both sides to match table width
+                right_padding = table_width - visible_len - header_padding
+                centered_header = " " * header_padding + header_text + " " * right_padding
             else:
                 centered_header = header_text
             
