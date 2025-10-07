@@ -309,7 +309,7 @@ class CmdArmor(Command):
                 )
         
         # Add centered header
-        table.add_header("|gARMOR COVERAGE MAP|n", center=center_headers)
+        table.add_header("ARMOR COVERAGE MAP", center=center_headers)
         
         # Center the table on screen
         session = caller.sessions.get()[0] if caller.sessions.get() else None
@@ -354,7 +354,7 @@ class CmdArmor(Command):
                 )
         
         # Add centered header
-        table.add_header("|gARMOR EFFECTIVENESS MATRIX|n", center=center_headers)
+        table.add_header("ARMOR EFFECTIVENESS MATRIX", center=center_headers)
         
         # Center the table on screen
         session = caller.sessions.get()[0] if caller.sessions.get() else None
