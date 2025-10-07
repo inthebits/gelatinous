@@ -1350,47 +1350,48 @@ class Character(ObjectParent, DefaultCharacter):
             under_outer_items = [k for k, v in conflicts_by_item.items() if v['type'] == 'under_outer']
             
             # Build natural language error message with proper grammar
+            # Use item.key (what they're trying to wear) and conflicting item keys
             if same_layer_items and under_outer_items:
                 # Both types of conflicts
                 if len(same_layer_items) == 1:
                     same_part = f"the {same_layer_items[0].key}"
                 else:
-                    same_names = [i.key for i in same_layer_items]
+                    same_names = [f"the {i.key}" for i in same_layer_items]
                     if len(same_names) == 2:
-                        same_part = f"the {same_names[0]} and the {same_names[1]}"
+                        same_part = f"{same_names[0]} and {same_names[1]}"
                     else:
-                        same_part = ", ".join([f"the {n}" for n in same_names[:-1]]) + f", and the {same_names[-1]}"
+                        same_part = ", ".join(same_names[:-1]) + f", and {same_names[-1]}"
                 
                 if len(under_outer_items) == 1:
                     under_part = f"the {under_outer_items[0].key}"
                 else:
-                    under_names = [i.key for i in under_outer_items]
+                    under_names = [f"the {i.key}" for i in under_outer_items]
                     if len(under_names) == 2:
-                        under_part = f"the {under_names[0]} and the {under_names[1]}"
+                        under_part = f"{under_names[0]} and {under_names[1]}"
                     else:
-                        under_part = ", ".join([f"the {n}" for n in under_names[:-1]]) + f", and the {under_names[-1]}"
+                        under_part = ", ".join(under_names[:-1]) + f", and {under_names[-1]}"
                 
-                error_msg = f"You are already wearing {same_part}, and you would need to wear the {item.key} under {under_part}."
+                error_msg = f"You cannot wear the {item.key} over {same_part}, and you would need to wear it under {under_part}."
             elif same_layer_items:
-                # Only same-layer conflicts
+                # Only same-layer conflicts - explain you can't wear it over what's already worn
                 if len(same_layer_items) == 1:
-                    error_msg = f"You are already wearing the {same_layer_items[0].key}."
+                    error_msg = f"You cannot wear the {item.key} over the {same_layer_items[0].key} you are already wearing."
                 elif len(same_layer_items) == 2:
-                    error_msg = f"You are already wearing the {same_layer_items[0].key} and the {same_layer_items[1].key}."
+                    error_msg = f"You cannot wear the {item.key} over the {same_layer_items[0].key} and the {same_layer_items[1].key} you are already wearing."
                 else:
-                    names = [i.key for i in same_layer_items]
-                    item_list = ", ".join([f"the {n}" for n in names[:-1]]) + f", and the {names[-1]}"
-                    error_msg = f"You are already wearing {item_list}."
+                    names = [f"the {i.key}" for i in same_layer_items]
+                    item_list = ", ".join(names[:-1]) + f", and {names[-1]}"
+                    error_msg = f"You cannot wear the {item.key} over {item_list} you are already wearing."
             else:
                 # Only under-outer conflicts
                 if len(under_outer_items) == 1:
-                    error_msg = f"You would need to wear the {item.key} under the {under_outer_items[0].key} - remove it first."
+                    error_msg = f"You cannot wear the {item.key} under the {under_outer_items[0].key} - remove it first."
                 elif len(under_outer_items) == 2:
-                    error_msg = f"You would need to wear the {item.key} under the {under_outer_items[0].key} and the {under_outer_items[1].key} - remove them first."
+                    error_msg = f"You cannot wear the {item.key} under the {under_outer_items[0].key} and the {under_outer_items[1].key} - remove them first."
                 else:
-                    names = [i.key for i in under_outer_items]
-                    item_list = ", ".join([f"the {n}" for n in names[:-1]]) + f", and the {names[-1]}"
-                    error_msg = f"You would need to wear the {item.key} under {item_list} - remove them first."
+                    names = [f"the {i.key}" for i in under_outer_items]
+                    item_list = ", ".join(names[:-1]) + f", and {names[-1]}"
+                    error_msg = f"You cannot wear the {item.key} under {item_list} - remove them first."
             
             return False, error_msg
         
@@ -1454,7 +1455,7 @@ class Character(ObjectParent, DefaultCharacter):
                     }
                 unique_blockers[blocker]['locations'].append(block['location'])
             
-            # Natural language, single-sentence response - list all blockers with proper grammar
+            # Natural language, single-sentence response
             if len(unique_blockers) == 1:
                 blocker = list(unique_blockers.keys())[0]
                 error_msg = f"Remove the {blocker.key} first."
@@ -1463,8 +1464,8 @@ class Character(ObjectParent, DefaultCharacter):
                 error_msg = f"Remove the {blocker1.key} and the {blocker2.key} first."
             else:
                 # 3+ blockers
-                names = [b.key for b in unique_blockers.keys()]
-                item_list = ", ".join([f"the {n}" for n in names[:-1]]) + f", and the {names[-1]}"
+                names = [f"the {b.key}" for b in unique_blockers.keys()]
+                item_list = ", ".join(names[:-1]) + f", and {names[-1]}"
                 error_msg = f"Remove {item_list} first."
             
             return False, error_msg
