@@ -98,6 +98,17 @@ class BoxTable(EvTable):
         kwargs.setdefault('corner_bottom_right_char', '╝')
         kwargs.setdefault('header_line_char', '═')
         
+        # Store border characters as instance attributes for later use
+        self._border_left = kwargs['border_left_char']
+        self._border_right = kwargs['border_right_char']
+        self._border_top = kwargs['border_top_char']
+        self._border_bottom = kwargs['border_bottom_char']
+        self._corner_tl = kwargs['corner_top_left_char']
+        self._corner_tr = kwargs['corner_top_right_char']
+        self._corner_bl = kwargs['corner_bottom_left_char']
+        self._corner_br = kwargs['corner_bottom_right_char']
+        self._header_line = kwargs['header_line_char']
+        
         # Initialize parent
         super().__init__(*args, **kwargs)
         
@@ -210,9 +221,9 @@ class BoxTable(EvTable):
         # If we have a header, add it centered with the same padding
         if has_header:
             # Create a boxed header that matches the table style
-            # Use the same box-drawing characters as the table
-            top_border = self.corner_top_left_char + self.border_top_char * (table_width - 2) + self.corner_top_right_char
-            bottom_border = self.border_left_char + self.header_line_char * (table_width - 2) + self.border_right_char
+            # Use the stored box-drawing characters
+            top_border = self._corner_tl + self._border_top * (table_width - 2) + self._corner_tr
+            bottom_border = self._border_left + self._header_line * (table_width - 2) + self._border_right
             
             if center_header:
                 # Center the header text within the box
@@ -221,13 +232,13 @@ class BoxTable(EvTable):
                 inner_width = table_width - 2
                 text_padding = (inner_width - visible_len) // 2
                 right_padding = inner_width - visible_len - text_padding
-                header_line = self.border_left_char + " " * text_padding + header_text + " " * right_padding + self.border_right_char
+                header_line = self._border_left + " " * text_padding + header_text + " " * right_padding + self._border_right
             else:
                 # Left-align the header text within the box
                 visible_len = len(ANSIString(header_text).clean())
                 inner_width = table_width - 2
                 right_padding = inner_width - visible_len
-                header_line = self.border_left_char + header_text + " " * right_padding + self.border_right_char
+                header_line = self._border_left + header_text + " " * right_padding + self._border_right
             
             # Add the screen left padding to all header lines
             boxed_header = [
