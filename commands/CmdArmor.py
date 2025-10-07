@@ -82,7 +82,7 @@ class CmdArmor(Command):
             return
         
         # Check if caller wants centered headers (default: True)
-        center_headers = caller.db.center_armor_headers if hasattr(caller.db, 'center_armor_headers') else True
+        center_headers = getattr(caller.db, 'center_armor_headers', True)
         
         # Create armor status table with box-drawing characters
         table = BoxTable("Item", "Type", "Rating", "Durability", "Coverage")
@@ -268,7 +268,7 @@ class CmdArmor(Command):
                     })
         
         # Check if caller wants centered headers (default: True)
-        center_headers = caller.db.center_armor_headers if hasattr(caller.db, 'center_armor_headers') else True
+        center_headers = getattr(caller.db, 'center_armor_headers', True)
         
         # Create coverage table with box-drawing characters
         table = BoxTable("Body Location", "Protected By", "Type", "Rating")
@@ -314,7 +314,7 @@ class CmdArmor(Command):
         from world.combat.constants import ARMOR_EFFECTIVENESS_MATRIX
         
         # Check if caller wants centered headers (default: True)
-        center_headers = caller.db.center_armor_headers if hasattr(caller.db, 'center_armor_headers') else True
+        center_headers = getattr(caller.db, 'center_armor_headers', True)
         
         # Convert to percentage display format
         effectiveness_display = {}
