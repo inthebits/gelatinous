@@ -209,21 +209,36 @@ class BoxTable(EvTable):
         
         # If we have a header, add it centered with the same padding
         if has_header:
+            # Create a boxed header that matches the table style
+            # Use the same box-drawing characters as the table
+            top_border = self.corner_top_left_char + self.border_top_char * (table_width - 2) + self.corner_top_right_char
+            bottom_border = self.border_left_char + self.header_line_char * (table_width - 2) + self.border_right_char
+            
             if center_header:
-                # Center the header text relative to the table width
+                # Center the header text within the box
                 visible_len = len(ANSIString(header_text).clean())
-                header_padding = (table_width - visible_len) // 2
-                # Create centered header with padding on both sides to match table width
-                right_padding = table_width - visible_len - header_padding
-                centered_header = " " * header_padding + header_text + " " * right_padding
+                # Account for the border characters (║ on each side = 2 chars)
+                inner_width = table_width - 2
+                text_padding = (inner_width - visible_len) // 2
+                right_padding = inner_width - visible_len - text_padding
+                header_line = self.border_left_char + " " * text_padding + header_text + " " * right_padding + self.border_right_char
             else:
-                centered_header = header_text
+                # Left-align the header text within the box
+                visible_len = len(ANSIString(header_text).clean())
+                inner_width = table_width - 2
+                right_padding = inner_width - visible_len
+                header_line = self.border_left_char + header_text + " " * right_padding + self.border_right_char
             
-            # Add the screen left padding to the header too
-            centered_header = padding_str + centered_header
+            # Add the screen left padding to all header lines
+            boxed_header = [
+                padding_str + top_border,
+                padding_str + header_line,
+                padding_str + bottom_border
+            ]
             
-            # Prepend header to output
-            centered_lines.insert(0, centered_header)
+            # Prepend boxed header to output
+            for i, line in enumerate(boxed_header):
+                centered_lines.insert(i, line)
         
         return '\n'.join(centered_lines)
     
