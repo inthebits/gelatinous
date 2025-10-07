@@ -225,7 +225,7 @@ class BoxTable(EvTable):
             # We'll need to replace the table's top border to connect properly
             
             # Get the table's first line (top border) to find column positions
-            table_top = lines[0] if lines else ""
+            table_top = ANSIString(lines[0]).clean() if lines else ""
             
             # Create header box top border
             top_border = self._corner_tl + self._border_top * (table_width - 2) + self._corner_tr
@@ -235,8 +235,8 @@ class BoxTable(EvTable):
             if table_top:
                 # Replace the first line (table top) to connect with header
                 # Change corners to T-junctions: ╔ -> ╠, ╗ -> ╣
-                # Keep the column separators (╦) as crosses (╬)
-                bottom_border = table_top.replace('╔', '╠').replace('╗', '╣').replace('╦', '╬')
+                # Keep the column separators (╦) as T-junctions pointing down (╦)
+                bottom_border = table_top.replace('╔', '╠').replace('╗', '╣')
                 # Remove this line from centered_lines since we'll add it as part of header
                 centered_lines.pop(0)
             else:
@@ -250,6 +250,15 @@ class BoxTable(EvTable):
                 inner_width = table_width - 2
                 text_padding = (inner_width - visible_len) // 2
                 right_padding = inner_width - visible_len - text_padding
+                
+                # DEBUG
+                from evennia.comms.models import ChannelDB
+                try:
+                    splatter = ChannelDB.objects.get_channel("Splattercast")
+                    splatter.msg(f"HEADER_CENTER: text='{header_text}' visible={visible_len} inner_width={inner_width} left_pad={text_padding} right_pad={right_padding}")
+                except:
+                    pass
+                
                 header_line = self._border_left + " " * text_padding + header_text + " " * right_padding + self._border_right
             else:
                 # Left-align the header text within the box
