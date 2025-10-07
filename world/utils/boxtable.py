@@ -123,11 +123,14 @@ class BoxTable(EvTable):
         Returns:
             int: Total width of the table in characters
         """
-        # Generate lines to get actual width
-        lines = list(super()._generate_lines())
-        if lines:
-            # Get visible width of first line (excluding color codes)
-            return len(ANSIString(str(lines[0])).clean())
+        # Force generation of table to get actual width
+        table_output = super().__str__()
+        if table_output:
+            # Split into lines and get width of first line (border)
+            lines = table_output.split('\n')
+            if lines:
+                # Get visible width excluding color codes
+                return len(ANSIString(lines[0]).clean())
         return 78  # Fallback default
     
     def __str__(self):
@@ -140,7 +143,12 @@ class BoxTable(EvTable):
         table_str = super().__str__()
         
         if self._header_title:
-            table_width = self.get_table_width()
+            # Get actual table width from rendered output
+            lines = table_str.split('\n')
+            if lines:
+                table_width = len(ANSIString(lines[0]).clean())
+            else:
+                table_width = 78
             
             if self._center_header:
                 # Center the title based on table width

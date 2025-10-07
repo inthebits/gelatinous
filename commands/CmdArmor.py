@@ -173,7 +173,7 @@ class CmdArmor(Command):
             )
         
         # Add centered header using BoxTable's built-in functionality
-        table.add_header("|WARMOR STATUS|n", center=center_headers)
+        table.add_header("ARMOR STATUS", center=center_headers)
         
         caller.msg(f"\n{table}")
     
