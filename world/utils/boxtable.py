@@ -184,6 +184,13 @@ class BoxTable(EvTable):
         Returns:
             str: Centered table output
         """
+        from evennia.comms.models import ChannelDB
+        try:
+            splatter = ChannelDB.objects.get_channel("Splattercast")
+            splatter.msg(f"DEBUG center_on_screen: ENTRY, _header_title={self._header_title}, _center_header={self._center_header}")
+        except:
+            pass
+        
         if screen_width is None:
             screen_width = get_terminal_width(session)
         
@@ -191,6 +198,11 @@ class BoxTable(EvTable):
         has_header = self._header_title is not None
         header_text = self._header_title
         center_header = self._center_header
+        
+        try:
+            splatter.msg(f"DEBUG center_on_screen: has_header={has_header}, header_text='{header_text}', center_header={center_header}")
+        except:
+            pass
         
         # Temporarily remove header to get just the table
         self._header_title = None
@@ -220,7 +232,10 @@ class BoxTable(EvTable):
         
         # If we have a header, add it centered with the same padding
         if has_header:
-            print(f"DEBUG: has_header=True, center_header={center_header}, header_text='{header_text}'")
+            try:
+                splatter.msg(f"DEBUG: has_header=True, center_header={center_header}, header_text='{header_text}'")
+            except:
+                pass
             
             # Create a boxed header that matches the table style
             # The bottom border needs to connect with the table's top border
@@ -247,7 +262,10 @@ class BoxTable(EvTable):
                 bottom_border = self._border_left + self._header_line * (table_width - 2) + self._border_right
             
             if center_header:
-                print(f"DEBUG: Entering center_header branch")
+                try:
+                    splatter.msg(f"DEBUG: Entering center_header branch")
+                except:
+                    pass
                 # Center the header text within the box
                 visible_len = len(ANSIString(header_text).clean())
                 # Account for the border characters (║ on each side = 2 chars)
@@ -256,7 +274,10 @@ class BoxTable(EvTable):
                 right_padding = inner_width - visible_len - text_padding
                 header_line = self._border_left + " " * text_padding + header_text + " " * right_padding + self._border_right
                 
-                print(f"DEBUG CENTERING: visible={visible_len}, inner={inner_width}, pad={text_padding}, header_line_len={len(header_line)}")
+                try:
+                    splatter.msg(f"DEBUG CENTERING: visible={visible_len}, inner={inner_width}, pad={text_padding}, header_line_len={len(header_line)}")
+                except:
+                    pass
             else:
                 # Left-align the header text within the box
                 visible_len = len(ANSIString(header_text).clean())
