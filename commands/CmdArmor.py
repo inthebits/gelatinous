@@ -81,6 +81,9 @@ class CmdArmor(Command):
             caller.msg("You are not wearing any armor.")
             return
         
+        # Check if caller wants centered headers (default: True)
+        center_headers = caller.db.center_armor_headers if hasattr(caller.db, 'center_armor_headers') else True
+        
         # Create armor status table with box-drawing characters
         table = BoxTable("Item", "Type", "Rating", "Durability", "Coverage")
         
@@ -169,8 +172,9 @@ class CmdArmor(Command):
                 coverage_str
             )
         
-        # Add title as header
-        table.add_header("ARMOR STATUS")
+        # Add centered header using BoxTable's built-in functionality
+        table.add_header("|WARMOR STATUS|n", center=center_headers)
+        
         caller.msg(f"\n{table}")
     
     def _show_coverage_map(self, caller, worn_armor):
@@ -257,6 +261,9 @@ class CmdArmor(Command):
                         'type': getattr(armor, 'armor_type', 'generic')
                     })
         
+        # Check if caller wants centered headers (default: True)
+        center_headers = caller.db.center_armor_headers if hasattr(caller.db, 'center_armor_headers') else True
+        
         # Create coverage table with box-drawing characters
         table = BoxTable("Body Location", "Protected By", "Type", "Rating")
         
@@ -291,11 +298,17 @@ class CmdArmor(Command):
                     "0/10"
                 )
         
-        caller.msg(f"\n|gARMOR COVERAGE MAP|n\n{table}")
+        # Add centered header
+        table.add_header("|gARMOR COVERAGE MAP|n", center=center_headers)
+        
+        caller.msg(f"\n{table}")
     
     def _show_effectiveness_matrix(self, caller):
         """Show armor effectiveness vs damage types."""
         from world.combat.constants import ARMOR_EFFECTIVENESS_MATRIX
+        
+        # Check if caller wants centered headers (default: True)
+        center_headers = caller.db.center_armor_headers if hasattr(caller.db, 'center_armor_headers') else True
         
         # Convert to percentage display format
         effectiveness_display = {}
@@ -324,8 +337,10 @@ class CmdArmor(Command):
                     effectiveness.get('burn', 'N/A')
                 )
         
-        caller.msg(f"\n|gARMOR EFFECTIVENESS MATRIX|n")
-        caller.msg("Shows base effectiveness % before armor rating multiplier")
+        # Add centered header
+        table.add_header("|gARMOR EFFECTIVENESS MATRIX|n", center=center_headers)
+        
+        caller.msg("\nShows base effectiveness % before armor rating multiplier")
         caller.msg(f"{table}")
         caller.msg("\n|xNote: Final effectiveness = Base % × (Armor Rating / 10)|n")
     

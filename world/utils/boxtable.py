@@ -10,6 +10,55 @@ from evennia.utils.evtable import EvTable
 from evennia.utils.ansi import ANSIString
 
 
+def get_terminal_width(session=None):
+    """
+    Get terminal width from session, defaulting to 78 for MUD compatibility.
+    
+    Args:
+        session: Evennia session object to get width from
+        
+    Returns:
+        int: Terminal width in characters
+    """
+    if session:
+        # Use Evennia's built-in screen width detection
+        try:
+            detected_width = session.protocol_flags.get("SCREENWIDTH", [78])[0]
+            return max(60, detected_width)  # Minimum 60 for readability
+        except (IndexError, KeyError, TypeError, AttributeError):
+            # Fallback if protocol flags aren't available or malformed
+            pass
+    return 78
+
+
+def center_text(text, width=None, session=None, fillchar=' '):
+    """
+    Center text within a given width, with automatic screen width detection.
+    
+    Args:
+        text (str): Text to center (may include color codes)
+        width (int, optional): Width to center within. If None, uses terminal width
+        session: Evennia session object for width detection
+        fillchar (str): Character to use for padding (default: space)
+        
+    Returns:
+        str: Centered text with padding
+    """
+    if width is None:
+        width = get_terminal_width(session)
+    
+    # Calculate visible length (excluding color codes)
+    visible_text = ANSIString(text).clean()
+    visible_len = len(visible_text)
+    
+    if visible_len >= width:
+        return text
+    
+    # Calculate padding
+    padding = (width - visible_len) // 2
+    return fillchar * padding + text
+
+
 class BoxTable(EvTable):
     """
     Custom EvTable that uses Unicode double-line box-drawing characters.
@@ -51,6 +100,59 @@ class BoxTable(EvTable):
         
         # Initialize parent
         super().__init__(*args, **kwargs)
+        
+        # Store header title if provided
+        self._header_title = None
+        self._center_header = True  # Default to centering headers
+    
+    def add_header(self, title, center=True):
+        """
+        Add a centered title header above the table.
+        
+        Args:
+            title (str): The title text to display
+            center (bool): Whether to center the title (default: True)
+        """
+        self._header_title = title
+        self._center_header = center
+    
+    def get_table_width(self):
+        """
+        Calculate the total width of the table based on its columns.
+        
+        Returns:
+            int: Total width of the table in characters
+        """
+        # Generate lines to get actual width
+        lines = list(super()._generate_lines())
+        if lines:
+            # Get visible width of first line (excluding color codes)
+            return len(ANSIString(str(lines[0])).clean())
+        return 78  # Fallback default
+    
+    def __str__(self):
+        """
+        Override string conversion to include header title if set.
+        
+        Returns:
+            str: Table with optional centered header title
+        """
+        table_str = super().__str__()
+        
+        if self._header_title:
+            table_width = self.get_table_width()
+            
+            if self._center_header:
+                # Center the title based on table width
+                visible_len = len(ANSIString(self._header_title).clean())
+                padding = (table_width - visible_len) // 2
+                centered_title = " " * padding + self._header_title
+            else:
+                centered_title = self._header_title
+            
+            return f"{centered_title}\n{table_str}"
+        
+        return table_str
     
     def _generate_lines(self):
         """
