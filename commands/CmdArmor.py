@@ -484,8 +484,9 @@ class CmdArmor(Command):
         # Get character's valid locations from longdesc
         valid_locations = []
         if hasattr(caller, 'longdesc') and caller.longdesc:
+            # longdesc is a dict of {location: description}, check the keys
             valid_locations = [loc for loc in ANATOMICAL_DISPLAY_ORDER 
-                             if loc in caller.longdesc.lower()]
+                             if loc in caller.longdesc]
         else:
             valid_locations = ANATOMICAL_DISPLAY_ORDER
         
