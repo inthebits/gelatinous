@@ -3294,11 +3294,11 @@ class CmdDetonate(Command):
         fuse_time = getattr(explosive.db, DB_FUSE_TIME, 8)
         setattr(explosive.ndb, NDB_COUNTDOWN_REMAINING, fuse_time)
         
-        # Start countdown using CmdThrow's grenade ticker system
-        # Create temporary CmdThrow instance to access start_grenade_ticker
-        throw_cmd = CmdThrow()
-        throw_cmd.caller = caller
-        throw_cmd.start_grenade_ticker(explosive)
+        # Start countdown using CmdPull's grenade ticker system
+        # Create temporary CmdPull instance to access start_grenade_ticker
+        pull_cmd = CmdPull()
+        pull_cmd.caller = caller
+        pull_cmd.start_grenade_ticker(explosive)
         
         # Operator messaging
         caller.msg(
@@ -3368,9 +3368,9 @@ class CmdDetonate(Command):
             setattr(explosive.ndb, NDB_COUNTDOWN_REMAINING, fuse_time)
             
             # Start countdown
-            throw_cmd = CmdThrow()
-            throw_cmd.caller = caller
-            throw_cmd.start_grenade_ticker(explosive)
+            pull_cmd = CmdPull()
+            pull_cmd.caller = caller
+            pull_cmd.start_grenade_ticker(explosive)
             
             detonated_count += 1
             
