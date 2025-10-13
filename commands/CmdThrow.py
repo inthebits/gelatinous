@@ -1991,23 +1991,9 @@ def check_rigged_grenade(character, exit_obj):
             from world.combat.utils import check_grenade_human_shield
             damage_modifiers = check_grenade_human_shield(proximity_list)
             
-            # Apply damage to trigger character with human shield modifier
-            modifier = damage_modifiers.get(character, 1.0)
-            trigger_damage = int(blast_damage * modifier)
-            
-            if trigger_damage > 0:
-                damage_type = getattr(rigged_grenade.db, 'damage_type', 'blast')
-                character.take_damage(trigger_damage, location="chest", injury_type=damage_type)
-                character.msg(MSG_GRENADE_DAMAGE.format(grenade=rigged_grenade.key))
-                if character.location:
-                    character.location.msg_contents(
-                        MSG_GRENADE_DAMAGE_ROOM.format(victim=character.key, grenade=rigged_grenade.key),
-                        exclude=character
-                    )
-            
-            # Apply damage to others in proximity with human shield modifiers
+            # Apply damage to all in proximity (trigger character only if they're in proximity)
             for other_character in proximity_list:
-                if other_character != character and hasattr(other_character, 'msg'):
+                if hasattr(other_character, 'msg'):
                     # Apply damage modifier (0.0 for grapplers, 2.0 for victims, 1.0 for others)
                     modifier = damage_modifiers.get(other_character, 1.0)
                     final_damage = int(blast_damage * modifier)
