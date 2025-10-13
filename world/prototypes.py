@@ -121,47 +121,24 @@ SMOKE_GRENADE = {
 }
 
 # =============================================================================
-# STICKY GRENADE PROTOTYPES (magnetic adhesion system)
+# STICKY GRENADE PROTOTYPE (magnetic adhesion system)
 # =============================================================================
 
-# Standard sticky grenade (medium magnetic strength)
+# SPDR M9 - Spider-class magnetic adhesion grenade (repurposed mining tech)
 STICKY_GRENADE = {
     "prototype_parent": "EXPLOSIVE_BASE",
-    "key": "sticky grenade",
-    "aliases": ["sticky", "mag grenade", "magnetic grenade"],
-    "desc": "A magnetic adhesion grenade that bonds to ferrous metal armor. The magnetic field is strong enough to adhere to steel plate carriers and helmets. Once stuck, removing the armor is the only way to separate yourself from the explosive.",
-    "fuse_time": 8,
-    "blast_damage": 25,
-    "dud_chance": 0.05,
+    "key": "SPDR M9 grenade",
+    "aliases": ["spdr", "spider grenade", "m9", "sticky grenade", "sticky"],
+    "desc": "A SPDR M9 'Spider' - originally designed for breaching and clearing metallic ore deposits in asteroid mining operations. A compact black sphere bristling with eight telescoping articulated legs that extend on deployment. The moment it's thrown, tiny servos activate and the legs begin seeking ferrous metal surfaces with the single-minded purpose of industrial demolition equipment. Once proximity is achieved, powerful electromagnets pulse through the leg tips, causing them to skitter and latch onto the target with frightening precision. The magnetic adhesion is so strong that removing the stuck surface is the only way to separate yourself from the device. A soft blue LED pulses faster as detonation approaches. What was once a tool for breaking apart ore-rich asteroids has found a darker purpose in combat scenarios.",
+    "fuse_time": 6,  # Shorter fuse for tactical use
+    "blast_damage": 30,
+    "dud_chance": 0.02,  # Industrial reliability standards
     "damage_type": "laceration",
     # Sticky grenade specific attributes
     "is_sticky": True,
-    "magnetic_strength": 5,  # 0-10 scale, determines stick threshold
-    "stuck_to_armor": None,  # Reference to armor it's stuck to
-    "stuck_to_location": None,  # Body location where it's stuck
-}
-
-# Weak sticky grenade (lower magnetic strength)
-WEAK_STICKY_GRENADE = {
-    "prototype_parent": "STICKY_GRENADE",
-    "key": "weak sticky grenade",
-    "aliases": ["weak sticky", "prototype sticky"],
-    "desc": "An early prototype magnetic grenade with weaker adhesion. Only sticks to high-quality steel armor with significant ferrous content.",
-    "fuse_time": 8,
-    "blast_damage": 20,
-    "magnetic_strength": 3,  # Lower threshold - requires better metal to stick
-}
-
-# Strong sticky grenade (higher magnetic strength)
-STRONG_STICKY_GRENADE = {
-    "prototype_parent": "STICKY_GRENADE",
-    "key": "strong sticky grenade",
-    "aliases": ["strong sticky", "tactical sticky"],
-    "desc": "A military-grade magnetic adhesion grenade with powerful electromagnets. Can stick to armor with even minimal ferrous content. Extremely dangerous.",
-    "fuse_time": 6,  # Shorter fuse for tactical use
-    "blast_damage": 30,
-    "magnetic_strength": 8,  # High threshold - sticks to almost anything with metal
-    "dud_chance": 0.02,  # More reliable
+    "magnetic_strength": 8,  # 0-10 scale, determines stick threshold (mining-grade electromagnets)
+    "stuck_to_armor": None,  # Reference to armor it's stuck to (runtime)
+    "stuck_to_location": None,  # Body location where it's stuck (runtime)
 }
 
 # =============================================================================
