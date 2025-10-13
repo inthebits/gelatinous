@@ -147,10 +147,10 @@ STICKY_GRENADE = {
 # =============================================================================
 
 REMOTE_DETONATOR = {
-    "key": "remote detonator",
-    "aliases": ["detonator", "remote", "trigger"],
+    "key": "VECTOR UEM-3 detonator",
+    "aliases": ["vector", "uem3", "uem-3", "detonator", "remote", "trigger"],
     "typeclass": "typeclasses.items.RemoteDetonator",
-    "desc": "A compact military-grade remote detonator with a digital display showing scanned explosive devices. The device can store up to 20 explosive signatures and trigger them remotely with the press of a button. A red safety cover protects the main detonation switch.",
+    "desc": "A VECTOR UEM-3 (Universal Explosive Module, Series 3) - a compact military-grade remote detonator with a matte black finish and angular, utilitarian design. Its digital display shows scanned explosive device signatures in crisp amber text. The device can store up to 20 explosive signatures simultaneously and trigger them remotely with surgical precision. A prominent red safety cover protects the main detonation switch, while smaller buttons below handle scanning and memory management. The VECTOR logo is subtly embossed on the casing, along with the serial number and dire warnings about unauthorized use.",
     "tags": [
         ("item", "general"),
         ("tool", "category"),
