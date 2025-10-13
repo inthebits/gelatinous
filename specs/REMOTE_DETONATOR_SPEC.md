@@ -1,6 +1,8 @@
 # Remote Detonator System Specification
 
-## Status: 📋 SPECIFICATION - NOT YET IMPLEMENTED
+## Status: 📋 SPECIFICATION - READY FOR IMPLEMENTATION
+
+*All implementation questions resolved. Spec finalized 2025-01-13.*
 
 ## Overview
 A handheld remote detonator device that can scan and remotely trigger explosive devices. The detonator maintains a list of up to 20 scanned explosives and can trigger them individually or simultaneously by pulling their pins and starting their normal fuse countdowns. This system integrates with all existing explosive types (sticky grenades, rigged explosives, standard grenades) and respects their unique behaviors.
@@ -15,7 +17,46 @@ A handheld remote detonator device that can scan and remotely trigger explosive 
 - Tactical grenades with 5-second fuses give 5 seconds to react
 - This maintains explosive type diversity and prevents instant-death scenarios
 
-**Tactical Gameplay:**
+**Detonation Messages (Detonate All):**
+
+*Note: Each grenade's location receives individual activation message*
+
+```
+You: You flip open the red safety cover on your remote detonator and press the large button. Multiple distant beeps echo from various locations!
+
+Operator's Room: {char_name} flips open a red safety cover on their remote detonator and presses a large button. Multiple distant beeps echo from various locations!
+
+Grenade 1 Location: An SPDR M9 grenade beeps and its light begins flashing! [6 seconds]
+Grenade 2 Location: A tactical grenade beeps and activates! [5 seconds]  
+Grenade 3 Location: A rigged SPDR M9 beeps urgently! [1 second]
+```
+
+**Multi-Detonation Messaging:**
+- Operator sees single "multiple beeps" message
+- Operator's room sees button press + "multiple beeps"
+- Each grenade's location sees individual activation message
+- Staggered countdowns begin based on each explosive's fuse_time
+
+*Note: Cross-room messaging sends different messages to operator's location and grenade's location*
+
+```
+You: You flip open the red safety cover on your remote detonator and press the large button. A distant beep echoes!
+
+Operator's Room: {char_name} flips open a red safety cover on their remote detonator and presses a large button.
+
+Grenade's Location (if different room): An SPDR M9 grenade beeps and its light begins flashing! [6 seconds]
+
+Same Room (if operator and grenade in same location): 
+  {char_name} flips open a red safety cover on their remote detonator and presses a large button.
+  An SPDR M9 grenade beeps and its light begins flashing! [6 seconds]
+```
+
+**Cross-Room Messaging Logic:**
+- Operator always sees button press action
+- Operator's room sees: "flips open... presses button"
+- Grenade's room (if different) sees: "grenade beeps and light flashes"
+- If same room: Both messages sent to room
+- Observers see different perspectives based on location
 - Plan complex multi-stage detonations with timed delays
 - Create distractions with long-fuse grenades while rigged traps explode quickly
 - Override rigged traps remotely before they're triggered by victims
@@ -104,6 +145,8 @@ detonator.db.scanned_explosives = [explosive_dbref1, explosive_dbref2, ...]
 
 **Syntax:** `scan <explosive> with <detonator>`
 
+**Requirements:** Detonator must be wielded/held (not just in inventory)
+
 **Behavior:**
 ```python
 1. Validate both objects exist and in inventory/room
@@ -136,6 +179,8 @@ Room: {char_name} scans a SPDR M9 grenade with their remote detonator, which emi
 ### Detonate Single Command
 
 **Syntax:** `detonate e-<dbref> with <detonator>`
+
+**Requirements:** Detonator must be wielded/held (not just in inventory)
 
 **Behavior:**
 ```python
@@ -172,6 +217,8 @@ Observer at grenade location (if different room): A SPDR M9 grenade suddenly act
 ### Detonate All Command
 
 **Syntax:** `detonate all with <detonator>`
+
+**Requirements:** Detonator must be wielded/held (not just in inventory)
 
 **Behavior:**
 ```python
@@ -212,6 +259,8 @@ Room: {char_name} flips open a red safety cover on their remote detonator and pr
 ### List Command
 
 **Syntax:** `detonate list with <detonator>` or `detonator list` (if wielded)
+
+**Requirements:** Detonator must be wielded/held (not just in inventory)
 
 **Behavior:**
 ```python
@@ -271,6 +320,8 @@ Status Legend:
 
 **Syntax:** `clear e-<dbref> from <detonator>`
 
+**Requirements:** Detonator must be wielded/held (not just in inventory)
+
 **Behavior:**
 ```python
 1. Validate dbref is in detonator's scanned list
@@ -297,6 +348,8 @@ Room: {char_name} presses several buttons on their remote detonator.
 ### Clear All Command
 
 **Syntax:** `clear all from <detonator>` or `detonator clear`
+
+**Requirements:** Detonator must be wielded/held (not just in inventory)
 
 **Behavior:**
 ```python
@@ -435,21 +488,41 @@ remote_detonate(explosive) → pull_pin(explosive) → start_countdown(explosive
 # Damages everyone in proximity (existing logic)
 ```
 
+### Already-Active Explosives
+
+**Scenario 1: Pin Already Pulled**
+```python
+# Someone manually pulls pin on grenade → countdown starts
+# Remote detonation attempt → check pin_pulled flag
+# Message: "That explosive is already detonating!"
+# No re-trigger, countdown continues normally
+```
+
+**Scenario 2: Multiple Detonators**
+```python
+# Detonator A detonates grenade → countdown starts
+# Detonator B attempts detonation → check pin_pulled flag
+# Message: "That explosive is already detonating!"
+# Prevents exploit of resetting/extending countdown
+```
+
 ### Rigged Explosives
 
 **Scenario 1: Trap Override**
 ```python
 # Rigged explosive set up as trap in doorway
-# Remote detonation pulls pin → 1s countdown
+# Remote detonation pulls pin → 1s countdown (from rigging)
 # Explodes BEFORE anyone triggers trap
 # Useful for clearing your own traps safely
+# Uses existing fuse_time (already 1s from rigging process)
 ```
 
 **Scenario 2: Trap + Remote**
 ```python
 # Rigged explosive scanned by detonator
-# Someone triggers trap → 1s countdown starts
-# Remote detonation attempt → "already active"
+# Someone triggers trap → pin_pulled flag set, 1s countdown starts
+# Remote detonation attempt → check pin_pulled flag
+# Message: "That explosive is already detonating!"
 # Cannot re-trigger during countdown
 ```
 
@@ -520,44 +593,89 @@ class RemoteDetonator(Item):
     
     def detonate_all(self):
         # Trigger all explosives
+    
+    def at_delete(self):
+        """Called when detonator is destroyed"""
+        # Clear scanned_by_detonator on all linked explosives
 ```
 
-**2. New Commands** (`commands/combat/detonator.py` - new file)
+**2. Explosive Cleanup Hook** (`typeclasses/items.py`)
 ```python
+# Add to all explosive item classes (or base explosive class)
+def at_delete(self):
+    """Called when explosive is destroyed"""
+    # Remove from detonator's scanned list if linked
+    if hasattr(self.db, 'scanned_by_detonator') and self.db.scanned_by_detonator:
+        detonator = search_object(f"#{self.db.scanned_by_detonator}")
+        if detonator and hasattr(detonator[0].db, 'scanned_explosives'):
+            try:
+                detonator[0].db.scanned_explosives.remove(self.id)
+            except ValueError:
+                pass  # Already removed
+```
+
+**3. New Commands** (`commands/CmdThrow.py` - add to existing file)
+```python
+# NOTE: All detonator commands added to CmdThrow.py (monolithic explosives file)
+
 class CmdScan(Command):
     """Scan explosive with detonator"""
+    # Must be wielding/holding detonator to use
     
 class CmdDetonate(Command):
     """Detonate single or all explosives"""
+    # Must be wielding/holding detonator to use
+    # Already-active explosives show "already detonating" message (no re-trigger)
     
 class CmdDetonateList(Command):
     """List scanned explosives"""
+    # Must be wielding/holding detonator to use
     
 class CmdClearDetonator(Command):
     """Clear single or all explosives from detonator"""
+    # Must be wielding/holding detonator to use
 
 class DetonatorCmdSet(CmdSet):
     """Command set for detonator commands"""
 ```
 
-**3. Integration Hooks** (Modify existing explosion code)
+**4. Integration Hooks** (`commands/CmdThrow.py` - modify existing functions)
 ```python
-# In existing explosion functions:
-def explode_grenade(grenade):
+# In existing pull_pin() function:
+def pull_pin(self, grenade):
+    # ... existing pin pull logic ...
+    
+    # NEW: Auto-cleanup detonator reference after explosion completes
+    # This happens in explosion completion, not in pull_pin
+    
+# In existing explode_grenade() function or completion:
+def explode_grenade(self, grenade):
     # ... existing explosion logic ...
     
     # NEW: Auto-cleanup detonator reference
     if hasattr(grenade.db, 'scanned_by_detonator'):
         detonator_dbref = grenade.db.scanned_by_detonator
         if detonator_dbref:
+            from evennia.utils.search import search_object
             detonator = search_object(f"#{detonator_dbref}")
-            if detonator:
-                remove_explosive_from_detonator(detonator, grenade)
+            if detonator and hasattr(detonator[0].db, 'scanned_explosives'):
+                try:
+                    detonator[0].db.scanned_explosives.remove(grenade.id)
+                except ValueError:
+                    pass  # Already removed
     
     # ... rest of explosion logic ...
+
+# In existing explode_rigged_grenade() function:
+def explode_rigged_grenade(grenade):
+    # ... existing rigged explosion logic ...
+    
+    # NEW: Same cleanup as above
+    # Rigged explosives already use 1-second fuse_time from rigging process
+    # Remote detonation uses normal fuse_time (which is already 1s)
 ```
 
-**4. Utility Functions** (`world/combat/utils.py`)
+**5. Utility Functions** (`commands/CmdThrow.py` - add helper functions)
 ```python
 def validate_detonator_list(detonator):
     """Clean up invalid explosives from detonator list"""
@@ -583,10 +701,11 @@ def get_explosive_location_string(explosive):
 ]
 ```
 
-**2. Explosion Functions** (Wherever they currently live)
+**2. Explosion Functions** (`commands/CmdThrow.py`)
 ```python
 # Add cleanup hook to explosion completion
 # Ensure sticky grenades, rigged explosives, standard explosives all clean up
+# Happens automatically via at_delete() hook on explosive objects
 ```
 
 ### Testing Priorities
@@ -604,7 +723,57 @@ def get_explosive_location_string(explosive):
 
 ---
 
-## 7. Command Reference Summary
+## 7. Implementation Decisions
+
+### Decision Log
+
+These decisions were made during the specification phase to resolve implementation questions:
+
+**1. Already-Active Grenade Behavior**
+- **Decision:** Show "already detonating" message, don't re-trigger
+- **Rationale:** Prevents exploits and maintains predictability
+- **Implementation:** Check `grenade.db.pin_pulled` flag before remote detonation
+
+**2. Code Organization**
+- **Decision:** Add all detonator commands to `commands/CmdThrow.py` (monolithic approach)
+- **Rationale:** "Throw and explosives work in tandem. So, that file needs to be monolithic."
+- **Implementation:** CmdScan, CmdDetonate, CmdDetonateList, CmdClearDetonator all in CmdThrow.py
+
+**3. Rigged Explosive Countdown Timing**
+- **Decision:** Use normal fuse_time (already 1 second from rigging process)
+- **Rationale:** Rigging process already sets `grenade.db.fuse_time = 1`, no special handling needed
+- **Implementation:** Remote detonation calls `pull_pin()` which uses existing `fuse_time` attribute
+
+**4. Cleanup Integration Point**
+- **Decision:** Use `at_delete()` hook on explosive objects
+- **Rationale:** Catches all deletion scenarios cleanly (explosion, pickup, destroy, etc.)
+- **Implementation:** Add `at_delete()` to explosive item classes to remove from detonator list
+
+**5. Cross-Room Messaging**
+- **Decision:** Both operator location and grenade location get messages
+- **Rationale:** "Operator just presses a button and that's what people see. Locations see the whole shebang."
+- **Implementation:**
+  - Operator's room: "{char_name} flips open a red safety cover and presses a button."
+  - Grenade's room: "An SPDR M9 grenade beeps and its light begins flashing!"
+
+**6. Wielding Requirement**
+- **Decision:** Detonator must be wielded/held to use (not just in inventory)
+- **Rationale:** Requires active use, prevents passive inventory operation
+- **Implementation:** Check for wielded weapon or held item before allowing detonator commands
+
+**7. Pin State Handling**
+- **Decision:** Pin state doesn't matter for remote detonation
+- **Rationale:** Remote detonation can pull pin even if already pulled (though already-active check prevents re-trigger)
+- **Implementation:** `pull_pin()` function handles pin state internally
+
+**8. Fuse Countdown Preservation**
+- **Decision:** Remote detonation preserves and respects existing fuse countdown
+- **Rationale:** If someone manually pulled pin, remote detonation doesn't interfere with active countdown
+- **Implementation:** Check `pin_pulled` flag before calling `pull_pin()`
+
+---
+
+## 8. Command Reference Summary
 
 ```
 scan <explosive> with <detonator>
@@ -640,7 +809,7 @@ clear all from <detonator>
 
 ---
 
-## 8. Future Enhancements (Not in Initial Implementation)
+## 9. Future Enhancements (Not in Initial Implementation)
 
 **Range Limitations:**
 - Add signal strength system
@@ -665,7 +834,7 @@ clear all from <detonator>
 
 ---
 
-## 9. Design Notes
+## 10. Design Notes
 
 **Why No Instant Detonation:**
 - Maintains explosive type diversity (sticky vs standard vs rigged)
