@@ -1924,15 +1924,41 @@ def check_rigged_grenade(character, exit_obj):
     # Move grenade to the character's location quietly (no movement announcements)
     rigged_grenade.move_to(character.location, quiet=True)
     
+    # FOR STICKY GRENADES: Find most magnetic target and attempt to stick
+    # FOR REGULAR GRENADES: Just establish proximity with trigger character
+    is_sticky = getattr(rigged_grenade.db, 'is_sticky', False)
+    sticky_target = None
+    
+    if is_sticky:
+        # Use the existing CmdThrow's magnetic targeting logic
+        cmd = CmdThrow()
+        cmd.caller = character  # Set caller for context
+        sticky_target = cmd.select_most_magnetic_target_in_room(character.location, rigged_grenade)
+        
+        if sticky_target:
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_RIGGED_STICKY: Selected {sticky_target.key} as magnetic target")
+            # Use existing resolve_weapon_hit logic to handle stick attempt
+            cmd.resolve_weapon_hit(rigged_grenade, sticky_target, character)
+        else:
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_RIGGED_STICKY: No viable magnetic targets, treating as regular grenade")
+    
     # Establish proximity for auto-defuse system (rigged grenades need this!)
     proximity_list = getattr(rigged_grenade.ndb, NDB_PROXIMITY_UNIVERSAL, None)
     if not proximity_list:
         setattr(rigged_grenade.ndb, NDB_PROXIMITY_UNIVERSAL, [])
         proximity_list = getattr(rigged_grenade.ndb, NDB_PROXIMITY_UNIVERSAL)
     
-    # Add the character who triggered it
-    if character not in proximity_list:
-        proximity_list.append(character)
+    # For sticky grenades that stuck: proximity is whoever it stuck to
+    # For regular grenades or failed sticks: proximity is the trigger character
+    if is_sticky and sticky_target:
+        # Sticky grenade dictates its own proximity via establish_stick()
+        # Just verify the target is in the list
+        if sticky_target not in proximity_list:
+            proximity_list.append(sticky_target)
+    else:
+        # Regular grenade - add trigger character
+        if character not in proximity_list:
+            proximity_list.append(character)
     
     splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
     splattercast.msg(f"{DEBUG_PREFIX_THROW}_RIGGED: Established proximity for {rigged_grenade.key}: {[char.key for char in proximity_list]}")
