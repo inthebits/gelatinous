@@ -426,8 +426,8 @@ class CmdThrow(Command):
                 continue
             
             # Get armor properties (including plate carrier check)
-            metal_level = getattr(armor.db, 'metal_level', 0)
-            magnetic_level = getattr(armor.db, 'magnetic_level', 0)
+            metal_level = getattr(armor.db, 'metal_level', 0) or 0
+            magnetic_level = getattr(armor.db, 'magnetic_level', 0) or 0
             
             # Check if plate carrier - use installed plates' values
             is_plate_carrier = getattr(armor.db, 'is_plate_carrier', False)
@@ -435,8 +435,8 @@ class CmdThrow(Command):
                 installed_plates = getattr(armor.db, 'installed_plates', {})
                 for slot, plate_ref in installed_plates.items():
                     if plate_ref:
-                        plate_metal = getattr(plate_ref.db, 'metal_level', 0)
-                        plate_magnetic = getattr(plate_ref.db, 'magnetic_level', 0)
+                        plate_metal = getattr(plate_ref.db, 'metal_level', 0) or 0
+                        plate_magnetic = getattr(plate_ref.db, 'magnetic_level', 0) or 0
                         metal_level = max(metal_level, plate_metal)
                         magnetic_level = max(magnetic_level, plate_magnetic)
             
