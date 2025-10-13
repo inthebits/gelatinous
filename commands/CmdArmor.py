@@ -492,7 +492,8 @@ class CmdArmor(Command):
         
         # Fixed widths for consistent box sizes
         LOCATION_BOX_WIDTH = 15
-        ITEM_BOX_WIDTH = 50
+        RATING_WIDTH = 8  # Width reserved for rating display (e.g., "- IV    ")
+        NULL_CHAR = "∅"   # Null character for zero/missing ratings
         
         # Build output lines
         output_lines = []
@@ -502,16 +503,18 @@ class CmdArmor(Command):
         equipment_label = "EQUIPMENT"
         rating_label = "Rating"
         
-        # Pad labels to match box widths
+        # Center Location label in the box width
         loc_label_padding = (LOCATION_BOX_WIDTH - len(location_label)) // 2
         loc_label_line = " " * loc_label_padding + location_label
         
-        # Rating label should be at the end of the item box area
-        rating_label_padding = ITEM_BOX_WIDTH - len(rating_label) - 2
-        rating_label_line = " " * rating_label_padding + rating_label
+        # Calculate spacing for header
+        # Format: [Location Box] [spacing] [Equipment Label] [spacing] [Rating Label]
+        spacing_before_equipment = "     "  # Space between box and equipment
         
-        # Build the header line
-        header_line = loc_label_line + " " * (LOCATION_BOX_WIDTH - len(loc_label_line)) + "     " + equipment_label + " " * (ITEM_BOX_WIDTH - len(equipment_label) - len(rating_label)) + rating_label
+        # Build the header line with proper alignment
+        header_line = (loc_label_line + " " * (LOCATION_BOX_WIDTH - len(loc_label_line)) + 
+                      spacing_before_equipment + equipment_label + 
+                      " " * (50 - len(equipment_label) - len(rating_label)) + rating_label)
         
         if center_headers:
             session = caller.sessions.get()[0] if caller.sessions.get() else None
@@ -600,9 +603,11 @@ class CmdArmor(Command):
                             'is_carrier': False
                         })
             
-            # Create the location box (left side)
-            loc_padding = LOCATION_BOX_WIDTH - len(location_display)
-            loc_text = location_display + " " * loc_padding
+            # Create the location box (left side) with centered text
+            # Center the location name in the box
+            loc_padding_left = (LOCATION_BOX_WIDTH - len(location_display)) // 2
+            loc_padding_right = LOCATION_BOX_WIDTH - len(location_display) - loc_padding_left
+            loc_text = " " * loc_padding_left + location_display + " " * loc_padding_right
             
             loc_box_top = "╔" + "═" * LOCATION_BOX_WIDTH + "╗"
             loc_box_mid = "║" + loc_text + "║"
@@ -613,12 +618,16 @@ class CmdArmor(Command):
                 # Single item - simple stem connection
                 entry = item_entries[0]
                 
-                # Format item text
+                # Format item text with aligned rating
                 if entry['rating'] > 0:
                     rating_roman = to_roman(entry['rating'])
-                    item_text = f"{entry['name']} - {rating_roman}"
+                    rating_text = f"- {rating_roman}"
                 else:
-                    item_text = entry['name']
+                    rating_text = NULL_CHAR
+                
+                # Pad rating to consistent width (right-aligned)
+                rating_padded = rating_text.rjust(RATING_WIDTH)
+                item_text = f"{entry['name']} {rating_padded}"
                 
                 # Simple horizontal stem to item
                 stem = "────"
@@ -635,12 +644,16 @@ class CmdArmor(Command):
                     is_first = (idx == 0)
                     is_last = (idx == len(item_entries) - 1)
                     
-                    # Format item text
+                    # Format item text with aligned rating
                     if entry['rating'] > 0:
                         rating_roman = to_roman(entry['rating'])
-                        item_text = f"{entry['name']} - {rating_roman}"
+                        rating_text = f"- {rating_roman}"
                     else:
-                        item_text = entry['name']
+                        rating_text = NULL_CHAR
+                    
+                    # Pad rating to consistent width (right-aligned)
+                    rating_padded = rating_text.rjust(RATING_WIDTH)
+                    item_text = f"{entry['name']} {rating_padded}"
                     
                     if is_first:
                         # First item - show location box with stem and branch
