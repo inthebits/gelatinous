@@ -581,30 +581,36 @@ class CmdArmor(Command):
         rating_label = "Rating"
         
         # Calculate actual column positions and widths
-        # Box = 17 chars (╔ + 15 + ╗), stem = 6 chars (──┬── or ──────), space = 1
+        # Box = 17 chars (╔ + 15 + ╗), stem = 7 chars ("──────" + " ")
         location_column_width = 17  # Width of the box including borders
         stem_width = 7  # "──────" (6) + " " (1)
         equipment_column_width = max_equip_name_len
-        rating_column_width = RATING_WIDTH + 2  # Rating width plus 2 space separator
         
-        # Center each label within its column
-        # Location: center within box width (17 chars)
+        # Position labels to align with actual visual centers:
+        # - Location: centered over centered body location names
+        # - Equipment: centered over the middle of the longest equipment name
+        # - Rating: centered over where rating numerals appear (accounting for right-alignment)
+        
+        # Location: center within box width
         loc_label_padding_left = (location_column_width - len(location_label)) // 2
         loc_label_padding_right = location_column_width - len(location_label) - loc_label_padding_left
         
-        # Equipment: center within equipment column width
+        # Equipment: center label over the middle of the equipment name area
+        # The equipment names are left-aligned and padded, so center over half the max length
         equip_label_padding_left = (equipment_column_width - len(equipment_label)) // 2
         equip_label_padding_right = equipment_column_width - len(equipment_label) - equip_label_padding_left
         
-        # Rating: center within rating column width
-        rating_label_padding_left = (rating_column_width - len(rating_label)) // 2
-        rating_label_padding_right = rating_column_width - len(rating_label) - rating_label_padding_left
+        # Rating: center over where the numerals actually appear
+        # Ratings are right-aligned in RATING_WIDTH, so center the label over that area
+        rating_label_padding_left = (RATING_WIDTH - len(rating_label)) // 2
+        rating_label_padding_right = RATING_WIDTH - len(rating_label) - rating_label_padding_left
         
-        # Build header line with centered labels
+        # Build header line
         header_parts = []
         header_parts.append(" " * loc_label_padding_left + location_label + " " * loc_label_padding_right)
         header_parts.append(" " * stem_width)  # Space for stem
         header_parts.append(" " * equip_label_padding_left + equipment_label + " " * equip_label_padding_right)
+        header_parts.append("  ")  # 2 space separator
         header_parts.append(" " * rating_label_padding_left + rating_label + " " * rating_label_padding_right)
         header_line = "".join(header_parts)
         
@@ -656,11 +662,11 @@ class CmdArmor(Command):
                 equip_name_padded = entry['name'].ljust(max_equip_name_len)
                 item_text = f"{equip_name_padded}  {rating_text.rjust(RATING_WIDTH)}"
                 
-                # Simple horizontal stem to item
-                stem = "────"
+                # Simple horizontal stem to item (7 chars total: "──────" + " ")
+                stem = "──────"
                 
                 output_lines.append(line_padding + loc_box_top)
-                output_lines.append(line_padding + loc_box_mid + stem + "── " + item_text)
+                output_lines.append(line_padding + loc_box_mid + stem + " " + item_text)
                 output_lines.append(line_padding + loc_box_bot)
                 
             else:
@@ -682,16 +688,16 @@ class CmdArmor(Command):
                     item_text = f"{equip_name_padded}  {rating_text.rjust(RATING_WIDTH)}"
                     
                     if is_first:
-                        # First item - show location box with stem and branch
+                        # First item - show location box with stem and branch (7 chars: "──┬──" + "  ")
                         output_lines.append(line_padding + loc_box_top)
-                        output_lines.append(line_padding + loc_box_mid + "──┬── " + item_text)
+                        output_lines.append(line_padding + loc_box_mid + "──┬──" + "  " + item_text)
                         output_lines.append(line_padding + loc_box_bot + "  │")
                     elif is_last:
-                        # Last item - final branch with └─
-                        output_lines.append(line_padding + blank_space + "  └── " + item_text)
+                        # Last item - final branch with └── (7 chars: "  " + "└──" + "  ")
+                        output_lines.append(line_padding + blank_space + "  └──" + "  " + item_text)
                     else:
-                        # Middle item - branch with ├─
-                        output_lines.append(line_padding + blank_space + "  ├── " + item_text)
+                        # Middle item - branch with ├── (7 chars: "  " + "├──" + "  ")
+                        output_lines.append(line_padding + blank_space + "  ├──" + "  " + item_text)
                         output_lines.append(line_padding + blank_space + "  │")
             
             # Blank line after each location
