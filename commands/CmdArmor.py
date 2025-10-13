@@ -572,7 +572,6 @@ class CmdArmor(Command):
         
         # Calculate max equipment name length
         max_equip_name_len = max((len(entry['name']) for entry in all_item_entries), default=20)
-        
         # Build output lines
         output_lines = []
         
@@ -581,27 +580,32 @@ class CmdArmor(Command):
         equipment_label = "EQUIPMENT"
         rating_label = "Rating"
         
-        # Center Location label in the box width
-        loc_label_padding = (LOCATION_BOX_WIDTH - len(location_label)) // 2
-        loc_label_line = " " * loc_label_padding + location_label
-        
-        # Calculate actual column positions
+        # Calculate actual column positions and widths
         # Box = 17 chars (╔ + 15 + ╗), stem = 6 chars (──┬── or ──────), space = 1
-        equipment_start_col = 17 + 6 + 1  # = 24
-        rating_start_col = equipment_start_col + max_equip_name_len + 2  # 2 spaces before rating
+        location_column_width = 17  # Width of the box including borders
+        stem_width = 7  # "──────" (6) + " " (1)
+        equipment_column_width = max_equip_name_len
+        rating_column_width = RATING_WIDTH + 2  # Rating width plus 2 space separator
         
-        # Build header line with aligned labels  
-        # Location label (centered in box width), then spaces to equipment column, then equipment label, then rating label
+        # Center each label within its column
+        # Location: center within box width (17 chars)
+        loc_label_padding_left = (location_column_width - len(location_label)) // 2
+        loc_label_padding_right = location_column_width - len(location_label) - loc_label_padding_left
+        
+        # Equipment: center within equipment column width
+        equip_label_padding_left = (equipment_column_width - len(equipment_label)) // 2
+        equip_label_padding_right = equipment_column_width - len(equipment_label) - equip_label_padding_left
+        
+        # Rating: center within rating column width
+        rating_label_padding_left = (rating_column_width - len(rating_label)) // 2
+        rating_label_padding_right = rating_column_width - len(rating_label) - rating_label_padding_left
+        
+        # Build header line with centered labels
         header_parts = []
-        header_parts.append(loc_label_line + " " * (LOCATION_BOX_WIDTH - len(loc_label_line)))  # Location in box width
-        # After box (17 chars), stem is "──────" (6) + " " (1) = 7 chars total before equipment
-        header_parts.append(" " * 7)  # Space from box end to equipment column start
-        header_parts.append(equipment_label)
-        # Calculate space between equipment label and rating label
-        # Equipment column width is max_equip_name_len, minus the equipment label length, plus 2 spaces separator
-        equipment_to_rating_spacing = max_equip_name_len - len(equipment_label) + 2
-        header_parts.append(" " * equipment_to_rating_spacing)
-        header_parts.append(rating_label)
+        header_parts.append(" " * loc_label_padding_left + location_label + " " * loc_label_padding_right)
+        header_parts.append(" " * stem_width)  # Space for stem
+        header_parts.append(" " * equip_label_padding_left + equipment_label + " " * equip_label_padding_right)
+        header_parts.append(" " * rating_label_padding_left + rating_label + " " * rating_label_padding_right)
         header_line = "".join(header_parts)
         
         # Store base header for potential centering of data lines
