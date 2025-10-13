@@ -642,6 +642,17 @@ class CmdThrow(Command):
                     splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in resolve_weapon_hit: {e}")
                     # Continue with landing even if weapon hit fails
             
+            # Sticky grenade resolution (even for utility throws)
+            elif target and not is_weapon and getattr(obj.db, 'is_sticky', False):
+                try:
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Sticky grenade utility throw - routing to weapon hit logic")
+                    self.resolve_weapon_hit(obj, target, thrower)
+                    showed_interaction = True  # Stick/bounce shows its own message
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Sticky grenade resolution completed")
+                except Exception as e:
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in sticky grenade resolution: {e}")
+                    # Continue with landing even if stick check fails
+            
             # Utility object bounce
             elif target and not is_weapon:
                 try:
