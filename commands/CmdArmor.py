@@ -600,11 +600,12 @@ class CmdArmor(Command):
         equip_label_padding_left = (equipment_column_width - len(equipment_label)) // 2
         equip_label_padding_right = equipment_column_width - len(equipment_label) - equip_label_padding_left
         
-        # Rating: right-align within the total rating column space (2 space separator + RATING_WIDTH)
+        # Rating: center the 't' in "Rating" over where the Roman numerals appear
         # The data line shows: equipment + "  " + rating.rjust(RATING_WIDTH)
-        # So total rating column is 2 + RATING_WIDTH = 10 characters
-        total_rating_column_width = 2 + RATING_WIDTH
-        rating_label_padding_left = total_rating_column_width - len(rating_label)
+        # With RATING_WIDTH=8, a single char like "I" appears at position: 2 + (RATING_WIDTH - 1) = 9
+        # "Rating" has 6 chars, 't' is at index 2 (Ra[t]ing)
+        # To align 't' (index 2) with position 9: "Rating" starts at position 9 - 2 = 7
+        rating_label_padding_left = 2 + RATING_WIDTH - 1 - 2  # Simplifies to: RATING_WIDTH - 1
         
         # Build header line
         header_parts = []
