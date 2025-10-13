@@ -593,10 +593,14 @@ class CmdArmor(Command):
         # Build header line with aligned labels  
         # Location label (centered in box width), then spaces to equipment column, then equipment label, then rating label
         header_parts = []
-        header_parts.append(loc_label_line + " " * (LOCATION_BOX_WIDTH - len(loc_label_line)))  # Location in box
-        header_parts.append(" " * 8)  # Space from box end to equipment column (17 box + 7 stem chars = 24 total)
+        header_parts.append(loc_label_line + " " * (LOCATION_BOX_WIDTH - len(loc_label_line)))  # Location in box width
+        # After box (17 chars), stem is "──────" (6) + " " (1) = 7 chars total before equipment
+        header_parts.append(" " * 7)  # Space from box end to equipment column start
         header_parts.append(equipment_label)
-        header_parts.append(" " * (max_equip_name_len - len(equipment_label) + 2))  # Space to rating
+        # Calculate space between equipment label and rating label
+        # Equipment column width is max_equip_name_len, minus the equipment label length, plus 2 spaces separator
+        equipment_to_rating_spacing = max_equip_name_len - len(equipment_label) + 2
+        header_parts.append(" " * equipment_to_rating_spacing)
         header_parts.append(rating_label)
         header_line = "".join(header_parts)
         
