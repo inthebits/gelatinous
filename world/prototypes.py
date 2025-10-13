@@ -62,6 +62,7 @@ EXPLOSIVE_BASE = {
     "chain_trigger": True,
     "dud_chance": 0.05,  # 5% chance to fail
     "damage_type": "laceration",  # Fragmentation/shrapnel wounds
+    "scanned_by_detonator": None,  # Remote detonator tracking
 }
 
 # Standard fragmentation grenade
@@ -139,6 +140,26 @@ STICKY_GRENADE = {
     "magnetic_strength": 8,  # 0-10 scale, determines stick threshold (mining-grade electromagnets)
     "stuck_to_armor": None,  # Reference to armor it's stuck to (runtime)
     "stuck_to_location": None,  # Body location where it's stuck (runtime)
+}
+
+# =============================================================================
+# REMOTE DETONATOR PROTOTYPE
+# =============================================================================
+
+REMOTE_DETONATOR = {
+    "key": "remote detonator",
+    "aliases": ["detonator", "remote", "trigger"],
+    "typeclass": "typeclasses.items.RemoteDetonator",
+    "desc": "A compact military-grade remote detonator with a digital display showing scanned explosive devices. The device can store up to 20 explosive signatures and trigger them remotely with the press of a button. A red safety cover protects the main detonation switch.",
+    "tags": [
+        ("item", "general"),
+        ("tool", "category"),
+    ],
+    "attrs": [
+        ("scanned_explosives", []),  # List of explosive dbrefs
+        ("max_capacity", 20),        # Maximum capacity
+        ("device_type", "remote_detonator"),
+    ]
 }
 
 # =============================================================================

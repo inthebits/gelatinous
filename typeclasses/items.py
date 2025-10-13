@@ -505,6 +505,25 @@ class Item(DefaultObject):
                 return "|rTerrible|n"
         
         return None
+    
+    def at_delete(self):
+        """
+        Called when item is deleted/destroyed.
+        Handles cleanup for remote detonator explosive tracking.
+        """
+        # If this item is an explosive scanned by a detonator, remove it from the detonator's list
+        if hasattr(self.db, 'scanned_by_detonator') and self.db.scanned_by_detonator:
+            from evennia.utils.search import search_object
+            detonator = search_object(f"#{self.db.scanned_by_detonator}")
+            if detonator and len(detonator) > 0:
+                detonator_obj = detonator[0]
+                if hasattr(detonator_obj.db, 'scanned_explosives'):
+                    try:
+                        detonator_obj.db.scanned_explosives.remove(self.id)
+                    except ValueError:
+                        pass  # Already removed
+        
+        super().at_delete()
 
 
 class SprayCanItem(Item):
@@ -706,3 +725,162 @@ class SolventCanItem(Item):
             self.delete()
         
         return actual_used
+
+
+class RemoteDetonator(Item):
+    """
+    Remote detonator for explosive devices.
+    
+    Can scan and remotely trigger up to 20 explosives. Maintains bidirectional
+    tracking with explosives - each explosive can only be scanned by one detonator
+    at a time, but detonators can manage multiple explosives.
+    
+    Remote detonation triggers the explosive's normal pin-pull and countdown logic,
+    respecting each explosive type's unique behavior (sticky grenade seeking,
+    rigged explosive trap mechanics, varied fuse times).
+    """
+    
+    def at_object_creation(self):
+        """Initialize remote detonator attributes."""
+        super().at_object_creation()
+        
+        # Scanned explosives tracking (list of dbrefs)
+        self.db.scanned_explosives = []
+        
+        # Maximum capacity
+        self.db.max_capacity = 20
+        
+        # Device type identifier
+        self.db.device_type = "remote_detonator"
+        
+        # Default description if not set
+        if not self.db.desc:
+            self.db.desc = (
+                "A compact military-grade remote detonator with a digital display "
+                "showing scanned explosive devices. The device can store up to 20 "
+                "explosive signatures and trigger them remotely with the press of a button. "
+                "A red safety cover protects the main detonation switch."
+            )
+    
+    def validate_scanned_list(self):
+        """
+        Clean up invalid explosives from scanned list.
+        Removes explosives that no longer exist or are invalid.
+        
+        Returns:
+            int: Number of explosives removed
+        """
+        if not self.db.scanned_explosives:
+            return 0
+        
+        original_count = len(self.db.scanned_explosives)
+        valid_explosives = []
+        
+        for explosive_dbref in self.db.scanned_explosives:
+            from evennia.utils.search import search_object
+            explosive = search_object(f"#{explosive_dbref}")
+            
+            # Keep if explosive exists and is valid
+            if explosive and len(explosive) > 0:
+                explosive_obj = explosive[0]
+                if explosive_obj and hasattr(explosive_obj, 'db'):
+                    valid_explosives.append(explosive_dbref)
+                    
+        self.db.scanned_explosives = valid_explosives
+        return original_count - len(valid_explosives)
+    
+    def add_explosive(self, explosive):
+        """
+        Add explosive to scanned list with validation.
+        Handles capacity limits and bidirectional linking.
+        
+        Args:
+            explosive: Explosive object to add
+            
+        Returns:
+            tuple: (success: bool, message: str)
+        """
+        # Validate capacity
+        if len(self.db.scanned_explosives) >= self.db.max_capacity:
+            return False, f"Detonator at maximum capacity ({self.db.max_capacity} explosives)."
+        
+        # Check if already scanned
+        if explosive.id in self.db.scanned_explosives:
+            return False, f"{explosive.key} is already scanned by this detonator."
+        
+        # Handle override: remove from previous detonator if any
+        if hasattr(explosive.db, 'scanned_by_detonator') and explosive.db.scanned_by_detonator:
+            old_detonator_dbref = explosive.db.scanned_by_detonator
+            from evennia.utils.search import search_object
+            old_detonator = search_object(f"#{old_detonator_dbref}")
+            
+            if old_detonator and len(old_detonator) > 0:
+                old_det = old_detonator[0]
+                if hasattr(old_det.db, 'scanned_explosives'):
+                    try:
+                        old_det.db.scanned_explosives.remove(explosive.id)
+                    except ValueError:
+                        pass  # Already removed
+        
+        # Add to this detonator's list
+        self.db.scanned_explosives.append(explosive.id)
+        
+        # Set bidirectional reference
+        explosive.db.scanned_by_detonator = self.id
+        
+        return True, f"{explosive.key} scanned successfully."
+    
+    def remove_explosive(self, explosive_dbref):
+        """
+        Remove explosive from scanned list.
+        Breaks bidirectional reference.
+        
+        Args:
+            explosive_dbref: Database ID of explosive to remove
+            
+        Returns:
+            bool: True if removed, False if not in list
+        """
+        if explosive_dbref not in self.db.scanned_explosives:
+            return False
+        
+        # Remove from list
+        self.db.scanned_explosives.remove(explosive_dbref)
+        
+        # Clear bidirectional reference if explosive still exists
+        from evennia.utils.search import search_object
+        explosive = search_object(f"#{explosive_dbref}")
+        if explosive and len(explosive) > 0:
+            explosive_obj = explosive[0]
+            if hasattr(explosive_obj.db, 'scanned_by_detonator'):
+                explosive_obj.db.scanned_by_detonator = None
+        
+        return True
+    
+    def get_scanned_count(self):
+        """
+        Get current count of scanned explosives.
+        Auto-validates list before counting.
+        
+        Returns:
+            int: Number of valid scanned explosives
+        """
+        self.validate_scanned_list()
+        return len(self.db.scanned_explosives)
+    
+    def at_delete(self):
+        """
+        Called when detonator is destroyed.
+        Clears scanned_by_detonator reference on all linked explosives.
+        """
+        if self.db.scanned_explosives:
+            from evennia.utils.search import search_object
+            
+            for explosive_dbref in self.db.scanned_explosives:
+                explosive = search_object(f"#{explosive_dbref}")
+                if explosive and len(explosive) > 0:
+                    explosive_obj = explosive[0]
+                    if hasattr(explosive_obj.db, 'scanned_by_detonator'):
+                        explosive_obj.db.scanned_by_detonator = None
+        
+        super().at_delete()

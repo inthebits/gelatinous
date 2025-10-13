@@ -3084,3 +3084,658 @@ class CmdDefuse(Command):
         except Exception as e:
             splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_ERROR: Error in trigger_early_explosion: {e}")
+
+
+# =============================================================================
+# REMOTE DETONATOR COMMANDS
+# =============================================================================
+
+class CmdScan(Command):
+    """
+    Scan an explosive device with a remote detonator.
+    
+    Usage:
+        scan <explosive> with <detonator>
+    
+    Examples:
+        scan grenade with detonator
+        scan spdr with remote
+    
+    Scans an explosive device into the detonator's memory for remote detonation.
+    The detonator can store up to 20 explosive signatures. Each explosive can
+    only be scanned by one detonator at a time - scanning with a new detonator
+    will override the previous link.
+    
+    You must be wielding or holding the detonator to use it.
+    """
+    
+    key = "scan"
+    locks = "cmd:all()"
+    help_category = "Combat"
+    
+    def func(self):
+        caller = self.caller
+        
+        # Parse arguments
+        if not self.args or " with " not in self.args:
+            caller.msg("Usage: scan <explosive> with <detonator>")
+            return
+        
+        parts = self.args.split(" with ", 1)
+        if len(parts) != 2:
+            caller.msg("Usage: scan <explosive> with <detonator>")
+            return
+        
+        explosive_name = parts[0].strip()
+        detonator_name = parts[1].strip()
+        
+        # Find explosive
+        explosive = caller.search(explosive_name, location=caller)
+        if not explosive:
+            return
+        
+        # Validate explosive
+        if not getattr(explosive.db, DB_IS_EXPLOSIVE, False):
+            caller.msg(f"{explosive.key} is not an explosive device.")
+            return
+        
+        # Find detonator
+        detonator = caller.search(detonator_name, location=caller)
+        if not detonator:
+            return
+        
+        # Validate detonator type
+        if not hasattr(detonator.db, 'device_type') or detonator.db.device_type != "remote_detonator":
+            caller.msg(f"{detonator.key} is not a remote detonator.")
+            return
+        
+        # Check if detonator is wielded/held
+        if not hasattr(caller, 'hands') or not caller.hands:
+            caller.msg("You need hands to use a detonator.")
+            return
+        
+        is_wielded = any(held_item == detonator for held_item in caller.hands.values() if held_item)
+        if not is_wielded:
+            caller.msg(f"You must be wielding or holding {detonator.key} to use it.")
+            return
+        
+        # Add explosive to detonator
+        success, message = detonator.add_explosive(explosive)
+        
+        if success:
+            # Success messaging
+            caller.msg(f"|gYou scan {explosive.key} into {detonator.key}'s memory.|n")
+            caller.msg(f"  Signature: e-{explosive.id}")
+            caller.msg(f"  Capacity: {len(detonator.db.scanned_explosives)}/{detonator.db.max_capacity}")
+            
+            # Room messaging
+            caller.location.msg_contents(
+                f"{caller.key} points a device at {explosive.key}, which emits a soft beep.",
+                exclude=[caller]
+            )
+            
+            # Debug logging
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(
+                f"DETONATOR_SCAN: {caller.key} scanned e-{explosive.id} ({explosive.key}) "
+                f"into detonator #{detonator.id}. Capacity: {len(detonator.db.scanned_explosives)}/{detonator.db.max_capacity}"
+            )
+        else:
+            # Failure messaging
+            caller.msg(f"|r{message}|n")
+
+
+class CmdDetonate(Command):
+    """
+    Remotely detonate scanned explosives.
+    
+    Usage:
+        detonate e-<dbref> with <detonator>
+        detonate all with <detonator>
+    
+    Examples:
+        detonate e-1234 with remote
+        detonate all with detonator
+    
+    Remotely detonates scanned explosives by pulling their pins and starting
+    their normal fuse countdowns. Each explosive type behaves as it normally
+    would (sticky grenades seek/stick, rigged explosives use 1s fuse, etc.).
+    
+    Detonating "all" triggers every scanned explosive simultaneously with
+    staggered countdowns based on their individual fuse times.
+    
+    You must be wielding or holding the detonator to use it.
+    """
+    
+    key = "detonate"
+    locks = "cmd:all()"
+    help_category = "Combat"
+    
+    def func(self):
+        caller = self.caller
+        
+        # Parse arguments
+        if not self.args or " with " not in self.args:
+            caller.msg("Usage: detonate e-<dbref> with <detonator> OR detonate all with <detonator>")
+            return
+        
+        parts = self.args.split(" with ", 1)
+        if len(parts) != 2:
+            caller.msg("Usage: detonate e-<dbref> with <detonator> OR detonate all with <detonator>")
+            return
+        
+        target_str = parts[0].strip()
+        detonator_name = parts[1].strip()
+        
+        # Find detonator
+        detonator = caller.search(detonator_name, location=caller)
+        if not detonator:
+            return
+        
+        # Validate detonator type
+        if not hasattr(detonator.db, 'device_type') or detonator.db.device_type != "remote_detonator":
+            caller.msg(f"{detonator.key} is not a remote detonator.")
+            return
+        
+        # Check if detonator is wielded/held
+        if not hasattr(caller, 'hands') or not caller.hands:
+            caller.msg("You need hands to use a detonator.")
+            return
+        
+        is_wielded = any(held_item == detonator for held_item in caller.hands.values() if held_item)
+        if not is_wielded:
+            caller.msg(f"You must be wielding or holding {detonator.key} to use it.")
+            return
+        
+        # Check for empty list
+        if not detonator.db.scanned_explosives:
+            caller.msg(f"{detonator.key} has no scanned explosives.")
+            return
+        
+        # Handle "all" detonation
+        if target_str.lower() == "all":
+            self.detonate_all(caller, detonator)
+        # Handle single detonation
+        elif target_str.startswith("e-"):
+            try:
+                explosive_dbref = int(target_str[2:])
+                self.detonate_single(caller, detonator, explosive_dbref)
+            except ValueError:
+                caller.msg(f"Invalid explosive ID: {target_str}")
+        else:
+            caller.msg("Usage: detonate e-<dbref> with <detonator> OR detonate all with <detonator>")
+    
+    def detonate_single(self, caller, detonator, explosive_dbref):
+        """Detonate a single explosive."""
+        # Validate detonator has this explosive
+        if explosive_dbref not in detonator.db.scanned_explosives:
+            caller.msg(f"e-{explosive_dbref} is not in {detonator.key}'s memory.")
+            return
+        
+        # Get explosive object
+        from evennia.utils.search import search_object
+        explosive = search_object(f"#{explosive_dbref}")
+        
+        if not explosive or len(explosive) == 0:
+            caller.msg(f"|ye-{explosive_dbref} no longer exists.|n")
+            # Auto-cleanup invalid explosive
+            detonator.db.scanned_explosives.remove(explosive_dbref)
+            return
+        
+        explosive = explosive[0]
+        
+        # Check if already detonating
+        if getattr(explosive.db, DB_PIN_PULLED, False):
+            caller.msg(f"|y{explosive.key} is already detonating!|n")
+            return
+        
+        # Pull the pin remotely
+        setattr(explosive.db, DB_PIN_PULLED, True)
+        fuse_time = getattr(explosive.db, DB_FUSE_TIME, 8)
+        setattr(explosive.ndb, NDB_COUNTDOWN_REMAINING, fuse_time)
+        
+        # Start countdown using CmdThrow's grenade ticker system
+        # Create temporary CmdThrow instance to access start_grenade_ticker
+        throw_cmd = CmdThrow()
+        throw_cmd.caller = caller
+        throw_cmd.start_grenade_ticker(explosive)
+        
+        # Operator messaging
+        caller.msg(
+            f"|rYou flip open the red safety cover on {detonator.key} and press the large button. "
+            f"A distant beep echoes!|n"
+        )
+        
+        # Operator's room messaging (button press)
+        caller.location.msg_contents(
+            f"{caller.key} flips open a red safety cover on their {detonator.key} and presses a large button.",
+            exclude=[caller]
+        )
+        
+        # Grenade's location messaging (activation)
+        if explosive.location and explosive.location != caller.location:
+            # Cross-room - grenade location sees activation
+            explosive.location.msg_contents(
+                f"|rAn {explosive.key} beeps and its light begins flashing!|n |y[{fuse_time} seconds]|n"
+            )
+        elif explosive.location == caller.location:
+            # Same room - show activation to everyone
+            caller.location.msg_contents(
+                f"|rAn {explosive.key} beeps and its light begins flashing!|n |y[{fuse_time} seconds]|n",
+                exclude=[caller]
+            )
+            caller.msg(f"|rThe {explosive.key} beeps and its light begins flashing!|n |y[{fuse_time} seconds]|n")
+        
+        # Debug logging
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(
+            f"DETONATOR_SINGLE: {caller.key} remotely detonated e-{explosive_dbref} ({explosive.key}) "
+            f"via detonator #{detonator.id}. Fuse: {fuse_time}s"
+        )
+    
+    def detonate_all(self, caller, detonator):
+        """Detonate all scanned explosives."""
+        # Validate and clean list
+        detonator.validate_scanned_list()
+        
+        if not detonator.db.scanned_explosives:
+            caller.msg(f"{detonator.key} has no valid explosives to detonate.")
+            return
+        
+        from evennia.utils.search import search_object
+        
+        detonated_count = 0
+        already_active_count = 0
+        
+        # Track locations for messaging
+        activation_locations = {}  # location: [explosive_names]
+        
+        for explosive_dbref in list(detonator.db.scanned_explosives):
+            explosive = search_object(f"#{explosive_dbref}")
+            if not explosive or len(explosive) == 0:
+                continue
+            
+            explosive = explosive[0]
+            
+            # Skip if already detonating
+            if getattr(explosive.db, DB_PIN_PULLED, False):
+                already_active_count += 1
+                continue
+            
+            # Pull the pin remotely
+            setattr(explosive.db, DB_PIN_PULLED, True)
+            fuse_time = getattr(explosive.db, DB_FUSE_TIME, 8)
+            setattr(explosive.ndb, NDB_COUNTDOWN_REMAINING, fuse_time)
+            
+            # Start countdown
+            throw_cmd = CmdThrow()
+            throw_cmd.caller = caller
+            throw_cmd.start_grenade_ticker(explosive)
+            
+            detonated_count += 1
+            
+            # Track for location messaging
+            if explosive.location:
+                if explosive.location not in activation_locations:
+                    activation_locations[explosive.location] = []
+                activation_locations[explosive.location].append((explosive.key, fuse_time))
+        
+        if detonated_count == 0:
+            if already_active_count > 0:
+                caller.msg(f"|yAll scanned explosives are already detonating.|n")
+            else:
+                caller.msg(f"|yNo valid explosives to detonate.|n")
+            return
+        
+        # Operator messaging
+        caller.msg(
+            f"|rYou flip open the red safety cover on {detonator.key} and press the large button. "
+            f"Multiple distant beeps echo from various locations!|n"
+        )
+        caller.msg(f"|gDetonated {detonated_count} explosive(s).|n")
+        
+        # Operator's room messaging
+        caller.location.msg_contents(
+            f"{caller.key} flips open a red safety cover on their {detonator.key} and presses a large button. "
+            f"Multiple distant beeps echo from various locations!",
+            exclude=[caller]
+        )
+        
+        # Send activation messages to each location
+        for location, explosives_list in activation_locations.items():
+            if location == caller.location:
+                # Same room - show to everyone including operator
+                for exp_name, fuse in explosives_list:
+                    location.msg_contents(
+                        f"|rAn {exp_name} beeps and its light begins flashing!|n |y[{fuse} seconds]|n"
+                    )
+            else:
+                # Different room - just show activation
+                for exp_name, fuse in explosives_list:
+                    location.msg_contents(
+                        f"|rAn {exp_name} beeps and its light begins flashing!|n |y[{fuse} seconds]|n"
+                    )
+        
+        # Debug logging
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(
+            f"DETONATOR_ALL: {caller.key} remotely detonated {detonated_count} explosives "
+            f"via detonator #{detonator.id}. Already active: {already_active_count}"
+        )
+
+
+class CmdDetonateList(Command):
+    """
+    List scanned explosives in remote detonator.
+    
+    Usage:
+        detonate list with <detonator>
+        detonator list (if wielded)
+    
+    Examples:
+        detonate list with remote
+        detonator list
+    
+    Displays a table of all scanned explosives showing their ID, type, status,
+    fuse time, and current location. Automatically validates and removes invalid
+    explosives from the list.
+    
+    You must be wielding or holding the detonator to use it.
+    """
+    
+    key = "detonate list"
+    aliases = ["detonator list"]
+    locks = "cmd:all()"
+    help_category = "Combat"
+    
+    def func(self):
+        caller = self.caller
+        
+        # Parse arguments - handle both syntaxes
+        detonator = None
+        
+        if self.cmdstring == "detonator list":
+            # Find wielded detonator
+            if hasattr(caller, 'hands') and caller.hands:
+                for held_item in caller.hands.values():
+                    if (held_item and hasattr(held_item.db, 'device_type') and 
+                        held_item.db.device_type == "remote_detonator"):
+                        detonator = held_item
+                        break
+            
+            if not detonator:
+                caller.msg("You must be wielding a remote detonator to use this command.")
+                return
+        else:
+            # Parse "detonate list with <detonator>"
+            if not self.args or " with " not in self.args:
+                caller.msg("Usage: detonate list with <detonator>")
+                return
+            
+            parts = self.args.split(" with ", 1)
+            if len(parts) != 2:
+                caller.msg("Usage: detonate list with <detonator>")
+                return
+            
+            detonator_name = parts[1].strip()
+            detonator = caller.search(detonator_name, location=caller)
+            if not detonator:
+                return
+        
+        # Validate detonator type
+        if not hasattr(detonator.db, 'device_type') or detonator.db.device_type != "remote_detonator":
+            caller.msg(f"{detonator.key} is not a remote detonator.")
+            return
+        
+        # Check if detonator is wielded/held
+        if not hasattr(caller, 'hands') or not caller.hands:
+            caller.msg("You need hands to use a detonator.")
+            return
+        
+        is_wielded = any(held_item == detonator for held_item in caller.hands.values() if held_item)
+        if not is_wielded:
+            caller.msg(f"You must be wielding or holding {detonator.key} to use it.")
+            return
+        
+        # Validate list
+        detonator.validate_scanned_list()
+        
+        if not detonator.db.scanned_explosives:
+            caller.msg(f"{detonator.key} has no scanned explosives.")
+            return
+        
+        # Build table
+        from evennia.utils.evtable import EvTable
+        from evennia.utils.search import search_object
+        
+        table = EvTable(
+            "|wID|n", "|wDevice|n", "|wStatus|n", "|wFuse|n", "|wLocation|n",
+            border="cells",
+            width=78
+        )
+        
+        for explosive_dbref in detonator.db.scanned_explosives:
+            explosive = search_object(f"#{explosive_dbref}")
+            if not explosive or len(explosive) == 0:
+                continue
+            
+            explosive = explosive[0]
+            
+            # Get status
+            if getattr(explosive.db, DB_PIN_PULLED, False):
+                countdown = getattr(explosive.ndb, NDB_COUNTDOWN_REMAINING, 0)
+                if getattr(explosive.db, 'stuck_to_armor', None):
+                    status = f"|RSTUCK|n"
+                else:
+                    status = f"|YACTIVE|n"
+                fuse_str = f"|R{countdown}s left!|n"
+            elif getattr(explosive.db, 'rigged_to_exit', None) is not None:
+                status = f"|yTRAP|n"
+                fuse_time = getattr(explosive.db, DB_FUSE_TIME, 8)
+                fuse_str = f"{fuse_time}s (trap)"
+            else:
+                status = f"|gREADY|n"
+                fuse_time = getattr(explosive.db, DB_FUSE_TIME, 8)
+                fuse_str = f"{fuse_time}s"
+            
+            # Get location
+            if not explosive.location:
+                loc_str = "|xVoid|n"
+            elif explosive.location == caller:
+                loc_str = "Your inventory"
+            elif hasattr(explosive.location, 'key'):
+                # Check if stuck to armor
+                if getattr(explosive.db, 'stuck_to_armor', None):
+                    stuck_to = explosive.db.stuck_to_armor
+                    if hasattr(stuck_to, 'location') and hasattr(stuck_to.location, 'key'):
+                        loc_str = f"On {stuck_to.location.key}"
+                    else:
+                        loc_str = "Stuck to armor"
+                else:
+                    loc_str = explosive.location.key
+            else:
+                loc_str = "|xUnknown|n"
+            
+            table.add_row(
+                f"e-{explosive_dbref}",
+                explosive.key[:18],  # Truncate long names
+                status,
+                fuse_str,
+                loc_str[:16]  # Truncate long location names
+            )
+        
+        # Display
+        caller.msg(f"\n|w{'='*78}|n")
+        caller.msg(f"|w  REMOTE DETONATOR - SCANNED DEVICES|n")
+        caller.msg(f"|w  Capacity: {len(detonator.db.scanned_explosives)}/{detonator.db.max_capacity}|n")
+        caller.msg(f"|w{'='*78}|n")
+        caller.msg(str(table))
+        caller.msg(f"|w{'='*78}|n")
+        caller.msg("\nStatus Legend:")
+        caller.msg("  |gREADY|n  - Armed and ready for remote detonation")
+        caller.msg("  |YACTIVE|n - Currently counting down (pin already pulled)")
+        caller.msg("  |RSTUCK|n  - Sticky grenade adhered to target")
+        caller.msg("  |yTRAP|n   - Rigged explosive waiting for trigger")
+
+
+class CmdClearDetonator(Command):
+    """
+    Clear explosives from remote detonator memory.
+    
+    Usage:
+        clear e-<dbref> from <detonator>
+        clear all from <detonator>
+        detonator clear (if wielded)
+    
+    Examples:
+        clear e-1234 from remote
+        clear all from detonator
+        detonator clear
+    
+    Removes explosive signatures from the detonator's memory, breaking the
+    bidirectional link. Cleared explosives can no longer be remotely detonated
+    until they are scanned again.
+    
+    You must be wielding or holding the detonator to use it.
+    """
+    
+    key = "clear"
+    aliases = ["detonator clear"]
+    locks = "cmd:all()"
+    help_category = "Combat"
+    
+    def func(self):
+        caller = self.caller
+        
+        # Handle "detonator clear" syntax
+        if self.cmdstring == "detonator clear":
+            # Find wielded detonator and clear all
+            if not hasattr(caller, 'hands') or not caller.hands:
+                caller.msg("You need hands to use a detonator.")
+                return
+            
+            detonator = None
+            for held_item in caller.hands.values():
+                if (held_item and hasattr(held_item.db, 'device_type') and 
+                    held_item.db.device_type == "remote_detonator"):
+                    detonator = held_item
+                    break
+            
+            if not detonator:
+                caller.msg("You must be wielding a remote detonator to use this command.")
+                return
+            
+            self.clear_all(caller, detonator)
+            return
+        
+        # Parse "clear <target> from <detonator>" syntax
+        if not self.args or " from " not in self.args:
+            caller.msg("Usage: clear e-<dbref> from <detonator> OR clear all from <detonator>")
+            return
+        
+        parts = self.args.split(" from ", 1)
+        if len(parts) != 2:
+            caller.msg("Usage: clear e-<dbref> from <detonator> OR clear all from <detonator>")
+            return
+        
+        target_str = parts[0].strip()
+        detonator_name = parts[1].strip()
+        
+        # Find detonator
+        detonator = caller.search(detonator_name, location=caller)
+        if not detonator:
+            return
+        
+        # Validate detonator type
+        if not hasattr(detonator.db, 'device_type') or detonator.db.device_type != "remote_detonator":
+            caller.msg(f"{detonator.key} is not a remote detonator.")
+            return
+        
+        # Check if detonator is wielded/held
+        if not hasattr(caller, 'hands') or not caller.hands:
+            caller.msg("You need hands to use a detonator.")
+            return
+        
+        is_wielded = any(held_item == detonator for held_item in caller.hands.values() if held_item)
+        if not is_wielded:
+            caller.msg(f"You must be wielding or holding {detonator.key} to use it.")
+            return
+        
+        # Handle "all" clear
+        if target_str.lower() == "all":
+            self.clear_all(caller, detonator)
+        # Handle single clear
+        elif target_str.startswith("e-"):
+            try:
+                explosive_dbref = int(target_str[2:])
+                self.clear_single(caller, detonator, explosive_dbref)
+            except ValueError:
+                caller.msg(f"Invalid explosive ID: {target_str}")
+        else:
+            caller.msg("Usage: clear e-<dbref> from <detonator> OR clear all from <detonator>")
+    
+    def clear_single(self, caller, detonator, explosive_dbref):
+        """Clear a single explosive from detonator."""
+        # Check if explosive is in list
+        if explosive_dbref not in detonator.db.scanned_explosives:
+            caller.msg(f"e-{explosive_dbref} is not in {detonator.key}'s memory.")
+            return
+        
+        # Get explosive name if it still exists
+        from evennia.utils.search import search_object
+        explosive = search_object(f"#{explosive_dbref}")
+        explosive_name = explosive[0].key if explosive and len(explosive) > 0 else f"e-{explosive_dbref}"
+        
+        # Remove from detonator
+        success = detonator.remove_explosive(explosive_dbref)
+        
+        if success:
+            caller.msg(f"|gYou clear e-{explosive_dbref} ({explosive_name}) from {detonator.key}'s memory.|n")
+            
+            # Room messaging
+            caller.location.msg_contents(
+                f"{caller.key} presses several buttons on their {detonator.key}.",
+                exclude=[caller]
+            )
+            
+            # Debug logging
+            splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+            splattercast.msg(
+                f"DETONATOR_CLEAR_SINGLE: {caller.key} cleared e-{explosive_dbref} from detonator #{detonator.id}"
+            )
+        else:
+            caller.msg(f"|rFailed to clear e-{explosive_dbref} from {detonator.key}.|n")
+    
+    def clear_all(self, caller, detonator):
+        """Clear all explosives from detonator."""
+        if not detonator.db.scanned_explosives:
+            caller.msg(f"{detonator.key} has no scanned explosives to clear.")
+            return
+        
+        count = len(detonator.db.scanned_explosives)
+        
+        # Clear bidirectional references
+        from evennia.utils.search import search_object
+        for explosive_dbref in list(detonator.db.scanned_explosives):
+            explosive = search_object(f"#{explosive_dbref}")
+            if explosive and len(explosive) > 0:
+                explosive_obj = explosive[0]
+                if hasattr(explosive_obj.db, 'scanned_by_detonator'):
+                    explosive_obj.db.scanned_by_detonator = None
+        
+        # Clear detonator list
+        detonator.db.scanned_explosives = []
+        
+        caller.msg(f"|gYou clear all {count} explosive signature(s) from {detonator.key}'s memory.|n")
+        
+        # Room messaging
+        caller.location.msg_contents(
+            f"{caller.key} holds down a button on their {detonator.key}, which emits a series of beeps before going silent.",
+            exclude=[caller]
+        )
+        
+        # Debug logging
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(
+            f"DETONATOR_CLEAR_ALL: {caller.key} cleared {count} explosives from detonator #{detonator.id}"
+        )

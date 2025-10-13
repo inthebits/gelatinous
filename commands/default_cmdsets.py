@@ -27,7 +27,10 @@ from commands.CmdSpawnMob import CmdSpawnMob
 from commands.CmdAdmin import CmdHeal, CmdPeace, CmdTestDeathCurtain, CmdWeather, CmdResetMedical, CmdMedicalAudit, CmdTestDeath, CmdTestUnconscious
 from commands.combat.cmdset_combat import CombatCmdSet
 from commands.combat.special_actions import CmdAim, CmdGrapple
-from commands.CmdThrow import CmdThrow, CmdPull, CmdCatch, CmdRig, CmdDefuse
+from commands.CmdThrow import (
+    CmdThrow, CmdPull, CmdCatch, CmdRig, CmdDefuse,
+    CmdScan, CmdDetonate, CmdDetonateList, CmdClearDetonator
+)
 from commands.CmdGraffiti import CmdGraffiti, CmdPress
 from commands.CmdCharacter import CmdLongdesc, CmdSkintone
 from commands.CmdArmor import CmdArmor, CmdArmorRepair, CmdSlot, CmdUnslot
@@ -137,12 +140,18 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         # Add frisk command (search characters/corpses)
         self.add(CmdInventory.CmdFrisk())
         
-        # Add throw command system
+        # Add throw/grenade system commands
         self.add(CmdThrow())
         self.add(CmdPull())
         self.add(CmdCatch())
         self.add(CmdRig())
         self.add(CmdDefuse())
+        
+        # Add remote detonator commands
+        self.add(CmdScan())
+        self.add(CmdDetonate())
+        self.add(CmdDetonateList())
+        self.add(CmdClearDetonator())
         
         # Add character placement commands
         self.add(CmdCharacter.CmdLookPlace())
