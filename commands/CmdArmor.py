@@ -516,28 +516,53 @@ class CmdArmor(Command):
                 
                 # Handle plate carriers specially
                 if getattr(item, 'is_plate_carrier', False):
+                    base_rating = getattr(item, 'armor_rating', 0)
                     installed_plates = getattr(item, 'installed_plates', {})
-                    plate_coverage = getattr(item, 'plate_slot_coverage', {})
                     
+                    location_rating = base_rating
                     affecting_plates = []
-                    for slot, covered_locs in plate_coverage.items():
-                        if location in covered_locs:
-                            plate = installed_plates.get(slot)
-                            if plate:
-                                affecting_plates.append(plate)
                     
+                    # Check which plates affect this specific location
+                    if location == "chest":
+                        # Front plate protects chest
+                        front_plate = installed_plates.get('front')
+                        if front_plate:
+                            plate_rating = getattr(front_plate, 'armor_rating', 0)
+                            location_rating += plate_rating
+                            affecting_plates.append(front_plate)
+                    elif location == "back":
+                        # Back plate protects back
+                        back_plate = installed_plates.get('back')
+                        if back_plate:
+                            plate_rating = getattr(back_plate, 'armor_rating', 0)
+                            location_rating += plate_rating
+                            affecting_plates.append(back_plate)
+                    elif location == "abdomen":
+                        # Side plates contribute to abdomen (averaged)
+                        side_protection = 0
+                        left_plate = installed_plates.get('left_side')
+                        right_plate = installed_plates.get('right_side')
+                        if left_plate:
+                            left_rating = getattr(left_plate, 'armor_rating', 0)
+                            side_protection += left_rating
+                            affecting_plates.append(left_plate)
+                        if right_plate:
+                            right_rating = getattr(right_plate, 'armor_rating', 0)
+                            side_protection += right_rating
+                            affecting_plates.append(right_plate)
+                        if side_protection > 0:
+                            location_rating += side_protection // 2
+                    
+                    # Add carrier entry
+                    item_entries.append({
+                        'name': item.key,
+                        'rating': location_rating,
+                        'type': armor_type,
+                        'is_carrier': True
+                    })
+                    
+                    # Add affecting plates as sub-items
                     if affecting_plates:
-                        total_rating = armor_rating
-                        for plate in affecting_plates:
-                            total_rating += getattr(plate, 'armor_rating', 0)
-                        
-                        item_entries.append({
-                            'name': item.key,
-                            'rating': total_rating,
-                            'type': armor_type,
-                            'is_carrier': True
-                        })
-                        
                         for plate in affecting_plates:
                             plate_rating = getattr(plate, 'armor_rating', 0)
                             plate_type = getattr(plate, 'armor_type', 'generic')
@@ -547,13 +572,6 @@ class CmdArmor(Command):
                                 'type': plate_type,
                                 'is_plate': True
                             })
-                    else:
-                        item_entries.append({
-                            'name': item.key,
-                            'rating': armor_rating,
-                            'type': armor_type,
-                            'is_carrier': False
-                        })
                 else:
                     item_entries.append({
                         'name': item.key,
