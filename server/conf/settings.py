@@ -83,6 +83,25 @@ CMDSET_UNLOGGEDIN = "commands.unloggedin_email.UnloggedinEmailCmdSet"
 CONNECTION_SCREEN_MODULE = "server.conf.connection_screens"
 
 ######################################################################
+# Channels
+######################################################################
+CHANNEL_MUDINFO = {
+    "key": "G-INFO",
+    "aliases": "",
+    "desc": "Connection Log",
+    "locks": "control:perm(Developer);listen:perm(Admin);send:false()",
+}
+
+DEFAULT_CHANNELS = [
+    {
+        "key": "Splattercast",
+        "aliases": "",
+        "desc": "Combat Log",
+        "locks": "control:perm(Developer);listen:perm(Admin);send:false()",
+    },
+]
+
+######################################################################
 # Django web features
 ######################################################################
 
