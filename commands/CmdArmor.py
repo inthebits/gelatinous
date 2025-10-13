@@ -590,14 +590,18 @@ class CmdArmor(Command):
         equipment_start_col = 17 + 6 + 1  # = 24
         rating_start_col = equipment_start_col + max_equip_name_len + 2  # 2 spaces before rating
         
-        # Build header line with aligned labels
+        # Build header line with aligned labels  
+        # Location label (centered in box width), then spaces to equipment column, then equipment label, then rating label
         header_parts = []
-        header_parts.append(loc_label_line + " " * (LOCATION_BOX_WIDTH - len(loc_label_line)))
-        header_parts.append(" " * 7)  # Space to equipment label start
+        header_parts.append(loc_label_line + " " * (LOCATION_BOX_WIDTH - len(loc_label_line)))  # Location in box
+        header_parts.append(" " * 8)  # Space from box end to equipment column (17 box + 7 stem chars = 24 total)
         header_parts.append(equipment_label)
-        header_parts.append(" " * (max_equip_name_len - len(equipment_label) + 2))
+        header_parts.append(" " * (max_equip_name_len - len(equipment_label) + 2))  # Space to rating
         header_parts.append(rating_label)
         header_line = "".join(header_parts)
+        
+        # Store base header for potential centering of data lines
+        base_header_line = header_line
         
         if center_headers:
             session = caller.sessions.get()[0] if caller.sessions.get() else None
@@ -606,6 +610,10 @@ class CmdArmor(Command):
             header_width = len(header_line)
             padding = (screen_width - header_width) // 2
             header_line = " " * padding + header_line
+            # Store padding for use on data lines
+            line_padding = " " * padding
+        else:
+            line_padding = ""
         
         output_lines.append(header_line)
         output_lines.append("")  # Blank line after header
@@ -630,10 +638,9 @@ class CmdArmor(Command):
                 # Single item - simple stem connection
                 entry = item_entries[0]
                 
-                # Format item text with aligned rating
+                # Format item text with aligned rating (no "- " prefix)
                 if entry['rating'] > 0:
-                    rating_roman = to_roman(entry['rating'])
-                    rating_text = f"- {rating_roman}"
+                    rating_text = to_roman(entry['rating'])
                 else:
                     rating_text = NULL_CHAR
                 
@@ -644,9 +651,9 @@ class CmdArmor(Command):
                 # Simple horizontal stem to item
                 stem = "────"
                 
-                output_lines.append(loc_box_top)
-                output_lines.append(loc_box_mid + stem + "── " + item_text)
-                output_lines.append(loc_box_bot)
+                output_lines.append(line_padding + loc_box_top)
+                output_lines.append(line_padding + loc_box_mid + stem + "── " + item_text)
+                output_lines.append(line_padding + loc_box_bot)
                 
             else:
                 # Multiple items - tree structure with branches
@@ -656,10 +663,9 @@ class CmdArmor(Command):
                     is_first = (idx == 0)
                     is_last = (idx == len(item_entries) - 1)
                     
-                    # Format item text with aligned rating
+                    # Format item text with aligned rating (no "- " prefix)
                     if entry['rating'] > 0:
-                        rating_roman = to_roman(entry['rating'])
-                        rating_text = f"- {rating_roman}"
+                        rating_text = to_roman(entry['rating'])
                     else:
                         rating_text = NULL_CHAR
                     
@@ -669,16 +675,16 @@ class CmdArmor(Command):
                     
                     if is_first:
                         # First item - show location box with stem and branch
-                        output_lines.append(loc_box_top)
-                        output_lines.append(loc_box_mid + "──┬── " + item_text)
-                        output_lines.append(loc_box_bot + "  │")
+                        output_lines.append(line_padding + loc_box_top)
+                        output_lines.append(line_padding + loc_box_mid + "──┬── " + item_text)
+                        output_lines.append(line_padding + loc_box_bot + "  │")
                     elif is_last:
                         # Last item - final branch with └─
-                        output_lines.append(blank_space + "  └── " + item_text)
+                        output_lines.append(line_padding + blank_space + "  └── " + item_text)
                     else:
                         # Middle item - branch with ├─
-                        output_lines.append(blank_space + "  ├── " + item_text)
-                        output_lines.append(blank_space + "  │")
+                        output_lines.append(line_padding + blank_space + "  ├── " + item_text)
+                        output_lines.append(line_padding + blank_space + "  │")
             
             # Blank line after each location
             output_lines.append("")
