@@ -842,11 +842,11 @@ class CmdThrow(Command):
                         if roll <= stick_chance:
                             # SUCCESS - Grenade sticks to armor
                             if establish_stick(weapon, armor, hit_location):
-                                # Send stick messages
-                                target.msg(f"|R*** MAGNETIC CLAMP! ***|n\n{thrower.key}'s {weapon.key} magnetically adheres to your {armor.key}!")
-                                thrower.msg(f"|yYour {weapon.key} magnetically clamps onto {target.key}'s {armor.key}!|n")
+                                # Send stick messages - Spider-themed with telescoping legs
+                                target.msg(f"|rThe {weapon.key}'s articulated legs extend with mechanical precision, their electromagnetic tips skittering across your {armor.key} before *CLAMPING* tight with magnetic fury!|n")
+                                thrower.msg(f"Your {weapon.key}'s spider-legs deploy and latch onto {target.key}'s {armor.key} with a satisfying *CLACK-CLACK-CLACK* of magnetic adhesion!")
                                 target.location.msg_contents(
-                                    f"|y{thrower.key}'s {weapon.key} magnetically clamps onto {target.key}'s {armor.key} with a sharp *CLANG*!|n",
+                                    f"The {weapon.key}'s eight legs telescope outward in a blur of motion, seeking metal across {target.key}'s {armor.key} before *SNAPPING* into electromagnetic lock!",
                                     exclude=[thrower, target]
                                 )
                                 
@@ -858,10 +858,10 @@ class CmdThrow(Command):
                                 splattercast.msg(f"{DEBUG_PREFIX_THROW}_STICKY_ERROR: establish_stick failed")
                         else:
                             # FAIL - Grenade bounces off
-                            target.msg(f"{thrower.key}'s {weapon.key} strikes your {armor.key} but fails to adhere, bouncing away!")
-                            thrower.msg(f"Your {weapon.key} bounces off {target.key}'s {armor.key}!")
+                            target.msg(f"The {weapon.key}'s legs extend and scrabble frantically across your {armor.key}, but the magnetic field is too weak - it bounces away with a frustrated clatter!")
+                            thrower.msg(f"Your {weapon.key}'s spider-legs fail to find purchase on {target.key}'s {armor.key}, bouncing off ineffectively!")
                             target.location.msg_contents(
-                                f"{thrower.key}'s {weapon.key} bounces off {target.key}'s {armor.key}!",
+                                f"The {weapon.key}'s articulated legs scrape and skitter across {target.key}'s {armor.key} before losing grip and clattering away!",
                                 exclude=[thrower, target]
                             )
                             
@@ -869,10 +869,10 @@ class CmdThrow(Command):
                             # Continue to normal landing
                     else:
                         # No armor at hit location - bounce off
-                        target.msg(f"{thrower.key}'s {weapon.key} strikes your {hit_location} but has nothing to stick to, bouncing away!")
-                        thrower.msg(f"Your {weapon.key} bounces off {target.key} - no magnetic surface!")
+                        target.msg(f"The {weapon.key} strikes your {hit_location} and its legs extend desperately, seeking metal that isn't there - it bounces away with a frustrated whir of servos!")
+                        thrower.msg(f"Your {weapon.key}'s electromagnetic sensors find no ferrous surface on {target.key}'s {hit_location} - the spider-legs retract as it falls away!")
                         target.location.msg_contents(
-                            f"{thrower.key}'s {weapon.key} bounces off {target.key}!",
+                            f"The {weapon.key}'s articulated legs extend and search frantically across {target.key}'s {hit_location} before retracting in defeat!",
                             exclude=[thrower, target]
                         )
                         
