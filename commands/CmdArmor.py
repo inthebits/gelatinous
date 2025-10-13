@@ -533,17 +533,14 @@ class CmdArmor(Command):
             items_here = worn_by_location.get(location, [])
             items_sorted = sorted(items_here, key=lambda x: getattr(x, 'layer', 2))
             
+            # Skip locations with no items (don't show "Unprotected")
+            if not items_sorted:
+                continue
+            
             # Build item entries (including plate carrier expansions)
             item_entries = []
             
-            if not items_sorted:
-                # No items - show "Unprotected"
-                item_entries.append({
-                    'name': 'Unprotected',
-                    'rating': 0,
-                    'type': None
-                })
-            else:
+            if items_sorted:
                 for item in items_sorted:
                     # Get base item info
                     armor_type = getattr(item, 'armor_type', 'generic')
@@ -611,9 +608,9 @@ class CmdArmor(Command):
             loc_box_mid = "║" + loc_text + "║"
             loc_box_bot = "╚" + "═" * LOCATION_BOX_WIDTH + "╝"
             
-            # Create the item boxes (right side, stacked)
+            # Create the item lines (right side, tree structure - NO BOXES)
             if len(item_entries) == 1:
-                # Single item - simple connection
+                # Single item - simple stem connection
                 entry = item_entries[0]
                 
                 # Format item text
@@ -623,34 +620,20 @@ class CmdArmor(Command):
                 else:
                     item_text = entry['name']
                 
-                item_padding = ITEM_BOX_WIDTH - len(item_text) - 2
-                item_line = " " + item_text + " " * item_padding + " "
+                # Simple horizontal stem to item
+                stem = "────"
                 
-                item_box_top = "╔" + "═" * ITEM_BOX_WIDTH + "╗"
-                item_box_mid = "║" + item_line + "║"
-                item_box_bot = "╚" + "═" * ITEM_BOX_WIDTH + "╝"
-                
-                # Connect boxes with ═════
-                connector = "═════"
-                
-                output_lines.append(loc_box_top + "     " + item_box_top)
-                output_lines.append(loc_box_mid + connector + item_box_mid)
-                output_lines.append(loc_box_bot + "     " + item_box_bot)
+                output_lines.append(loc_box_top)
+                output_lines.append(loc_box_mid + stem + "── " + item_text)
+                output_lines.append(loc_box_bot)
                 
             else:
-                # Multiple items - stacked connection
-                connector = "═════"
+                # Multiple items - tree structure with branches
                 blank_space = " " * (LOCATION_BOX_WIDTH + 2)
                 
                 for idx, entry in enumerate(item_entries):
                     is_first = (idx == 0)
                     is_last = (idx == len(item_entries) - 1)
-                    is_plate = entry.get('is_plate', False)
-                    
-                    # Check if next item is also a plate
-                    next_is_plate = False
-                    if idx < len(item_entries) - 1:
-                        next_is_plate = item_entries[idx + 1].get('is_plate', False)
                     
                     # Format item text
                     if entry['rating'] > 0:
@@ -659,25 +642,18 @@ class CmdArmor(Command):
                     else:
                         item_text = entry['name']
                     
-                    item_padding = ITEM_BOX_WIDTH - len(item_text) - 2
-                    item_line = " " + item_text + " " * item_padding + " "
-                    
                     if is_first:
-                        # First item - show location box
-                        output_lines.append(loc_box_top + "     " + "╔" + "═" * ITEM_BOX_WIDTH + "╗")
-                        output_lines.append(loc_box_mid + connector + "║" + item_line + "║")
+                        # First item - show location box with stem and branch
+                        output_lines.append(loc_box_top)
+                        output_lines.append(loc_box_mid + "──┬── " + item_text)
+                        output_lines.append(loc_box_bot + "  │")
                     elif is_last:
-                        # Last item - close the stack
-                        output_lines.append(blank_space + "     " + "║" + item_line + "║")
-                        output_lines.append(blank_space + "     " + "╚" + "═" * ITEM_BOX_WIDTH + "╝")
+                        # Last item - final branch with └─
+                        output_lines.append(blank_space + "  └── " + item_text)
                     else:
-                        # Middle item
-                        output_lines.append(blank_space + "     " + "║" + item_line + "║")
-                        # Add horizontal separator only between non-plate items
-                        if not is_plate and not next_is_plate:
-                            output_lines.append(blank_space + "     " + "╠" + "═" * ITEM_BOX_WIDTH + "╣")
-                        elif is_plate and not next_is_plate:
-                            output_lines.append(blank_space + "     " + "╠" + "═" * ITEM_BOX_WIDTH + "╣")
+                        # Middle item - branch with ├─
+                        output_lines.append(blank_space + "  ├── " + item_text)
+                        output_lines.append(blank_space + "  │")
             
             # Blank line after each location
             output_lines.append("")
