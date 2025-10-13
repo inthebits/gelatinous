@@ -33,9 +33,9 @@ class Command(BaseCommand):
     4. Both dobject and iobject strings are resolved into actual in-game objects
        via `get_object()`, which uses the `OrdinalParser` to support
        ordinal-based object references such as:
-           - "first shotgun"
-           - "2nd grenade"
-           - "last painkiller"
+           - first shotgun
+           - 2nd grenade
+           - last painkiller
     5. Parsed information is stored in `self.info`, a debug-friendly list
        of tuples representing each parsed component.
 
@@ -175,12 +175,11 @@ class Command(BaseCommand):
             ("iobject", self.iobject),
         ]
 
-        if self.options:
-            self.info = [
-                *self.info,
-                *[(attr, value) for attr, value in vars(self.options).items()],
-            ]
+        self.info = [
+            *self.info,
+            *[(option, value) for option, value in vars(self.options).items()],
+        ]
 
-            if self.options.debug:
-                for option, value in self.info:
-                    self.msg(f"|Y[DEBUG]|n |r{option.upper()}|n |C{type(value)}|n |Y=>|n |w{value}|n")
+        if self.options.debug:
+            for option, value in self.info:
+                self.msg(f"|Y[DEBUG]|n |r{option.upper()}|n |C{type(value)}|n |Y=>|n |w{value}|n")
