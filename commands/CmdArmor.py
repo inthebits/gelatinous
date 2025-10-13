@@ -688,11 +688,18 @@ class CmdArmor(Command):
                     equip_name_padded = entry['name'].ljust(max_equip_name_len)
                     item_text = f"{equip_name_padded}  {rating_text.rjust(RATING_WIDTH)}"
                     
+                    # Check if this is a plate (already has tree formatting in name)
+                    is_plate = entry.get('is_plate', False)
+                    
                     if is_first:
                         # First item - show location box with stem and branch (7 chars: "──┬──" + "  ")
                         output_lines.append(line_padding + loc_box_top)
                         output_lines.append(line_padding + loc_box_mid + "──┬──" + "  " + item_text)
                         output_lines.append(line_padding + loc_box_bot + "  │")
+                    elif is_plate:
+                        # Plate sub-item - already has tree chars, just indent to align
+                        # Plates use blank space to align with other items
+                        output_lines.append(line_padding + blank_space + "       " + item_text)
                     elif is_last:
                         # Last item - final branch with └── (7 chars: "  " + "└──" + "  ")
                         output_lines.append(line_padding + blank_space + "  └──" + "  " + item_text)
