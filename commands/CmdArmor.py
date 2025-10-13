@@ -600,10 +600,9 @@ class CmdArmor(Command):
         equip_label_padding_left = (equipment_column_width - len(equipment_label)) // 2
         equip_label_padding_right = equipment_column_width - len(equipment_label) - equip_label_padding_left
         
-        # Rating: center over where the numerals actually appear
-        # Ratings are right-aligned in RATING_WIDTH, so center the label over that area
-        rating_label_padding_left = (RATING_WIDTH - len(rating_label)) // 2
-        rating_label_padding_right = RATING_WIDTH - len(rating_label) - rating_label_padding_left
+        # Rating: right-align to match where the Roman numerals are right-aligned
+        # Since ratings are right-aligned in RATING_WIDTH, align "Rating" the same way
+        rating_label_padding_left = RATING_WIDTH - len(rating_label)
         
         # Build header line
         header_parts = []
@@ -611,7 +610,7 @@ class CmdArmor(Command):
         header_parts.append(" " * stem_width)  # Space for stem
         header_parts.append(" " * equip_label_padding_left + equipment_label + " " * equip_label_padding_right)
         header_parts.append("  ")  # 2 space separator
-        header_parts.append(" " * rating_label_padding_left + rating_label + " " * rating_label_padding_right)
+        header_parts.append(" " * rating_label_padding_left + rating_label)
         header_line = "".join(header_parts)
         
         # Store base header for potential centering of data lines
