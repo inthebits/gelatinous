@@ -692,9 +692,17 @@ class CmdArmor(Command):
                 # Multiple items - tree structure with branches
                 blank_space = " " * (LOCATION_BOX_WIDTH + 2)
                 
+                # Find the last non-plate item for proper tree structure
+                last_non_plate_idx = -1
+                for i in range(len(item_entries) - 1, -1, -1):
+                    if not item_entries[i].get('is_plate', False):
+                        last_non_plate_idx = i
+                        break
+                
                 for idx, entry in enumerate(item_entries):
                     is_first = (idx == 0)
-                    is_last = (idx == len(item_entries) - 1)
+                    # An item is "last" if it's the last non-plate item
+                    is_last = (idx == last_non_plate_idx)
                     
                     # Format item text with aligned rating (no "- " prefix)
                     if entry['rating'] > 0:
@@ -724,7 +732,9 @@ class CmdArmor(Command):
                     else:
                         # Middle item - branch with ├── (7 chars: "  " + "├──" + "  ")
                         output_lines.append(line_padding + blank_space + "  ├──" + "  " + item_text)
-                        output_lines.append(line_padding + blank_space + "  │")
+                        # Only add continuation bar if next item is not a plate
+                        if idx + 1 < len(item_entries) and not item_entries[idx + 1].get('is_plate', False):
+                            output_lines.append(line_padding + blank_space + "  │")
             
             # Blank line after each location
             output_lines.append("")
