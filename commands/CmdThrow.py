@@ -115,6 +115,9 @@ class CmdThrow(Command):
         if not obj:
             return
         
+        # Store object as instance variable for use in determine_destination
+        self.obj_to_throw = obj
+        
         # Check if this is a dedicated throwing weapon that should use attack command
         if getattr(obj.db, DB_IS_THROWING_WEAPON, False):
             # If targeting someone, invoke attack command instead
@@ -230,7 +233,13 @@ class CmdThrow(Command):
             destination = self.get_destination_room(self.direction)
             if not destination:
                 return None, None
-            target = self.select_random_target_in_room(destination)
+            # For sticky grenades, prefer most magnetic character, fallback to random
+            if hasattr(self, 'obj_to_throw') and getattr(self.obj_to_throw.db, 'is_sticky', False):
+                target = self.select_most_magnetic_target_in_room(destination, self.obj_to_throw)
+                if not target:  # No viable magnetic targets, select random
+                    target = self.select_random_target_in_room(destination)
+            else:
+                target = self.select_random_target_in_room(destination)
             return destination, target
         
         elif self.throw_type == "fallback":
@@ -239,11 +248,24 @@ class CmdThrow(Command):
             if aim_direction:
                 destination = self.get_destination_room(aim_direction)
                 if destination:
-                    target = self.select_random_target_in_room(destination)
+                    # For sticky grenades, prefer most magnetic character, fallback to random
+                    if hasattr(self, 'obj_to_throw') and getattr(self.obj_to_throw.db, 'is_sticky', False):
+                        target = self.select_most_magnetic_target_in_room(destination, self.obj_to_throw)
+                        if not target:  # No viable magnetic targets, select random
+                            target = self.select_random_target_in_room(destination)
+                    else:
+                        target = self.select_random_target_in_room(destination)
                     return destination, target
             
             # Fallback to current room
-            return self.caller.location, self.select_random_target_in_room(self.caller.location)
+            # For sticky grenades in current room, prefer most magnetic character, fallback to random
+            if hasattr(self, 'obj_to_throw') and getattr(self.obj_to_throw.db, 'is_sticky', False):
+                target = self.select_most_magnetic_target_in_room(self.caller.location, self.obj_to_throw)
+                if not target:  # No viable magnetic targets, select random
+                    target = self.select_random_target_in_room(self.caller.location)
+            else:
+                target = self.select_random_target_in_room(self.caller.location)
+            return self.caller.location, target
         
         return None, None
     
@@ -358,6 +380,80 @@ class CmdThrow(Command):
         if characters:
             return random.choice(characters)
         return None
+    
+    def select_most_magnetic_target_in_room(self, room, grenade):
+        """
+        Select the most magnetic character in room for sticky grenade targeting.
+        
+        For sticky grenades thrown without a specific target, this finds the character
+        with the highest magnetic armor to stick to.
+        
+        Args:
+            room: The room to search
+            grenade: The sticky grenade being thrown (for magnetic strength)
+            
+        Returns:
+            Character with highest magnetic armor, or None if no valid targets
+        """
+        if not room:
+            return None
+        
+        from typeclasses.characters import Character
+        from typeclasses.items import Item
+        from world.combat.utils import get_outermost_armor_at_location
+        
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        
+        # Get all characters except thrower
+        characters = [obj for obj in room.contents if isinstance(obj, Character) and obj != self.caller]
+        if not characters:
+            return None
+        
+        # Get grenade magnetic strength for threshold checks
+        magnetic_strength = getattr(grenade.db, 'magnetic_strength', 5)
+        magnetic_threshold = magnetic_strength - 3
+        metal_threshold = magnetic_strength - 5
+        
+        # Find character with highest magnetic armor that meets thresholds
+        best_target = None
+        best_magnetic_score = 0
+        
+        for char in characters:
+            # Check armor at chest (primary target location)
+            armor = get_outermost_armor_at_location(char, "chest")
+            
+            if not armor:
+                continue
+            
+            # Get armor properties (including plate carrier check)
+            metal_level = getattr(armor.db, 'metal_level', 0)
+            magnetic_level = getattr(armor.db, 'magnetic_level', 0)
+            
+            # Check if plate carrier - use installed plates' values
+            is_plate_carrier = getattr(armor.db, 'is_plate_carrier', False)
+            if is_plate_carrier:
+                installed_plates = getattr(armor.db, 'installed_plates', {})
+                for slot, plate_ref in installed_plates.items():
+                    if plate_ref:
+                        plate_metal = getattr(plate_ref.db, 'metal_level', 0)
+                        plate_magnetic = getattr(plate_ref.db, 'magnetic_level', 0)
+                        metal_level = max(metal_level, plate_metal)
+                        magnetic_level = max(magnetic_level, plate_magnetic)
+            
+            # Check if meets thresholds
+            if magnetic_level >= magnetic_threshold and metal_level >= metal_threshold:
+                # This target is viable - use magnetic level as score
+                if magnetic_level > best_magnetic_score:
+                    best_magnetic_score = magnetic_level
+                    best_target = char
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_STICKY_TARGET: {char.key} viable with magnetic={magnetic_level}, metal={metal_level}")
+        
+        if best_target:
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_STICKY_TARGET: Selected {best_target.key} (magnetic={best_magnetic_score})")
+        else:
+            splattercast.msg(f"{DEBUG_PREFIX_THROW}_STICKY_TARGET: No viable magnetic targets in {room.key}")
+        
+        return best_target
     
     def is_throwing_weapon(self, obj):
         """Check if object is a throwing weapon."""
