@@ -72,6 +72,48 @@ class Room(ObjectParent, DefaultRoom):
         if not hasattr(self, 'crowd_base_level'):
             self.crowd_base_level = 0
     
+    def at_object_receive(self, moved_obj, source_location, **kwargs):
+        """
+        Called when an object enters this room.
+        Check for fully decayed corpses and clean them up just-in-time.
+        """
+        super().at_object_receive(moved_obj, source_location, **kwargs)
+        
+        # When a character (PC or NPC) enters, check all corpses in room for decay
+        from typeclasses.characters import Character
+        if isinstance(moved_obj, Character):
+            # Only run decay check when a character enters (not every object move)
+            self._check_corpse_decay()
+    
+    def _check_corpse_decay(self):
+        """Check all corpses in room and remove those that have fully decayed."""
+        from typeclasses.corpse import Corpse
+        
+        # Get all corpses in this room
+        corpses = [obj for obj in self.contents if isinstance(obj, Corpse)]
+        
+        for corpse in corpses:
+            try:
+                if corpse.check_complete_decay():
+                    # Drop items to room
+                    for item in list(corpse.contents):
+                        try:
+                            item.move_to(self, quiet=True)
+                        except:
+                            pass
+                    
+                    # Log and delete
+                    try:
+                        from evennia.comms.models import ChannelDB
+                        splattercast = ChannelDB.objects.get_channel("Splattercast")
+                        splattercast.msg(f"CORPSE_DECAY_JIT: {corpse.key} decayed on room entry to {self.key}")
+                    except:
+                        pass
+                    
+                    corpse.delete()
+            except:
+                pass  # Corpse may have been deleted or be in invalid state
+    
     # Override the appearance template to use our custom footer for exits
     # and custom things display to handle @integrate objects
     # This avoids duplicate display issues with exits while letting Evennia handle characters

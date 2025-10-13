@@ -644,7 +644,7 @@ class Corpse(Item):
         return elapsed > complete_decay_time
     
     def _handle_complete_decay(self):
-        """Handle complete decay - drop items and remove corpse."""
+        """Handle complete decay - drop items and remove corpse (called when looked at)."""
         if not self.check_complete_decay():
             return False
             
