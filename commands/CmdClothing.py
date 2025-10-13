@@ -130,16 +130,57 @@ class CmdRemove(Command):
             caller.msg(f"You're not wearing '{self.args.strip()}'.")
             return
         
+        # STICKY GRENADE WARNING - Check for stuck grenades before removal
+        if hasattr(item.db, 'stuck_grenade') and item.db.stuck_grenade:
+            grenade = item.db.stuck_grenade
+            
+            # Get remaining countdown time if any
+            remaining = getattr(grenade.ndb, 'countdown_remaining', 0) if hasattr(grenade, 'ndb') else 0
+            stuck_location = getattr(grenade.db, 'stuck_to_location', 'unknown')
+            
+            # Send dramatic warning
+            if remaining > 0:
+                caller.msg(
+                    f"\n|R╔══════════════════════════════════════╗|n\n"
+                    f"|R║  ⚠️  CRITICAL WARNING  ⚠️           ║|n\n"
+                    f"|R║                                      ║|n\n"
+                    f"|R║  LIVE {grenade.key.upper()} ATTACHED       ║|n\n"
+                    f"|R║  COUNTDOWN: {remaining} SECONDS REMAINING   ║|n\n"
+                    f"|R║  MAGNETICALLY CLAMPED AT {stuck_location.upper():^7}  ║|n\n"
+                    f"|R║                                      ║|n\n"
+                    f"|R║  Removing this armor will NOT       ║|n\n"
+                    f"|R║  break the magnetic bond!           ║|n\n"
+                    f"|R║  Grenade stays stuck to armor!      ║|n\n"
+                    f"|R║                                      ║|n\n"
+                    f"|R║  DROP ARMOR AND FLEE TO SURVIVE!    ║|n\n"
+                    f"|R╚══════════════════════════════════════╝|n\n"
+                )
+            else:
+                caller.msg(
+                    f"\n|y*** WARNING ***|n\n"
+                    f"A {grenade.key} is magnetically clamped to this {item.key}.\n"
+                    f"Removing the armor will NOT break the magnetic bond.\n"
+                    f"The grenade will remain stuck to the armor.\n"
+                )
+            
+            # Warn the room
+            caller.location.msg_contents(
+                f"|R{caller.get_display_name(None)} carefully removes their {item.key} - "
+                f"the magnetically attached {grenade.key} moves with it!|n",
+                exclude=caller
+            )
+        
         # Remove the item
         success, message = caller.remove_item(item)
         caller.msg(message)
         
         if success:
-            # Message to room
-            caller.location.msg_contents(
-                f"{caller.get_display_name(None)} removes {item.key}.",
-                exclude=caller
-            )
+            # Message to room (only if no grenade warning was sent)
+            if not (hasattr(item.db, 'stuck_grenade') and item.db.stuck_grenade):
+                caller.location.msg_contents(
+                    f"{caller.get_display_name(None)} removes {item.key}.",
+                    exclude=caller
+                )
 
 
 class CmdRollUp(Command):

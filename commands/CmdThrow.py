@@ -709,7 +709,70 @@ class CmdThrow(Command):
             hit_chance = 0.7  # 70% base hit chance
             
             if random.random() <= hit_chance:
-                # Hit - apply damage
+                # STICKY GRENADE CHECK - Check for stick before damage
+                # Import required for sticky grenade logic
+                from world.combat.utils import (
+                    calculate_stick_chance, establish_stick,
+                    get_outermost_armor_at_location, debug_broadcast
+                )
+                
+                # Check if this is a sticky grenade
+                is_sticky = getattr(weapon.db, 'is_sticky', False)
+                hit_location = "chest"  # Default hit location for throws
+                
+                if is_sticky:
+                    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_STICKY: Sticky grenade {weapon.key} hit {target.key}")
+                    
+                    # Get outermost armor at hit location
+                    armor = get_outermost_armor_at_location(target, hit_location)
+                    
+                    if armor:
+                        # Calculate stick chance
+                        stick_chance = calculate_stick_chance(weapon, armor)
+                        roll = random.randint(1, 100)
+                        
+                        if roll <= stick_chance:
+                            # SUCCESS - Grenade sticks to armor
+                            if establish_stick(weapon, armor, hit_location):
+                                # Send stick messages
+                                target.msg(f"|R*** MAGNETIC CLAMP! ***|n\n{thrower.key}'s {weapon.key} magnetically adheres to your {armor.key}!")
+                                thrower.msg(f"|yYour {weapon.key} magnetically clamps onto {target.key}'s {armor.key}!|n")
+                                target.location.msg_contents(
+                                    f"|y{thrower.key}'s {weapon.key} magnetically clamps onto {target.key}'s {armor.key} with a sharp *CLANG*!|n",
+                                    exclude=[thrower, target]
+                                )
+                                
+                                splattercast.msg(f"{DEBUG_PREFIX_THROW}_STICKY_SUCCESS: {weapon.key} stuck to {armor.key} (roll {roll} <= {stick_chance})")
+                                
+                                # Skip normal landing - grenade is stuck to armor now
+                                return
+                            else:
+                                splattercast.msg(f"{DEBUG_PREFIX_THROW}_STICKY_ERROR: establish_stick failed")
+                        else:
+                            # FAIL - Grenade bounces off
+                            target.msg(f"{thrower.key}'s {weapon.key} strikes your {armor.key} but fails to adhere, bouncing away!")
+                            thrower.msg(f"Your {weapon.key} bounces off {target.key}'s {armor.key}!")
+                            target.location.msg_contents(
+                                f"{thrower.key}'s {weapon.key} bounces off {target.key}'s {armor.key}!",
+                                exclude=[thrower, target]
+                            )
+                            
+                            splattercast.msg(f"{DEBUG_PREFIX_THROW}_STICKY_FAIL: {weapon.key} bounce (roll {roll} > {stick_chance})")
+                            # Continue to normal landing
+                    else:
+                        # No armor at hit location - bounce off
+                        target.msg(f"{thrower.key}'s {weapon.key} strikes your {hit_location} but has nothing to stick to, bouncing away!")
+                        thrower.msg(f"Your {weapon.key} bounces off {target.key} - no magnetic surface!")
+                        target.location.msg_contents(
+                            f"{thrower.key}'s {weapon.key} bounces off {target.key}!",
+                            exclude=[thrower, target]
+                        )
+                        
+                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_STICKY_FAIL: No armor at {hit_location}")
+                        # Continue to normal landing
+                
+                # Hit - apply damage (only for non-sticky or failed-stick weapons)
                 base_damage = getattr(weapon.db, 'damage', 1)
                 total_damage = random.randint(1, 6) + base_damage
                 damage_type = getattr(weapon.db, 'damage_type', 'blunt')  # Get weapon damage type
@@ -1170,12 +1233,44 @@ class CmdPull(Command):
                     remaining -= 1
                     setattr(grenade.ndb, NDB_COUNTDOWN_REMAINING, remaining)
                     
+                    # STICKY GRENADE: Send appropriate countdown warnings
+                    from typeclasses.items import Item
+                    from typeclasses.characters import Character
+                    
+                    # Check if grenade is stuck to armor
+                    is_stuck = isinstance(grenade.location, Item) and hasattr(grenade.db, 'stuck_to_armor')
+                    
+                    if is_stuck:
+                        # Grenade stuck to armor - send dramatic warnings
+                        armor = grenade.location
+                        stuck_location = getattr(grenade.db, 'stuck_to_location', 'unknown')
+                        
+                        # Check if armor is worn
+                        if armor.location and isinstance(armor.location, Character):
+                            wearer = armor.location
+                            # Warning to wearer
+                            wearer.msg(f"|R*** {remaining} SECONDS ***|n {grenade.key} magnetically clamped to your {armor.key}!")
+                            
+                            # Warning to room
+                            if wearer.location:
+                                wearer.location.msg_contents(
+                                    f"|y{wearer.key} has a live {grenade.key} magnetically stuck to their {armor.key}! {remaining} seconds remaining!|n",
+                                    exclude=wearer
+                                )
+                        else:
+                            # Armor on ground with stuck grenade
+                            room = armor.location
+                            if room:
+                                room.msg_contents(
+                                    f"|yA {grenade.key} magnetically stuck to a {armor.key} ticks down: {remaining} seconds!|n"
+                                )
+                    
                     # Schedule next tick
                     timer = utils.delay(1, tick)
                     setattr(grenade.ndb, NDB_GRENADE_TIMER, timer)
                     
                     if splattercast:
-                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TICKER: {grenade.key} scheduled next tick, {remaining}s remaining")
+                        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TICKER: {grenade.key} scheduled next tick, {remaining}s remaining, stuck={is_stuck}")
                 
                 elif remaining == 1:
                     # Final countdown - explode next tick
@@ -1991,16 +2086,38 @@ def explode_standalone_grenade(grenade):
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Blast damage: {blast_damage}")
         
         # Check if grenade is in someone's inventory when it explodes
+        # STICKY GRENADE: Check armor hierarchy first (grenade -> armor -> character)
         # Use typeclass check to distinguish characters (PCs and NPCs) from rooms
         holder = None
+        stuck_to_armor = None  # Track if grenade is stuck to armor
+        
         if grenade.location:
             from typeclasses.characters import Character
-            if isinstance(grenade.location, Character):
+            from typeclasses.items import Item
+            from world.combat.utils import get_explosion_room
+            
+            # FIRST: Check if grenade is stuck to armor (sticky grenade system)
+            if isinstance(grenade.location, Item):
+                stuck_to_armor = grenade.location
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Grenade stuck to armor: {stuck_to_armor.key}")
+                
+                # Check if armor is worn by someone
+                if stuck_to_armor.location and isinstance(stuck_to_armor.location, Character):
+                    holder = stuck_to_armor.location
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Stuck armor worn by: {holder.key}")
+                else:
+                    # Armor is on ground - get room for explosion
+                    room = get_explosion_room(grenade)
+                    splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Stuck armor on ground in: {room.key if room else 'unknown'}")
+            
+            # SECOND: Check if grenade is directly in character inventory
+            elif isinstance(grenade.location, Character):
                 # Grenade is in a character's inventory - they're holding it!
                 # This works for both PCs and NPCs, regardless of hands/account status
                 holder = grenade.location
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Grenade in character inventory: {holder.key}")
         
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Holder check - location: {grenade.location}, holder: {holder}")
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Holder check - location: {grenade.location}, holder: {holder}, stuck_to_armor: {stuck_to_armor}")
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Location is Character: {isinstance(grenade.location, Character) if grenade.location else 'No location'}")
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_DEBUG: Location typeclass: {type(grenade.location).__name__ if grenade.location else 'No location'}")
         
@@ -2016,14 +2133,29 @@ def explode_standalone_grenade(grenade):
             holder_damage = blast_damage * 2
             damage_type = getattr(grenade.db, 'damage_type', 'blast')  # Explosive damage type
             holder.take_damage(holder_damage, location="chest", injury_type=damage_type)
-            holder.msg(f"|rThe {grenade.key} EXPLODES IN YOUR HANDS!|n You take {holder_damage} damage!")
             
-            # Announce to the room
-            if holder.location:
-                holder.location.msg_contents(
-                    f"|r{holder.key}'s {grenade.key} explodes in their hands!|n",
-                    exclude=holder
-                )
+            # Different messages for sticky vs normal grenades
+            if stuck_to_armor:
+                # Sticky grenade stuck to armor they're wearing
+                stuck_location = getattr(grenade.db, 'stuck_to_location', 'body')
+                holder.msg(f"|R*** CATASTROPHIC EXPLOSION! ***|n\nThe {grenade.key} magnetically clamped to your {stuck_to_armor.key} DETONATES against your {stuck_location}!\nYou take {holder_damage} damage!")
+                
+                # Announce to the room
+                if holder.location:
+                    holder.location.msg_contents(
+                        f"|R{holder.key}'s {grenade.key}, magnetically clamped to their {stuck_to_armor.key}, EXPLODES in a devastating blast!|n",
+                        exclude=holder
+                    )
+            else:
+                # Normal grenade in hands
+                holder.msg(f"|rThe {grenade.key} EXPLODES IN YOUR HANDS!|n You take {holder_damage} damage!")
+                
+                # Announce to the room
+                if holder.location:
+                    holder.location.msg_contents(
+                        f"|r{holder.key}'s {grenade.key} explodes in their hands!|n",
+                        exclude=holder
+                    )
                 
             # Still damage others in proximity, but less (shielded by holder's body)
             for character in proximity_list:

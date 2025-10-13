@@ -121,6 +121,50 @@ SMOKE_GRENADE = {
 }
 
 # =============================================================================
+# STICKY GRENADE PROTOTYPES (magnetic adhesion system)
+# =============================================================================
+
+# Standard sticky grenade (medium magnetic strength)
+STICKY_GRENADE = {
+    "prototype_parent": "EXPLOSIVE_BASE",
+    "key": "sticky grenade",
+    "aliases": ["sticky", "mag grenade", "magnetic grenade"],
+    "desc": "A magnetic adhesion grenade that bonds to ferrous metal armor. The magnetic field is strong enough to adhere to steel plate carriers and helmets. Once stuck, removing the armor is the only way to separate yourself from the explosive.",
+    "fuse_time": 8,
+    "blast_damage": 25,
+    "dud_chance": 0.05,
+    "damage_type": "laceration",
+    # Sticky grenade specific attributes
+    "is_sticky": True,
+    "magnetic_strength": 5,  # 0-10 scale, determines stick threshold
+    "stuck_to_armor": None,  # Reference to armor it's stuck to
+    "stuck_to_location": None,  # Body location where it's stuck
+}
+
+# Weak sticky grenade (lower magnetic strength)
+WEAK_STICKY_GRENADE = {
+    "prototype_parent": "STICKY_GRENADE",
+    "key": "weak sticky grenade",
+    "aliases": ["weak sticky", "prototype sticky"],
+    "desc": "An early prototype magnetic grenade with weaker adhesion. Only sticks to high-quality steel armor with significant ferrous content.",
+    "fuse_time": 8,
+    "blast_damage": 20,
+    "magnetic_strength": 3,  # Lower threshold - requires better metal to stick
+}
+
+# Strong sticky grenade (higher magnetic strength)
+STRONG_STICKY_GRENADE = {
+    "prototype_parent": "STICKY_GRENADE",
+    "key": "strong sticky grenade",
+    "aliases": ["strong sticky", "tactical sticky"],
+    "desc": "A military-grade magnetic adhesion grenade with powerful electromagnets. Can stick to armor with even minimal ferrous content. Extremely dangerous.",
+    "fuse_time": 6,  # Shorter fuse for tactical use
+    "blast_damage": 30,
+    "magnetic_strength": 8,  # High threshold - sticks to almost anything with metal
+    "dud_chance": 0.02,  # More reliable
+}
+
+# =============================================================================
 # MELEE WEAPON PROTOTYPES (for grenade deflection testing)
 # =============================================================================
 
@@ -787,6 +831,10 @@ TACTICAL_JUMPSUIT = {
         ("armor_durability", 20),
         ("max_armor_durability", 20),
         ("base_armor_rating", 1),
+        
+        # Sticky grenade properties (synthetic fabric - no metal)
+        ("metal_level", 0),      # No metal content
+        ("magnetic_level", 0),   # No magnetic response
     ],
 }
 
@@ -811,6 +859,10 @@ TACTICAL_PANTS = {
         ("armor_durability", 20),
         ("max_armor_durability", 20),
         ("base_armor_rating", 1),
+        
+        # Sticky grenade properties (synthetic fabric - no metal)
+        ("metal_level", 0),      # No metal content
+        ("magnetic_level", 0),   # No magnetic response
     ],
 }
 
@@ -835,6 +887,10 @@ TACTICAL_SHIRT = {
         ("armor_durability", 20),
         ("max_armor_durability", 20),
         ("base_armor_rating", 1),
+        
+        # Sticky grenade properties (synthetic fabric - no metal)
+        ("metal_level", 0),      # No metal content
+        ("magnetic_level", 0),   # No magnetic response
     ],
 }
 
@@ -883,6 +939,10 @@ PLATE_CARRIER = {
             }
         }),
         ("style_properties", {"adjustable": "normal"}),
+        
+        # Sticky grenade properties (nylon carrier - minimal metal from buckles/clips)
+        ("metal_level", 1),      # Minimal metal (buckles, clips)
+        ("magnetic_level", 1),   # Minimal magnetic (some steel hardware)
     ],
 }
 
@@ -916,6 +976,10 @@ LIGHTWEIGHT_PLATE = {
         ("armor_durability", 100),  # Lower durability
         ("max_armor_durability", 100),
         ("base_armor_rating", 5),
+        
+        # Sticky grenade properties (composite - some metal, non-magnetic)
+        ("metal_level", 4),      # Some metal content (aluminum backing)
+        ("magnetic_level", 0),   # Non-magnetic (aluminum/composite)
     ],
 }
 
@@ -940,6 +1004,10 @@ STANDARD_PLATE = {
         ("armor_durability", 140),
         ("max_armor_durability", 140),
         ("base_armor_rating", 7),
+        
+        # Sticky grenade properties (ceramic with steel backing)
+        ("metal_level", 6),      # Moderate metal (steel backing plate)
+        ("magnetic_level", 5),   # Moderate magnetic (steel backing)
     ],
 }
 
@@ -962,6 +1030,10 @@ REINFORCED_PLATE = {
         ("armor_durability", 180),  # Highest durability
         ("max_armor_durability", 180),
         ("base_armor_rating", 9),
+        
+        # Sticky grenade properties (solid steel plate - HIGHLY magnetic)
+        ("metal_level", 10),     # Maximum metal content (solid steel)
+        ("magnetic_level", 10),  # Maximum magnetic (ferrous steel)
     ],
 }
 
@@ -986,6 +1058,10 @@ CERAMIC_PLATES = {
         ("armor_durability", 50),   # Low durability - shatters after absorbing damage
         ("max_armor_durability", 50),
         ("base_armor_rating", 10),
+        
+        # Sticky grenade properties (advanced ceramic - minimal magnetic)
+        ("metal_level", 3),      # Minimal metal (titanium backing)
+        ("magnetic_level", 0),   # Non-magnetic (ceramic/titanium)
     ],
 }
 
@@ -1018,6 +1094,10 @@ KEVLAR_VEST = {
         
         # Combat stats
         ("deflection_bonus", -0.05),  # Slight penalty to deflection (bulky)
+        
+        # Sticky grenade properties (kevlar with steel trauma plates)
+        ("metal_level", 7),      # High metal (embedded steel plates)
+        ("magnetic_level", 6),   # High magnetic (steel trauma plates)
     ],
 }
 
@@ -1046,6 +1126,10 @@ PLATE_MAIL = {
         
         # Combat penalties
         ("deflection_bonus", -0.15),  # Significant deflection penalty (very bulky)
+        
+        # Sticky grenade properties (solid steel plate armor - MAXIMUM)
+        ("metal_level", 10),     # Maximum metal (solid steel plates)
+        ("magnetic_level", 10),  # Maximum magnetic (ferrous steel)
     ],
 }
 
@@ -1089,6 +1173,10 @@ ARMORED_LEATHER_JACKET = {
         
         # Combat stats
         ("deflection_bonus", 0.05),  # Slight deflection bonus (flexible)
+        
+        # Sticky grenade properties (leather with decorative studs)
+        ("metal_level", 2),      # Minimal metal (some decorative studs)
+        ("magnetic_level", 1),   # Minimal magnetic (small steel studs)
     ],
 }
 
@@ -1114,6 +1202,10 @@ COMBAT_HELMET = {
         ("armor_durability", 20),   # Moderate durability
         ("max_armor_durability", 20),
         ("base_armor_rating", 7),
+        
+        # Sticky grenade properties (kevlar with composite shell)
+        ("metal_level", 3),      # Low metal (mounting hardware)
+        ("magnetic_level", 2),   # Low magnetic (minimal steel clips)
     ],
 }
 

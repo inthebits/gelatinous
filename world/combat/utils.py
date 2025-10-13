@@ -1217,3 +1217,389 @@ def send_grenade_shield_messages(grappler, victim):
     # Send to observers in the same location (exclude the two participants)
     if grappler.location:
         grappler.location.msg_contents(observer_msg, exclude=[grappler, victim])
+
+
+# ===================================================================
+# STICKY GRENADE HELPERS
+# ===================================================================
+
+def calculate_stick_chance(grenade, armor):
+    """
+    Calculate the chance that a sticky grenade will adhere to armor.
+    
+    Stick Criteria:
+    1. Check armor base metal/magnetic levels
+    2. If armor is a plate carrier, check installed plates for highest values
+    3. Threshold check: magnetic_level >= (grenade_strength - 3) AND 
+                       metal_level >= (grenade_strength - 5)
+    4. If threshold met: chance = 40 + (metal_level * 5) + (magnetic_level * 5)
+    5. Maximum 95% chance (always 5% chance to fail)
+    
+    Args:
+        grenade: The sticky grenade object with magnetic_strength attribute
+        armor: The armor Item with metal_level and magnetic_level attributes
+    
+    Returns:
+        int: Percentage chance to stick (0-95), or 0 if thresholds not met
+        
+    Example:
+        # Steel plate (metal=10, magnetic=10) vs medium grenade (strength=5)
+        # Thresholds: magnetic >= 2, metal >= 0 (both pass)
+        # Chance: 40 + (10*5) + (10*5) = 140 -> capped at 95%
+        
+        # Cloth vest (metal=0, magnetic=0) vs any grenade
+        # Thresholds: fail -> 0% chance
+        
+        # Plate carrier with steel plate installed
+        # Checks both carrier properties AND installed plate properties
+    """
+    from typeclasses.items import Item
+    
+    # Validate inputs
+    if not grenade or not armor:
+        return 0
+    
+    # Get grenade magnetic strength (default 5 if not set)
+    magnetic_strength = getattr(grenade.db, 'magnetic_strength', 5)
+    
+    # Get armor base properties (default 0 if not set)
+    metal_level = getattr(armor.db, 'metal_level', 0)
+    magnetic_level = getattr(armor.db, 'magnetic_level', 0)
+    
+    # PLATE CARRIER CHECK: If this is a plate carrier, check installed plates
+    is_plate_carrier = getattr(armor.db, 'is_plate_carrier', False)
+    if is_plate_carrier:
+        installed_plates = getattr(armor.db, 'installed_plates', {})
+        
+        # Check all installed plates and use highest metal/magnetic values
+        for slot, plate_ref in installed_plates.items():
+            if plate_ref:
+                # Get plate properties
+                plate_metal = getattr(plate_ref.db, 'metal_level', 0)
+                plate_magnetic = getattr(plate_ref.db, 'magnetic_level', 0)
+                
+                # Use highest values between carrier and plates
+                metal_level = max(metal_level, plate_metal)
+                magnetic_level = max(magnetic_level, plate_magnetic)
+                
+                debug_broadcast(
+                    f"Plate carrier check: {armor.key} slot {slot} has {plate_ref.key} "
+                    f"(metal={plate_metal}, magnetic={plate_magnetic})",
+                    prefix="STICKY_GRENADE",
+                    status="PLATE_CHECK"
+                )
+        
+        debug_broadcast(
+            f"Plate carrier final values: metal={metal_level}, magnetic={magnetic_level}",
+            prefix="STICKY_GRENADE",
+            status="PLATE_FINAL"
+        )
+    
+    # Calculate thresholds
+    magnetic_threshold = magnetic_strength - 3
+    metal_threshold = magnetic_strength - 5
+    
+    # Check if thresholds are met
+    if magnetic_level < magnetic_threshold or metal_level < metal_threshold:
+        debug_broadcast(
+            f"Stick failed threshold: {grenade.key} vs {armor.key} "
+            f"(magnetic {magnetic_level}/{magnetic_threshold}, "
+            f"metal {metal_level}/{metal_threshold})",
+            prefix="STICKY_GRENADE",
+            status="THRESHOLD_FAIL"
+        )
+        return 0
+    
+    # Calculate base chance
+    chance = 40 + (metal_level * 5) + (magnetic_level * 5)
+    
+    # Cap at 95% (always 5% failure chance)
+    chance = min(chance, 95)
+    
+    debug_broadcast(
+        f"Stick chance: {grenade.key} vs {armor.key} = {chance}% "
+        f"(metal={metal_level}, magnetic={magnetic_level}, strength={magnetic_strength})",
+        prefix="STICKY_GRENADE",
+        status="CALC"
+    )
+    
+    return chance
+
+
+def get_explosion_room(grenade):
+    """
+    Get the room where a grenade will explode, handling armor hierarchy.
+    
+    This traverses the location hierarchy to find the room:
+    - grenade.location = armor -> armor.location = character/room
+    - grenade.location = character -> character.location = room
+    - grenade.location = room -> room itself
+    
+    Args:
+        grenade: The grenade object
+    
+    Returns:
+        Room object or None if grenade has no valid explosion location
+        
+    Example:
+        # Stuck to worn armor: grenade -> armor -> character -> room
+        room = get_explosion_room(grenade)  # Returns room
+        
+        # On ground: grenade -> room
+        room = get_explosion_room(grenade)  # Returns room
+    """
+    from typeclasses.characters import Character
+    from typeclasses.rooms import Room
+    from typeclasses.items import Item
+    
+    if not grenade or not grenade.location:
+        debug_broadcast(
+            f"Explosion room lookup failed: grenade has no location",
+            prefix="STICKY_GRENADE",
+            status="ERROR"
+        )
+        return None
+    
+    location = grenade.location
+    
+    # If grenade is in/on an Item (armor), go up one level
+    if isinstance(location, Item):
+        debug_broadcast(
+            f"Grenade {grenade.key} stuck to armor {location.key}, checking armor location",
+            prefix="STICKY_GRENADE",
+            status="HIERARCHY"
+        )
+        location = location.location
+    
+    # If we're now at a Character, go up one more level to room
+    if isinstance(location, Character):
+        debug_broadcast(
+            f"Grenade on character {location.key}, getting their room",
+            prefix="STICKY_GRENADE",
+            status="HIERARCHY"
+        )
+        location = location.location
+    
+    # Validate we have a room
+    if isinstance(location, Room):
+        debug_broadcast(
+            f"Explosion room for {grenade.key}: {location.key}",
+            prefix="STICKY_GRENADE",
+            status="SUCCESS"
+        )
+        return location
+    
+    debug_broadcast(
+        f"Explosion room lookup failed: final location is {type(location).__name__}",
+        prefix="STICKY_GRENADE",
+        status="ERROR"
+    )
+    return None
+
+
+def establish_stick(grenade, armor, hit_location):
+    """
+    Establish bidirectional sticky grenade relationship.
+    
+    Sets up the magnetic bond between grenade and armor:
+    - grenade.location = armor (physical containment)
+    - grenade.db.stuck_to_armor = armor (reference)
+    - grenade.db.stuck_to_location = hit_location (body part)
+    - armor.db.stuck_grenade = grenade (bidirectional reference)
+    
+    Args:
+        grenade: The sticky grenade object
+        armor: The armor Item object
+        hit_location: String indicating body location (e.g., "chest", "head")
+    
+    Returns:
+        bool: True if stick established successfully
+        
+    Example:
+        if establish_stick(grenade, steel_vest, "chest"):
+            # Grenade is now magnetically bonded to vest
+            # Will move with vest when removed
+    """
+    from typeclasses.items import Item
+    
+    # Validate inputs
+    if not grenade or not armor or not isinstance(armor, Item):
+        debug_broadcast(
+            f"Stick establishment failed: invalid inputs",
+            prefix="STICKY_GRENADE",
+            status="ERROR"
+        )
+        return False
+    
+    # Break any existing stick first
+    if hasattr(grenade.db, 'stuck_to_armor') and grenade.db.stuck_to_armor:
+        old_armor = grenade.db.stuck_to_armor
+        if old_armor and hasattr(old_armor.db, 'stuck_grenade'):
+            old_armor.db.stuck_grenade = None
+    
+    # Establish new stick - grenade moves to armor
+    grenade.location = armor
+    
+    # Set grenade attributes
+    grenade.db.stuck_to_armor = armor
+    grenade.db.stuck_to_location = hit_location
+    
+    # Set armor attribute (bidirectional reference)
+    armor.db.stuck_grenade = grenade
+    
+    debug_broadcast(
+        f"Stick established: {grenade.key} -> {armor.key} at {hit_location}",
+        prefix="STICKY_GRENADE",
+        status="SUCCESS"
+    )
+    
+    return True
+
+
+def get_stuck_grenades_on_character(character):
+    """
+    Get all sticky grenades currently stuck to a character's armor.
+    
+    Searches all worn items for stuck grenades.
+    
+    Args:
+        character: The Character object to check
+    
+    Returns:
+        list: List of tuples (grenade, armor, location) for each stuck grenade
+        
+    Example:
+        stuck = get_stuck_grenades_on_character(bob)
+        for grenade, armor, location in stuck:
+            print(f"{grenade.key} stuck to {armor.key} at {location}")
+    """
+    from typeclasses.characters import Character
+    from typeclasses.items import Item
+    
+    if not isinstance(character, Character):
+        return []
+    
+    stuck_grenades = []
+    
+    # Check all items in character's inventory
+    for item in character.contents:
+        if not isinstance(item, Item):
+            continue
+        
+        # Check if this item has a stuck grenade
+        if hasattr(item.db, 'stuck_grenade') and item.db.stuck_grenade:
+            grenade = item.db.stuck_grenade
+            location = getattr(grenade.db, 'stuck_to_location', 'unknown')
+            stuck_grenades.append((grenade, item, location))
+            
+            debug_broadcast(
+                f"Found stuck grenade: {grenade.key} on {item.key} ({location})",
+                prefix="STICKY_GRENADE",
+                status="FOUND"
+            )
+    
+    return stuck_grenades
+
+
+def get_outermost_armor_at_location(character, hit_location):
+    """
+    Get the outermost armor piece at a specific body location.
+    
+    Searches worn items for highest layer number at the hit location.
+    
+    Args:
+        character: The Character object
+        hit_location: Body location string (e.g., "chest", "head", "left_arm")
+    
+    Returns:
+        Item: The outermost armor at that location, or None if no armor
+        
+    Example:
+        # Character wearing shirt (layer 1) and vest (layer 3) on chest
+        armor = get_outermost_armor_at_location(bob, "chest")
+        # Returns vest (higher layer)
+    """
+    from typeclasses.characters import Character
+    from typeclasses.items import Item
+    
+    if not isinstance(character, Character):
+        return None
+    
+    outermost_armor = None
+    highest_layer = -1
+    
+    # Check all worn items
+    for item in character.contents:
+        if not isinstance(item, Item):
+            continue
+        
+        # Check if item covers this location
+        coverage = getattr(item.db, 'coverage', [])
+        if hit_location not in coverage:
+            continue
+        
+        # Check layer
+        layer = getattr(item.db, 'layer', 0)
+        if layer > highest_layer:
+            highest_layer = layer
+            outermost_armor = item
+    
+    if outermost_armor:
+        debug_broadcast(
+            f"Outermost armor at {hit_location}: {outermost_armor.key} (layer {highest_layer})",
+            prefix="STICKY_GRENADE",
+            status="FOUND"
+        )
+    else:
+        debug_broadcast(
+            f"No armor found at {hit_location}",
+            prefix="STICKY_GRENADE",
+            status="NOT_FOUND"
+        )
+    
+    return outermost_armor
+
+
+def break_stick(grenade):
+    """
+    Break the magnetic bond between grenade and armor.
+    
+    Cleans up all bidirectional references. Grenade location is NOT changed
+    (caller must handle that separately if needed).
+    
+    Args:
+        grenade: The sticky grenade object
+    
+    Returns:
+        bool: True if stick was broken, False if no stick existed
+        
+    Example:
+        if break_stick(grenade):
+            # Magnetic bond broken
+            grenade.location = room  # Move to room
+    """
+    if not grenade:
+        return False
+    
+    # Check if grenade is stuck
+    if not hasattr(grenade.db, 'stuck_to_armor') or not grenade.db.stuck_to_armor:
+        return False
+    
+    armor = grenade.db.stuck_to_armor
+    location = getattr(grenade.db, 'stuck_to_location', 'unknown')
+    
+    # Clear armor's reference to grenade
+    if armor and hasattr(armor.db, 'stuck_grenade'):
+        armor.db.stuck_grenade = None
+    
+    # Clear grenade's references
+    grenade.db.stuck_to_armor = None
+    grenade.db.stuck_to_location = None
+    
+    debug_broadcast(
+        f"Stick broken: {grenade.key} from {armor.key if armor else 'unknown'} at {location}",
+        prefix="STICKY_GRENADE",
+        status="BREAK"
+    )
+    
+    return True

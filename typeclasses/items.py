@@ -111,6 +111,30 @@ class Item(DefaultObject):
     # }
     
     # ===================================================================
+    # STICKY GRENADE SYSTEM ATTRIBUTES
+    # ===================================================================
+    
+    # Metal content level (0-10): Amount of metal in the item
+    # 0 = No metal whatsoever
+    # 1-3 = Minimal metal (buckles, rivets, small fasteners)
+    # 4-6 = Moderate metal (metal plates, reinforcements, chainmail sections)
+    # 7-9 = Heavy metal (predominantly metal construction)
+    # 10 = Pure metal (entirely metal construction)
+    metal_level = AttributeProperty(0, autocreate=True)
+    
+    # Magnetic responsiveness level (0-10): How magnetic the metal is
+    # 0 = Non-magnetic (no ferrous metals - aluminum, titanium, synthetic, cloth, leather)
+    # 1-3 = Weakly magnetic (stainless steel, treated/alloyed metals with low iron content)
+    # 4-6 = Moderately magnetic (mild steel, some carbon steel)
+    # 7-9 = Highly magnetic (carbon steel, most ferrous alloys)
+    # 10 = Pure ferrous metal (raw iron, unalloyed steel)
+    # NOTE: Titanium and aluminum are NOT magnetic (magnetic_level=0) despite being metal
+    magnetic_level = AttributeProperty(0, autocreate=True)
+    
+    # Reference to sticky grenade attached to this armor (if any)
+    stuck_grenade = AttributeProperty(None, autocreate=True)
+    
+    # ===================================================================
     # CLOTHING SYSTEM METHODS
     # ===================================================================
     
@@ -310,6 +334,19 @@ class Item(DefaultObject):
         """
         # Get the basic appearance first
         appearance = super().return_appearance(looker, **kwargs)
+        
+        # Check for stuck grenade (CRITICAL SAFETY WARNING)
+        if hasattr(self, 'stuck_grenade') and self.stuck_grenade:
+            grenade = self.stuck_grenade
+            remaining = getattr(grenade.ndb, 'countdown_remaining', 0) if hasattr(grenade, 'ndb') else 0
+            if remaining > 0:
+                appearance += f"\n\n|r{'='*60}|n"
+                appearance += f"\n|R!!! WARNING: LIVE GRENADE MAGNETICALLY CLAMPED TO THIS ITEM !!!|n"
+                appearance += f"\n|r{'='*60}|n"
+                appearance += f"\n|REXPLOSION IN {remaining} SECONDS!|n"
+                appearance += f"\n|r{'='*60}|n"
+            else:
+                appearance += f"\n\n|rA {grenade.key} is magnetically clamped to this item.|n"
         
         # Check if this is an armor item and add armor information
         if self._is_armor_item():
