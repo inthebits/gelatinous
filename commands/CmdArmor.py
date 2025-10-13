@@ -495,10 +495,88 @@ class CmdArmor(Command):
         RATING_WIDTH = 8  # Width reserved for rating display (e.g., "- IV    ")
         NULL_CHAR = "∅"   # Null character for zero/missing ratings
         
+        # FIRST PASS: Collect all item entries to determine max equipment name length
+        all_item_entries = []
+        locations_to_display = []
+        
+        for location in valid_locations:
+            items_here = worn_by_location.get(location, [])
+            items_sorted = sorted(items_here, key=lambda x: getattr(x, 'layer', 2))
+            
+            # Skip locations with no items
+            if not items_sorted:
+                continue
+            
+            location_display = location.replace('_', ' ').title()
+            item_entries = []
+            
+            for item in items_sorted:
+                armor_type = getattr(item, 'armor_type', 'generic')
+                armor_rating = getattr(item, 'armor_rating', 0)
+                
+                # Handle plate carriers specially
+                if getattr(item, 'is_plate_carrier', False):
+                    installed_plates = getattr(item, 'installed_plates', {})
+                    plate_coverage = getattr(item, 'plate_slot_coverage', {})
+                    
+                    affecting_plates = []
+                    for slot, covered_locs in plate_coverage.items():
+                        if location in covered_locs:
+                            plate = installed_plates.get(slot)
+                            if plate:
+                                affecting_plates.append(plate)
+                    
+                    if affecting_plates:
+                        total_rating = armor_rating
+                        for plate in affecting_plates:
+                            total_rating += getattr(plate, 'armor_rating', 0)
+                        
+                        item_entries.append({
+                            'name': item.key,
+                            'rating': total_rating,
+                            'type': armor_type,
+                            'is_carrier': True
+                        })
+                        
+                        for plate in affecting_plates:
+                            plate_rating = getattr(plate, 'armor_rating', 0)
+                            plate_type = getattr(plate, 'armor_type', 'generic')
+                            item_entries.append({
+                                'name': f"  └─ {plate.key}",
+                                'rating': plate_rating,
+                                'type': plate_type,
+                                'is_plate': True
+                            })
+                    else:
+                        item_entries.append({
+                            'name': item.key,
+                            'rating': armor_rating,
+                            'type': armor_type,
+                            'is_carrier': False
+                        })
+                else:
+                    item_entries.append({
+                        'name': item.key,
+                        'rating': armor_rating,
+                        'type': armor_type,
+                        'is_carrier': False
+                    })
+            
+            if item_entries:
+                all_item_entries.extend(item_entries)
+                locations_to_display.append({
+                    'location': location,
+                    'location_display': location_display,
+                    'item_entries': item_entries
+                })
+        
+        # Calculate max equipment name length
+        max_equip_name_len = max((len(entry['name']) for entry in all_item_entries), default=20)
+        
         # Build output lines
         output_lines = []
         
-        # Create centered EQUIPMENT header with Location and Rating labels
+        # Create header with proper alignment
         location_label = "Location"
         equipment_label = "EQUIPMENT"
         rating_label = "Rating"
@@ -507,14 +585,19 @@ class CmdArmor(Command):
         loc_label_padding = (LOCATION_BOX_WIDTH - len(location_label)) // 2
         loc_label_line = " " * loc_label_padding + location_label
         
-        # Calculate spacing for header
-        # Format: [Location Box] [spacing] [Equipment Label] [spacing] [Rating Label]
-        spacing_before_equipment = "     "  # Space between box and equipment
+        # Calculate actual column positions
+        # Box = 17 chars (╔ + 15 + ╗), stem = 6 chars (──┬── or ──────), space = 1
+        equipment_start_col = 17 + 6 + 1  # = 24
+        rating_start_col = equipment_start_col + max_equip_name_len + 2  # 2 spaces before rating
         
-        # Build the header line with proper alignment
-        header_line = (loc_label_line + " " * (LOCATION_BOX_WIDTH - len(loc_label_line)) + 
-                      spacing_before_equipment + equipment_label + 
-                      " " * (50 - len(equipment_label) - len(rating_label)) + rating_label)
+        # Build header line with aligned labels
+        header_parts = []
+        header_parts.append(loc_label_line + " " * (LOCATION_BOX_WIDTH - len(loc_label_line)))
+        header_parts.append(" " * 7)  # Space to equipment label start
+        header_parts.append(equipment_label)
+        header_parts.append(" " * (max_equip_name_len - len(equipment_label) + 2))
+        header_parts.append(rating_label)
+        header_line = "".join(header_parts)
         
         if center_headers:
             session = caller.sessions.get()[0] if caller.sessions.get() else None
@@ -527,81 +610,10 @@ class CmdArmor(Command):
         output_lines.append(header_line)
         output_lines.append("")  # Blank line after header
         
-        # Process each body location
-        for location in valid_locations:
-            # Format location name nicely
-            location_display = location.replace('_', ' ').title()
-            
-            # Get items at this location, sorted by layer
-            items_here = worn_by_location.get(location, [])
-            items_sorted = sorted(items_here, key=lambda x: getattr(x, 'layer', 2))
-            
-            # Skip locations with no items (don't show "Unprotected")
-            if not items_sorted:
-                continue
-            
-            # Build item entries (including plate carrier expansions)
-            item_entries = []
-            
-            if items_sorted:
-                for item in items_sorted:
-                    # Get base item info
-                    armor_type = getattr(item, 'armor_type', 'generic')
-                    armor_rating = getattr(item, 'armor_rating', 0)
-                    
-                    # Handle plate carriers specially
-                    if getattr(item, 'is_plate_carrier', False):
-                        installed_plates = getattr(item, 'installed_plates', {})
-                        plate_coverage = getattr(item, 'plate_slot_coverage', {})
-                        
-                        # Check which plates affect this location
-                        affecting_plates = []
-                        for slot, covered_locs in plate_coverage.items():
-                            if location in covered_locs:
-                                plate = installed_plates.get(slot)
-                                if plate:
-                                    affecting_plates.append(plate)
-                        
-                        # Add carrier itself
-                        if affecting_plates:
-                            # Calculate total rating with plates
-                            total_rating = armor_rating
-                            for plate in affecting_plates:
-                                total_rating += getattr(plate, 'armor_rating', 0)
-                            
-                            item_entries.append({
-                                'name': item.key,
-                                'rating': total_rating,
-                                'type': armor_type,
-                                'is_carrier': True
-                            })
-                            
-                            # Add each plate as sub-entry
-                            for plate in affecting_plates:
-                                plate_rating = getattr(plate, 'armor_rating', 0)
-                                plate_type = getattr(plate, 'armor_type', 'generic')
-                                item_entries.append({
-                                    'name': f"  └─ {plate.key}",
-                                    'rating': plate_rating,
-                                    'type': plate_type,
-                                    'is_plate': True
-                                })
-                        else:
-                            # Carrier with no plates for this location
-                            item_entries.append({
-                                'name': item.key,
-                                'rating': armor_rating,
-                                'type': armor_type,
-                                'is_carrier': False
-                            })
-                    else:
-                        # Regular item
-                        item_entries.append({
-                            'name': item.key,
-                            'rating': armor_rating,
-                            'type': armor_type,
-                            'is_carrier': False
-                        })
+        # SECOND PASS: Build display with padded equipment names
+        for loc_data in locations_to_display:
+            location_display = loc_data['location_display']
+            item_entries = loc_data['item_entries']
             
             # Create the location box (left side) with centered text
             # Center the location name in the box
@@ -625,9 +637,9 @@ class CmdArmor(Command):
                 else:
                     rating_text = NULL_CHAR
                 
-                # Pad rating to consistent width (right-aligned)
-                rating_padded = rating_text.rjust(RATING_WIDTH)
-                item_text = f"{entry['name']} {rating_padded}"
+                # Pad equipment name to max length, then add rating
+                equip_name_padded = entry['name'].ljust(max_equip_name_len)
+                item_text = f"{equip_name_padded}  {rating_text.rjust(RATING_WIDTH)}"
                 
                 # Simple horizontal stem to item
                 stem = "────"
@@ -651,9 +663,9 @@ class CmdArmor(Command):
                     else:
                         rating_text = NULL_CHAR
                     
-                    # Pad rating to consistent width (right-aligned)
-                    rating_padded = rating_text.rjust(RATING_WIDTH)
-                    item_text = f"{entry['name']} {rating_padded}"
+                    # Pad equipment name to max length, then add rating
+                    equip_name_padded = entry['name'].ljust(max_equip_name_len)
+                    item_text = f"{equip_name_padded}  {rating_text.rjust(RATING_WIDTH)}"
                     
                     if is_first:
                         # First item - show location box with stem and branch
