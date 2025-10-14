@@ -484,7 +484,8 @@ Select a consciousness vessel:
         text += "\n|wEnter choice [1-3]:|n"
     
     # Use only _default to catch all input (prevents EvMenu from displaying option keys)
-    options = {"key": "_default", "goto": "respawn_welcome"}
+    # IMPORTANT: Must be a tuple, not a bare dict, or EvMenu will auto-generate numbered options
+    options = ({"key": "_default", "goto": "respawn_welcome"},)
     
     return text, options
 
