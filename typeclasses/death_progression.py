@@ -412,15 +412,18 @@ class DeathProgressionScript(DefaultScript):
             # 1. Create corpse object with forensic data
             corpse = self._create_corpse_from_character(character)
             
-            # 2. Get account before unpuppeting
+            # 2. Get account and session before unpuppeting
             account = character.account
+            session = None
+            if account and account.sessions.all():
+                session = account.sessions.all()[0]
             
-            # 3. Transition character out of play
+            # 3. Transition character out of play (includes unpuppeting now)
             self._transition_character_to_death(character)
             
-            # 4. TODO: Initiate character creation for account (commented out until character creation ready)
-            # if account:
-            #     self._initiate_new_character_creation(account)
+            # 4. Initiate character creation for account
+            if account and session:
+                self._initiate_new_character_creation(account, character, session)
                 
             # 5. Log the transition
             try:
@@ -571,33 +574,52 @@ class DeathProgressionScript(DefaultScript):
             except:
                 pass
         
-        # TODO: Unpuppet character from account (commented out until character creation ready)
-        # if account:
-        #     account.unpuppet_object(character)
-        # 
-        # # Clear character state
-        # character.db.account = None
+        # Unpuppet character from account
+        if account:
+            # Get session before unpuppeting
+            session = None
+            if account.sessions.all():
+                session = account.sessions.all()[0]
+            
+            # Unpuppet the dead character
+            if session:
+                account.unpuppet_object(session)
+                
+                try:
+                    splattercast = ChannelDB.objects.get_channel("Splattercast")
+                    splattercast.msg(f"DEATH_UNPUPPET: {character.key} unpuppeted from {account.key}")
+                except:
+                    pass
         
-        # TODO: Consider setting character to inactive or archiving them
-        # character.db.archived = True
-        # character.db.death_archived_time = time.time()
+        # Archive the dead character
+        character.db.archived = True
+        character.db.archived_reason = "death"
+        character.db.archived_date = time.time()
+        character.db.death_cause = getattr(character.db, 'death_cause', 'unknown')
 
-    def _initiate_new_character_creation(self, account):
-        """Start the character creation process for the account."""
+    def _initiate_new_character_creation(self, account, old_character, session):
+        """Start the character creation process for the account after death."""
         # Give the account feedback about what happened
         account.msg("|r" + "=" * 60 + "|n")
         account.msg("|rYour character has died and cannot be revived.|n")
         account.msg("|rA corpse has been left behind for investigation.|n")
         account.msg("|r" + "=" * 60 + "|n")
         account.msg("")
-        account.msg("|gYou must create a new character to continue playing.|n")
-        account.msg("")
         
-        # TODO: Implement character creation system
-        # For now, provide instructions
-        account.msg("|yCharacter creation system is under development.|n")
-        account.msg("|yPlease contact staff for assistance creating a new character.|n")
-        account.msg("|yUse the |cguest|y command to connect as a guest in the meantime.|n")
+        # Start character creation flow (respawn mode)
+        try:
+            from commands.charcreate import start_character_creation
+            start_character_creation(account, is_respawn=True, old_character=old_character)
+        except ImportError as e:
+            # Fallback if character creation not yet implemented
+            account.msg("|yCharacter creation system is under development.|n")
+            account.msg("|yPlease contact staff for assistance creating a new character.|n")
+            
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"CHARCREATE_IMPORT_ERROR: {e}")
+            except:
+                pass
         account.msg("")
         
         # TODO: Future implementation might:

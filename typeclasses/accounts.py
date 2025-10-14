@@ -136,6 +136,50 @@ class Account(DefaultAccount):
 
     """
 
+    def at_post_login(self, session=None, **kwargs):
+        """
+        Called after successful login, after the Account has been connected to
+        a session. This is a good place to check if the Account has any characters
+        and start character creation if they don't.
+        
+        Args:
+            session (Session): Session object for this connection
+        """
+        super().at_post_login(session=session, **kwargs)
+        
+        # Check if account has any non-archived characters
+        from typeclasses.characters import Character
+        
+        all_chars = Character.objects.filter(db_account=self)
+        active_chars = [char for char in all_chars if not char.db.archived]
+        
+        if not active_chars:
+            # No active characters - start character creation
+            # Import here to avoid circular imports
+            try:
+                from commands.charcreate import start_character_creation
+                start_character_creation(self, is_respawn=False)
+            except ImportError as e:
+                # Graceful fallback if charcreate not available yet
+                from evennia.comms.models import ChannelDB
+                try:
+                    splattercast = ChannelDB.objects.get_channel("Splattercast")
+                    splattercast.msg(f"AT_POST_LOGIN_ERROR: Could not import charcreate: {e}")
+                except:
+                    pass
+                self.msg("|rCharacter creation system not available. Please contact an admin.|n")
+        else:
+            # Has characters - puppet the most recently used one
+            last_puppet = self.db._last_puppet
+            if last_puppet and not last_puppet.db.archived and last_puppet in active_chars:
+                # Puppet last used character
+                if session:
+                    self.puppet_object(session, last_puppet)
+            elif active_chars:
+                # Puppet first available character
+                if session:
+                    self.puppet_object(session, active_chars[0])
+
     pass
 
 
