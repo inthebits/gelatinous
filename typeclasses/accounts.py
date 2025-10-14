@@ -138,21 +138,16 @@ class Account(DefaultAccount):
 
     def at_post_login(self, session=None, **kwargs):
         """
-        Called after successful login, after the Account has been connected to
-        a session. This is a good place to check if the Account has any characters
-        and start character creation if they don't.
+        Called after successful login, handles character detection and auto-puppeting.
         
-        Args:
-            session (Session): Session object for this connection
+        We override the default entirely because we have custom logic for:
+        - Auto-puppeting single characters
+        - Starting character creation for new accounts
+        - Handling archived characters
         """
-        # Let default at_post_login run first
-        super().at_post_login(session=session, **kwargs)
-        
         # IMPORTANT: Due to testing/development, there may be legacy characters
         # with inconsistent states. We need to be defensive here.
         
-        # CRITICAL FIX: Use Evennia's built-in character retrieval method
-        # This is more reliable than direct database queries
         from evennia.comms.models import ChannelDB
         
         # Debug logging
