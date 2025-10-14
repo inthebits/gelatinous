@@ -28,6 +28,12 @@ class CmdFixCharacterOwnership(Command):
     def func(self):
         caller = self.caller
         
+        # Get the account - caller might be a Character, we need the Account
+        if hasattr(caller, 'account'):
+            account = caller.account
+        else:
+            account = caller
+        
         if not self.args:
             caller.msg("Usage: @fixchar <character name> or @fixchar all")
             return
@@ -40,21 +46,21 @@ class CmdFixCharacterOwnership(Command):
             fixed_count = 0
             for char in all_chars:
                 # Check if this account can puppet this character
-                if char.access(caller, "puppet"):
+                if char.access(account, "puppet"):
                     # Fix ownership
-                    char.db_account = caller
+                    char.db_account = account
                     
-                    if not caller.db._playable_characters:
-                        caller.db._playable_characters = []
-                    if char not in caller.db._playable_characters:
-                        caller.db._playable_characters.append(char)
+                    if not account.db._playable_characters:
+                        account.db._playable_characters = []
+                    if char not in account.db._playable_characters:
+                        account.db._playable_characters.append(char)
                         fixed_count += 1
                         caller.msg(f"|gFixed:|n {char.key}")
             
             caller.msg(f"|gFixed {fixed_count} character(s).|n")
             
             # Show verification
-            all_puppets = caller.get_all_puppets()
+            all_puppets = account.get_all_puppets()
             caller.msg(f"|yget_all_puppets() now returns {len(all_puppets)} character(s):|n")
             for char in all_puppets:
                 caller.msg(f"  - {char.key} (#{char.id})")
@@ -78,22 +84,22 @@ class CmdFixCharacterOwnership(Command):
             char = results[0]
             
             # Check puppet access
-            if not char.access(caller, "puppet"):
+            if not char.access(account, "puppet"):
                 caller.msg(f"|rYou don't have permission to puppet {char.key}.|n")
                 return
             
             # Fix ownership
-            char.db_account = caller
+            char.db_account = account
             
-            if not caller.db._playable_characters:
-                caller.db._playable_characters = []
+            if not account.db._playable_characters:
+                account.db._playable_characters = []
             
-            if char in caller.db._playable_characters:
+            if char in account.db._playable_characters:
                 caller.msg(f"|y{char.key} was already in _playable_characters.|n")
             else:
-                caller.db._playable_characters.append(char)
+                account.db._playable_characters.append(char)
                 caller.msg(f"|gAdded {char.key} to _playable_characters.|n")
             
             # Verify
-            all_puppets = caller.get_all_puppets()
+            all_puppets = account.get_all_puppets()
             caller.msg(f"|gget_all_puppets() now returns {len(all_puppets)} character(s).|n")
