@@ -220,26 +220,17 @@ def create_character_from_template(account, template, sex="androgynous"):
     # Create full name
     full_name = f"{template['first_name']} {template['last_name']}"
     
-    # Create character
-    char = create_object(
-        Character,
+    # Use Evennia's proper character creation method
+    char, errors = account.create_character(
         key=full_name,
         location=start_location,
-        home=start_location
+        home=start_location,
+        typeclass="typeclasses.characters.Character"
     )
     
-    # CRITICAL: Use account.db._playable_characters to register ownership
-    # This is what get_all_puppets() checks
-    if not account.db._playable_characters:
-        account.db._playable_characters = []
-    if char not in account.db._playable_characters:
-        account.db._playable_characters.append(char)
-    
-    # Set account relationship
-    char.db_account = account  # Database field
-    account.db._last_puppet = char
-    char.locks.add(f"puppet:id({account.id}) or pid({account.id}) or perm(Developer) or pperm(Developer)")
-    char.permissions.add("Player")
+    if errors:
+        # Handle creation errors
+        raise Exception(f"Character creation failed: {errors}")
     
     # Set GRIM stats
     char.grit = template['grit']
@@ -288,26 +279,17 @@ def create_flash_clone(account, old_character):
     # Build name using death_count as Roman numeral source
     new_name = build_name_from_death_count(old_character.key, old_death_count)
     
-    # Create character
-    char = create_object(
-        Character,
+    # Use Evennia's proper character creation method
+    char, errors = account.create_character(
         key=new_name,
         location=start_location,
-        home=start_location
+        home=start_location,
+        typeclass="typeclasses.characters.Character"
     )
     
-    # CRITICAL: Use account.db._playable_characters to register ownership
-    # This is what get_all_puppets() checks
-    if not account.db._playable_characters:
-        account.db._playable_characters = []
-    if char not in account.db._playable_characters:
-        account.db._playable_characters.append(char)
-    
-    # Set account relationship
-    char.db_account = account  # Database field
-    account.db._last_puppet = char
-    char.locks.add(f"puppet:id({account.id}) or pid({account.id}) or perm(Developer) or pperm(Developer)")
-    char.permissions.add("Player")
+    if errors:
+        # Handle creation errors
+        raise Exception(f"Flash clone creation failed: {errors}")
     
     # INHERIT: GRIM stats (with fallback defaults)
     char.grit = old_character.grit if old_character.grit is not None else 1
@@ -982,25 +964,17 @@ def first_char_finalize(caller, raw_string, **kwargs):
     
     # Create character
     try:
-        char = create_object(
-            Character,
+        # Use Evennia's proper character creation method
+        char, errors = caller.create_character(
             key=full_name,
             location=start_location,
-            home=start_location
+            home=start_location,
+            typeclass="typeclasses.characters.Character"
         )
         
-        # CRITICAL: Use account.db._playable_characters to register ownership
-        # This is what get_all_puppets() checks
-        if not caller.db._playable_characters:
-            caller.db._playable_characters = []
-        if char not in caller.db._playable_characters:
-            caller.db._playable_characters.append(char)
-        
-        # Set account relationship
-        char.db_account = caller  # Database field
-        caller.db._last_puppet = char
-        char.locks.add(f"puppet:id({caller.id}) or pid({caller.id}) or perm(Developer) or pperm(Developer)")
-        char.permissions.add("Player")
+        if errors:
+            # Handle creation errors
+            raise Exception(f"Character creation failed: {errors}")
         
         # Set GRIM stats
         char.grit = grit
