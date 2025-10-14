@@ -290,7 +290,9 @@ class CmdStats(Command):
             return roman_num
 
         # Generate dynamic file reference and subject name with clone generation
-        clone_generation = getattr(target.db, 'clone_generation', 1)  # Default to 1 if not set
+        clone_generation = getattr(target.db, 'clone_generation', None)
+        if clone_generation is None:
+            clone_generation = 1  # Default to 1 if not set or None
         roman_generation = to_roman(clone_generation)
         file_ref = f"GEL-MST/PR-{target.id}"
         file_ref_padded = f" File Reference: {file_ref}".ljust(48)
