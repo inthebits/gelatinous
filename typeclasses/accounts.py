@@ -145,71 +145,51 @@ class Account(DefaultAccount):
         - Starting character creation for new accounts
         - Handling archived characters
         """
-        # IMPORTANT: Due to testing/development, there may be legacy characters
-        # with inconsistent states. We need to be defensive here.
-        
-        from evennia.comms.models import ChannelDB
-        
-        # Debug logging
-        try:
-            splattercast = ChannelDB.objects.get_channel("Splattercast")
-        except:
-            splattercast = None
-        
         # Use Evennia's get_all_puppets() method - this is the authoritative source
         all_puppets = self.get_all_puppets()
         
-        if splattercast:
-            splattercast.msg(f"AT_POST_LOGIN: Account {self.key} - get_all_puppets returned {len(all_puppets)} characters")
-            if all_puppets:
-                splattercast.msg(f"AT_POST_LOGIN: Puppets: {[(c.key, c.id) for c in all_puppets]}")
+        # DEBUG: Log to account since Splattercast doesn't work at login
+        self.msg(f"|yDEBUG: get_all_puppets returned {len(all_puppets)} characters|n")
+        for char in all_puppets:
+            self.msg(f"|yDEBUG: - {char.key} (#{char.id})|n")
         
         # Filter for active (non-archived) characters
         # Be defensive: only treat explicitly archived=True as archived
         active_chars = []
         for char in all_puppets:
             archived_status = getattr(char.db, 'archived', False)
-            if splattercast:
-                splattercast.msg(f"AT_POST_LOGIN: Checking char {char.key} (#{char.id}) - archived={archived_status}")
+            self.msg(f"|yDEBUG: {char.key} archived={archived_status} (type: {type(archived_status)})|n")
             
             # Only exclude if explicitly archived
             if archived_status is not True:
                 active_chars.append(char)
         
-        if splattercast:
-            splattercast.msg(f"AT_POST_LOGIN: active_chars after filtering={len(active_chars)}")
-            if active_chars:
-                splattercast.msg(f"AT_POST_LOGIN: Active characters: {[(c.key, c.id) for c in active_chars]}")
+        self.msg(f"|yDEBUG: Active chars after filter: {len(active_chars)}|n")
         
         # CRITICAL: Only start character creation if there are ZERO active characters
         if len(active_chars) == 0:
+            self.msg("|yDEBUG: No active characters - starting character creation|n")
             # No active characters - start character creation
-            if splattercast:
-                splattercast.msg(f"AT_POST_LOGIN: No active characters, starting character creation")
-            
             # Import here to avoid circular imports
             try:
                 from commands.charcreate import start_character_creation
                 start_character_creation(self, is_respawn=False)
             except ImportError as e:
                 # Graceful fallback if charcreate not available yet
-                if splattercast:
-                    splattercast.msg(f"AT_POST_LOGIN_ERROR: Could not import charcreate: {e}")
                 self.msg("|rCharacter creation system not available. Please contact an admin.|n")
         elif len(active_chars) == 1:
+            self.msg(f"|yDEBUG: One active character - auto-puppeting {active_chars[0].key}|n")
             # Exactly one active character - auto-puppet for convenience
-            if splattercast:
-                splattercast.msg(f"AT_POST_LOGIN: One active character, auto-puppeting {active_chars[0].key}")
-            
             if session:
                 self.puppet_object(session, active_chars[0])
             else:
-                if splattercast:
-                    splattercast.msg(f"AT_POST_LOGIN_ERROR: No session available for auto-puppet")
+                # No session means we can't auto-puppet - this shouldn't happen
+                self.msg("|yAuto-puppet failed: No session. Use 'ic' to connect.|n")
         else:
+            self.msg(f"|yDEBUG: Multiple active characters ({len(active_chars)}) - user must choose|n")
             # Multiple active characters - let user choose with 'ic <name>'
-            if splattercast:
-                splattercast.msg(f"AT_POST_LOGIN: Multiple active characters ({len(active_chars)}), user must choose with 'ic <name>'")
+            # The default OOC behavior will handle this
+            pass
 
 
 class Guest(DefaultGuest):
