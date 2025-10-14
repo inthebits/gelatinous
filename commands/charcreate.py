@@ -279,6 +279,17 @@ def create_flash_clone(account, old_character):
     # Build name using death_count as Roman numeral source
     new_name = build_name_from_death_count(old_character.key, old_death_count)
     
+    # CRITICAL: Remove the old archived character from account.characters
+    # This is necessary because MAX_NR_CHARACTERS=1, and we need to replace the old char
+    if old_character in account.characters:
+        account.characters.remove(old_character)
+        try:
+            from evennia.comms.models import ChannelDB
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            splattercast.msg(f"FLASH_CLONE: Removed {old_character.key} from {account.key}'s characters")
+        except:
+            pass
+    
     # Use Evennia's proper character creation method
     char, errors = account.create_character(
         key=new_name,
@@ -460,7 +471,7 @@ Select a consciousness vessel:
         text += f"|mMotorics:|n {old_char.motorics:3d}\n"
         text += f"    |xInherits appearance, stats, and memories from previous incarnation|n\n"
     
-    text += "\n|wEnter choice [1-4]:|n "
+    text += "\n|wEnter choice [1-4]:|n"
     
     options = (
         {"key": "1",
