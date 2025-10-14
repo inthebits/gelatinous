@@ -148,27 +148,18 @@ class Account(DefaultAccount):
         # Use Evennia's account.characters (the _playable_characters list) - this is the authoritative source
         all_characters = self.characters.all()
         
-        # DEBUG: Log to account since Splattercast doesn't work at login
-        self.msg(f"|yDEBUG: account.characters returned {len(all_characters)} characters|n")
-        for char in all_characters:
-            self.msg(f"|yDEBUG: - {char.key} (#{char.id})|n")
-        
         # Filter for active (non-archived) characters
         # Be defensive: only treat explicitly archived=True as archived
         active_chars = []
         for char in all_characters:
             archived_status = getattr(char.db, 'archived', False)
-            self.msg(f"|yDEBUG: {char.key} archived={archived_status} (type: {type(archived_status)})|n")
             
             # Only exclude if explicitly archived
             if archived_status is not True:
                 active_chars.append(char)
         
-        self.msg(f"|yDEBUG: Active chars after filter: {len(active_chars)}|n")
-        
         # CRITICAL: Only start character creation if there are ZERO active characters
         if len(active_chars) == 0:
-            self.msg("|yDEBUG: No active characters - starting character creation|n")
             # No active characters - start character creation
             # Import here to avoid circular imports
             try:
@@ -178,7 +169,6 @@ class Account(DefaultAccount):
                 # Graceful fallback if charcreate not available yet
                 self.msg("|rCharacter creation system not available. Please contact an admin.|n")
         elif len(active_chars) == 1:
-            self.msg(f"|yDEBUG: One active character - auto-puppeting {active_chars[0].key}|n")
             # Exactly one active character - auto-puppet for convenience
             if session:
                 self.puppet_object(session, active_chars[0])
@@ -186,7 +176,6 @@ class Account(DefaultAccount):
                 # No session means we can't auto-puppet - this shouldn't happen
                 self.msg("|yAuto-puppet failed: No session. Use 'ic' to connect.|n")
         else:
-            self.msg(f"|yDEBUG: Multiple active characters ({len(active_chars)}) - user must choose|n")
             # Multiple active characters - let user choose with 'ic <name>'
             # The default OOC behavior will handle this
             pass
