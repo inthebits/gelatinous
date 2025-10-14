@@ -290,11 +290,11 @@ def create_flash_clone(account, old_character):
     char.db.account = account
     account.db._last_puppet = char
     
-    # INHERIT: GRIM stats
-    char.grit = old_character.grit
-    char.resonance = old_character.resonance
-    char.intellect = old_character.intellect
-    char.motorics = old_character.motorics
+    # INHERIT: GRIM stats (with fallback defaults)
+    char.grit = old_character.grit if old_character.grit is not None else 1
+    char.resonance = old_character.resonance if old_character.resonance is not None else 1
+    char.intellect = old_character.intellect if old_character.intellect is not None else 1
+    char.motorics = old_character.motorics if old_character.motorics is not None else 1
     
     # INHERIT: Appearance
     char.db.desc = old_character.db.desc
@@ -307,10 +307,14 @@ def create_flash_clone(account, old_character):
         char.db.skintone = old_character.db.skintone
     
     # INCREMENT: Generation and death count
-    old_generation = getattr(old_character.db, 'clone_generation', 1)
+    old_generation = getattr(old_character.db, 'clone_generation', None)
+    if old_generation is None:
+        old_generation = 1
     char.db.clone_generation = old_generation + 1
     
-    old_death_count = getattr(old_character.db, 'death_count', 0)
+    old_death_count = getattr(old_character.db, 'death_count', None)
+    if old_death_count is None:
+        old_death_count = 0
     char.db.death_count = old_death_count + 1
     
     # Link to previous incarnation
