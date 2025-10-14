@@ -228,8 +228,15 @@ def create_character_from_template(account, template, sex="androgynous"):
         home=start_location
     )
     
-    # Set account and puppet permissions
-    char.db.account = account
+    # CRITICAL: Use account.db._playable_characters to register ownership
+    # This is what get_all_puppets() checks
+    if not account.db._playable_characters:
+        account.db._playable_characters = []
+    if char not in account.db._playable_characters:
+        account.db._playable_characters.append(char)
+    
+    # Set account relationship
+    char.db_account = account  # Database field
     account.db._last_puppet = char
     char.locks.add(f"puppet:id({account.id}) or pid({account.id}) or perm(Developer) or pperm(Developer)")
     char.permissions.add("Player")
@@ -289,8 +296,15 @@ def create_flash_clone(account, old_character):
         home=start_location
     )
     
-    # Set account and puppet permissions
-    char.db.account = account
+    # CRITICAL: Use account.db._playable_characters to register ownership
+    # This is what get_all_puppets() checks
+    if not account.db._playable_characters:
+        account.db._playable_characters = []
+    if char not in account.db._playable_characters:
+        account.db._playable_characters.append(char)
+    
+    # Set account relationship
+    char.db_account = account  # Database field
     account.db._last_puppet = char
     char.locks.add(f"puppet:id({account.id}) or pid({account.id}) or perm(Developer) or pperm(Developer)")
     char.permissions.add("Player")
@@ -975,8 +989,15 @@ def first_char_finalize(caller, raw_string, **kwargs):
             home=start_location
         )
         
-        # Set account and puppet permissions
-        char.db.account = caller
+        # CRITICAL: Use account.db._playable_characters to register ownership
+        # This is what get_all_puppets() checks
+        if not caller.db._playable_characters:
+            caller.db._playable_characters = []
+        if char not in caller.db._playable_characters:
+            caller.db._playable_characters.append(char)
+        
+        # Set account relationship
+        char.db_account = caller  # Database field
         caller.db._last_puppet = char
         char.locks.add(f"puppet:id({caller.id}) or pid({caller.id}) or perm(Developer) or pperm(Developer)")
         char.permissions.add("Player")
