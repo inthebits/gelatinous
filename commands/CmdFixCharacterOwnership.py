@@ -53,12 +53,11 @@ class CmdFixCharacterOwnership(Command):
             
             fixed_count = 0
             for char in all_chars:
-                # Check if this account can puppet this character AND it's not already tracked
-                if char.access(account, "puppet") and char not in account.get_all_puppets():
-                    # Set the character's db_account field directly (Django foreign key)
+                # Check if this account can puppet this character AND it's not already in playable list
+                if char.access(account, "puppet") and char not in account.characters:
+                    # Use Evennia's CharactersHandler to add character
                     try:
-                        char.db_account = account
-                        char.save()
+                        account.characters.add(char)
                         fixed_count += 1
                         caller.msg(f"|gFixed:|n {char.key} (#{char.id})")
                     except Exception as e:
@@ -70,9 +69,9 @@ class CmdFixCharacterOwnership(Command):
                 caller.msg(f"|gFixed {fixed_count} character(s).|n")
             
             # Show verification
-            all_puppets = account.get_all_puppets()
-            caller.msg(f"|yget_all_puppets() now returns {len(all_puppets)} character(s):|n")
-            for char in all_puppets:
+            all_playable = account.characters.all()
+            caller.msg(f"|yaccount.characters now returns {len(all_playable)} character(s):|n")
+            for char in all_playable:
                 caller.msg(f"  - {char.key} (#{char.id})")
             
         else:
@@ -99,23 +98,20 @@ class CmdFixCharacterOwnership(Command):
                 return
             
             # Check if already tracked
-            if char in account.get_all_puppets():
-                caller.msg(f"|y{char.key} is already properly tracked by get_all_puppets().|n")
+            if char in account.characters:
+                caller.msg(f"|y{char.key} is already in account.characters list.|n")
                 return
             
-            # Use Evennia's internal database field to properly link character
+            # Use Evennia's CharactersHandler to properly add the character
             try:
-                # Set the character's db_account field directly (Django foreign key)
-                char.db_account = account
-                char.save()
-                
-                caller.msg(f"|gFixed {char.key} - linked to account via db_account.|n")
+                account.characters.add(char)
+                caller.msg(f"|gFixed {char.key} - added to playable characters.|n")
             except Exception as e:
                 caller.msg(f"|rError fixing {char.key}:|n {e}")
                 return
             
             # Verify
-            all_puppets = account.get_all_puppets()
-            caller.msg(f"|yget_all_puppets() now returns {len(all_puppets)} character(s):|n")
-            for char in all_puppets:
+            all_playable = account.characters.all()
+            caller.msg(f"|yaccount.characters now returns {len(all_playable)} character(s):|n")
+            for char in all_playable:
                 caller.msg(f"  - {char.key} (#{char.id})")

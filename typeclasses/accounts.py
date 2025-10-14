@@ -145,18 +145,18 @@ class Account(DefaultAccount):
         - Starting character creation for new accounts
         - Handling archived characters
         """
-        # Use Evennia's get_all_puppets() method - this is the authoritative source
-        all_puppets = self.get_all_puppets()
+        # Use Evennia's account.characters (the _playable_characters list) - this is the authoritative source
+        all_characters = self.characters.all()
         
         # DEBUG: Log to account since Splattercast doesn't work at login
-        self.msg(f"|yDEBUG: get_all_puppets returned {len(all_puppets)} characters|n")
-        for char in all_puppets:
+        self.msg(f"|yDEBUG: account.characters returned {len(all_characters)} characters|n")
+        for char in all_characters:
             self.msg(f"|yDEBUG: - {char.key} (#{char.id})|n")
         
         # Filter for active (non-archived) characters
         # Be defensive: only treat explicitly archived=True as archived
         active_chars = []
-        for char in all_puppets:
+        for char in all_characters:
             archived_status = getattr(char.db, 'archived', False)
             self.msg(f"|yDEBUG: {char.key} archived={archived_status} (type: {type(archived_status)})|n")
             
