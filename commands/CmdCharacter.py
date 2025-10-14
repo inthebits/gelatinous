@@ -289,16 +289,13 @@ class CmdStats(Command):
                 i += 1
             return roman_num
 
-        # Generate dynamic file reference and subject name with clone generation
-        clone_generation = getattr(target.db, 'clone_generation', None)
-        if clone_generation is None:
-            clone_generation = 1  # Default to 1 if not set or None
-        roman_generation = to_roman(clone_generation)
+        # Generate dynamic file reference and subject name
+        # Note: Character name already includes Roman numeral (e.g., "Laszlo V")
         file_ref = f"GEL-MST/PR-{target.id}"
         file_ref_padded = f" File Reference: {file_ref}".ljust(48)
         
-        # Add roman numeral to subject name
-        subject_name = f"{target.key} {roman_generation}"
+        # Use character name directly (already has Roman numeral)
+        subject_name = target.key
         subject_line = f" Subject: {subject_name[:38]:<38}"
 
         # Dynamic formatting based on display mode

@@ -187,7 +187,6 @@ class Account(DefaultAccount):
                 splattercast.msg(f"AT_POST_LOGIN: Active characters: {[(c.key, c.id) for c in active_chars]}")
         
         # CRITICAL: Only start character creation if there are ZERO active characters
-        # If there are ANY active characters, let Evennia's default OOC menu handle it
         if len(active_chars) == 0:
             # No active characters - start character creation
             if splattercast:
@@ -202,14 +201,20 @@ class Account(DefaultAccount):
                 if splattercast:
                     splattercast.msg(f"AT_POST_LOGIN_ERROR: Could not import charcreate: {e}")
                 self.msg("|rCharacter creation system not available. Please contact an admin.|n")
-        else:
-            # Has active characters - DON'T start character creation
-            # DON'T auto-puppet - let default Evennia OOC menu handle character selection
+        elif len(active_chars) == 1:
+            # Exactly one active character - auto-puppet for convenience
             if splattercast:
-                splattercast.msg(f"AT_POST_LOGIN: Has {len(active_chars)} active characters, using default OOC menu")
+                splattercast.msg(f"AT_POST_LOGIN: One active character, auto-puppeting {active_chars[0].key}")
+            
+            if session:
+                self.puppet_object(session, active_chars[0])
+        else:
+            # Multiple active characters - let OOC menu handle selection
+            if splattercast:
+                splattercast.msg(f"AT_POST_LOGIN: {len(active_chars)} active characters, using OOC menu for selection")
             
             # The default Evennia behavior will show the OOC menu with 'ic <name>' option
-            # This is the correct behavior for accounts with existing characters
+            # This is the correct behavior for accounts with multiple characters
             pass
 
     pass
