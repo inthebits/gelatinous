@@ -1,5 +1,11 @@
 """
-Admin command to fix character ownership for get_all_puppets()
+One-time admin command to repair legacy character ownership.
+
+This fixes characters created with the old broken manual method by properly
+establishing Evennia's internal ownership relationships using the account's
+internal _add_character method.
+
+This command will be obsolete once all legacy characters are fixed.
 """
 
 from evennia import Command
@@ -8,17 +14,19 @@ from evennia.utils.search import search_object
 
 class CmdFixCharacterOwnership(Command):
     """
-    Fix character ownership so get_all_puppets() works.
+    ONE-TIME FIX for legacy character ownership.
     
     Usage:
         @fixchar <character name>
         @fixchar all
     
-    This fixes characters created before the ownership fix by:
-    - Setting char.db_account properly
-    - Adding char to account.db._playable_characters list
+    This repairs characters created before we switched to account.create_character()
+    by using Evennia's internal character tracking methods.
     
-    Use 'all' to fix all your characters.
+    Legacy characters were created with manual setup and don't appear in
+    get_all_puppets(). This command fixes that.
+    
+    Use 'all' to fix all characters you can puppet.
     """
     
     key = "@fixchar"
@@ -45,19 +53,21 @@ class CmdFixCharacterOwnership(Command):
             
             fixed_count = 0
             for char in all_chars:
-                # Check if this account can puppet this character
-                if char.access(account, "puppet"):
-                    # Fix ownership
-                    char.db_account = account
-                    
-                    if not account.db._playable_characters:
-                        account.db._playable_characters = []
-                    if char not in account.db._playable_characters:
-                        account.db._playable_characters.append(char)
+                # Check if this account can puppet this character AND it's not already tracked
+                if char.access(account, "puppet") and char not in account.get_all_puppets():
+                    # Use Evennia's internal method to properly add the character
+                    try:
+                        # This is the method account.create_character() uses internally
+                        account.characters.add(char)
                         fixed_count += 1
-                        caller.msg(f"|gFixed:|n {char.key}")
+                        caller.msg(f"|gFixed:|n {char.key} (#{char.id})")
+                    except Exception as e:
+                        caller.msg(f"|rError fixing {char.key}:|n {e}")
             
-            caller.msg(f"|gFixed {fixed_count} character(s).|n")
+            if fixed_count == 0:
+                caller.msg("|yNo characters needed fixing.|n")
+            else:
+                caller.msg(f"|gFixed {fixed_count} character(s).|n")
             
             # Show verification
             all_puppets = account.get_all_puppets()
@@ -88,18 +98,21 @@ class CmdFixCharacterOwnership(Command):
                 caller.msg(f"|rYou don't have permission to puppet {char.key}.|n")
                 return
             
-            # Fix ownership
-            char.db_account = account
+            # Check if already tracked
+            if char in account.get_all_puppets():
+                caller.msg(f"|y{char.key} is already properly tracked by get_all_puppets().|n")
+                return
             
-            if not account.db._playable_characters:
-                account.db._playable_characters = []
-            
-            if char in account.db._playable_characters:
-                caller.msg(f"|y{char.key} was already in _playable_characters.|n")
-            else:
-                account.db._playable_characters.append(char)
-                caller.msg(f"|gAdded {char.key} to _playable_characters.|n")
+            # Use Evennia's internal method to properly add the character
+            try:
+                account.characters.add(char)
+                caller.msg(f"|gFixed {char.key} - added to character tracking.|n")
+            except Exception as e:
+                caller.msg(f"|rError fixing {char.key}:|n {e}")
+                return
             
             # Verify
             all_puppets = account.get_all_puppets()
-            caller.msg(f"|gget_all_puppets() now returns {len(all_puppets)} character(s).|n")
+            caller.msg(f"|yget_all_puppets() now returns {len(all_puppets)} character(s):|n")
+            for char in all_puppets:
+                caller.msg(f"  - {char.key} (#{char.id})")
