@@ -413,7 +413,7 @@ def start_character_creation(account, is_respawn=False, old_character=None):
 # =============================================================================
 
 def respawn_welcome(caller, raw_string, **kwargs):
-    """Respawn menu entry point - show death message and transition."""
+    """Respawn menu entry point - show death message and auto-transition."""
     
     text = """
 |r╔════════════════════════════════════════════════════════════════╗
@@ -429,12 +429,11 @@ def respawn_welcome(caller, raw_string, **kwargs):
 Generating available templates...
 """
     
-    options = (
-        {"key": "_default",
-         "goto": "respawn_show_options"},
-    )
+    # Display welcome message
+    caller.msg(text)
     
-    return text, options
+    # Auto-advance to options screen (no input required)
+    return "respawn_show_options"
 
 
 def respawn_show_options(caller, raw_string, **kwargs):
@@ -471,22 +470,27 @@ Select a consciousness vessel:
         text += f"|mMotorics:|n {old_char.motorics:3d}\n"
         text += f"    |xInherits appearance, stats, and memories from previous incarnation|n\n"
     
-    text += "\n|wEnter choice [1-4]:|n"
+    # Build prompt based on available options
+    if old_char:
+        text += "\n|wEnter choice [1-4]:|n"
+    else:
+        text += "\n|wEnter choice [1-3]:|n"
     
-    options = (
-        {"key": "1",
-         "goto": ("respawn_confirm_template", {"template_idx": 0})},
-        {"key": "2",
-         "goto": ("respawn_confirm_template", {"template_idx": 1})},
-        {"key": "3",
-         "goto": ("respawn_confirm_template", {"template_idx": 2})},
-        {"key": "4",
-         "goto": "respawn_flash_clone"} if old_char else {"key": "_default", "goto": "respawn_show_options"},
-        {"key": "_default",
-         "goto": "respawn_show_options"},
-    )
+    # Build options list dynamically to avoid malformed tuples
+    options = [
+        {"key": "1", "goto": ("respawn_confirm_template", {"template_idx": 0})},
+        {"key": "2", "goto": ("respawn_confirm_template", {"template_idx": 1})},
+        {"key": "3", "goto": ("respawn_confirm_template", {"template_idx": 2})},
+    ]
     
-    return text, options
+    # Only add flash clone option if old character exists
+    if old_char:
+        options.append({"key": "4", "goto": "respawn_flash_clone"})
+    
+    # Add default handler for invalid input
+    options.append({"key": "_default", "goto": "respawn_show_options"})
+    
+    return text, tuple(options)
 
 
 def respawn_confirm_template(caller, raw_string, template_idx=0, **kwargs):
