@@ -273,7 +273,8 @@ def create_flash_clone(account, old_character):
     start_location = get_start_location()
     
     # Get old character's death_count (already incremented at death)
-    old_death_count = getattr(old_character.db, 'death_count', None)
+    # Use AttributeProperty directly to access the correct categorized attribute
+    old_death_count = old_character.death_count
     if old_death_count is None:
         old_death_count = 1  # Default from AttributeProperty
     
@@ -313,7 +314,8 @@ def create_flash_clone(account, old_character):
     # INHERIT: death_count from old character
     # The old character's death_count was already incremented at death (at_death())
     # The new clone inherits this value to continue the progression
-    char.db.death_count = old_death_count
+    # Use AttributeProperty directly, not db.death_count
+    char.death_count = old_death_count
     
     # Link to previous incarnation
     char.db.previous_clone_dbref = old_character.dbref
@@ -588,7 +590,8 @@ def respawn_flash_clone(caller, raw_string, **kwargs):
         caller.puppet_object(caller.sessions.all()[0], char)
         
         # Send welcome message
-        death_count = char.db.death_count
+        # Use AttributeProperty to access the correct categorized attribute
+        death_count = char.death_count
         char.msg("|r╔════════════════════════════════════════════════════════════════╗")
         char.msg("|r║  FLASH CLONE PROTOCOL COMPLETE                                 ║")
         char.msg("|r╚════════════════════════════════════════════════════════════════╝|n")
