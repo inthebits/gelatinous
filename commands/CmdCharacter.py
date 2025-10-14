@@ -289,14 +289,14 @@ class CmdStats(Command):
                 i += 1
             return roman_num
 
-        # Generate dynamic file reference and subject name with death counter
-        death_count = getattr(target, 'death_count', 1)  # Default to 1 if not set
-        roman_death = to_roman(death_count)
+        # Generate dynamic file reference and subject name with clone generation
+        clone_generation = getattr(target.db, 'clone_generation', 1)  # Default to 1 if not set
+        roman_generation = to_roman(clone_generation)
         file_ref = f"GEL-MST/PR-{target.id}"
         file_ref_padded = f" File Reference: {file_ref}".ljust(48)
         
         # Add roman numeral to subject name
-        subject_name = f"{target.key} {roman_death}"
+        subject_name = f"{target.key} {roman_generation}"
         subject_line = f" Subject: {subject_name[:38]:<38}"
 
         # Dynamic formatting based on display mode
