@@ -34,6 +34,9 @@ from commands.CmdThrow import (
 from commands.CmdGraffiti import CmdGraffiti, CmdPress
 from commands.CmdCharacter import CmdLongdesc, CmdSkintone
 from commands.CmdArmor import CmdArmor, CmdArmorRepair, CmdSlot, CmdUnslot
+from commands.CmdCleanupChars import (
+    CmdInspectChars, CmdArchiveChar, CmdUnarchiveChar, CmdDeleteChar
+)
 
 
 class UnconsciousCmdSet(CmdSet):
@@ -225,6 +228,12 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+        
+        # Add character cleanup/inspection commands (admin only)
+        self.add(CmdInspectChars())
+        self.add(CmdArchiveChar())
+        self.add(CmdUnarchiveChar())
+        self.add(CmdDeleteChar())
 
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):

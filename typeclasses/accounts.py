@@ -147,38 +147,62 @@ class Account(DefaultAccount):
         """
         super().at_post_login(session=session, **kwargs)
         
-        # Check if account has any non-archived characters
+        # IMPORTANT: Due to testing/development, there may be legacy characters
+        # with inconsistent states. We need to be defensive here.
         from typeclasses.characters import Character
+        from evennia.comms.models import ChannelDB
         
+        # Debug logging
+        try:
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+        except:
+            splattercast = None
+        
+        # Get all characters for this account
         all_chars = Character.objects.filter(db_account=self)
-        active_chars = [char for char in all_chars if not char.db.archived]
         
-        if not active_chars:
+        # Filter for active (non-archived) characters
+        # Be defensive: only treat explicitly archived=True as archived
+        active_chars = []
+        for char in all_chars:
+            archived_status = getattr(char.db, 'archived', False)
+            if splattercast:
+                splattercast.msg(f"AT_POST_LOGIN: Checking char {char.key} (#{char.id}) - archived={archived_status}")
+            
+            # Only exclude if explicitly archived
+            if archived_status is not True:
+                active_chars.append(char)
+        
+        if splattercast:
+            splattercast.msg(f"AT_POST_LOGIN: Account {self.key} - all_chars={len(all_chars)}, active_chars={len(active_chars)}")
+            if active_chars:
+                splattercast.msg(f"AT_POST_LOGIN: Active characters: {[(c.key, c.id) for c in active_chars]}")
+        
+        # CRITICAL: Only start character creation if there are ZERO active characters
+        # If there are ANY active characters, let Evennia's default OOC menu handle it
+        if len(active_chars) == 0:
             # No active characters - start character creation
+            if splattercast:
+                splattercast.msg(f"AT_POST_LOGIN: No active characters, starting character creation")
+            
             # Import here to avoid circular imports
             try:
                 from commands.charcreate import start_character_creation
                 start_character_creation(self, is_respawn=False)
             except ImportError as e:
                 # Graceful fallback if charcreate not available yet
-                from evennia.comms.models import ChannelDB
-                try:
-                    splattercast = ChannelDB.objects.get_channel("Splattercast")
+                if splattercast:
                     splattercast.msg(f"AT_POST_LOGIN_ERROR: Could not import charcreate: {e}")
-                except:
-                    pass
                 self.msg("|rCharacter creation system not available. Please contact an admin.|n")
         else:
-            # Has characters - puppet the most recently used one
-            last_puppet = self.db._last_puppet
-            if last_puppet and not last_puppet.db.archived and last_puppet in active_chars:
-                # Puppet last used character
-                if session:
-                    self.puppet_object(session, last_puppet)
-            elif active_chars:
-                # Puppet first available character
-                if session:
-                    self.puppet_object(session, active_chars[0])
+            # Has active characters - DON'T start character creation
+            # DON'T auto-puppet - let default Evennia OOC menu handle character selection
+            if splattercast:
+                splattercast.msg(f"AT_POST_LOGIN: Has {len(active_chars)} active characters, using default OOC menu")
+            
+            # The default Evennia behavior will show the OOC menu with 'ic <name>' option
+            # This is the correct behavior for accounts with existing characters
+            pass
 
     pass
 
