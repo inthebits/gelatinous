@@ -78,8 +78,8 @@ MULTISESSION_MODE = 1
 AUTO_CREATE_CHARACTER_WITH_ACCOUNT = False  # We'll handle this custom
 AUTO_PUPPET_ON_LOGIN = False  # Let at_post_login handle character selection/creation
 
-# Default starting location for new characters (Limbo)
-START_LOCATION = "#2"
+# Default starting location for new characters
+START_LOCATION = "#178"
 
 # Use our custom email-based login system
 CMDSET_UNLOGGEDIN = "commands.unloggedin_email.UnloggedinEmailCmdSet"
