@@ -415,9 +415,30 @@ def start_character_creation(account, is_respawn=False, old_character=None):
 def respawn_welcome(caller, raw_string, **kwargs):
     """Respawn menu entry point - combined welcome + options screen."""
     
-    # Generate 3 random templates
-    templates = [generate_random_template() for _ in range(3)]
-    caller.ndb.charcreate_data['templates'] = templates
+    # Generate 3 random templates (only on first view)
+    if not caller.ndb.charcreate_data.get('templates'):
+        templates = [generate_random_template() for _ in range(3)]
+        caller.ndb.charcreate_data['templates'] = templates
+    else:
+        templates = caller.ndb.charcreate_data['templates']
+    
+    # Handle user input
+    if raw_string:
+        choice = raw_string.strip()
+        old_char = caller.ndb.charcreate_old_character
+        
+        if choice == "1":
+            return "respawn_confirm_template", {"template_idx": 0}
+        elif choice == "2":
+            return "respawn_confirm_template", {"template_idx": 1}
+        elif choice == "3":
+            return "respawn_confirm_template", {"template_idx": 2}
+        elif choice == "4" and old_char:
+            return "respawn_flash_clone"
+        else:
+            caller.msg("|rInvalid choice. Please enter a number from the available options.|n")
+            # Return None to re-display current node
+            return None
     
     text = """
 |r╔════════════════════════════════════════════════════════════════╗
@@ -462,21 +483,10 @@ Select a consciousness vessel:
     else:
         text += "\n|wEnter choice [1-3]:|n"
     
-    # Build options list dynamically to avoid malformed tuples
-    options = [
-        {"key": "1", "goto": ("respawn_confirm_template", {"template_idx": 0})},
-        {"key": "2", "goto": ("respawn_confirm_template", {"template_idx": 1})},
-        {"key": "3", "goto": ("respawn_confirm_template", {"template_idx": 2})},
-    ]
+    # Use only _default to catch all input (prevents EvMenu from displaying option keys)
+    options = {"key": "_default", "goto": "respawn_welcome"}
     
-    # Only add flash clone option if old character exists
-    if old_char:
-        options.append({"key": "4", "goto": "respawn_flash_clone"})
-    
-    # Add default handler for invalid input
-    options.append({"key": "_default", "goto": "respawn_welcome"})
-    
-    return text, tuple(options)
+    return text, options
 
 
 def respawn_confirm_template(caller, raw_string, template_idx=0, **kwargs):

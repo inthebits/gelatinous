@@ -877,22 +877,27 @@ class Character(ObjectParent, DefaultCharacter):
         from world.combat.constants import SPLATTERCAST_CHANNEL, NDB_COMBAT_HANDLER
         from evennia.utils.utils import delay
         
-        # Prevent double death processing
-        if hasattr(self, 'ndb') and getattr(self.ndb, 'death_processed', False):
+        # Prevent double death processing using PERSISTENT db flag (survives server reload)
+        if self.db.death_processed:
             try:
                 splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-                splattercast.msg(f"AT_DEATH_SKIP: {self.key} already processed death, skipping")
+                splattercast.msg(f"AT_DEATH_SKIP: {self.key} already processed death (db flag), skipping")
             except:
                 pass
             return
             
-        # Mark death as processed immediately to prevent race conditions
+        # Mark death as processed IMMEDIATELY using db (persistent) to prevent ANY race conditions
+        self.db.death_processed = True
+        
+        # Also set NDB flag for backwards compatibility
         if not hasattr(self, 'ndb'):
             self.ndb = {}
         self.ndb.death_processed = True
         
-        # Increment death counter for file reference system
-        self.death_count += 1
+        # Note: death_count is NOT incremented here - it will be incremented in the 
+        # death_progression.py script at the definitive point of permanent death
+        # (right before the character is moved to limbo). This ensures it only
+        # increments exactly once, even if at_death() is called multiple times.
         
         # Clear any previous unconsciousness state since death supersedes it
         if getattr(self.ndb, 'unconsciousness_processed', False):
