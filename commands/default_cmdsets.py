@@ -25,6 +25,7 @@ from commands import CmdConsumption
 from commands import CmdMedicalItems
 from commands.CmdSpawnMob import CmdSpawnMob
 from commands.CmdAdmin import CmdHeal, CmdPeace, CmdTestDeathCurtain, CmdWeather, CmdResetMedical, CmdMedicalAudit, CmdTestDeath, CmdTestUnconscious
+from commands.CmdFixCharacterOwnership import CmdFixCharacterOwnership
 from commands.combat.cmdset_combat import CombatCmdSet
 from commands.combat.special_actions import CmdAim, CmdGrapple
 from commands.CmdThrow import (
@@ -115,6 +116,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdAdmin.CmdPeace())
         self.add(CmdAdmin.CmdTestDeathCurtain())
         self.add(CmdWeather())
+        
+        # Add character ownership fix command
+        self.add(CmdFixCharacterOwnership())
         
         # Add aim command for ranged combat preparation
         self.add(CmdAim())
