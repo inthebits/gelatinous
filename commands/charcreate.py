@@ -71,51 +71,42 @@ def generate_random_template():
     }
 
 
-def increment_roman_numeral(name):
+def build_name_from_death_count(base_name, death_count):
     """
-    Increment the Roman numeral at the end of a name, or add ' II' if none exists.
+    Build character name with Roman numeral based on death_count.
+    
+    The death_count is the source of truth - it's incremented at death (at_death()).
+    - death_count = 1: No Roman numeral (original character)
+    - death_count = 2: Roman numeral II (first death/clone)
+    - death_count = 3: Roman numeral III (second death/clone)
+    - etc.
     
     Examples:
-        "Brock" → "Brock II"
-        "Brock II" → "Brock III"
-        "Marcus X" → "Marcus XI"
+        ("Brock", 1) → "Brock"
+        ("Brock", 2) → "Brock II"
+        ("Brock", 3) → "Brock III"
+        ("Marcus", 10) → "Marcus X"
     
     Args:
-        name (str): Character name possibly ending in Roman numeral
+        base_name (str): Character base name (may include old Roman numeral to strip)
+        death_count (int): Current death_count value
         
     Returns:
-        str: Name with incremented Roman numeral
+        str: Name with appropriate Roman numeral (or none if death_count=1)
     """
-    # Roman numeral pattern at end of string
+    # Strip any existing Roman numeral from base_name
     pattern = r'^(.*?)\s*([IVXLCDM]+)$'
-    match = re.match(pattern, name.strip(), re.IGNORECASE)
-    
+    match = re.match(pattern, base_name.strip(), re.IGNORECASE)
     if match:
         base_name = match.group(1).strip()
-        roman = match.group(2).upper()
-        
-        # Convert Roman to int
-        roman_values = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}
-        value = 0
-        prev_value = 0
-        
-        for char in reversed(roman):
-            current_value = roman_values.get(char, 0)
-            if current_value < prev_value:
-                value -= current_value
-            else:
-                value += current_value
-            prev_value = current_value
-        
-        # Increment
-        value += 1
-        
-        # Convert back to Roman
-        new_roman = int_to_roman(value)
-        return f"{base_name} {new_roman}"
-    else:
-        # No Roman numeral found, add II
-        return f"{name} II"
+    
+    # Original character (death_count=1) has no Roman numeral
+    if death_count == 1:
+        return base_name
+    
+    # death_count 2+ gets Roman numeral (2=II, 3=III, etc.)
+    roman = int_to_roman(death_count)
+    return f"{base_name} {roman}"
 
 
 def int_to_roman(num):
@@ -253,7 +244,7 @@ def create_character_from_template(account, template, sex="androgynous"):
     char.sex = sex
     
     # Set defaults
-    char.db.clone_generation = 1
+    # death_count starts at 1 via AttributeProperty in Character class
     char.db.archived = False
     
     return char
@@ -263,7 +254,11 @@ def create_flash_clone(account, old_character):
     """
     Create a flash clone from a dead character.
     Inherits: GRIM stats, longdesc, desc, sex, skintone
-    Increments: name (with Roman numeral), death_count
+    Name: Built from base name + Roman numeral based on old_character's death_count
+    
+    Note: death_count is incremented on the OLD character at death (at_death()).
+    The Roman numeral in the name reflects this death_count value.
+    The NEW clone starts with default death_count=1 from AttributeProperty.
     
     Args:
         account: Account object
@@ -277,8 +272,13 @@ def create_flash_clone(account, old_character):
     # Get spawn location
     start_location = get_start_location()
     
-    # Increment name
-    new_name = increment_roman_numeral(old_character.key)
+    # Get old character's death_count (already incremented at death)
+    old_death_count = getattr(old_character.db, 'death_count', None)
+    if old_death_count is None:
+        old_death_count = 1  # Default from AttributeProperty
+    
+    # Build name using death_count as Roman numeral source
+    new_name = build_name_from_death_count(old_character.key, old_death_count)
     
     # Create character
     char = create_object(
@@ -310,16 +310,10 @@ def create_flash_clone(account, old_character):
     if hasattr(old_character.db, 'skintone'):
         char.db.skintone = old_character.db.skintone
     
-    # INCREMENT: Generation and death count
-    old_generation = getattr(old_character.db, 'clone_generation', None)
-    if old_generation is None:
-        old_generation = 1
-    char.db.clone_generation = old_generation + 1
-    
-    old_death_count = getattr(old_character.db, 'death_count', None)
-    if old_death_count is None:
-        old_death_count = 0
-    char.db.death_count = old_death_count + 1
+    # INHERIT: death_count from old character
+    # The old character's death_count was already incremented at death (at_death())
+    # The new clone inherits this value to continue the progression
+    char.db.death_count = old_death_count
     
     # Link to previous incarnation
     char.db.previous_clone_dbref = old_character.dbref
@@ -594,24 +588,23 @@ def respawn_flash_clone(caller, raw_string, **kwargs):
         caller.puppet_object(caller.sessions.all()[0], char)
         
         # Send welcome message
-        generation = char.db.clone_generation
+        death_count = char.db.death_count
         char.msg("|r╔════════════════════════════════════════════════════════════════╗")
         char.msg("|r║  FLASH CLONE PROTOCOL COMPLETE                                 ║")
         char.msg("|r╚════════════════════════════════════════════════════════════════╝|n")
         char.msg("")
         char.msg(f"|wWelcome back, |c{char.key}|w.|n")
-        char.msg(f"|xClone Generation:|n |w{generation}|n")
-        char.msg(f"|xDeath Count:|n |w{char.db.death_count}|n")
+        char.msg(f"|xDeath Count:|n |w{death_count}|n")
         char.msg("")
         
-        # Generation-specific flavor
-        if generation == 2:
+        # Death count-specific flavor
+        if death_count == 2:
             char.msg("|xThis is your first death. The sensation of resleeving is disorienting.|n")
             char.msg("|xYour old body's final moments echo in your mind like static on a dead channel.|n")
-        elif generation < 5:
+        elif death_count < 5:
             char.msg("|xThe memories of your previous body fade like analog videotape degradation.|n")
             char.msg("|xYou know you've done this before, but each time feels like the first.|n")
-        elif generation < 10:
+        elif death_count < 10:
             char.msg("|xYou've died enough times to know: this never gets easier.|n")
             char.msg("|xBut at least you're still you. Mostly.|n")
         else:
@@ -995,7 +988,7 @@ def first_char_finalize(caller, raw_string, **kwargs):
         char.sex = sex
         
         # Set defaults
-        char.db.clone_generation = 1
+        # death_count starts at 1 via AttributeProperty in Character class
         char.db.archived = False
         
         # Generate unique Stack ID
