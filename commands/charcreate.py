@@ -237,9 +237,11 @@ def create_character_from_template(account, template, sex="androgynous"):
         home=start_location
     )
     
-    # Set account
+    # Set account and puppet permissions
     char.db.account = account
     account.db._last_puppet = char
+    char.locks.add(f"puppet:id({account.id}) or pid({account.id}) or perm(Developer) or pperm(Developer)")
+    char.permissions.add("Player")
     
     # Set GRIM stats
     char.grit = template['grit']
@@ -286,9 +288,11 @@ def create_flash_clone(account, old_character):
         home=start_location
     )
     
-    # Set account
+    # Set account and puppet permissions
     char.db.account = account
     account.db._last_puppet = char
+    char.locks.add(f"puppet:id({account.id}) or pid({account.id}) or perm(Developer) or pperm(Developer)")
+    char.permissions.add("Player")
     
     # INHERIT: GRIM stats (with fallback defaults)
     char.grit = old_character.grit if old_character.grit is not None else 1
@@ -975,9 +979,11 @@ def first_char_finalize(caller, raw_string, **kwargs):
             home=start_location
         )
         
-        # Set account
+        # Set account and puppet permissions
         char.db.account = caller
         caller.db._last_puppet = char
+        char.locks.add(f"puppet:id({caller.id}) or pid({caller.id}) or perm(Developer) or pperm(Developer)")
+        char.permissions.add("Player")
         
         # Set GRIM stats
         char.grit = grit
