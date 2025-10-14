@@ -19,14 +19,17 @@ class CmdFixCharacterOwnership(Command):
     Usage:
         @fixchar <character name>
         @fixchar all
+        @fixchar undo
     
     This repairs characters created before we switched to account.create_character()
     by using Evennia's internal character tracking methods.
     
     Legacy characters were created with manual setup and don't appear in
-    get_all_puppets(). This command fixes that.
+    account.characters. This command fixes that by checking the character's
+    puppet lock for your account ID.
     
-    Use 'all' to fix all characters you can puppet.
+    Use 'all' to fix all characters that have your account ID in their puppet lock.
+    Use 'undo' to remove ALL characters from your account.characters list (emergency cleanup).
     """
     
     key = "@fixchar"
@@ -43,25 +46,44 @@ class CmdFixCharacterOwnership(Command):
             account = caller
         
         if not self.args:
-            caller.msg("Usage: @fixchar <character name> or @fixchar all")
+            caller.msg("Usage: @fixchar <character name> or @fixchar all or @fixchar undo")
+            return
+        
+        if self.args.strip().lower() == "undo":
+            # EMERGENCY: Clear the entire _playable_characters list
+            caller.msg("|rWARNING: This will remove ALL characters from your account.characters list!|n")
+            all_chars = account.characters.all()
+            caller.msg(f"|rRemoving {len(all_chars)} character(s)...|n")
+            for char in list(all_chars):  # Make a copy to avoid modifying while iterating
+                account.characters.remove(char)
+                caller.msg(f"|yRemoved:|n {char.key} (#{char.id})")
+            caller.msg("|gUndo complete. Your account.characters list is now empty.|n")
             return
         
         if self.args.strip().lower() == "all":
-            # Fix all characters puppetable by this account
+            # Fix all characters that have the correct puppet lock for this account
             from typeclasses.characters import Character
             all_chars = Character.objects.all()
             
             fixed_count = 0
             for char in all_chars:
-                # Check if this account can puppet this character AND it's not already in playable list
-                if char.access(account, "puppet") and char not in account.characters:
-                    # Use Evennia's CharactersHandler to add character
-                    try:
-                        account.characters.add(char)
-                        fixed_count += 1
-                        caller.msg(f"|gFixed:|n {char.key} (#{char.id})")
-                    except Exception as e:
-                        caller.msg(f"|rError fixing {char.key}:|n {e}")
+                # Check if character's locks specifically reference this account's ID
+                # This prevents admins from accidentally claiming all characters
+                puppet_lock = char.locks.get("puppet")
+                if puppet_lock and f"pid({account.id})" in puppet_lock:
+                    # Character has a lock for this specific account, but may not be in characters list
+                    if char not in account.characters:
+                        try:
+                            account.characters.add(char)
+                            fixed_count += 1
+                            caller.msg(f"|gFixed:|n {char.key} (#{char.id})")
+                        except Exception as e:
+                            caller.msg(f"|rError fixing {char.key}:|n {e}")
+            
+            if fixed_count == 0:
+                caller.msg("|yNo characters needed fixing.|n")
+            else:
+                caller.msg(f"|gFixed {fixed_count} character(s).|n")
             
             if fixed_count == 0:
                 caller.msg("|yNo characters needed fixing.|n")
