@@ -145,11 +145,14 @@ class Account(DefaultAccount):
         Args:
             session (Session): Session object for this connection
         """
+        # Let default at_post_login run first
         super().at_post_login(session=session, **kwargs)
         
         # IMPORTANT: Due to testing/development, there may be legacy characters
         # with inconsistent states. We need to be defensive here.
-        from typeclasses.characters import Character
+        
+        # CRITICAL FIX: Use Evennia's built-in character retrieval method
+        # This is more reliable than direct database queries
         from evennia.comms.models import ChannelDB
         
         # Debug logging
@@ -158,13 +161,18 @@ class Account(DefaultAccount):
         except:
             splattercast = None
         
-        # Get all characters for this account
-        all_chars = Character.objects.filter(db_account=self)
+        # Use Evennia's get_all_puppets() method - this is the authoritative source
+        all_puppets = self.get_all_puppets()
+        
+        if splattercast:
+            splattercast.msg(f"AT_POST_LOGIN: Account {self.key} - get_all_puppets returned {len(all_puppets)} characters")
+            if all_puppets:
+                splattercast.msg(f"AT_POST_LOGIN: Puppets: {[(c.key, c.id) for c in all_puppets]}")
         
         # Filter for active (non-archived) characters
         # Be defensive: only treat explicitly archived=True as archived
         active_chars = []
-        for char in all_chars:
+        for char in all_puppets:
             archived_status = getattr(char.db, 'archived', False)
             if splattercast:
                 splattercast.msg(f"AT_POST_LOGIN: Checking char {char.key} (#{char.id}) - archived={archived_status}")
@@ -174,7 +182,7 @@ class Account(DefaultAccount):
                 active_chars.append(char)
         
         if splattercast:
-            splattercast.msg(f"AT_POST_LOGIN: Account {self.key} - all_chars={len(all_chars)}, active_chars={len(active_chars)}")
+            splattercast.msg(f"AT_POST_LOGIN: active_chars after filtering={len(active_chars)}")
             if active_chars:
                 splattercast.msg(f"AT_POST_LOGIN: Active characters: {[(c.key, c.id) for c in active_chars]}")
         
