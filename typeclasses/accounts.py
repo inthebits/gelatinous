@@ -209,6 +209,10 @@ class Account(DefaultAccount):
             if session:
                 self.puppet_object(session, active_chars[0])
         else:
+            # Multiple active characters - let user choose with 'ic <name>'
+            if splattercast:
+                splattercast.msg(f"AT_POST_LOGIN: Multiple active characters ({len(active_chars)}), user must choose with 'ic <name>'")
+        else:
             # Multiple active characters - let OOC menu handle selection
             if splattercast:
                 splattercast.msg(f"AT_POST_LOGIN: {len(active_chars)} active characters, using OOC menu for selection")
