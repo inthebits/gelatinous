@@ -55,10 +55,10 @@ class CmdFixCharacterOwnership(Command):
             for char in all_chars:
                 # Check if this account can puppet this character AND it's not already tracked
                 if char.access(account, "puppet") and char not in account.get_all_puppets():
-                    # Use Evennia's internal method to properly add the character
+                    # Set the character's db_account field directly (Django foreign key)
                     try:
-                        # This is the method account.create_character() uses internally
-                        account.characters.add(char)
+                        char.db_account = account
+                        char.save()
                         fixed_count += 1
                         caller.msg(f"|gFixed:|n {char.key} (#{char.id})")
                     except Exception as e:
@@ -103,10 +103,13 @@ class CmdFixCharacterOwnership(Command):
                 caller.msg(f"|y{char.key} is already properly tracked by get_all_puppets().|n")
                 return
             
-            # Use Evennia's internal method to properly add the character
+            # Use Evennia's internal database field to properly link character
             try:
-                account.characters.add(char)
-                caller.msg(f"|gFixed {char.key} - added to character tracking.|n")
+                # Set the character's db_account field directly (Django foreign key)
+                char.db_account = account
+                char.save()
+                
+                caller.msg(f"|gFixed {char.key} - linked to account via db_account.|n")
             except Exception as e:
                 caller.msg(f"|rError fixing {char.key}:|n {e}")
                 return
