@@ -413,7 +413,11 @@ def start_character_creation(account, is_respawn=False, old_character=None):
 # =============================================================================
 
 def respawn_welcome(caller, raw_string, **kwargs):
-    """Respawn menu entry point - show death message and auto-transition."""
+    """Respawn menu entry point - combined welcome + options screen."""
+    
+    # Generate 3 random templates
+    templates = [generate_random_template() for _ in range(3)]
+    caller.ndb.charcreate_data['templates'] = templates
     
     text = """
 |r╔════════════════════════════════════════════════════════════════╗
@@ -426,24 +430,6 @@ def respawn_welcome(caller, raw_string, **kwargs):
 
 |wPreparing new sleeve for consciousness transfer...|n
 
-Generating available templates...
-"""
-    
-    # Display welcome message
-    caller.msg(text)
-    
-    # Auto-advance to options screen (no input required)
-    return "respawn_show_options"
-
-
-def respawn_show_options(caller, raw_string, **kwargs):
-    """Show the 3 templates + flash clone option."""
-    
-    # Generate 3 random templates
-    templates = [generate_random_template() for _ in range(3)]
-    caller.ndb.charcreate_data['templates'] = templates
-    
-    text = """
 |w╔════════════════════════════════════════════════════════════════╗
 ║  AVAILABLE SLEEVES                                             ║
 ╚════════════════════════════════════════════════════════════════╝|n
@@ -488,7 +474,7 @@ Select a consciousness vessel:
         options.append({"key": "4", "goto": "respawn_flash_clone"})
     
     # Add default handler for invalid input
-    options.append({"key": "_default", "goto": "respawn_show_options"})
+    options.append({"key": "_default", "goto": "respawn_welcome"})
     
     return text, tuple(options)
 
@@ -498,7 +484,7 @@ def respawn_confirm_template(caller, raw_string, template_idx=0, **kwargs):
     
     templates = caller.ndb.charcreate_data.get('templates', [])
     if template_idx >= len(templates):
-        return "respawn_show_options"
+        return "respawn_welcome"
     
     template = templates[template_idx]
     caller.ndb.charcreate_data['selected_template'] = template
@@ -533,7 +519,7 @@ Select biological sex for this sleeve:
         {"key": "3",
          "goto": ("respawn_finalize_template", {"sex": "androgynous"})},
         {"key": ("b", "back"),
-         "goto": "respawn_show_options"},
+         "goto": "respawn_welcome"},
         {"key": "_default",
          "goto": ("respawn_confirm_template", {"template_idx": template_idx})},
     )
@@ -546,7 +532,7 @@ def respawn_finalize_template(caller, raw_string, sex="androgynous", **kwargs):
     
     template = caller.ndb.charcreate_data.get('selected_template')
     if not template:
-        return "respawn_show_options"
+        return "respawn_welcome"
     
     # Create character
     try:
@@ -582,7 +568,7 @@ def respawn_finalize_template(caller, raw_string, sex="androgynous", **kwargs):
             splattercast.msg(f"CHARCREATE_ERROR: {e}")
         except:
             pass
-        return "respawn_show_options"
+        return "respawn_welcome"
 
 
 def respawn_flash_clone(caller, raw_string, **kwargs):
@@ -591,7 +577,7 @@ def respawn_flash_clone(caller, raw_string, **kwargs):
     old_char = caller.ndb.charcreate_old_character
     if not old_char:
         caller.msg("|rError: No previous character found.|n")
-        return "respawn_show_options"
+        return "respawn_welcome"
     
     # Create flash clone
     try:
@@ -644,7 +630,7 @@ def respawn_flash_clone(caller, raw_string, **kwargs):
             splattercast.msg(f"FLASH_CLONE_ERROR: {e}")
         except:
             pass
-        return "respawn_show_options"
+        return "respawn_welcome"
 
 
 # =============================================================================
