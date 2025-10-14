@@ -412,6 +412,25 @@ def start_character_creation(account, is_respawn=False, old_character=None):
 # RESPAWN MENU NODES
 # =============================================================================
 
+def _respawn_process_choice(caller, raw_string, **kwargs):
+    """Process user's respawn menu choice and route to appropriate node."""
+    choice = raw_string.strip()
+    old_char = caller.ndb.charcreate_old_character
+    
+    if choice == "1":
+        return "respawn_confirm_template", {"template_idx": 0}
+    elif choice == "2":
+        return "respawn_confirm_template", {"template_idx": 1}
+    elif choice == "3":
+        return "respawn_confirm_template", {"template_idx": 2}
+    elif choice == "4" and old_char:
+        return "respawn_flash_clone"
+    else:
+        caller.msg("|rInvalid choice. Please enter a number from the available options.|n")
+        # Return None to re-display current node
+        return None
+
+
 def respawn_welcome(caller, raw_string, **kwargs):
     """Respawn menu entry point - combined welcome + options screen."""
     
@@ -421,24 +440,6 @@ def respawn_welcome(caller, raw_string, **kwargs):
         caller.ndb.charcreate_data['templates'] = templates
     else:
         templates = caller.ndb.charcreate_data['templates']
-    
-    # Handle user input
-    if raw_string:
-        choice = raw_string.strip()
-        old_char = caller.ndb.charcreate_old_character
-        
-        if choice == "1":
-            return "respawn_confirm_template", {"template_idx": 0}
-        elif choice == "2":
-            return "respawn_confirm_template", {"template_idx": 1}
-        elif choice == "3":
-            return "respawn_confirm_template", {"template_idx": 2}
-        elif choice == "4" and old_char:
-            return "respawn_flash_clone"
-        else:
-            caller.msg("|rInvalid choice. Please enter a number from the available options.|n")
-            # Return None to re-display current node
-            return None
     
     text = """
 |r╔════════════════════════════════════════════════════════════════╗
@@ -485,7 +486,8 @@ Select a consciousness vessel:
     
     # Use only _default to catch all input (prevents EvMenu from displaying option keys)
     # IMPORTANT: Must be a tuple, not a bare dict, or EvMenu will auto-generate numbered options
-    options = ({"key": "_default", "goto": "respawn_welcome"},)
+    # The goto points to a callable that processes the input and routes to the correct node
+    options = ({"key": "_default", "goto": _respawn_process_choice},)
     
     return text, options
 
