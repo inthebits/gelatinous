@@ -433,7 +433,7 @@ def start_character_creation(account, is_respawn=False, old_character=None):
             "commands.charcreate",
             startnode="respawn_welcome",
             cmdset_mergetype="Replace",
-            cmd_on_exit=None
+            cmd_on_exit="quit"
         )
     else:
         # First character menu: custom creation
@@ -442,7 +442,7 @@ def start_character_creation(account, is_respawn=False, old_character=None):
             "commands.charcreate",
             startnode="first_char_welcome",
             cmdset_mergetype="Replace",
-            cmd_on_exit=None
+            cmd_on_exit="quit"
         )
 
 
@@ -972,9 +972,9 @@ Distribute |w300 points|n across your attributes (min 1, max 150 per stat):
 |gGrit:|n      {grit:3d}  (Physical resilience, endurance, toughness)
 |yResonance:|n {resonance:3d}  (Social awareness, empathy, influence)
 |bIntellect:|n {intellect:3d}  (Mental acuity, reasoning, knowledge)
-|mMotorics:|n {motorics:3d}  (Physical coordination, reflexes, dexterity)
+|mMotorics:|n  {motorics:3d}  (Physical coordination, reflexes, dexterity)
 
-|wTotal:|n {total}/300  |{'|gREMAINING:|n ' + str(remaining) if remaining >= 0 else '|rOVER BY:|n ' + str(abs(remaining))}
+|wTotal:|n {total}/300  {'REMAINING: ' + str(remaining) if remaining >= 0 else '|rOVER BY:|n ' + str(abs(remaining))}
 
 Commands:
   |wgrit <value>|n     - Set Grit
