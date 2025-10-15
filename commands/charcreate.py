@@ -869,12 +869,10 @@ Select biological sex:
 def first_char_grim(caller, raw_string, **kwargs):
     """Distribute GRIM points."""
     
-    # Extract sex from kwargs (passed from EvMenu goto dict)
-    sex = kwargs.get('sex', 'ambiguous')
-    
-    # Store sex if provided (on first entry from sex selection)
-    if sex and sex != caller.ndb.charcreate_data.get('sex'):
-        caller.ndb.charcreate_data['sex'] = sex
+    # Store sex if explicitly provided in kwargs (from EvMenu goto dict)
+    # Only update if 'sex' key exists in kwargs to avoid overwriting with default
+    if 'sex' in kwargs:
+        caller.ndb.charcreate_data['sex'] = kwargs['sex']
     
     first_name = caller.ndb.charcreate_data.get('first_name', '')
     last_name = caller.ndb.charcreate_data.get('last_name', '')
