@@ -1089,9 +1089,11 @@ class Character(ObjectParent, DefaultCharacter):
                 except:
                     pass
         
-        # Clear death processing flag
+        # Clear death processing flags (both ndb and db)
         if hasattr(self.ndb, 'death_processed'):
             self.ndb.death_processed = False
+        if hasattr(self.db, 'death_processed'):
+            del self.db.death_processed
         
         # Notify revival
         if self.location:
