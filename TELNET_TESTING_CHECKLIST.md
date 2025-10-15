@@ -27,6 +27,17 @@
 
 ## Test Suite
 
+### TEST RESULTS - October 14, 2025
+
+**Bug Found During Initial Testing:**
+- **Issue:** Blank Enter key at welcome screen was being treated as character name input
+- **Symptom:** "Invalid name: Name must be 2-30 characters" error when pressing Enter
+- **Root Cause:** EvMenu nodes processing blank `raw_string` as input instead of ignoring it
+- **Fix Applied:** Modified `first_char_name_first` and `first_char_name_last` to check `if raw_string and raw_string.strip():`
+- **Status:** ✅ FIXED - Ready for re-testing
+
+---
+
 ### 1. Fresh Account Creation (First-Time Player)
 
 **Goal:** Validate complete new player experience from account creation to first spawn.

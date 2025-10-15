@@ -678,6 +678,24 @@ Press |w<Enter>|n to begin character creation.
 def first_char_name_first(caller, raw_string, **kwargs):
     """Get first name."""
     
+    # If input provided, validate it
+    if raw_string and raw_string.strip():
+        name = raw_string.strip()
+        
+        # Validate format (not uniqueness yet - need full name)
+        if len(name) < 2 or len(name) > 30:
+            caller.msg(f"|rInvalid name: Name must be 2-30 characters.|n")
+            return "first_char_name_first"
+        
+        if not re.match(r"^[a-zA-Z][a-zA-Z\-']*[a-zA-Z]$", name):
+            caller.msg(f"|rInvalid name: Only letters, hyphens, and apostrophes allowed.|n")
+            return "first_char_name_first"
+        
+        # Store first name and advance
+        caller.ndb.charcreate_data['first_name'] = name
+        return "first_char_name_last"
+    
+    # Display prompt (first time or after error)
     text = """
 |w╔════════════════════════════════════════════════════════════════╗
 ║  IDENTITY VERIFICATION                                         ║
@@ -688,25 +706,6 @@ def first_char_name_first(caller, raw_string, **kwargs):
 (2-30 characters, letters only)
 
 |w>|n """
-    
-    if raw_string:
-        # Validate
-        name = raw_string.strip()
-        is_valid, error = validate_name(name)
-        
-        # Note: We're only checking format here, not uniqueness
-        # (since we need full name for uniqueness check)
-        if len(name) < 2 or len(name) > 30:
-            caller.msg(f"|rInvalid name: Name must be 2-30 characters.|n")
-            return "first_char_name_first"
-        
-        if not re.match(r"^[a-zA-Z][a-zA-Z\-']*[a-zA-Z]$", name):
-            caller.msg(f"|rInvalid name: Only letters, hyphens, and apostrophes allowed.|n")
-            return "first_char_name_first"
-        
-        # Store first name
-        caller.ndb.charcreate_data['first_name'] = name
-        return "first_char_name_last"
     
     options = (
         {"key": "_default",
@@ -721,21 +720,8 @@ def first_char_name_last(caller, raw_string, **kwargs):
     
     first_name = caller.ndb.charcreate_data.get('first_name', '')
     
-    text = f"""
-|w╔════════════════════════════════════════════════════════════════╗
-║  IDENTITY VERIFICATION                                         ║
-╚════════════════════════════════════════════════════════════════╝|n
-
-First name: |c{first_name}|n
-
-|wWhat is your LAST name?|n
-
-(2-30 characters, letters only)
-
-|w>|n """
-    
-    if raw_string:
-        # Validate
+    # If input provided, validate it
+    if raw_string and raw_string.strip():
         name = raw_string.strip()
         
         if len(name) < 2 or len(name) > 30:
@@ -753,9 +739,23 @@ First name: |c{first_name}|n
             caller.msg(f"|r{error}|n")
             return "first_char_name_last"
         
-        # Store last name
+        # Store last name and advance
         caller.ndb.charcreate_data['last_name'] = name
         return "first_char_sex"
+    
+    # Display prompt (first time or after error)
+    text = f"""
+|w╔════════════════════════════════════════════════════════════════╗
+║  IDENTITY VERIFICATION                                         ║
+╚════════════════════════════════════════════════════════════════╝|n
+
+First name: |c{first_name}|n
+
+|wWhat is your LAST name?|n
+
+(2-30 characters, letters only)
+
+|w>|n """
     
     options = (
         {"key": "_default",
