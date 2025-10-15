@@ -18,6 +18,28 @@ import re
 
 
 # =============================================================================
+# CUSTOM EV MENU CLASS
+# =============================================================================
+
+class CharCreateEvMenu(EvMenu):
+    """
+    Custom EvMenu that suppresses automatic option display.
+    
+    The character creation menu includes option keys in the node text itself,
+    so we don't want EvMenu to auto-display them again.
+    """
+    
+    def options_formatter(self, optionlist):
+        """
+        Override to suppress automatic option display.
+        
+        Returns:
+            str: Empty string to prevent option display.
+        """
+        return ""
+
+
+# =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
 
@@ -390,25 +412,21 @@ def start_character_creation(account, is_respawn=False, old_character=None):
     # Start appropriate menu
     if is_respawn:
         # Respawn menu: show templates + flash clone option
-        EvMenu(
+        CharCreateEvMenu(
             account,
             "commands.charcreate",
             startnode="respawn_welcome",
             cmdset_mergetype="Replace",
-            cmd_on_exit=None,
-            auto_help=False,
-            auto_look=False
+            cmd_on_exit=None
         )
     else:
         # First character menu: custom creation
-        EvMenu(
+        CharCreateEvMenu(
             account,
             "commands.charcreate",
             startnode="first_char_welcome",
             cmdset_mergetype="Replace",
-            cmd_on_exit=None,
-            auto_help=False,
-            auto_look=False
+            cmd_on_exit=None
         )
 
 
