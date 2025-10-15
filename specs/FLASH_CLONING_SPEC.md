@@ -3,8 +3,9 @@
 ## Document Status
 - **Version:** 2.0 IMPLEMENTED
 - **Date:** October 14, 2025
-- **Status:** Core System Functional - Testing Required
+- **Status:** Telnet Testing Phase - Registration Enabled
 - **Priority:** CRITICAL - Core gameplay loop now complete
+- **Next Phase:** Web/Django signup interface (post-telnet validation)
 
 ---
 
@@ -231,11 +232,16 @@ Character Dies → Death Curtain → Death Progression (6 min) → Corpse Create
 - **Status:** ✅ IMPLEMENTED - Single increment location prevents race conditions
 - **Balancing:** Death count visible, affects narrative but not hard mechanics
 
-**Decision #5: Telnet-Only Approach**
-- **Rationale:** Avoid web/Django complexity, focus on game functionality
-- **Implementation:** All character creation via in-game EvMenu system
-- **Status:** ✅ IMPLEMENTED - No web interface needed
-- **Future:** Could add web roster/stats display later if desired
+**Decision #5: Phased Implementation Approach**
+- **Rationale:** Test core functionality via telnet before adding web complexity
+- **Phase 1 (Current):** Telnet-only character creation and respawn - ✅ IMPLEMENTED
+- **Phase 2 (Next):** Web/Django signup and character creation interface
+- **Status:** Phase 1 complete and ready for testing
+- **Benefits:** 
+  - Validates game logic independently of web layer
+  - Simpler debugging and iteration
+  - Can add web UI once core mechanics proven stable
+  - Telnet remains functional as fallback/admin tool
 
 ### Core Systems Integration
 
@@ -248,18 +254,23 @@ Character Dies → Death Curtain → Death Progression (6 min) → Corpse Create
 6. ✅ **Email Auth** (`commands/unloggedin_email.py`) - Account creation - FUNCTIONAL
 
 **Systems We Built (October 14, 2025):**
-1. ✅ **Character Creation** (`commands/charcreate.py:1-1058`) - IMPLEMENTED
-2. ✅ **Flash Cloning** (`commands/charcreate.py:622-758`) - IMPLEMENTED
+1. ✅ **Character Creation** (`commands/charcreate.py:1-1058`) - IMPLEMENTED (telnet)
+2. ✅ **Flash Cloning** (`commands/charcreate.py:622-758`) - IMPLEMENTED (telnet)
 3. ✅ **Spawn Management** (`typeclasses/death_progression.py:548-596`) - IMPLEMENTED
 4. ✅ **Account Hooks** (`typeclasses/accounts.py:69-137`) - IMPLEMENTED
 5. ✅ **Character Archiving** (`typeclasses/death_progression.py:575-587`) - IMPLEMENTED
 6. ✅ **Death Count System** (`typeclasses/death_progression.py:556-563`) - IMPLEMENTED
 
+**Next Phase (Web/Django Interface):**
+1. ⏳ **Web Account Registration** - Django views for signup
+2. ⏳ **Web Character Creator** - Browser-based alternative to telnet EvMenu
+3. ⏳ **Character Roster Display** - Web view of character history/stats
+4. ⏳ **Respawn Dashboard** - Web-based flash clone selection (optional)
+
 **Deferred to Future:**
 1. ❌ **Character Selection Roster** - Not needed with MAX_NR_CHARACTERS=1
-2. ❌ **Web/Django Interface** - Telnet-only approach sufficient
-3. ❌ **Multiple Character Management** - Single character enforced
-4. ❌ **Character Deletion UI** - Automatic on death
+2. ❌ **Multiple Character Management** - Single character enforced
+3. ❌ **Character Deletion UI** - Automatic on death
 
 ---
 
