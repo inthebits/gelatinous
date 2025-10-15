@@ -979,7 +979,7 @@ def first_char_confirm(caller, raw_string, **kwargs):
     
     first_name = caller.ndb.charcreate_data.get('first_name', '')
     last_name = caller.ndb.charcreate_data.get('last_name', '')
-    sex = caller.ndb.charcreate_data.get('sex', 'androgynous')
+    sex = caller.ndb.charcreate_data.get('sex', 'ambiguous')
     grit = caller.ndb.charcreate_data.get('grit', 75)
     resonance = caller.ndb.charcreate_data.get('resonance', 75)
     intellect = caller.ndb.charcreate_data.get('intellect', 75)
