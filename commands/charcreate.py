@@ -263,6 +263,14 @@ def create_character_from_template(account, template, sex="ambiguous"):
     # Set sex
     char.sex = sex
     
+    # Debug: Verify sex was set correctly
+    from evennia.comms.models import ChannelDB
+    try:
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        splattercast.msg(f"CHARCREATE_SEX_SET: {char.key} sex set to '{sex}', current value: '{char.sex}', gender property: '{char.gender}'")
+    except:
+        pass
+    
     # Set defaults
     # death_count starts at 1 via AttributeProperty in Character class
     char.db.archived = False
@@ -339,6 +347,14 @@ def create_flash_clone(account, old_character):
     char.sex = old_character.sex
     if hasattr(old_character.db, 'skintone'):
         char.db.skintone = old_character.db.skintone
+    
+    # Debug: Verify sex was inherited correctly
+    from evennia.comms.models import ChannelDB
+    try:
+        splattercast = ChannelDB.objects.get_channel("Splattercast")
+        splattercast.msg(f"FLASH_CLONE_SEX_INHERIT: {char.key} inherited sex '{old_character.sex}' from {old_character.key}, current value: '{char.sex}', gender property: '{char.gender}'")
+    except:
+        pass
     
     # INHERIT: death_count from old character
     # The old character's death_count was already incremented at death (at_death())
