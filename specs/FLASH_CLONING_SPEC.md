@@ -1,10 +1,10 @@
 # Flash Cloning System Specification
 
 ## Document Status
-- **Version:** 1.0 DRAFT
-- **Date:** October 13, 2025
-- **Status:** Architectural Design Phase
-- **Priority:** CRITICAL - Blocks all gameplay progression
+- **Version:** 2.0 IMPLEMENTED
+- **Date:** October 14, 2025
+- **Status:** Core System Functional - Testing Required
+- **Priority:** CRITICAL - Core gameplay loop now complete
 
 ---
 
@@ -12,9 +12,11 @@
 
 The Flash Cloning System is the core respawn mechanism for Gelatinous Monster. It closes the death loop by seamlessly transitioning dead characters through corporate memory upload into new clone bodies. This system must integrate with the existing death progression, medical system, and account management to create a complete lifecycle: **Creation → Death → Respawn → Death → Respawn...**
 
-**Current State:** 🔴 **BROKEN** - Death loop never closes. Dead characters accumulate in limbo.
+**Current State:** ✅ **FUNCTIONAL** - Death loop closes. Characters unpuppet, respawn menu works, flash cloning operational.
 
-**Target State:** ✅ **SEAMLESS** - Death automatically triggers flash cloning. Players respawn with minimal friction.
+**Target State:** ✅ **ACHIEVED** - Death automatically triggers character creation menu. Players can flash clone or select new templates.
+
+**Implementation Date:** October 14, 2025
 
 ---
 
@@ -37,72 +39,81 @@ The Flash Cloning System is the core respawn mechanism for Gelatinous Monster. I
 
 ## Problem Statement
 
-### Critical Bugs Identified
+### Implementation Status (October 14, 2025)
 
-**Bug #1: Zombie Characters in Limbo**
-- **Location:** `typeclasses/death_progression.py:571-582`
-- **Severity:** CRITICAL
-- **Description:** Dead characters are teleported to limbo but NEVER unpuppeted from their account. The unpuppeting code is commented out with TODO markers.
-- **Impact:** 
-  - Accounts remain attached to dead characters
-  - Players can't create new characters (still puppeting old one)
-  - Dead characters accumulate in limbo indefinitely
-  - Blocks all respawn gameplay
+**✅ RESOLVED - Bug #1: Zombie Characters in Limbo**
+- **Original Issue:** Dead characters teleported to limbo but never unpuppeted
+- **Resolution:** `death_progression.py` now properly unpuppets characters and initiates character creation
+- **Code Location:** `typeclasses/death_progression.py:548-596` (`_transition_character_to_death()`)
+- **Status:** FUNCTIONAL - Characters properly unpuppet and accounts redirected to respawn menu
 
-**Bug #2: No Character Creation System**
-- **Location:** Missing entirely from codebase
-- **Severity:** CRITICAL
-- **Description:** No command exists to create a character after account login. No character selection menu. No character roster display.
-- **Impact:**
-  - New accounts have no path to enter the game
-  - Dead accounts have no path to respawn
-  - `AUTO_PUPPET_ON_LOGIN = True` fails (nothing to puppet)
-  - Website and telnet both broken
+**✅ RESOLVED - Bug #2: Character Creation System**
+- **Original Issue:** No character creation system existed
+- **Resolution:** Complete EvMenu-based character creation system implemented
+- **Code Location:** `commands/charcreate.py` (1,058 lines)
+- **Features Implemented:**
+  - First-time character creation (name, sex, GRIM distribution)
+  - Respawn menu with 3 random templates
+  - Flash clone option (preserves identity, stats, appearance)
+  - Roman numeral naming (death_count integration)
+  - Template caching and validation
+- **Status:** IMPLEMENTED - Needs first-time creation testing
 
-**Bug #3: Registration Disabled**
-- **Location:** `server/conf/settings.py:48`
-- **Severity:** HIGH
-- **Description:** `NEW_ACCOUNT_REGISTRATION_ENABLED = False` blocks all new account creation
-- **Impact:**
-  - No new players can join
-  - Development/testing requires manual account creation via Django admin
-  - Public launch impossible in current state
+**✅ RESOLVED - Bug #3: Account Login Flow**
+- **Original Issue:** AUTO_PUPPET_ON_LOGIN caused conflicts
+- **Resolution:** Disabled auto-puppeting, implemented custom `at_post_login()` hook
+- **Code Location:** `typeclasses/accounts.py:69-137` (`at_post_login()`)
+- **Status:** FUNCTIONAL - Proper character detection and menu triggering
 
-**Bug #4: Empty Initial Setup**
-- **Location:** `server/conf/at_initial_setup.py:16-17`
-- **Severity:** MEDIUM
-- **Description:** `at_initial_setup()` function is completely empty (just `pass`)
-- **Impact:**
-  - No starting location created beyond Evennia default Limbo (#2)
-  - No default rooms or spawn points
-  - No character creation prompts
-  - Fresh server has nowhere for players to spawn
+**⚠️ PARTIAL - Bug #4: Empty Initial Setup**
+- **Original Issue:** No starting location or spawn points
+- **Resolution:** START_LOCATION set to Limbo (#2) in settings
+- **Code Location:** `server/conf/settings.py:82`
+- **Status:** FUNCTIONAL - Using Evennia default Limbo as spawn point
+- **Future:** Create proper starting room when world building begins
 
-**Bug #5: Multisession Mode Mismatch**
-- **Location:** `server/conf/settings.py:74,79`
-- **Severity:** MEDIUM
-- **Description:** `MULTISESSION_MODE = 1` (account-based) with `AUTO_CREATE_CHARACTER_WITH_ACCOUNT = False` and `AUTO_PUPPET_ON_LOGIN = True` creates impossible state
-- **Impact:**
-  - Settings contradict each other
-  - Login attempts auto-puppet but there's no character to puppet
-  - Confusing error messages for users
+**✅ RESOLVED - Bug #5: Settings Configuration**
+- **Original Issue:** Contradictory multisession settings
+- **Resolution:** Proper configuration applied
+- **Settings Applied:**
+  - `MULTISESSION_MODE = 1` (account-based login)
+  - `AUTO_CREATE_CHARACTER_WITH_ACCOUNT = False`
+  - `AUTO_PUPPET_ON_LOGIN = False`
+  - `MAX_NR_CHARACTERS = 1` (enforces single character limit)
+- **Status:** FUNCTIONAL - Clean account-based flow
 
-### System Flow Gaps
+### System Flow - Current Implementation
 
-**Current Death Flow (Broken):**
+**✅ FUNCTIONAL Death & Respawn Flow:**
 ```
 Character Dies → Death Curtain → Death Progression (6 min) → Corpse Created 
-→ Character Teleported to Limbo → [STOPS HERE - NEVER UNPUPPETS]
+→ Character Moved to Limbo → Character Unpuppeted from Account 
+→ Account Receives Death Notification → Character Creation Menu Launched
+→ [Flash Clone OR Random Template] → New Character Created → Puppeted → Spawned
 ```
 
-**Missing Components:**
-- Character unpuppeting from account
-- Character archiving/deletion
-- Account redirection to character creation
-- Character creation menu/interface
-- Character roster/selection system
-- Respawn location management
-- Flash cloning narrative integration
+**✅ IMPLEMENTED Components:**
+- ✅ Character unpuppeting from account
+- ✅ Character archiving (db.archived = True, db.archived_reason = "death")
+- ✅ Account redirection to character creation
+- ✅ Character creation menu (EvMenu-based)
+- ✅ Flash cloning with identity preservation
+- ✅ Random template generation (3 options)
+- ✅ Respawn location management (START_LOCATION)
+- ✅ Death count tracking with Roman numerals
+- ✅ Character-account cleanup (removes old char from account.characters)
+
+**⚠️ UNTESTED Components:**
+- ⚠️ First-time character creation flow (never triggered with existing accounts)
+- ⚠️ GRIM point distribution validation
+- ⚠️ Name uniqueness validation
+- ⚠️ Fresh account login without existing character
+
+**❌ NOT IMPLEMENTED (Deferred to Future):**
+- ❌ Web/Django registration interface (telnet-only approach)
+- ❌ Character roster/selection menu (not needed with MAX_NR_CHARACTERS=1)
+- ❌ Multiple character management
+- ❌ Character deletion UI (handled automatically on death)
 
 ---
 
@@ -198,40 +209,167 @@ Character Dies → Death Curtain → Death Progression (6 min) → Corpse Create
 
 **Decision #1: One Active Character Per Account**
 - **Rationale:** Simpler to implement, matches single-protagonist narrative
-- **Implementation:** Accounts can have multiple archived characters but only one active
+- **Implementation:** `MAX_NR_CHARACTERS = 1` enforces single character limit
+- **Status:** ✅ IMPLEMENTED - Old character removed from account before new clone created
 - **Future:** Could extend to multiple active characters if needed
 
 **Decision #2: Preserve Character Objects**
 - **Rationale:** Investigation RP, admin forensics, player history
 - **Implementation:** Dead characters archived rather than deleted
-- **Storage:** `character.db.archived = True`, moved to Limbo or Archive room
+- **Status:** ✅ IMPLEMENTED - Characters marked `db.archived = True` and moved to Limbo
+- **Storage:** `character.db.archived = True`, `character.db.archived_reason = "death"`
 
-**Decision #3: Flash Cloning is Automatic**
-- **Rationale:** Minimize player downtime, maintain immersion
-- **Implementation:** Death progression completion automatically triggers clone creation
-- **Player Choice:** Name and appearance can be customized, but respawn is mandatory
+**Decision #3: Flash Cloning Menu-Driven**
+- **Rationale:** Player agency, respawn choices, identity preservation
+- **Implementation:** EvMenu-based character creation with flash clone option
+- **Status:** ✅ IMPLEMENTED - Respawn menu offers flash clone or 3 random templates
+- **Player Choice:** Full control over name, appearance, stats, or use flash clone
 
 **Decision #4: Stack Persistence Model**
 - **Rationale:** Define what makes "you" persist across deaths
-- **Implementation:** See Data Model section
-- **Balancing:** Some progression persists, but death has consequences
+- **Implementation:** Death count tracks number of deaths, used for Roman numeral naming
+- **Status:** ✅ IMPLEMENTED - Single increment location prevents race conditions
+- **Balancing:** Death count visible, affects narrative but not hard mechanics
+
+**Decision #5: Telnet-Only Approach**
+- **Rationale:** Avoid web/Django complexity, focus on game functionality
+- **Implementation:** All character creation via in-game EvMenu system
+- **Status:** ✅ IMPLEMENTED - No web interface needed
+- **Future:** Could add web roster/stats display later if desired
 
 ### Core Systems Integration
 
 **Existing Systems We Build On:**
-1. ✅ **Death Curtain** (`typeclasses/curtain_of_death.py`) - Animation system
-2. ✅ **Death Progression** (`typeclasses/death_progression.py`) - 6-minute timer
-3. ✅ **Medical System** (`world/medical/*`) - Organ damage, wounds
-4. ✅ **Corpse System** (`typeclasses/corpse.py`) - Forensic preservation
-5. ✅ **Combat System** (`world/combat/*`) - Damage application
-6. ✅ **Email Auth** (`commands/unloggedin_email.py`) - Account creation
+1. ✅ **Death Curtain** (`typeclasses/curtain_of_death.py`) - Animation system - FUNCTIONAL
+2. ✅ **Death Progression** (`typeclasses/death_progression.py`) - 6-minute timer - FUNCTIONAL
+3. ✅ **Medical System** (`world/medical/*`) - Organ damage, wounds - FUNCTIONAL
+4. ✅ **Corpse System** (`typeclasses/corpse.py`) - Forensic preservation - FUNCTIONAL
+5. ✅ **Combat System** (`world/combat/*`) - Damage application - FUNCTIONAL
+6. ✅ **Email Auth** (`commands/unloggedin_email.py`) - Account creation - FUNCTIONAL
 
-**New Systems We Must Build:**
-1. ❌ **Character Creation** - Name, appearance, spawn
-2. ❌ **Character Selection** - Roster, switching (future)
-3. ❌ **Flash Cloning** - Stack preservation, sleeve creation
-4. ❌ **Spawn Management** - Respawn locations
-5. ❌ **Account Hooks** - Post-login redirection
+**Systems We Built (October 14, 2025):**
+1. ✅ **Character Creation** (`commands/charcreate.py:1-1058`) - IMPLEMENTED
+2. ✅ **Flash Cloning** (`commands/charcreate.py:622-758`) - IMPLEMENTED
+3. ✅ **Spawn Management** (`typeclasses/death_progression.py:548-596`) - IMPLEMENTED
+4. ✅ **Account Hooks** (`typeclasses/accounts.py:69-137`) - IMPLEMENTED
+5. ✅ **Character Archiving** (`typeclasses/death_progression.py:575-587`) - IMPLEMENTED
+6. ✅ **Death Count System** (`typeclasses/death_progression.py:556-563`) - IMPLEMENTED
+
+**Deferred to Future:**
+1. ❌ **Character Selection Roster** - Not needed with MAX_NR_CHARACTERS=1
+2. ❌ **Web/Django Interface** - Telnet-only approach sufficient
+3. ❌ **Multiple Character Management** - Single character enforced
+4. ❌ **Character Deletion UI** - Automatic on death
+
+---
+
+## October 14, 2025 Implementation Summary
+
+### Bugs Fixed
+
+**Bug #1: EvMenu Auto-Generated Numbered Lists**
+- **Symptom:** Respawn menu showed "1 2 3 4" auto-generated lines
+- **Root Cause:** Returning bare dict instead of tuple for options
+- **Solution:** Changed options return from `dict` to `(dict,)` tuple format
+- **Pattern:** Created `_respawn_process_choice()` goto-callable following Evennia canonical pattern
+- **Files Modified:** `commands/charcreate.py`
+
+**Bug #2: Death Count Incrementing by 4**
+- **Symptom:** Character names jumped from "Laszlo VII" to "Laszlo XI" (4 instead of 1)
+- **Root Cause:** `at_death()` called from multiple locations (combat, medical, manual)
+- **Solution:** Moved death_count increment to single definitive location in `_transition_character_to_death()`
+- **Architectural Win:** Instead of preventing multiple calls with flags, increment only at guaranteed-once location
+- **Files Modified:** 
+  - `typeclasses/characters.py` (removed increment from `at_death()`)
+  - `typeclasses/death_progression.py` (added increment before limbo teleport)
+
+**Bug #3: Death Curtain Not Firing**
+- **Symptom:** Death curtain and progression script not running on subsequent deaths
+- **Root Cause:** Changed to persistent `db.death_processed` flag but forgot to clear on revival
+- **Solution:** Added `db.death_processed` cleanup to `remove_death_state()`
+- **Manual Fix Required:** Existing characters need `@py del me.db.death_processed`
+- **Files Modified:** `typeclasses/characters.py:1093-1096`
+
+**Bug #4: Stale Handler References**
+- **Original Issue:** NDB attributes not cleaned up properly
+- **Solution:** Comprehensive state cleanup in character removal
+- **Files Modified:** Multiple cleanup functions across combat system
+
+**Bug #5: Complete Death Loop**
+- **Original Issue:** Death loop never closed, characters stuck in limbo
+- **Solution:** Implemented complete flow from death to respawn
+- **Components:** Unpuppet → Character creation menu → Flash clone/template → Respawn
+- **Files Modified:** `typeclasses/death_progression.py`, `commands/charcreate.py`
+
+### Testing Status
+
+**✅ Tested and Verified:**
+- Death curtain display and timing
+- Death progression script (6-minute countdown)
+- Corpse creation with inventory transfer
+- Character unpuppeting on death
+- Character archiving system
+- Respawn menu display (clean, no auto-formatting)
+- Flash clone option (identity preservation, stat inheritance)
+- Random template generation (3 options)
+- Death count increment (exactly once per death)
+- Roman numeral naming system
+- Character-account cleanup (removes old char from account.characters)
+
+**⚠️ Implemented But Untested:**
+- First-time character creation flow (never triggered due to AUTO_PUPPET disabled during dev)
+- GRIM point distribution validation (300 points across 4 stats)
+- Name uniqueness validation
+- Fresh account login without existing character
+- Sex selection system
+- Character description generation
+- Starting equipment assignment
+
+**❌ Known Limitations:**
+- Manual flag cleanup needed for existing characters with `db.death_processed=True`
+- START_LOCATION set to Limbo (#2) - proper starting room needed for world building
+- No multi-character support (by design - MAX_NR_CHARACTERS=1)
+- No web interface (by design - telnet-only approach)
+
+### Code Changes Summary
+
+**Files Created:**
+- None (all modifications to existing files)
+
+**Files Modified:**
+- `commands/charcreate.py` - Complete refactor of respawn menu system
+  - Added `_respawn_process_choice()` goto-callable
+  - Fixed EvMenu options tuple format
+  - Improved error handling and state management
+  
+- `typeclasses/characters.py`
+  - Changed `at_death()` to use persistent `db.death_processed` flag
+  - Removed death_count increment from `at_death()`
+  - Added `db.death_processed` cleanup to `remove_death_state()`
+  
+- `typeclasses/death_progression.py`
+  - Added death_count increment in `_transition_character_to_death()`
+  - Implemented proper character archiving
+  - Added unpuppet and character creation menu trigger
+  
+- `typeclasses/accounts.py`
+  - Implemented `at_post_login()` hook for character detection
+  - Added respawn menu triggering for dead accounts
+  
+- `server/conf/settings.py`
+  - Set `MULTISESSION_MODE = 1`
+  - Set `AUTO_CREATE_CHARACTER_WITH_ACCOUNT = False`
+  - Set `AUTO_PUPPET_ON_LOGIN = False`
+  - Set `MAX_NR_CHARACTERS = 1`
+  - Set `START_LOCATION = "#2"` (Limbo)
+
+**Lines of Code:**
+- Character Creation System: ~1,058 lines (new)
+- Account Hooks: ~69 lines (new)
+- Death Progression: ~100 lines (modified)
+- Character Type: ~50 lines (modified)
+
+---
 
 ---
 
