@@ -685,15 +685,18 @@ def first_char_name_first(caller, raw_string, **kwargs):
         # Validate format (not uniqueness yet - need full name)
         if len(name) < 2 or len(name) > 30:
             caller.msg(f"|rInvalid name: Name must be 2-30 characters.|n")
-            return "first_char_name_first"
+            # Return None to re-display current node
+            return None
         
         if not re.match(r"^[a-zA-Z][a-zA-Z\-']*[a-zA-Z]$", name):
             caller.msg(f"|rInvalid name: Only letters, hyphens, and apostrophes allowed.|n")
-            return "first_char_name_first"
+            # Return None to re-display current node
+            return None
         
-        # Store first name and advance
+        # Store first name and advance to next node
         caller.ndb.charcreate_data['first_name'] = name
-        return "first_char_name_last"
+        # Call next node directly and return its result
+        return first_char_name_last(caller, "", **kwargs)
     
     # Display prompt (first time or after error)
     text = """
@@ -726,22 +729,26 @@ def first_char_name_last(caller, raw_string, **kwargs):
         
         if len(name) < 2 or len(name) > 30:
             caller.msg(f"|rInvalid name: Name must be 2-30 characters.|n")
-            return "first_char_name_last"
+            # Return None to re-display current node
+            return None
         
         if not re.match(r"^[a-zA-Z][a-zA-Z\-']*[a-zA-Z]$", name):
             caller.msg(f"|rInvalid name: Only letters, hyphens, and apostrophes allowed.|n")
-            return "first_char_name_last"
+            # Return None to re-display current node
+            return None
         
         # Check full name uniqueness
         full_name = f"{first_name} {name}"
         is_valid, error = validate_name(full_name)
         if not is_valid:
             caller.msg(f"|r{error}|n")
-            return "first_char_name_last"
+            # Return None to re-display current node
+            return None
         
-        # Store last name and advance
+        # Store last name and advance to next node
         caller.ndb.charcreate_data['last_name'] = name
-        return "first_char_sex"
+        # Call next node directly and return its result
+        return first_char_sex(caller, "", **kwargs)
     
     # Display prompt (first time or after error)
     text = f"""
@@ -851,7 +858,8 @@ Commands:
         args = raw_string.strip().lower().split()
         
         if not args:
-            return "first_char_grim"
+            # Return None to re-display current node
+            return None
         
         command = args[0]
         
@@ -861,7 +869,8 @@ Commands:
             caller.ndb.charcreate_data['resonance'] = 75
             caller.ndb.charcreate_data['intellect'] = 75
             caller.ndb.charcreate_data['motorics'] = 75
-            return "first_char_grim"
+            # Return None to re-display current node with reset values
+            return None
         
         # Done command
         if command in ["done", "d", "finish", "finalize"]:
@@ -869,23 +878,28 @@ Commands:
             is_valid, error = validate_grim_distribution(grit, resonance, intellect, motorics)
             if not is_valid:
                 caller.msg(f"|r{error}|n")
-                return "first_char_grim"
-            return "first_char_confirm"
+                # Return None to re-display current node
+                return None
+            # Call next node directly and return its result
+            return first_char_confirm(caller, "", **kwargs)
         
         # Stat assignment commands
         if len(args) < 2:
             caller.msg("|rUsage: <stat> <value>  (e.g., 'grit 100')|n")
-            return "first_char_grim"
+            # Return None to re-display current node
+            return None
         
         try:
             value = int(args[1])
         except ValueError:
             caller.msg("|rValue must be a number.|n")
-            return "first_char_grim"
+            # Return None to re-display current node
+            return None
         
         if value < 1 or value > 150:
             caller.msg("|rValue must be between 1 and 150.|n")
-            return "first_char_grim"
+            # Return None to re-display current node
+            return None
         
         # Set the stat
         if command in ["grit", "g"]:
@@ -899,7 +913,8 @@ Commands:
         else:
             caller.msg("|rUnknown stat. Use: grit, resonance, intellect, or motorics|n")
         
-        return "first_char_grim"
+        # Return None to re-display current node with updated values
+        return None
     
     options = (
         {"key": "_default",

@@ -29,11 +29,25 @@
 
 ### TEST RESULTS - October 14, 2025
 
-**Bug Found During Initial Testing:**
+**Bug #1 Found During Initial Testing:**
 - **Issue:** Blank Enter key at welcome screen was being treated as character name input
 - **Symptom:** "Invalid name: Name must be 2-30 characters" error when pressing Enter
 - **Root Cause:** EvMenu nodes processing blank `raw_string` as input instead of ignoring it
 - **Fix Applied:** Modified `first_char_name_first` and `first_char_name_last` to check `if raw_string and raw_string.strip():`
+- **Status:** ✅ FIXED
+
+**Bug #2 Found During Second Test:**
+- **Issue:** EvMenu exiting after entering first name, showing node name as debug output
+- **Symptom:** After entering first name, saw "first_char_name_last" printed, then "Command 'Wakka' is not available"
+- **Root Cause:** Returning node name string instead of calling next node function directly
+- **Technical Detail:** EvMenu interprets returned string as text to display, not as goto target during input processing
+- **Fix Applied:** Changed all node transitions to either:
+  - Return `None` to re-display current node (for errors/validation)
+  - Call next node function directly: `return next_node(caller, "", **kwargs)`
+- **Files Modified:** 
+  - `first_char_name_first()` - Fixed transition to `first_char_name_last()`
+  - `first_char_name_last()` - Fixed transition to `first_char_sex()`
+  - `first_char_grim()` - Fixed transition to `first_char_confirm()` and all error returns
 - **Status:** ✅ FIXED - Ready for re-testing
 
 ---
