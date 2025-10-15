@@ -810,8 +810,8 @@ Select biological sex:
 def first_char_grim(caller, raw_string, sex="androgynous", **kwargs):
     """Distribute GRIM points."""
     
-    # Store sex
-    if sex:
+    # Store sex if provided (on first entry from sex selection)
+    if sex and sex != caller.ndb.charcreate_data.get('sex'):
         caller.ndb.charcreate_data['sex'] = sex
     
     first_name = caller.ndb.charcreate_data.get('first_name', '')
@@ -827,6 +827,78 @@ def first_char_grim(caller, raw_string, sex="androgynous", **kwargs):
     total = grit + resonance + intellect + motorics
     remaining = 300 - total
     
+    # Process input ONLY if it's a valid command (not just transitioning from previous node)
+    # Valid commands: stat assignments, reset, done
+    # Invalid to process: single numbers like "1", "2", "3" from sex selection
+    if raw_string and raw_string.strip():
+        args = raw_string.strip().lower().split()
+        
+        if not args:
+            # Return None to re-display current node
+            return None
+        
+        command = args[0]
+        
+        # Only process if it's a known command (not leftover input from previous node)
+        # Commands: grit, resonance, intellect, motorics, reset, done
+        # Ignore: single digits (from sex selection) or other garbage
+        valid_commands = ['grit', 'g', 'resonance', 'r', 'res', 'intellect', 'i', 'int', 
+                         'motorics', 'm', 'mot', 'reset', 'done', 'd', 'finish', 'finalize']
+        
+        if command in valid_commands:
+            # Reset command
+            if command in ["reset", "r"]:
+                caller.ndb.charcreate_data['grit'] = 75
+                caller.ndb.charcreate_data['resonance'] = 75
+                caller.ndb.charcreate_data['intellect'] = 75
+                caller.ndb.charcreate_data['motorics'] = 75
+                # Return None to re-display current node with reset values
+                return None
+            
+            # Done command
+            if command in ["done", "d", "finish", "finalize"]:
+                # Validate distribution
+                is_valid, error = validate_grim_distribution(grit, resonance, intellect, motorics)
+                if not is_valid:
+                    caller.msg(f"|r{error}|n")
+                    # Return None to re-display current node
+                    return None
+                # Call next node directly and return its result
+                return first_char_confirm(caller, "", **kwargs)
+            
+            # Stat assignment commands
+            if len(args) < 2:
+                caller.msg("|rUsage: <stat> <value>  (e.g., 'grit 100')|n")
+                # Return None to re-display current node
+                return None
+            
+            try:
+                value = int(args[1])
+            except ValueError:
+                caller.msg("|rValue must be a number.|n")
+                # Return None to re-display current node
+                return None
+            
+            if value < 1 or value > 150:
+                caller.msg("|rValue must be between 1 and 150.|n")
+                # Return None to re-display current node
+                return None
+            
+            # Set the stat
+            if command in ["grit", "g"]:
+                caller.ndb.charcreate_data['grit'] = value
+            elif command in ["resonance", "r", "res"]:
+                caller.ndb.charcreate_data['resonance'] = value
+            elif command in ["intellect", "i", "int"]:
+                caller.ndb.charcreate_data['intellect'] = value
+            elif command in ["motorics", "m", "mot"]:
+                caller.ndb.charcreate_data['motorics'] = value
+            
+            # Return None to re-display current node with updated values
+            return None
+        # If not a valid command, just ignore and display the menu
+    
+    # Display the GRIM distribution screen
     text = f"""
 |w╔════════════════════════════════════════════════════════════════╗
 ║  G.R.I.M. ATTRIBUTE DISTRIBUTION                               ║
@@ -853,68 +925,6 @@ Commands:
   |wdone|n              - Finalize character (when total = 300)
 
 |w>|n """
-    
-    if raw_string:
-        args = raw_string.strip().lower().split()
-        
-        if not args:
-            # Return None to re-display current node
-            return None
-        
-        command = args[0]
-        
-        # Reset command
-        if command in ["reset", "r"]:
-            caller.ndb.charcreate_data['grit'] = 75
-            caller.ndb.charcreate_data['resonance'] = 75
-            caller.ndb.charcreate_data['intellect'] = 75
-            caller.ndb.charcreate_data['motorics'] = 75
-            # Return None to re-display current node with reset values
-            return None
-        
-        # Done command
-        if command in ["done", "d", "finish", "finalize"]:
-            # Validate distribution
-            is_valid, error = validate_grim_distribution(grit, resonance, intellect, motorics)
-            if not is_valid:
-                caller.msg(f"|r{error}|n")
-                # Return None to re-display current node
-                return None
-            # Call next node directly and return its result
-            return first_char_confirm(caller, "", **kwargs)
-        
-        # Stat assignment commands
-        if len(args) < 2:
-            caller.msg("|rUsage: <stat> <value>  (e.g., 'grit 100')|n")
-            # Return None to re-display current node
-            return None
-        
-        try:
-            value = int(args[1])
-        except ValueError:
-            caller.msg("|rValue must be a number.|n")
-            # Return None to re-display current node
-            return None
-        
-        if value < 1 or value > 150:
-            caller.msg("|rValue must be between 1 and 150.|n")
-            # Return None to re-display current node
-            return None
-        
-        # Set the stat
-        if command in ["grit", "g"]:
-            caller.ndb.charcreate_data['grit'] = value
-        elif command in ["resonance", "r", "res"]:
-            caller.ndb.charcreate_data['resonance'] = value
-        elif command in ["intellect", "i", "int"]:
-            caller.ndb.charcreate_data['intellect'] = value
-        elif command in ["motorics", "m", "mot"]:
-            caller.ndb.charcreate_data['motorics'] = value
-        else:
-            caller.msg("|rUnknown stat. Use: grit, resonance, intellect, or motorics|n")
-        
-        # Return None to re-display current node with updated values
-        return None
     
     options = (
         {"key": "_default",

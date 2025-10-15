@@ -48,6 +48,18 @@
   - `first_char_name_first()` - Fixed transition to `first_char_name_last()`
   - `first_char_name_last()` - Fixed transition to `first_char_sex()`
   - `first_char_grim()` - Fixed transition to `first_char_confirm()` and all error returns
+- **Status:** ✅ FIXED
+
+**Bug #3 Found During Third Test:**
+- **Issue:** GRIM distribution node processing leftover input from sex selection
+- **Symptom:** After selecting sex option "1", saw "Usage: <stat> <value> (e.g., 'grit 100')" instead of GRIM screen
+- **Root Cause:** When transitioning with `("node", {"kwarg": "value"})`, EvMenu passes previous user input in `raw_string`
+- **Technical Detail:** Sex selection passes "1" to GRIM node, which tried to process it as a stat command
+- **Fix Applied:** Added command whitelist validation - only process known commands (grit, resonance, etc.)
+  - Ignore invalid commands (like "1", "2", "3" from previous node)
+  - Always display menu if input isn't a recognized command
+- **Files Modified:**
+  - `first_char_grim()` - Added valid_commands list and filtering
 - **Status:** ✅ FIXED - Ready for re-testing
 
 ---
