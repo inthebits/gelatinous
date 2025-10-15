@@ -222,7 +222,7 @@ def validate_grim_distribution(grit, resonance, intellect, motorics):
     return (True, None)
 
 
-def create_character_from_template(account, template, sex="androgynous"):
+def create_character_from_template(account, template, sex="ambiguous"):
     """
     Create a character from a template (for respawn).
     
@@ -556,7 +556,7 @@ Select biological sex for this sleeve:
          "auto_help": False,
          "auto_look": False},
         {"key": "3",
-         "goto": ("respawn_finalize_template", {"sex": "androgynous"}),
+         "goto": ("respawn_finalize_template", {"sex": "ambiguous"}),
          "auto_help": False,
          "auto_look": False},
         {"key": ("b", "back"),
@@ -572,7 +572,7 @@ Select biological sex for this sleeve:
     return text, options
 
 
-def respawn_finalize_template(caller, raw_string, sex="androgynous", **kwargs):
+def respawn_finalize_template(caller, raw_string, sex="ambiguous", **kwargs):
     """Create character from template and finalize respawn."""
     
     template = caller.ndb.charcreate_data.get('selected_template')
@@ -835,7 +835,7 @@ Select biological sex:
          "auto_help": False,
          "auto_look": False},
         {"key": "3",
-         "goto": ("first_char_grim", {"sex": "androgynous"}),
+         "goto": ("first_char_grim", {"sex": "ambiguous"}),
          "auto_help": False,
          "auto_look": False},
         {"key": "_default",
@@ -847,7 +847,7 @@ Select biological sex:
     return text, options
 
 
-def first_char_grim(caller, raw_string, sex="androgynous", **kwargs):
+def first_char_grim(caller, raw_string, sex="ambiguous", **kwargs):
     """Distribute GRIM points."""
     
     # Store sex if provided (on first entry from sex selection)
@@ -856,7 +856,7 @@ def first_char_grim(caller, raw_string, sex="androgynous", **kwargs):
     
     first_name = caller.ndb.charcreate_data.get('first_name', '')
     last_name = caller.ndb.charcreate_data.get('last_name', '')
-    sex = caller.ndb.charcreate_data.get('sex', 'androgynous')
+    sex = caller.ndb.charcreate_data.get('sex', 'ambiguous')
     
     # Get current GRIM values (or defaults)
     grit = caller.ndb.charcreate_data.get('grit', 75)
@@ -1038,7 +1038,7 @@ def first_char_finalize(caller, raw_string, **kwargs):
     first_name = caller.ndb.charcreate_data.get('first_name', '')
     last_name = caller.ndb.charcreate_data.get('last_name', '')
     full_name = f"{first_name} {last_name}"
-    sex = caller.ndb.charcreate_data.get('sex', 'androgynous')
+    sex = caller.ndb.charcreate_data.get('sex', 'ambiguous')
     grit = caller.ndb.charcreate_data.get('grit', 75)
     resonance = caller.ndb.charcreate_data.get('resonance', 75)
     intellect = caller.ndb.charcreate_data.get('intellect', 75)
