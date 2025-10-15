@@ -1,13 +1,24 @@
-# EvMenu Pattern Notes - Lessons Learned
+# EvMenu Pattern Reference Specification
 
-**Date:** October 14, 2025  
-**Context:** Flash Cloning System character creation menu implementation
+## Document Status
+- **Version:** 1.0 REFERENCE
+- **Date:** October 14, 2025
+- **Status:** Canonical Reference Guide
+- **Context:** Flash Cloning System character creation menu implementation
 
 ---
 
-## The Problem
+## Overview
 
-When implementing text-input nodes in EvMenu (where users type freeform text rather than selecting numbered options), we encountered two critical bugs that revealed important EvMenu behavior patterns.
+This specification documents the correct patterns for implementing text-input nodes in Evennia's EvMenu system. These patterns were discovered through trial and error while implementing the Flash Cloning character creation system, which revealed four critical bugs that illuminate EvMenu's non-obvious behavior.
+
+**Purpose:** Serve as the canonical reference for all future EvMenu implementations in this project.
+
+---
+
+## Critical Bugs Discovered
+
+When implementing text-input nodes in EvMenu (where users type freeform text rather than selecting numbered options), we encountered four critical bugs that revealed important EvMenu behavior patterns.
 
 ---
 

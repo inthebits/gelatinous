@@ -375,10 +375,45 @@ Character Dies → Death Curtain → Death Progression (6 min) → Corpse Create
   - Set `START_LOCATION = "#2"` (Limbo)
 
 **Lines of Code:**
-- Character Creation System: ~1,058 lines (new)
+- Character Creation System: ~1,085 lines (new)
 - Account Hooks: ~69 lines (new)
 - Death Progression: ~100 lines (modified)
 - Character Type: ~50 lines (modified)
+
+### EvMenu Implementation Bugs Fixed
+
+During telnet testing (October 14, 2025), we discovered and fixed 4 critical EvMenu bugs:
+
+**Bug #1: Blank Input Validation**
+- **Issue:** Pressing Enter triggered "Invalid name" errors
+- **Fix:** Changed `if raw_string:` to `if raw_string and raw_string.strip():`
+- **Pattern:** Always validate stripped non-empty input only
+
+**Bug #2: Node Transitions Exiting Menu**
+- **Issue:** Returning node name string printed it as text and exited menu
+- **Fix:** Call next node function directly: `return next_node(caller, "", **kwargs)`
+- **Pattern:** Never return node name strings during input processing
+
+**Bug #3: Leftover Input from Previous Node**
+- **Issue:** Previous node's selection ("1", "2", "3") processed as command in next node
+- **Fix:** Added command whitelist - only process known commands, ignore invalid input
+- **Pattern:** Validate commands before processing when transitioning with kwargs
+
+**Bug #4: Return None Exits Menu**
+- **Issue:** `return None` exits menu instead of re-displaying current node
+- **Fix:** Use recursive call: `return current_node(caller, "", **kwargs)`
+- **Pattern:** CRITICAL - `return None` = exit, not re-display!
+
+**Documentation:** See `specs/EVMENU_PATTERNS_SPEC.md` for complete EvMenu reference guide.
+
+**Testing Status:**
+- ✅ Full character creation flow works end-to-end
+- ✅ Name validation functional
+- ✅ Sex selection functional
+- ✅ GRIM stat distribution functional (300 points across 4 stats)
+- ✅ Menu stays active during multi-command input
+- ⏳ Confirmation and finalization not yet tested
+- ⏳ Death → Respawn flow not yet tested
 
 ---
 
