@@ -526,15 +526,25 @@ Select biological sex for this sleeve:
     
     options = (
         {"key": "1",
-         "goto": ("respawn_finalize_template", {"sex": "male"})},
+         "goto": ("respawn_finalize_template", {"sex": "male"}),
+         "auto_help": False,
+         "auto_look": False},
         {"key": "2",
-         "goto": ("respawn_finalize_template", {"sex": "female"})},
+         "goto": ("respawn_finalize_template", {"sex": "female"}),
+         "auto_help": False,
+         "auto_look": False},
         {"key": "3",
-         "goto": ("respawn_finalize_template", {"sex": "androgynous"})},
+         "goto": ("respawn_finalize_template", {"sex": "androgynous"}),
+         "auto_help": False,
+         "auto_look": False},
         {"key": ("b", "back"),
-         "goto": "respawn_welcome"},
+         "goto": "respawn_welcome",
+         "auto_help": False,
+         "auto_look": False},
         {"key": "_default",
-         "goto": ("respawn_confirm_template", {"template_idx": template_idx})},
+         "goto": ("respawn_confirm_template", {"template_idx": template_idx}),
+         "auto_help": False,
+         "auto_look": False},
     )
     
     return text, options
@@ -795,13 +805,21 @@ Select biological sex:
     
     options = (
         {"key": "1",
-         "goto": ("first_char_grim", {"sex": "male"})},
+         "goto": ("first_char_grim", {"sex": "male"}),
+         "auto_help": False,
+         "auto_look": False},
         {"key": "2",
-         "goto": ("first_char_grim", {"sex": "female"})},
+         "goto": ("first_char_grim", {"sex": "female"}),
+         "auto_help": False,
+         "auto_look": False},
         {"key": "3",
-         "goto": ("first_char_grim", {"sex": "androgynous"})},
+         "goto": ("first_char_grim", {"sex": "androgynous"}),
+         "auto_help": False,
+         "auto_look": False},
         {"key": "_default",
-         "goto": "first_char_sex"},
+         "goto": "first_char_sex",
+         "auto_help": False,
+         "auto_look": False},
     )
     
     return text, options
@@ -919,7 +937,7 @@ Distribute |w300 points|n across your attributes (min 1, max 150 per stat):
 Commands:
   |wgrit <value>|n     - Set Grit
   |wresonance <value>|n - Set Resonance
-  |winterllect <value>|n - Set Intellect
+  |wintellect <value>|n - Set Intellect
   |wmotorics <value>|n  - Set Motorics
   |wreset|n             - Reset to defaults (75 each)
   |wdone|n              - Finalize character (when total = 300)
@@ -973,11 +991,17 @@ Create this character?
     
     options = (
         {"key": ("y", "yes"),
-         "goto": "first_char_finalize"},
+         "goto": "first_char_finalize",
+         "auto_help": False,
+         "auto_look": False},
         {"key": ("n", "no"),
-         "goto": "first_char_grim"},
+         "goto": "first_char_grim",
+         "auto_help": False,
+         "auto_look": False},
         {"key": "_default",
-         "goto": "first_char_confirm"},
+         "goto": "first_char_confirm",
+         "auto_help": False,
+         "auto_look": False},
     )
     
     return text, options
