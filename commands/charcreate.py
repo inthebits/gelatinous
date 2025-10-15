@@ -395,7 +395,9 @@ def start_character_creation(account, is_respawn=False, old_character=None):
             "commands.charcreate",
             startnode="respawn_welcome",
             cmdset_mergetype="Replace",
-            cmd_on_exit=None
+            cmd_on_exit=None,
+            auto_help=False,
+            auto_look=False
         )
     else:
         # First character menu: custom creation
@@ -404,7 +406,9 @@ def start_character_creation(account, is_respawn=False, old_character=None):
             "commands.charcreate",
             startnode="first_char_welcome",
             cmdset_mergetype="Replace",
-            cmd_on_exit=None
+            cmd_on_exit=None,
+            auto_help=False,
+            auto_look=False
         )
 
 
