@@ -498,7 +498,7 @@ Select a consciousness vessel:
         text += f"|yResonance:|n {old_char.resonance:3d}  "
         text += f"|bIntellect:|n {old_char.intellect:3d}  "
         text += f"|mMotorics:|n {old_char.motorics:3d}\n"
-        text += f"    |xInherits appearance, stats, and memories from previous incarnation|n\n"
+        text += f"    |wInherits appearance, stats, and memories from previous incarnation|n\n"
     
     # Build prompt based on available options
     if old_char:
@@ -592,7 +592,7 @@ def respawn_finalize_template(caller, raw_string, sex="androgynous", **kwargs):
         char.msg("|g╚════════════════════════════════════════════════════════════════╝|n")
         char.msg("")
         char.msg(f"|wWelcome back, |c{char.key}|w.|n")
-        char.msg(f"|xClone Generation:|n |w1|n")
+        char.msg(f"|wClone Generation:|n |w1|n")
         char.msg("")
         char.msg("|yYou open your eyes in an unfamiliar body.|n")
         char.msg("|yThe memories feel... borrowed. But they're yours now.|n")
@@ -639,25 +639,25 @@ def respawn_flash_clone(caller, raw_string, **kwargs):
         char.msg("|r╚════════════════════════════════════════════════════════════════╝|n")
         char.msg("")
         char.msg(f"|wWelcome back, |c{char.key}|w.|n")
-        char.msg(f"|xDeath Count:|n |w{death_count}|n")
+        char.msg(f"|wDeath Count:|n |w{death_count}|n")
         char.msg("")
         
         # Death count-specific flavor
         if death_count == 2:
-            char.msg("|xThis is your first death. The sensation of resleeving is disorienting.|n")
-            char.msg("|xYour old body's final moments echo in your mind like static on a dead channel.|n")
+            char.msg("|wThis is your first death. The sensation of resleeving is disorienting.|n")
+            char.msg("|wYour old body's final moments echo in your mind like static on a dead channel.|n")
         elif death_count < 5:
-            char.msg("|xThe memories of your previous body fade like analog videotape degradation.|n")
-            char.msg("|xYou know you've done this before, but each time feels like the first.|n")
+            char.msg("|wThe memories of your previous body fade like analog videotape degradation.|n")
+            char.msg("|wYou know you've done this before, but each time feels like the first.|n")
         elif death_count < 10:
-            char.msg("|xYou've died enough times to know: this never gets easier.|n")
-            char.msg("|xBut at least you're still you. Mostly.|n")
+            char.msg("|wYou've died enough times to know: this never gets easier.|n")
+            char.msg("|wBut at least you're still you. Mostly.|n")
         else:
             char.msg("|rHow many times have you done this? The memories blur together like overexposed film.|n")
             char.msg("|rAre you still the person who first stepped into this world?|n")
         
         char.msg("")
-        char.msg(f"|xPrevious cause of death:|n |r{old_char.db.death_cause or 'Unknown'}|n")
+        char.msg(f"|wPrevious cause of death:|n |r{old_char.db.death_cause or 'Unknown'}|n")
         char.msg("")
         
         # Clean up
@@ -693,8 +693,8 @@ def first_char_welcome(caller, raw_string, **kwargs):
 
 |wBeginning consciousness upload sequence...|n
 
-|xThe year is 198█. The broadcast never ends.|n
-|xYour memories are... incomplete. But you're here now.|n
+|wThe year is 198█. The broadcast never ends.|n
+|wYour memories are... incomplete. But you're here now.|n
 
 Press |w<Enter>|n to begin character creation.
 """
@@ -1090,9 +1090,9 @@ def first_char_finalize(caller, raw_string, **kwargs):
         char.msg("")
         char.msg(f"|wWelcome to Gelatinous Monster, |c{char.key}|w.|n")
         char.msg("")
-        char.msg("|xThe static clears. You open your eyes.|n")
-        char.msg("|xThe year is 198█. The broadcast continues.|n")
-        char.msg("|xYou are here. You are real. You are... something.|n")
+        char.msg("|wThe static clears. You open your eyes.|n")
+        char.msg("|wThe year is 198█. The broadcast continues.|n")
+        char.msg("|wYou are here. You are real. You are... something.|n")
         char.msg("")
         char.msg("|yType |wlook|y to examine your surroundings.|n")
         char.msg("|yType |whelp|y for a list of commands.|n")
