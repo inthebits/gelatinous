@@ -43,10 +43,9 @@ SERVER_HOSTNAME = "play.gel.monster"
 # Lockdown mode will cut off the game from any external connections
 # and only allow connections from localhost. Requires a cold reboot.
 LOCKDOWN_MODE = False
-# Controls whether new account registration is available.
-# Set to False to lock down the registration page and the create account command.
-# ENABLED FOR TELNET TESTING PHASE (October 14, 2025)
-NEW_ACCOUNT_REGISTRATION_ENABLED = True
+# Allow new account registration via the website and the `create` command
+# (October 14, 2025: Disabled after successful Phase 1 testing - ready for Phase 2)
+NEW_ACCOUNT_REGISTRATION_ENABLED = False
 # Activate telnet service
 TELNET_ENABLED = True
 # A list of ports the Evennia telnet server listens on Can be one or many.
