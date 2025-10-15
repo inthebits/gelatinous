@@ -834,8 +834,8 @@ def first_char_grim(caller, raw_string, sex="androgynous", **kwargs):
         args = raw_string.strip().lower().split()
         
         if not args:
-            # Return None to re-display current node
-            return None
+            # Re-display current node (ignore empty command)
+            return first_char_grim(caller, "", **kwargs)
         
         command = args[0]
         
@@ -852,8 +852,8 @@ def first_char_grim(caller, raw_string, sex="androgynous", **kwargs):
                 caller.ndb.charcreate_data['resonance'] = 75
                 caller.ndb.charcreate_data['intellect'] = 75
                 caller.ndb.charcreate_data['motorics'] = 75
-                # Return None to re-display current node with reset values
-                return None
+                # Re-display the menu with reset values by calling self recursively
+                return first_char_grim(caller, "", **kwargs)
             
             # Done command
             if command in ["done", "d", "finish", "finalize"]:
@@ -861,28 +861,28 @@ def first_char_grim(caller, raw_string, sex="androgynous", **kwargs):
                 is_valid, error = validate_grim_distribution(grit, resonance, intellect, motorics)
                 if not is_valid:
                     caller.msg(f"|r{error}|n")
-                    # Return None to re-display current node
-                    return None
+                    # Re-display current node with error message
+                    return first_char_grim(caller, "", **kwargs)
                 # Call next node directly and return its result
                 return first_char_confirm(caller, "", **kwargs)
             
             # Stat assignment commands
             if len(args) < 2:
                 caller.msg("|rUsage: <stat> <value>  (e.g., 'grit 100')|n")
-                # Return None to re-display current node
-                return None
+                # Re-display current node
+                return first_char_grim(caller, "", **kwargs)
             
             try:
                 value = int(args[1])
             except ValueError:
                 caller.msg("|rValue must be a number.|n")
-                # Return None to re-display current node
-                return None
+                # Re-display current node
+                return first_char_grim(caller, "", **kwargs)
             
             if value < 1 or value > 150:
                 caller.msg("|rValue must be between 1 and 150.|n")
-                # Return None to re-display current node
-                return None
+                # Re-display current node
+                return first_char_grim(caller, "", **kwargs)
             
             # Set the stat
             if command in ["grit", "g"]:
@@ -894,8 +894,8 @@ def first_char_grim(caller, raw_string, sex="androgynous", **kwargs):
             elif command in ["motorics", "m", "mot"]:
                 caller.ndb.charcreate_data['motorics'] = value
             
-            # Return None to re-display current node with updated values
-            return None
+            # Re-display the menu with updated values by calling self recursively
+            return first_char_grim(caller, "", **kwargs)
         # If not a valid command, just ignore and display the menu
     
     # Display the GRIM distribution screen

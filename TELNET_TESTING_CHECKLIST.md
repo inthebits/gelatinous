@@ -60,6 +60,19 @@
   - Always display menu if input isn't a recognized command
 - **Files Modified:**
   - `first_char_grim()` - Added valid_commands list and filtering
+- **Status:** ✅ FIXED
+
+**Bug #4 Found During Fourth Test:**
+- **Issue:** EvMenu exiting after first stat command (e.g., `grit 100`)
+- **Symptom:** After typing `grit 100`, no update shown, next command `resonance 200` treated as regular game command
+- **Root Cause:** Returning `None` from EvMenu node actually EXITS the menu (not re-displays)
+- **Technical Detail:** EvMenu behavior: `return None` = exit menu, not = re-display current node
+- **Fix Applied:** Changed all `return None` to `return node_name(caller, "", **kwargs)` (recursive call)
+  - Errors: `return first_char_grim(caller, "", **kwargs)`
+  - State updates: `return first_char_grim(caller, "", **kwargs)`
+  - Reset command: `return first_char_grim(caller, "", **kwargs)`
+- **Files Modified:**
+  - `first_char_grim()` - All error returns and state update returns
 - **Status:** ✅ FIXED - Ready for re-testing
 
 ---

@@ -77,12 +77,14 @@ def first_char_name_first(caller, raw_string, **kwargs):
 
 **Solution - Pattern #1: Return None to Re-Display**
 ```python
+# ⚠️ WARNING: return None actually EXITS the menu!
+# Use recursive call instead:
 def node(caller, raw_string, **kwargs):
     if raw_string and raw_string.strip():
         # Validate
         if not valid:
             caller.msg("Error message")
-            return None  # ✅ Re-displays current node
+            return node(caller, "", **kwargs)  # ✅ Re-displays current node
 ```
 
 **Solution - Pattern #2: Call Next Node Directly**
@@ -230,14 +232,15 @@ Commands: stat1 <value>, stat2 <value>, reset, done
 
 ### ✅ DO:
 - Check `if raw_string and raw_string.strip():` for text input validation
-- Return `None` to re-display current node (errors, state updates)
+- Return recursive call to re-display current node: `return current_node(caller, "", **kwargs)`
 - Call next node function directly when advancing: `return next_node(caller, "", **kwargs)`
 - Use goto-callables for menu option routing (they can return node name strings)
 
 ### ❌ DON'T:
 - Return just `if raw_string:` (can trigger on empty input)
 - Return node name string during input processing: `return "node_name"`
-- Forget to pass empty string when calling next node: `next_node(caller, "", **kwargs)`
+- Return `None` (this EXITS the menu, doesn't re-display!)
+- Forget to pass empty string when calling nodes: `node(caller, "", **kwargs)`
 
 ### 🔍 Debugging:
 If you see node names appearing as text output, you're returning a string during input processing instead of calling the node function.
