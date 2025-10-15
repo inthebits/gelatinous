@@ -588,8 +588,11 @@ Select biological sex for this sleeve:
     return text, options
 
 
-def respawn_finalize_template(caller, raw_string, sex="ambiguous", **kwargs):
+def respawn_finalize_template(caller, raw_string, **kwargs):
     """Create character from template and finalize respawn."""
+    
+    # Extract sex from kwargs (EvMenu passes goto dict params as kwargs)
+    sex = kwargs.get('sex', 'ambiguous')
     
     template = caller.ndb.charcreate_data.get('selected_template')
     if not template:
@@ -863,8 +866,11 @@ Select biological sex:
     return text, options
 
 
-def first_char_grim(caller, raw_string, sex="ambiguous", **kwargs):
+def first_char_grim(caller, raw_string, **kwargs):
     """Distribute GRIM points."""
+    
+    # Extract sex from kwargs (passed from EvMenu goto dict)
+    sex = kwargs.get('sex', 'ambiguous')
     
     # Store sex if provided (on first entry from sex selection)
     if sex and sex != caller.ndb.charcreate_data.get('sex'):
