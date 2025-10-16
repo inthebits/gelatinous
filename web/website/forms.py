@@ -149,24 +149,28 @@ class CharacterForm(EvenniaCharacterForm):
     def clean(self):
         """
         Validate that GRIM stats total exactly 300 points.
+        
+        IntegerField automatically converts values to int during field cleaning,
+        so by the time we get here, values should already be integers.
         """
         cleaned_data = super().clean()
         
-        # Debug: Check what's in cleaned_data
-        print(f"DEBUG clean(): cleaned_data = {cleaned_data}")
-        print(f"DEBUG clean(): grit raw = {repr(cleaned_data.get('grit'))}, type = {type(cleaned_data.get('grit'))}")
-        print(f"DEBUG clean(): resonance raw = {repr(cleaned_data.get('resonance'))}, type = {type(cleaned_data.get('resonance'))}")
-        print(f"DEBUG clean(): intellect raw = {repr(cleaned_data.get('intellect'))}, type = {type(cleaned_data.get('intellect'))}")
-        print(f"DEBUG clean(): motorics raw = {repr(cleaned_data.get('motorics'))}, type = {type(cleaned_data.get('motorics'))}")
+        # IntegerField should have already converted these to int
+        # If a field failed validation, it won't be in cleaned_data
+        grit = cleaned_data.get('grit', 0)
+        resonance = cleaned_data.get('resonance', 0)
+        intellect = cleaned_data.get('intellect', 0)
+        motorics = cleaned_data.get('motorics', 0)
         
-        # Get values and ensure they're integers
-        grit = int(cleaned_data.get('grit', 0) or 0)
-        resonance = int(cleaned_data.get('resonance', 0) or 0)
-        intellect = int(cleaned_data.get('intellect', 0) or 0)
-        motorics = int(cleaned_data.get('motorics', 0) or 0)
+        # Sanity check: ensure they're actually integers
+        if not all(isinstance(v, int) for v in [grit, resonance, intellect, motorics]):
+            # Force conversion if needed (shouldn't happen with IntegerField)
+            grit = int(grit) if grit else 0
+            resonance = int(resonance) if resonance else 0
+            intellect = int(intellect) if intellect else 0
+            motorics = int(motorics) if motorics else 0
         
         total = grit + resonance + intellect + motorics
-        print(f"DEBUG clean(): total = {total} (grit={grit}, res={resonance}, int={intellect}, mot={motorics})")
         
         if total != GRIM_TOTAL_POINTS:
             raise forms.ValidationError(

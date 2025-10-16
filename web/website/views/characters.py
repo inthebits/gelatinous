@@ -56,11 +56,11 @@ class CharacterCreateView(EvenniaCharacterCreateView):
             return self.form_invalid(form)
         
         if character:
-            # Set GRIM stats (using AttributeProperty)
-            character.grit = form.cleaned_data['grit']
-            character.resonance = form.cleaned_data['resonance']
-            character.intellect = form.cleaned_data['intellect']
-            character.motorics = form.cleaned_data['motorics']
+            # Set GRIM stats (using AttributeProperty) - ensure integers
+            character.grit = int(form.cleaned_data['grit'])
+            character.resonance = int(form.cleaned_data['resonance'])
+            character.intellect = int(form.cleaned_data['intellect'])
+            character.motorics = int(form.cleaned_data['motorics'])
             
             # Set sex (using AttributeProperty)
             character.sex = sex
