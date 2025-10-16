@@ -9,13 +9,11 @@ so it can reroute to all website pages.
 from django.urls import path
 
 from evennia.web.website.urls import urlpatterns as evennia_website_urlpatterns
-from web.website.views import characters
 
-# Override Evennia's default CharacterCreateView with our GRIM-enabled version
-# This provides a smart single-page experience that handles both first-time
-# character creation and post-death respawn/flash cloning.
+# add patterns here
 urlpatterns = [
-    path("characters/create/", characters.CharacterCreateView.as_view(), name="character-create"),
+    # path("url-pattern", imported_python_view),
+    # path("url-pattern", imported_python_view),
 ]
 
 # read by Django
