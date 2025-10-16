@@ -114,10 +114,14 @@ document.addEventListener('DOMContentLoaded', function() {
   
   function updateTotal() {
     let total = 0;
+    console.log('=== Calculating GRIM Total ===');
+    console.log('Found', grimStats.length, 'stat inputs');
     grimStats.forEach(stat => {
-      const value = parseInt(stat.value) || 0;
-      total += value;
+      const value = parseInt(stat.value, 10) || 0;
+      console.log(stat.name, '=', stat.value, '-> parsed as', value);
+      total = total + value;
     });
+    console.log('Final total:', total);
     
     totalDisplay.textContent = total;
     
