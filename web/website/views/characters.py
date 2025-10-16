@@ -52,12 +52,20 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         # Characters with db.archived == True should not count toward the limit
         active_characters = []
         for char in account.characters:
-            # Check if archived attribute exists and is True
-            if not char.attributes.get('archived', default=False):
+            # Access archived status via db.archived (shorthand for attributes)
+            archived = char.db.archived if hasattr(char.db, 'archived') else False
+            if not archived:
                 active_characters.append(char)
         
         from django.conf import settings
         max_chars = settings.MAX_NR_CHARACTERS
+        
+        # Debug logging to help diagnose
+        print(f"DEBUG: Total characters: {len(account.characters)}")
+        print(f"DEBUG: Active characters: {len(active_characters)}")
+        for char in account.characters:
+            archived_status = char.db.archived if hasattr(char.db, 'archived') else False
+            print(f"DEBUG: {char.name} - archived={archived_status}")
         
         if max_chars is not None and len(active_characters) >= max_chars:
             from evennia.utils.ansi import strip_ansi
