@@ -79,7 +79,7 @@ Decant Sleeve
               </div>
               
               {% for field in form %}
-                {% if field.name in 'grit,resonance,intellect,motorics' %}
+                {% if field.name == 'grit' or field.name == 'resonance' or field.name == 'intellect' or field.name == 'motorics' %}
                 <div class="form-field my-3">
                   {{ field.label_tag }}
                   {{ field | addclass:"form-control grim-stat" }}
