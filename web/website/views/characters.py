@@ -8,6 +8,7 @@ automatically detects respawn vs. first-time creation.
 
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.http import HttpResponseRedirect
 from evennia.web.website.views.characters import (
     CharacterCreateView as EvenniaCharacterCreateView
 )
@@ -73,11 +74,12 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         2. Template: Use one of the randomly generated templates
         3. Custom: Use the form data submitted by player
         
-        The path is determined by the 'respawn_choice' POST parameter,
-        which is only present when is_respawn=True in the template.
+        Follows Evennia's pattern: extract form data, call typeclass.create(),
+        set additional attributes, return HttpResponseRedirect.
         """
         account = self.request.user
         respawn_choice = self.request.POST.get('respawn_choice')
+        character = None
         
         # PATH 1: Flash Clone (exact copy of last character)
         if respawn_choice == 'flash_clone':
@@ -87,14 +89,14 @@ class CharacterCreateView(EvenniaCharacterCreateView):
             
             if archived_chars.exists():
                 last_character = archived_chars.first()
-                new_character = create_flash_clone(account, last_character)
+                character = create_flash_clone(account, last_character)
                 
                 messages.success(
                     self.request,
-                    f"Flash clone '{new_character.name}' created from Stack backup. "
+                    f"Flash clone '{character.name}' created from Stack backup. "
                     f"Consciousness restored with original GRIM configuration."
                 )
-                return redirect('character-detail', pk=new_character.id)
+                return redirect('character-manage')
         
         # PATH 2: Template Selection (use generated template)
         elif respawn_choice and respawn_choice.startswith('template_'):
@@ -108,9 +110,16 @@ class CharacterCreateView(EvenniaCharacterCreateView):
                 if template_index < len(templates):
                     template = templates[template_index]
                     
-                    # Create character using parent's logic first
-                    response = super().form_valid(form)
-                    character = self.object
+                    # Extract form data (Evennia pattern)
+                    charname = form.cleaned_data['db_key']
+                    description = form.cleaned_data.get('desc', '')
+                    
+                    # Create character using typeclass.create() - returns (character, errors)
+                    character, errors = self.typeclass.create(charname, account, description=description)
+                    
+                    if errors:
+                        [messages.error(self.request, x) for x in errors]
+                        return self.form_invalid(form)
                     
                     if character:
                         # Override with template stats
@@ -128,16 +137,24 @@ class CharacterCreateView(EvenniaCharacterCreateView):
                             self.request,
                             f"Character '{character.name}' created from template Sleeve."
                         )
-                    
-                    return response
+                        return HttpResponseRedirect(self.success_url)
             except (ValueError, IndexError):
                 # Invalid template index, fall through to custom creation
                 pass
         
         # PATH 3: Custom Character (standard form submission)
         # This is also the fallback if anything goes wrong above
-        response = super().form_valid(form)
-        character = self.object
+        
+        # Extract form data (Evennia pattern)
+        charname = form.cleaned_data['db_key']
+        description = form.cleaned_data.get('desc', '')
+        
+        # Create character using typeclass.create() - returns (character, errors)
+        character, errors = self.typeclass.create(charname, account, description=description)
+        
+        if errors:
+            [messages.error(self.request, x) for x in errors]
+            return self.form_invalid(form)
         
         if character:
             # Set GRIM stats from form
@@ -147,16 +164,14 @@ class CharacterCreateView(EvenniaCharacterCreateView):
             character.db.motorics = form.cleaned_data['motorics']
             
             # Initialize Stack attributes for flash cloning
-            char_name = form.cleaned_data.get('db_key', character.key)
-            name_parts = char_name.split(maxsplit=1)
+            name_parts = charname.split(maxsplit=1)
             character.db.stack_name_first = name_parts[0]
             character.db.stack_name_last = name_parts[1] if len(name_parts) > 1 else ""
             character.db.stack_sex = "ambiguous"  # Default, can be enhanced later
             character.db.stack_skintone = "fair"   # Default, can be enhanced later
             
             # Initialize death tracking
-            if not hasattr(character.db, 'death_count'):
-                character.db.death_count = 0
+            character.db.death_count = 0
             
             messages.success(
                 self.request,
@@ -164,5 +179,7 @@ class CharacterCreateView(EvenniaCharacterCreateView):
                 f"Grit {character.db.grit}, Resonance {character.db.resonance}, "
                 f"Intellect {character.db.intellect}, Motorics {character.db.motorics}"
             )
-        
-        return response
+            return HttpResponseRedirect(self.success_url)
+        else:
+            messages.error(self.request, "Your character could not be created.")
+            return self.form_invalid(form)
