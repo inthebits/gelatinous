@@ -21,24 +21,79 @@ Decant Sleeve
                   <div class="alert alert-danger" role="alert">{{ error }}</div>
                 {% endfor %}
               {% endfor %}
+              {% for error in form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">{{ error }}</div>
+              {% endfor %}
             {% endif %}
           
           <form method="post" action="?">
             {% csrf_token %}
   
-            {% for field in form %}
-            <div class="form-field my-3">
-                {{ field.label_tag }}
-                {{ field | addclass:"form-control" }}
-                {% if field.help_text %}
-                <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+            <div class="form-section mb-4">
+              <h3>Identity</h3>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-field my-3">
+                    {{ form.first_name.label_tag }}
+                    {{ form.first_name | addclass:"form-control" }}
+                    {% if form.first_name.help_text %}
+                    <small class="form-text text-muted">{{ form.first_name.help_text|safe }}</small>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-field my-3">
+                    {{ form.last_name.label_tag }}
+                    {{ form.last_name | addclass:"form-control" }}
+                    {% if form.last_name.help_text %}
+                    <small class="form-text text-muted">{{ form.last_name.help_text|safe }}</small>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-field my-3">
+                {{ form.sex.label_tag }}
+                {{ form.sex | addclass:"form-control" }}
+                {% if form.sex.help_text %}
+                <small class="form-text text-muted">{{ form.sex.help_text|safe }}</small>
                 {% endif %}
+              </div>
+              
+              <div class="form-field my-3">
+                {{ form.desc.label_tag }}
+                {{ form.desc | addclass:"form-control" }}
+                {% if form.desc.help_text %}
+                <small class="form-text text-muted">{{ form.desc.help_text|safe }}</small>
+                {% endif %}
+              </div>
             </div>
-            {% endfor %}
+            
+            <div class="form-section mb-4">
+              <h3>GRIM Stats</h3>
+              <p class="text-muted">Distribute 300 points across your stats (1-150 each)</p>
+              
+              <div id="grim-total-display" class="alert alert-info mb-3">
+                <strong>Total Points:</strong> <span id="grim-total">300</span> / 300
+                <span id="grim-status"></span>
+              </div>
+              
+              {% for field in form %}
+                {% if field.name in 'grit,resonance,intellect,motorics' %}
+                <div class="form-field my-3">
+                  {{ field.label_tag }}
+                  {{ field | addclass:"form-control grim-stat" }}
+                  {% if field.help_text %}
+                  <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                  {% endif %}
+                </div>
+                {% endif %}
+              {% endfor %}
+            </div>
             
             <hr />
             <div class="form-group">
-              <input class="form-control btn btn-outline-secondary" type="submit" value="Submit" />
+              <input class="form-control btn btn-outline-secondary" type="submit" value="Decant Sleeve" />
               <input type="hidden" name="next" value="{{ next }}" />
             </div>
           </form>
@@ -47,5 +102,48 @@ Decant Sleeve
       </div>
     </div>
   </div>
+
+<script>
+// GRIM Stat Point Calculator
+document.addEventListener('DOMContentLoaded', function() {
+  const grimStats = document.querySelectorAll('.grim-stat');
+  const totalDisplay = document.getElementById('grim-total');
+  const statusDisplay = document.getElementById('grim-status');
+  const totalContainer = document.getElementById('grim-total-display');
+  const submitButton = document.querySelector('input[type="submit"]');
+  
+  function updateTotal() {
+    let total = 0;
+    grimStats.forEach(stat => {
+      const value = parseInt(stat.value) || 0;
+      total += value;
+    });
+    
+    totalDisplay.textContent = total;
+    
+    if (total === 300) {
+      totalContainer.className = 'alert alert-success mb-3';
+      statusDisplay.innerHTML = '<span class="ml-2">✓ Valid</span>';
+      submitButton.disabled = false;
+    } else if (total > 300) {
+      totalContainer.className = 'alert alert-danger mb-3';
+      statusDisplay.innerHTML = '<span class="ml-2">✗ Over by ' + (total - 300) + '</span>';
+      submitButton.disabled = true;
+    } else {
+      totalContainer.className = 'alert alert-warning mb-3';
+      statusDisplay.innerHTML = '<span class="ml-2">⚠ Under by ' + (300 - total) + '</span>';
+      submitButton.disabled = true;
+    }
+  }
+  
+  grimStats.forEach(stat => {
+    stat.addEventListener('input', updateTotal);
+    stat.addEventListener('change', updateTotal);
+  });
+  
+  // Initial calculation
+  updateTotal();
+});
+</script>
 
 {% endblock %}

@@ -1,0 +1,168 @@
+"""
+Django forms for Gelatinous Monster character creation.
+
+Extends Evennia's default CharacterForm to add GRIM stat system and name structure.
+"""
+
+from django import forms
+from evennia.web.website.forms import CharacterForm as EvenniaCharacterForm
+
+
+# Constants from telnet character creation
+GRIM_TOTAL_POINTS = 300
+GRIM_MIN = 1
+GRIM_MAX = 150
+
+SEX_CHOICES = [
+    ('male', 'Male'),
+    ('female', 'Female'),
+    ('ambiguous', 'Ambiguous'),
+]
+
+
+class CharacterForm(EvenniaCharacterForm):
+    """
+    Extends Evennia's default CharacterForm with GRIM stats and name structure.
+    
+    GRIM System:
+    - Grit: Physical power and endurance
+    - Resonance: Psychic affinity and willpower
+    - Intellect: Logic, memory, and reasoning
+    - Motorics: Dexterity, reflexes, and coordination
+    
+    Total points must equal 300.
+    """
+    
+    # Name fields (split from db_key)
+    first_name = forms.CharField(
+        max_length=30,
+        min_length=2,
+        label="First Name",
+        help_text="Your character's first name (2-30 characters)",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'First name'
+        })
+    )
+    
+    last_name = forms.CharField(
+        max_length=30,
+        min_length=2,
+        label="Last Name",
+        help_text="Your character's last name (2-30 characters)",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Last name'
+        })
+    )
+    
+    # Sex/Gender
+    sex = forms.ChoiceField(
+        choices=SEX_CHOICES,
+        initial='ambiguous',
+        label="Sex",
+        help_text="Biological sex presentation",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    
+    # GRIM Stats
+    grit = forms.IntegerField(
+        min_value=GRIM_MIN,
+        max_value=GRIM_MAX,
+        initial=75,
+        label="Grit",
+        help_text="Physical power and endurance (1-150)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control grim-stat',
+            'data-stat': 'grit',
+            'placeholder': '75'
+        })
+    )
+    
+    resonance = forms.IntegerField(
+        min_value=GRIM_MIN,
+        max_value=GRIM_MAX,
+        initial=75,
+        label="Resonance",
+        help_text="Psychic affinity and willpower (1-150)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control grim-stat',
+            'data-stat': 'resonance',
+            'placeholder': '75'
+        })
+    )
+    
+    intellect = forms.IntegerField(
+        min_value=GRIM_MIN,
+        max_value=GRIM_MAX,
+        initial=75,
+        label="Intellect",
+        help_text="Logic, memory, and reasoning (1-150)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control grim-stat',
+            'data-stat': 'intellect',
+            'placeholder': '75'
+        })
+    )
+    
+    motorics = forms.IntegerField(
+        min_value=GRIM_MIN,
+        max_value=GRIM_MAX,
+        initial=75,
+        label="Motorics",
+        help_text="Dexterity, reflexes, and coordination (1-150)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control grim-stat',
+            'data-stat': 'motorics',
+            'placeholder': '75'
+        })
+    )
+    
+    class Meta(EvenniaCharacterForm.Meta):
+        # Extend parent's fields with our custom fields
+        fields = ('first_name', 'last_name', 'sex', 'desc', 'grit', 'resonance', 'intellect', 'motorics')
+    
+    def clean_first_name(self):
+        """Validate first name format."""
+        import re
+        name = self.cleaned_data.get('first_name', '').strip()
+        
+        if not re.match(r"^[a-zA-Z][a-zA-Z\-']*[a-zA-Z]$", name):
+            raise forms.ValidationError(
+                "Name must start and end with a letter, and contain only letters, hyphens, and apostrophes."
+            )
+        
+        return name
+    
+    def clean_last_name(self):
+        """Validate last name format."""
+        import re
+        name = self.cleaned_data.get('last_name', '').strip()
+        
+        if not re.match(r"^[a-zA-Z][a-zA-Z\-']*[a-zA-Z]$", name):
+            raise forms.ValidationError(
+                "Name must start and end with a letter, and contain only letters, hyphens, and apostrophes."
+            )
+        
+        return name
+    
+    def clean(self):
+        """
+        Validate that GRIM stats total exactly 300 points.
+        """
+        cleaned_data = super().clean()
+        
+        grit = cleaned_data.get('grit', 0)
+        resonance = cleaned_data.get('resonance', 0)
+        intellect = cleaned_data.get('intellect', 0)
+        motorics = cleaned_data.get('motorics', 0)
+        
+        total = grit + resonance + intellect + motorics
+        
+        if total != GRIM_TOTAL_POINTS:
+            raise forms.ValidationError(
+                f"GRIM stats must total exactly {GRIM_TOTAL_POINTS} points. "
+                f"Current total: {total} points."
+            )
+        
+        return cleaned_data
