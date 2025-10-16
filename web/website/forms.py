@@ -152,10 +152,11 @@ class CharacterForm(EvenniaCharacterForm):
         """
         cleaned_data = super().clean()
         
-        grit = cleaned_data.get('grit', 0)
-        resonance = cleaned_data.get('resonance', 0)
-        intellect = cleaned_data.get('intellect', 0)
-        motorics = cleaned_data.get('motorics', 0)
+        # Get values and ensure they're integers
+        grit = int(cleaned_data.get('grit', 0) or 0)
+        resonance = int(cleaned_data.get('resonance', 0) or 0)
+        intellect = int(cleaned_data.get('intellect', 0) or 0)
+        motorics = int(cleaned_data.get('motorics', 0) or 0)
         
         total = grit + resonance + intellect + motorics
         
