@@ -49,7 +49,13 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         account = self.request.user
         
         # Check character slot availability (excluding archived characters)
-        active_characters = [c for c in account.characters if not getattr(c.db, 'archived', False)]
+        # Characters with db.archived == True should not count toward the limit
+        active_characters = []
+        for char in account.characters:
+            # Check if archived attribute exists and is True
+            if not char.attributes.get('archived', default=False):
+                active_characters.append(char)
+        
         from django.conf import settings
         max_chars = settings.MAX_NR_CHARACTERS
         
