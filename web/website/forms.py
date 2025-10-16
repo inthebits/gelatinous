@@ -75,7 +75,7 @@ class CharacterForm(EvenniaCharacterForm):
         widget=forms.NumberInput(attrs={
             'class': 'form-control grim-stat',
             'data-stat': 'grit',
-            'placeholder': '75'
+            'value': '75'
         })
     )
     
@@ -88,7 +88,7 @@ class CharacterForm(EvenniaCharacterForm):
         widget=forms.NumberInput(attrs={
             'class': 'form-control grim-stat',
             'data-stat': 'resonance',
-            'placeholder': '75'
+            'value': '75'
         })
     )
     
@@ -101,7 +101,7 @@ class CharacterForm(EvenniaCharacterForm):
         widget=forms.NumberInput(attrs={
             'class': 'form-control grim-stat',
             'data-stat': 'intellect',
-            'placeholder': '75'
+            'value': '75'
         })
     )
     
@@ -114,7 +114,7 @@ class CharacterForm(EvenniaCharacterForm):
         widget=forms.NumberInput(attrs={
             'class': 'form-control grim-stat',
             'data-stat': 'motorics',
-            'placeholder': '75'
+            'value': '75'
         })
     )
     
@@ -152,6 +152,13 @@ class CharacterForm(EvenniaCharacterForm):
         """
         cleaned_data = super().clean()
         
+        # Debug: Check what's in cleaned_data
+        print(f"DEBUG clean(): cleaned_data = {cleaned_data}")
+        print(f"DEBUG clean(): grit raw = {repr(cleaned_data.get('grit'))}, type = {type(cleaned_data.get('grit'))}")
+        print(f"DEBUG clean(): resonance raw = {repr(cleaned_data.get('resonance'))}, type = {type(cleaned_data.get('resonance'))}")
+        print(f"DEBUG clean(): intellect raw = {repr(cleaned_data.get('intellect'))}, type = {type(cleaned_data.get('intellect'))}")
+        print(f"DEBUG clean(): motorics raw = {repr(cleaned_data.get('motorics'))}, type = {type(cleaned_data.get('motorics'))}")
+        
         # Get values and ensure they're integers
         grit = int(cleaned_data.get('grit', 0) or 0)
         resonance = int(cleaned_data.get('resonance', 0) or 0)
@@ -159,6 +166,7 @@ class CharacterForm(EvenniaCharacterForm):
         motorics = int(cleaned_data.get('motorics', 0) or 0)
         
         total = grit + resonance + intellect + motorics
+        print(f"DEBUG clean(): total = {total} (grit={grit}, res={resonance}, int={intellect}, mot={motorics})")
         
         if total != GRIM_TOTAL_POINTS:
             raise forms.ValidationError(
