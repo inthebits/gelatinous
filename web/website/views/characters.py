@@ -68,8 +68,15 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         description = form.cleaned_data.get('desc', '')
         sex = form.cleaned_data['sex']
         
+        # Get START_LOCATION for character spawn point
+        from django.conf import settings
+        from evennia.objects.models import ObjectDB
+        start_location = ObjectDB.objects.get_id(settings.START_LOCATION)
+        
         # Create character using typeclass.create() - returns (character, errors)
-        character, errors = self.typeclass.create(charname, account, description=description)
+        character, errors = self.typeclass.create(
+            charname, account, description=description, location=start_location, home=start_location
+        )
         
         if errors:
             # Strip Evennia color codes from error messages before displaying on web
