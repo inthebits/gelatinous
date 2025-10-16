@@ -9,8 +9,11 @@ import uuid
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseRedirect, Http404
+from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.text import slugify
 from django.views.generic import View
 from evennia.web.website.views.objects import ObjectCreateView, ObjectDetailView
 from evennia.web.website.views.characters import (
@@ -93,7 +96,7 @@ class CharacterCreateView(EvenniaCharacterCreateView):
             return self.form_invalid(form)
 
 
-class CharacterArchiveView(LoginRequiredMixin, ObjectDetailView, View):
+class CharacterArchiveView(LoginRequiredMixin, CharacterMixin, View):
     """
     Archive a character instead of deleting it.
     
@@ -108,17 +111,50 @@ class CharacterArchiveView(LoginRequiredMixin, ObjectDetailView, View):
     # -- Evennia constructs --
     access_type = "delete"  # Use delete permission (user must own character)
     
-    def get_queryset(self):
-        """Override to only return characters owned by this account."""
-        account = self.request.user
-        ids = [getattr(x, "id") for x in account.characters if x]
-        from typeclasses.characters import Character
-        return Character.objects.filter(id__in=ids)
+    def get(self, request, *args, **kwargs):
+        """Display the archive confirmation page."""
+        # Get the character using pk from URL
+        pk = kwargs.get('pk')
+        slug_param = kwargs.get('slug')
+        
+        # Get character from database
+        try:
+            character = self.typeclass.objects.get(pk=pk)
+            
+            # Verify slug matches
+            if slugify(character.name) != slug_param:
+                raise Http404("Character not found")
+            
+            # Verify ownership (user must be in character's account's characters)
+            if character not in request.user.characters:
+                raise PermissionDenied("You don't have permission to archive this character")
+                
+        except self.typeclass.DoesNotExist:
+            raise Http404("Character not found")
+        
+        # Render confirmation template
+        return render(request, self.template_name, {'object': character})
     
     def post(self, request, *args, **kwargs):
         """Handle the archive action."""
-        # Get the character object (with permission check)
-        character = self.get_object()
+        # Get the character using pk from URL
+        pk = kwargs.get('pk')
+        slug_param = kwargs.get('slug')
+        
+        # Get character (same validation as GET)
+        try:
+            character = self.typeclass.objects.get(pk=pk)
+            
+            # Verify slug matches
+            if slugify(character.name) != slug_param:
+                raise Http404("Character not found")
+            
+            # Verify ownership
+            if character not in request.user.characters:
+                raise PermissionDenied("You don't have permission to archive this character")
+                
+        except self.typeclass.DoesNotExist:
+            raise Http404("Character not found")
         
         # Archive instead of delete
         character.db.archived = True
