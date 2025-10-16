@@ -1,0 +1,354 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block titleblock %}
+  {% if is_respawn %}
+    Respawn Character - VECTOR Industries
+  {% else %}
+    Create Character - VECTOR Industries
+  {% endif %}
+{% endblock %}
+
+{% block header_ext %}
+<style>
+  .grim-stat-group {
+    margin-bottom: 1.5rem;
+  }
+  .grim-stat-label {
+    font-weight: bold;
+    color: #2c3e50;
+  }
+  .points-display {
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+  }
+  .points-valid {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  .points-warning {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  .points-error {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  .template-card {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .template-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  .template-card input[type="radio"]:checked + .card-body {
+    background-color: #e7f3ff;
+  }
+  .flash-clone-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+  }
+  .flash-clone-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+  }
+  .stat-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: rgba(255,255,255,0.2);
+    border-radius: 4px;
+    margin-right: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      
+      {% if is_respawn %}
+        {# RESPAWN MODE: Show Flash Clone + Templates + Custom #}
+        <h1 class="mb-4">Stack Recovery - VECTOR Industries Respawn Protocol</h1>
+        <p class="lead">Your previous Sleeve has been terminated. Select a recovery method:</p>
+        
+        <form method="post">
+          {% csrf_token %}
+          
+          {# Option 1: Flash Clone (Exact Copy) #}
+          <div class="template-card flash-clone-card mb-4">
+            <input type="radio" name="respawn_choice" value="flash_clone" id="choice_flash" class="d-none">
+            <label for="choice_flash" class="card-body mb-0" style="cursor: pointer;">
+              <h3 class="card-title">
+                <i class="fas fa-clone"></i> Flash Clone
+                <span class="badge badge-light float-right">Recommended</span>
+              </h3>
+              <p class="card-text">
+                Restore your original Stack configuration. All GRIM stats and identity preserved.
+              </p>
+              {% if last_character %}
+              <div class="mt-3">
+                <strong>Stack Identity:</strong> {{ last_character.db.stack_name_first|default:"Unknown" }} {{ last_character.db.stack_name_last|default:"" }}<br>
+                <strong>Death Count:</strong> {{ last_character.db.death_count|default:0 }}<br>
+                <div class="mt-2">
+                  <span class="stat-badge">Grit: {{ last_character.db.grit|default:"N/A" }}</span>
+                  <span class="stat-badge">Resonance: {{ last_character.db.resonance|default:"N/A" }}</span>
+                  <span class="stat-badge">Intellect: {{ last_character.db.intellect|default:"N/A" }}</span>
+                  <span class="stat-badge">Motorics: {{ last_character.db.motorics|default:"N/A" }}</span>
+                </div>
+              </div>
+              {% endif %}
+            </label>
+          </div>
+          
+          {# Option 2-4: Random Templates #}
+          <h4 class="mt-4 mb-3">Alternative Sleeve Templates</h4>
+          <div class="row">
+            {% for template in random_templates %}
+            <div class="col-md-4">
+              <div class="template-card">
+                <input type="radio" name="respawn_choice" value="template_{{ forloop.counter0 }}" id="choice_template_{{ forloop.counter0 }}" class="d-none">
+                <label for="choice_template_{{ forloop.counter0 }}" class="card-body mb-0" style="cursor: pointer;">
+                  <h5 class="card-title">Template {{ forloop.counter }}</h5>
+                  <p class="card-text">
+                    <strong>Name:</strong> {{ template.name_first }} {{ template.name_last }}<br>
+                    <strong>Sex:</strong> {{ template.sex|title }}<br>
+                    <strong>Skintone:</strong> {{ template.skintone|title }}
+                  </p>
+                  <div class="mt-2">
+                    <small class="stat-badge">G: {{ template.grit }}</small>
+                    <small class="stat-badge">R: {{ template.resonance }}</small>
+                    <small class="stat-badge">I: {{ template.intellect }}</small>
+                    <small class="stat-badge">M: {{ template.motorics }}</small>
+                  </div>
+                </label>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          {# Option 5: Custom Character #}
+          <div class="template-card mt-4">
+            <input type="radio" name="respawn_choice" value="custom" id="choice_custom" class="d-none" checked>
+            <label for="choice_custom" class="card-body mb-0" style="cursor: pointer;">
+              <h4 class="card-title">
+                <i class="fas fa-user-edit"></i> Custom Sleeve Configuration
+              </h4>
+              <p class="card-text">
+                Design a new Sleeve from scratch. Allocate 300 points across GRIM stats.
+              </p>
+            </label>
+          </div>
+          
+          {# Show custom form fields when custom is selected #}
+          <div id="custom-form-fields" class="mt-4">
+            <h4>Custom Character Details</h4>
+            {{ form.non_field_errors }}
+            
+            <div class="form-group">
+              <label for="{{ form.db_key.id_for_label }}">Character Name</label>
+              {{ form.db_key }}
+              {% if form.db_key.errors %}
+                <div class="invalid-feedback d-block">{{ form.db_key.errors }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="form-group">
+              <label for="{{ form.desc.id_for_label }}">Description</label>
+              {{ form.desc }}
+              {% if form.desc.errors %}
+                <div class="invalid-feedback d-block">{{ form.desc.errors }}</div>
+              {% endif %}
+            </div>
+            
+            <h5 class="mt-4">GRIM Stats (Total: 300 points)</h5>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="grim-stat-group">
+                  <label for="{{ form.grit.id_for_label }}" class="grim-stat-label">Grit</label>
+                  <small class="form-text text-muted">Physical toughness and endurance</small>
+                  {{ form.grit }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="grim-stat-group">
+                  <label for="{{ form.resonance.id_for_label }}" class="grim-stat-label">Resonance</label>
+                  <small class="form-text text-muted">Empathy and social awareness</small>
+                  {{ form.resonance }}
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="grim-stat-group">
+                  <label for="{{ form.intellect.id_for_label }}" class="grim-stat-label">Intellect</label>
+                  <small class="form-text text-muted">Logic and knowledge</small>
+                  {{ form.intellect }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="grim-stat-group">
+                  <label for="{{ form.motorics.id_for_label }}" class="grim-stat-label">Motorics</label>
+                  <small class="form-text text-muted">Coordination and reflexes</small>
+                  {{ form.motorics }}
+                </div>
+              </div>
+            </div>
+            
+            <div id="points-display" class="points-display points-valid">
+              Points Used: <span id="points-used">300</span> / 300
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary btn-lg btn-block mt-4">
+            Respawn Character
+          </button>
+        </form>
+        
+      {% else %}
+        {# FIRST-TIME CREATION MODE: Standard Form #}
+        <h1 class="mb-4">Create Your Character - VECTOR Industries</h1>
+        <p class="lead">Welcome to the GRIM System. Distribute 300 points across your attributes.</p>
+        
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          
+          <div class="form-group">
+            <label for="{{ form.db_key.id_for_label }}">Character Name</label>
+            {{ form.db_key }}
+            {% if form.db_key.errors %}
+              <div class="invalid-feedback d-block">{{ form.db_key.errors }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="form-group">
+            <label for="{{ form.desc.id_for_label }}">Description</label>
+            {{ form.desc }}
+            {% if form.desc.errors %}
+              <div class="invalid-feedback d-block">{{ form.desc.errors }}</div>
+            {% endif %}
+          </div>
+          
+          <h4 class="mt-4">GRIM Stats (Total: 300 points)</h4>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="grim-stat-group">
+                <label for="{{ form.grit.id_for_label }}" class="grim-stat-label">Grit</label>
+                <small class="form-text text-muted">Physical toughness and endurance</small>
+                {{ form.grit }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="grim-stat-group">
+                <label for="{{ form.resonance.id_for_label }}" class="grim-stat-label">Resonance</label>
+                <small class="form-text text-muted">Empathy and social awareness</small>
+                {{ form.resonance }}
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="grim-stat-group">
+                <label for="{{ form.intellect.id_for_label }}" class="grim-stat-label">Intellect</label>
+                <small class="form-text text-muted">Logic and knowledge</small>
+                {{ form.intellect }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="grim-stat-group">
+                <label for="{{ form.motorics.id_for_label }}" class="grim-stat-label">Motorics</label>
+                <small class="form-text text-muted">Coordination and reflexes</small>
+                {{ form.motorics }}
+              </div>
+            </div>
+          </div>
+          
+          <div id="points-display" class="points-display points-valid">
+            Points Used: <span id="points-used">300</span> / 300
+          </div>
+          
+          <button type="submit" class="btn btn-primary btn-lg btn-block mt-4">
+            Create Character
+          </button>
+        </form>
+      {% endif %}
+      
+    </div>
+  </div>
+</div>
+
+<script>
+  // Live GRIM points calculator
+  document.addEventListener('DOMContentLoaded', function() {
+    const gritInput = document.getElementById('{{ form.grit.id_for_label }}');
+    const resonanceInput = document.getElementById('{{ form.resonance.id_for_label }}');
+    const intellectInput = document.getElementById('{{ form.intellect.id_for_label }}');
+    const motoricsInput = document.getElementById('{{ form.motorics.id_for_label }}');
+    const pointsDisplay = document.getElementById('points-display');
+    const pointsUsed = document.getElementById('points-used');
+    
+    function calculatePoints() {
+      const total = 
+        (parseInt(gritInput.value) || 0) +
+        (parseInt(resonanceInput.value) || 0) +
+        (parseInt(intellectInput.value) || 0) +
+        (parseInt(motoricsInput.value) || 0);
+      
+      pointsUsed.textContent = total;
+      
+      // Update styling based on total
+      pointsDisplay.classList.remove('points-valid', 'points-warning', 'points-error');
+      if (total === 300) {
+        pointsDisplay.classList.add('points-valid');
+      } else if (total < 300) {
+        pointsDisplay.classList.add('points-warning');
+      } else {
+        pointsDisplay.classList.add('points-error');
+      }
+    }
+    
+    // Attach listeners
+    if (gritInput) {
+      gritInput.addEventListener('input', calculatePoints);
+      resonanceInput.addEventListener('input', calculatePoints);
+      intellectInput.addEventListener('input', calculatePoints);
+      motoricsInput.addEventListener('input', calculatePoints);
+      
+      // Initial calculation
+      calculatePoints();
+    }
+    
+    // Handle respawn choice visibility for custom fields
+    {% if is_respawn %}
+    const customFields = document.getElementById('custom-form-fields');
+    const radioButtons = document.querySelectorAll('input[name="respawn_choice"]');
+    
+    function toggleCustomFields() {
+      const customSelected = document.getElementById('choice_custom').checked;
+      customFields.style.display = customSelected ? 'block' : 'none';
+    }
+    
+    radioButtons.forEach(radio => {
+      radio.addEventListener('change', toggleCustomFields);
+    });
+    
+    // Initial state
+    toggleCustomFields();
+    {% endif %}
+  });
+</script>
+{% endblock %}
