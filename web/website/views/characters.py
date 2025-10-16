@@ -1,14 +1,21 @@
 """
-Character creation views for Gelatinous Monster.
+Django views for Gelatinous Monster character creation.
 
-Extends Evennia's default character creation system with GRIM stats
-and name structure matching the telnet character creation flow.
+Extends Evennia's default CharacterCreateView to add GRIM stats and archiving.
 """
 
+import time
+import uuid
+
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
+from django.views.generic import View
+from evennia.web.website.views.objects import ObjectCreateView, ObjectDetailView
 from evennia.web.website.views.characters import (
-    CharacterCreateView as EvenniaCharacterCreateView
+    CharacterCreateView as EvenniaCharacterCreateView,
+    CharacterMixin
 )
 
 # Import forms module (Evennia pattern)
@@ -84,3 +91,44 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         else:
             messages.error(self.request, "Character creation failed.")
             return self.form_invalid(form)
+
+
+class CharacterArchiveView(LoginRequiredMixin, ObjectDetailView, View):
+    """
+    Archive a character instead of deleting it.
+    
+    Sets character.db.archived = True rather than deleting from database.
+    This preserves Stack tracking and death history.
+    """
+    
+    # -- Django constructs --
+    template_name = "website/character_confirm_archive.html"
+    success_url = reverse_lazy("character-manage")
+    
+    # -- Evennia constructs --
+    access_type = "delete"  # Use delete permission (user must own character)
+    
+    def get_queryset(self):
+        """Override to only return characters owned by this account."""
+        account = self.request.user
+        ids = [getattr(x, "id") for x in account.characters if x]
+        from typeclasses.characters import Character
+        return Character.objects.filter(id__in=ids)
+    
+    def post(self, request, *args, **kwargs):
+        """Handle the archive action."""
+        # Get the character object (with permission check)
+        character = self.get_object()
+        
+        # Archive instead of delete
+        character.db.archived = True
+        
+        # Success message using character terminology
+        messages.success(
+            request,
+            f"Sleeve '{character.name}' has been archived. "
+            f"Stack ID preserved for future respawn."
+        )
+        
+        # Redirect to character management page
+        return HttpResponseRedirect(self.success_url)
