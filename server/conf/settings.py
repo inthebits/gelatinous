@@ -89,6 +89,12 @@ CONNECTION_SCREEN_MODULE = "server.conf.connection_screens"
 # Django web features
 ######################################################################
 
+# Configure authentication backends for email-based login
+AUTHENTICATION_BACKENDS = [
+    "web.utils.auth_backends.EmailAuthenticationBackend",  # Email-based login for website
+    "evennia.web.utils.backends.CaseInsensitiveModelBackend",  # Fallback for other auth
+]
+
 # While DEBUG is False, show a regular server error page on the web
 # stuff, email the traceback to the people in the ADMINS tuple
 # below. If True, show a detailed traceback for the web
