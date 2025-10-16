@@ -48,6 +48,17 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         """
         account = self.request.user
         
+        # Check character slot availability (excluding archived characters)
+        active_characters = [c for c in account.characters if not getattr(c.db, 'archived', False)]
+        from django.conf import settings
+        max_chars = settings.MAX_NR_CHARACTERS
+        
+        if max_chars is not None and len(active_characters) >= max_chars:
+            from evennia.utils.ansi import strip_ansi
+            error_msg = strip_ansi(f"You may only have a maximum of {max_chars} active character(s). Archive an existing sleeve to create a new one.")
+            messages.error(self.request, error_msg)
+            return self.form_invalid(form)
+        
         # Extract name components and build full name
         first_name = form.cleaned_data['first_name']
         last_name = form.cleaned_data['last_name']
@@ -61,8 +72,10 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         character, errors = self.typeclass.create(charname, account, description=description)
         
         if errors:
-            # Echo error messages to the user
-            [messages.error(self.request, x) for x in errors]
+            # Strip Evennia color codes from error messages before displaying on web
+            from evennia.utils.ansi import strip_ansi
+            clean_errors = [strip_ansi(str(err)) for err in errors]
+            [messages.error(self.request, err) for err in clean_errors]
             return self.form_invalid(form)
         
         if character:
