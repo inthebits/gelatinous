@@ -49,7 +49,9 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         account = self.request.user
         
         # Check character slot availability (excluding archived characters)
-        # Characters with db.archived == True should not count toward the limit
+        # Note: Account.check_available_slots() override in typeclasses/accounts.py
+        # handles the primary slot checking. This view-level check provides additional
+        # user-friendly validation before the character creation attempt.
         active_characters = []
         for char in account.characters:
             # Access archived status via db.archived (shorthand for attributes)
@@ -59,13 +61,6 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         
         from django.conf import settings
         max_chars = settings.MAX_NR_CHARACTERS
-        
-        # Debug logging to help diagnose
-        print(f"DEBUG: Total characters: {len(account.characters)}")
-        print(f"DEBUG: Active characters: {len(active_characters)}")
-        for char in account.characters:
-            archived_status = char.db.archived if hasattr(char.db, 'archived') else False
-            print(f"DEBUG: {char.name} - archived={archived_status}")
         
         if max_chars is not None and len(active_characters) >= max_chars:
             from evennia.utils.ansi import strip_ansi

@@ -136,6 +136,42 @@ class Account(DefaultAccount):
 
     """
 
+    def check_available_slots(self, **kwargs):
+        """
+        Override Evennia's default to exclude archived characters from slot count.
+        
+        Helper method used to determine if an account can create additional characters
+        using the character slot system. Archived characters don't count toward the limit.
+
+        Returns:
+            str (optional): An error message regarding the status of slots. If present, this
+               will halt character creation. If not, character creation can proceed.
+        """
+        from django.conf import settings
+        
+        # Get max allowed characters
+        max_slots = settings.MAX_NR_CHARACTERS
+        if max_slots is None:
+            # No limit
+            return None
+        
+        # Count only active (non-archived) characters
+        active_count = 0
+        for char in self.characters:
+            archived = char.db.archived if hasattr(char.db, 'archived') else False
+            if not archived:
+                active_count += 1
+        
+        # Check if we have slots available
+        available_slots = max(0, max_slots - active_count)
+        
+        if available_slots <= 0:
+            if not (self.is_superuser or self.check_permstring("Developer")):
+                plural = "" if max_slots == 1 else "s"
+                return f"You may only have a maximum of {max_slots} character{plural}."
+        
+        return None
+
     def at_post_login(self, session=None, **kwargs):
         """
         Called after successful login, handles character detection and auto-puppeting.
