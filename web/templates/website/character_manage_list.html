@@ -1,0 +1,63 @@
+{% extends "website/base.html" %}
+
+{% block titleblock %}
+Manage Sleeves
+{% endblock %}
+
+{% block content %}
+
+{% load addclass %}
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="card-body">
+        <h1 class="card-title">Manage Sleeves</h1>
+        <hr />
+
+          {% for object in object_list %}
+          <div class="media mb-4">
+            <a href="{{ object.web_get_detail_url }}"><img class="d-flex mr-3" src="http://placehold.jp/50x50.png" alt="" /></a>
+            <div class="media-body">
+              <p class="float-right ml-2">
+                Created: {{ object.db_date_created|date:"Y-m-d" }}
+                <br /><a href="{{ object.web_get_delete_url }}">Delete Sleeve</a>
+                <br /><a href="{{ object.web_get_update_url }}">Edit</a>
+              </p>
+              <h5 class="mt-0">
+                <a href="{{ object.web_get_detail_url }}">{{ object }}</a> 
+                {% if object.subtitle %}<small class="text-muted" style="white-space:nowrap;">{{ object.subtitle }}</small>{% endif %}
+              </h5>
+              
+              <!-- Character Description -->
+              <p class="mb-2">{{ object.db.desc|default:"No description" }}</p>
+              
+              <!-- GRIM Stats Display -->
+              <div class="mb-2">
+                <strong>GRIM Stats:</strong>
+                <span class="badge badge-secondary">Grit: {{ object.grit|default:"0" }}</span>
+                <span class="badge badge-secondary">Resonance: {{ object.resonance|default:"0" }}</span>
+                <span class="badge badge-secondary">Intellect: {{ object.intellect|default:"0" }}</span>
+                <span class="badge badge-secondary">Motorics: {{ object.motorics|default:"0" }}</span>
+              </div>
+              
+              <!-- Sex/Gender -->
+              <div class="mb-2">
+                <strong>Sex:</strong> <span class="text-muted">{{ object.sex|default:"Ambiguous"|capfirst }}</span>
+                | <strong>Deaths:</strong> {{ object.death_count|default:"1" }}
+                {% if object.db.archived %}
+                | <span class="badge badge-warning">Archived</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="alert alert-info">
+            You haven't decanted any sleeves yet. <a href="{% url 'character-create' %}">Decant your first sleeve!</a>
+          </div>
+          {% endfor %}
+          
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
