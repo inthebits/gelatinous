@@ -12,7 +12,7 @@ from evennia.web.website.views.characters import (
     CharacterCreateView as EvenniaCharacterCreateView
 )
 
-# Import our extended form
+# Import forms module (Evennia pattern)
 from web.website import forms
 
 # Import telnet character creation functions for code reuse
@@ -31,7 +31,7 @@ class CharacterCreateView(EvenniaCharacterCreateView):
     the player is creating their first character or respawning.
     """
     
-    # Use our extended form with GRIM fields
+    # Use our extended form with GRIM fields (Evennia pattern: forms.ClassName)
     form_class = forms.CharacterForm
     
     def get_context_data(self, **kwargs):
