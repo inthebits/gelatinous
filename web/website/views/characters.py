@@ -19,6 +19,8 @@ from evennia.web.website.views.objects import ObjectCreateView, ObjectDetailView
 from evennia.web.website.views.characters import (
     CharacterCreateView as EvenniaCharacterCreateView,
     CharacterListView as EvenniaCharacterListView,
+    CharacterDetailView as EvenniaCharacterDetailView,
+    CharacterUpdateView as EvenniaCharacterUpdateView,
     CharacterMixin
 )
 
@@ -213,4 +215,95 @@ class StaffCharacterListView(EvenniaCharacterListView):
         if not request.user.is_staff:
             messages.error(request, "You must be a staff member to access the character list.")
             return HttpResponseRedirect(reverse_lazy("index"))
+        return super().dispatch(request, *args, **kwargs)
+
+
+class OwnerOnlyCharacterDetailView(EvenniaCharacterDetailView):
+    """
+    Owner-only character detail view.
+    
+    Only allows viewing character details if you own the character.
+    Staff members can view any character.
+    """
+    
+    def get_queryset(self):
+        """
+        Override to only return characters owned by the current user.
+        Staff can view all characters.
+        """
+        account = self.request.user
+        
+        # Staff can view all characters
+        if account.is_staff:
+            return super().get_queryset()
+        
+        # Regular users can only view their own characters
+        ids = [getattr(x, "id") for x in account.characters if x]
+        return self.typeclass.objects.filter(id__in=ids)
+    
+    def dispatch(self, request, *args, **kwargs):
+        """Check ownership before allowing access."""
+        # Get the character being requested
+        try:
+            char = self.get_object()
+            account = request.user
+            
+            # Staff can view any character
+            if account.is_staff:
+                return super().dispatch(request, *args, **kwargs)
+            
+            # Check if the character belongs to this account
+            if char not in account.characters:
+                messages.error(request, "You can only view your own characters.")
+                return HttpResponseRedirect(reverse_lazy("character-manage"))
+        except Exception:
+            messages.error(request, "Character not found.")
+            return HttpResponseRedirect(reverse_lazy("index"))
+        
+        return super().dispatch(request, *args, **kwargs)
+
+
+class OwnerOnlyCharacterUpdateView(EvenniaCharacterUpdateView):
+    """
+    Owner-only character update view.
+    
+    Only allows editing character details if you own the character.
+    Staff members can edit any character.
+    """
+    
+    def get_queryset(self):
+        """
+        Override to only return characters owned by the current user.
+        Staff can edit all characters.
+        """
+        account = self.request.user
+        
+        # Staff can edit all characters
+        if account.is_staff:
+            from django.db.models.functions import Lower
+            return self.typeclass.objects.all().order_by(Lower("db_key"))
+        
+        # Regular users can only edit their own characters
+        ids = [getattr(x, "id") for x in account.characters if x]
+        return self.typeclass.objects.filter(id__in=ids)
+    
+    def dispatch(self, request, *args, **kwargs):
+        """Check ownership before allowing access."""
+        # Get the character being requested
+        try:
+            char = self.get_object()
+            account = request.user
+            
+            # Staff can edit any character
+            if account.is_staff:
+                return super().dispatch(request, *args, **kwargs)
+            
+            # Check if the character belongs to this account
+            if char not in account.characters:
+                messages.error(request, "You can only edit your own characters.")
+                return HttpResponseRedirect(reverse_lazy("character-manage"))
+        except Exception:
+            messages.error(request, "Character not found.")
+            return HttpResponseRedirect(reverse_lazy("index"))
+        
         return super().dispatch(request, *args, **kwargs)

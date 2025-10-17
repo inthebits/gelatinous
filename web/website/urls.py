@@ -12,7 +12,9 @@ from evennia.web.website.urls import urlpatterns as evennia_website_urlpatterns
 from web.website.views.characters import (
     CharacterCreateView, 
     CharacterArchiveView,
-    StaffCharacterListView
+    StaffCharacterListView,
+    OwnerOnlyCharacterDetailView,
+    OwnerOnlyCharacterUpdateView
 )
 from web.website.views.channels import StaffChannelListView, StaffChannelDetailView
 
@@ -26,6 +28,18 @@ urlpatterns = [
         "characters/delete/<str:slug>/<int:pk>/",
         CharacterArchiveView.as_view(),
         name="character-delete",
+    ),
+    
+    # Owner-only character detail and update (staff can view/edit all)
+    path(
+        "characters/detail/<str:slug>/<int:pk>/",
+        OwnerOnlyCharacterDetailView.as_view(),
+        name="character-detail",
+    ),
+    path(
+        "characters/update/<str:slug>/<int:pk>/",
+        OwnerOnlyCharacterUpdateView.as_view(),
+        name="character-update",
     ),
     
     # Staff-only character list (replaces default)
