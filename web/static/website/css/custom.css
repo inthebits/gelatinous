@@ -63,33 +63,43 @@
 
 /* ===== BODY & LAYOUT ===== */
 body {
-    background-color: var(--df-bg-light) !important;
-    color: var(--df-text-dark);
+    background-color: var(--df-bg-dark) !important;
+    color: var(--df-text-primary);
 }
 
 .main-content {
     background-color: transparent;
 }
 
+/* Make container area dark too */
+.container {
+    background-color: transparent;
+}
+
 /* ===== CARDS ===== */
 .card {
-    background-color: var(--df-text-primary);
-    border: 1px solid var(--df-border);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: var(--df-bg-medium);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    color: var(--df-text-primary);
 }
 
 .card-header {
-    background-color: var(--df-bg-light);
-    border-bottom: 1px solid var(--df-border);
-    color: var(--df-text-dark);
+    background-color: var(--df-bg-dark);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--df-text-primary);
 }
 
 .card-title {
-    color: var(--df-text-dark);
+    color: var(--df-text-primary);
 }
 
 .card-subtitle {
-    color: var(--df-text-muted);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.card-body {
+    color: var(--df-text-primary);
 }
 
 /* ===== LINKS ===== */
@@ -132,74 +142,83 @@ a:hover {
 
 /* ===== FORMS ===== */
 .form-control {
-    border-color: var(--df-border);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--df-text-primary);
 }
 
 .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.15);
     border-color: var(--df-accent);
     box-shadow: 0 0 0 0.2rem rgba(111, 168, 220, 0.25);
+    color: var(--df-text-primary);
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
 }
 
 label {
-    color: var(--df-text-dark);
+    color: var(--df-text-primary);
     font-weight: 500;
 }
 
 /* ===== ALERTS ===== */
 .alert-info {
-    background-color: #d9edf7;
-    border-color: #bce8f1;
-    color: #31708f;
+    background-color: rgba(111, 168, 220, 0.2);
+    border-color: var(--df-accent);
+    color: var(--df-text-primary);
 }
 
 .alert-danger {
-    background-color: #f2dede;
-    border-color: #ebccd1;
-    color: #a94442;
+    background-color: rgba(220, 53, 69, 0.2);
+    border-color: #dc3545;
+    color: #ff6b7a;
 }
 
 .alert-success {
-    background-color: #dff0d8;
-    border-color: #d6e9c6;
-    color: #3c763d;
+    background-color: rgba(40, 167, 69, 0.2);
+    border-color: #28a745;
+    color: #6adb8a;
 }
 
 .alert-warning {
-    background-color: #fcf8e3;
-    border-color: #faebcc;
-    color: #8a6d3b;
+    background-color: rgba(255, 193, 7, 0.2);
+    border-color: #ffc107;
+    color: #ffd54f;
 }
 
 /* ===== TABLES ===== */
 .table {
-    color: var(--df-text-dark);
+    color: var(--df-text-primary);
 }
 
 .table thead th {
-    border-bottom: 2px solid var(--df-border);
-    color: var(--df-text-dark);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    color: var(--df-text-primary);
     font-weight: 600;
 }
 
 .table td,
 .table th {
-    border-top: 1px solid var(--df-border);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .table-hover tbody tr:hover {
-    background-color: rgba(111, 168, 220, 0.1);
+    background-color: rgba(111, 168, 220, 0.2);
 }
 
 /* ===== PAGINATION ===== */
 .pagination .page-link {
-    color: var(--df-accent);
-    border-color: var(--df-border);
+    background-color: var(--df-bg-medium);
+    color: var(--df-text-primary);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .pagination .page-link:hover {
-    color: var(--df-accent-hover);
-    background-color: var(--df-bg-light);
-    border-color: var(--df-border);
+    color: var(--df-accent);
+    background-color: var(--df-bg-dark);
+    border-color: var(--df-accent);
 }
 
 .pagination .page-item.active .page-link {
@@ -208,10 +227,16 @@ label {
     color: var(--df-text-primary);
 }
 
+.pagination .page-item.disabled .page-link {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.3);
+}
+
 /* ===== BREADCRUMBS ===== */
 .breadcrumb {
-    background-color: var(--df-bg-light);
-    border: 1px solid var(--df-border);
+    background-color: var(--df-bg-medium);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .breadcrumb-item a {
@@ -219,31 +244,46 @@ label {
 }
 
 .breadcrumb-item.active {
-    color: var(--df-text-muted);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.5);
 }
 
 /* ===== CUSTOM ELEMENTS ===== */
 hr {
-    border-top: 1px solid var(--df-border);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 code {
     color: var(--df-accent);
-    background-color: var(--df-bg-light);
+    background-color: rgba(0, 0, 0, 0.3);
     padding: 2px 4px;
     border-radius: 3px;
 }
 
 pre {
-    background-color: var(--df-bg-light);
-    border: 1px solid var(--df-border);
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 4px;
     padding: 10px;
+    color: var(--df-text-primary);
+}
+
+/* Ensure all text is white by default */
+p, h1, h2, h3, h4, h5, h6, li, span {
+    color: inherit;
 }
 
 /* ===== TEXT UTILITIES ===== */
 .text-muted {
-    color: var(--df-text-muted) !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Override any dark text that might appear */
+.text-dark {
+    color: var(--df-text-primary) !important;
 }
 
 /* ===== RESPONSIVE ADJUSTMENTS ===== */
