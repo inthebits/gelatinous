@@ -1,0 +1,193 @@
+/**
+ * Gelatinous Monster Custom Styles
+ * 
+ * Inspired by Daring Fireball's clean, readable design:
+ * - White text on gray/blue background
+ * - High contrast for readability
+ * - Simple, minimalist aesthetic
+ */
+
+:root {
+    /* Daring Fireball-inspired color palette */
+    --df-bg-dark: #4a525a;        /* Main background - dark gray-blue */
+    --df-bg-light: #5d6770;       /* Lighter gray-blue for cards */
+    --df-text-primary: #ffffff;    /* White text */
+    --df-text-muted: #b8c5d0;     /* Muted text for secondary info */
+    --df-accent: #6fa8dc;         /* Light blue for links and accents */
+    --df-accent-hover: #8fc1e9;   /* Lighter blue for hover states */
+    --df-border: #3a4149;         /* Darker borders */
+}
+
+/* Body and main background */
+body {
+    background-color: var(--df-bg-dark) !important;
+    color: var(--df-text-primary) !important;
+}
+
+/* Navbar styling */
+.navbar {
+    background-color: var(--df-bg-light) !important;
+    border-bottom: 1px solid var(--df-border);
+}
+
+.navbar-brand,
+.nav-link {
+    color: var(--df-text-primary) !important;
+}
+
+.nav-link:hover {
+    color: var(--df-accent-hover) !important;
+}
+
+/* Dropdown menus */
+.dropdown-menu {
+    background-color: var(--df-bg-light) !important;
+    border: 1px solid var(--df-border) !important;
+}
+
+.dropdown-item {
+    color: var(--df-text-primary) !important;
+}
+
+.dropdown-item:hover {
+    background-color: var(--df-bg-dark) !important;
+    color: var(--df-accent-hover) !important;
+}
+
+.dropdown-divider {
+    border-color: var(--df-border) !important;
+}
+
+/* Cards and content areas */
+.card {
+    background-color: var(--df-bg-light) !important;
+    border: 1px solid var(--df-border) !important;
+    color: var(--df-text-primary) !important;
+}
+
+.card-header {
+    background-color: var(--df-bg-dark) !important;
+    border-bottom: 1px solid var(--df-border) !important;
+    color: var(--df-text-primary) !important;
+}
+
+.card-body {
+    color: var(--df-text-primary) !important;
+}
+
+/* Links */
+a {
+    color: var(--df-accent) !important;
+}
+
+a:hover {
+    color: var(--df-accent-hover) !important;
+}
+
+/* Forms */
+.form-control {
+    background-color: var(--df-bg-dark) !important;
+    border: 1px solid var(--df-border) !important;
+    color: var(--df-text-primary) !important;
+}
+
+.form-control:focus {
+    background-color: var(--df-bg-dark) !important;
+    border-color: var(--df-accent) !important;
+    color: var(--df-text-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(111, 168, 220, 0.25) !important;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--df-accent) !important;
+    border-color: var(--df-accent) !important;
+    color: var(--df-text-primary) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--df-accent-hover) !important;
+    border-color: var(--df-accent-hover) !important;
+}
+
+.btn-link {
+    color: var(--df-text-primary) !important;
+}
+
+.btn-link:hover {
+    color: var(--df-accent-hover) !important;
+}
+
+/* Tables */
+.table {
+    color: var(--df-text-primary) !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Muted text */
+.text-muted {
+    color: var(--df-text-muted) !important;
+}
+
+/* Alerts */
+.alert {
+    border: 1px solid var(--df-border);
+}
+
+.alert-success {
+    background-color: #2d5016;
+    color: #a8d08d;
+    border-color: #1f3810;
+}
+
+.alert-danger {
+    background-color: #5a1616;
+    color: #f8b4b4;
+    border-color: #3d0f0f;
+}
+
+.alert-warning {
+    background-color: #5a4a16;
+    color: #f8e8b4;
+    border-color: #3d310f;
+}
+
+.alert-info {
+    background-color: #16455a;
+    color: #b4ddf8;
+    border-color: #0f2e3d;
+}
+
+/* List groups */
+.list-group-item {
+    background-color: var(--df-bg-light) !important;
+    border-color: var(--df-border) !important;
+    color: var(--df-text-primary) !important;
+}
+
+.list-group-item:hover {
+    background-color: var(--df-bg-dark) !important;
+}
+
+/* Media objects (character lists, etc.) */
+.media {
+    color: var(--df-text-primary) !important;
+}
+
+/* HR elements */
+hr {
+    border-color: var(--df-border) !important;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--df-text-primary) !important;
+}
+
+/* Container background */
+.container {
+    background-color: transparent;
+}
