@@ -100,6 +100,16 @@ body {
 
 .card-body {
     color: var(--df-text-primary);
+    background-color: var(--df-bg-medium);
+}
+
+/* Force all card content to be dark themed */
+.card .card-body,
+.card .card-body p,
+.card .card-body div,
+.card .card-body span {
+    background-color: transparent;
+    color: var(--df-text-primary) !important;
 }
 
 /* ===== LINKS ===== */
@@ -276,6 +286,17 @@ p, h1, h2, h3, h4, h5, h6, li, span {
     color: inherit;
 }
 
+/* Force card list items and any nested content to be white */
+.card ul,
+.card ol,
+.card li,
+.card dl,
+.card dt,
+.card dd {
+    color: var(--df-text-primary) !important;
+    background-color: transparent !important;
+}
+
 /* ===== TEXT UTILITIES ===== */
 .text-muted {
     color: rgba(255, 255, 255, 0.6) !important;
@@ -284,6 +305,12 @@ p, h1, h2, h3, h4, h5, h6, li, span {
 /* Override any dark text that might appear */
 .text-dark {
     color: var(--df-text-primary) !important;
+}
+
+/* Override Bootstrap background utilities in cards */
+.card .bg-white,
+.card .bg-light {
+    background-color: transparent !important;
 }
 
 /* ===== RESPONSIVE ADJUSTMENTS ===== */
