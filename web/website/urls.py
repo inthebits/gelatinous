@@ -9,7 +9,12 @@ so it can reroute to all website pages.
 from django.urls import path
 
 from evennia.web.website.urls import urlpatterns as evennia_website_urlpatterns
-from web.website.views.characters import CharacterCreateView, CharacterArchiveView
+from web.website.views.characters import (
+    CharacterCreateView, 
+    CharacterArchiveView,
+    StaffCharacterListView
+)
+from web.website.views.channels import StaffChannelListView, StaffChannelDetailView
 
 # Override default character creation and deletion with custom versions
 urlpatterns = [
@@ -22,6 +27,13 @@ urlpatterns = [
         CharacterArchiveView.as_view(),
         name="character-delete",
     ),
+    
+    # Staff-only character list (replaces default)
+    path("characters/", StaffCharacterListView.as_view(), name="characters"),
+    
+    # Staff-only channel views (replaces defaults)
+    path("channels/", StaffChannelListView.as_view(), name="channels"),
+    path("channels/<str:slug>/", StaffChannelDetailView.as_view(), name="channel-detail"),
 ]
 
 # read by Django

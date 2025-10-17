@@ -18,6 +18,7 @@ from django.views.generic import View
 from evennia.web.website.views.objects import ObjectCreateView, ObjectDetailView
 from evennia.web.website.views.characters import (
     CharacterCreateView as EvenniaCharacterCreateView,
+    CharacterListView as EvenniaCharacterListView,
     CharacterMixin
 )
 
@@ -197,3 +198,19 @@ class CharacterArchiveView(LoginRequiredMixin, CharacterMixin, View):
         
         # Redirect to character management page
         return HttpResponseRedirect(self.success_url)
+
+
+class StaffCharacterListView(EvenniaCharacterListView):
+    """
+    Staff-only character list view.
+    
+    Restricts access to the character list to staff members only.
+    Regular players attempting to access this page will be redirected.
+    """
+    
+    def dispatch(self, request, *args, **kwargs):
+        """Check if user is staff before allowing access."""
+        if not request.user.is_staff:
+            messages.error(request, "You must be a staff member to access the character list.")
+            return HttpResponseRedirect(reverse_lazy("index"))
+        return super().dispatch(request, *args, **kwargs)
