@@ -210,11 +210,58 @@ class TurnstileAccountForm(EvenniaAccountForm):
         super().__init__(*args, **kwargs)
         # Make email required and update help text
         self.fields['email'].required = True
-        self.fields['email'].help_text = "A valid email address. Required for password resets."
+        self.fields['email'].help_text = "A valid email address. Required for login and password resets."
         self.fields['email'].error_messages = {
             'required': 'Email address is required.',
             'invalid': 'Please enter a valid email address.'
         }
+    
+    def clean_email(self):
+        """
+        Validate that the email address is unique (case-insensitive).
+        
+        This is critical because Evennia's email_login contrib allows users
+        to log in with their email address, so duplicate emails could cause
+        authentication conflicts.
+        """
+        from evennia.accounts.models import AccountDB
+        
+        email = self.cleaned_data.get('email', '').strip()
+        
+        if not email:
+            raise forms.ValidationError("Email address is required.")
+        
+        # Check for existing account with this email (case-insensitive)
+        if AccountDB.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError(
+                "An account with this email address already exists. "
+                "If you forgot your password, use the password reset link."
+            )
+        
+        return email
+    
+    def clean_username(self):
+        """
+        Validate username uniqueness (case-insensitive).
+        
+        This adds an explicit check in addition to the parent form's validation
+        to provide clearer error messages and ensure consistency.
+        """
+        from evennia.accounts.models import AccountDB
+        
+        username = self.cleaned_data.get('username', '').strip()
+        
+        if not username:
+            raise forms.ValidationError("Username is required.")
+        
+        # Check for existing account with this username (case-insensitive)
+        if AccountDB.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError(
+                "An account with this username already exists. "
+                "Please choose a different username."
+            )
+        
+        return username
     
     class Meta(EvenniaAccountForm.Meta):
         # Extend parent's fields with Turnstile response
