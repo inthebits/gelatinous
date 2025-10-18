@@ -2,7 +2,32 @@
 
 ## [Unreleased]
 
-### Added
+### Added - Website & Authentication (October 2025)
+- **Cloudflare Turnstile Integration** - CAPTCHA protection for registration
+  - Optional configuration for GitHub forks (gracefully degrades when not configured)
+  - Dark theme widget integration
+  - Server-side verification with IP tracking
+  - Custom form validation and error handling
+  - Documentation in `specs/TURNSTILE_INTEGRATION_SPEC.md`
+- **Email-Based Authentication System**
+  - Custom authentication backend for email login (`web.utils.auth_backends.EmailAuthenticationBackend`)
+  - Email requirement for registration with duplicate validation
+  - Case-insensitive email lookup for login
+  - Password reset functionality ready for email configuration
+  - Telnet and web authentication alignment
+- **Website UI/UX Improvements**
+  - Daring Fireball-inspired dark color scheme
+  - Seamless header/footer blending with background
+  - Character management restricted to owners
+  - Removed unused character puppet dropdown
+  - Fixed login button (changed from POST form to GET link)
+- **Form Validation Enhancements**
+  - Duplicate email detection (case-insensitive)
+  - Duplicate username detection (case-insensitive)
+  - Defense-in-depth validation (form-level + view-level)
+  - Improved error messages guiding users to password reset
+
+### Added - Documentation
 - Comprehensive project documentation suite
 - `PROJECT_OVERVIEW.md` - Main project documentation
 - `ARCHITECTURE.md` - File structure and architectural decisions
