@@ -18,9 +18,13 @@ from web.website.views.characters import (
 )
 from web.website.views.channels import StaffChannelListView, StaffChannelDetailView
 from web.website.views.accounts import TurnstileAccountCreateView
+from web.website.views.discourse_sso import discourse_sso
 
 # Override default character creation, account registration, and other views
 urlpatterns = [
+    # Discourse SSO endpoint
+    path("sso/discourse/", discourse_sso, name="discourse-sso"),
+    
     # Custom account registration with Cloudflare Turnstile
     path("auth/register", TurnstileAccountCreateView.as_view(), name="register"),
     

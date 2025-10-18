@@ -105,6 +105,18 @@ TURNSTILE_SITE_KEY = ""  # Public site key (visible in HTML)
 TURNSTILE_SECRET_KEY = ""  # Secret key (server-side only)
 
 ######################################################################
+# Discourse SSO (DiscourseConnect) Configuration
+######################################################################
+
+# Discourse forum URL
+DISCOURSE_URL = ""  # e.g., "https://forum.gel.monster"
+
+# SSO secret key - MUST match the discourse_connect_secret in Discourse settings
+# Generate a random secret with: python -c "import secrets; print(secrets.token_urlsafe(32))"
+# NOTE: This should be set in secret_settings.py in production
+DISCOURSE_SSO_SECRET = ""
+
+######################################################################
 # Django web features
 ######################################################################
 
