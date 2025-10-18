@@ -36,10 +36,15 @@ class TurnstileAccountCreateView(EvenniaAccountCreateView):
     
     def form_valid(self, form):
         """
-        Validate form including Turnstile verification.
+        Validate form including Turnstile verification and duplicate checking.
         
         This extends the parent form_valid() to first verify the Cloudflare
-        Turnstile response before proceeding with account creation.
+        Turnstile response and ensure Django's form validation (including our
+        custom clean_email() and clean_username() methods) has run before
+        proceeding with account creation.
+        
+        Note: Evennia's AccountCreateView.form_valid() bypasses Django's
+        standard form validation, so we must ensure it happens here.
         """
         # Get Turnstile response token from form
         turnstile_response = form.cleaned_data.get('cf_turnstile_response')
@@ -49,7 +54,29 @@ class TurnstileAccountCreateView(EvenniaAccountCreateView):
             form.add_error(None, "CAPTCHA verification failed. Please try again.")
             return self.form_invalid(form)
         
-        # Turnstile verification passed - proceed with account creation
+        # Django's form.is_valid() should have already been called by the framework,
+        # which would have run our clean_email() and clean_username() validators.
+        # However, Evennia's parent class bypasses this, so we need to verify
+        # the form validation actually happened.
+        
+        # The cleaned_data existing means is_valid() was called, but let's be extra safe
+        # and check that our custom validation methods would pass
+        from evennia.accounts.models import AccountDB
+        
+        email = form.cleaned_data.get('email', '').strip()
+        username = form.cleaned_data.get('username', '').strip()
+        
+        # Double-check email uniqueness (shouldn't be needed if form validation ran)
+        if email and AccountDB.objects.filter(email__iexact=email).exists():
+            form.add_error('email', "An account with this email address already exists.")
+            return self.form_invalid(form)
+            
+        # Double-check username uniqueness (shouldn't be needed if form validation ran)  
+        if username and AccountDB.objects.filter(username__iexact=username).exists():
+            form.add_error('username', "An account with this username already exists.")
+            return self.form_invalid(form)
+        
+        # All validations passed - proceed with account creation
         return super().form_valid(form)
     
     def verify_turnstile(self, token):
