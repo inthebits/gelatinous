@@ -191,7 +191,19 @@ class TurnstileAccountForm(EvenniaAccountForm):
     
     Adds a hidden field to capture the Turnstile response token,
     which is validated server-side in the view.
+    
+    Overrides email field to make it required (critical for password resets).
     """
+    
+    # Override email field to make it required
+    email = forms.EmailField(
+        required=True,
+        help_text="A valid email address. Required for password resets.",
+        error_messages={
+            'required': 'Email address is required.',
+            'invalid': 'Please enter a valid email address.'
+        }
+    )
     
     # Hidden field to store Turnstile response token
     # This is populated by the Turnstile JavaScript widget
