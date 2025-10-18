@@ -16,7 +16,7 @@
           {% if user.is_authenticated %}
           <div class="alert alert-info" role="alert">You are already logged in!</div>
           {% else %}
-            {% if form.errors %}
+            {% if form.errors and request.method == 'POST' %}
             <div class="alert alert-danger" role="alert">Your email and password are incorrect. Please try again.</div>
             {% endif %}
           {% endif %}
