@@ -17,9 +17,13 @@ from web.website.views.characters import (
     OwnerOnlyCharacterUpdateView
 )
 from web.website.views.channels import StaffChannelListView, StaffChannelDetailView
+from web.website.views.accounts import TurnstileAccountCreateView
 
-# Override default character creation and deletion with custom versions
+# Override default character creation, account registration, and other views
 urlpatterns = [
+    # Custom account registration with Cloudflare Turnstile
+    path("accounts/register/", TurnstileAccountCreateView.as_view(), name="register"),
+    
     # Custom character creation with GRIM stats
     path("characters/create/", CharacterCreateView.as_view(), name="character-create"),
     

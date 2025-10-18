@@ -1,0 +1,109 @@
+{% extends "website/base.html" %}
+
+{% block titleblock %}
+Register
+{% endblock %}
+
+{% block body %}
+
+{% load addclass %}
+<div class="container main-content mt-4" id="main-copy">
+  <div class="row">
+    <div class="col-lg-5 offset-lg-3 col-sm-12">
+      <div class="card mt-3">
+        <div class="card-body">
+          <h1 class="card-title">Register</h1>
+          <hr />
+          {% if user.is_authenticated %}
+          <div class="alert alert-info" role="alert">You are already registered!</div>
+          {% else %}
+            {% if form.errors %}
+              {% for field in form %}
+                {% for error in field.errors %}
+                  <div class="alert alert-danger" role="alert">{{ error }}</div>
+                {% endfor %}
+              {% endfor %}
+              {% for error in form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">{{ error }}</div>
+              {% endfor %}
+            {% endif %}
+          {% endif %}
+  
+          {% if not user.is_authenticated %}
+            {% if register_enabled %}
+              <form method="post" action="?" id="registration-form">
+                {% csrf_token %}
+      
+                {% for field in form %}
+                  {%  if field.name != 'cf_turnstile_response' %}
+                <div class="form-field my-3">
+                    {{ field.label_tag }}
+                    {{ field | addclass:"form-control" }}
+                    {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                    {% endif %}
+                </div>
+                  {% endif %}
+                {% endfor %}
+                
+                <!-- Cloudflare Turnstile Widget -->
+                <div class="form-field my-3">
+                  <label>Verification:</label>
+                  <div class="cf-turnstile" 
+                       data-sitekey="{{ turnstile_site_key }}" 
+                       data-callback="onTurnstileSuccess"
+                       data-theme="dark"></div>
+                  <small class="form-text text-muted">Please complete the verification to proceed.</small>
+                </div>
+                
+                <!-- Hidden field for Turnstile response (populated by JavaScript) -->
+                {{ form.cf_turnstile_response }}
+                
+                <hr />
+                <div class="form-group">
+                  <input class="form-control btn btn-outline-secondary" 
+                         type="submit" 
+                         value="Register" 
+                         id="submit-button" />
+                  <input type="hidden" name="next" value="{{ next }}" />
+                </div>
+              </form>
+            {% else %}
+              <p>Registration is currently disabled.</p>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cloudflare Turnstile Script -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<script>
+// Callback function when Turnstile verification succeeds
+function onTurnstileSuccess(token) {
+    // Populate hidden field with Turnstile response token
+    document.getElementById('id_cf_turnstile_response').value = token;
+    console.log('Turnstile verification successful');
+}
+
+// Form submission validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registration-form');
+    const submitButton = document.getElementById('submit-button');
+    
+    form.addEventListener('submit', function(e) {
+        const turnstileResponse = document.getElementById('id_cf_turnstile_response').value;
+        
+        if (!turnstileResponse) {
+            e.preventDefault();
+            alert('Please complete the verification before submitting.');
+            return false;
+        }
+    });
+});
+</script>
+
+{% endblock %}

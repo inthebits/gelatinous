@@ -1,11 +1,15 @@
 """
-Django forms for Gelatinous Monster character creation.
+Django forms for Gelatinous Monster character creation and account registration.
 
-Extends Evennia's default CharacterForm to add GRIM stat system and name structure.
+Extends Evennia's default forms to add GRIM stat system, name structure,
+and Cloudflare Turnstile verification.
 """
 
 from django import forms
-from evennia.web.website.forms import CharacterForm as EvenniaCharacterForm
+from evennia.web.website.forms import (
+    CharacterForm as EvenniaCharacterForm,
+    AccountForm as EvenniaAccountForm
+)
 
 
 # Constants from telnet character creation
@@ -179,3 +183,27 @@ class CharacterForm(EvenniaCharacterForm):
             )
         
         return cleaned_data
+
+
+class TurnstileAccountForm(EvenniaAccountForm):
+    """
+    Extends Evennia's AccountForm with Cloudflare Turnstile verification.
+    
+    Adds a hidden field to capture the Turnstile response token,
+    which is validated server-side in the view.
+    """
+    
+    # Hidden field to store Turnstile response token
+    # This is populated by the Turnstile JavaScript widget
+    cf_turnstile_response = forms.CharField(
+        widget=forms.HiddenInput(),
+        required=True,
+        error_messages={
+            'required': 'CAPTCHA verification is required. Please complete the verification.'
+        }
+    )
+    
+    class Meta(EvenniaAccountForm.Meta):
+        # Extend parent's fields with Turnstile response
+        fields = EvenniaAccountForm.Meta.fields + ('cf_turnstile_response',)
+

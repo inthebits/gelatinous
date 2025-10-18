@@ -44,8 +44,8 @@ SERVER_HOSTNAME = "play.gel.monster"
 # and only allow connections from localhost. Requires a cold reboot.
 LOCKDOWN_MODE = False
 # Allow new account registration via the website and the `create` command
-# (October 14, 2025: Disabled after successful Phase 1 testing - ready for Phase 2)
-NEW_ACCOUNT_REGISTRATION_ENABLED = False
+# (October 18, 2025: Enabled for Cloudflare Turnstile integration testing)
+NEW_ACCOUNT_REGISTRATION_ENABLED = True
 # Activate telnet service
 TELNET_ENABLED = True
 # A list of ports the Evennia telnet server listens on Can be one or many.
@@ -93,6 +93,20 @@ CONNECTION_SCREEN_MODULE = "server.conf.connection_screens"
 AUTHENTICATION_BACKENDS = [
     "web.utils.auth_backends.EmailAuthenticationBackend",  # Email-based login only
 ]
+
+######################################################################
+# Cloudflare Turnstile Configuration
+######################################################################
+
+# Cloudflare Turnstile keys for CAPTCHA verification
+# Get your keys from: https://dash.cloudflare.com/?to=/:account/turnstile
+# NOTE: These should be moved to secret_settings.py in production
+TURNSTILE_SITE_KEY = ""  # Public site key (visible in HTML)
+TURNSTILE_SECRET_KEY = ""  # Secret key (server-side only)
+
+######################################################################
+# Django web features
+######################################################################
 
 # While DEBUG is False, show a regular server error page on the web
 # stuff, email the traceback to the people in the ADMINS tuple
