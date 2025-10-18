@@ -10,13 +10,12 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from evennia.web.website.views.accounts import (
-    AccountCreateView as EvenniaAccountCreateView,
-    AccountMixin
+    AccountCreateView as EvenniaAccountCreateView
 )
 from web.website.forms import TurnstileAccountForm
 
 
-class TurnstileAccountCreateView(AccountMixin, EvenniaAccountCreateView):
+class TurnstileAccountCreateView(EvenniaAccountCreateView):
     """
     Account creation view with Cloudflare Turnstile verification.
     
