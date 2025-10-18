@@ -47,7 +47,6 @@ class TurnstileAccountCreateView(EvenniaAccountCreateView):
         standard form validation, so we must ensure it happens here.
         """
         from evennia.accounts.models import AccountDB
-        from evennia.comms.models import ChannelDB
         
         # Get Turnstile response token from form
         turnstile_response = form.cleaned_data.get('cf_turnstile_response')
@@ -57,48 +56,21 @@ class TurnstileAccountCreateView(EvenniaAccountCreateView):
             form.add_error(None, "CAPTCHA verification failed. Please try again.")
             return self.form_invalid(form)
         
-        # Django's form.is_valid() should have already been called by the framework,
-        # which would have run our clean_email() and clean_username() validators.
-        # However, Evennia's parent class bypasses this, so we need to verify
-        # the form validation actually happened.
-        
-        # The cleaned_data existing means is_valid() was called, but let's be extra safe
-        # and check that our custom validation methods would pass
+        # Validate email and username uniqueness
+        # This provides defense-in-depth since Evennia's parent class
+        # bypasses Django's standard form validation flow
         email = form.cleaned_data.get('email', '').strip()
         username = form.cleaned_data.get('username', '').strip()
         
-        # Debug logging to Splattercast
-        try:
-            splattercast = ChannelDB.objects.get_channel("Splattercast")
-            splattercast.msg(f"REGISTRATION_DEBUG: Attempting registration - username='{username}', email='{email}'")
-        except:
-            pass
-        
-        # Double-check email uniqueness (shouldn't be needed if form validation ran)
+        # Check email uniqueness (case-insensitive)
         if email and AccountDB.objects.filter(email__iexact=email).exists():
-            try:
-                splattercast = ChannelDB.objects.get_channel("Splattercast")
-                splattercast.msg(f"REGISTRATION_BLOCKED: Duplicate email '{email}' detected")
-            except:
-                pass
             form.add_error('email', "An account with this email address already exists.")
             return self.form_invalid(form)
             
-        # Double-check username uniqueness (shouldn't be needed if form validation ran)  
+        # Check username uniqueness (case-insensitive)
         if username and AccountDB.objects.filter(username__iexact=username).exists():
-            try:
-                splattercast = ChannelDB.objects.get_channel("Splattercast")
-                splattercast.msg(f"REGISTRATION_BLOCKED: Duplicate username '{username}' detected")
-            except:
-                pass
             form.add_error('username', "An account with this username already exists.")
             return self.form_invalid(form)
-        
-        try:
-            splattercast = ChannelDB.objects.get_channel("Splattercast")
-            splattercast.msg(f"REGISTRATION_SUCCESS: Validation passed, creating account")
-        except:
-            pass
         
         # All validations passed - proceed with account creation
         return super().form_valid(form)
