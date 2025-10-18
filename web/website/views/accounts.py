@@ -31,7 +31,9 @@ class TurnstileAccountCreateView(EvenniaAccountCreateView):
     def get_context_data(self, **kwargs):
         """Add Turnstile site key to template context."""
         context = super().get_context_data(**kwargs)
-        context['turnstile_site_key'] = getattr(settings, 'TURNSTILE_SITE_KEY', '')
+        site_key = getattr(settings, 'TURNSTILE_SITE_KEY', '')
+        context['turnstile_site_key'] = site_key
+        context['turnstile_enabled'] = bool(site_key)
         return context
     
     def form_valid(self, form):
@@ -45,16 +47,21 @@ class TurnstileAccountCreateView(EvenniaAccountCreateView):
         
         Note: Evennia's AccountCreateView.form_valid() bypasses Django's
         standard form validation, so we must ensure it happens here.
+        
+        Turnstile verification is optional - if not configured, registration
+        proceeds without CAPTCHA (useful for development and forks).
         """
         from evennia.accounts.models import AccountDB
         
-        # Get Turnstile response token from form
-        turnstile_response = form.cleaned_data.get('cf_turnstile_response')
-        
-        # Verify Turnstile token with Cloudflare
-        if not self.verify_turnstile(turnstile_response):
-            form.add_error(None, "CAPTCHA verification failed. Please try again.")
-            return self.form_invalid(form)
+        # Only verify Turnstile if configured
+        # This allows the game to work for developers who clone from GitHub
+        # without requiring Cloudflare Turnstile setup
+        turnstile_secret = getattr(settings, 'TURNSTILE_SECRET_KEY', None)
+        if turnstile_secret:
+            turnstile_response = form.cleaned_data.get('cf_turnstile_response')
+            if not self.verify_turnstile(turnstile_response):
+                form.add_error(None, "CAPTCHA verification failed. Please try again.")
+                return self.form_invalid(form)
         
         # Validate email and username uniqueness
         # This provides defense-in-depth since Evennia's parent class
@@ -89,9 +96,11 @@ class TurnstileAccountCreateView(EvenniaAccountCreateView):
         secret_key = getattr(settings, 'TURNSTILE_SECRET_KEY', None)
         
         if not secret_key:
-            # If no secret key configured, log error and fail verification
-            print("ERROR: TURNSTILE_SECRET_KEY not configured in settings")
-            return False
+            # If no secret key configured, log warning
+            # This shouldn't happen as we check before calling this method,
+            # but handle gracefully just in case
+            print("WARNING: TURNSTILE_SECRET_KEY not configured - skipping verification")
+            return True  # Allow registration to proceed
         
         # Cloudflare Turnstile verification endpoint
         verify_url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'

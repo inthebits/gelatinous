@@ -46,7 +46,8 @@ Register
                   {% endif %}
                 {% endfor %}
                 
-                <!-- Cloudflare Turnstile Widget (invisible/automatic verification) -->
+                <!-- Cloudflare Turnstile Widget (only if configured) -->
+                {% if turnstile_enabled %}
                 <div class="form-field my-3">
                   <div class="cf-turnstile" 
                        data-sitekey="{{ turnstile_site_key }}" 
@@ -56,6 +57,7 @@ Register
                 
                 <!-- Hidden field for Turnstile response (populated by JavaScript) -->
                 {{ form.cf_turnstile_response }}
+                {% endif %}
                 
                 <hr />
                 <div class="form-group">
@@ -76,7 +78,8 @@ Register
   </div>
 </div>
 
-<!-- Cloudflare Turnstile Script -->
+<!-- Cloudflare Turnstile Script (only if configured) -->
+{% if turnstile_enabled %}
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 <script>
@@ -103,5 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+{% endif %}
 
 {% endblock %}
