@@ -195,16 +195,6 @@ class TurnstileAccountForm(EvenniaAccountForm):
     Overrides email field to make it required (critical for password resets).
     """
     
-    # Override email field to make it required
-    email = forms.EmailField(
-        required=True,
-        help_text="A valid email address. Required for password resets.",
-        error_messages={
-            'required': 'Email address is required.',
-            'invalid': 'Please enter a valid email address.'
-        }
-    )
-    
     # Hidden field to store Turnstile response token
     # This is populated by the Turnstile JavaScript widget
     cf_turnstile_response = forms.CharField(
@@ -214,6 +204,17 @@ class TurnstileAccountForm(EvenniaAccountForm):
             'required': 'CAPTCHA verification is required. Please complete the verification.'
         }
     )
+    
+    def __init__(self, *args, **kwargs):
+        """Override email field to make it required."""
+        super().__init__(*args, **kwargs)
+        # Make email required and update help text
+        self.fields['email'].required = True
+        self.fields['email'].help_text = "A valid email address. Required for password resets."
+        self.fields['email'].error_messages = {
+            'required': 'Email address is required.',
+            'invalid': 'Please enter a valid email address.'
+        }
     
     class Meta(EvenniaAccountForm.Meta):
         # Extend parent's fields with Turnstile response
