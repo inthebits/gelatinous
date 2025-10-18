@@ -46,14 +46,12 @@ Register
                   {% endif %}
                 {% endfor %}
                 
-                <!-- Cloudflare Turnstile Widget -->
+                <!-- Cloudflare Turnstile Widget (invisible/automatic verification) -->
                 <div class="form-field my-3">
-                  <label>Verification:</label>
                   <div class="cf-turnstile" 
                        data-sitekey="{{ turnstile_site_key }}" 
                        data-callback="onTurnstileSuccess"
                        data-theme="dark"></div>
-                  <small class="form-text text-muted">Please complete the verification to proceed.</small>
                 </div>
                 
                 <!-- Hidden field for Turnstile response (populated by JavaScript) -->
