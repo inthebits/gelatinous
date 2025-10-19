@@ -6,19 +6,19 @@ ensuring the user is logged out of both systems with proper cookie clearing.
 
 SETUP INSTRUCTIONS:
 1. Configure DISCOURSE_URL in Django settings (server/conf/secret_settings.py)
-2. Set Discourse's logout_redirect setting to point back to this view
+2. Set Discourse's logout_redirect setting to point back to Django logout handler
    (already configured: https://gel.monster/sso/discourse/logout/)
 
 3. Override the default logout URL in your urls.py:
    path("auth/logout/", logout_with_discourse, name="logout"),
 
 How it works:
-- User clicks logout
+- User clicks logout on Django
 - Django logs them out
-- Redirects to Discourse /session/sso_logout
+- Redirects to Discourse's main logout page
 - Discourse clears its session cookies
 - Discourse redirects back to /sso/discourse/logout/ (discourse_logout view)
-- discourse_logout view confirms Django logout and redirects home
+- User arrives at home page, logged out of both sites
 """
 
 from django.contrib.auth import logout
@@ -36,9 +36,9 @@ def logout_with_discourse(request):
     
     This view:
     1. Logs the user out of Django
-    2. Redirects to Discourse's logout endpoint
-    3. Discourse clears its session cookies
-    4. Discourse redirects back to our discourse_logout view
+    2. Redirects to Discourse's logout page
+    3. Discourse clears its session cookies and redirects via logout_redirect
+    4. discourse_logout view confirms Django logout and redirects home
     5. User ends up at home page, logged out of both systems
     
     Configuration:
@@ -50,9 +50,8 @@ def logout_with_discourse(request):
     # Get Discourse URL
     discourse_url = getattr(settings, 'DISCOURSE_URL', 'https://forum.gel.monster')
     
-    # Redirect to Discourse's logout endpoint
-    # This will clear Discourse session cookies, then redirect to logout_redirect
-    # which points to our discourse_logout view
-    logout_url = f"{discourse_url}/session/sso_logout"
+    # Redirect to Discourse's standard logout endpoint
+    # Discourse will clear cookies and redirect to logout_redirect setting
+    logout_url = f"{discourse_url}/logout"
     
     return HttpResponseRedirect(logout_url)
