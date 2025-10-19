@@ -1,12 +1,22 @@
 """
 Django logout view with Discourse logout synchronization.
 
-When a user logs out from Django, we redirect their browser to Discourse's
-logout endpoint. Discourse will clear its cookies and then redirect back to
-Django via the 'logout_redirect' setting, which points to discourse_logout view.
+Uses the discourse-sso-logout pattern: redirect to Discourse with #logout hash,
+which triggers a JavaScript snippet on Discourse that clears cookies.
 
-This creates a logout flow:
-Django logout → Discourse /logout → Django discourse_logout → Home page
+SETUP INSTRUCTIONS:
+1. Add this JavaScript to Discourse theme's </head> section:
+   <script>
+   if(window.location.hash=='#logout'){
+       document.cookie = '_forum_session=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+       document.cookie = '_t=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+       document.location = 'https://gel.monster/';
+   }
+   </script>
+
+2. Configure DISCOURSE_URL in Django settings
+
+This approach is from: https://github.com/johnmap/discourse-sso-logout
 """
 
 from django.contrib.auth import logout
@@ -23,10 +33,12 @@ def logout_with_discourse(request):
     Initiate logout from both Django and Discourse.
     
     1. Log out from Django first (clear Django session)
-    2. Redirect browser to Discourse's logout page
-    3. Discourse clears its cookies
-    4. Discourse redirects to logout_redirect setting (Django discourse_logout)
-    5. discourse_logout confirms and redirects to home
+    2. Redirect browser to Discourse with #logout hash
+    3. JavaScript on Discourse detects hash and clears cookies
+    4. JavaScript redirects back to Django home page
+    
+    This uses the discourse-sso-logout pattern since Discourse
+    doesn't have a proper logout URL endpoint.
     """
     # Log out from Django first
     logout(request)
@@ -34,8 +46,8 @@ def logout_with_discourse(request):
     # Get Discourse URL
     discourse_url = getattr(settings, 'DISCOURSE_URL', 'https://forum.gel.monster')
     
-    # Redirect to Discourse's logout page
-    # Discourse will handle its logout and redirect via logout_redirect setting
-    logout_url = f"{discourse_url}/logout"
+    # Redirect to Discourse with #logout hash
+    # JavaScript on Discourse will detect this and clear cookies
+    logout_url = f"{discourse_url}/#logout"
     
     return HttpResponseRedirect(logout_url)
