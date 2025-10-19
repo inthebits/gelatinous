@@ -1,11 +1,83 @@
-# Discourse Dark Theme CSS
-## Matching Django's Daring Fireball Color Scheme
+# Discourse Complete Theme CSS
+## Django Header Integration + Dark Theme
 
-Copy and paste this CSS into your Discourse theme component's **Common → CSS** section (in addition to the existing header iframe CSS).
+Copy and paste this **ENTIRE CSS** into your Discourse theme component's **Common → CSS** section. This replaces all existing CSS.
 
 ---
 
 ```css
+/* ===== DJANGO HEADER IFRAME INTEGRATION ===== */
+
+/* Hide standard Discourse header */
+.d-header {
+  display: none !important;
+}
+
+/* Container for Django header iframe */
+#gel-django-header-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1031;
+  background-color: #4a525a;
+}
+
+/* Iframe styling - seamless integration */
+#gel-django-header-iframe {
+  width: 100%;
+  height: 80px;
+  border: none;
+  display: block;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+/* Adjust Discourse content for fixed header */
+#main-outlet {
+  margin-top: 80px !important;
+  padding-top: 20px;
+}
+
+body {
+  padding-top: 80px;
+}
+
+.sidebar-wrapper {
+  top: 80px !important;
+}
+
+/* Hide Discourse footer */
+.about-footer {
+  display: none !important;
+}
+
+/* Loading state */
+#gel-django-header-container.loading::before {
+  content: 'Loading header...';
+  display: block;
+  text-align: center;
+  padding: 20px;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  body, #main-outlet {
+    padding-top: 60px;
+    margin-top: 60px !important;
+  }
+  
+  .sidebar-wrapper {
+    top: 60px !important;
+  }
+}
+
+/* ===== DARK THEME FOR DISCOURSE ===== */
 /* ===== DARK THEME FOR DISCOURSE ===== */
 /* Matches Django's Daring Fireball-inspired color scheme */
 
@@ -352,20 +424,36 @@ aside.quote .title {
 1. **Go to Discourse Admin** → Customize → Themes
 2. **Find your theme component**: "Django Header Integration"
 3. **Edit CSS/HTML** → Common → CSS
-4. **Scroll to the bottom** of your existing CSS (after the header iframe CSS)
-5. **Paste this entire dark theme CSS** after your existing code
+4. **Select ALL existing CSS and DELETE it**
+5. **Paste this ENTIRE CSS file** (from line 9 to the end of the code block above)
 6. **Save**
 7. **Hard refresh** your browser (Cmd+Shift+R or Ctrl+Shift+R)
 
 ---
 
-## Result
+## What This Does
 
-Your Discourse forum will now have:
-- Dark blue-gray backgrounds matching Django
+**Django Header Integration:**
+- Hides native Discourse header
+- Embeds Django header in iframe at top
+- Adjusts spacing for fixed header
+- Mobile responsive
+
+**Dark Theme:**
+- Dark blue-gray backgrounds matching Django (`#4a525a`, `#6b747c`)
 - White text throughout
-- Light blue accent colors for links and buttons
+- Light blue accent colors for links and buttons (`#6fa8dc`)
 - Consistent styling with your main site
-- Same color palette as the Daring Fireball-inspired theme
+- Covers all Discourse elements: posts, topics, sidebar, modals, search, etc.
 
 The entire site will have a cohesive dark theme from the Django header through all Discourse content!
+
+---
+
+## Note
+
+This CSS file contains:
+1. **Lines 1-77**: Django header iframe integration (replaces native header)
+2. **Lines 79-end**: Complete dark theme styling (all Discourse elements)
+
+Both sections work together to create a seamless experience between Django and Discourse.
