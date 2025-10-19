@@ -8,6 +8,8 @@ Use this code in your Discourse theme component named "Django Header Integration
 ## Step 1: HTML Code (Paste in `</head>` section)
 
 ```html
+<link rel="preconnect" href="https://gel.monster">
+<link rel="dns-prefetch" href="https://gel.monster">
 <div id="gel-django-header-container"></div>
 ```
 

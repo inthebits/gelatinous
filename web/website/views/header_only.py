@@ -7,8 +7,10 @@ maintaining visual consistency.
 """
 
 from django.shortcuts import render
+from django.views.decorators.cache import cache_control
 
 
+@cache_control(max_age=300, public=True)  # Cache for 5 minutes
 def header_only(request):
     """
     Render just the navbar for iframe embedding in Discourse.
@@ -18,6 +20,9 @@ def header_only(request):
     
     The header detects it's in an iframe context and adjusts link behavior
     to prevent double-header issues when navigating to Discourse.
+    
+    Cache is set to 5 minutes to improve load performance while still
+    reflecting authentication state changes reasonably quickly.
     """
     context = {
         'game_name': 'Gelatinous Monster',
