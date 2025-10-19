@@ -35,6 +35,16 @@ Uses iframe-specific menu that removes Forum link to prevent double headers.
             border-radius: 0;
         }
         
+        /* Disable dropdowns in iframe - they render outside bounds */
+        .dropdown-menu {
+            display: none !important;
+        }
+        
+        /* Make dropdown toggle act as regular link */
+        .dropdown-toggle::after {
+            display: none !important;
+        }
+        
         /* Prevent any scrolling */
         html, body {
             height: auto;

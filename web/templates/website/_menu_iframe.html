@@ -51,20 +51,8 @@ Removes the Forum link to prevent navigation loops and double headers.
 
       {% block navbar_user %}
       {% if account %}
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" id="user_options" aria-expanded="false">
-          Logged in as {{ account.username }} <span class="caret"></span>
-        </a>
-        <div class="dropdown-menu" aria-labelledby="user_options">
-          <a class="dropdown-item" href="{% url 'character-create' %}" target="_top">Decant Sleeve</a>
-          <a class="dropdown-item" href="{% url 'character-manage' %}" target="_top">Manage Sleeves</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="{% url 'password_change' %}" target="_top">Change Password</a>
-          <form method="post" action="{% url 'logout' %}" target="_top" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="dropdown-item">Log Out</button>
-          </form>
-        </div>
+      <li class="nav-item">
+        <span class="nav-link">Logged in as {{ account.username }}</span>
       </li>
       <li>
         <form method="post" action="{% url 'logout' %}" target="_top" style="display:inline;">
