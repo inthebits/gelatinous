@@ -87,3 +87,35 @@ folder and edit it to add/remove links to the menu.
     </ul>
   </div>
 </nav>
+
+{% if account %}
+<!-- Discourse Session Sync: Automatically log into forum when logged into Django -->
+<script>
+  (function() {
+    // Only sync once per page load
+    if (sessionStorage.getItem('discourse_sync_attempted')) {
+      return;
+    }
+    
+    fetch("{% url 'discourse-session-sync' %}", {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin'
+    })
+    .then(response => {
+      if (response.ok) {
+        console.log('✓ Discourse session synced - you are now logged into the forum');
+        sessionStorage.setItem('discourse_sync_attempted', 'true');
+      } else {
+        console.warn('Discourse session sync failed:', response.status);
+      }
+    })
+    .catch(error => {
+      console.warn('Discourse session sync error:', error);
+    });
+  })();
+</script>
+{% endif %}
