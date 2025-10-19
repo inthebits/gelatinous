@@ -21,6 +21,7 @@ from web.website.views.accounts import TurnstileAccountCreateView
 from web.website.views.discourse_sso import discourse_sso
 from web.website.views.discourse_logout import discourse_logout
 from web.website.views.logout_with_discourse import logout_with_discourse
+from web.website.views.discourse_session_sync import discourse_session_sync
 
 # Override default character creation, account registration, and other views
 urlpatterns = [
@@ -29,6 +30,9 @@ urlpatterns = [
     
     # Discourse logout endpoint (redirect target from Discourse logout)
     path("sso/discourse/logout/", discourse_logout, name="discourse-logout"),
+    
+    # Discourse session sync endpoint (automatic login sync)
+    path("sso/discourse/session-sync/", discourse_session_sync, name="discourse-session-sync"),
     
     # Override default logout to also log out of Discourse
     path("auth/logout/", logout_with_discourse, name="logout"),
