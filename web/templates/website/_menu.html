@@ -28,17 +28,13 @@ folder and edit it to add/remove links to the menu.
         <a class="nav-link" href="{% url 'index' %}">Home</a>
       </li>
       <!-- game views -->
-      <li><a class="nav-link" href="{% url 'help' %}">Help</a></li>
       {% if account %}
       <li><a class="nav-link" href="{% url 'discourse-session-sync' %}" target="_top">Forum</a></li>
       {% else %}
       <li><a class="nav-link" href="https://forum.gel.monster" target="_top">Forum</a></li>
       {% endif %}
+      <li><a class="nav-link" href="{% url 'help' %}">Help</a></li>
       <!-- end game views -->
-
-      {% if webclient_enabled %}
-      <li><a class="nav-link" href="{% url 'webclient:index' %}">Play Online</a></li>
-      {% endif %}
 
       {% if user.is_staff %}
       <li><a class="nav-link" href="{% url 'characters' %}">Characters</a></li>
@@ -47,6 +43,10 @@ folder and edit it to add/remove links to the menu.
       {% if rest_api_enabled %}
       <li><a class="nav-link" href="/api">API</a></li>
       {% endif %}
+      {% endif %}
+
+      {% if webclient_enabled %}
+      <li><a class="nav-link" href="{% url 'webclient:index' %}">Play Online</a></li>
       {% endif %}
       {% endblock %}
     </ul>
