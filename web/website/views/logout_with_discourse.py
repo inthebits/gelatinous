@@ -32,10 +32,17 @@ def get_discourse_user_id(user):
     Get Discourse user ID for a Django user.
     For DiscourseConnect, this is the external_id which is the Django user ID.
     """
+    from evennia.utils import logger
+    
     discourse_url = getattr(settings, 'DISCOURSE_URL', 'https://forum.gel.monster')
     api_key = getattr(settings, 'DISCOURSE_API_KEY', None)
     
+    logger.log_info(f"[DISCOURSE_LOGOUT] Attempting to get Discourse user ID for Django user {user.id}")
+    logger.log_info(f"[DISCOURSE_LOGOUT] Discourse URL: {discourse_url}")
+    logger.log_info(f"[DISCOURSE_LOGOUT] API key configured: {bool(api_key)}")
+    
     if not api_key:
+        logger.log_err("[DISCOURSE_LOGOUT] No API key configured!")
         return None
     
     # Use the by-external endpoint to find user by Django user ID
@@ -45,13 +52,22 @@ def get_discourse_user_id(user):
         'Api-Username': 'system',
     }
     
+    logger.log_info(f"[DISCOURSE_LOGOUT] Calling: {url}")
+    
     try:
         response = requests.get(url, headers=headers, timeout=5)
+        logger.log_info(f"[DISCOURSE_LOGOUT] Response status: {response.status_code}")
+        logger.log_info(f"[DISCOURSE_LOGOUT] Response body: {response.text[:200]}")
+        
         if response.status_code == 200:
             user_data = response.json()
-            return user_data.get('user', {}).get('id')
+            discourse_user_id = user_data.get('user', {}).get('id')
+            logger.log_info(f"[DISCOURSE_LOGOUT] Found Discourse user ID: {discourse_user_id}")
+            return discourse_user_id
+        else:
+            logger.log_err(f"[DISCOURSE_LOGOUT] Failed to get user ID: {response.status_code} - {response.text}")
     except Exception as e:
-        print(f"Error fetching Discourse user ID: {e}")
+        logger.log_trace(f"[DISCOURSE_LOGOUT] Exception fetching Discourse user ID: {e}")
     
     return None
 
@@ -61,13 +77,17 @@ def logout_discourse_user(discourse_user_id):
     Log out a user from Discourse using the admin API.
     This invalidates their session in Discourse's database.
     """
+    from evennia.utils import logger
+    
     if not discourse_user_id:
+        logger.log_warn("[DISCOURSE_LOGOUT] No discourse_user_id provided")
         return False
     
     discourse_url = getattr(settings, 'DISCOURSE_URL', 'https://forum.gel.monster')
     api_key = getattr(settings, 'DISCOURSE_API_KEY', None)
     
     if not api_key:
+        logger.log_err("[DISCOURSE_LOGOUT] No API key configured for logout!")
         return False
     
     url = f"{discourse_url}/admin/users/{discourse_user_id}/log_out"
@@ -77,11 +97,21 @@ def logout_discourse_user(discourse_user_id):
         'Content-Type': 'application/json',
     }
     
+    logger.log_info(f"[DISCOURSE_LOGOUT] Calling logout API: {url}")
+    
     try:
         response = requests.post(url, headers=headers, timeout=5)
-        return response.status_code == 200
+        logger.log_info(f"[DISCOURSE_LOGOUT] Logout response status: {response.status_code}")
+        logger.log_info(f"[DISCOURSE_LOGOUT] Logout response: {response.text[:200]}")
+        
+        success = response.status_code == 200
+        if success:
+            logger.log_info(f"[DISCOURSE_LOGOUT] Successfully logged out Discourse user {discourse_user_id}")
+        else:
+            logger.log_err(f"[DISCOURSE_LOGOUT] Failed to logout: {response.status_code} - {response.text}")
+        return success
     except Exception as e:
-        print(f"Error logging out Discourse user: {e}")
+        logger.log_trace(f"[DISCOURSE_LOGOUT] Exception logging out Discourse user: {e}")
         return False
 
 
@@ -100,15 +130,23 @@ def logout_with_discourse(request):
     so when the browser sends cookies on next request, they will be
     treated as invalid and the user will appear logged out.
     """
+    from evennia.utils import logger
+    
     user = request.user
+    logger.log_info(f"[DISCOURSE_LOGOUT] User {user.username} (ID: {user.id}) initiating logout")
     
     # Try to logout from Discourse first
     discourse_user_id = get_discourse_user_id(user)
     if discourse_user_id:
+        logger.log_info(f"[DISCOURSE_LOGOUT] Found Discourse user ID {discourse_user_id}, attempting logout")
         logout_discourse_user(discourse_user_id)
+    else:
+        logger.log_warn(f"[DISCOURSE_LOGOUT] Could not find Discourse user ID for Django user {user.id}")
     
     # Log out from Django
+    logger.log_info(f"[DISCOURSE_LOGOUT] Logging out from Django")
     logout(request)
     
     # Redirect to home page
+    logger.log_info(f"[DISCOURSE_LOGOUT] Redirecting to home page")
     return HttpResponseRedirect('/')
