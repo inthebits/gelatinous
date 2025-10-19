@@ -22,9 +22,13 @@ from web.website.views.discourse_sso import discourse_sso
 from web.website.views.discourse_logout import discourse_logout
 from web.website.views.logout_with_discourse import logout_with_discourse
 from web.website.views.discourse_session_sync import discourse_session_sync
+from web.website.views.header_only import header_only
 
 # Override default character creation, account registration, and other views
 urlpatterns = [
+    # Header-only endpoint for Discourse iframe embedding
+    path("header-only/", header_only, name="header-only"),
+    
     # Discourse SSO endpoint
     path("sso/discourse/", discourse_sso, name="discourse-sso"),
     

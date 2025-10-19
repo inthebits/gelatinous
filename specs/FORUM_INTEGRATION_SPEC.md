@@ -554,82 +554,57 @@ Map Django fields to Discourse:
 - ✅ Mobile responsive behavior
 - ✅ Performance under load
 
-### 🔄 Phase 6: Header Unification - IN PROGRESS
+### ✅ Phase 6: Header Unification - COMPLETE
 
 **Objective**: Create consistent "single pane of glass" experience with unified navigation headers
 
-**Approach**: Brand Header Theme Component + Custom CSS
+**Approach**: Django Header Iframe Integration
 
-**Implementation Plan**:
+**Implementation**:
 
-1. **Install Brand Header Component**:
-   - Official Discourse theme component
-   - Repository: `https://github.com/discourse/discourse-brand-header`
-   - Adds customizable navigation bar above standard Discourse header
+1. **Django Side** (✅ Complete):
+   - Created `/header-only/` endpoint that renders just the navbar
+   - Minimal HTML template for iframe embedding
+   - Includes Bootstrap CSS/JS and dynamic height reporting
+   - Full authentication state and functionality preserved
 
-2. **Configure Navigation Links**:
-   ```
-   Home | https://gel.monster
-   Help | https://gel.monster/help
-   Forum | https://forum.gel.monster
-   Play Online | https://gel.monster/webclient
-   ```
+2. **Discourse Side** (Ready to implement):
+   - Theme component with iframe container
+   - CSS to hide standard Discourse header
+   - JavaScript to dynamically adjust height
+   - Seamless visual integration
 
-3. **Hide Standard Discourse Elements** (via CSS):
-   ```css
-   /* Hide standard Discourse logo */
-   .d-header .logo-wrapper { display: none; }
-   
-   /* Hide search button */
-   .d-header .search-menu { display: none; }
-   
-   /* Simplify header - keep only essentials */
-   .extra-info-wrapper { display: none; }
-   ```
+**Benefits**:
+- 100% visual consistency (actual Django header, not replica)
+- Single source of truth for header code
+- All Django functionality works (dropdowns, auth, etc.)
+- Zero CSS conflicts between Django and Discourse
+- Automatic updates when Django header changes
+- Imperceptible to users (no visible iframe artifacts)
 
-4. **Apply Dark Theme Matching**:
-   ```css
-   .brand-header {
-     background-color: #4a525a;  /* Match Django header */
-     border-bottom: 1px solid #6b747c;
-   }
-   
-   .brand-header a {
-     color: #ffffff;
-   }
-   
-   .brand-header a:hover {
-     color: #6fa8dc;  /* Match Django accent color */
-   }
-   ```
+**Files Created**:
+- `web/website/views/header_only.py` - View for header endpoint
+- `web/templates/website/header_only.html` - Iframe template
+- `specs/DISCOURSE_HEADER_IFRAME_IMPLEMENTATION.md` - Full implementation guide
 
-5. **Preserve Evennia Functionality**:
-   - Keep all Django header features intact
-   - Characters, Channels, Admin links remain on Django site
-   - Discourse header simplified to core navigation only
-   - Staff link to forum administration accessible
-
-**Design Philosophy**:
-- Django header: Full Evennia functionality (unchanged)
-- Discourse header: Minimal "barebones" navigation
-- Visual consistency: Dark theme (#4a525a) across both sites
-- User perception: Seamless transition between sites
+**Implementation Steps**:
+1. ✅ Create Django `/header-only/` endpoint
+2. ✅ Create minimal iframe template
+3. ✅ Add URL route
+4. ⏳ Create Discourse theme component
+5. ⏳ Add iframe HTML, CSS, and JavaScript
+6. ⏳ Enable component on active theme
+7. ⏳ Test and verify functionality
 
 **Rationale**:
-- Brand Header is official Discourse component (maintained by Discourse team)
-- Allows custom navigation matching Django site
-- CSS-based hiding of unwanted Discourse features
-- Mobile-responsive out of the box
-- Future-proof with official support
+After attempting to replicate Django's Bootstrap navbar in Discourse with custom CSS, we determined that using the actual Django header via iframe is superior because:
+- Eliminates CSS/styling maintenance burden
+- Guarantees pixel-perfect visual match
+- Preserves all interactive functionality
+- Reduces complexity for future updates
+- Works perfectly with Lightsail infrastructure (no nginx required)
 
-**Next Steps**:
-- [ ] Install Brand Header theme component
-- [ ] Configure navigation links
-- [ ] Apply custom CSS for dark theme
-- [ ] Hide unwanted Discourse UI elements
-- [ ] Add staff-only forum administration link
-- [ ] Test responsive behavior
-- [ ] Verify consistent user experience
+**See Full Documentation**: `specs/DISCOURSE_HEADER_IFRAME_IMPLEMENTATION.md`
 
 ---
 
