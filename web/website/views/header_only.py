@@ -15,6 +15,9 @@ def header_only(request):
     
     This minimal view provides the Django header with full functionality
     (authentication state, dropdowns, etc.) without page chrome.
+    
+    The header detects it's in an iframe context and adjusts link behavior
+    to prevent double-header issues when navigating to Discourse.
     """
     context = {
         'game_name': 'Gelatinous Monster',
@@ -23,6 +26,7 @@ def header_only(request):
         'webclient_enabled': True,
         'register_enabled': True,
         'rest_api_enabled': request.user.is_staff if request.user.is_authenticated else False,
+        'is_iframe': True,  # Signal to template that this is iframe context
     }
     
     return render(request, 'website/header_only.html', context)

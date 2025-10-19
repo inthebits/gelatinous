@@ -1,6 +1,7 @@
 {% comment %}
 Minimal header template for iframe embedding in Discourse.
 Includes only the navbar with necessary Bootstrap CSS/JS.
+Uses iframe-specific menu that removes Forum link to prevent double headers.
 {% endcomment %}
 {% load static %}
 <!DOCTYPE html>
@@ -36,7 +37,7 @@ Includes only the navbar with necessary Bootstrap CSS/JS.
     </style>
 </head>
 <body>
-    {% include "website/_menu.html" %}
+    {% include "website/_menu_iframe.html" %}
     
     <!-- jQuery and Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
