@@ -20,6 +20,7 @@ from web.website.views.channels import StaffChannelListView, StaffChannelDetailV
 from web.website.views.accounts import TurnstileAccountCreateView
 from web.website.views.discourse_sso import discourse_sso
 from web.website.views.discourse_logout import discourse_logout
+from web.website.views.logout_with_discourse import logout_with_discourse
 
 # Override default character creation, account registration, and other views
 urlpatterns = [
@@ -28,6 +29,9 @@ urlpatterns = [
     
     # Discourse logout endpoint (redirect target from Discourse logout)
     path("sso/discourse/logout/", discourse_logout, name="discourse-logout"),
+    
+    # Override default logout to also log out of Discourse
+    path("auth/logout/", logout_with_discourse, name="logout"),
     
     # Custom account registration with Cloudflare Turnstile
     path("auth/register", TurnstileAccountCreateView.as_view(), name="register"),
