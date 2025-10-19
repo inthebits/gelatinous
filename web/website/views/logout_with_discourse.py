@@ -1,14 +1,16 @@
 """
-Django logout view with Discourse logout synchronization using API.
+Django logout view with optional Discourse logout synchronization.
 
-Uses the official Discourse API endpoint to log out the user from Discourse.
-The API invalidates the session in Discourse's database, which should cause
-the browser's cookies to be treated as invalid on subsequent requests.
+If Discourse integration is configured, this view will also log the user out
+of Discourse when they log out of Django. If Discourse is not configured,
+it simply logs them out of Django normally.
 
-SETUP REQUIREMENTS:
+OPTIONAL SETUP (for Discourse integration):
 1. DISCOURSE_URL in Django settings
 2. DISCOURSE_API_KEY in Django settings (admin API key)
 3. DISCOURSE_SSO_SECRET in Django settings (for SSO)
+
+If these settings are not configured, this view falls back to normal Django logout.
 
 References:
 - https://meta.discourse.org/t/logout-post-request/192601
@@ -88,12 +90,16 @@ def logout_discourse_user(discourse_user_id):
 @login_required
 def logout_with_discourse(request):
     """
-    Log out from both Django and Discourse.
+    Log out from Django and optionally from Discourse.
     
+    If Discourse is configured:
     1. Look up Discourse user ID via external_id (Django user ID)
     2. Call Discourse API to invalidate their session
     3. Log out from Django
     4. Redirect to Django home page
+    
+    If Discourse is not configured:
+    - Simply logs out from Django normally
     
     The API call invalidates the Discourse session in the database,
     so when the browser sends cookies on next request, they will be
@@ -101,10 +107,12 @@ def logout_with_discourse(request):
     """
     user = request.user
     
-    # Try to logout from Discourse first
+    # Try to logout from Discourse first (if configured)
     discourse_user_id = get_discourse_user_id(user)
     if discourse_user_id:
         logout_discourse_user(discourse_user_id)
+    # If Discourse is not configured, get_discourse_user_id returns None
+    # and we just skip the Discourse logout gracefully
     
     # Log out from Django
     logout(request)

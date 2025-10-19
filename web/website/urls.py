@@ -26,10 +26,10 @@ from web.website.views.header_only import header_only
 
 # Override default character creation, account registration, and other views
 urlpatterns = [
-    # Header-only endpoint for Discourse iframe embedding
+    # Header-only endpoint for iframe embedding (optional - for forum integration)
     path("header-only/", header_only, name="header-only"),
     
-    # Discourse SSO endpoint
+    # Discourse SSO endpoints (optional - only needed if using Discourse forum)
     path("sso/discourse/", discourse_sso, name="discourse-sso"),
     
     # Discourse logout endpoint (redirect target from Discourse logout)
@@ -38,7 +38,7 @@ urlpatterns = [
     # Discourse session sync endpoint (automatic login sync)
     path("sso/discourse/session-sync/", discourse_session_sync, name="discourse-session-sync"),
     
-    # Override default logout to also log out of Discourse
+    # Override default logout to also log out of Discourse (if configured)
     path("auth/logout/", logout_with_discourse, name="logout"),
     
     # Custom account registration with Cloudflare Turnstile

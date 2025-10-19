@@ -10,9 +10,19 @@ Copy and paste this **ENTIRE CSS** into your Discourse theme component's **Commo
 ```css
 /* ===== DJANGO HEADER IFRAME INTEGRATION ===== */
 
-/* Hide standard Discourse header */
+/* Hide standard Discourse header - prevent flash */
 .d-header {
   display: none !important;
+}
+
+/* Pre-allocate space to prevent layout shift */
+body {
+  padding-top: 80px;
+}
+
+#main-outlet {
+  margin-top: 80px !important;
+  padding-top: 20px;
 }
 
 /* Container for Django header iframe */
@@ -22,8 +32,12 @@ Copy and paste this **ENTIRE CSS** into your Discourse theme component's **Commo
   left: 0;
   right: 0;
   width: 100%;
+  height: 80px; /* Fixed height prevents reflow */
   z-index: 1031;
   background-color: #1a1a1a;
+  /* Optimize rendering */
+  will-change: contents;
+  contain: layout style;
 }
 
 /* Iframe styling - seamless integration */
@@ -36,16 +50,8 @@ Copy and paste this **ENTIRE CSS** into your Discourse theme component's **Commo
   padding: 0;
   background: transparent;
   overflow: hidden;
-}
-
-/* Adjust Discourse content for fixed header */
-#main-outlet {
-  margin-top: 80px !important;
-  padding-top: 20px;
-}
-
-body {
-  padding-top: 80px;
+  /* Performance optimizations */
+  pointer-events: auto;
 }
 
 .sidebar-wrapper {
@@ -57,21 +63,27 @@ body {
   display: none !important;
 }
 
-/* Loading state */
-#gel-django-header-container.loading::before {
-  content: 'Loading header...';
-  display: block;
-  text-align: center;
-  padding: 20px;
-  color: rgba(255,255,255,0.5);
-  font-size: 14px;
+/* Simplified loading state - no jitter */
+#gel-django-header-container.loading {
+  background-color: #1a1a1a;
 }
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  body, #main-outlet {
+  body {
     padding-top: 60px;
+  }
+  
+  #main-outlet {
     margin-top: 60px !important;
+  }
+  
+  #gel-django-header-container {
+    height: 60px;
+  }
+  
+  #gel-django-header-iframe {
+    height: 60px;
   }
   
   .sidebar-wrapper {

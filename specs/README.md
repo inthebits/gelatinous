@@ -1,0 +1,126 @@
+# Specifications Directory
+
+This directory contains detailed specifications for various features of the Gelatinous MUD project.
+
+---
+
+## Core Specifications (Required)
+
+These specs document core game systems that are always active:
+
+### Combat System
+- `GRAPPLE_SYSTEM_SPEC.md` - Grappling mechanics
+- `PROXIMITY_SYSTEM_SPEC.md` - Tactical positioning
+- `COMBAT_MESSAGE_FORMAT_SPEC.md` - Combat messaging system
+
+### Commands
+- `JUMP_COMMAND_SPEC.md` - Jumping between rooms
+- `THROW_COMMAND_SPEC.md` - Throwing items/characters
+- `WREST_COMMAND_SPEC.md` - Taking items by force
+
+---
+
+## Optional Specifications (Forum Integration)
+
+**These are completely optional** - only needed if you're running a Discourse forum:
+
+### Main Guide
+- **`FORUM_INTEGRATION_GUIDE.md`** - Start here! Comprehensive guide explaining:
+  - Do you need forum integration?
+  - Complete setup instructions
+  - How to remove if not needed
+  - Alternative platforms
+
+### Discourse Theme Configuration
+- `DISCOURSE_COLOR_PALETTE.md` - Color scheme setup
+- `DISCOURSE_DARK_THEME_CSS.md` - CSS for header integration
+- `DISCOURSE_THEME_CODE_FIXED.md` - JavaScript for iframe embedding
+- `CACHING_AND_PRECONNECT_SETUP.md` - Performance optimizations
+
+### Implementation Details
+- `FORUM_INTEGRATION_SPEC.md` - Technical implementation details
+- `DISCOURSE_HEADER_IFRAME_IMPLEMENTATION.md` - Header embedding approach
+
+**Note**: If you're not using Discourse, these files won't affect your game. The code is designed to gracefully degrade when Discourse settings are not configured.
+
+---
+
+## How To Tell If You Need Forum Integration
+
+### ✅ You MIGHT want it if:
+- You want persistent, searchable community discussions
+- You want to provide game guides, announcements, or support forums
+- You have resources to run/manage a separate Discourse instance
+- You want unified login between game and forum
+
+### ❌ You DON'T need it if:
+- You only want in-game chat (Evennia has channels built-in)
+- You prefer Discord or another existing platform
+- You're just getting started and want simplicity
+- You don't want to manage a separate service
+
+---
+
+## Quick Check: Is Forum Integration Active?
+
+Look at your `server/conf/secret_settings.py`:
+
+```python
+# If you see this and it's set to a real value:
+DISCOURSE_SSO_SECRET = "some-secret-here"
+DISCOURSE_URL = "https://forum.yourgame.com"
+
+# Then forum integration is active.
+
+# If these don't exist or are commented out:
+# Then forum integration is disabled.
+```
+
+---
+
+## Removing Forum Specs (Optional Cleanup)
+
+If you're certain you won't use forum integration:
+
+```bash
+# Remove optional forum specs
+rm specs/DISCOURSE_*.md
+rm specs/FORUM_INTEGRATION_*.md
+rm specs/CACHING_AND_PRECONNECT_SETUP.md
+```
+
+The game will work exactly the same - these are just documentation files.
+
+---
+
+## Questions?
+
+- **Game doesn't work**: Forum specs are documentation only - they don't affect game functionality
+- **Want to add forum later**: Just follow `FORUM_INTEGRATION_GUIDE.md` when ready
+- **Want to use different forum**: The iframe approach works with other platforms too
+- **Confused about optional vs required**: When in doubt, ignore Discourse specs - you don't need them unless you're specifically setting up a forum
+
+---
+
+## Summary
+
+```
+Core Specs (always relevant):
+├── GRAPPLE_SYSTEM_SPEC.md
+├── PROXIMITY_SYSTEM_SPEC.md
+├── COMBAT_MESSAGE_FORMAT_SPEC.md
+├── JUMP_COMMAND_SPEC.md
+├── THROW_COMMAND_SPEC.md
+└── WREST_COMMAND_SPEC.md
+
+Forum Specs (optional - only if using Discourse):
+├── FORUM_INTEGRATION_GUIDE.md ← START HERE
+├── DISCOURSE_COLOR_PALETTE.md
+├── DISCOURSE_DARK_THEME_CSS.md
+├── DISCOURSE_THEME_CODE_FIXED.md
+├── CACHING_AND_PRECONNECT_SETUP.md
+├── FORUM_INTEGRATION_SPEC.md
+└── DISCOURSE_HEADER_IFRAME_IMPLEMENTATION.md
+```
+
+When in doubt: **Ignore the forum specs** - they're optional enhancements, not requirements.
