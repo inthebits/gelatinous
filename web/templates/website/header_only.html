@@ -14,6 +14,9 @@ Uses iframe-specific menu that removes Forum link to prevent double headers.
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
     
+    <!-- Custom CSS - matches main Django site -->
+    <link rel="stylesheet" href="{% static 'website/css/custom.css' %}">
+    
     <style>
         /* Minimal styling for iframe embedding */
         body {
@@ -27,32 +30,6 @@ Uses iframe-specific menu that removes Forum link to prevent double headers.
         .navbar {
             margin: 0;
             border-radius: 0;
-            padding-top: 0.25rem;
-            padding-bottom: 0.25rem;
-        }
-        
-        /* Compact logo for iframe */
-        .navbar-brand-logo {
-            max-height: 40px !important;
-            width: auto !important;
-        }
-        
-        .navbar-brand {
-            padding-top: 0.25rem;
-            padding-bottom: 0.25rem;
-        }
-        
-        .navbar-brand .media {
-            align-items: center;
-        }
-        
-        .navbar-brand .media-body {
-            font-size: 0.9rem;
-            line-height: 1.2;
-        }
-        
-        .navbar-brand .media-body small {
-            font-size: 0.75rem;
         }
         
         /* Prevent any scrolling */
