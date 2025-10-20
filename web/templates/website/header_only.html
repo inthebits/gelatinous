@@ -35,6 +35,11 @@ Uses iframe-specific menu that removes Forum link to prevent double headers.
             border-radius: 0;
         }
         
+        /* Ensure slogan text matches main site */
+        .navbar-brand .media-body small {
+            font-size: 0.875rem; /* 14px - matches main site rendering */
+        }
+        
         /* Disable dropdowns in iframe - they render outside bounds */
         .dropdown-menu {
             display: none !important;
