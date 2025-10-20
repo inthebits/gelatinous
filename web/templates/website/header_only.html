@@ -61,49 +61,6 @@ Uses iframe-specific menu that removes Forum link to prevent double headers.
             height: auto;
             overflow: hidden;
         }
-        
-        /* Mobile responsive adjustments - match Discourse iframe sizing */
-        @media (max-width: 768px) {
-            /* Reduce navbar height to fit 60px container */
-            .navbar {
-                min-height: 60px;
-                padding: 0.25rem 1rem;
-            }
-            
-            /* Scale down logo */
-            .navbar-brand-logo {
-                max-height: 40px;
-                width: auto;
-            }
-            
-            /* Reduce brand text size */
-            .navbar-brand .media-body {
-                font-size: 1rem;
-                line-height: 1.2;
-            }
-            
-            .navbar-brand .media-body small {
-                font-size: 0.75rem;
-            }
-            
-            /* Reduce spacing */
-            .navbar-brand-logo.mx-3 {
-                margin-left: 0.5rem !important;
-                margin-right: 0.5rem !important;
-            }
-            
-            /* Compact nav items */
-            .navbar-nav .nav-link {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.875rem;
-            }
-            
-            /* Adjust navbar toggler for smaller height */
-            .navbar-toggler {
-                padding: 0.25rem 0.5rem;
-                font-size: 1rem;
-            }
-        }
     </style>
 </head>
 <body>

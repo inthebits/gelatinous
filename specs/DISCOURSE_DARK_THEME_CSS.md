@@ -68,26 +68,27 @@ body {
   background-color: #1a1a1a;
 }
 
-/* Mobile responsive */
+/* Mobile responsive - keep same height as desktop */
+/* Django header handles its own mobile layout */
 @media (max-width: 768px) {
   body {
-    padding-top: 60px;
+    padding-top: 80px;
   }
   
   #main-outlet {
-    margin-top: 60px !important;
+    margin-top: 80px !important;
   }
   
   #gel-django-header-container {
-    height: 60px;
+    height: 80px;
   }
   
   #gel-django-header-iframe {
-    height: 60px;
+    height: 80px;
   }
   
   .sidebar-wrapper {
-    top: 60px !important;
+    top: 80px !important;
   }
 }
 ```
