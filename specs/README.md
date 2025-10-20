@@ -24,22 +24,9 @@ These specs document core game systems that are always active:
 
 **These are completely optional** - only needed if you're running a Discourse forum:
 
-### Main Guide
-- **`FORUM_INTEGRATION_GUIDE.md`** - Start here! Comprehensive guide explaining:
-  - Do you need forum integration?
-  - Complete setup instructions
-  - How to remove if not needed
-  - Alternative platforms
-
-### Discourse Theme Configuration
-- `DISCOURSE_COLOR_PALETTE.md` - Color scheme setup
-- `DISCOURSE_DARK_THEME_CSS.md` - CSS for header integration
-- `DISCOURSE_THEME_CODE_FIXED.md` - JavaScript for iframe embedding
-- `CACHING_AND_PRECONNECT_SETUP.md` - Performance optimizations
-
-### Implementation Details
-- `FORUM_INTEGRATION_SPEC.md` - Technical implementation details
-- `DISCOURSE_HEADER_IFRAME_IMPLEMENTATION.md` - Header embedding approach
+### Main Guides
+- **`FORUM_INTEGRATION_GUIDE.md`** - Overview: Do you need forum integration? How to remove it if not needed.
+- **`DISCOURSE_INTEGRATION.md`** - Complete step-by-step setup guide with all code snippets ready to copy/paste.
 
 **Note**: If you're not using Discourse, these files won't affect your game. The code is designed to gracefully degrade when Discourse settings are not configured.
 
@@ -114,13 +101,8 @@ Core Specs (always relevant):
 └── WREST_COMMAND_SPEC.md
 
 Forum Specs (optional - only if using Discourse):
-├── FORUM_INTEGRATION_GUIDE.md ← START HERE
-├── DISCOURSE_COLOR_PALETTE.md
-├── DISCOURSE_DARK_THEME_CSS.md
-├── DISCOURSE_THEME_CODE_FIXED.md
-├── CACHING_AND_PRECONNECT_SETUP.md
-├── FORUM_INTEGRATION_SPEC.md
-└── DISCOURSE_HEADER_IFRAME_IMPLEMENTATION.md
+├── FORUM_INTEGRATION_GUIDE.md    ← Overview & decision guide
+└── DISCOURSE_INTEGRATION.md      ← Complete setup instructions
 ```
 
 When in doubt: **Ignore the forum specs** - they're optional enhancements, not requirements.
