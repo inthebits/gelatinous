@@ -94,9 +94,6 @@ AUTHENTICATION_BACKENDS = [
     "web.utils.auth_backends.EmailAuthenticationBackend",  # Email-based login only
 ]
 
-# Redirect after login - if no 'next' parameter is provided, go to homepage
-LOGIN_REDIRECT_URL = "/"
-
 ######################################################################
 # Cloudflare Turnstile Configuration
 ######################################################################
