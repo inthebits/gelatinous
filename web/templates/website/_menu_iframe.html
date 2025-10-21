@@ -45,7 +45,7 @@ Removes the Forum link to prevent navigation loops and double headers.
       {% block navbar_user %}
       {% if account %}
       <li class="nav-item">
-        <span class="nav-link">Logged in as {{ account.username }}</span>
+        <span class="nav-link">Logged in as {{ account.username }} <span style="opacity: 0;">▼</span></span>
       </li>
       <li>
         <form method="post" action="{% url 'logout' %}" target="_top" style="display:inline;">
