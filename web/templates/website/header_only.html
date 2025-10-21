@@ -11,6 +11,15 @@ Uses iframe-specific menu that removes Forum link to prevent double headers.
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gelatinous Monster Header</title>
     
+    <!-- Critical CSS - renders dark background immediately before external CSS loads -->
+    <style>
+        html, body {
+            background-color: #1a1a1a !important;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     
