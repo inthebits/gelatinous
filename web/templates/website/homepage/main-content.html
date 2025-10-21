@@ -1,31 +1,31 @@
-<h1 class="card-title">Gelatinous Monster</h1>
-
-<hr/>
-
-<p class="lead">An abomination to behold</p>
+<h2>Welcome</h2>
 
 <p>
-    A text-based multiplayer experience where dissolution is inevitable. 
-    Enter the gel and become part of something... <em>else</em>.
+    You've found a text-based multiplayer game where dissolution is inevitable. 
+    Navigate a world where form gives way to formlessness, where boundaries blur, 
+    and identity slowly dissolves into the collective ooze.
+</p>
+
+<h4>Getting Started</h4>
+<p>
+    New to text-based games? Start by <a href="{% url 'help' %}">reading the help documentation</a> 
+    or <a href="{% url 'forum-redirect' %}">asking questions in the forum</a>.
 </p>
 
 {% if telnet_enabled %}
+<h4>Connect to Play</h4>
 <p>
-    <strong>Connect via Telnet:</strong> {{ server_hostname }}, port
-    {% for port in telnet_ports %}
-    {% if not forloop.first and forloop.last %} or
-    {% elif forloop.counter != 1 %},
-    {% endif %}
-    {{ port }}
-    {% endfor %}
+    Point your favorite MUD client to:
+</p>
+<pre class="text-light bg-dark p-3 rounded">{{ server_hostname }}, port {% for port in telnet_ports %}{% if not forloop.first and forloop.last %} or {% elif forloop.counter != 1 %}, {% endif %}{{ port }}{% endfor %}</pre>
+<p class="text-muted small">
+    Don't have a MUD client? Try <a href="https://www.mudlet.org/" target="_blank">Mudlet</a> (cross-platform) 
+    or use your system's built-in telnet command.
 </p>
 {% endif %}
 
+<h4>Community</h4>
 <p>
-    <a href="{% url 'forum-redirect' %}" class="btn btn-primary">Enter the Discourse</a>
-    <a href="{% url 'help' %}" class="btn btn-outline-secondary">Documentation</a>
-</p>
-
-<p class="small text-muted mt-3">
-    Powered by <a href="https://www.evennia.com">Evennia</a>, the Python MUD creation framework.
+    Join the conversation on the <a href="{% url 'forum-redirect' %}">forum</a> 
+    to discuss strategy, share stories, and connect with other players.
 </p>
