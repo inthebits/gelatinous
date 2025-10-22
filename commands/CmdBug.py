@@ -492,6 +492,25 @@ class CmdBug(MuxCommand):
         # Store a reference to self for callbacks
         cmd_instance = self
         
+        def _validate_title_input(caller, raw_string, **kwargs):
+            """Process and validate title input (goto callable, not a node)."""
+            title = raw_string.strip()
+            
+            if not title:
+                caller.msg("|yBug report cancelled.|n")
+                return None  # Exit menu
+            
+            if len(title) < 10:
+                caller.msg("|rTitle too short. Please provide at least 10 characters.|n")
+                caller.msg("|yBug report cancelled.|n")
+                return None  # Exit menu
+            
+            # Store title in menu session
+            caller.ndb._evmenu.bug_title = title
+            
+            # Move to category node
+            return "node_category"
+        
         def node_title(caller, raw_string, **kwargs):
             """EvMenu node to get the bug title."""
             text = "\n|c=== Detailed Bug Report ===|n\n"
@@ -500,30 +519,11 @@ class CmdBug(MuxCommand):
             options = (
                 {
                     "key": "_default",
-                    "goto": "node_validate_title"
+                    "goto": _validate_title_input  # Callable, not string
                 },
             )
             
             return text, options
-        
-        def node_validate_title(caller, raw_string, **kwargs):
-            """Validate the title and move to category selection."""
-            title = raw_string.strip()
-            
-            if not title:
-                text = "\n|yBug report cancelled.|n"
-                return text, None
-            
-            if len(title) < 10:
-                text = "\n|rTitle too short. Please provide at least 10 characters.|n"
-                text += "\n|yBug report cancelled.|n"
-                return text, None
-            
-            # Store title in menu session
-            caller.ndb._evmenu.bug_title = title
-            
-            # Move to category node - return tuple to jump directly
-            return ("node_category", {})
         
         def node_category(caller, raw_string, **kwargs):
             """EvMenu node to select category."""
@@ -639,7 +639,6 @@ class CmdBug(MuxCommand):
         # Start the EvMenu
         EvMenu(caller, 
                {"node_title": node_title,
-                "node_validate_title": node_validate_title,
                 "node_category": node_category,
                 "node_open_editor": node_open_editor},
                startnode="node_title")
