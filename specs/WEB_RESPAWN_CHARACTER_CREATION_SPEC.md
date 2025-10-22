@@ -264,3 +264,174 @@ Redirect to Character Management
 - [ ] Add "Randomize All" button for template generation
 - [ ] Allow editing template stats before decanting (within 300 point limit)
 - [ ] Add character comparison view (side-by-side stats)
+- [ ] Add descriptive stat adjectives (e.g., "Mighty" instead of "5") - deferred due to template filter complexity
+
+---
+
+## Implementation Completed (January 2025)
+
+### Phase 1: COMPLETED ✅
+
+**Implementation Summary:**
+Phase 1 was successfully implemented with respawn interface, template generation, flash clone functionality, and sex selection. During testing, several critical bugs were discovered and fixed.
+
+**Completed Components:**
+
+1. **View Logic** (`web/website/views/characters.py`)
+   - ✅ `get()` method detects respawn vs first character
+   - ✅ `show_respawn_interface()` generates 3 templates + flash clone
+   - ✅ `handle_respawn_submission()` processes template/clone selection
+   - ✅ Sex selection integrated for all respawn paths
+   - ✅ Imports `generate_random_template()` and `create_flash_clone_character()`
+
+2. **Template Creation** (`web/templates/website/character_respawn_create.html`)
+   - ✅ Respawn interface matches dissolution aesthetic
+   - ✅ Radio buttons for template selection
+   - ✅ Flash clone option with preview
+   - ✅ Sex selection (male/female/ambiguous)
+   - ✅ Thematic styling with dark colors
+
+3. **Form Processing**
+   - ✅ Respawn POST handler implemented
+   - ✅ Template selection and character creation working
+   - ✅ Flash clone selection and creation working
+   - ✅ Roman numeral naming integrated
+   - ✅ Sex inheritance for flash clones (automatic from old character)
+
+4. **Testing Results**
+   - ✅ First character creation works (shows manual form)
+   - ✅ Respawn interface appears for archived characters
+   - ✅ Template selection creates characters correctly
+   - ✅ Flash clone preserves all data (stats, appearance, sex)
+   - ✅ Roman numeral naming works correctly
+   - ✅ Mobile responsive design verified
+
+### Bugs Discovered and Fixed During Testing
+
+#### 1. Menu Visibility Bug (Superuser Bypass)
+**Issue:** "Decant Sleeve" menu item was showing for superusers even when at character limit (MAX_NR_CHARACTERS=1), allowing access to character creation when it should be hidden.
+
+**Root Cause:** `typeclasses/accounts.py` `at_character_limit` property had a superuser bypass:
+```python
+if self.is_superuser:
+    return False  # Never at limit for superusers
+```
+
+**Fix:** Removed superuser bypass entirely (commit `bccfae3`):
+- Deleted the `if self.is_superuser: return False` logic
+- Added defensive coding: `if not char or not hasattr(char, 'db'): continue`
+- Now applies character limit consistently to ALL users including superusers
+- Menu properly hides when at limit for everyone
+
+**Rationale:** Superuser backup accounts (like Drivel) should respect game rules. Superusers aren't meant for regular play, just administrative access.
+
+#### 2. Roman Numeral Parsing Bug (Name Truncation)
+**Issue:** Names ending in letters that are valid Roman numerals were being truncated. "Drivel" became "Drive II" (the "L" was interpreted as Roman numeral 50).
+
+**Root Cause:** `commands/charcreate.py` line 130 used regex pattern `r'^(.*?)\s*([IVXLCDM]+)$'` which matched any trailing Roman numeral letters even without whitespace.
+
+**Fix:** Changed regex pattern to require whitespace (commit `d5caa42`):
+```python
+# Old pattern (too aggressive)
+r'^(.*?)\s*([IVXLCDM]+)$'
+
+# New pattern (requires space before numeral)
+r'^(.+?)\s+([IVXLCDM]+)$'
+```
+
+**Result:** 
+- "Drivel" stays "Drivel" (no space before L)
+- "Drivel II" correctly strips to "Drivel" (space before II)
+- Only explicitly formatted Roman numerals are stripped
+
+#### 3. Flash Clone Sex Inheritance Bug
+**Issue:** Flash clone was overriding inherited sex with 'ambiguous' default from POST data, instead of preserving the original character's sex.
+
+**Root Cause:** `web/website/views/characters.py` `handle_respawn_submission()` was reading `sex` from POST data and applying it to both template-based characters AND flash clones. Flash clones already inherit sex automatically in `create_flash_clone_character()`.
+
+**Fix:** Removed sex override for flash clone option (commit `00e2ff3`):
+```python
+# For flash clone, don't read sex from POST
+if sleeve_choice == 'flash_clone':
+    character = create_flash_clone_character(account, old_character)
+    # Sex already inherited automatically
+else:
+    # Template-based creation uses POST sex
+    sex = request.POST.get('sex', 'ambiguous')
+    character = create_character_from_template(account, template, sex)
+```
+
+**Result:** Flash clones now properly maintain their original sex (male/female) across respawns without manual selection.
+
+#### 4. UI Cleanup (Manage Sleeves Display)
+**Issue:** Character list page (`character_manage_list.html`) had redundant and unnecessary display elements.
+
+**Changes Made** (commit `f7688c9`):
+- ❌ Removed placeholder `<img>` tag (will be account-level feature later)
+- ❌ Removed "GRIM Stats:" label (redundant, stats are self-evident)
+- ❌ Removed "Deaths: X" field (redundant with Roman numeral in character name)
+- ✅ Kept essential info: Character name (with Roman numeral), GRIM stat badges (numeric), Sex field, Archived badge
+
+**Result:** Cleaner, more focused character list showing only necessary information.
+
+### Attempted Enhancement (Rolled Back)
+
+#### Template Filter for Descriptive Stats
+**Attempted:** Add Django template filter to show descriptive adjectives for GRIM stats instead of numbers (e.g., "Mighty" for Grit 5, "Frail" for Grit 1).
+
+**Implementation:**
+- Created `web/website/templatetags/__init__.py`
+- Created `web/website/templatetags/character_filters.py` with `stat_descriptor` filter
+- Imported `STAT_DESCRIPTORS` from `world/combat/constants.py`
+- Modified templates to use `{{ object.grit|stat_descriptor:"grit" }}`
+
+**Result:** 500 errors on Manage Sleeves page. Issue persisted through:
+- Simplified filter (just return numeric value)
+- Full Django restart (`docker-compose restart evennia`)
+- Server reload attempts
+
+**Decision:** Rolled back entirely (commit `babd0b4` reverting commits `b3cf3df`, `94683a3`, `6d2a4ab`):
+- Deleted `web/website/templatetags/` directory
+- Restored numeric stat display
+- Back to stable state
+
+**Lessons Learned:**
+- Django template filter system has specific registration requirements
+- Issue likely related to app configuration or import paths
+- Numeric display is clean and functional - descriptive adjectives can be revisited later
+- Template filters require careful Django app structure
+
+### Design Decisions Documented
+
+1. **Single Character Display:** The Manage Sleeves page only shows the latest iteration of each character (e.g., "Jorge III" but not "Jorge" and "Jorge II"). This is INTENTIONAL for `MAX_NR_CHARACTERS=1` permadeath design. Old iterations are archived and removed from `account.characters` (see `commands/charcreate.py` line 323 comment).
+
+2. **Superuser Treatment:** Superusers now respect character limits. They're meant for administrative access, not regular gameplay. The backup account Drivel is subject to the same rules as regular players.
+
+3. **Roman Numeral Formatting:** Requires whitespace before numeral to prevent false positives. Only explicitly formatted Roman numerals (with space) are stripped during name building.
+
+4. **Flash Clone Sex Inheritance:** Flash clones inherit sex automatically from the archived character. Sex selection in the respawn UI only applies to template-based characters, not flash clones.
+
+5. **Numeric Stats Display:** UI shows numeric stat values (1-10 scale) rather than descriptive adjectives. This is clear, concise, and avoids template filter complexity. Descriptive system can be added later if needed.
+
+### Current State (Post-Phase 1)
+
+**Status:** Phase 1 fully functional and deployed to production (play.gel.monster)
+
+**Verified Working:**
+- ✅ Menu visibility respects character limit (including for superusers)
+- ✅ Respawn interface generates templates correctly
+- ✅ Flash clone preserves all character data (stats, sex, appearance)
+- ✅ Roman numeral naming works without false positives
+- ✅ Sex selection works for template-based characters
+- ✅ Character list displays cleanly with essential info only
+- ✅ First character creation still uses manual form (unchanged)
+
+**Commits:**
+- `bccfae3` - Remove superuser bypass from at_character_limit
+- `d5caa42` - Fix Roman numeral regex pattern
+- `00e2ff3` - Fix flash clone sex inheritance  
+- `f7688c9` - Clean up Manage Sleeves display
+- `babd0b4` - Revert template filter changes (rollback)
+
+**Next Steps:**
+Phase 1 is complete and stable. Future phases can focus on polish, AJAX template regeneration, appearance preview, and other enhancements listed above.
