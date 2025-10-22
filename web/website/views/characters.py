@@ -47,7 +47,27 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         # Check for respawn scenario FIRST (before max character check)
         # This allows respawn even when at 0 active characters
         if hasattr(account, 'db') and account.db.last_character:
-            return self.show_respawn_interface(request, account)
+            old_char = account.db.last_character
+            
+            # Validate that last_character is actually dead/archived and eligible for respawn
+            # If they're alive or missing archived attribute (legacy), clear last_character
+            try:
+                # Check if character still exists and is accessible
+                _ = old_char.key
+                
+                # Check if character is actually archived/dead (default False for legacy)
+                is_archived = getattr(old_char.db, 'archived', False)
+                
+                # If not archived, they're alive - clear last_character and proceed to normal creation
+                if not is_archived:
+                    account.db.last_character = None
+                else:
+                    # Character is properly archived, show respawn interface
+                    return self.show_respawn_interface(request, account)
+                    
+            except (AttributeError, TypeError):
+                # last_character reference is broken/invalid, clear it
+                account.db.last_character = None
         
         # Check if account has reached max character limit
         active_characters = []
