@@ -8,7 +8,7 @@ input validation, and privacy-conscious reporting.
 
 from evennia import Command
 from evennia.commands.default.muxcommand import MuxCommand
-from evennia.utils.evmenu import EvEditor
+from evennia.utils.eveditor import EvEditor
 from django.conf import settings
 from datetime import datetime, timezone
 import requests
