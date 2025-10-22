@@ -7,13 +7,14 @@ input validation, and privacy-conscious reporting.
 """
 
 from evennia import Command
+from evennia.commands.default.muxcommand import MuxCommand
 from django.conf import settings
 from datetime import datetime, timezone
 import requests
 import json
 
 
-class CmdBug(Command):
+class CmdBug(MuxCommand):
     """
     Report a bug to the development team.
     
