@@ -1886,28 +1886,17 @@ def notify_adjacent_rooms_of_explosion(explosion_room):
 
 def check_rigged_grenade(character, exit_obj):
     """Check if character triggers a rigged grenade. Character should already be at destination."""
-    from evennia.comms.models import ChannelDB
-    splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-    
-    splattercast.msg(f"RIGGED_DEBUG: check_rigged_grenade called for {character.key} on exit {exit_obj.key}")
-    
     # Check if there's a rigged grenade on this exit
     rigged_grenade = getattr(exit_obj.db, 'rigged_grenade', None)
-    splattercast.msg(f"RIGGED_DEBUG: rigged_grenade found: {rigged_grenade}")
     
     if not rigged_grenade:
-        splattercast.msg(f"RIGGED_DEBUG: No rigged grenade found on exit {exit_obj.key}")
         return False
     
     # Check if this character is the rigger (immunity)
     rigger = getattr(rigged_grenade.db, 'rigged_by', None)
-    splattercast.msg(f"RIGGED_DEBUG: Rigger: {rigger}, Character: {character}")
     
     if rigger and character == rigger:
-        splattercast.msg(f"RIGGED_DEBUG: Character {character.key} is the rigger, immune to own trap")
         return False  # Rigger is immune to their own trap
-    
-    splattercast.msg(f"RIGGED_DEBUG: Triggering rigged grenade {rigged_grenade.key}!")
     
     # Trigger the rigged grenade
     character.msg(MSG_RIG_TRIGGERED.format(object=rigged_grenade.key))
@@ -2355,34 +2344,26 @@ def explode_standalone_grenade(grenade):
 def check_auto_defuse(character):
     """Check for auto-defuse opportunities when character enters a room with live grenades."""
     try:
-        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-        splattercast.msg(f"AUTO_DEFUSE: Checking for auto-defuse opportunities for {character.key} in {character.location}")
-        
         # Find live grenades in the room that have the character in proximity
         live_grenades = []
         
         for obj in character.location.contents:
-            splattercast.msg(f"AUTO_DEFUSE: Checking object {obj.key} - is_explosive: {getattr(obj.db, DB_IS_EXPLOSIVE, False)}")
-            
             # Check if object is an explosive
             if not getattr(obj.db, DB_IS_EXPLOSIVE, False):
                 continue
                 
             # Check if grenade is live (pin pulled and timer active)
             pin_pulled = getattr(obj.db, DB_PIN_PULLED, False)
-            splattercast.msg(f"AUTO_DEFUSE: {obj.key} pin_pulled: {pin_pulled}")
             if not pin_pulled:
                 continue
                 
             # Check if grenade has time remaining
             remaining_time = getattr(obj.ndb, NDB_COUNTDOWN_REMAINING, 0)
-            splattercast.msg(f"AUTO_DEFUSE: {obj.key} remaining_time: {remaining_time}")
             if remaining_time is None or remaining_time <= 0:
                 continue
             
             # Check if character is in this grenade's proximity
             obj_proximity = getattr(obj.ndb, NDB_PROXIMITY_UNIVERSAL, [])
-            splattercast.msg(f"AUTO_DEFUSE: {obj.key} proximity: {[char.key if hasattr(char, 'key') else str(char) for char in obj_proximity]}")
             if obj_proximity and character in obj_proximity:
                 # Check if character has already attempted to defuse this grenade
                 attempted_by = getattr(obj.ndb, 'defuse_attempted_by', [])
@@ -2391,14 +2372,8 @@ def check_auto_defuse(character):
                     
                 if character not in attempted_by:
                     live_grenades.append(obj)
-                    splattercast.msg(f"AUTO_DEFUSE: Found auto-defuse candidate: {obj.key} (time remaining: {remaining_time}s)")
-                else:
-                    splattercast.msg(f"AUTO_DEFUSE: {obj.key} already attempted by {character.key}")
-            else:
-                splattercast.msg(f"AUTO_DEFUSE: {character.key} not in {obj.key} proximity or proximity empty")
         
         if not live_grenades:
-            splattercast.msg(f"AUTO_DEFUSE: No auto-defuse opportunities found for {character.key}")
             return
         
         # Auto-defuse attempt for each grenade (like D&D trap detection)
