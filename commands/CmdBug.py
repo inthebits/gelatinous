@@ -485,152 +485,161 @@ class CmdBug(MuxCommand):
             caller.msg(f"|rUnexpected error: {str(e)}|n")
     
     def start_detail_editor(self, caller):
-        """Start the multi-line detail editor for bug reports."""
-        from evennia.utils.evmenu import get_input
+        """Start the multi-line detail editor for bug reports using EvMenu."""
+        from evennia.utils.evmenu import EvMenu
+        from evennia.utils.eveditor import EvEditor
         
-        # First, ask for the bug title
-        caller.msg("\n|c=== Detailed Bug Report ===|n")
-        caller.msg("\nFirst, provide a short title for the bug:")
+        # Store a reference to self for callbacks
+        cmd_instance = self
         
-        def _get_title(caller, prompt, user_input):
-            """Callback to get the bug title."""
-            title = user_input.strip()
+        def node_title(caller, raw_string, **kwargs):
+            """EvMenu node to get the bug title."""
+            text = "\n|c=== Detailed Bug Report ===|n\n"
+            text += "\nProvide a short title for the bug (minimum 10 characters):"
+            
+            options = (
+                {
+                    "key": "_default",
+                    "goto": "node_validate_title"
+                },
+            )
+            
+            return text, options
+        
+        def node_validate_title(caller, raw_string, **kwargs):
+            """Validate the title and move to category selection."""
+            title = raw_string.strip()
             
             if not title:
-                caller.msg("|yBug report cancelled.|n")
-                return
+                text = "\n|yBug report cancelled.|n"
+                return text, None
             
             if len(title) < 10:
-                caller.msg("|rTitle too short. Please provide at least 10 characters.|n")
-                caller.msg("|yBug report cancelled.|n")
-                return
+                text = "\n|rTitle too short. Please provide at least 10 characters.|n"
+                text += "\n|yBug report cancelled.|n"
+                return text, None
             
-            # Now ask for category
+            # Store title in menu session
+            caller.ndb._evmenu.bug_title = title
+            
+            # Move to category node
+            return "node_category", {}
+        
+        def node_category(caller, raw_string, **kwargs):
+            """EvMenu node to select category."""
+            title = caller.ndb._evmenu.bug_title
+            
+            text = f"\n|gTitle:|n {title}\n"
+            text += "\n|ySelect a category:|n"
+            
+            options = (
+                {"key": ("1", "combat"), "desc": "Combat", "goto": ("node_open_editor", {"category": "combat"})},
+                {"key": ("2", "medical"), "desc": "Medical", "goto": ("node_open_editor", {"category": "medical"})},
+                {"key": ("3", "movement"), "desc": "Movement", "goto": ("node_open_editor", {"category": "movement"})},
+                {"key": ("4", "items"), "desc": "Items/Inventory", "goto": ("node_open_editor", {"category": "items"})},
+                {"key": ("5", "commands"), "desc": "Commands", "goto": ("node_open_editor", {"category": "commands"})},
+                {"key": ("6", "web"), "desc": "Web Interface", "goto": ("node_open_editor", {"category": "web"})},
+                {"key": ("7", "world"), "desc": "World/Environment", "goto": ("node_open_editor", {"category": "world"})},
+                {"key": ("8", "social"), "desc": "Social/Communication", "goto": ("node_open_editor", {"category": "social"})},
+                {"key": ("9", "system"), "desc": "System/Performance", "goto": ("node_open_editor", {"category": "system"})},
+                {"key": ("0", "other"), "desc": "Other", "goto": ("node_open_editor", {"category": "other"})},
+                {"key": "_default", "goto": ("node_open_editor", {"category": "other"})},
+            )
+            
+            return text, options
+        
+        def node_open_editor(caller, raw_string, **kwargs):
+            """Open the EvEditor for detailed description."""
+            title = caller.ndb._evmenu.bug_title
+            category = kwargs.get("category", "other")
+            
+            # Store category
+            caller.ndb._evmenu.bug_category = category
+            
+            # Show confirmation and instructions
             caller.msg(f"\n|gTitle:|n {title}")
-            caller.msg("\n|ySelect a category (or press Enter for 'other'):|n")
-            caller.msg("  |w1|n - Combat")
-            caller.msg("  |w2|n - Medical")
-            caller.msg("  |w3|n - Movement")
-            caller.msg("  |w4|n - Items/Inventory")
-            caller.msg("  |w5|n - Commands")
-            caller.msg("  |w6|n - Web Interface")
-            caller.msg("  |w7|n - World/Environment")
-            caller.msg("  |w8|n - Social/Communication")
-            caller.msg("  |w9|n - System/Performance")
-            caller.msg("  |w0|n - Other")
+            caller.msg(f"|gCategory:|n {category.capitalize()}")
+            caller.msg("\n|yNow provide detailed information:|n")
+            caller.msg("  - What you were trying to do")
+            caller.msg("  - What you expected to happen")
+            caller.msg("  - What actually happened")
+            caller.msg("  - Steps to reproduce (if possible)")
+            caller.msg("\n|yEditor Commands:|n")
+            caller.msg("  |w:w|n or |w:wq|n - Save and submit bug report")
+            caller.msg("  |w:q|n or |w:q!|n - Cancel without submitting")
+            caller.msg("  |w:h|n - Show editor help")
+            caller.msg("\n|yOpening editor...|n\n")
             
-            def _get_category(caller, prompt, user_input):
-                """Callback to get the bug category."""
-                category_map = {
-                    '1': 'combat',
-                    '2': 'medical',
-                    '3': 'movement',
-                    '4': 'items',
-                    '5': 'commands',
-                    '6': 'web',
-                    '7': 'world',
-                    '8': 'social',
-                    '9': 'system',
-                    '0': 'other',
-                    '': 'other'  # Default if they press Enter
-                }
+            # Define EvEditor save callback
+            def _save_callback(caller, buffer):
+                """Called when the player saves the editor."""
+                if isinstance(buffer, str):
+                    details = buffer.strip()
+                else:
+                    details = "\n".join(buffer).strip()
                 
-                choice = user_input.strip()
-                category = category_map.get(choice)
-                
-                if category is None:
-                    caller.msg("|rInvalid choice. Using 'other' as category.|n")
-                    category = 'other'
-                
-                # Show confirmation and open editor
-                caller.msg(f"\n|gCategory:|n {category.capitalize()}")
-                caller.msg("\n|yNow provide detailed information:|n")
-                caller.msg("  - What you were trying to do")
-                caller.msg("  - What you expected to happen")
-                caller.msg("  - What actually happened")
-                caller.msg("  - Steps to reproduce (if possible)")
-                caller.msg("\n|yEditor Commands:|n")
-                caller.msg("  |w:w|n or |w:wq|n - Save and submit bug report")
-                caller.msg("  |w:q|n or |w:q!|n - Cancel without submitting")
-                caller.msg("  |w:h|n - Show editor help")
-                caller.msg("\n|yOpening editor...|n\n")
-                
-                # Callback when editor is saved
-                def _save_callback(caller, buffer):
-                    """
-                    Called when player saves the editor.
-                    
-                    According to Evennia docs, buffer parameter is the "current buffer",
-                    which in practice is a string, not a list. We handle both cases
-                    for robustness.
-                    """
-                    # Buffer should be a string from EvEditor
-                    if isinstance(buffer, str):
-                        details = buffer.strip()
-                    else:
-                        # Fallback: if it's somehow a list, join it
-                        details = "\n".join(buffer).strip()
-                    
-                    if not details or len(details) < 10:
-                        caller.msg("|rDetails too short. Minimum 10 characters required.|n")
-                        caller.msg("|yBug report cancelled.|n")
-                        return
-                    
-                    # Check rate limit
-                    account = caller.account
-                    if not self.check_rate_limit(account):
-                        remaining_time = self.get_time_until_reset(account)
-                        caller.msg("|rYou've reached the daily limit of 30 bug reports.|n")
-                        caller.msg(f"The limit resets in {remaining_time}.")
-                        return
-                    
-                    # Get environment context
-                    context = self.gather_context(caller)
-                    context['category'] = category
-                    context['title'] = title  # Pass title separately
-                    
-                    # Create GitHub issue - pass only details, title is in context
-                    caller.msg(f"\n|gCreating detailed bug report (category: |c{category}|g)...|n")
-                    
-                    success, result = self.create_github_issue(details, context)
-                    
-                    if success:
-                        issue_url = result.get('html_url', '')
-                        issue_number = result.get('number', '?')
-                        
-                        # Increment bug report counter
-                        self.increment_report_count(account)
-                        remaining = 30 - account.db.bug_report_count
-                        
-                        caller.msg(f"\n|g✓|n Issue created: |c{issue_url}|n")
-                        caller.msg("\nThank you for the detailed report! The development team will investigate.")
-                        
-                        if remaining <= 5:
-                            caller.msg(f"You have |y{remaining}|n bug reports remaining today.")
-                        else:
-                            caller.msg(f"You have {remaining} bug reports remaining today.")
-                    else:
-                        error_msg = result
-                        caller.msg(f"\n|rFailed to create bug report:|n {error_msg}")
-                        caller.msg("|yPlease try again in a moment. If the problem persists, contact staff.|n")
-                
-                # Callback when editor is quit
-                def _quit_callback(caller):
-                    """Called when player quits without saving."""
+                if not details or len(details) < 10:
+                    caller.msg("|rDetails too short. Minimum 10 characters required.|n")
                     caller.msg("|yBug report cancelled.|n")
+                    return
                 
-                # Start the editor with empty buffer
-                EvEditor(
-                    caller,
+                # Check rate limit
+                account = caller.account
+                if not cmd_instance.check_rate_limit(account):
+                    remaining_time = cmd_instance.get_time_until_reset(account)
+                    caller.msg("|rYou've reached the daily limit of 30 bug reports.|n")
+                    caller.msg(f"The limit resets in {remaining_time}.")
+                    return
+                
+                # Get environment context
+                context = cmd_instance.gather_context(caller)
+                context['category'] = category
+                context['title'] = title
+                
+                # Create GitHub issue
+                caller.msg(f"\n|gCreating detailed bug report (category: |c{category}|g)...|n")
+                
+                success, result = cmd_instance.create_github_issue(details, context)
+                
+                if success:
+                    issue_url = result.get('html_url', '')
+                    issue_number = result.get('number', '?')
+                    
+                    # Increment bug report counter
+                    cmd_instance.increment_report_count(account)
+                    remaining = 30 - account.db.bug_report_count
+                    
+                    caller.msg(f"\n|g✓|n Issue created: |c{issue_url}|n")
+                    caller.msg("\nThank you for the detailed report! The development team will investigate.")
+                    
+                    if remaining <= 5:
+                        caller.msg(f"You have |y{remaining}|n bug reports remaining today.")
+                    else:
+                        caller.msg(f"You have {remaining} bug reports remaining today.")
+                else:
+                    error_msg = result
+                    caller.msg(f"\n|rFailed to create bug report:|n {error_msg}")
+                    caller.msg("|yPlease try again in a moment. If the problem persists, contact staff.|n")
+            
+            def _quit_callback(caller):
+                """Called when the player quits the editor."""
+                caller.msg("|yBug report cancelled.|n")
+            
+            # Open the EvEditor
+            EvEditor(caller, 
                     loadfunc=lambda caller: "",
                     savefunc=_save_callback,
                     quitfunc=_quit_callback,
                     key="bug_report_editor",
-                    persistent=False
-                )
+                    persistent=False)
             
-            # Get category from user
-            get_input(caller, "", _get_category)
+            # Return None to exit the menu (EvEditor takes over)
+            return None, None
         
-        # Get the title from user
-        get_input(caller, "", _get_title)
+        # Start the EvMenu
+        EvMenu(caller, 
+               {"node_title": node_title,
+                "node_validate_title": node_validate_title,
+                "node_category": node_category,
+                "node_open_editor": node_open_editor},
+               startnode="node_title")
