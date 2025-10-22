@@ -776,6 +776,10 @@ class Character(ObjectParent, DefaultCharacter):
             except:
                 pass
         
+        # Set account's last_character for respawn flow
+        if self.account:
+            self.account.db.last_character = self
+        
         # Set archive flags
         self.db.archived = True
         self.db.archived_reason = reason

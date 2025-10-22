@@ -200,7 +200,13 @@ class Account(DefaultAccount):
             # Import here to avoid circular imports
             try:
                 from commands.charcreate import start_character_creation
-                start_character_creation(self, is_respawn=False)
+                
+                # Check if they have a last_character (from death or manual archival)
+                # If so, use respawn flow with flash clone + template options
+                is_respawn = bool(self.db.last_character)
+                old_character = self.db.last_character if is_respawn else None
+                
+                start_character_creation(self, is_respawn=is_respawn, old_character=old_character)
             except ImportError as e:
                 # Graceful fallback if charcreate not available yet
                 self.msg("|rCharacter creation system not available. Please contact an admin.|n")
