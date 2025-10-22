@@ -96,6 +96,10 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         # Get old character for flash clone option
         old_character = account.db.last_character
         
+        # Ensure old character has required attributes (legacy data fix)
+        if old_character and not hasattr(old_character, 'sex'):
+            old_character.sex = 'ambiguous'  # Default for legacy characters
+        
         context = {
             'templates': templates,
             'old_character': old_character,
