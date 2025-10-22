@@ -636,21 +636,13 @@ class CmdBug(MuxCommand):
                 if hasattr(caller.ndb, '_bug_editor_saved'):
                     del caller.ndb._bug_editor_saved
             
-            # Use utils.delay to open EvEditor after a tiny delay
-            # This ensures the EvMenu cmdset is fully cleaned up first
-            from evennia.utils import delay
-            
-            def _delayed_editor_open(caller):
-                """Open EvEditor after menu cleanup."""
-                EvEditor(caller, 
-                        loadfunc=lambda caller: "",
-                        savefunc=_save_callback,
-                        quitfunc=_quit_callback,
-                        key="bug_report_editor",
-                        persistent=False)
-            
-            # Delay by 0.1 seconds to let EvMenu clean up
-            delay(0.1, _delayed_editor_open, caller)
+            # Open the EvEditor
+            EvEditor(caller, 
+                    loadfunc=lambda caller: "",
+                    savefunc=_save_callback,
+                    quitfunc=_quit_callback,
+                    key="bug_report_editor",
+                    persistent=False)
             
             # Return None to exit the menu
             return None, None
@@ -660,4 +652,5 @@ class CmdBug(MuxCommand):
                {"node_title": node_title,
                 "node_category": node_category,
                 "node_open_editor": node_open_editor},
-               startnode="node_title")
+               startnode="node_title",
+               cmd_on_exit=None)  # Don't run 'look' when menu exits
