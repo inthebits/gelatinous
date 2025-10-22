@@ -92,14 +92,25 @@ class CmdBug(MuxCommand):
             caller.msg("Please contact staff directly to report bugs.")
             return
         
-        # Handle /list switch
+        # Handle /list switch (doesn't need args)
         if 'list' in self.switches:
             self.show_bug_list(caller, account)
             return
         
-        # Handle /detail switch
+        # Handle /detail switch (doesn't need args)
         if 'detail' in self.switches:
             self.start_detail_editor(caller)
+            return
+        
+        # Validate input - required for bug submission
+        if not self.args:
+            caller.msg("|rUsage: @bug <description>|n")
+            caller.msg("Example: |w@bug grenades aren't exploding|n")
+            caller.msg("Or with category: |w@bug/combat grapple release broken|n")
+            caller.msg("\nFor other options:")
+            caller.msg("  |w@bug/list|n - Show your recent bug reports")
+            caller.msg("  |w@bug/detail|n - Open detailed bug editor (coming soon)")
+            caller.msg("\nFor full help: |whelp @bug|n")
             return
         
         # Determine category from switches
@@ -108,14 +119,6 @@ class CmdBug(MuxCommand):
             if switch.lower() in self.VALID_CATEGORIES:
                 category = switch.lower()
                 break
-        
-        # Validate input
-        if not self.args:
-            caller.msg("|rUsage: @bug <description>|n")
-            caller.msg("Example: |w@bug grenades aren't exploding|n")
-            caller.msg("Or with category: |w@bug/combat grapple release broken|n")
-            caller.msg("\nFor help: |whelp @bug|n")
-            return
         
         description = self.args.strip()
         
@@ -311,7 +314,7 @@ class CmdBug(MuxCommand):
         }
         
         payload = {
-            "title": f"[BUG] {description[:100]}",  # Truncate title if too long
+            "title": description[:100],  # Use description directly, truncate if too long
             "body": body,
             "labels": self.get_labels(context)
         }
