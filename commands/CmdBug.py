@@ -34,12 +34,13 @@ class CmdBug(Command):
     - Your account username
     - Current location (#dbref)
     - Server version (commit hash)
-    - Timestamp
     
     Your report will NOT include:
     - Email address
+    - Character names
     - Character stats
     - Room names (only #dbref)
+    - Timestamps (GitHub tracks this)
     """
     
     key = "@bug"
@@ -167,16 +168,12 @@ class CmdBug(Command):
         # Get location info
         if location:
             location_dbref = f"#{location.id}"
-            location_typeclass = location.typeclass_path.split('.')[-1]
         else:
             location_dbref = "None"
-            location_typeclass = "None"
         
         context = {
             'account_username': account.key,
-            'timestamp': datetime.now(timezone.utc).isoformat(),
             'location_dbref': location_dbref,
-            'location_typeclass': location_typeclass,
             'commit_hash': commit_hash,
             'server': 'play.gel.monster'
         }
@@ -187,11 +184,17 @@ class CmdBug(Command):
         """Get the current git commit hash."""
         try:
             import subprocess
+            import os
+            
+            # Try to get git directory - may need to specify path in Docker
+            git_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            
             result = subprocess.run(
                 ['git', 'rev-parse', '--short', 'HEAD'],
                 capture_output=True,
                 text=True,
-                timeout=2
+                timeout=2,
+                cwd=git_dir
             )
             if result.returncode == 0:
                 return result.stdout.strip()
@@ -277,7 +280,6 @@ class CmdBug(Command):
     def format_issue_body(self, description, context):
         """Format the GitHub issue body with context."""
         body = f"""**Reported By:** {context['account_username']}
-**Date:** {context['timestamp']}
 **Location:** {context['location_dbref']}
 
 **Category:** Uncategorized
@@ -294,7 +296,6 @@ class CmdBug(Command):
 
 - **Server:** {context['server']}
 - **Commit:** {context['commit_hash']}
-- **Room Type:** {context['location_typeclass']}
 """
         
         return body

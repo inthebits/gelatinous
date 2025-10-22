@@ -79,7 +79,6 @@ Shows recently created issues from the game. Defaults to 5, max 20.
 ### Issue Body Template
 ```markdown
 **Reported By:** <account_username>
-**Date:** <ISO 8601 timestamp>
 **Location:** <room #dbref>
 
 **Category:** <category or "Uncategorized">
@@ -96,7 +95,6 @@ Shows recently created issues from the game. Defaults to 5, max 20.
 
 - **Server:** play.gel.monster
 - **Commit:** <git commit hash>
-- **Room Type:** <room typeclass>
 ```
 
 ### Privacy Considerations
@@ -105,8 +103,6 @@ Shows recently created issues from the game. Defaults to 5, max 20.
 - Account username (display name, not email)
 - Current room #dbref (for context)
 - Git commit hash (for version tracking)
-- Timestamp
-- Room typeclass
 
 **❌ EXCLUDED:**
 - Email addresses
@@ -116,6 +112,7 @@ Shows recently created issues from the game. Defaults to 5, max 20.
 - Account IP addresses
 - Session information
 - Personal identifying information
+- Timestamps (GitHub Issues tracks creation time automatically)
 
 ---
 
