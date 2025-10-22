@@ -55,6 +55,21 @@ Respawn Sleeve
             {% endfor %}
             
             {% if old_character %}
+            <div class="mt-4 mb-3">
+              <hr style="border-top: 2px dashed #ffa500; opacity: 0.5;" />
+              <div class="text-center my-3">
+                <h5 class="text-warning mb-1">⚠ Flash Clone Option</h5>
+                <small class="text-muted">Create an identical clone of your previous sleeve</small>
+                <div class="mt-2">
+                  <small class="text-warning">
+                    <strong>WARNING:</strong> Flash cloning carries inherent risks. Genetic drift, memory corruption, 
+                    and cellular degradation may occur.
+                  </small>
+                </div>
+              </div>
+              <hr style="border-top: 2px dashed #ffa500; opacity: 0.5;" />
+            </div>
+            
             <div class="card mb-3 sleeve-option flash-clone-option">
               <div class="card-body">
                 <div class="form-check">
@@ -66,8 +81,7 @@ Respawn Sleeve
                     value="flash_clone"
                   >
                   <label class="form-check-label" for="flash_clone">
-                    <h5>Flash Clone: {{ old_character.name }}</h5>
-                    <small class="text-muted">Create an identical clone of your previous sleeve</small>
+                    <h5>{{ old_character.name }}</h5>
                   </label>
                 </div>
                 <div class="ml-4 mt-2">
@@ -84,12 +98,6 @@ Respawn Sleeve
                     <div class="col-md-3">
                       <strong>Motorics:</strong> {{ old_character.motorics }}
                     </div>
-                  </div>
-                  <div class="mt-2">
-                    <small class="text-warning">
-                      <strong>⚠ WARNING:</strong> Flash cloning carries inherent risks. Genetic drift, memory corruption, 
-                      and cellular degradation may occur.
-                    </small>
                   </div>
                 </div>
               </div>
