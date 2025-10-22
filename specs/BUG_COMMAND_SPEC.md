@@ -4,6 +4,17 @@
 
 The `@bug` command allows players and staff to submit bug reports directly to the GitHub repository as issues. This integrates in-game feedback with the development workflow while maintaining appropriate privacy boundaries.
 
+**Current Status**: ✅ **Production Ready** - All planned features implemented and deployed.
+
+## Features
+
+- **@bug**: Interactive workflow for creating detailed bug reports with title, category, and description
+- **@bug/list**: View the 10 most recent bug reports from GitHub
+- **@bug/show <number>**: View full details of a specific bug including all comments (supports `#15` format)
+- **Rate Limiting**: 30 reports per player per day
+- **Privacy-Conscious**: No email addresses or sensitive player data exposed
+- **GitHub Integration**: Issues automatically created with proper formatting and labels
+
 ## Design Principles
 
 1. **Accessible**: All players can report bugs
@@ -30,6 +41,22 @@ Opens an interactive workflow for creating detailed bug reports:
 @bug/list
 ```
 Shows the 10 most recent bug reports from GitHub (open and closed).
+
+### View Bug Details
+```
+@bug/show <number>
+@bug/show #<number>
+```
+Displays full details of a specific bug report including:
+- Issue title, state, and category
+- Creation and last update dates
+- Full description
+- All comments from GitHub
+- Direct link to the issue
+
+Examples:
+- `@bug/show 15`
+- `@bug/show #15`
 
 ---
 
@@ -254,6 +281,55 @@ You have 29 bug reports remaining today.
 Showing 10 most recent reports. Visit GitHub for full history.
 ```
 
+### View Bug Details
+```
+> @bug/show 44
+
+======================================================================
+Issue #44 OPEN
+======================================================================
+
+Title: Grenades don't explode when rigged to exits
+Category: Combat
+Created: 2025-10-22
+Updated: 2025-10-22
+URL: https://github.com/daiimus/gelatinous/issues/44
+
+----------------------------------------------------------------------
+Description:
+
+**Reported By:** PlayerName
+**Location:** Room #123
+
+**Category:** Combat
+
+**Description:**
+
+I tried to rig a grenade to the north exit.
+I expected it to explode when someone walked through.
+Instead, nothing happens and the grenade vanishes.
+
+Steps:
+1. Get grenade from inventory
+2. Type "rig grenade to north"
+3. Command succeeds but grenade disappears
+4. Someone walks through exit - no explosion
+
+----------------------------------------------------------------------
+
+Comments (2):
+
+1. daiimus (2025-10-22)
+Thanks for the report! I can reproduce this. The issue is in the exit trigger 
+system not properly handling deferred explosions. Working on a fix.
+
+2. daiimus (2025-10-23)
+Fixed in commit abc123f. The trap system now properly defers explosion logic
+until the trigger fires. Will be in next deployment.
+
+======================================================================
+```
+
 ### Rate Limit Reached
 ```
 > @bug
@@ -451,11 +527,14 @@ if not hasattr(settings, 'GITHUB_TOKEN') or not settings.GITHUB_TOKEN:
 - [x] Rate limit resets at midnight UTC
 - [x] GitHub link is returned and functional
 - [x] @bug/list shows recent 10 issues
+- [x] @bug/show displays full issue details and comments
+- [x] @bug/show supports both "15" and "#15" formats
 - [x] Error handling for network failures
 - [x] Error handling for invalid GitHub token
 - [x] Privacy: no emails or stats in issues
 - [x] No spurious "look" command in editor buffer
 - [x] No "Bug report cancelled" after successful save
+- [x] All text colors are readable (no dark gray)
 
 ### Test Cases
 ```python
@@ -490,6 +569,18 @@ if not hasattr(settings, 'GITHUB_TOKEN') or not settings.GITHUB_TOKEN:
 # Test 6: List command
 @bug/list
 # Expected: Shows 10 most recent issues with links
+
+# Test 7: Show command
+@bug/show 15
+# Expected: Shows full issue details with comments
+
+# Test 8: Show command with # prefix
+@bug/show #15
+# Expected: Same as Test 7
+
+# Test 9: Show non-existent issue
+@bug/show 99999
+# Expected: "Issue #99999 not found."
 ```
 
 ---
@@ -505,19 +596,26 @@ if not hasattr(settings, 'GITHUB_TOKEN') or not settings.GITHUB_TOKEN:
 - ✅ Error handling
 - ✅ @bug/list command for viewing recent issues
 
-### Phase 2: Completed Enhancements ✅
+### Phase 2: Completed Enhancements ✅ COMPLETE
 - ✅ Fixed EvMenu cmd_on_exit causing "look" in editor
 - ✅ Fixed duplicate cancellation messages
 - ✅ Removed quick @bug <message> format (encouraged poor reports)
 - ✅ Simplified help text
+- ✅ Added @bug/show command for viewing full issue details
+- ✅ Support for both "15" and "#15" formats in @bug/show
+- ✅ Replaced all unreadable dark gray colors with white/cyan
+- ✅ Display issue comments from GitHub in-game
 
-### Phase 3: Future Enhancements ⏳
-- ⏳ Duplicate detection
-- ⏳ Issue status tracking for players
+**Status**: All planned features implemented. System is production-ready.
+
+### Phase 3: Future Enhancements (Not Currently Planned) ⏳
+The following features could be added in the future if needed:
+- ⏳ Duplicate detection before creating issues
+- ⏳ Issue status tracking/notifications for players
 - ⏳ Admin close/comment commands from in-game
-- ⏳ Player notification on bug resolution
+- ⏳ Player notification when their bugs are resolved
 - ⏳ Attachment support (command history, combat logs)
-- ⏳ Integration with staff channels
+- ⏳ Integration with staff channels for new bug alerts
 
 ---
 
