@@ -20,6 +20,7 @@ class CmdBug(MuxCommand):
     Usage:
         @bug
         @bug/list
+        @bug/show <number>
     
     Opens an interactive bug report workflow that will guide you through:
     1. Entering a title/summary for the bug
@@ -27,6 +28,7 @@ class CmdBug(MuxCommand):
     3. Writing a detailed description in a multi-line editor
     
     Use @bug/list to view recent bug reports from the GitHub repository.
+    Use @bug/show <number> to view full details of a specific bug report.
     
     Your report will be created as a GitHub issue for the development team
     to review. All players can submit up to 30 bug reports per day.
@@ -38,7 +40,7 @@ class CmdBug(MuxCommand):
     aliases = ["bug"]
     locks = "cmd:all()"
     help_category = "General"
-    switch_options = ("list",)
+    switch_options = ("list", "show")
     
     def func(self):
         """Execute the bug report command."""
@@ -59,6 +61,22 @@ class CmdBug(MuxCommand):
         # Handle /list switch
         if "list" in self.switches:
             self.show_bug_list(caller)
+            return
+        
+        # Handle /show switch
+        if "show" in self.switches:
+            if not self.args:
+                caller.msg("|yUsage: @bug/show <number>|n")
+                caller.msg("Example: @bug/show 15")
+                return
+            
+            try:
+                issue_number = int(self.args.strip())
+            except ValueError:
+                caller.msg("|rInvalid issue number. Please provide a number.|n")
+                return
+            
+            self.show_bug_detail(caller, issue_number)
             return
         
         # Any other arguments show usage
@@ -330,6 +348,91 @@ class CmdBug(MuxCommand):
             caller.msg("|rRequest timed out. Please try again later.|n")
         except requests.exceptions.RequestException as e:
             caller.msg(f"|rFailed to fetch bug list: {str(e)}|n")
+        except Exception as e:
+            caller.msg(f"|rUnexpected error: {str(e)}|n")
+    
+    def show_bug_detail(self, caller, issue_number):
+        """Show detailed information about a specific bug report."""
+        repo = settings.GITHUB_REPO
+        token = settings.GITHUB_TOKEN
+        
+        headers = {
+            'Authorization': f'token {token}',
+            'Accept': 'application/vnd.github.v3+json'
+        }
+        
+        try:
+            # Fetch the issue
+            issue_url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
+            response = requests.get(issue_url, headers=headers, timeout=10)
+            
+            if response.status_code == 404:
+                caller.msg(f"|rIssue #{issue_number} not found.|n")
+                return
+            
+            response.raise_for_status()
+            issue = response.json()
+            
+            # Fetch comments
+            comments_url = issue['comments_url']
+            comments_response = requests.get(comments_url, headers=headers, timeout=10)
+            comments_response.raise_for_status()
+            comments = comments_response.json()
+            
+            # Display issue details
+            title = issue['title']
+            state = issue['state'].upper()
+            state_display = "|g[OPEN]|n" if state == "OPEN" else "|r[CLOSED]|n"
+            created = issue['created_at'][:10]
+            updated = issue['updated_at'][:10]
+            body = issue.get('body', 'No description provided.')
+            url = issue['html_url']
+            
+            # Extract labels
+            labels = [label['name'] for label in issue.get('labels', [])]
+            category = None
+            for label in labels:
+                if label in {'combat', 'medical', 'movement', 'items', 'commands',
+                            'web', 'world', 'social', 'system', 'other'}:
+                    category = label.capitalize()
+                    break
+            
+            # Build display
+            caller.msg(f"\n|w{'=' * 70}|n")
+            caller.msg(f"|wIssue #{issue_number}|n {state_display}")
+            caller.msg(f"|w{'=' * 70}|n\n")
+            
+            caller.msg(f"|wTitle:|n {title}")
+            if category:
+                caller.msg(f"|wCategory:|n |y{category}|n")
+            caller.msg(f"|wCreated:|n {created}")
+            caller.msg(f"|wUpdated:|n {updated}")
+            caller.msg(f"|wURL:|n |c{url}|n\n")
+            
+            caller.msg(f"|w{'-' * 70}|n")
+            caller.msg(f"|wDescription:|n\n")
+            caller.msg(body)
+            caller.msg(f"\n|w{'-' * 70}|n")
+            
+            # Display comments
+            if comments:
+                caller.msg(f"\n|wComments ({len(comments)}):|n\n")
+                for i, comment in enumerate(comments, 1):
+                    author = comment['user']['login']
+                    created = comment['created_at'][:10]
+                    comment_body = comment['body']
+                    
+                    caller.msg(f"|w{i}. {author}|n |x({created})|n")
+                    caller.msg(f"{comment_body}\n")
+            else:
+                caller.msg(f"\n|xNo comments yet.|n\n")
+            
+            caller.msg(f"|w{'=' * 70}|n\n")
+            
+        except requests.exceptions.Timeout:
+            caller.msg("|rRequest timed out. Please try again later.|n")
+        except requests.exceptions.RequestException as e:
+            caller.msg(f"|rFailed to fetch bug details: {str(e)}|n")
         except Exception as e:
             caller.msg(f"|rUnexpected error: {str(e)}|n")
     
