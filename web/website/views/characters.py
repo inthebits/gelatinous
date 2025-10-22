@@ -460,6 +460,8 @@ class OwnerOnlyCharacterDetailView(EvenniaCharacterDetailView):
     Staff members can view any character.
     """
     
+    template_name = "website/character_detail.html"
+    
     def get_queryset(self):
         """
         Override to only return characters owned by the current user.
@@ -474,6 +476,27 @@ class OwnerOnlyCharacterDetailView(EvenniaCharacterDetailView):
         # Regular users can only view their own characters
         ids = [getattr(x, "id") for x in account.characters if x]
         return self.typeclass.objects.filter(id__in=ids)
+    
+    def get_context_data(self, **kwargs):
+        """Add GRIM stat descriptors to context."""
+        context = super().get_context_data(**kwargs)
+        character = self.object
+        
+        # Import the descriptor function
+        from commands.CmdCharacter import get_stat_descriptor
+        
+        # Get stat descriptors
+        grit = getattr(character, 'grit', 0)
+        resonance = getattr(character, 'resonance', 0)
+        intellect = getattr(character, 'intellect', 0)
+        motorics = getattr(character, 'motorics', 0)
+        
+        context['grit_descriptor'] = get_stat_descriptor('grit', grit)
+        context['resonance_descriptor'] = get_stat_descriptor('resonance', resonance)
+        context['intellect_descriptor'] = get_stat_descriptor('intellect', intellect)
+        context['motorics_descriptor'] = get_stat_descriptor('motorics', motorics)
+        
+        return context
     
     def dispatch(self, request, *args, **kwargs):
         """Check ownership before allowing access."""
