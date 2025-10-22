@@ -44,6 +44,11 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         """Determine which character creation flow to show."""
         account = request.user
         
+        # Check for respawn scenario FIRST (before max character check)
+        # This allows respawn even when at 0 active characters
+        if hasattr(account, 'db') and account.db.last_character:
+            return self.show_respawn_interface(request, account)
+        
         # Check if account has reached max character limit
         active_characters = []
         for char in account.characters:
@@ -74,16 +79,12 @@ class CharacterCreateView(EvenniaCharacterCreateView):
             last_char = account.db.last_character
             debug_info['last_character'] = last_char.key if last_char else 'None'
         
-        # Check for respawn scenario
-        if hasattr(account, 'db') and account.db.last_character:
-            return self.show_respawn_interface(request, account)
-        else:
-            # First character - show manual stat allocation form with debug info
-            response = super().get(request, *args, **kwargs)
-            # Try to inject debug info into context
-            if hasattr(response, 'context_data'):
-                response.context_data['debug_info'] = debug_info
-            return response
+        # First character - show manual stat allocation form with debug info
+        response = super().get(request, *args, **kwargs)
+        # Try to inject debug info into context
+        if hasattr(response, 'context_data'):
+            response.context_data['debug_info'] = debug_info
+        return response
     
     def show_respawn_interface(self, request, account):
         """Display template selection + flash clone options for respawn."""
