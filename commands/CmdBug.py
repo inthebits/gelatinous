@@ -543,21 +543,18 @@ class CmdBug(MuxCommand):
                     caller.msg(f"The limit resets in {remaining_time}.")
                     return
                 
-                # Combine title and details
-                full_description = f"{title}\n\n{details}"
-                
                 # Get environment context
                 context = self.gather_context(caller)
                 context['category'] = category
                 context['title'] = title  # Pass title separately
                 
-                # Create GitHub issue
+                # Create GitHub issue - pass only details, title is in context
                 if category:
                     caller.msg(f"\n|gCreating detailed bug report (category: |c{category}|g)...|n")
                 else:
                     caller.msg("\n|gCreating detailed bug report...|n")
                 
-                success, result = self.create_github_issue(full_description, context)
+                success, result = self.create_github_issue(details, context)
                 
                 if success:
                     issue_url = result.get('html_url', '')
