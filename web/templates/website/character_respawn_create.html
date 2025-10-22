@@ -86,9 +86,10 @@ Respawn Sleeve
                     </div>
                   </div>
                   <div class="mt-2">
-                    <small class="text-info">
-                      <strong>Note:</strong> Flash clone will inherit stats, appearance, and sex. 
-                      Roman numeral will be automatically appended to name.
+                    <small class="text-warning">
+                      <strong>⚠ WARNING:</strong> Flash cloning carries inherent risks. Genetic drift, memory corruption, 
+                      and cellular degradation may occur. Will inherit all stats, appearance, and sex from archived sleeve. 
+                      Roman numeral automatically appended to name.
                     </small>
                   </div>
                 </div>
@@ -130,19 +131,32 @@ Respawn Sleeve
   background-color: #5d6f85;
 }
 
-/* Very dark blue-grey for flash clone */
+/* Caution stripe border for flash clone */
 .flash-clone-option {
-  border-color: #6c8ba8;
+  border: 3px solid;
+  border-image: repeating-linear-gradient(
+    45deg,
+    #ffa500 0px,
+    #ffa500 15px,
+    #1a1a1a 15px,
+    #1a1a1a 30px
+  ) 1;
+  background-color: rgba(255, 165, 0, 0.05);
 }
 
 .flash-clone-option:hover {
-  border-color: #5a7690;
-  background-color: #e3edf5;
+  background-color: rgba(255, 165, 0, 0.1);
 }
 
 .flash-clone-option:has(input[type="radio"]:checked) {
-  border-color: #3d5a73;
-  background-color: #556a82;
+  background-color: rgba(255, 165, 0, 0.15);
+  border-image: repeating-linear-gradient(
+    45deg,
+    #ffaa00 0px,
+    #ffaa00 15px,
+    #222 15px,
+    #222 30px
+  ) 1;
 }
 </style>
 
