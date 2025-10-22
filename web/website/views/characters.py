@@ -122,7 +122,7 @@ class CharacterCreateView(EvenniaCharacterCreateView):
                 old_character = account.db.last_character
                 if not old_character:
                     messages.error(request, "Flash clone source not found.")
-                    return HttpResponseRedirect(self.get_success_url())
+                    return HttpResponseRedirect(self.success_url)
                 
                 character = create_flash_clone(account, old_character)
                 
@@ -145,7 +145,7 @@ class CharacterCreateView(EvenniaCharacterCreateView):
                 template_idx = int(choice.split('_')[1])
                 if template_idx >= len(templates):
                     messages.error(request, "Invalid template selection.")
-                    return HttpResponseRedirect(self.get_success_url())
+                    return HttpResponseRedirect(self.success_url)
                 
                 template = templates[template_idx]
                 character = create_character_from_template(account, template, sex)
@@ -160,7 +160,7 @@ class CharacterCreateView(EvenniaCharacterCreateView):
             # Clear last_character after successful respawn
             account.db.last_character = None
             
-            return HttpResponseRedirect(self.get_success_url())
+            return HttpResponseRedirect(self.success_url)
             
         except Exception as e:
             messages.error(request, f"Sleeve decantation failed: {str(e)}")
