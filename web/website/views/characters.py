@@ -180,7 +180,6 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         from commands.charcreate import create_flash_clone, create_character_from_template
         
         choice = request.POST.get('sleeve_choice')
-        sex = request.POST.get('sex', 'ambiguous')
         
         try:
             if choice == 'flash_clone':
@@ -190,11 +189,9 @@ class CharacterCreateView(EvenniaCharacterCreateView):
                     messages.error(request, "Flash clone source not found.")
                     return HttpResponseRedirect(self.success_url)
                 
+                # Flash clone inherits sex from old character automatically
+                # No need to override - create_flash_clone() handles inheritance
                 character = create_flash_clone(account, old_character)
-                
-                # Apply sex if specified (flash clone can override)
-                if sex and sex != old_character.sex:
-                    character.sex = sex
                 
                 messages.success(
                     request,
