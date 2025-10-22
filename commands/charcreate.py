@@ -53,8 +53,16 @@ def generate_random_template():
     """
     from world.namebank import FIRST_NAMES_MALE, FIRST_NAMES_FEMALE, LAST_NAMES
     
-    # Randomly pick gender for name selection
-    use_male = random.choice([True, False])
+    # Randomly pick gender for name selection and character sex
+    sex_choices = ['male', 'female', 'ambiguous']
+    sex = random.choice(sex_choices)
+    
+    # Use gendered names for male/female, random choice for ambiguous
+    if sex == 'ambiguous':
+        use_male = random.choice([True, False])
+    else:
+        use_male = (sex == 'male')
+    
     first_name = random.choice(FIRST_NAMES_MALE if use_male else FIRST_NAMES_FEMALE)
     last_name = random.choice(LAST_NAMES)
     
@@ -86,6 +94,8 @@ def generate_random_template():
     return {
         'first_name': first_name,
         'last_name': last_name,
+        'name': f"{first_name} {last_name}",  # Full name for display
+        'sex': sex,
         'grit': stats[0],
         'resonance': stats[1],
         'intellect': stats[2],

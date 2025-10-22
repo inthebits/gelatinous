@@ -167,7 +167,9 @@ class CharacterCreateView(EvenniaCharacterCreateView):
                     return HttpResponseRedirect(self.success_url)
                 
                 template = templates[template_idx]
-                character = create_character_from_template(account, template, sex)
+                # Use the template's pre-assigned sex (not user selection)
+                template_sex = template.get('sex', 'ambiguous')
+                character = create_character_from_template(account, template, template_sex)
                 
                 messages.success(
                     request,
