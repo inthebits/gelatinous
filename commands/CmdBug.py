@@ -6,9 +6,7 @@ that automatically create GitHub issues in the repository. Includes rate limitin
 input validation, and privacy-conscious reporting.
 """
 
-from evennia import Command
 from evennia.commands.default.muxcommand import MuxCommand
-from evennia.utils.eveditor import EvEditor
 from django.conf import settings
 from datetime import datetime, timezone
 import requests
@@ -20,46 +18,24 @@ class CmdBug(MuxCommand):
     Report a bug to the development team.
     
     Usage:
-        @bug <description>
-        @bug/combat <description>
-        @bug/medical <description>
-        @bug/category <description>
-        @bug/list [count]
-        @bug/detail
+        @bug
+        @bug/list [page]
+    
+    Without arguments, opens an interactive bug report workflow that will guide
+    you through:
+    1. Entering a title/summary for the bug
+    2. Selecting a category
+    3. Writing a detailed description in a multi-line editor
     
     Switches:
-        combat    - Tag as combat-related bug
-        medical   - Tag as medical system bug
-        movement  - Tag as movement/navigation bug
-        items     - Tag as inventory/items bug
-        commands  - Tag as command parsing bug
-        web       - Tag as web interface bug
-        world     - Tag as room/environment bug
-        social    - Tag as communication bug
-        system    - Tag as server/performance bug
-        other     - Tag as uncategorized
-        list      - Show your recent bug reports (optional: count 1-20)
-        detail    - Open multi-line editor for detailed reports (with category selection)
+        /list - View recent bug reports from the GitHub repository
     
-    Examples:
-        @bug grenades aren't exploding when rigged to exits
-        @bug/combat grapple doesn't release target properly
-        @bug/medical healing not restoring HP correctly
-        @bug/list
-        @bug/list 10
-        @bug/detail (will prompt for title, category, and details)
+    Your report will be created as a GitHub issue for the development team
+    to review. All players can submit up to 30 bug reports per day.
     
-    Submit a bug report that will be created as a GitHub issue for the
-    development team to review. All players can submit up to 30 bug reports
-    per day. Be clear and descriptive - good bug reports help us fix issues
-    faster!
-    
-    Use @bug/detail for complex bugs that need:
-    - A clear title/summary
-    - Proper categorization
-    - Detailed steps to reproduce
-    - Multiple paragraphs of explanation
-    - Formatted lists or examples
+    Categories:
+        Combat, Medical, Movement, Items/Inventory, Commands, Web Interface,
+        World/Environment, Social/Communication, System/Performance, Other
     
     Your report will include:
     - Your account username
@@ -72,18 +48,15 @@ class CmdBug(MuxCommand):
     - Character stats
     - Room names (only #dbref)
     - Timestamps (GitHub tracks this)
+    
+    Be clear and descriptive - good bug reports help us fix issues faster!
     """
     
     key = "@bug"
     aliases = ["bug"]
     locks = "cmd:all()"
     help_category = "General"
-    
-    # Valid bug categories
-    VALID_CATEGORIES = {
-        'combat', 'medical', 'movement', 'items', 'commands',
-        'web', 'world', 'social', 'system', 'other'
-    }
+    switch_options = ("list",)
     
     def func(self):
         """Execute the bug report command."""
@@ -101,84 +74,18 @@ class CmdBug(MuxCommand):
             caller.msg("Please contact staff directly to report bugs.")
             return
         
-        # Handle /list switch (doesn't need args)
-        if 'list' in self.switches:
-            self.show_bug_list(caller, account)
+        # Handle /list switch
+        if "list" in self.switches:
+            self.show_bug_list(caller)
             return
         
-        # Handle /detail switch (doesn't need args)
-        if 'detail' in self.switches:
-            self.start_detail_editor(caller)
+        # Any other arguments show usage
+        if self.args:
+            caller.msg("|yUsage:|n @bug  or  @bug/list")
             return
         
-        # Validate input - required for bug submission
-        if not self.args:
-            caller.msg("|rUsage: @bug <description>|n")
-            caller.msg("Example: |w@bug grenades aren't exploding|n")
-            caller.msg("Or with category: |w@bug/combat grapple release broken|n")
-            caller.msg("\nFor other options:")
-            caller.msg("  |w@bug/list|n - Show your recent bug reports")
-            caller.msg("  |w@bug/detail|n - Open detailed bug editor (coming soon)")
-            caller.msg("\nFor full help: |whelp @bug|n")
-            return
-        
-        # Determine category from switches
-        category = None
-        for switch in self.switches:
-            if switch.lower() in self.VALID_CATEGORIES:
-                category = switch.lower()
-                break
-        
-        description = self.args.strip()
-        
-        # Validate description length
-        if len(description) < 10:
-            caller.msg("|rPlease provide a more detailed description (at least 10 characters).|n")
-            return
-        
-        if len(description) > 5000:
-            caller.msg("|rDescription too long. Please keep it under 5000 characters.|n")
-            return
-        
-        # Check rate limit
-        if not self.check_rate_limit(account):
-            remaining_time = self.get_time_until_reset(account)
-            caller.msg("|rYou've reached the daily limit of 30 bug reports.|n")
-            caller.msg(f"The limit resets in {remaining_time}.")
-            caller.msg("\nIf you have an urgent issue, please contact staff directly.")
-            return
-        
-        # Get environment context
-        context = self.gather_context(caller)
-        context['category'] = category
-        
-        # Create GitHub issue
-        if category:
-            caller.msg(f"|gCreating bug report (category: |c{category}|g)...|n")
-        else:
-            caller.msg("|gCreating bug report...|n")
-        
-        success, result = self.create_github_issue(description, context)
-        
-        if success:
-            issue_url = result.get('html_url', '')
-            issue_number = result.get('number', '?')
-            
-            # Increment bug report counter
-            self.increment_report_count(account)
-            remaining = 30 - account.db.bug_report_count
-            
-            caller.msg(f"\n|g✓|n Issue created: |c{issue_url}|n")
-            caller.msg("\nThank you for your report! The development team will investigate.")
-            
-            if remaining <= 5:
-                caller.msg(f"You have |y{remaining}|n bug reports remaining today.")
-            else:
-                caller.msg(f"You have {remaining} bug reports remaining today.")
-        else:
-            error_msg = result
-            caller.msg(f"\n|rFailed to create bug report:|n {error_msg}")
-            caller.msg("|yPlease try again in a moment. If the problem persists, contact staff.|n")
+        # Open the detailed bug report workflow
+        self.start_detail_editor(caller)
     
     def check_rate_limit(self, account):
         """Check if account is within rate limit."""
@@ -372,6 +279,78 @@ class CmdBug(MuxCommand):
         except Exception as e:
             return (False, f"Unexpected error: {str(e)}")
     
+    def show_bug_list(self, caller):
+        """Show list of recent bug reports from GitHub."""
+        repo = settings.GITHUB_REPO
+        token = settings.GITHUB_TOKEN
+        
+        url = f"https://api.github.com/repos/{repo}/issues"
+        headers = {
+            "Authorization": f"token {token}",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        
+        params = {
+            "state": "all",  # Show both open and closed
+            "labels": "player-reported",
+            "per_page": 10,
+            "sort": "created",
+            "direction": "desc"
+        }
+        
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=10)
+            
+            if response.status_code != 200:
+                caller.msg(f"|rFailed to fetch bug list: HTTP {response.status_code}|n")
+                return
+            
+            issues = response.json()
+            
+            if not issues:
+                caller.msg("\n|yNo bug reports found.|n")
+                return
+            
+            # Display header
+            caller.msg("\n|c=== Recent Bug Reports ===|n\n")
+            
+            for issue in issues:
+                number = issue['number']
+                title = issue['title']
+                state = issue['state']
+                created = issue['created_at'][:10]  # Just date
+                url = issue['html_url']
+                
+                # Color code by state
+                if state == "open":
+                    state_display = "|gOPEN|n"
+                else:
+                    state_display = "|xCLOSED|n"
+                
+                # Extract category from labels if present
+                labels = [label['name'] for label in issue.get('labels', [])]
+                category = None
+                for label in labels:
+                    if label in {'combat', 'medical', 'movement', 'items', 'commands',
+                                'web', 'world', 'social', 'system', 'other'}:
+                        category = label.capitalize()
+                        break
+                
+                category_display = f" |y[{category}]|n" if category else ""
+                
+                caller.msg(f"|w#{number}|n {state_display}{category_display} - {title}")
+                caller.msg(f"  |xCreated: {created}|n")
+                caller.msg(f"  |c{url}|n\n")
+            
+            caller.msg("|xShowing 10 most recent reports. Visit GitHub for full history.|n\n")
+            
+        except requests.exceptions.Timeout:
+            caller.msg("|rRequest timed out. Please try again later.|n")
+        except requests.exceptions.RequestException as e:
+            caller.msg(f"|rFailed to fetch bug list: {str(e)}|n")
+        except Exception as e:
+            caller.msg(f"|rUnexpected error: {str(e)}|n")
+    
     def format_issue_body(self, description, context):
         """Format the GitHub issue body with context."""
         category = context.get('category', None)
@@ -403,86 +382,11 @@ class CmdBug(MuxCommand):
         labels = ["bug", "player-reported"]
         
         category = context.get('category')
-        if category and category in self.VALID_CATEGORIES:
+        if category and category in {'combat', 'medical', 'movement', 'items', 'commands', 
+                                      'web', 'world', 'social', 'system', 'other'}:
             labels.append(category)
         
         return labels
-    
-    def show_bug_list(self, caller, account):
-        """Show the player's recent bug reports."""
-        caller.msg("|c@bug/list|n - Fetching your recent bug reports...")
-        
-        # Get optional count parameter
-        count = 5  # Default
-        if self.args and self.args.strip().isdigit():
-            count = min(int(self.args.strip()), 20)  # Max 20
-        
-        try:
-            # Fetch issues from GitHub API
-            headers = {
-                "Authorization": f"token {settings.GITHUB_TOKEN}",
-                "Accept": "application/vnd.github.v3+json",
-                "User-Agent": "Gelatinous-MUD-Bug-Reporter"
-            }
-            
-            # Search for issues by this account
-            search_query = f"repo:{settings.GITHUB_REPO} is:issue label:player-reported {account.key} in:body"
-            url = f"https://api.github.com/search/issues"
-            
-            response = requests.get(
-                url,
-                headers=headers,
-                params={"q": search_query, "sort": "created", "order": "desc", "per_page": count},
-                timeout=10
-            )
-            
-            response.raise_for_status()
-            data = response.json()
-            
-            issues = data.get('items', [])
-            total_count = data.get('total_count', 0)
-            
-            if not issues:
-                caller.msg("\n|yYou haven't submitted any bug reports yet.|n")
-                caller.msg("Use |w@bug <description>|n to report your first bug!")
-                return
-            
-            # Display issues
-            caller.msg(f"\n|cYour Recent Bug Reports (showing {len(issues)} of {total_count}):|n\n")
-            
-            for issue in issues:
-                number = issue['number']
-                title = issue['title']
-                state = issue['state']
-                labels = [l['name'] for l in issue.get('labels', [])]
-                created = issue['created_at'][:10]  # YYYY-MM-DD
-                
-                # Color code by state
-                if state == 'open':
-                    state_color = "|g"
-                else:
-                    state_color = "|r"
-                
-                # Get category from labels
-                category = next((l for l in labels if l in self.VALID_CATEGORIES), 'other')
-                
-                caller.msg(f"|y#{number}|n [{state_color}{state}|n] |c[{category}]|n {title}")
-                caller.msg(f"  Created: {created}")
-                caller.msg(f"  |chttps://github.com/{settings.GITHUB_REPO}/issues/{number}|n\n")
-            
-            if total_count > len(issues):
-                caller.msg(f"|y...and {total_count - len(issues)} more.|n")
-                caller.msg("View all your reports:")
-                caller.msg(f"|chttps://github.com/{settings.GITHUB_REPO}/issues?q=is:issue+label:player-reported+{account.key}+in:body|n")
-        
-        except requests.exceptions.Timeout:
-            caller.msg("|rRequest timed out. Please try again.|n")
-        except requests.exceptions.ConnectionError:
-            caller.msg("|rUnable to connect to GitHub. Please try again later.|n")
-        except requests.exceptions.HTTPError as e:
-            caller.msg(f"|rGitHub API error: {e.response.status_code}|n")
-        except Exception as e:
-            caller.msg(f"|rUnexpected error: {str(e)}|n")
     
     def start_detail_editor(self, caller):
         """Start the multi-line detail editor for bug reports using EvMenu."""
