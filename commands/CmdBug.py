@@ -8,6 +8,7 @@ input validation, and privacy-conscious reporting.
 
 from evennia import Command
 from evennia.commands.default.muxcommand import MuxCommand
+from evennia.utils.evmenu import EvEditor
 from django.conf import settings
 from datetime import datetime, timezone
 import requests
@@ -25,6 +26,7 @@ class CmdBug(MuxCommand):
         @bug/category <description>
         @bug/list [count]
         @bug/detail
+        @bug/detail/category
     
     Switches:
         combat    - Tag as combat-related bug
@@ -37,7 +39,7 @@ class CmdBug(MuxCommand):
         social    - Tag as communication bug
         system    - Tag as server/performance bug
         other     - Tag as uncategorized
-        list      - Show your recent bug reports
+        list      - Show your recent bug reports (optional: count 1-20)
         detail    - Open multi-line editor for detailed reports
     
     Examples:
@@ -45,12 +47,19 @@ class CmdBug(MuxCommand):
         @bug/combat grapple doesn't release target properly
         @bug/medical healing not restoring HP correctly
         @bug/list
+        @bug/list 10
         @bug/detail
+        @bug/detail/combat
     
     Submit a bug report that will be created as a GitHub issue for the
     development team to review. All players can submit up to 30 bug reports
     per day. Be clear and descriptive - good bug reports help us fix issues
     faster!
+    
+    Use @bug/detail for complex bugs that need:
+    - Detailed steps to reproduce
+    - Multiple paragraphs of explanation
+    - Formatted lists or examples
     
     Your report will include:
     - Your account username
@@ -393,13 +402,168 @@ class CmdBug(MuxCommand):
     def show_bug_list(self, caller, account):
         """Show the player's recent bug reports."""
         caller.msg("|c@bug/list|n - Fetching your recent bug reports...")
-        caller.msg("|yThis feature is coming soon!|n")
-        caller.msg("\nFor now, check GitHub directly:")
-        caller.msg(f"|chttps://github.com/{settings.GITHUB_REPO}/issues|n")
+        
+        # Get optional count parameter
+        count = 5  # Default
+        if self.args and self.args.strip().isdigit():
+            count = min(int(self.args.strip()), 20)  # Max 20
+        
+        try:
+            # Fetch issues from GitHub API
+            headers = {
+                "Authorization": f"token {settings.GITHUB_TOKEN}",
+                "Accept": "application/vnd.github.v3+json",
+                "User-Agent": "Gelatinous-MUD-Bug-Reporter"
+            }
+            
+            # Search for issues by this account
+            search_query = f"repo:{settings.GITHUB_REPO} is:issue label:player-reported {account.key} in:body"
+            url = f"https://api.github.com/search/issues"
+            
+            response = requests.get(
+                url,
+                headers=headers,
+                params={"q": search_query, "sort": "created", "order": "desc", "per_page": count},
+                timeout=10
+            )
+            
+            response.raise_for_status()
+            data = response.json()
+            
+            issues = data.get('items', [])
+            total_count = data.get('total_count', 0)
+            
+            if not issues:
+                caller.msg("\n|yYou haven't submitted any bug reports yet.|n")
+                caller.msg("Use |w@bug <description>|n to report your first bug!")
+                return
+            
+            # Display issues
+            caller.msg(f"\n|cYour Recent Bug Reports (showing {len(issues)} of {total_count}):|n\n")
+            
+            for issue in issues:
+                number = issue['number']
+                title = issue['title']
+                state = issue['state']
+                labels = [l['name'] for l in issue.get('labels', [])]
+                created = issue['created_at'][:10]  # YYYY-MM-DD
+                
+                # Color code by state
+                if state == 'open':
+                    state_color = "|g"
+                else:
+                    state_color = "|r"
+                
+                # Get category from labels
+                category = next((l for l in labels if l in self.VALID_CATEGORIES), 'other')
+                
+                caller.msg(f"|y#{number}|n [{state_color}{state}|n] |c[{category}]|n {title}")
+                caller.msg(f"  Created: {created}")
+                caller.msg(f"  |chttps://github.com/{settings.GITHUB_REPO}/issues/{number}|n\n")
+            
+            if total_count > len(issues):
+                caller.msg(f"|y...and {total_count - len(issues)} more.|n")
+                caller.msg("View all your reports:")
+                caller.msg(f"|chttps://github.com/{settings.GITHUB_REPO}/issues?q=is:issue+label:player-reported+{account.key}+in:body|n")
+        
+        except requests.exceptions.Timeout:
+            caller.msg("|rRequest timed out. Please try again.|n")
+        except requests.exceptions.ConnectionError:
+            caller.msg("|rUnable to connect to GitHub. Please try again later.|n")
+        except requests.exceptions.HTTPError as e:
+            caller.msg(f"|rGitHub API error: {e.response.status_code}|n")
+        except Exception as e:
+            caller.msg(f"|rUnexpected error: {str(e)}|n")
     
     def start_detail_editor(self, caller):
         """Start the multi-line detail editor for bug reports."""
-        caller.msg("|c@bug/detail|n - Opening detailed bug report editor...")
-        caller.msg("|yThis feature is coming soon!|n")
-        caller.msg("\nFor now, use: |w@bug <description>|n")
-        caller.msg("Or submit a detailed report directly on GitHub:")
+        
+        # Determine category from switches
+        category = None
+        for switch in self.switches:
+            if switch.lower() in self.VALID_CATEGORIES:
+                category = switch.lower()
+                break
+        
+        # Instructions for the editor
+        instructions = """
+|c=== Detailed Bug Report Editor ===|n
+
+Please provide a detailed bug report including:
+  - What you were trying to do
+  - What you expected to happen
+  - What actually happened
+  - Steps to reproduce (if possible)
+
+|yCommands:|n
+  |w:w|n or |w:wq|n - Save and submit bug report
+  |w:q|n or |w:q!|n - Cancel without submitting
+  |w:h|n - Show editor help
+
+Write your bug report below:
+"""
+        
+        # Callback when editor is saved
+        def _save_callback(caller, buffer):
+            """Called when player saves the editor."""
+            description = "\n".join(buffer)
+            
+            if not description or len(description.strip()) < 10:
+                caller.msg("|rBug report too short. Minimum 10 characters required.|n")
+                caller.msg("|yBug report cancelled.|n")
+                return
+            
+            # Check rate limit
+            account = caller.account
+            if not self.check_rate_limit(account):
+                remaining_time = self.get_time_until_reset(account)
+                caller.msg("|rYou've reached the daily limit of 30 bug reports.|n")
+                caller.msg(f"The limit resets in {remaining_time}.")
+                return
+            
+            # Get environment context
+            context = self.gather_context(caller)
+            context['category'] = category
+            
+            # Create GitHub issue
+            if category:
+                caller.msg(f"\n|gCreating detailed bug report (category: |c{category}|g)...|n")
+            else:
+                caller.msg("\n|gCreating detailed bug report...|n")
+            
+            success, result = self.create_github_issue(description, context)
+            
+            if success:
+                issue_url = result.get('html_url', '')
+                issue_number = result.get('number', '?')
+                
+                # Increment bug report counter
+                self.increment_report_count(account)
+                remaining = 30 - account.db.bug_report_count
+                
+                caller.msg(f"\n|g✓|n Issue created: |c{issue_url}|n")
+                caller.msg("\nThank you for the detailed report! The development team will investigate.")
+                
+                if remaining <= 5:
+                    caller.msg(f"You have |y{remaining}|n bug reports remaining today.")
+                else:
+                    caller.msg(f"You have {remaining} bug reports remaining today.")
+            else:
+                error_msg = result
+                caller.msg(f"\n|rFailed to create bug report:|n {error_msg}")
+                caller.msg("|yPlease try again in a moment. If the problem persists, contact staff.|n")
+        
+        # Callback when editor is quit
+        def _quit_callback(caller):
+            """Called when player quits without saving."""
+            caller.msg("|yBug report cancelled.|n")
+        
+        # Start the editor
+        EvEditor(
+            caller,
+            loadfunc=lambda caller: instructions,
+            savefunc=_save_callback,
+            quitfunc=_quit_callback,
+            key="bug_report_editor",
+            persistent=False
+        )
