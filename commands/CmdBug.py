@@ -183,21 +183,33 @@ class CmdBug(Command):
     def get_git_commit_hash(self):
         """Get the current git commit hash."""
         try:
-            import subprocess
             import os
             
-            # Try to get git directory - may need to specify path in Docker
+            # Try reading from .git/refs/heads/master (works even without git command)
             git_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            ref_file = os.path.join(git_dir, '.git', 'refs', 'heads', 'master')
             
-            result = subprocess.run(
-                ['git', 'rev-parse', '--short', 'HEAD'],
-                capture_output=True,
-                text=True,
-                timeout=2,
-                cwd=git_dir
-            )
-            if result.returncode == 0:
-                return result.stdout.strip()
+            if os.path.exists(ref_file):
+                with open(ref_file, 'r') as f:
+                    full_hash = f.read().strip()
+                    # Return short hash (first 7 characters)
+                    return full_hash[:7] if full_hash else "unknown"
+            
+            # Fallback: try git command if available
+            try:
+                import subprocess
+                result = subprocess.run(
+                    ['git', 'rev-parse', '--short', 'HEAD'],
+                    capture_output=True,
+                    text=True,
+                    timeout=2,
+                    cwd=git_dir
+                )
+                if result.returncode == 0:
+                    return result.stdout.strip()
+            except Exception:
+                pass
+                
         except Exception:
             pass
         
