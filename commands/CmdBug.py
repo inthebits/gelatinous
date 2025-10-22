@@ -19,35 +19,17 @@ class CmdBug(MuxCommand):
     
     Usage:
         @bug
-        @bug/list [page]
+        @bug/list
     
-    Without arguments, opens an interactive bug report workflow that will guide
-    you through:
+    Opens an interactive bug report workflow that will guide you through:
     1. Entering a title/summary for the bug
     2. Selecting a category
     3. Writing a detailed description in a multi-line editor
     
-    Switches:
-        /list - View recent bug reports from the GitHub repository
+    Use @bug/list to view recent bug reports from the GitHub repository.
     
     Your report will be created as a GitHub issue for the development team
     to review. All players can submit up to 30 bug reports per day.
-    
-    Categories:
-        Combat, Medical, Movement, Items/Inventory, Commands, Web Interface,
-        World/Environment, Social/Communication, System/Performance, Other
-    
-    Your report will include:
-    - Your account username
-    - Current location (#dbref)
-    - Server version (commit hash)
-    
-    Your report will NOT include:
-    - Email address
-    - Character names
-    - Character stats
-    - Room names (only #dbref)
-    - Timestamps (GitHub tracks this)
     
     Be clear and descriptive - good bug reports help us fix issues faster!
     """
