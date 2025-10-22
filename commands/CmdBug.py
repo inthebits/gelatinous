@@ -522,8 +522,8 @@ class CmdBug(MuxCommand):
             # Store title in menu session
             caller.ndb._evmenu.bug_title = title
             
-            # Move to category node
-            return "node_category", {}
+            # Move to category node - return tuple to jump directly
+            return ("node_category", {})
         
         def node_category(caller, raw_string, **kwargs):
             """EvMenu node to select category."""
