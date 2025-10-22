@@ -185,15 +185,27 @@ class CmdBug(Command):
         try:
             import os
             
-            # Try reading from .git/refs/heads/master (works even without git command)
-            git_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            ref_file = os.path.join(git_dir, '.git', 'refs', 'heads', 'master')
+            # In Docker, the game is mounted at /usr/src/game
+            # Try multiple possible paths
+            possible_paths = [
+                '/usr/src/game/.git/refs/heads/master',  # Docker absolute path
+                os.path.join(os.getcwd(), '.git', 'refs', 'heads', 'master'),  # From current working dir
+            ]
             
-            if os.path.exists(ref_file):
-                with open(ref_file, 'r') as f:
-                    full_hash = f.read().strip()
-                    # Return short hash (first 7 characters)
-                    return full_hash[:7] if full_hash else "unknown"
+            # Also try calculating from this file's location
+            try:
+                git_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                possible_paths.append(os.path.join(git_dir, '.git', 'refs', 'heads', 'master'))
+            except:
+                pass
+            
+            # Try each possible path
+            for ref_file in possible_paths:
+                if os.path.exists(ref_file):
+                    with open(ref_file, 'r') as f:
+                        full_hash = f.read().strip()
+                        # Return short hash (first 7 characters)
+                        return full_hash[:7] if full_hash else "unknown"
             
             # Fallback: try git command if available
             try:
@@ -202,8 +214,7 @@ class CmdBug(Command):
                     ['git', 'rev-parse', '--short', 'HEAD'],
                     capture_output=True,
                     text=True,
-                    timeout=2,
-                    cwd=git_dir
+                    timeout=2
                 )
                 if result.returncode == 0:
                     return result.stdout.strip()
