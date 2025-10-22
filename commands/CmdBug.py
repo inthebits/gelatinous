@@ -485,23 +485,18 @@ class CmdBug(MuxCommand):
                 category = switch.lower()
                 break
         
-        # Instructions for the editor
-        instructions = """
-|c=== Detailed Bug Report Editor ===|n
-
-Please provide a detailed bug report including:
-  - What you were trying to do
-  - What you expected to happen
-  - What actually happened
-  - Steps to reproduce (if possible)
-
-|yCommands:|n
-  |w:w|n or |w:wq|n - Save and submit bug report
-  |w:q|n or |w:q!|n - Cancel without submitting
-  |w:h|n - Show editor help
-
-Write your bug report below:
-"""
+        # Show instructions BEFORE opening editor
+        caller.msg("\n|c=== Detailed Bug Report Editor ===|n")
+        caller.msg("\nPlease provide a detailed bug report including:")
+        caller.msg("  - What you were trying to do")
+        caller.msg("  - What you expected to happen")
+        caller.msg("  - What actually happened")
+        caller.msg("  - Steps to reproduce (if possible)")
+        caller.msg("\n|yEditor Commands:|n")
+        caller.msg("  |w:w|n or |w:wq|n - Save and submit bug report")
+        caller.msg("  |w:q|n or |w:q!|n - Cancel without submitting")
+        caller.msg("  |w:h|n - Show editor help")
+        caller.msg("\n|yOpening editor...|n\n")
         
         # Callback when editor is saved
         def _save_callback(caller, buffer):
@@ -558,10 +553,10 @@ Write your bug report below:
             """Called when player quits without saving."""
             caller.msg("|yBug report cancelled.|n")
         
-        # Start the editor
+        # Start the editor with empty buffer
         EvEditor(
             caller,
-            loadfunc=lambda caller: instructions,
+            loadfunc=lambda caller: "",
             savefunc=_save_callback,
             quitfunc=_quit_callback,
             key="bug_report_editor",
