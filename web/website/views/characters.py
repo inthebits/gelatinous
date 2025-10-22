@@ -222,6 +222,25 @@ class CharacterCreateView(EvenniaCharacterCreateView):
                     f"Intellect {character.intellect}, Motorics {character.motorics}"
                 )
             
+            # WEB-CREATED CHARACTERS: Make invisible until puppeted
+            # Set location to None (standard Evennia unpuppet behavior)
+            # This makes them invisible in room until first puppet/login
+            # Save current location for restoration during at_pre_puppet
+            character.db.prelogout_location = character.location
+            character.location = None
+            
+            # Debug logging
+            from evennia.comms.models import ChannelDB
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(
+                    f"WEB_CHAR_CREATE: {character.key} created via web (respawn), "
+                    f"location set to None for invisibility. "
+                    f"Will be restored to {character.db.prelogout_location.key} on telnet login."
+                )
+            except:
+                pass
+            
             # Clear last_character after successful respawn
             # (archive_character() will set it again when this character is archived)
             account.db.last_character = None
@@ -305,6 +324,25 @@ class CharacterCreateView(EvenniaCharacterCreateView):
             character.db.current_sleeve_birth = time.time()
             character.db.archived = False
             # death_count defaults to 1 via AttributeProperty in Character class
+            
+            # WEB-CREATED CHARACTERS: Make invisible until puppeted
+            # Set location to None (standard Evennia unpuppet behavior)
+            # This makes them invisible in room until first puppet/login
+            # Save current location for restoration during at_pre_puppet
+            character.db.prelogout_location = character.location
+            character.location = None
+            
+            # Debug logging
+            from evennia.comms.models import ChannelDB
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(
+                    f"WEB_CHAR_CREATE: {character.key} created via web (first-time), "
+                    f"location set to None for invisibility. "
+                    f"Will be restored to {character.db.prelogout_location.key} on telnet login."
+                )
+            except:
+                pass
             
             messages.success(
                 self.request,

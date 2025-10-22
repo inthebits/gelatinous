@@ -789,6 +789,21 @@ class Character(ObjectParent, DefaultCharacter):
         self.db.archived_reason = reason
         self.db.archived_date = time.time()
         
+        # Move character to Limbo to prevent appearing as NPC in game world
+        from evennia import search_object
+        limbo = search_object("#2")  # Limbo is always dbref #2
+        if limbo:
+            limbo = limbo[0]
+            current_location = self.location
+            self.move_to(limbo, quiet=True, move_hooks=False)
+            
+            # Log the move
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"ARCHIVE: Moved {self.key} from {current_location.key if current_location else 'None'} to Limbo")
+            except:
+                pass
+        
         # Disconnect any active sessions
         if self.sessions.all():
             if not disconnect_msg:

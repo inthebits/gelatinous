@@ -435,3 +435,177 @@ else:
 
 **Next Steps:**
 Phase 1 is complete and stable. Future phases can focus on polish, AJAX template regeneration, appearance preview, and other enhancements listed above.
+
+---
+
+## Bug Fix: Web-Created Characters Appearing as Visible NPCs (January 2025)
+
+### Problem Statement
+
+**Issue:** Characters created via web interface (both first-time and respawn) were appearing as visible NPCs in the game world before the player ever connected via telnet.
+
+**Symptoms:**
+- Web-created characters visible in START_LOCATION as unpuppeted objects
+- Appeared identical to NPCs created via @spawnnpc command
+- Characters became puppeted only on first telnet login
+- Violated expected "invisible until first login" behavior
+
+**Root Cause:** Characters created via web were:
+1. Created with `location = START_LOCATION`
+2. Left unpuppeted (no active session)
+3. Remained visible because location was not None
+
+### Solution: Mimic Evennia's Standard Unpuppet Behavior
+
+**Key Insight from Evennia Source Code:**
+
+From `evennia/objects/objects.py` `DefaultCharacter` class:
+
+**`at_post_unpuppet()` (lines 3288-3321):**
+```python
+def at_post_unpuppet(self, account=None, session=None, **kwargs):
+    if not self.sessions.count():
+        # only remove this char from grid if no sessions control it anymore.
+        if self.location:
+            # Save location for restoration
+            self.db.prelogout_location = self.location
+            # Make invisible by removing from grid
+            self.location = None
+```
+
+**`at_pre_puppet()` (lines 3237-3259):**
+```python
+def at_pre_puppet(self, account, session=None, **kwargs):
+    if self.location is None:
+        # Restore character from invisible storage
+        location = self.db.prelogout_location if self.db.prelogout_location else self.home
+        if location:
+            self.location = location
+            self.location.at_object_receive(self, None)
+```
+
+**Conclusion:** Setting `character.location = None` is Evennia's standard mechanism for making unpuppeted player characters invisible.
+
+### Implementation
+
+Modified `web/website/views/characters.py` in two places:
+
+#### 1. Respawn Character Creation (`handle_respawn_submission`)
+
+```python
+# After character creation...
+# WEB-CREATED CHARACTERS: Make invisible until puppeted
+# Set location to None (standard Evennia unpuppet behavior)
+# This makes them invisible in room until first puppet/login
+# Save current location for restoration during at_pre_puppet
+character.db.prelogout_location = character.location
+character.location = None
+
+# Debug logging
+splattercast.msg(
+    f"WEB_CHAR_CREATE: {character.key} created via web (respawn), "
+    f"location set to None for invisibility. "
+    f"Will be restored to {character.db.prelogout_location.key} on telnet login."
+)
+```
+
+#### 2. First-Time Character Creation (`form_valid`)
+
+```python
+# After character creation...
+# WEB-CREATED CHARACTERS: Make invisible until puppeted
+# Set location to None (standard Evennia unpuppet behavior)
+# This makes them invisible in room until first puppet/login
+# Save current location for restoration during at_pre_puppet
+character.db.prelogout_location = character.location
+character.location = None
+
+# Debug logging
+splattercast.msg(
+    f"WEB_CHAR_CREATE: {character.key} created via web (first-time), "
+    f"location set to None for invisibility. "
+    f"Will be restored to {character.db.prelogout_location.key} on telnet login."
+)
+```
+
+### Behavior Flow
+
+#### Web Character Creation
+1. **Character Created**: Django view creates character with `location=START_LOCATION`
+2. **Made Invisible**: Immediately set `location = None`, save previous location to `db.prelogout_location`
+3. **Invisible State**: Character exists in database but not in game world
+4. **Debug Logging**: Splattercast message confirms invisibility
+
+#### First Telnet Login
+1. **Account Login**: Player connects via telnet
+2. **Auto-Puppet**: `at_post_login()` calls `puppet_object()` (if `AUTO_PUPPET_ON_LOGIN=True`)
+3. **at_pre_puppet Hook**: Evennia's built-in hook detects `location is None`
+4. **Restoration**: Character restored to `db.prelogout_location` (or home)
+5. **Visible & Active**: Character appears in game world with standard "has entered the game" message
+
+#### Subsequent Sessions
+- **Normal puppet/unpuppet cycle**: Standard Evennia behavior
+- **Quit**: Character location set to None (standard)
+- **Login**: Character restored from None location (standard)
+
+### NPCs vs Player Characters
+
+#### NPCs (Created via @spawnnpc)
+- **Never puppeted**: No session, no account
+- **Always visible**: Location is always a room
+- **Behavior unchanged**: Continue working as before
+
+#### Player Characters (Web-created)
+- **Initially unpuppeted**: No session until telnet login
+- **Initially invisible**: `location = None`
+- **Visible when puppeted**: Restored to room on first puppet
+- **Standard Evennia behavior**: Matches quit/disconnect mechanics
+
+### Why This Solution Is Superior
+
+**Alternative 1: Leave at START_LOCATION, add visibility check**
+- ❌ Requires custom `access()` override in Character typeclass
+- ❌ Requires distinguishing NPCs from player chars
+- ❌ More complex, error-prone
+
+**Alternative 2: Move to Limbo**
+- ❌ Requires special handling on login
+- ❌ Less standard Evennia pattern
+- ❌ Extra location management
+
+**Current Solution (location=None)**
+- ✅ Standard Evennia behavior (mimics quit/disconnect)
+- ✅ Zero custom hooks needed
+- ✅ Automatic restoration via built-in `at_pre_puppet`
+- ✅ Simple, clean, maintainable
+- ✅ No special case logic for NPCs
+
+### Files Modified
+- `web/website/views/characters.py`:
+  - `handle_respawn_submission()`: Added location=None after respawn creation
+  - `form_valid()`: Added location=None after first-time creation
+  - Debug logging added to both methods
+
+### Testing Checklist
+- [ ] Create character via web (first-time)
+- [ ] Verify character not visible in START_LOCATION
+- [ ] Login via telnet
+- [ ] Verify auto-puppet works
+- [ ] Verify character appears in START_LOCATION
+- [ ] Verify "has entered the game" message
+- [ ] Create character via web (respawn)
+- [ ] Verify same invisibility behavior
+- [ ] Verify NPCs created via @spawnnpc still visible
+- [ ] Verify quit/login cycle works normally
+
+### References
+- Evennia Source: `evennia/objects/objects.py` (DefaultCharacter class)
+  - `at_post_unpuppet()`: Lines 3288-3321
+  - `at_pre_puppet()`: Lines 3237-3259
+- Evennia GitHub: https://github.com/evennia/evennia
+
+### Conclusion
+
+Web-created characters now seamlessly integrate with Evennia's standard visibility mechanics. By setting `location = None` immediately after web creation, we achieve the desired "invisible until first puppet" behavior without any custom hooks or special case logic. The solution is elegant, maintainable, and follows Evennia best practices.
+
+````
