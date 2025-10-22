@@ -556,6 +556,9 @@ class CmdBug(MuxCommand):
             # Store category
             caller.ndb._evmenu.bug_category = category
             
+            # Flag to track if save was called
+            caller.ndb._bug_editor_saved = False
+            
             # Show confirmation and instructions
             caller.msg(f"\n|gTitle:|n {title}")
             caller.msg(f"|gCategory:|n {category.capitalize()}")
@@ -573,6 +576,9 @@ class CmdBug(MuxCommand):
             # Define EvEditor save callback
             def _save_callback(caller, buffer):
                 """Called when the player saves the editor."""
+                # Mark that save was called
+                caller.ndb._bug_editor_saved = True
+                
                 if isinstance(buffer, str):
                     details = buffer.strip()
                 else:
@@ -623,17 +629,30 @@ class CmdBug(MuxCommand):
             
             def _quit_callback(caller):
                 """Called when the player quits the editor."""
-                caller.msg("|yBug report cancelled.|n")
+                # Only show cancellation message if save wasn't called
+                if not getattr(caller.ndb, '_bug_editor_saved', False):
+                    caller.msg("|yBug report cancelled.|n")
+                # Clean up flag
+                if hasattr(caller.ndb, '_bug_editor_saved'):
+                    del caller.ndb._bug_editor_saved
             
-            # Open the EvEditor
-            EvEditor(caller, 
-                    loadfunc=lambda caller: "",
-                    savefunc=_save_callback,
-                    quitfunc=_quit_callback,
-                    key="bug_report_editor",
-                    persistent=False)
+            # Use utils.delay to open EvEditor after a tiny delay
+            # This ensures the EvMenu cmdset is fully cleaned up first
+            from evennia.utils import delay
             
-            # Return None to exit the menu (EvEditor takes over)
+            def _delayed_editor_open(caller):
+                """Open EvEditor after menu cleanup."""
+                EvEditor(caller, 
+                        loadfunc=lambda caller: "",
+                        savefunc=_save_callback,
+                        quitfunc=_quit_callback,
+                        key="bug_report_editor",
+                        persistent=False)
+            
+            # Delay by 0.1 seconds to let EvMenu clean up
+            delay(0.1, _delayed_editor_open, caller)
+            
+            # Return None to exit the menu
             return None, None
         
         # Start the EvMenu
