@@ -416,12 +416,14 @@ def _charcreate_exit_callback(caller, menu):
     Called when the character creation menu exits.
     Only disconnects if character creation was NOT completed.
     """
-    # Check if they have any characters - if so, creation was successful
-    if caller.characters:
+    # Check if they have any ACTIVE (non-archived) characters
+    active_characters = [char for char in caller.characters if not char.db.archived]
+    
+    if active_characters:
         # They completed creation - just close menu, don't disconnect
         return
     
-    # No characters - they exited without completing
+    # No active characters - they exited without completing
     # Disconnect them so they restart character creation on reconnect
     caller.msg("|yCharacter creation incomplete. Please reconnect to continue.|n")
     caller.sessions.all()[0].sessionhandler.disconnect(caller.sessions.all()[0], reason="Character creation incomplete")
