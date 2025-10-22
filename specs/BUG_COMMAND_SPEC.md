@@ -18,58 +18,25 @@ The `@bug` command allows players and staff to submit bug reports directly to th
 
 ### Basic Usage
 ```
-@bug <brief description>
+@bug
 ```
-Creates a simple one-line bug report.
+Opens an interactive workflow for creating detailed bug reports:
+1. Enter a title (minimum 10 characters)
+2. Select a category from a menu
+3. Write detailed description in a multi-line editor
 
-**Example:**
+### List Recent Bugs
 ```
-@bug grenades aren't exploding when rigged to exits
+@bug/list
 ```
-
-### Detailed Reports
-```
-@bug/detail
-```
-Opens a multi-line text editor for detailed bug descriptions with reproduction steps.
-
-### Category Tagging
-```
-@bug/category <category> <description>
-```
-Tag the bug with a specific category for better organization.
-
-**Categories:**
-- `combat` - Combat system issues (attacks, grappling, damage)
-- `medical` - Medical system, injuries, healing
-- `movement` - Movement commands, exits, navigation
-- `items` - Inventory, equipment, objects
-- `commands` - General command parsing or execution
-- `web` - Web interface, character creation, respawn
-- `world` - Rooms, descriptions, environment
-- `social` - Communication, channels, emotes
-- `system` - Server errors, crashes, performance
-- `other` - Uncategorized issues
-
-**Example:**
-```
-@bug/combat grapple command isn't releasing target properly
-```
-
-### List Recent Bugs (Admin Only)
-```
-@bug/list [count]
-```
-Shows recently created issues from the game. Defaults to 5, max 20.
+Shows the 10 most recent bug reports from GitHub (open and closed).
 
 ---
 
 ## GitHub Issue Format
 
 ### Issue Title
-```
-[BUG] <player's brief description>
-```
+The player's title input is used directly as the issue title (no [BUG] prefix).
 
 ### Issue Labels
 - `bug` (always applied)
@@ -202,83 +169,171 @@ def check_rate_limit(account):
 
 ## User Experience Flow
 
-### Successful Report
+### Interactive Bug Report Flow
 ```
-> @bug grenades aren't exploding when rigged to exits
+> @bug
 
-|gCreating bug report...|n
+=== Detailed Bug Report ===
 
-|g✓|n Issue created: |chttps://github.com/daiimus/gelatinous/issues/42|n
+Provide a short title for the bug (minimum 10 characters):
 
-Thank you for your report! The development team will investigate.
-You have |y29|n bug reports remaining today.
-```
+> Grenades don't explode when rigged to exits
 
-### Detailed Report Flow
-```
-> @bug/detail
+Title: Grenades don't explode when rigged to exits
 
-|cOpening bug report editor...|n
-|yPlease provide a detailed description including:|n
+Select a category:
+
+  1 - Combat
+  2 - Medical
+  3 - Movement
+  4 - Items/Inventory
+  5 - Commands
+  6 - Web Interface
+  7 - World/Environment
+  8 - Social/Communication
+  9 - System/Performance
+  0 - Other
+
+> 1
+
+Title: Grenades don't explode when rigged to exits
+Category: Combat
+
+Now provide detailed information:
   - What you were trying to do
   - What you expected to happen
   - What actually happened
   - Steps to reproduce (if possible)
 
-|yType your report below. Use @@ on a new line when finished.|n
+Editor Commands:
+  :w or :wq - Save and submit bug report
+  :q or :q! - Cancel without submitting
+  :h - Show editor help
+
+Opening editor...
+
+---------Line Editor [bug_report_editor]-----------------------------
+
+---------[1:01 w:000 c:0000]-----------(:h for help)-----------------
 
 > I tried to rig a grenade to the north exit.
-> I expected it to explode when someone walked north.
-> Instead, nothing happens and the grenade disappears.
+> I expected it to explode when someone walked through.
+> Instead, nothing happens and the grenade vanishes.
 > 
 > Steps:
 > 1. Get grenade from inventory
 > 2. Type "rig grenade to north"
-> 3. Command succeeds but grenade vanishes
-> 4. Walk through exit - no explosion
-> @@
+> 3. Command succeeds but grenade disappears
+> 4. Someone walks through exit - no explosion
+> :wq
 
-|gCreating detailed bug report...|n
+Creating detailed bug report (category: combat)...
 
-|g✓|n Issue created: |chttps://github.com/daiimus/gelatinous/issues/43|n
+✓ Issue created: https://github.com/daiimus/gelatinous/issues/44
 
-Thank you for the detailed report! This helps us fix the issue faster.
-You have |y28|n bug reports remaining today.
+Thank you for the detailed report! The development team will investigate.
+You have 29 bug reports remaining today.
 ```
 
-### Category Report
+### List Recent Bugs
 ```
-> @bug/combat grapple release doesn't work after knockout
+> @bug/list
 
-|gCreating bug report (category: |ccombat|g)...|n
+=== Recent Bug Reports ===
 
-|g✓|n Issue created: |chttps://github.com/daiimus/gelatinous/issues/44|n
+#44 OPEN [Combat] - Grenades don't explode when rigged to exits
+  Created: 2025-10-22
+  https://github.com/daiimus/gelatinous/issues/44
 
-Thank you for your report! The development team will investigate.
-You have |y27|n bug reports remaining today.
+#43 CLOSED [Medical] - Healing doesn't restore full HP
+  Created: 2025-10-21
+  https://github.com/daiimus/gelatinous/issues/43
+
+[... 8 more issues ...]
+
+Showing 10 most recent reports. Visit GitHub for full history.
 ```
 
 ### Rate Limit Reached
 ```
-> @bug another issue here
+> @bug
 
-|rYou've reached the daily limit of 30 bug reports.|n
-The limit resets at midnight UTC (in 4 hours, 23 minutes).
+You've reached the daily limit of 30 bug reports.
+The limit resets in 4 hours, 23 minutes.
+```
 
-If you have an urgent issue, please contact staff directly.
+### Short Title Error
+```
+> @bug
+
+=== Detailed Bug Report ===
+
+Provide a short title for the bug (minimum 10 characters):
+
+> test bug
+
+Title too short. Please provide at least 10 characters.
+
+Bug report cancelled.
+```
+
+### Editor Cancellation
+```
+> @bug
+
+[... workflow starts ...]
+
+Opening editor...
+
+> This is my bug description
+> :q
+
+Bug report cancelled.
 ```
 
 ### Network Error
 ```
-> @bug test bug
+> @bug
 
-|rFailed to create bug report: Unable to connect to GitHub.|n
-|yPlease try again in a moment. If the problem persists, contact staff.|n
+[... workflow completes ...]
+
+Creating detailed bug report (category: combat)...
+
+Failed to create bug report: Connection timeout.
+Please try again in a moment. If the problem persists, contact staff.
 ```
 
 ---
 
-## Error Handling
+## Technical Implementation
+
+### EvMenu Integration
+The command uses Evennia's EvMenu system for the interactive workflow:
+- `node_title`: Prompts for bug title (text input node)
+- `_validate_title_input`: Goto callable that validates title
+- `node_category`: Category selection menu (numbered options)
+- `node_open_editor`: Opens EvEditor for detailed description
+
+**Key Settings:**
+- `cmd_on_exit=None` - Prevents default "look" command when menu exits
+- Uses goto callables instead of node functions for validation steps
+- EvEditor opens with 0.1s delay after menu closes to avoid input capture
+
+### EvEditor Integration
+Multi-line editor for bug descriptions:
+- `loadfunc`: Returns empty string (blank buffer)
+- `savefunc`: Creates GitHub issue if description valid (min 10 chars)
+- `quitfunc`: Shows cancellation message only if save wasn't called
+- Uses flag `caller.ndb._bug_editor_saved` to track save state
+
+### Dependencies
+- `evennia.commands.default.muxcommand.MuxCommand` - For switch support
+- `evennia.utils.evmenu.EvMenu` - Interactive menu system
+- `evennia.utils.eveditor.EvEditor` - Multi-line text editor
+- `requests` library (HTTP client for GitHub API)
+- `json` (standard library, payload formatting)
+- `datetime` (standard library, timestamps)
+- `git` command line (to get current commit hash)
 
 ### Network Failures
 ```python
@@ -386,92 +441,83 @@ if not hasattr(settings, 'GITHUB_TOKEN') or not settings.GITHUB_TOKEN:
 ## Testing Strategy
 
 ### Manual Testing Checklist
-- [ ] Simple bug report creates issue successfully
-- [ ] Detailed report with multi-line editor works
-- [ ] Category tagging applies correct labels
-- [ ] Rate limiting enforces 30/day limit
-- [ ] Rate limit resets at midnight UTC
-- [ ] GitHub link is returned and functional
-- [ ] Error handling for network failures
-- [ ] Error handling for invalid GitHub token
-- [ ] Input sanitization prevents injection
-- [ ] Privacy: no emails or stats in issues
+- [x] Interactive workflow creates issue successfully
+- [x] Title validation enforces 10 character minimum
+- [x] Category selection menu displays all options
+- [x] EvEditor opens and accepts multi-line input
+- [x] EvEditor :wq saves and submits report
+- [x] EvEditor :q cancels without submitting
+- [x] Rate limiting enforces 30/day limit
+- [x] Rate limit resets at midnight UTC
+- [x] GitHub link is returned and functional
+- [x] @bug/list shows recent 10 issues
+- [x] Error handling for network failures
+- [x] Error handling for invalid GitHub token
+- [x] Privacy: no emails or stats in issues
+- [x] No spurious "look" command in editor buffer
+- [x] No "Bug report cancelled" after successful save
 
 ### Test Cases
 ```python
-# Test 1: Basic report
-@bug test basic bug report
-# Expected: Issue created with title "[BUG] test basic bug report"
+# Test 1: Full workflow
+@bug
+# Enter title: "Test bug report title"
+# Select category: 1 (Combat)
+# Enter description: "This is a test\nwith multiple lines"
+# :wq
+# Expected: Issue created with all data
 
-# Test 2: Category tagging
-@bug/combat test combat bug
-# Expected: Issue has labels ["bug", "player-reported", "combat"]
+# Test 2: Title too short
+@bug
+# Enter title: "test"
+# Expected: Error message, workflow cancelled
 
-# Test 3: Rate limiting
+# Test 3: Empty description
+@bug
+# Enter valid title and category
+# Enter nothing in editor, just :wq
+# Expected: Error about minimum 10 characters
+
+# Test 4: Cancel in editor
+@bug
+# Complete workflow but type :q instead of :wq
+# Expected: "Bug report cancelled" message only
+
+# Test 5: Rate limiting
 # Create 30 reports rapidly
-# Expected: 30th succeeds, 31st fails with rate limit message
+# Expected: 30th succeeds, 31st shows rate limit message
 
-# Test 4: Detailed report
-@bug/detail
-# Enter multi-line text
-# Expected: Full description appears in issue body
-
-# Test 5: Network error
-# Disable internet connection
-@bug test during outage
-# Expected: Graceful error message, no crash
+# Test 6: List command
+@bug/list
+# Expected: Shows 10 most recent issues with links
 ```
-
----
-
-## Future Enhancements (Phase 2+)
-
-### Duplicate Detection
-- Check for similar existing issues before creating
-- Suggest existing issues to reporter
-- "Did you mean issue #42?"
-
-### Attachment Support
-- Capture recent command history (last 10 commands)
-- Include recent combat log entries (if applicable)
-- Screenshot support (via web interface)
-
-### Issue Tracking
-- Allow players to check status of their reports
-- `@bug/status` - Show your open bugs
-- Notify players when their bugs are closed/fixed
-
-### Prioritization
-- Allow staff to set priority from in-game
-- Auto-tag critical bugs (crashes, data loss)
-- Escalate urgent issues automatically
-
-### Integration with Channels
-- Broadcast new bug reports to staff channel
-- Optional: Public bug report announcements
-- Link to fixed bugs in patch notes
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Core Functionality (MVP)
-- ✅ Basic `@bug <description>` command
+### Phase 1: Core Functionality ✅ COMPLETE
+- ✅ Interactive EvMenu workflow for title and category
+- ✅ EvEditor for detailed multi-line descriptions  
 - ✅ GitHub issue creation via API
 - ✅ Rate limiting (30/day)
 - ✅ Privacy-conscious issue format
 - ✅ Error handling
+- ✅ @bug/list command for viewing recent issues
 
-### Phase 2: Enhanced Reporting
-- ⏳ Detailed report editor (`@bug/detail`)
-- ⏳ Category tagging system
-- ⏳ Admin list command (`@bug/list`)
+### Phase 2: Completed Enhancements ✅
+- ✅ Fixed EvMenu cmd_on_exit causing "look" in editor
+- ✅ Fixed duplicate cancellation messages
+- ✅ Removed quick @bug <message> format (encouraged poor reports)
+- ✅ Simplified help text
 
-### Phase 3: Advanced Features
+### Phase 3: Future Enhancements ⏳
 - ⏳ Duplicate detection
-- ⏳ Issue status tracking
-- ⏳ Admin close/comment commands
+- ⏳ Issue status tracking for players
+- ⏳ Admin close/comment commands from in-game
 - ⏳ Player notification on bug resolution
+- ⏳ Attachment support (command history, combat logs)
+- ⏳ Integration with staff channels
 
 ---
 
@@ -519,34 +565,34 @@ GITHUB_REPO = getattr(secret_settings, 'GITHUB_REPO', 'daiimus/gelatinous')
 ```
 > help @bug
 
-@bug - Submit a bug report to the development team
+@bug - Report a bug to the development team
 
 Usage:
-  @bug <brief description>
-  @bug/detail              (opens editor for detailed reports)
-  @bug/combat <description> (tag as combat-related)
-  
-Examples:
-  @bug grenades aren't exploding
-  @bug/detail
-  @bug/medical healing doesn't restore HP
-  
-All players can submit up to 30 bug reports per day. Your reports
-help make the game better for everyone!
+  @bug
+  @bug/list
 
-Categories: combat, medical, movement, items, commands, web, world,
-           social, system, other
+Opens an interactive bug report workflow that will guide you through:
+1. Entering a title/summary for the bug
+2. Selecting a category
+3. Writing a detailed description in a multi-line editor
 
-See also: help feedback, help @idea
+Use @bug/list to view recent bug reports from the GitHub repository.
+
+Your report will be created as a GitHub issue for the development team
+to review. All players can submit up to 30 bug reports per day.
+
+Be clear and descriptive - good bug reports help us fix issues faster!
 ```
 
 ### Player Documentation
-Add section to `README.md` or create `CONTRIBUTING_PLAYERS.md`:
-- How to write good bug reports
-- What information to include
-- When to use @bug vs contacting staff directly
-- Expected response times
+The interactive workflow guides players through creating good bug reports:
+- Title must be at least 10 characters
+- Category selection from numbered menu
+- EvEditor instructions shown before opening
+- Minimum 10 characters required in description
 
 ---
 
-*This specification should be reviewed and updated as the bug reporting system evolves.*
+*This specification reflects the implemented system as of October 2025.*
+
+````
