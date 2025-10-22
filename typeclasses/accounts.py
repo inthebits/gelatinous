@@ -177,6 +177,9 @@ class Account(DefaultAccount):
         """
         Check if account has reached the maximum character limit.
         
+        Note: This does NOT bypass for superusers anymore. The limit applies to everyone
+        for menu display purposes. Character creation itself may still allow bypass.
+        
         Returns:
             bool: True if at max characters, False otherwise.
         """
@@ -186,14 +189,12 @@ class Account(DefaultAccount):
         if max_slots is None:
             return False
         
-        # Superusers and Developers bypass the limit
-        if self.is_superuser or self.check_permstring("Developer"):
-            return False
-        
-        # Count active (non-archived) characters
+        # Count active (non-archived) characters - defensive coding
         active_count = 0
         for char in self.characters:
-            archived = char.db.archived if hasattr(char.db, 'archived') else False
+            if not char or not hasattr(char, 'db'):
+                continue
+            archived = getattr(char.db, 'archived', False)
             if not archived:
                 active_count += 1
         
