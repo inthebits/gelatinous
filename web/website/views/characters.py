@@ -353,13 +353,20 @@ class CharacterArchiveView(LoginRequiredMixin, CharacterMixin, View):
         logger = logging.getLogger('evennia')
         logger.warning(f"WEB_ARCHIVE: About to archive {character.key}")
         logger.warning(f"WEB_ARCHIVE: character.account={character.account.key if character.account else None}")
+        logger.warning(f"WEB_ARCHIVE: request.user={request.user.key if hasattr(request.user, 'key') else request.user}")
         
         character.archive_character(reason="manual")
         
+        # FIX: character.account is None when accessed via web
+        # Manually set last_character using request.user (which is the Evennia Account)
+        account = request.user
+        if hasattr(account, 'db'):
+            account.db.last_character = character
+            logger.warning(f"WEB_ARCHIVE: Manually set account.db.last_character={character.key}")
+        
         # Verify last_character was set
-        if character.account:
-            last_char = character.account.db.last_character
-            logger.warning(f"WEB_ARCHIVE: After archive, account.db.last_character={last_char.key if last_char else None}")
+        last_char = account.db.last_character if hasattr(account, 'db') else None
+        logger.warning(f"WEB_ARCHIVE: After archive, account.db.last_character={last_char.key if last_char else None}")
         
         # Success message using character terminology
         messages.success(
