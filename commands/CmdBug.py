@@ -19,11 +19,32 @@ class CmdBug(Command):
     
     Usage:
         @bug <description>
+        @bug/combat <description>
+        @bug/medical <description>
+        @bug/category <description>
+        @bug/list [count]
+        @bug/detail
+    
+    Switches:
+        combat    - Tag as combat-related bug
+        medical   - Tag as medical system bug
+        movement  - Tag as movement/navigation bug
+        items     - Tag as inventory/items bug
+        commands  - Tag as command parsing bug
+        web       - Tag as web interface bug
+        world     - Tag as room/environment bug
+        social    - Tag as communication bug
+        system    - Tag as server/performance bug
+        other     - Tag as uncategorized
+        list      - Show your recent bug reports
+        detail    - Open multi-line editor for detailed reports
     
     Examples:
         @bug grenades aren't exploding when rigged to exits
-        @bug combat handler not removing dead combatants
-        @bug web character creation form validation error
+        @bug/combat grapple doesn't release target properly
+        @bug/medical healing not restoring HP correctly
+        @bug/list
+        @bug/detail
     
     Submit a bug report that will be created as a GitHub issue for the
     development team to review. All players can submit up to 30 bug reports
@@ -48,6 +69,12 @@ class CmdBug(Command):
     locks = "cmd:all()"
     help_category = "General"
     
+    # Valid bug categories
+    VALID_CATEGORIES = {
+        'combat', 'medical', 'movement', 'items', 'commands',
+        'web', 'world', 'social', 'system', 'other'
+    }
+    
     def func(self):
         """Execute the bug report command."""
         caller = self.caller
@@ -64,10 +91,29 @@ class CmdBug(Command):
             caller.msg("Please contact staff directly to report bugs.")
             return
         
+        # Handle /list switch
+        if 'list' in self.switches:
+            self.show_bug_list(caller, account)
+            return
+        
+        # Handle /detail switch
+        if 'detail' in self.switches:
+            self.start_detail_editor(caller)
+            return
+        
+        # Determine category from switches
+        category = None
+        for switch in self.switches:
+            if switch.lower() in self.VALID_CATEGORIES:
+                category = switch.lower()
+                break
+        
         # Validate input
         if not self.args:
             caller.msg("|rUsage: @bug <description>|n")
             caller.msg("Example: |w@bug grenades aren't exploding|n")
+            caller.msg("Or with category: |w@bug/combat grapple release broken|n")
+            caller.msg("\nFor help: |whelp @bug|n")
             return
         
         description = self.args.strip()
@@ -91,9 +137,13 @@ class CmdBug(Command):
         
         # Get environment context
         context = self.gather_context(caller)
+        context['category'] = category
         
         # Create GitHub issue
-        caller.msg("|gCreating bug report...|n")
+        if category:
+            caller.msg(f"|gCreating bug report (category: |c{category}|g)...|n")
+        else:
+            caller.msg("|gCreating bug report...|n")
         
         success, result = self.create_github_issue(description, context)
         
@@ -262,7 +312,7 @@ class CmdBug(Command):
         payload = {
             "title": f"[BUG] {description[:100]}",  # Truncate title if too long
             "body": body,
-            "labels": ["bug", "player-reported"]
+            "labels": self.get_labels(context)
         }
         
         # Make API request
@@ -302,10 +352,13 @@ class CmdBug(Command):
     
     def format_issue_body(self, description, context):
         """Format the GitHub issue body with context."""
+        category = context.get('category', None)
+        category_display = category.capitalize() if category else "Uncategorized"
+        
         body = f"""**Reported By:** {context['account_username']}
 **Location:** {context['location_dbref']}
 
-**Category:** Uncategorized
+**Category:** {category_display}
 
 ---
 
@@ -322,3 +375,27 @@ class CmdBug(Command):
 """
         
         return body
+    
+    def get_labels(self, context):
+        """Get GitHub labels for the issue based on category."""
+        labels = ["bug", "player-reported"]
+        
+        category = context.get('category')
+        if category and category in self.VALID_CATEGORIES:
+            labels.append(category)
+        
+        return labels
+    
+    def show_bug_list(self, caller, account):
+        """Show the player's recent bug reports."""
+        caller.msg("|c@bug/list|n - Fetching your recent bug reports...")
+        caller.msg("|yThis feature is coming soon!|n")
+        caller.msg("\nFor now, check GitHub directly:")
+        caller.msg(f"|chttps://github.com/{settings.GITHUB_REPO}/issues|n")
+    
+    def start_detail_editor(self, caller):
+        """Start the multi-line detail editor for bug reports."""
+        caller.msg("|c@bug/detail|n - Opening detailed bug report editor...")
+        caller.msg("|yThis feature is coming soon!|n")
+        caller.msg("\nFor now, use: |w@bug <description>|n")
+        caller.msg("Or submit a detailed report directly on GitHub:")
