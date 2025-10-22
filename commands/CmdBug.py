@@ -321,10 +321,10 @@ class CmdBug(MuxCommand):
                 category_display = f" |y[{category}]|n" if category else ""
                 
                 caller.msg(f"|w#{number}|n {state_display}{category_display} - {title}")
-                caller.msg(f"  |xCreated: {created}|n")
+                caller.msg(f"  |wCreated: {created}|n")
                 caller.msg(f"  |c{url}|n\n")
             
-            caller.msg("|xShowing 10 most recent reports. Visit GitHub for full history.|n\n")
+            caller.msg("|wShowing 10 most recent reports. Visit GitHub for full history.|n\n")
             
         except requests.exceptions.Timeout:
             caller.msg("|rRequest timed out. Please try again later.|n")
