@@ -787,7 +787,6 @@ class Character(ObjectParent, DefaultCharacter):
                 disconnect_msg = "|ySleeve has been archived. Please reconnect to continue.|n"
             
             for session in self.sessions.all():
-                self.msg("|ySleeve archived. Disconnecting...|n")
                 session.sessionhandler.disconnect(session, reason=disconnect_msg)
     
     def get_death_cause(self):
