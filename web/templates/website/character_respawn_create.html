@@ -81,7 +81,7 @@ Respawn Sleeve
                     value="flash_clone"
                   >
                   <label class="form-check-label" for="flash_clone">
-                    <h5>{{ old_character.name }}</h5>
+                    <h5>{{ old_character.name }} <small class="text-muted">({{ old_character.sex|title }})</small></h5>
                   </label>
                 </div>
                 <div class="ml-4 mt-2">
@@ -107,7 +107,7 @@ Respawn Sleeve
           
           <hr />
           <div class="form-group">
-            <input class="form-control btn btn-outline-secondary" type="submit" value="Decant Sleeve" />
+            <input id="decant-button" class="form-control btn btn-outline-secondary" type="submit" value="Decant Sleeve" />
           </div>
         </form>
         
@@ -165,13 +165,42 @@ Respawn Sleeve
     #222 30px
   ) 1;
 }
+
+/* Red hover for submit button when flash clone selected */
+#decant-button.flash-clone-selected {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+#decant-button.flash-clone-selected:hover {
+  background-color: #dc3545;
+  color: white;
+}
 </style>
 
 <script>
 // Make entire card clickable for radio selection
 document.addEventListener('DOMContentLoaded', function() {
   const sleeveCards = document.querySelectorAll('.sleeve-option');
+  const decantButton = document.getElementById('decant-button');
+  const flashCloneRadio = document.getElementById('flash_clone');
+  const allRadios = document.querySelectorAll('input[name="sleeve_choice"]');
   
+  // Update button style when selection changes
+  function updateButtonStyle() {
+    if (flashCloneRadio && flashCloneRadio.checked) {
+      decantButton.classList.add('flash-clone-selected');
+    } else {
+      decantButton.classList.remove('flash-clone-selected');
+    }
+  }
+  
+  // Listen for radio button changes
+  allRadios.forEach(radio => {
+    radio.addEventListener('change', updateButtonStyle);
+  });
+  
+  // Make entire card clickable for radio selection
   sleeveCards.forEach(card => {
     card.addEventListener('click', function(e) {
       // Don't trigger if clicking directly on the radio button
@@ -179,10 +208,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const radio = this.querySelector('input[type="radio"]');
         if (radio) {
           radio.checked = true;
+          // Trigger change event to update button style
+          updateButtonStyle();
         }
       }
     });
   });
+  
+  // Initial check
+  updateButtonStyle();
 });
 </script>
 
