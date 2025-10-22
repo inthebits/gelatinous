@@ -158,6 +158,7 @@ class CharacterCreateView(EvenniaCharacterCreateView):
                 )
             
             # Clear last_character after successful respawn
+            # (archive_character() will set it again when this character is archived)
             account.db.last_character = None
             
             return HttpResponseRedirect(self.success_url)
