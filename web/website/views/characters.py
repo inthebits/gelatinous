@@ -72,7 +72,10 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         # Check if account has reached max character limit
         active_characters = []
         for char in account.characters:
-            archived = char.db.archived if hasattr(char.db, 'archived') else False
+            # Defensive check - ensure character and db are accessible
+            if not char or not hasattr(char, 'db'):
+                continue
+            archived = getattr(char.db, 'archived', False)
             if not archived:
                 active_characters.append(char)
         
