@@ -77,6 +77,7 @@ class CharacterCreateView(EvenniaCharacterCreateView):
             'templates': templates,
             'old_character': old_character,
             'sex_choices': ['male', 'female', 'ambiguous'],
+            'debug_mode': True,  # Debug flag to show in template
         }
         
         return render(request, 'website/character_respawn_create.html', context)

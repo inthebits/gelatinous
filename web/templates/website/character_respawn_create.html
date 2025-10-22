@@ -6,6 +6,12 @@ Respawn Sleeve
 
 {% block content %}
 
+{% if debug_mode %}
+<div class="alert alert-success" role="alert">
+  <strong>DEBUG:</strong> Respawn mode active! old_character={{ old_character.key if old_character else 'None' }}
+</div>
+{% endif %}
+
 <div class="row">
   <div class="col">
     <div class="card">
