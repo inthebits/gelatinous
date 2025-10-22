@@ -8,7 +8,7 @@ Respawn Sleeve
 
 {% if debug_mode %}
 <div class="alert alert-success" role="alert">
-  <strong>DEBUG:</strong> Respawn mode active! old_character={{ old_character.key if old_character else 'None' }}
+  <strong>DEBUG:</strong> Respawn mode active! old_character={% if old_character %}{{ old_character.key }}{% else %}None{% endif %}
 </div>
 {% endif %}
 
