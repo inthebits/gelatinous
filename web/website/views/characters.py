@@ -32,15 +32,110 @@ class CharacterCreateView(EvenniaCharacterCreateView):
     """
     Extended character creation view with GRIM stats and name structure.
     
-    Matches the telnet character creation in commands/charcreate.py:
-    - Collects first name and last name separately
-    - Collects sex (male/female/ambiguous)
-    - Collects GRIM stat distribution (300 points total)
-    - Sets all appropriate character attributes
+    Two modes:
+    1. Respawn (account.db.last_character exists): Template selection + flash clone
+    2. First character: Manual stat allocation form
     """
     
     # Use our extended form with GRIM fields (Evennia pattern: forms.ClassName)
     form_class = forms.CharacterForm
+    
+    def get(self, request, *args, **kwargs):
+        """Determine which character creation flow to show."""
+        account = request.user
+        
+        # Check for respawn scenario
+        if account.db.last_character:
+            return self.show_respawn_interface(request, account)
+        else:
+            # First character - show manual stat allocation form
+            return super().get(request, *args, **kwargs)
+    
+    def show_respawn_interface(self, request, account):
+        """Display template selection + flash clone options for respawn."""
+        from commands.charcreate import generate_random_template
+        
+        # Generate 3 random templates
+        templates = [generate_random_template() for _ in range(3)]
+        
+        # Get old character for flash clone option
+        old_character = account.db.last_character
+        
+        context = {
+            'templates': templates,
+            'old_character': old_character,
+            'sex_choices': ['male', 'female', 'ambiguous'],
+        }
+        
+        return render(request, 'website/character_respawn_create.html', context)
+    
+    def post(self, request, *args, **kwargs):
+        """Handle both respawn and first character creation."""
+        account = request.user
+        
+        # Check if this is a respawn submission
+        if 'sleeve_choice' in request.POST:
+            return self.handle_respawn_submission(request, account)
+        else:
+            # First character form submission
+            return super().post(request, *args, **kwargs)
+    
+    def handle_respawn_submission(self, request, account):
+        """Process respawn template/flash clone selection."""
+        from commands.charcreate import create_flash_clone, create_character_from_template
+        
+        choice = request.POST.get('sleeve_choice')
+        sex = request.POST.get('sex', 'ambiguous')
+        
+        try:
+            if choice == 'flash_clone':
+                # Create flash clone
+                old_character = account.db.last_character
+                if not old_character:
+                    messages.error(request, "Flash clone source not found.")
+                    return HttpResponseRedirect(self.get_success_url())
+                
+                character = create_flash_clone(account, old_character)
+                
+                # Apply sex if specified (flash clone can override)
+                if sex and sex != old_character.sex:
+                    character.sex = sex
+                
+                messages.success(
+                    request,
+                    f"Flash clone '{character.name}' decanted successfully! "
+                    f"Consciousness transfer complete."
+                )
+                
+            else:
+                # Create from template
+                # Regenerate templates (they're not persisted between requests)
+                from commands.charcreate import generate_random_template
+                templates = [generate_random_template() for _ in range(3)]
+                
+                template_idx = int(choice.split('_')[1])
+                if template_idx >= len(templates):
+                    messages.error(request, "Invalid template selection.")
+                    return HttpResponseRedirect(self.get_success_url())
+                
+                template = templates[template_idx]
+                character = create_character_from_template(account, template, sex)
+                
+                messages.success(
+                    request,
+                    f"Character '{character.name}' decanted successfully! "
+                    f"GRIM: Grit {character.grit}, Resonance {character.resonance}, "
+                    f"Intellect {character.intellect}, Motorics {character.motorics}"
+                )
+            
+            # Clear last_character after successful respawn
+            account.db.last_character = None
+            
+            return HttpResponseRedirect(self.get_success_url())
+            
+        except Exception as e:
+            messages.error(request, f"Sleeve decantation failed: {str(e)}")
+            return HttpResponseRedirect(request.path)
     
     def form_valid(self, form):
         """

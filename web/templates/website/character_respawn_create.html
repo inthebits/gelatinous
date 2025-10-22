@@ -1,0 +1,187 @@
+{% extends "website/base.html" %}
+
+{% block titleblock %}
+Respawn Sleeve
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="card-body">
+        <h1 class="card-title">Respawn Sleeve</h1>
+        <p class="text-muted">Your previous consciousness has been archived. Select a new sleeve to decant into.</p>
+        <hr />
+        
+        <form method="post" action="?">
+          {% csrf_token %}
+          
+          <div class="form-section mb-4">
+            <h3>Sleeve Selection</h3>
+            <p>Choose from available templates or create a flash clone of your previous sleeve.</p>
+            
+            {% for template in templates %}
+            <div class="card mb-3 sleeve-option">
+              <div class="card-body">
+                <div class="form-check">
+                  <input 
+                    class="form-check-input" 
+                    type="radio" 
+                    name="sleeve_choice" 
+                    id="template_{{ forloop.counter0 }}" 
+                    value="template_{{ forloop.counter0 }}"
+                    {% if forloop.first %}checked{% endif %}
+                  >
+                  <label class="form-check-label" for="template_{{ forloop.counter0 }}">
+                    <h5>{{ template.name }}</h5>
+                  </label>
+                </div>
+                <div class="ml-4 mt-2">
+                  <div class="row">
+                    <div class="col-md-3">
+                      <strong>Grit:</strong> {{ template.grit }}
+                    </div>
+                    <div class="col-md-3">
+                      <strong>Resonance:</strong> {{ template.resonance }}
+                    </div>
+                    <div class="col-md-3">
+                      <strong>Intellect:</strong> {{ template.intellect }}
+                    </div>
+                    <div class="col-md-3">
+                      <strong>Motorics:</strong> {{ template.motorics }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+            
+            {% if old_character %}
+            <div class="card mb-3 sleeve-option flash-clone-option">
+              <div class="card-body">
+                <div class="form-check">
+                  <input 
+                    class="form-check-input" 
+                    type="radio" 
+                    name="sleeve_choice" 
+                    id="flash_clone" 
+                    value="flash_clone"
+                  >
+                  <label class="form-check-label" for="flash_clone">
+                    <h5>Flash Clone: {{ old_character.name }}</h5>
+                    <small class="text-muted">Create an identical clone of your previous sleeve</small>
+                  </label>
+                </div>
+                <div class="ml-4 mt-2">
+                  <div class="row">
+                    <div class="col-md-3">
+                      <strong>Grit:</strong> {{ old_character.grit }}
+                    </div>
+                    <div class="col-md-3">
+                      <strong>Resonance:</strong> {{ old_character.resonance }}
+                    </div>
+                    <div class="col-md-3">
+                      <strong>Intellect:</strong> {{ old_character.intellect }}
+                    </div>
+                    <div class="col-md-3">
+                      <strong>Motorics:</strong> {{ old_character.motorics }}
+                    </div>
+                  </div>
+                  <div class="mt-2">
+                    <small class="text-info">
+                      <strong>Note:</strong> Flash clone will inherit stats, appearance, and sex. 
+                      Roman numeral will be automatically appended to name.
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          
+          <div class="form-section mb-4">
+            <h3>Sex Selection</h3>
+            <p class="text-muted">Select the sex for your new sleeve (applies to templates only - flash clones use original sex by default)</p>
+            
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="sex" id="sex_male" value="male">
+              <label class="form-check-label" for="sex_male">Male</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="sex" id="sex_female" value="female">
+              <label class="form-check-label" for="sex_female">Female</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="sex" id="sex_ambiguous" value="ambiguous" checked>
+              <label class="form-check-label" for="sex_ambiguous">Ambiguous</label>
+            </div>
+          </div>
+          
+          <hr />
+          <div class="form-group">
+            <input class="form-control btn btn-outline-secondary" type="submit" value="Decant Sleeve" />
+          </div>
+        </form>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.sleeve-option {
+  border: 2px solid transparent;
+  transition: border-color 0.2s, background-color 0.2s;
+  cursor: pointer;
+}
+
+.sleeve-option:hover {
+  border-color: #6c757d;
+  background-color: #f8f9fa;
+}
+
+.sleeve-option input[type="radio"]:checked ~ label {
+  font-weight: bold;
+}
+
+.sleeve-option:has(input[type="radio"]:checked) {
+  border-color: #28a745;
+  background-color: #d4edda;
+}
+
+.flash-clone-option {
+  border-color: #17a2b8;
+}
+
+.flash-clone-option:hover {
+  border-color: #138496;
+  background-color: #d1ecf1;
+}
+
+.flash-clone-option:has(input[type="radio"]:checked) {
+  border-color: #17a2b8;
+  background-color: #d1ecf1;
+}
+</style>
+
+<script>
+// Make entire card clickable for radio selection
+document.addEventListener('DOMContentLoaded', function() {
+  const sleeveCards = document.querySelectorAll('.sleeve-option');
+  
+  sleeveCards.forEach(card => {
+    card.addEventListener('click', function(e) {
+      // Don't trigger if clicking directly on the radio button
+      if (e.target.type !== 'radio') {
+        const radio = this.querySelector('input[type="radio"]');
+        if (radio) {
+          radio.checked = true;
+        }
+      }
+    });
+  });
+});
+</script>
+
+{% endblock %}
