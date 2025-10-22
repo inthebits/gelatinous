@@ -44,23 +44,10 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         """Determine which character creation flow to show."""
         account = request.user
         
-        import logging
-        logger = logging.getLogger('evennia')
-        
-        # Debug logging
-        logger.warning(f"CHAR_CREATE_GET: account={account.key if hasattr(account, 'key') else account}")
-        logger.warning(f"CHAR_CREATE_GET: hasattr(account, 'db')={hasattr(account, 'db')}")
-        if hasattr(account, 'db'):
-            last_char = account.db.last_character
-            logger.warning(f"CHAR_CREATE_GET: last_character={last_char.key if last_char else None}")
-        
         # Check for respawn scenario FIRST (before max character check)
         # This allows respawn even when at 0 active characters
         if hasattr(account, 'db') and account.db.last_character:
-            logger.warning("CHAR_CREATE_GET: RESPAWN MODE - showing respawn interface")
             return self.show_respawn_interface(request, account)
-        
-        logger.warning("CHAR_CREATE_GET: FIRST CHARACTER MODE - showing normal form")
         
         # Check if account has reached max character limit
         active_characters = []
@@ -101,35 +88,20 @@ class CharacterCreateView(EvenniaCharacterCreateView):
     
     def show_respawn_interface(self, request, account):
         """Display template selection + flash clone options for respawn."""
-        import logging
-        logger = logging.getLogger('evennia')
+        from commands.charcreate import generate_random_template
         
-        try:
-            from commands.charcreate import generate_random_template
-            logger.warning("RESPAWN: Successfully imported generate_random_template")
-            
-            # Generate 3 random templates
-            templates = [generate_random_template() for _ in range(3)]
-            logger.warning(f"RESPAWN: Generated {len(templates)} templates")
-            
-            # Get old character for flash clone option
-            old_character = account.db.last_character
-            logger.warning(f"RESPAWN: old_character = {old_character.key if old_character else 'None'}")
-            
-            context = {
-                'templates': templates,
-                'old_character': old_character,
-                'sex_choices': ['male', 'female', 'ambiguous'],
-                'debug_mode': True,  # Debug flag to show in template
-            }
-            
-            logger.warning("RESPAWN: About to render template")
-            return render(request, 'website/character_respawn_create.html', context)
-            
-        except Exception as e:
-            logger.error(f"RESPAWN ERROR: {e}", exc_info=True)
-            # Fall back to normal form
-            return super().get(request)
+        # Generate 3 random templates
+        templates = [generate_random_template() for _ in range(3)]
+        
+        # Get old character for flash clone option
+        old_character = account.db.last_character
+        
+        context = {
+            'templates': templates,
+            'old_character': old_character,
+        }
+        
+        return render(request, 'website/character_respawn_create.html', context)
     
     def post(self, request, *args, **kwargs):
         """Handle both respawn and first character creation."""
@@ -349,12 +321,6 @@ class CharacterArchiveView(LoginRequiredMixin, CharacterMixin, View):
             raise Http404("Character not found")
         
         # Archive the character (handles archiving + disconnecting active sessions)
-        import logging
-        logger = logging.getLogger('evennia')
-        logger.warning(f"WEB_ARCHIVE: About to archive {character.key}")
-        logger.warning(f"WEB_ARCHIVE: character.account={character.account.key if character.account else None}")
-        logger.warning(f"WEB_ARCHIVE: request.user={request.user.key if hasattr(request.user, 'key') else request.user}")
-        
         character.archive_character(reason="manual")
         
         # FIX: character.account is None when accessed via web
@@ -362,11 +328,6 @@ class CharacterArchiveView(LoginRequiredMixin, CharacterMixin, View):
         account = request.user
         if hasattr(account, 'db'):
             account.db.last_character = character
-            logger.warning(f"WEB_ARCHIVE: Manually set account.db.last_character={character.key}")
-        
-        # Verify last_character was set
-        last_char = account.db.last_character if hasattr(account, 'db') else None
-        logger.warning(f"WEB_ARCHIVE: After archive, account.db.last_character={last_char.key if last_char else None}")
         
         # Success message using character terminology
         messages.success(
