@@ -96,9 +96,27 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         # Get old character for flash clone option
         old_character = account.db.last_character
         
-        # Ensure old character has required attributes (legacy data fix)
-        if old_character and not hasattr(old_character, 'sex'):
-            old_character.sex = 'ambiguous'  # Default for legacy characters
+        # Validate old_character exists and is accessible
+        if old_character:
+            try:
+                # Test if we can access the character (it might be deleted/invalid)
+                _ = old_character.key
+                _ = old_character.grit
+                _ = old_character.resonance
+                _ = old_character.intellect
+                _ = old_character.motorics
+                
+                # Ensure old character has sex attribute (legacy data fix)
+                if not hasattr(old_character, 'sex'):
+                    old_character.sex = 'ambiguous'  # Default for legacy characters
+                    
+            except (AttributeError, TypeError, Exception) as e:
+                # Old character reference is invalid/deleted - clear it
+                import logging
+                logger = logging.getLogger('evennia')
+                logger.warning(f"Invalid last_character for {account.key}: {e}")
+                account.db.last_character = None
+                old_character = None
         
         context = {
             'templates': templates,
