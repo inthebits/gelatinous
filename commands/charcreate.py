@@ -127,7 +127,9 @@ def build_name_from_death_count(base_name, death_count):
         str: Name with appropriate Roman numeral (or none if death_count=1)
     """
     # Strip any existing Roman numeral from base_name
-    pattern = r'^(.*?)\s*([IVXLCDM]+)$'
+    # Only strip if there's whitespace before the Roman numeral to avoid
+    # stripping letters from names like "Drivel" (ends with "L")
+    pattern = r'^(.+?)\s+([IVXLCDM]+)$'
     match = re.match(pattern, base_name.strip(), re.IGNORECASE)
     if match:
         base_name = match.group(1).strip()
