@@ -8,10 +8,13 @@
 2. Give it a descriptive name: "Gelatinous Bug Reporter"
 3. Set expiration: No expiration (or choose your preference)
 4. Select scopes:
-   - ✅ **repo** (Full control of private repositories)
-     - This is required for creating issues
+   - ✅ **public_repo** (Access public repositories)
+     - This is all you need since gelatinous is a public repository
+     - Allows creating issues in public repos
 5. Click "Generate token"
 6. Copy the token (format: `ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`)
+
+**Note:** If your repository were private, you would need the full `repo` scope instead.
 
 ### 2. Add Token to Server Configuration
 

@@ -140,7 +140,8 @@ POST https://api.github.com/repos/daiimus/gelatinous/issues
 
 **Authentication:**
 - Personal Access Token (PAT) stored in `secret_settings.py`
-- Required scope: `repo` (for issue creation)
+- Required scope: `public_repo` (for issue creation in public repositories)
+  - Note: If repository were private, would need full `repo` scope
 - Token format: `GITHUB_TOKEN = "ghp_your_token_here"`
 
 **Request Headers:**
