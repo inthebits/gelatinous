@@ -7,6 +7,19 @@ Manage Sleeves
 {% block content %}
 
 {% load addclass %}
+<style>
+  /* Terminal aesthetic hover effects */
+  .sleeve-name-link:hover {
+    color: #00ff00 !important;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  }
+  
+  .archive-link:hover {
+    color: #ff0000 !important;
+    text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+  }
+</style>
+
 <div class="row">
   <div class="col">
     <div class="card bg-dark border-secondary">
@@ -29,7 +42,7 @@ Manage Sleeves
               {% for object in object_list %}
               <tr class="border-secondary">
                 <td class="border-secondary">
-                  <a href="{{ object.web_get_detail_url }}" class="text-white" style="text-decoration: none;">
+                  <a href="{{ object.web_get_detail_url }}" class="text-white sleeve-name-link" style="text-decoration: none;">
                     {{ object }}
                   </a>
                 </td>
@@ -45,7 +58,7 @@ Manage Sleeves
                 </td>
                 <td class="border-secondary">
                   {% if not object.db.archived %}
-                    <a href="{{ object.web_get_delete_url }}" class="text-warning" style="font-size: 0.85rem; text-decoration: none;">
+                    <a href="{{ object.web_get_delete_url }}" class="text-warning archive-link" style="font-size: 0.85rem; text-decoration: none;">
                       [ARCHIVE]
                     </a>
                   {% endif %}
