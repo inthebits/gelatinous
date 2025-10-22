@@ -425,8 +425,7 @@ def _charcreate_exit_callback(caller, menu):
     
     # No active characters - they exited without completing
     # Disconnect them so they restart character creation on reconnect
-    caller.msg("|ySleeve decantation incomplete. Please reconnect to try again.|n")
-    caller.sessions.all()[0].sessionhandler.disconnect(caller.sessions.all()[0], reason="Sleeve decantation incomplete")
+    caller.sessions.all()[0].sessionhandler.disconnect(caller.sessions.all()[0], reason="|ySleeve decantation incomplete. Please reconnect to try again.|n")
 
 
 def start_character_creation(account, is_respawn=False, old_character=None):
