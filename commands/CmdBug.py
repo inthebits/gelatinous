@@ -70,8 +70,13 @@ class CmdBug(MuxCommand):
                 caller.msg("Example: @bug/show 15")
                 return
             
+            # Strip # prefix if present
+            arg = self.args.strip()
+            if arg.startswith('#'):
+                arg = arg[1:]
+            
             try:
-                issue_number = int(self.args.strip())
+                issue_number = int(arg)
             except ValueError:
                 caller.msg("|rInvalid issue number. Please provide a number.|n")
                 return
@@ -325,7 +330,7 @@ class CmdBug(MuxCommand):
                 if state == "open":
                     state_display = "|gOPEN|n"
                 else:
-                    state_display = "|xCLOSED|n"
+                    state_display = "|wCLOSED|n"
                 
                 # Extract category from labels if present
                 labels = [label['name'] for label in issue.get('labels', [])]
@@ -422,10 +427,10 @@ class CmdBug(MuxCommand):
                     created = comment['created_at'][:10]
                     comment_body = comment['body']
                     
-                    caller.msg(f"|w{i}. {author}|n |x({created})|n")
+                    caller.msg(f"|w{i}. {author}|n |c({created})|n")
                     caller.msg(f"{comment_body}\n")
             else:
-                caller.msg(f"\n|xNo comments yet.|n\n")
+                caller.msg(f"\n|wNo comments yet.|n\n")
             
             caller.msg(f"|w{'=' * 70}|n\n")
             
