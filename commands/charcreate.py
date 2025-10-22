@@ -411,6 +411,22 @@ def get_start_location():
 # MAIN ENTRY POINT
 # =============================================================================
 
+def _charcreate_exit_callback(caller, menu):
+    """
+    Called when the character creation menu exits.
+    Only disconnects if character creation was NOT completed.
+    """
+    # Check if they have any characters - if so, creation was successful
+    if caller.characters:
+        # They completed creation - just close menu, don't disconnect
+        return
+    
+    # No characters - they exited without completing
+    # Disconnect them so they restart character creation on reconnect
+    caller.msg("|yCharacter creation incomplete. Please reconnect to continue.|n")
+    caller.sessions.all()[0].sessionhandler.disconnect(caller.sessions.all()[0], reason="Character creation incomplete")
+
+
 def start_character_creation(account, is_respawn=False, old_character=None):
     """
     Start the character creation process.
@@ -433,7 +449,7 @@ def start_character_creation(account, is_respawn=False, old_character=None):
             "commands.charcreate",
             startnode="respawn_welcome",
             cmdset_mergetype="Replace",
-            cmd_on_exit="quit"
+            cmd_on_exit=_charcreate_exit_callback
         )
     else:
         # First character menu: custom creation
@@ -442,7 +458,7 @@ def start_character_creation(account, is_respawn=False, old_character=None):
             "commands.charcreate",
             startnode="first_char_welcome",
             cmdset_mergetype="Replace",
-            cmd_on_exit="quit"
+            cmd_on_exit=_charcreate_exit_callback
         )
 
 
