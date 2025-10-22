@@ -124,7 +124,7 @@ class CharacterCreateView(EvenniaCharacterCreateView):
                 
                 # Ensure archived attribute exists
                 if not hasattr(old_character.db, 'archived'):
-                    old_character.db.archived = True  # Assume archived if in last_character
+                    old_character.db.archived = False  # Legacy characters were active when they died
                     
             except (AttributeError, TypeError, Exception) as e:
                 # Old character reference is invalid/deleted - clear it
