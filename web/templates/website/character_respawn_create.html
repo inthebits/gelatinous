@@ -18,9 +18,6 @@ Respawn Sleeve
           {% csrf_token %}
           
           <div class="form-section mb-4">
-            <h3>Sleeve Selection</h3>
-            <p>Choose from available templates or create a flash clone of your previous sleeve.</p>
-            
             {% for template in templates %}
             <div class="card mb-3 sleeve-option">
               <div class="card-body">
