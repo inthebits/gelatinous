@@ -528,7 +528,12 @@ class CmdBug(MuxCommand):
             # Callback when editor is saved
             def _save_callback(caller, buffer):
                 """Called when player saves the editor."""
-                details = "\n".join(buffer).strip()
+                # Buffer is already a string from EvEditor, not a list
+                if isinstance(buffer, str):
+                    details = buffer.strip()
+                else:
+                    # Fallback if it's a list
+                    details = "\n".join(buffer).strip()
                 
                 if not details or len(details) < 10:
                     caller.msg("|rDetails too short. Minimum 10 characters required.|n")
