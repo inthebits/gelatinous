@@ -44,8 +44,17 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         """Determine which character creation flow to show."""
         account = request.user
         
+        # Debug logging
+        try:
+            from evennia.comms.models import ChannelDB
+            splattercast = ChannelDB.objects.get_channel("Splattercast")
+            last_char = getattr(account.db, 'last_character', None)
+            splattercast.msg(f"CHARCREATE_VIEW: account={account.key}, last_character={last_char}")
+        except:
+            pass
+        
         # Check for respawn scenario
-        if account.db.last_character:
+        if hasattr(account, 'db') and account.db.last_character:
             return self.show_respawn_interface(request, account)
         else:
             # First character - show manual stat allocation form
