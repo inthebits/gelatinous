@@ -188,8 +188,8 @@ class CharacterArchiveView(LoginRequiredMixin, CharacterMixin, View):
         except self.typeclass.DoesNotExist:
             raise Http404("Character not found")
         
-        # Archive instead of delete
-        character.db.archived = True
+        # Archive the character (handles archiving + disconnecting active sessions)
+        character.archive_character(reason="manual")
         
         # Success message using character terminology
         messages.success(

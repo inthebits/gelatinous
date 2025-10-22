@@ -758,6 +758,38 @@ class Character(ObjectParent, DefaultCharacter):
         except Exception as e:
             return f"Error in death analysis: {e}"
     
+    def archive_character(self, reason="manual", disconnect_msg=None):
+        """
+        Archive this character and disconnect any active sessions.
+        
+        Args:
+            reason (str): Why the character is being archived (e.g., "death", "manual")
+            disconnect_msg (str): Optional custom disconnect message. If None, uses default.
+        """
+        import time
+        
+        # Log warning if archiving a staff character (shouldn't happen normally)
+        if self.account and self.account.is_superuser:
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"WARNING: Archiving staff character {self.key} (Account: {self.account.key}, Reason: {reason})")
+            except:
+                pass
+        
+        # Set archive flags
+        self.db.archived = True
+        self.db.archived_reason = reason
+        self.db.archived_date = time.time()
+        
+        # Disconnect any active sessions
+        if self.sessions.all():
+            if not disconnect_msg:
+                disconnect_msg = "|ySleeve has been archived. Please reconnect to continue.|n"
+            
+            for session in self.sessions.all():
+                self.msg("|ySleeve archived. Disconnecting...|n")
+                session.sessionhandler.disconnect(session, reason=disconnect_msg)
+    
     def get_death_cause(self):
         """
         Get simple death cause for user-facing messages.

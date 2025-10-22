@@ -599,10 +599,8 @@ class DeathProgressionScript(DefaultScript):
                 except:
                     pass
         
-        # Archive the dead character
-        character.db.archived = True
-        character.db.archived_reason = "death"
-        character.db.archived_date = time.time()
+        # Archive the dead character (also handles any lingering sessions)
+        character.archive_character(reason="death")
         character.db.death_cause = getattr(character.db, 'death_cause', 'unknown')
 
     def _initiate_new_character_creation(self, account, old_character, session):
