@@ -310,6 +310,15 @@ class CmdBug(MuxCommand):
         # Sanitize description
         description = self.sanitize_description(description)
         
+        # Get title - use provided title or extract from description
+        title = context.get('title')
+        if title:
+            # Title was provided separately (from detail editor)
+            title = title[:100]  # Truncate if too long
+        else:
+            # Extract title from description (for regular @bug command)
+            title = description.split('\n')[0][:100]  # First line, truncated
+        
         # Build issue body
         body = self.format_issue_body(description, context)
         
@@ -323,7 +332,7 @@ class CmdBug(MuxCommand):
         }
         
         payload = {
-            "title": description[:100],  # Use description directly, truncate if too long
+            "title": title,
             "body": body,
             "labels": self.get_labels(context)
         }
@@ -477,6 +486,7 @@ class CmdBug(MuxCommand):
     
     def start_detail_editor(self, caller):
         """Start the multi-line detail editor for bug reports."""
+        from evennia.utils.evmenu import get_input
         
         # Determine category from switches
         category = None
@@ -485,80 +495,104 @@ class CmdBug(MuxCommand):
                 category = switch.lower()
                 break
         
-        # Show instructions BEFORE opening editor
-        caller.msg("\n|c=== Detailed Bug Report Editor ===|n")
-        caller.msg("\nPlease provide a detailed bug report including:")
-        caller.msg("  - What you were trying to do")
-        caller.msg("  - What you expected to happen")
-        caller.msg("  - What actually happened")
-        caller.msg("  - Steps to reproduce (if possible)")
-        caller.msg("\n|yEditor Commands:|n")
-        caller.msg("  |w:w|n or |w:wq|n - Save and submit bug report")
-        caller.msg("  |w:q|n or |w:q!|n - Cancel without submitting")
-        caller.msg("  |w:h|n - Show editor help")
-        caller.msg("\n|yOpening editor...|n\n")
+        # First, ask for the bug title
+        caller.msg("\n|c=== Detailed Bug Report ===|n")
+        caller.msg("\nFirst, provide a short title for the bug:")
         
-        # Callback when editor is saved
-        def _save_callback(caller, buffer):
-            """Called when player saves the editor."""
-            description = "\n".join(buffer)
+        def _get_title(caller, prompt, user_input):
+            """Callback to get the bug title."""
+            title = user_input.strip()
             
-            if not description or len(description.strip()) < 10:
-                caller.msg("|rBug report too short. Minimum 10 characters required.|n")
+            if not title:
                 caller.msg("|yBug report cancelled.|n")
                 return
             
-            # Check rate limit
-            account = caller.account
-            if not self.check_rate_limit(account):
-                remaining_time = self.get_time_until_reset(account)
-                caller.msg("|rYou've reached the daily limit of 30 bug reports.|n")
-                caller.msg(f"The limit resets in {remaining_time}.")
+            if len(title) < 10:
+                caller.msg("|rTitle too short. Please provide at least 10 characters.|n")
+                caller.msg("|yBug report cancelled.|n")
                 return
             
-            # Get environment context
-            context = self.gather_context(caller)
-            context['category'] = category
+            # Now open editor for detailed description
+            caller.msg(f"\n|gTitle:|n {title}")
+            caller.msg("\n|yNow provide detailed information:|n")
+            caller.msg("  - What you were trying to do")
+            caller.msg("  - What you expected to happen")
+            caller.msg("  - What actually happened")
+            caller.msg("  - Steps to reproduce (if possible)")
+            caller.msg("\n|yEditor Commands:|n")
+            caller.msg("  |w:w|n or |w:wq|n - Save and submit bug report")
+            caller.msg("  |w:q|n or |w:q!|n - Cancel without submitting")
+            caller.msg("  |w:h|n - Show editor help")
+            caller.msg("\n|yOpening editor...|n\n")
             
-            # Create GitHub issue
-            if category:
-                caller.msg(f"\n|gCreating detailed bug report (category: |c{category}|g)...|n")
-            else:
-                caller.msg("\n|gCreating detailed bug report...|n")
-            
-            success, result = self.create_github_issue(description, context)
-            
-            if success:
-                issue_url = result.get('html_url', '')
-                issue_number = result.get('number', '?')
+            # Callback when editor is saved
+            def _save_callback(caller, buffer):
+                """Called when player saves the editor."""
+                details = "\n".join(buffer).strip()
                 
-                # Increment bug report counter
-                self.increment_report_count(account)
-                remaining = 30 - account.db.bug_report_count
+                if not details or len(details) < 10:
+                    caller.msg("|rDetails too short. Minimum 10 characters required.|n")
+                    caller.msg("|yBug report cancelled.|n")
+                    return
                 
-                caller.msg(f"\n|g✓|n Issue created: |c{issue_url}|n")
-                caller.msg("\nThank you for the detailed report! The development team will investigate.")
+                # Check rate limit
+                account = caller.account
+                if not self.check_rate_limit(account):
+                    remaining_time = self.get_time_until_reset(account)
+                    caller.msg("|rYou've reached the daily limit of 30 bug reports.|n")
+                    caller.msg(f"The limit resets in {remaining_time}.")
+                    return
                 
-                if remaining <= 5:
-                    caller.msg(f"You have |y{remaining}|n bug reports remaining today.")
+                # Combine title and details
+                full_description = f"{title}\n\n{details}"
+                
+                # Get environment context
+                context = self.gather_context(caller)
+                context['category'] = category
+                context['title'] = title  # Pass title separately
+                
+                # Create GitHub issue
+                if category:
+                    caller.msg(f"\n|gCreating detailed bug report (category: |c{category}|g)...|n")
                 else:
-                    caller.msg(f"You have {remaining} bug reports remaining today.")
-            else:
-                error_msg = result
-                caller.msg(f"\n|rFailed to create bug report:|n {error_msg}")
-                caller.msg("|yPlease try again in a moment. If the problem persists, contact staff.|n")
+                    caller.msg("\n|gCreating detailed bug report...|n")
+                
+                success, result = self.create_github_issue(full_description, context)
+                
+                if success:
+                    issue_url = result.get('html_url', '')
+                    issue_number = result.get('number', '?')
+                    
+                    # Increment bug report counter
+                    self.increment_report_count(account)
+                    remaining = 30 - account.db.bug_report_count
+                    
+                    caller.msg(f"\n|g✓|n Issue created: |c{issue_url}|n")
+                    caller.msg("\nThank you for the detailed report! The development team will investigate.")
+                    
+                    if remaining <= 5:
+                        caller.msg(f"You have |y{remaining}|n bug reports remaining today.")
+                    else:
+                        caller.msg(f"You have {remaining} bug reports remaining today.")
+                else:
+                    error_msg = result
+                    caller.msg(f"\n|rFailed to create bug report:|n {error_msg}")
+                    caller.msg("|yPlease try again in a moment. If the problem persists, contact staff.|n")
+            
+            # Callback when editor is quit
+            def _quit_callback(caller):
+                """Called when player quits without saving."""
+                caller.msg("|yBug report cancelled.|n")
+            
+            # Start the editor with empty buffer
+            EvEditor(
+                caller,
+                loadfunc=lambda caller: "",
+                savefunc=_save_callback,
+                quitfunc=_quit_callback,
+                key="bug_report_editor",
+                persistent=False
+            )
         
-        # Callback when editor is quit
-        def _quit_callback(caller):
-            """Called when player quits without saving."""
-            caller.msg("|yBug report cancelled.|n")
-        
-        # Start the editor with empty buffer
-        EvEditor(
-            caller,
-            loadfunc=lambda caller: "",
-            savefunc=_save_callback,
-            quitfunc=_quit_callback,
-            key="bug_report_editor",
-            persistent=False
-        )
+        # Get the title from user
+        get_input(caller, "", _get_title)
