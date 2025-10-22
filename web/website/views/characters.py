@@ -101,14 +101,30 @@ class CharacterCreateView(EvenniaCharacterCreateView):
             try:
                 # Test if we can access the character (it might be deleted/invalid)
                 _ = old_character.key
-                _ = old_character.grit
-                _ = old_character.resonance
-                _ = old_character.intellect
-                _ = old_character.motorics
+                
+                # Safely check GRIM stats (with defaults for legacy characters)
+                grit = getattr(old_character, 'grit', 75)
+                resonance = getattr(old_character, 'resonance', 75)
+                intellect = getattr(old_character, 'intellect', 75)
+                motorics = getattr(old_character, 'motorics', 75)
+                
+                # Set attributes if they don't exist (legacy character fix)
+                if not hasattr(old_character, 'grit'):
+                    old_character.grit = grit
+                if not hasattr(old_character, 'resonance'):
+                    old_character.resonance = resonance
+                if not hasattr(old_character, 'intellect'):
+                    old_character.intellect = intellect
+                if not hasattr(old_character, 'motorics'):
+                    old_character.motorics = motorics
                 
                 # Ensure old character has sex attribute (legacy data fix)
                 if not hasattr(old_character, 'sex'):
-                    old_character.sex = 'ambiguous'  # Default for legacy characters
+                    old_character.sex = 'ambiguous'
+                
+                # Ensure archived attribute exists
+                if not hasattr(old_character.db, 'archived'):
+                    old_character.db.archived = True  # Assume archived if in last_character
                     
             except (AttributeError, TypeError, Exception) as e:
                 # Old character reference is invalid/deleted - clear it
