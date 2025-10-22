@@ -94,15 +94,15 @@ Sleeve Details
                 <p class="mb-2"><strong>Decanted on:</strong> {{ object.db_date_created }}</p>
               </div>
             </div>
-            
-            <!-- Action Buttons -->
-            <div class="mt-3 text-center">
-              <a href="{% url 'character-manage' %}" class="btn btn-secondary">← Back to Manage Sleeves</a>
-              {% if not object.db.archived %}
-              <a href="{{ object.web_get_delete_url }}" class="btn btn-warning">Archive Sleeve</a>
-              {% endif %}
-            </div>
           </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="mt-3 text-center">
+          <a href="{% url 'character-manage' %}" class="btn btn-secondary">← Back to Manage Sleeves</a>
+          {% if not object.db.archived %}
+          <a href="{{ object.web_get_delete_url }}" class="btn btn-warning">Archive Sleeve</a>
+          {% endif %}
         </div>
         
       </div>
