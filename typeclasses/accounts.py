@@ -172,6 +172,33 @@ class Account(DefaultAccount):
         
         return None
 
+    @property
+    def at_character_limit(self):
+        """
+        Check if account has reached the maximum character limit.
+        
+        Returns:
+            bool: True if at max characters, False otherwise.
+        """
+        from django.conf import settings
+        
+        max_slots = settings.MAX_NR_CHARACTERS
+        if max_slots is None:
+            return False
+        
+        # Superusers and Developers bypass the limit
+        if self.is_superuser or self.check_permstring("Developer"):
+            return False
+        
+        # Count active (non-archived) characters
+        active_count = 0
+        for char in self.characters:
+            archived = char.db.archived if hasattr(char.db, 'archived') else False
+            if not archived:
+                active_count += 1
+        
+        return active_count >= max_slots
+
     def at_post_login(self, session=None, **kwargs):
         """
         Called after successful login, handles character detection and auto-puppeting.

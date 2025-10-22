@@ -61,7 +61,9 @@ folder and edit it to add/remove links to the menu.
           Logged in as {{ account.username }} <span class="caret"></span>
         </a>
         <div class="dropdown-menu" aria-labelledby="user_options">
+          {% if not account.at_character_limit %}
           <a class="dropdown-item" href="{% url 'character-create' %}">Decant Sleeve</a>
+          {% endif %}
           <a class="dropdown-item" href="{% url 'character-manage' %}">Manage Sleeves</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a>

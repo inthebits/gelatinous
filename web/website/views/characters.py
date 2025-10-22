@@ -44,6 +44,25 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         """Determine which character creation flow to show."""
         account = request.user
         
+        # Check if account has reached max character limit
+        active_characters = []
+        for char in account.characters:
+            archived = char.db.archived if hasattr(char.db, 'archived') else False
+            if not archived:
+                active_characters.append(char)
+        
+        from django.conf import settings
+        max_chars = settings.MAX_NR_CHARACTERS
+        
+        if max_chars is not None and len(active_characters) >= max_chars:
+            from evennia.utils.ansi import strip_ansi
+            error_msg = strip_ansi(
+                f"You already have the maximum of {max_chars} active character(s). "
+                f"Archive an existing sleeve before creating a new one."
+            )
+            messages.error(request, error_msg)
+            return HttpResponseRedirect(reverse_lazy('character-manage-list'))
+        
         # Debug: Add info to context to display on page
         debug_info = {
             'account_key': account.key if hasattr(account, 'key') else str(account),
