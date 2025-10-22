@@ -780,6 +780,10 @@ class Character(ObjectParent, DefaultCharacter):
         if self.account:
             self.account.db.last_character = self
         
+        # Increment death_count for proper Roman numeral naming on respawn
+        # (This ensures "Jorge Jackson" -> "Jorge Jackson II" etc.)
+        self.death_count += 1
+        
         # Set archive flags
         self.db.archived = True
         self.db.archived_reason = reason
