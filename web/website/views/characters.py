@@ -349,7 +349,17 @@ class CharacterArchiveView(LoginRequiredMixin, CharacterMixin, View):
             raise Http404("Character not found")
         
         # Archive the character (handles archiving + disconnecting active sessions)
+        import logging
+        logger = logging.getLogger('evennia')
+        logger.warning(f"WEB_ARCHIVE: About to archive {character.key}")
+        logger.warning(f"WEB_ARCHIVE: character.account={character.account.key if character.account else None}")
+        
         character.archive_character(reason="manual")
+        
+        # Verify last_character was set
+        if character.account:
+            last_char = character.account.db.last_character
+            logger.warning(f"WEB_ARCHIVE: After archive, account.db.last_character={last_char.key if last_char else None}")
         
         # Success message using character terminology
         messages.success(
