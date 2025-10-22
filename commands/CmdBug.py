@@ -527,12 +527,18 @@ class CmdBug(MuxCommand):
             
             # Callback when editor is saved
             def _save_callback(caller, buffer):
-                """Called when player saves the editor."""
-                # Buffer is already a string from EvEditor, not a list
+                """
+                Called when player saves the editor.
+                
+                According to Evennia docs, buffer parameter is the "current buffer",
+                which in practice is a string, not a list. We handle both cases
+                for robustness.
+                """
+                # Buffer should be a string from EvEditor
                 if isinstance(buffer, str):
                     details = buffer.strip()
                 else:
-                    # Fallback if it's a list
+                    # Fallback: if it's somehow a list, join it
                     details = "\n".join(buffer).strip()
                 
                 if not details or len(details) < 10:
