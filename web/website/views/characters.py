@@ -42,45 +42,61 @@ class CharacterCreateView(EvenniaCharacterCreateView):
     
     def get(self, request, *args, **kwargs):
         """Determine which character creation flow to show."""
-        import logging
-        logger = logging.getLogger('evennia')
-        
         account = request.user
         
-        # Debug logging
-        logger.warning(f"CHARCREATE_VIEW_GET: account={account.key}")
-        logger.warning(f"CHARCREATE_VIEW_GET: hasattr db={hasattr(account, 'db')}")
+        # Debug: Add info to context to display on page
+        debug_info = {
+            'account_key': account.key if hasattr(account, 'key') else str(account),
+            'has_db': hasattr(account, 'db'),
+            'last_character': None,
+        }
+        
         if hasattr(account, 'db'):
             last_char = account.db.last_character
-            logger.warning(f"CHARCREATE_VIEW_GET: last_character={last_char}")
+            debug_info['last_character'] = last_char.key if last_char else 'None'
         
         # Check for respawn scenario
         if hasattr(account, 'db') and account.db.last_character:
-            logger.warning(f"CHARCREATE_VIEW_GET: Showing respawn interface")
             return self.show_respawn_interface(request, account)
         else:
-            # First character - show manual stat allocation form
-            logger.warning(f"CHARCREATE_VIEW_GET: Showing first character form")
-            return super().get(request, *args, **kwargs)
+            # First character - show manual stat allocation form with debug info
+            response = super().get(request, *args, **kwargs)
+            # Try to inject debug info into context
+            if hasattr(response, 'context_data'):
+                response.context_data['debug_info'] = debug_info
+            return response
     
     def show_respawn_interface(self, request, account):
         """Display template selection + flash clone options for respawn."""
-        from commands.charcreate import generate_random_template
+        import logging
+        logger = logging.getLogger('evennia')
         
-        # Generate 3 random templates
-        templates = [generate_random_template() for _ in range(3)]
-        
-        # Get old character for flash clone option
-        old_character = account.db.last_character
-        
-        context = {
-            'templates': templates,
-            'old_character': old_character,
-            'sex_choices': ['male', 'female', 'ambiguous'],
-            'debug_mode': True,  # Debug flag to show in template
-        }
-        
-        return render(request, 'website/character_respawn_create.html', context)
+        try:
+            from commands.charcreate import generate_random_template
+            logger.warning("RESPAWN: Successfully imported generate_random_template")
+            
+            # Generate 3 random templates
+            templates = [generate_random_template() for _ in range(3)]
+            logger.warning(f"RESPAWN: Generated {len(templates)} templates")
+            
+            # Get old character for flash clone option
+            old_character = account.db.last_character
+            logger.warning(f"RESPAWN: old_character = {old_character.key if old_character else 'None'}")
+            
+            context = {
+                'templates': templates,
+                'old_character': old_character,
+                'sex_choices': ['male', 'female', 'ambiguous'],
+                'debug_mode': True,  # Debug flag to show in template
+            }
+            
+            logger.warning("RESPAWN: About to render template")
+            return render(request, 'website/character_respawn_create.html', context)
+            
+        except Exception as e:
+            logger.error(f"RESPAWN ERROR: {e}", exc_info=True)
+            # Fall back to normal form
+            return super().get(request)
     
     def post(self, request, *args, **kwargs):
         """Handle both respawn and first character creation."""
