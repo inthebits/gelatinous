@@ -507,6 +507,17 @@ class CmdBug(MuxCommand):
             
             # Now ask for category
             caller.msg(f"\n|gTitle:|n {title}")
+            caller.msg("\n|ySelect a category (or press Enter for 'other'):|n")
+            caller.msg("  |w1|n - Combat")
+            caller.msg("  |w2|n - Medical")
+            caller.msg("  |w3|n - Movement")
+            caller.msg("  |w4|n - Items/Inventory")
+            caller.msg("  |w5|n - Commands")
+            caller.msg("  |w6|n - Web Interface")
+            caller.msg("  |w7|n - World/Environment")
+            caller.msg("  |w8|n - Social/Communication")
+            caller.msg("  |w9|n - System/Performance")
+            caller.msg("  |w0|n - Other")
             
             def _get_category(caller, prompt, user_input):
                 """Callback to get the bug category."""
@@ -618,20 +629,8 @@ class CmdBug(MuxCommand):
                     persistent=False
                 )
             
-            # Get category from user - prompt includes the menu
-            category_prompt = """\n|ySelect a category (or press Enter for 'other'):|n
-  |w1|n - Combat
-  |w2|n - Medical
-  |w3|n - Movement
-  |w4|n - Items/Inventory
-  |w5|n - Commands
-  |w6|n - Web Interface
-  |w7|n - World/Environment
-  |w8|n - Social/Communication
-  |w9|n - System/Performance
-  |w0|n - Other
-> """
-            get_input(caller, category_prompt, _get_category)
+            # Get category from user
+            get_input(caller, "", _get_category)
         
         # Get the title from user
         get_input(caller, "", _get_title)
