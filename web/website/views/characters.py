@@ -44,10 +44,23 @@ class CharacterCreateView(EvenniaCharacterCreateView):
         """Determine which character creation flow to show."""
         account = request.user
         
+        import logging
+        logger = logging.getLogger('evennia')
+        
+        # Debug logging
+        logger.warning(f"CHAR_CREATE_GET: account={account.key if hasattr(account, 'key') else account}")
+        logger.warning(f"CHAR_CREATE_GET: hasattr(account, 'db')={hasattr(account, 'db')}")
+        if hasattr(account, 'db'):
+            last_char = account.db.last_character
+            logger.warning(f"CHAR_CREATE_GET: last_character={last_char.key if last_char else None}")
+        
         # Check for respawn scenario FIRST (before max character check)
         # This allows respawn even when at 0 active characters
         if hasattr(account, 'db') and account.db.last_character:
+            logger.warning("CHAR_CREATE_GET: RESPAWN MODE - showing respawn interface")
             return self.show_respawn_interface(request, account)
+        
+        logger.warning("CHAR_CREATE_GET: FIRST CHARACTER MODE - showing normal form")
         
         # Check if account has reached max character limit
         active_characters = []
