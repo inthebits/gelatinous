@@ -4,8 +4,8 @@
  * Inspired by Blade Runner and retro-futuristic terminals
  */
 
-/* Import IBM Plex Mono from Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap');
+/* Import Inter from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
     /* Terminal Color Palette - Blade Runner Edition */
@@ -24,8 +24,8 @@
 
 /* ===== GLOBAL BASE ===== */
 * {
-    font-family: 'IBM Plex Mono', Monaco, Menlo, 'DejaVu Sans Mono', Consolas, 'Courier New', monospace !important;
-    letter-spacing: 0.02em;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    letter-spacing: 0.01em;
 }
 
 body {
