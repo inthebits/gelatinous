@@ -8,15 +8,23 @@ Archive Sleeve
 
 {% load addclass %}
 <style>
-  /* Hazard warning styling for archive confirmation */
-  .hazard-card {
-    border: 3px solid var(--terminal-yellow, #e6c547) !important;
+  /* Caution tape styling for archive confirmation */
+  .caution-card {
     background-color: var(--terminal-bg-medium, #2a2a2a);
+    border: none !important;
+    padding: 8px;
+    background-image: repeating-linear-gradient(
+      45deg,
+      #e6c547 0px,
+      #e6c547 20px,
+      #1a1a1a 20px,
+      #1a1a1a 40px
+    );
   }
   
-  .hazard-card-inner {
-    border: 2px solid var(--terminal-red, #e85555);
-    padding: 1.5rem;
+  .caution-card-inner {
+    background-color: var(--terminal-bg-medium, #2a2a2a);
+    padding: 2rem;
   }
   
   .archive-danger-btn {
@@ -61,8 +69,8 @@ Archive Sleeve
 <div class="container main-content mt-4" id="main-copy">
   <div class="row">
     <div class="col-lg-5 offset-lg-3 col-sm-12">
-      <div class="card mt-3 hazard-card">
-        <div class="hazard-card-inner">
+      <div class="card mt-3 caution-card">
+        <div class="caution-card-inner">
           <h1 class="card-title hazard-heading">Archive Sleeve</h1>
           
           <form method="post" action="?">
