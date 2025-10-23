@@ -48,11 +48,12 @@ Register
                 
                 <!-- Cloudflare Turnstile Widget (only if configured) -->
                 {% if turnstile_enabled %}
-                <div class="form-field my-3">
+                <div class="form-field my-3 text-center">
                   <div class="cf-turnstile" 
                        data-sitekey="{{ turnstile_site_key }}" 
                        data-callback="onTurnstileSuccess"
-                       data-theme="dark"></div>
+                       data-theme="dark"
+                       style="display: inline-block;"></div>
                 </div>
                 
                 <!-- Hidden field for Turnstile response (populated by JavaScript) -->
