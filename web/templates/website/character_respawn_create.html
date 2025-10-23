@@ -55,19 +55,17 @@ Respawn Sleeve
             {% endfor %}
             
             {% if old_character %}
-            <div class="mt-4 mb-3">
-              <hr style="border-top: 2px dashed #ffa500; opacity: 0.5;" />
-              <div class="text-center my-3">
-                <h5 class="text-warning mb-1">⚠ Flash Clone Option</h5>
-                <small class="text-muted">Create an identical clone of your previous sleeve</small>
+            <div class="mt-4 mb-3 flash-clone-warning">
+              <div class="text-center py-3">
+                <h5 class="mb-1" style="color: #e6c547; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">⚠ Flash Clone Option</h5>
+                <small style="color: #999;">Create an identical clone of your previous sleeve</small>
                 <div class="mt-2">
-                  <small class="text-warning">
+                  <small style="color: #e6c547;">
                     <strong>WARNING:</strong> Flash cloning carries inherent risks. Genetic drift, memory corruption, 
                     and cellular degradation may occur.
                   </small>
                 </div>
               </div>
-              <hr style="border-top: 2px dashed #ffa500; opacity: 0.5;" />
             </div>
             
             <div class="card mb-3 sleeve-option flash-clone-option">
@@ -117,64 +115,109 @@ Respawn Sleeve
 </div>
 
 <style>
+/* Flash clone warning box */
+.flash-clone-warning {
+  background-image: repeating-linear-gradient(
+    45deg,
+    #e6c547 0px,
+    #e6c547 20px,
+    #1a1a1a 20px,
+    #1a1a1a 40px
+  );
+  padding: 4px;
+}
+
+.flash-clone-warning > div {
+  background-color: #2a2a2a;
+}
+
 .sleeve-option {
-  border: 2px solid transparent;
-  transition: border-color 0.2s, background-color 0.2s;
+  border: 2px solid #404040;
+  background-color: #2a2a2a;
+  transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .sleeve-option:hover {
-  border-color: #8b9aad;
-  background-color: #f4f6f8;
+  border-color: #5fd38d;
+  background-color: #2a2a2a;
+  box-shadow: 0 0 8px rgba(95, 211, 141, 0.3);
 }
 
 .sleeve-option input[type="radio"]:checked ~ label {
   font-weight: bold;
+  color: #5fd38d;
 }
 
-/* Very dark bluish-grey for selected templates */
+/* Selected sleeve - jade green border with glow */
 .sleeve-option:has(input[type="radio"]:checked) {
-  border-color: #4a5d73;
-  background-color: #5d6f85;
+  border-color: #5fd38d;
+  background-color: #2a2a2a;
+  box-shadow: 0 0 12px rgba(95, 211, 141, 0.4);
 }
 
 /* Caution stripe border for flash clone */
 .flash-clone-option {
-  border: 3px solid;
-  border-image: repeating-linear-gradient(
+  padding: 8px;
+  border: none;
+  background-image: repeating-linear-gradient(
     45deg,
-    #ffa500 0px,
-    #ffa500 15px,
-    #1a1a1a 15px,
-    #1a1a1a 30px
-  ) 1;
-  background-color: rgba(255, 165, 0, 0.05);
+    #e6c547 0px,
+    #e6c547 20px,
+    #1a1a1a 20px,
+    #1a1a1a 40px
+  );
+  cursor: pointer;
 }
 
-.flash-clone-option:hover {
-  background-color: rgba(255, 165, 0, 0.1);
+.flash-clone-option .card-body {
+  background-color: #2a2a2a;
+  border: 2px solid #404040;
+  transition: all 0.2s ease;
 }
 
-.flash-clone-option:has(input[type="radio"]:checked) {
-  background-color: rgba(255, 165, 0, 0.15);
-  border-image: repeating-linear-gradient(
-    45deg,
-    #ffaa00 0px,
-    #ffaa00 15px,
-    #222 15px,
-    #222 30px
-  ) 1;
+.flash-clone-option:hover .card-body {
+  border-color: #e6c547;
+  box-shadow: 0 0 8px rgba(230, 197, 71, 0.3);
+}
+
+.flash-clone-option:has(input[type="radio"]:checked) .card-body {
+  border-color: #e6c547;
+  background-color: rgba(230, 197, 71, 0.05);
+  box-shadow: 0 0 12px rgba(230, 197, 71, 0.4);
+}
+
+.flash-clone-option:has(input[type="radio"]:checked) input[type="radio"]:checked ~ label {
+  color: #e6c547;
+}
+
+/* Decant button styling */
+#decant-button {
+  background-color: #2a2a2a;
+  border: 2px solid #5fd38d;
+  color: #5fd38d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+}
+
+#decant-button:hover {
+  background-color: rgba(95, 211, 141, 0.1);
+  box-shadow: 0 0 12px rgba(95, 211, 141, 0.4);
+  text-shadow: 0 0 8px rgba(95, 211, 141, 0.6);
 }
 
 /* Red hover for submit button when flash clone selected */
 #decant-button.flash-clone-selected {
-  border-color: #dc3545;
-  color: #dc3545;
+  border-color: #e6c547;
+  color: #e6c547;
 }
 
 #decant-button.flash-clone-selected:hover {
-  background-color: #dc3545;
-  color: white;
+  background-color: rgba(230, 197, 71, 0.1);
+  box-shadow: 0 0 12px rgba(230, 197, 71, 0.4);
+  text-shadow: 0 0 8px rgba(230, 197, 71, 0.6);
 }
 </style>
 
