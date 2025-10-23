@@ -7,19 +7,70 @@ Archive Sleeve
 {% block body %}
 
 {% load addclass %}
+<style>
+  /* Hazard warning styling for archive confirmation */
+  .hazard-card {
+    border: 3px solid var(--terminal-yellow, #e6c547) !important;
+    background-color: var(--terminal-bg-medium, #2a2a2a);
+  }
+  
+  .hazard-card-inner {
+    border: 2px solid var(--terminal-red, #e85555);
+    padding: 1.5rem;
+  }
+  
+  .archive-danger-btn {
+    background-color: var(--terminal-bg-light, #3a3a3a);
+    border: 2px solid var(--terminal-yellow, #e6c547);
+    color: var(--terminal-yellow, #e6c547);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+  
+  .archive-danger-btn:hover {
+    background-color: var(--terminal-bg-dark, #1a1a1a);
+    border-color: var(--terminal-red, #e85555);
+    color: var(--terminal-red, #e85555);
+    text-shadow: 0 0 8px rgba(232, 85, 85, 0.6);
+    box-shadow: 0 0 12px rgba(232, 85, 85, 0.4);
+  }
+  
+  .hazard-heading {
+    color: var(--terminal-yellow, #e6c547);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .warning-box {
+    background-color: rgba(232, 85, 85, 0.1);
+    border: 1px solid var(--terminal-red, #e85555);
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+  
+  .warning-box h5 {
+    color: var(--terminal-red, #e85555);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+</style>
+
 <div class="container main-content mt-4" id="main-copy">
   <div class="row">
     <div class="col-lg-5 offset-lg-3 col-sm-12">
-      <div class="card mt-3 border border-warning">
-        <div class="card-body">
-          <h1 class="card-title">Archive Sleeve</h1>
-          <hr />
+      <div class="card mt-3 hazard-card">
+        <div class="hazard-card-inner">
+          <h1 class="card-title hazard-heading">Archive Sleeve</h1>
+          
           <form method="post" action="?">
             {% csrf_token %}
             
-            <p class="lead">Are you sure you want to archive <strong>"{{ object }}"</strong>?</p>
+            <p class="lead text-center">Are you sure you want to archive <strong>"{{ object }}"</strong>?</p>
             
-            <div class="alert alert-info" role="alert">
+            <div class="warning-box" role="alert">
               <h5 class="alert-heading">About Archiving</h5>
               <p>Archiving this sleeve will:</p>
               <ul>
@@ -27,13 +78,13 @@ Archive Sleeve
                 <li>Remove the character from your active sleeves</li>
                 <li>Allow future respawn/clone operations</li>
               </ul>
-              <hr>
+              <hr style="border-color: var(--terminal-red, #e85555);">
               <p class="mb-0">This action <strong>cannot</strong> be undone without admin help.</p>
             </div>
             
             <hr />
             <div class="form-group">
-              <input class="form-control btn btn-warning" type="submit" value="Archive Sleeve" />
+              <input class="form-control archive-danger-btn" type="submit" value="Archive Sleeve" />
               <input type="hidden" name="next" value="{{ next }}" />
             </div>
             <div class="form-group">
