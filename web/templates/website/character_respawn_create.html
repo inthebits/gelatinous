@@ -158,8 +158,11 @@ Respawn Sleeve
 
 /* Caution stripe border for flash clone */
 .flash-clone-option {
-  padding: 8px;
   border: none;
+  background-color: #2a2a2a;
+  cursor: pointer;
+  position: relative;
+  padding: 8px;
   background-image: repeating-linear-gradient(
     45deg,
     #e6c547 0px,
@@ -167,23 +170,19 @@ Respawn Sleeve
     #1a1a1a 20px,
     #1a1a1a 40px
   );
-  cursor: pointer;
 }
 
 .flash-clone-option .card-body {
   background-color: #2a2a2a;
-  border: 2px solid #404040;
+  border: none;
   transition: all 0.2s ease;
 }
 
-.flash-clone-option:hover .card-body {
-  border-color: #e6c547;
+.flash-clone-option:hover {
   box-shadow: 0 0 8px rgba(230, 197, 71, 0.3);
 }
 
-.flash-clone-option:has(input[type="radio"]:checked) .card-body {
-  border-color: #e6c547;
-  background-color: rgba(230, 197, 71, 0.05);
+.flash-clone-option:has(input[type="radio"]:checked) {
   box-shadow: 0 0 12px rgba(230, 197, 71, 0.4);
 }
 
