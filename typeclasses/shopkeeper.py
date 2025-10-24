@@ -144,10 +144,9 @@ class ShopContainer(DefaultObject):
         # Get price
         price = self.get_price(prototype_key)
         
-        # Verify buyer has enough tokens
-        buyer_tokens = buyer.db.tokens if buyer.db.tokens is not None else 0
-        if buyer_tokens < price:
-            shortage = price - buyer_tokens
+        # Verify buyer has enough tokens (tokens AttributeProperty defaults to 0)
+        if buyer.tokens < price:
+            shortage = price - buyer.tokens
             return False, f"You need {format_currency(shortage)} more to afford that."
         
         # Spawn the item
@@ -163,7 +162,7 @@ class ShopContainer(DefaultObject):
             return False, "Something went wrong. Contact an admin."
         
         # Deduct tokens
-        buyer.db.tokens = buyer_tokens - price
+        buyer.tokens -= price
         
         # Update inventory for limited stock
         if not self.db.is_infinite:
