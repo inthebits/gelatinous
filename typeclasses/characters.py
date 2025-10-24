@@ -36,7 +36,10 @@ class Character(ObjectParent, DefaultCharacter):
     
     # Shop System Attributes
     is_merchant = AttributeProperty(False, category="shop", autocreate=True)
-    is_holographic = AttributeProperty(False, category="shop", autocreate=True)    # Death tracking system
+    is_holographic = AttributeProperty(False, category="shop", autocreate=True)
+    tokens = AttributeProperty(0, category="shop", autocreate=True)
+    
+    # Death tracking system
     death_count = AttributeProperty(1, category='mortality', autocreate=True)
     
     # Appearance attributes - stored in db but no auto-creation for optional features
@@ -95,10 +98,6 @@ class Character(ObjectParent, DefaultCharacter):
 
         # Initialize medical system - replaces legacy HP system
         self._initialize_medical_state()
-        
-        # Initialize currency/tokens
-        if self.db.tokens is None:
-            self.db.tokens = 0
 
     def _initialize_medical_state(self):
         """Initialize the character's medical state."""
