@@ -57,9 +57,11 @@ This specification defines a container-based shop system for the G.R.I.M. MUD wi
 
 8. **Phase 1 is Buy-Only**: Fixed shops only support purchasing. Selling is Phase 2 with haggling.
 
-9. **Builder-Friendly**: Simple @py commands to set up shops.
+9. **Self-Service Shops**: Merchants are decorative/atmospheric. Shops function without merchant presence (no attendance check).
 
-10. **Traditional Commands**: No EvMenu - players use `buy <item> from <container>` and `look <container>`.
+10. **Builder-Friendly**: Simple @py commands to set up shops.
+
+11. **Traditional Commands**: No EvMenu - players use `buy <item> from <container>` and `look <container>`.
 
 ## System Architecture
 
@@ -251,6 +253,13 @@ HOLOGRAPHIC_MERCHANT = {
 ```python
 @spawn CORNERSTORE_MERCHANT
 ```
+
+**Current Behavior:**
+- Merchants are **purely decorative/atmospheric** in Phase 1
+- Shops function without merchant presence (self-service)
+- Merchants receive transaction notifications but don't interact
+- No greeting, dialogue, or attendance requirement
+- Future phases may add merchant interactions and attendance checks
 
 ### 7. Utility Functions
 
@@ -2057,6 +2066,9 @@ else:
 - [ ] Room-based shop configuration (original spec)
 - [ ] MerchantTemplate system (original spec)
 - [ ] Merchant respawning (original spec)
+- [ ] Merchant attendance requirement (shops are self-service)
+- [ ] Merchant interactions (greetings, dialogue, reactions)
+- [ ] Merchant AI/personality scripts
 - [ ] Vending machines (original spec)
 - [ ] Limited stock mode (infinite only)
 - [ ] Dynamic pricing/haggling
