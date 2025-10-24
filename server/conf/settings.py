@@ -61,8 +61,9 @@ CSRF_TRUSTED_ORIGINS = ['https://gel.monster', 'https://play.gel.monster', 'http
 # the websocket one.
 WEBCLIENT_ENABLED = True
 
-# Force webclient to always connect to play.gel.monster for websocket
-# This ensures CloudFlare traffic goes to the right endpoint
+# Websocket configuration - use play.gel.monster without HTTPS
+# This allows websocket on port 4002 without SSL complications
+# Users should access: http://play.gel.monster/webclient/
 WEBSOCKET_CLIENT_URL = "ws://play.gel.monster:4002"
 
 # Default exit typeclass
