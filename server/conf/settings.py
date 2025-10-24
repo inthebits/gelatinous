@@ -61,10 +61,9 @@ CSRF_TRUSTED_ORIGINS = ['https://gel.monster', 'https://play.gel.monster', 'http
 # the websocket one.
 WEBCLIENT_ENABLED = True
 
-# Websocket configuration - use play.gel.monster without HTTPS
-# This allows websocket on port 4002 without SSL complications
-# Users should access: http://play.gel.monster/webclient/
-WEBSOCKET_CLIENT_URL = "ws://play.gel.monster:4002"
+# Use secure websocket on port 8443 (CloudFlare-proxied port)
+# CloudFlare handles SSL termination and proxies to backend port 4002
+WEBSOCKET_CLIENT_URL = "wss://gel.monster:8443"
 
 # Default exit typeclass
 DEFAULT_EXIT_TYPECLASS = "typeclasses.exits.Exit"
