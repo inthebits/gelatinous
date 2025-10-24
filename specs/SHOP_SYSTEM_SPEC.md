@@ -39,7 +39,7 @@ This specification defines a container-based shop system for the G.R.I.M. MUD wi
 
 5. **Templates as Character Blueprints**: MerchantTemplates are blueprints (character sleeves) defining merchant appearance, personality, and behavior. When a merchant dies, the room spawns a replacement from the template after a delay.
 
-6. **Holographic Invulnerability**: Holographic merchants use `at_pre_attack()` to intercept and cancel attacks, showing glitch effects. They're truly invulnerable, not respawning.
+6. **Holographic Invulnerability**: Holographic merchants use `validate_attack_target()` method that CmdAttack checks before combat initiation, showing glitch effects and preventing attacks. They're truly invulnerable, not respawning.
 
 7. **Prototype-Based Inventory**: Items don't exist as objects until purchased - spawned from prototypes at transaction time to prevent database bloat.
 
@@ -90,6 +90,43 @@ server/conf/
 ### 1. Currency System
 
 **Implementation:**
+
+```python
+# world/economy/utils.py
+
+def get_prototype_value(prototype):
+    """
+    Extract the 'value' attribute from a prototype.
+    
+    Evennia prototypes store attributes in the 'attrs' list as tuples.
+    This function handles both the attrs list format and direct key access
+    for backward compatibility.
+    
+    Args:
+        prototype (dict): The prototype dictionary
+        
+    Returns:
+        int: The value attribute, or 10 as default
+        
+    Example:
+        >>> proto = {"attrs": [("value", 50), ("weight", 2)]}
+        >>> get_prototype_value(proto)
+        50
+    """
+    # Try attrs list first (current Evennia format)
+    for attr in prototype.get("attrs", []):
+        if isinstance(attr, (list, tuple)) and len(attr) >= 2:
+            if attr[0] == "value":
+                return int(attr[1])
+    
+    # Fallback: try direct key access (older format)
+    if "value" in prototype:
+        return int(prototype["value"])
+    
+    # Default fallback
+    return 10
+```
+
 ```python
 # world/economy/constants.py
 
@@ -549,14 +586,15 @@ class Character(DefaultCharacter):
         # Holographic flag (affects combat)
         self.db.is_holographic = False
     
-    def at_pre_attack(self, attacker, **kwargs):
+    def validate_attack_target(self, attacker):
         """
-        Hook called before this character is attacked.
+        Validate if this character can be attacked.
+        Called by CmdAttack before combat initiation.
         
-        Holographic merchants are invulnerable - attacks pass through them.
+        Holographic merchants cannot be attacked - show glitch effect instead.
         
         Returns:
-            bool: False to cancel attack, True to allow
+            tuple: (can_attack: bool, message: str or None)
         """
         if self.db.is_holographic:
             # Show glitch effect
@@ -576,12 +614,13 @@ class Character(DefaultCharacter):
                 "Cute. Now, about those prices..."
             ]
             from random import choice
-            self.msg(choice(responses), from_obj=attacker)
+            # Send merchant response directly to attacker
+            attacker.msg(f"{self.key} says, \"{choice(responses)}\"")
             
-            # Cancel the attack
-            return False
+            # Prevent attack
+            return (False, None)  # Message already sent
         
-        return True
+        return (True, None)  # Allow attack
     
     def at_death(self):
         """
@@ -596,6 +635,22 @@ class Character(DefaultCharacter):
             shop_room = self.db.shop_room
             if shop_room and hasattr(shop_room, 'handle_merchant_death'):
                 shop_room.handle_merchant_death(self)
+```
+
+**CmdAttack Integration:**
+
+To make holographic merchants work, add this validation in `CmdAttack.func()` after target resolution:
+
+```python
+# In commands/combat/core_actions.py, CmdAttack.func()
+# After: target = potential_targets[0]
+# Add:
+if hasattr(target, 'validate_attack_target'):
+    can_attack, error_msg = target.validate_attack_target(caller)
+    if not can_attack:
+        if error_msg:
+            caller.msg(error_msg)
+        return  # Attack cancelled
 ```
 
 ### 5. Shop Container System
@@ -672,14 +727,9 @@ class ShopContainer(DefaultObject):
             name = proto.get("key", "Unknown")
             desc = proto.get("desc", "")[:50] + "..." if len(proto.get("desc", "")) > 50 else proto.get("desc", "")
             
-            # Get base value from prototype
-            base_value = proto.get("attrs", {}).get("value", 10)
-            if isinstance(base_value, tuple):  # attrs format: (name, value, ...)
-                # Search for value attribute in attrs list
-                for attr in proto.get("attrs", []):
-                    if isinstance(attr, (list, tuple)) and attr[0] == "value":
-                        base_value = attr[1]
-                        break
+            # Get base value using utility function
+            from world.economy.utils import get_prototype_value
+            base_value = get_prototype_value(proto)
             
             # Calculate price using room's upsell factor
             price = int(base_value * upsell)
@@ -743,12 +793,8 @@ class ShopContainer(DefaultObject):
         if not room or not room.is_shop():
             return False, "This container is not in a functioning shop.", None
         
-        base_value = proto.get("value", 10)
-        # Handle attrs format
-        for attr in proto.get("attrs", []):
-            if isinstance(attr, (list, tuple)) and attr[0] == "value":
-                base_value = attr[1]
-                break
+        from world.economy.utils import get_prototype_value
+        base_value = get_prototype_value(proto)
         
         upsell = room.get_upsell_factor()
         price = int(base_value * upsell)
@@ -778,19 +824,23 @@ class ShopContainer(DefaultObject):
         return True, f"You buy {item.key} for {format_currency(price)}.", item
     
     def _give_item_to_buyer(self, buyer, item):
-        """Put item in buyer's hands or inventory."""
-        # Try hands first
-        hands = getattr(buyer, 'hands', {})
-        for hand, held in hands.items():
-            if not held:
-                hands[hand] = item
-                item.location = None
-                buyer.msg(f"You hold {item.key} in your {hand} hand.")
-                return
-        
-        # Fall back to inventory
-        item.location = buyer
-        buyer.msg(f"{item.key} goes to your inventory.")
+        """Put item in buyer's hands or inventory using the hands system."""
+        # Use the wield_item method if available (proper hands integration)
+        if hasattr(buyer, 'wield_item'):
+            # Try right hand first, then left
+            for hand in ['right', 'left']:
+                result = buyer.wield_item(item, hand=hand)
+                if not isinstance(result, str) or "already holding" not in result.lower():
+                    # Successfully wielded
+                    return
+            
+            # Both hands full - fall back to inventory
+            item.location = buyer
+            buyer.msg(f"|yYour hands are full. {item.key} goes to your inventory.|n")
+        else:
+            # Fallback for characters without hands system
+            item.location = buyer
+            buyer.msg(f"{item.key} goes to your inventory.")
 
 
 # Room integration example for builders:
@@ -927,12 +977,9 @@ class VendingMachine(ShopContainer):
             proto = proto_list[0]
             name = proto.get("key", "Unknown")
             
-            # Get base value from prototype
-            base_value = 10  # Default fallback
-            for attr in proto.get("attrs", []):
-                if isinstance(attr, (list, tuple)) and attr[0] == "value":
-                    base_value = attr[1]
-                    break
+            # Get base value using utility function
+            from world.economy.utils import get_prototype_value
+            base_value = get_prototype_value(proto)
             
             # Calculate vending price
             price = int(base_value * self.db.price_multiplier)
@@ -1024,18 +1071,14 @@ class VendingMachine(ShopContainer):
         
         # Get prototype and calculate price
         from evennia.prototypes.prototypes import search_prototype
+        from world.economy.utils import get_prototype_value
+        
         proto_list = search_prototype(key=proto_key)
         if not proto_list:
             return False, "Item not found in database.", None
         
         proto = proto_list[0]
-        
-        base_value = 10
-        for attr in proto.get("attrs", []):
-            if isinstance(attr, (list, tuple)) and attr[0] == "value":
-                base_value = attr[1]
-                break
-        
+        base_value = get_prototype_value(proto)
         price = int(base_value * self.db.price_multiplier)
         
         # Check funds
@@ -1214,10 +1257,12 @@ class CmdBuy(Command):
         
         args = self.args.strip()
         
+        # Use rsplit to handle item names containing "from"
+        # e.g., "buy letter from mother from shelf" → ["buy letter from mother", "shelf"]
         if " from " in args:
-            self.item_name, self.source_name = args.split(" from ", 1)
-            self.item_name = self.item_name.strip()
-            self.source_name = self.source_name.strip()
+            parts = args.rsplit(" from ", 1)
+            self.item_name = parts[0].strip()
+            self.source_name = parts[1].strip() if len(parts) > 1 else ""
         else:
             self.item_name = args
     
@@ -1534,21 +1579,23 @@ else:
 
 #### Holographic Merchant Attack
 ```python
-# In Character.at_pre_attack() for holographic merchants
-def at_pre_attack(self, attacker, **kwargs):
+# In Character.validate_attack_target() for holographic merchants
+# Called by CmdAttack before combat initiation
+def validate_attack_target(self):
     """Prevent attacks on holographic merchants."""
     if getattr(self.db, 'is_holographic', False):
-        # Show glitch effect
-        attacker.msg(f"Your attack passes through {self.key}'s holographic form with a shimmer of static.")
-        self.location.msg_contents(
-            f"{attacker.key}'s attack passes through {self.key}'s flickering projection.",
-            exclude=[attacker, self]
-        )
-        # Cancel the attack
-        return False
-    
-    # Allow normal attacks
-    return True
+        return "A holographic merchant cannot be attacked - target validation failed"
+    return None  # None means valid target
+
+# In CmdAttack.func() after target resolution:
+# validation_error = target.validate_attack_target()
+# if validation_error:
+#     caller.msg(f"|yYour attack passes through {target.key}'s holographic form with a shimmer of static.|n")
+#     target.location.msg_contents(
+#         f"|y{caller.key}'s attack passes through {target.key}'s flickering projection.|n",
+#         exclude=[caller, target]
+#     )
+#     return  # Abort attack before combat handler involvement
 ```
 
 ### Validation Helpers
