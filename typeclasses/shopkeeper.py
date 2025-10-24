@@ -145,7 +145,7 @@ class ShopContainer(DefaultObject):
         price = self.get_price(prototype_key)
         
         # Verify buyer has enough tokens
-        buyer_tokens = getattr(buyer.db, "tokens", 0)
+        buyer_tokens = buyer.db.tokens if buyer.db.tokens is not None else 0
         if buyer_tokens < price:
             shortage = price - buyer_tokens
             return False, f"You need {format_currency(shortage)} more to afford that."

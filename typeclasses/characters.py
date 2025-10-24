@@ -95,6 +95,10 @@ class Character(ObjectParent, DefaultCharacter):
 
         # Initialize medical system - replaces legacy HP system
         self._initialize_medical_state()
+        
+        # Initialize currency/tokens
+        if self.db.tokens is None:
+            self.db.tokens = 0
 
     def _initialize_medical_state(self):
         """Initialize the character's medical state."""
