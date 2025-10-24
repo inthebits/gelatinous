@@ -61,6 +61,10 @@ CSRF_TRUSTED_ORIGINS = ['https://gel.monster', 'https://play.gel.monster', 'http
 # the websocket one.
 WEBCLIENT_ENABLED = True
 
+# Force webclient to always connect to play.gel.monster for websocket
+# This ensures CloudFlare traffic goes to the right endpoint
+WEBSOCKET_CLIENT_URL = "ws://play.gel.monster:4002"
+
 # Default exit typeclass
 DEFAULT_EXIT_TYPECLASS = "typeclasses.exits.Exit"
 
