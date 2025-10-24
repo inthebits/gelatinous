@@ -1575,3 +1575,65 @@ PAIN_RELIEF_CIGARETTE = {
         })
     ],
 }
+
+# =============================================================================
+# SHOP MERCHANT PROTOTYPES
+# =============================================================================
+
+# Base merchant template - holographic shopkeeper
+HOLOGRAPHIC_MERCHANT = {
+    "key": "holographic merchant",
+    "typeclass": "typeclasses.characters.Character",
+    "desc": "A shimmering holographic projection of a merchant. The figure flickers slightly, clearly not real.",
+    "attrs": [
+        ("is_merchant", True),
+        ("is_holographic", True),
+        ("merchant_greeting", "Welcome to the shop. Browse my wares."),
+    ],
+    "locks": "get:false();puppet:false()",
+}
+
+# Example armory merchant
+ARMORY_MERCHANT = {
+    "prototype_parent": "HOLOGRAPHIC_MERCHANT",
+    "key": "Gunther the Armorer",
+    "desc": "A burly holographic figure in tactical gear, arms crossed. The projection glitches occasionally, revealing the emitter underneath.",
+    "attrs": [
+        ("merchant_greeting", "Need weapons? You've come to the right place."),
+        ("merchant_specialty", "weapons and armor"),
+    ],
+}
+
+# Example general goods merchant
+GENERAL_MERCHANT = {
+    "prototype_parent": "HOLOGRAPHIC_MERCHANT",
+    "key": "Sal the Supplier",
+    "desc": "A friendly-looking holographic merchant with a wide smile. The projection flickers blue-green.",
+    "attrs": [
+        ("merchant_greeting", "Everything you need, right here!"),
+        ("merchant_specialty", "general supplies"),
+    ],
+}
+
+# Example medical supplies merchant
+MEDIC_MERCHANT = {
+    "prototype_parent": "HOLOGRAPHIC_MERCHANT",
+    "key": "Dr. Voss",
+    "desc": "A stern holographic figure in a white coat, clipboard in hand. The projection is sharp and professional.",
+    "attrs": [
+        ("merchant_greeting", "Medical supplies. No prescriptions required."),
+        ("merchant_specialty", "medical supplies"),
+    ],
+}
+
+# Example corner store merchant
+CORNERSTORE_MERCHANT = {
+    "prototype_parent": "HOLOGRAPHIC_MERCHANT",
+    "key": "Juan Sanchez",
+    "desc": "A flamboyant holographic merchant with wild hair and an elaborate mustache. His garish outfit shifts between purple and gold as the projection flickers. He gestures dramatically even in stillness.",
+    "attrs": [
+        ("merchant_greeting", "Welcome, my friend! I have everything you need - and some things you don't!"),
+        ("merchant_specialty", "general goods"),
+    ],
+}
+

@@ -36,6 +36,7 @@ from commands.CmdThrow import (
 from commands.CmdGraffiti import CmdGraffiti, CmdPress
 from commands.CmdCharacter import CmdLongdesc, CmdSkintone
 from commands.CmdArmor import CmdArmor, CmdArmorRepair, CmdSlot, CmdUnslot
+from commands.shop import CmdBuy
 
 
 class UnconsciousCmdSet(CmdSet):
@@ -214,6 +215,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdMedicalItems.CmdRefillMedItem())
         
         self.add(CmdClothing.CmdZip())
+        
+        # Add shop commands
+        self.add(CmdBuy())
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """

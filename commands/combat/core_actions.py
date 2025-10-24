@@ -122,6 +122,23 @@ class CmdAttack(Command):
             caller.msg(MSG_SELF_TARGET)
             return
 
+        # --- TARGET VALIDATION ---
+        # Check if target can be attacked (holographic merchants, etc.)
+        if hasattr(target, 'validate_attack_target'):
+            validation_error = target.validate_attack_target()
+            if validation_error:
+                # Target is invalid - show glitch effect for holographic
+                if getattr(target.db, 'is_holographic', False):
+                    caller.msg(f"|yYour attack passes through {target.key}'s holographic form with a shimmer of static.|n")
+                    target.location.msg_contents(
+                        f"|y{caller.key}'s attack passes through {target.key}'s flickering projection.|n",
+                        exclude=[caller, target]
+                    )
+                else:
+                    # Generic validation failure
+                    caller.msg(f"You cannot attack {target.key}.")
+                return
+
         # --- GRAPPLE RESTRICTION CHECK ---
         # Check if caller is grappled and trying to attack their grappler
         caller_handler = getattr(caller.ndb, "combat_handler", None)

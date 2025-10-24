@@ -26,7 +26,7 @@ class Character(ObjectParent, DefaultCharacter):
     In this instance, we are also adding the G.R.I.M. attributes using AttributeProperty.
     """
     
-# G.R.I.M. Attributes
+    # G.R.I.M. Attributes
     # Grit, Resonance, Intellect, Motorics
     grit = AttributeProperty(1, category='stat', autocreate=True)
     resonance = AttributeProperty(1, category='stat', autocreate=True)
@@ -34,7 +34,9 @@ class Character(ObjectParent, DefaultCharacter):
     motorics = AttributeProperty(1, category='stat', autocreate=True)
     sex = AttributeProperty("ambiguous", category="biology", autocreate=True)
     
-    # Death tracking system
+    # Shop System Attributes
+    is_merchant = AttributeProperty(False, category="shop", autocreate=True)
+    is_holographic = AttributeProperty(False, category="shop", autocreate=True)    # Death tracking system
     death_count = AttributeProperty(1, category='mortality', autocreate=True)
     
     # Appearance attributes - stored in db but no auto-creation for optional features
@@ -1176,6 +1178,23 @@ class Character(ObjectParent, DefaultCharacter):
             splattercast.msg(f"FINAL_DEATH: {self.key} has entered permanent death state")
         except:
             pass
+
+    def validate_attack_target(self):
+        """
+        Validate if this character can be attacked.
+        
+        Called by CmdAttack before combat initiation. Returns None for valid
+        targets, or an error message string to prevent the attack.
+        
+        Returns:
+            None if valid target, or str with error message if invalid
+        """
+        # Holographic merchants cannot be attacked
+        if getattr(self.db, 'is_holographic', False):
+            return "A holographic merchant cannot be attacked - target validation failed"
+        
+        # Character is a valid attack target
+        return None
 
     # MR. HANDS SYSTEM
     # Persistent hand slots: supports dynamic anatomy eventually
