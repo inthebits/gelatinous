@@ -31,6 +31,10 @@ Removes the Forum link to prevent navigation loops and double headers.
       <li><a class="nav-link" href="{% url 'help' %}" target="_top">Help</a></li>
       <!-- end game views -->
 
+      {% if webclient_enabled %}
+      <li><a class="nav-link" href="{% url 'webclient:index' %}" target="_top">Play Online</a></li>
+      {% endif %}
+
       {% if user.is_staff %}
       <li><a class="nav-link" href="{% url 'characters' %}" target="_top">Characters</a></li>
       <li><a class="nav-link" href="{% url 'channels' %}" target="_top">Channels</a></li>
