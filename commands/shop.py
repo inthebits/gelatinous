@@ -143,22 +143,17 @@ class CmdBuy(Command):
             buyer: Character who bought the item
             item: Item to give
         """
+        # Item is already in buyer's inventory from spawn(location=buyer)
         # Try to wield in right hand first, then left
-        hands = getattr(buyer, 'hands', {'left': None, 'right': None})
+        hands = buyer.hands
         
         if hands.get('right') is None:
             # Right hand empty - wield there
-            result = buyer.wield_item(item, hand='right')
-            if not isinstance(result, str) or "Error" not in result:
-                return
+            buyer.wield_item(item, hand='right')
         elif hands.get('left') is None:
             # Left hand empty - wield there
-            result = buyer.wield_item(item, hand='left')
-            if not isinstance(result, str) or "Error" not in result:
-                return
-        
-        # Both hands full - put in inventory
-        item.location = buyer
+            buyer.wield_item(item, hand='left')
+        # else: both hands full, item stays in inventory
     
     def _notify_merchant(self, buyer, item, price, container):
         """
