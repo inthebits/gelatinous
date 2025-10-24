@@ -143,25 +143,16 @@ class CmdBuy(Command):
             buyer: Character who bought the item
             item: Item to give
         """
-        # Item is already in buyer's inventory from spawn(location=buyer)
-        # Debug: verify item location
-        if item.location != buyer:
-            buyer.msg(f"|yDEBUG: Item location is {item.location}, expected {buyer}|n")
-        
+        # Item location is set to buyer in purchase_item
         # Try to wield in right hand first, then left
         hands = buyer.hands
-        buyer.msg(f"|yDEBUG: Hands state - right: {hands.get('right')}, left: {hands.get('left')}|n")
         
         if hands.get('right') is None:
             # Right hand empty - wield there
-            result = buyer.wield_item(item, hand='right')
-            buyer.msg(f"|yDEBUG: Wield right result: {result}|n")
+            buyer.wield_item(item, hand='right')
         elif hands.get('left') is None:
             # Left hand empty - wield there
-            result = buyer.wield_item(item, hand='left')
-            buyer.msg(f"|yDEBUG: Wield left result: {result}|n")
-        else:
-            buyer.msg(f"|yDEBUG: Both hands full, item stays in inventory|n")
+            buyer.wield_item(item, hand='left')
         # else: both hands full, item stays in inventory
     
     def _notify_merchant(self, buyer, item, price, container):
