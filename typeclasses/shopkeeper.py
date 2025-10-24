@@ -171,6 +171,27 @@ class ShopContainer(DefaultObject):
         
         return True, item
     
+    def get_display_name_for_prototype(self, prototype_key, prototype):
+        """
+        Get display name for a prototype without spawning objects.
+        
+        Args:
+            prototype_key (str): The prototype key
+            prototype (dict): The prototype definition
+            
+        Returns:
+            str: Display name for the item
+        """
+        # Special handling for known dynamic-name items
+        # This avoids expensive spawning operations
+        if prototype_key == "spraypaint_can":
+            return "can of spraypaint"
+        elif prototype_key == "solvent_can":
+            return "can of solvent"
+        
+        # For most items, just use the key from prototype
+        return prototype.get("key", prototype_key)
+    
     def get_browse_display(self, viewer):
         """
         Generate formatted inventory display for browsing.
@@ -200,24 +221,8 @@ class ShopContainer(DefaultObject):
                 continue
             prototype = prototype[0]
             
-            # Get item name - check if typeclass has get_display_name
-            # For items like cans that build their name dynamically
-            typeclass_path = prototype.get("typeclass")
-            item_name = None
-            
-            if typeclass_path:
-                # Try to spawn a temporary instance to get display name
-                from evennia.prototypes.spawner import spawn
-                temp_obj = spawn(prototype)[0]
-                if hasattr(temp_obj, 'get_display_name'):
-                    item_name = temp_obj.get_display_name(viewer)
-                else:
-                    item_name = temp_obj.key
-                temp_obj.delete()
-            
-            # Fallback to prototype key
-            if not item_name:
-                item_name = prototype.get("key", prototype_key)
+            # Get display name efficiently
+            item_name = self.get_display_name_for_prototype(prototype_key, prototype)
             
             # Check stock status
             if self.db.is_infinite:
