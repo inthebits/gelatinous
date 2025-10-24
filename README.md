@@ -109,12 +109,11 @@ gelatinous/
 
 ## � Research Documentation & Safety Manuals
 
-### Primary Research Documents
-- **[Combat Testing Protocols](COMBAT_SYSTEM.md)** - Comprehensive G.R.I.M. methodology
-- **[Facility Architecture](ARCHITECTURE.md)** - Engineering decisions and structural patterns
-- **[Research Guidelines](DEVELOPMENT_GUIDE.md)** - Contribution protocols and safety procedures
-- **[Project Charter](PROJECT_OVERVIEW.md)** - Core mission and design philosophy
-- **[Research Partner Guide](AGENTS.md)** - AI development and integration handbook
+### Documentation Suite
+- **[Project Overview](PROJECT_OVERVIEW.md)** - Design philosophy and core concepts
+- **[Architecture Guide](ARCHITECTURE.md)** - File structure and system organization
+- **[Combat Testing Protocols](specs/COMBAT_SYSTEM.md)** - Comprehensive G.R.I.M. methodology
+- **[Development Procedures](DEVELOPMENT_GUIDE.md)** - Approved research practices
 
 ### Current Project Status
 - 🧪 **Combat Response System** - Message protocols converted *(Performance within acceptable parameters)*
