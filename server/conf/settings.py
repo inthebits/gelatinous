@@ -59,7 +59,7 @@ CSRF_TRUSTED_ORIGINS = ['https://gel.monster', 'https://gelatinous.monster', 'ht
 # Start the evennia webclient. This requires the webserver to be running and
 # offers the fallback ajax-based webclient backbone for browsers not supporting
 # the websocket one.
-WEBCLIENT_ENABLED = False
+WEBCLIENT_ENABLED = True
 
 # Default exit typeclass
 DEFAULT_EXIT_TYPECLASS = "typeclasses.exits.Exit"
