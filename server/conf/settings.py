@@ -53,9 +53,9 @@ TELNET_PORTS = [23]
 # This is a security setting protecting against host poisoning
 # attacks.  It defaults to allowing all. In production, make
 # sure to change this to your actual host addresses/IPs.
-ALLOWED_HOSTS = ["play.gel.monster", gel.monster", "gelatinous.org", "gelatinous.monster", "96d01c0600eef9c99db924a15939abf3-578402624.us-west-2.elb.amazonaws.com"]
+ALLOWED_HOSTS = ["play.gel.monster", "gel.monster", "gelatinous.org", "gelatinous.monster", "96d01c0600eef9c99db924a15939abf3-578402624.us-west-2.elb.amazonaws.com", "35.165.102.12"]
 # This is a security setting protecting against DJANGO CSRF nonsense
-CSRF_TRUSTED_ORIGINS = ['https://gel.monster', 'https://gelatinous.monster', 'https://gelatinous.org', 'https://96d01c0600eef9c99db924a15939abf3-578402624.us-west-2.elb.amazonaws.com', 'https://35.165.102.12']
+CSRF_TRUSTED_ORIGINS = ['https://gel.monster', 'https://play.gel.monster', 'https://gelatinous.monster', 'https://gelatinous.org', 'https://96d01c0600eef9c99db924a15939abf3-578402624.us-west-2.elb.amazonaws.com', 'https://35.165.102.12']
 # Start the evennia webclient. This requires the webserver to be running and
 # offers the fallback ajax-based webclient backbone for browsers not supporting
 # the websocket one.
