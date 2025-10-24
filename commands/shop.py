@@ -113,20 +113,23 @@ class CmdBuy(Command):
         # Get available prototypes
         available_keys = container.db.prototype_inventory.keys()
         
-        # Try exact match first
+        # Try exact match on prototype key first
         if item_name in available_keys:
             return item_name
         
-        # Try fuzzy match on prototype display names
+        # Try fuzzy match on display names (handles cans and other dynamic names)
         item_name_lower = item_name.lower()
         for proto_key in available_keys:
-            # Get prototype to check its key (display name)
+            # Get prototype to check its display name
             prototype = search_prototype(proto_key)
             if not prototype:
                 continue
             prototype = prototype[0]
             
-            display_name = prototype.get("key", proto_key).lower()
+            # Use container's display name method to handle dynamic names
+            display_name = container.get_display_name_for_prototype(proto_key, prototype).lower()
+            
+            # Match if search term is in display name or vice versa
             if item_name_lower in display_name or display_name in item_name_lower:
                 return proto_key
         

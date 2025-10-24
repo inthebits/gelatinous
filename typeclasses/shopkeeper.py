@@ -149,9 +149,9 @@ class ShopContainer(DefaultObject):
             shortage = price - buyer.tokens
             return False, f"You need {format_currency(shortage)} more to afford that."
         
-        # Spawn the item
+        # Spawn the item to buyer's location
         try:
-            spawned = spawn(prototype_key)
+            spawned = spawn(prototype_key, location=buyer)
             if not spawned or len(spawned) == 0:
                 logger.log_err(f"ShopContainer: Failed to spawn '{prototype_key}'")
                 return False, "The item couldn't be retrieved. Contact an admin."
