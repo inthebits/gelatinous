@@ -1,18 +1,30 @@
 # SHOP SYSTEM SPECIFICATION
 
+> **📋 SPECIFICATION STATUS:**
+> 
+> This document has been updated to reflect the **actual Phase 1 implementation** (completed December 2024).
+> 
+> - **Sections marked "ACTUAL IMPLEMENTATION"**: Production code, tested and working
+> - **Sections marked "NOT IMPLEMENTED"**: Original spec ideas that were simplified or deferred
+> 
+> The actual implementation is **simpler and more direct** than the original specification:
+> - ✅ Container-based shops (not room-based)
+> - ✅ Regular prototypes for merchants (no MerchantTemplate system)
+> - ✅ AttributeProperty currency (no CurrencyMixin)
+> - ✅ Direct attribute inspection for dynamic names (no complex template system)
+
 ## Overview
 
 This specification defines a container-based shop system for the G.R.I.M. MUD with two merchant types and a foundation for dynamic economies.
 
 ### Phase 1: Fixed Shops (Current Implementation)
-- **Room-Based Architecture**: Room stores shop configuration (pricing, merchant template, shop name)
-- **Physical Containers (Required)**: ShopContainers (shelves, displays, racks) hold prototype inventories - these are required for shops to function
-- **NPC Merchants**: Regular Characters spawned from templates, can die and be replaced after delay
-- **Holographic Merchants**: Characters with `is_holographic` flag - invulnerable, attacks pass through
-- **Template-Based**: MerchantTemplates are blueprints for spawning/respawning consistent merchant NPCs
-- **Simple Pricing**: Room stores upsell factor applied to item base values
-- **Buy-Only**: Players can only purchase items in Phase 1. Selling is a Phase 2 marketplace feature.
-- **Merchant Required**: Shops require an active merchant to operate (unless `allows_unmanned_sales` flag is set)
+- **Prototype-Based Architecture**: ShopContainers store prototype inventories and pricing
+- **Physical Containers**: ShopContainers (shelves, displays) are physical objects with inventories
+- **Holographic Merchants**: NPCs with `is_holographic` and `is_merchant` AttributeProperties - combat-protected
+- **Simple Pricing**: Fixed prices per prototype, stored in container
+- **Buy-Only**: Players can only purchase items. Selling is Phase 2 marketplace feature
+- **Token Currency**: Characters have `tokens` AttributeProperty (default: 0)
+- **Customizable Messages**: Purchase messages configurable per shop via container attributes
 
 ### Phase 2: Dynamic Marketplaces (Future)
 - **Procedural Mazes**: Marketplace rooms that reconfigure on timers
@@ -29,242 +41,385 @@ This specification defines a container-based shop system for the G.R.I.M. MUD wi
 
 ## Design Philosophy
 
-1. **Room-Based Architecture**: The *room* is the shop. All shop configuration (pricing factors, merchant template, shop metadata) is stored in `room.db.shop_config`. Merchants are regular Characters with flags.
+1. **Container-Based Architecture**: ShopContainers are standalone objects that manage their own inventory and pricing. No room configuration needed.
 
-2. **Physical Containers Are Required**: Shops display inventory through physical ShopContainer objects (shelves, racks, displays, vending machines). Containers store prototype inventories. Without containers, there's nothing to buy from.
+2. **Prototype Inventory**: Items stored as prototype keys, spawned on purchase to prevent database bloat.
 
-3. **Merchants Are Required for Transactions**: Without an active merchant present, the shop is closed and purchases cannot be made. Builders can optionally set `allows_unmanned_sales` flag for self-service shops (vending machines, automated kiosks).
+3. **Holographic Merchants**: NPCs protected via `validate_attack_target()` method and AttributeProperties (`is_merchant`, `is_holographic`).
 
-4. **Merchants Are Characters with Flags**: No special merchant classes. Regular Characters use flags like `is_merchant`, `is_holographic`, `shop_room`, and `template_key`.
+4. **Infinite Inventory Mode**: Shops operate in infinite mode by default - items never run out.
 
-5. **Templates as Character Blueprints**: MerchantTemplates are blueprints (character sleeves) defining merchant appearance, personality, and behavior. When a merchant dies, the room spawns a replacement from the template after a delay.
+5. **AttributeProperty Currency**: All characters have `tokens` AttributeProperty (autocreate, default 0).
 
-6. **Holographic Invulnerability**: Holographic merchants use `validate_attack_target()` method that CmdAttack checks before combat initiation, showing glitch effects and preventing attacks. They're truly invulnerable, not respawning.
+6. **Customizable Messaging**: Purchase messages stored on container with placeholder support ({buyer}, {item}, {price}, {shop}).
 
-7. **Prototype-Based Inventory**: Items don't exist as objects until purchased - spawned from prototypes at transaction time to prevent database bloat.
+7. **Data-Driven Display**: Can names derived from `aerosol_contents` attribute - extensible for future dynamic items.
 
-8. **Phase 1 is Buy-Only**: Fixed shops only support purchasing. Selling items is a Phase 2 marketplace feature with haggling mechanics.
+8. **Phase 1 is Buy-Only**: Fixed shops only support purchasing. Selling is Phase 2 with haggling.
 
-9. **Builder-Friendly**: Easy shop configuration via `room.setup_as_shop()` and prototype system integration.
+9. **Builder-Friendly**: Simple @py commands to set up shops.
 
-10. **Extensible Foundation**: Simple pricing now (upsell factor), supports complex economies later (dynamic pricing, haggling in Phase 2).
-
-11. **Traditional MUD Commands**: No EvMenu complexity. Players use `buy` and `look at container` to interact with shops.
+10. **Traditional Commands**: No EvMenu - players use `buy <item> from <container>` and `look <container>`.
 
 ## System Architecture
 
 ```
-world/economy/
+world/shop/
 ├── __init__.py
-├── constants.py              # Currency, pricing, limits
-├── currency.py               # CurrencyMixin for Characters
-├── shops/
-│   ├── __init__.py
-│   ├── containers.py         # ShopContainer, VendingMachine (physical inventory)
-│   ├── templates.py          # MerchantTemplate for spawning/respawning shop NPCs
-│   └── pricing.py            # Simple upsell_factor, foundation for dynamic pricing
-└── marketplaces/             # PHASE 2
-    ├── __init__.py
-    ├── rooms.py              # Procedural marketplace room types
-    ├── maze.py               # Dynamic reconfiguration system
-    ├── haggling.py           # Price negotiation mechanics
-    └── dynamic_pricing.py    # Supply/demand via database queries
+├── utils.py                  # get_prototype_value, format_currency, etc.
 
 typeclasses/
-├── rooms.py                  # Room with shop_config support
-├── containers.py             # ShopContainer base class
-└── characters.py             # Character with merchant flags (is_merchant, is_holographic)
+├── shopkeeper.py             # ShopContainer - prototype inventory manager
+├── characters.py             # Character with tokens AttributeProperty, holographic support
 
-commands/economy/
-├── __init__.py
-├── shop_commands.py          # buy, sell (direct commands, interact with room.db.shop_config)
-├── marketplace_commands.py   # PHASE 2: haggle command
-└── builder_commands.py       # Commands for setting up shops
+commands/
+├── shop.py                   # CmdBuy with fuzzy matching and customizable messages
+└── default_cmdsets.py        # CharacterCmdSet includes CmdBuy
 
-server/conf/
-└── at_initial_setup.py       # Add merchant template initialization
+world/prototypes.py           # Merchant prototypes (HOLOGRAPHIC_MERCHANT, etc.)
 ```
 
-## Core Components - Phase 1
+## Core Components - Phase 1 (ACTUAL IMPLEMENTATION)
 
-### 1. Currency System
+### 1. ShopContainer Typeclass
+
+**Location:** `typeclasses/shopkeeper.py`
+
+**Purpose:** Physical container object that manages prototype-based shop inventory with infinite stock mode.
+
+**Key Attributes:**
+```python
+self.db.prototype_inventory = {}  # {prototype_key: price}
+self.db.item_inventory = {}       # For future limited stock mode
+self.db.is_infinite = True        # Infinite stock enabled
+self.db.shop_name = "Shop"        # Display name
+self.db.container_type = "shelf"   # Container type
+self.db.purchase_msg_buyer = "You purchase {item} for {price}."
+self.db.purchase_msg_room = "{buyer} purchases {item} from {shop}."
+```
+
+**Key Methods:**
+- `add_prototype(prototype_key, price)` - Add item to inventory
+- `get_price(prototype_key)` - Get price for item
+- `is_in_stock(prototype_key)` - Check availability (always True in infinite mode)
+- `purchase_item(buyer, prototype_key)` - Process purchase, spawn item, deduct tokens
+- `get_display_name_for_prototype(prototype_key, prototype)` - Get display name (handles cans via aerosol_contents)
+- `get_browse_display(viewer)` - Generate inventory listing
+- `return_appearance(looker)` - Override look to show inventory
+
+**Purchase Flow:**
+1. Validate prototype exists in inventory
+2. Check if in stock (infinite mode always True)
+3. Get price from inventory dict
+4. Verify buyer has enough tokens
+5. Spawn item from prototype
+6. Set `item.location = buyer`
+7. Deduct tokens: `buyer.tokens -= price`
+8. Return success and item
+
+### 2. Character Currency System
+
+**Location:** `typeclasses/characters.py`
 
 **Implementation:**
+```python
+# AttributeProperty for automatic initialization
+tokens = AttributeProperty(0, category="shop", autocreate=True)
+```
+
+**Benefits:**
+- All characters automatically have tokens attribute
+- Defaults to 0 for new and existing characters
+- No manual initialization needed
+- Persistent across restarts
+
+### 3. Holographic Merchant Protection
+
+**Location:** `typeclasses/characters.py`
+
+**AttributeProperties:**
+```python
+is_merchant = AttributeProperty(False, category="shop", autocreate=True)
+is_holographic = AttributeProperty(False, category="shop", autocreate=True)
+```
+
+**Combat Integration:**
+```python
+def validate_attack_target(self, attacker):
+    """Check if character can be attacked (holographic protection)."""
+    if self.is_holographic:
+        # Show glitch messages
+        attacker.msg(f"|cYour attack passes through {self.key}'s holographic form!|n")
+        # ... observer messages ...
+        return (False, None)  # Prevent attack
+    return (True, None)  # Allow attack
+```
+
+**CmdAttack Integration** (`commands/combat/core_actions.py`):
+```python
+# After target resolution
+if hasattr(target, 'validate_attack_target'):
+    can_attack, error_msg = target.validate_attack_target(caller)
+    if not can_attack:
+        if error_msg:
+            caller.msg(error_msg)
+        return
+```
+
+### 4. Buy Command
+
+**Location:** `commands/shop.py`
+
+**Features:**
+- Fuzzy matching by item name
+- Matches by display name (handles cans via `get_display_name_for_prototype`)
+- Customizable purchase messages via container attributes
+- Auto-wields items in hands if available
+
+**Syntax:**
+```
+buy <item> from <container>
+buy spraypaint from shop
+buy solvent from shop
+```
+
+**Purchase Flow:**
+1. Parse `buy <item> from <container>` syntax
+2. Find container in room
+3. Call `container._find_prototype_key(item_name)` - uses display names
+4. Call `container.purchase_item(caller, prototype_key)`
+5. Call `_give_item_to_buyer(buyer, item)` - wields if hands empty
+6. Send customizable messages from container.db.purchase_msg_*
+7. Notify merchant if present via `_notify_merchant()`
+
+**Display Name Matching:**
+```python
+def _find_prototype_key(self, container, item_name):
+    # Get display name using container's method (handles cans)
+    display_name = container.get_display_name_for_prototype(proto_key, prototype).lower()
+    
+    # Match if search term in display name
+    if item_name_lower in display_name or display_name in item_name_lower:
+        return proto_key
+```
+
+### 5. Dynamic Item Names
+
+**Problem:** Items like cans have dynamic names ("can of spraypaint" vs "can of solvent")
+
+**Solution:** Data-driven display names via prototype attributes
+
+**Implementation:**
+```python
+# In ShopContainer.get_display_name_for_prototype()
+attrs = prototype.get("attrs", [])
+for attr in attrs:
+    if isinstance(attr, tuple) and attr[0] == "aerosol_contents":
+        return f"can of {attr[1]}"  # e.g., "can of spraypaint"
+return prototype.get("key", prototype_key)
+```
+
+**Benefits:**
+- No hardcoded item names
+- Extensible for future dynamic items
+- Works with any attribute pattern
+
+### 6. Merchant Prototypes
+
+**Location:** `world/prototypes.py`
+
+**Base Holographic Merchant:**
+```python
+HOLOGRAPHIC_MERCHANT = {
+    "prototype_parent": "BASE_NPC",
+    "key": "holographic merchant",
+    "typeclass": "typeclasses.characters.Character",
+    "attrs": [
+        ("is_merchant", True),
+        ("is_holographic", True),
+    ],
+}
+```
+
+**Specific Merchants (inherit from HOLOGRAPHIC_MERCHANT):**
+- `ARMORY_MERCHANT` - Gunther Steele (weapons)
+- `GENERAL_MERCHANT` - Sal Mendoza (supplies)
+- `MEDIC_MERCHANT` - Dr. Cassandra Voss (medical)
+- `CORNERSTORE_MERCHANT` - Juan Sanchez (corner market)
+
+**Usage:**
+```python
+@spawn CORNERSTORE_MERCHANT
+```
+
+### 7. Utility Functions
+
+**Location:** `world/shop/utils.py`
+
+**Key Functions:**
+```python
+def get_prototype_value(prototype):
+    """Extract 'value' attribute from prototype attrs list."""
+    for attr in prototype.get("attrs", []):
+        if isinstance(attr, tuple) and attr[0] == "value":
+            return int(attr[1])
+    return 10  # Default
+
+def format_currency(amount):
+    """Format tokens as '150₮' or '0₮' for free items."""
+    return f"{amount}₮"
+
+def parse_currency(text):
+    """Parse '150₮' back to integer 150."""
+    # Implementation...
+```
+
+### 8. Customizable Purchase Messages
+
+**Container Attributes:**
+```python
+self.db.purchase_msg_buyer = "You purchase {item} for {price}."
+self.db.purchase_msg_room = "{buyer} purchases {item} from {shop}."
+```
+
+**Available Placeholders:**
+- `{buyer}` - Buyer's display name
+- `{item}` - Item's display name
+- `{price}` - Formatted price (e.g., "50₮")
+- `{shop}` - Shop container's display name
+
+**Customization Example:**
+```python
+@py shop = me.search("shop")
+@py shop.db.purchase_msg_buyer = "|gAh, excellent choice!|n You purchase {item} for {price}."
+@py shop.db.purchase_msg_room = "{buyer} haggles with Juan before purchasing {item}."
+```
+
+**Implementation** (`commands/shop.py`):
+```python
+msg_buyer = container.db.purchase_msg_buyer or "You purchase {item} for {price}."
+msg_room = container.db.purchase_msg_room or "{buyer} purchases {item} from {shop}."
+
+format_data = {
+    "buyer": caller.get_display_name(caller),
+    "item": item.get_display_name(caller),
+    "price": format_currency(price),
+    "shop": container.get_display_name(caller)
+}
+
+caller.msg(msg_buyer.format(**format_data))
+caller.location.msg_contents(msg_room.format(**format_data), exclude=caller)
+```
+
+## Core Components - Phase 1 (ORIGINAL SPEC - NOT IMPLEMENTED)
+
+### 1. Currency System (ACTUAL IMPLEMENTATION)
+
+**Character Attribute:**
 
 ```python
-# world/economy/utils.py
+# typeclasses/characters.py
+
+class Character(LivingMixin, DefaultCharacter):
+    # AttributeProperty for automatic initialization
+    tokens = AttributeProperty(0, category="shop", autocreate=True)
+```
+
+**Benefits:**
+- All characters automatically have `tokens` attribute
+- Defaults to 0 for both new and existing characters
+- No manual initialization in `at_object_creation()` required
+- Persists across server restarts (stored in database)
+- Direct access: `char.tokens = 100` or `char.tokens -= 50`
+
+**Utility Functions:**
+
+```python
+# world/shop/utils.py
+
+def format_currency(amount):
+    """
+    Format tokens for display.
+    
+    Args:
+        amount (int): Token amount
+        
+    Returns:
+        str: Formatted string like "150₮" or "0₮"
+        
+    Example:
+        >>> format_currency(150)
+        '150₮'
+        >>> format_currency(0)
+        '0₮'
+    """
+    return f"{amount}₮"
+
+def parse_currency(text):
+    """
+    Parse currency string back to integer.
+    
+    Args:
+        text (str): Currency string like "150₮"
+        
+    Returns:
+        int: Token amount
+        
+    Example:
+        >>> parse_currency("150₮")
+        150
+    """
+    return int(text.rstrip("₮"))
 
 def get_prototype_value(prototype):
     """
-    Extract the 'value' attribute from a prototype.
+    Extract 'value' attribute from prototype attrs list.
     
-    Evennia prototypes store attributes in the 'attrs' list as tuples.
-    This function handles both the attrs list format and direct key access
-    for backward compatibility.
+    Evennia prototypes store attributes in 'attrs' as tuples.
+    This handles the list format and provides safe fallback.
     
     Args:
-        prototype (dict): The prototype dictionary
+        prototype (dict): Prototype dictionary
         
     Returns:
-        int: The value attribute, or 10 as default
+        int: Value attribute, or 10 as default
         
     Example:
         >>> proto = {"attrs": [("value", 50), ("weight", 2)]}
         >>> get_prototype_value(proto)
         50
     """
-    # Try attrs list first (current Evennia format)
     for attr in prototype.get("attrs", []):
         if isinstance(attr, (list, tuple)) and len(attr) >= 2:
             if attr[0] == "value":
                 return int(attr[1])
-    
-    # Fallback: try direct key access (older format)
-    if "value" in prototype:
-        return int(prototype["value"])
-    
-    # Default fallback
-    return 10
+    return 10  # Default fallback
 ```
 
-```python
-# world/economy/constants.py
-
-# Currency configuration
-CURRENCY_NAME = "tokens"              # Official name
-CURRENCY_NAME_SINGULAR = "token"      # Singular form
-CURRENCY_SYMBOL = "₮"                 # Tugrik symbol
-CURRENCY_DISPLAY_SYMBOL_FIRST = False # Display as "150₮" not "₮150"
-
-# Slang terms (for flavor text, NPC dialogue)
-CURRENCY_SLANG = ["ticks", "tabs", "kennys"]  # Common slang variations
-
-DEFAULT_STARTING_CURRENCY = 100
-
-def format_currency(amount, use_slang=False):
-    """
-    Format currency for display.
-    
-    Args:
-        amount: Currency amount
-        use_slang: If True, randomly use slang term (for NPC dialogue flavor)
-    
-    Returns:
-        Formatted string like "150₮" or "150 tokens"
-    """
-    if use_slang:
-        import random
-        slang = random.choice(CURRENCY_SLANG)
-        return f"{amount} {slang}"
-    
-    # Standard display: "150₮"
-    if CURRENCY_DISPLAY_SYMBOL_FIRST:
-        return f"{CURRENCY_SYMBOL}{amount}"
-    return f"{amount}{CURRENCY_SYMBOL}"
-
-def format_currency_long(amount):
-    """Format with full word (for help text, formal messages)."""
-    if amount == 1:
-        return f"{amount} {CURRENCY_NAME_SINGULAR}"
-    return f"{amount} {CURRENCY_NAME}"
-
-# Pricing
-DEFAULT_UPSELL_FACTOR = 1.2  # Merchants sell for 120% of prototype base value
-
-# Future: Dynamic pricing foundation (Phase 2)
-# These will be used when we implement supply/demand in marketplaces
-PRICE_VOLATILITY_FACTOR = 0.1  # 10% price drift range
-RARITY_PRICE_MULTIPLIER = {
-    "common": 1.0,
-    "uncommon": 1.5,
-    "rare": 2.5,
-    "legendary": 5.0
-}
-```
-
-**Examples:**
-```python
->>> format_currency(150)
-'150₮'
-
->>> format_currency(1)
-'1₮'
-
->>> format_currency_long(150)
-'150 tokens'
-
->>> format_currency_long(1)
-'1 token'
-
->>> format_currency(50, use_slang=True)
-'50 ticks'  # or '50 tabs' or '50 kennys' (random)
-```
+**Usage Examples:**
 
 ```python
-# world/economy/currency.py
+# Give tokens to player
+char.tokens = 100
 
-class CurrencyMixin:
-    """
-    Mixin for Characters to handle currency (Tokens).
-    Add to Character class in typeclasses/characters.py
-    """
+# Check if can afford
+if char.tokens >= price:
+    char.tokens -= price
     
-    @property
-    def tokens(self):
-        """Get token amount."""
-        return self.db.currency or 0
-    
-    @tokens.setter
-    def tokens(self, value):
-        """Set token amount."""
-        self.db.currency = max(0, int(value))
-    
-    # Alias for backwards compatibility / code clarity
-    @property
-    def credits(self):
-        """Alias for tokens (some code may use 'credits')."""
-        return self.tokens
-    
-    @credits.setter
-    def credits(self, value):
-        """Alias setter for tokens."""
-        self.tokens = value
-    
-    def pay_tokens(self, amount):
-        """
-        Pay amount in tokens. Returns True if successful.
-        Negative amount = receiving money.
-        """
-        if amount < 0:
-            self.tokens += abs(amount)
-            return True
-        
-        if self.tokens >= amount:
-            self.tokens -= amount
-            return True
-        return False
-    
-    # Alias for clarity
-    def pay_credits(self, amount):
-        """Alias for pay_tokens."""
-        return self.pay_tokens(amount)
-    
-    def can_afford(self, amount):
-        """Check if can afford amount."""
-        return self.tokens >= amount
-    
-    def get_currency_display(self):
-        """Get formatted display."""
-        from world.economy.constants import format_currency
-        return format_currency(self.tokens)
+# Display current tokens
+char.msg(f"You have {format_currency(char.tokens)}")
+# Output: "You have 150₮"
+
+# Get item value from prototype
+from evennia.prototypes.prototypes import search_prototype
+proto = search_prototype("SPRAYPAINT_CAN")[0]
+value = get_prototype_value(proto)
+# value = 50 (from proto's attrs)
 ```
 
 **Currency Lore:**
 
-The **Token (₮)** is the standard colonial scrip used throughout Gelatinous. Officially called "tokens," they're the lifeblood of the company-controlled economy. 
-
-In practice, nobody calls them tokens except corporate suits and automated systems. On the streets and in the shops, you'll hear them called:
-- **"Ticks"** - Most common slang, as in "That'll cost you 50 ticks"
+The **Token (₮)** is standard colonial scrip used throughout Gelatinous. Street slang includes "ticks," "tabs," and "kennys," but the system currently displays the official ₮ symbol
 - **"Tabs"** - From "running a tab," implies debt and company store economics
 - **"Kennys"** - Origin unknown, possibly from a famous debtor or colonial administrator
 
@@ -273,11 +428,21 @@ Example NPC dialogue:
 "That medkit? 150 ticks, no haggling."
 "I need at least 30 tabs for this junk."
 "You got the kennys for it, or you just window shopping?"
-```
+for future dynamic pricing phases.
 
-```
+---
 
-### 2. Merchant Template System
+## ⚠️ NOT IMPLEMENTED IN PHASE 1 ⚠️
+
+The following sections describe features from the original specification that were **NOT implemented** in Phase 1. They remain here for reference and potential future development.
+
+---
+
+### 2. Merchant Template System (NOT IMPLEMENTED)
+
+**Note:** The actual Phase 1 implementation uses regular Evennia prototypes (HOLOGRAPHIC_MERCHANT, ARMORY_MERCHANT, etc.) instead of a dedicated MerchantTemplate system. Merchants are spawned with `@spawn PROTOTYPE_NAME` and have `is_merchant` and `is_holographic` AttributeProperties.
+
+**Original Spec:**
 
 **What is a MerchantTemplate?**
 
@@ -1647,129 +1812,258 @@ def validate_container_inventory(prototype_list):
     return errors
 ```
 
-## Builder Workflow
+## Builder Workflow - Phase 1 (ACTUAL IMPLEMENTATION)
 
-### Setting Up a Room-Based Shop
+### Setting Up a Shop
 
-```python
-# Step 1: Create the shop room
-@dig Rusty Pete's Armory = north, south
-
-# Step 2: Move to the shop room
-north
-
-# Step 3: Configure room as shop
-@py here.setup_as_shop(["FRAG_GRENADE", "SWORD", "KEVLAR_VEST"], "weapons_dealer", shop_name="Rusty Pete's Armory")
-
-# Step 4: Spawn merchant
-@py here.spawn_merchant()
-
-# Step 5: (Optional) Create shop containers for display
-@create/drop weapons_rack:typeclasses.containers.ShopContainer
-@desc weapons_rack = A sturdy rack displaying various weapons.
-@py weapons_rack.db.prototype_inventory = here.db.shop_config["prototype_inventory"]
-
-# Optional: Adjust pricing on the room
-@py here.db.shop_config["upsell_factor"] = 1.4  # 40% markup
-```
-
-**Why room-based?**
-- Shop persists even if merchant dies
-- Easy to respawn merchants automatically
-- Can have multiple merchants in same shop
-- Player shops use same system (no merchant needed)
-
-### Setting Up a Holographic Shop
+**Step 1: Create ShopContainer**
 
 ```python
-# Same as above, but use a holographic merchant template
-@py here.setup_as_shop(["PLASMA_RIFLE", "SHIELD_GENERATOR"], "armor_smith", shop_name="Automated Armory")
-@py here.spawn_merchant()  # armor_smith template has is_holographic=True
+# Create a shop container (not room-based)
+@create/drop shop:typeclasses.shopkeeper.ShopContainer
 
-# The merchant will be invulnerable to attacks
+# Set description
+@desc shop = A well-stocked shop shelf displaying various items.
+
+# Set shop name (for purchase messages)
+@py shop.db.shop_name = "Juan's Corner Market"
 ```
 
-###  Setting Up a Vending Machine
+**Step 2: Add Items to Inventory**
 
 ```python
-# Create vending machine (no room setup needed for vending machines)
-@create/drop medstation:typeclasses.containers.VendingMachine
-@desc medstation = A medical vending machine with a glowing blue interface.
+# Add items using their prototype keys
+@py shop.add_prototype("SPRAYPAINT_CAN", 50)
+@py shop.add_prototype("SPRAY_SOLVENT", 30)
+@py shop.add_prototype("MACHETE", 150)
+@py shop.add_prototype("FRAG_GRENADE", 200)
 
-# Configure slots
-@py medstation.db.slot_inventory = {"A1": "BLOOD_BAG", "A2": "PAINKILLER", "A3": "GAUZE_BANDAGES", "B1": "SPLINT", "B2": "STIMPAK"}
-
-# Optional: Set limited stock
-@py medstation.db.unlimited_stock = False
-@py medstation.db.stock_quantities = {"A1": 5, "A2": 10, "A3": 15, "B1": 3, "B2": 2}
-
-# Adjust pricing
-@py medstation.db.price_multiplier = 1.8  # More expensive than merchant
+# Check what's in stock
+@py shop.db.prototype_inventory
+# Output: {"SPRAYPAINT_CAN": 50, "SPRAY_SOLVENT": 30, "MACHETE": 150, "FRAG_GRENADE": 200}
 ```
 
-## Integration with Existing Systems
+**Step 3: (Optional) Customize Purchase Messages**
+
+```python
+# Customize buyer message
+@py shop.db.purchase_msg_buyer = "|gExcellent choice!|n You purchase {item} for {price}."
+
+# Customize room message
+@py shop.db.purchase_msg_room = "{buyer} haggles with Juan before purchasing {item}."
+
+# Available placeholders: {buyer}, {item}, {price}, {shop}
+```
+
+**Step 4: Spawn Merchant (Optional)**
+
+```python
+# Spawn a holographic merchant from prototypes
+@spawn CORNERSTORE_MERCHANT
+
+# Or spawn directly with attributes
+@spawn {"prototype_parent": "BASE_NPC", "key": "Juan Sanchez", "typeclass": "typeclasses.characters.Character", "attrs": [("is_merchant", True), ("is_holographic", True)]}
+
+# Merchant will be invulnerable to attacks (holographic protection)
+```
+
+**Step 5: Give Players Tokens**
+
+```python
+# Give tokens to a player
+@py me.tokens = 500
+
+# Check current tokens
+@py me.tokens
+# Output: 500
+```
+
+### Complete Shop Setup Example
+
+```python
+# Create cornerstore in current room
+@create/drop shop:typeclasses.shopkeeper.ShopContainer
+@desc shop = A worn wooden shelf stocked with everyday necessities.
+@py shop.db.shop_name = "Juan's Corner Market"
+@py shop.db.container_type = "shelf"
+
+# Stock the shop
+@py shop.add_prototype("SPRAYPAINT_CAN", 50)
+@py shop.add_prototype("SPRAY_SOLVENT", 30) 
+@py shop.add_prototype("MACHETE", 100)
+@py shop.add_prototype("KEVLAR_VEST", 300)
+
+# Customize messages
+@py shop.db.purchase_msg_buyer = "|gGracias, amigo!|n You purchase {item} for {price}."
+@py shop.db.purchase_msg_room = "{buyer} buys {item} from Juan's shop."
+
+# Spawn merchant
+@spawn CORNERSTORE_MERCHANT
+
+# Give yourself tokens to test
+@py me.tokens = 1000
+
+# Test the shop
+look shop
+buy spraypaint from shop
+```
+
+### Quick Reference Commands
+
+```python
+# View shop inventory
+look shop
+
+# Buy item (fuzzy matching)
+buy spraypaint from shop
+buy can of spraypaint from shop
+buy solvent from shop
+
+# Check your tokens
+@py me.tokens
+
+# Give tokens
+@py me.tokens += 500
+
+# Remove tokens
+@py me.tokens -= 100
+
+# Check if you can afford something
+@py me.tokens >= 50  # Returns True/False
+```
+
+### Holographic Merchant Testing
+
+```python
+# Spawn holographic merchant
+@spawn HOLOGRAPHIC_MERCHANT
+
+# Try to attack it (will fail with glitch message)
+attack merchant
+
+# Output: Your attack passes through merchant's holographic form!
+```
+
+## Integration with Existing Systems (ACTUAL)
 
 ### Character Integration
 
 ```python
 # typeclasses/characters.py
 
-from world.economy.currency import CurrencyMixin
-
-class Character(CurrencyMixin, ObjectParent, DefaultCharacter):
-    """Character with currency support."""
+class Character(LivingMixin, DefaultCharacter):
+    """Character with shop/currency support."""
     
-    def at_object_creation(self):
-        """Initialize character."""
-        super().at_object_creation()
-        
-        # Give starting currency
-        from world.economy.constants import DEFAULT_STARTING_CURRENCY
-        self.credits = DEFAULT_STARTING_CURRENCY
+    # AttributeProperties for automatic initialization
+    tokens = AttributeProperty(0, category="shop", autocreate=True)
+    is_merchant = AttributeProperty(False, category="shop", autocreate=True)
+    is_holographic = AttributeProperty(False, category="shop", autocreate=True)
+    
+    def validate_attack_target(self, attacker):
+        """Check if character can be attacked (holographic protection)."""
+        if self.is_holographic:
+            attacker.msg(f"|cYour attack passes through {self.key}'s holographic form!|n")
+            attacker.location.msg_contents(
+                f"|c{attacker.key}'s attack phases harmlessly through {self.key}!|n",
+                exclude=[attacker]
+            )
+            return (False, None)
+        return (True, None)
 ```
 
 ### Prototype Integration
 
-All items in `world/prototypes.py` can be sold in shops. Merchants reference prototype keys:
+All items in `world/prototypes.py` can be sold in shops:
 
 ```python
-# Example: Weapons shop sells grenades and weapons from prototypes.py
-container.db.prototype_inventory = [
-    "FRAG_GRENADE",      # From prototypes.py
-    "TACTICAL_GRENADE",
-    "SWORD",
-    "KEVLAR_VEST",
-    "COMBAT_HELMET"
-]
+# Example: Items with value attributes
+SPRAYPAINT_CAN = {
+    "key": "can of spraypaint",
+    "typeclass": "typeclasses.items.AerosolCan",
+    "attrs": [
+        ("value", 50),           # Used for shop pricing
+        ("aerosol_contents", "spraypaint"),  # Used for display name
+        ("spray_range", 10),
+        ("spray_duration", 5)
+    ]
+}
+
+# Shop references by prototype key
+shop.add_prototype("SPRAYPAINT_CAN", 50)  # Sell for 50₮
 ```
 
 ### Combat Integration
 
-Merchants track deaths like any character:
-- Death handlers work normally
-- Combat system recognizes merchants as valid targets
-- Holographics still "die" but respawn instantly
-- NPC merchants need replacement
+Holographic merchants are protected via `validate_attack_target()`:
 
-## Testing Checklist
+```python
+# In CmdAttack (commands/combat/core_actions.py)
+if hasattr(target, 'validate_attack_target'):
+    can_attack, error_msg = target.validate_attack_target(caller)
+    if not can_attack:
+        if error_msg:
+            caller.msg(error_msg)
+        return  # Attack prevented
+```
 
-### Phase 1 - Fixed Shops
-- [ ] Currency system works (buy/sell/check balance)
-- [ ] Room-based shops persist when merchant dies
-- [ ] Room.setup_as_shop() configures shop_config correctly
-- [ ] Room.spawn_merchant() creates Character from template
-- [ ] Merchants respawn from templates after configured delay (default 5 min)
-- [ ] Holographic merchants are invulnerable (attacks pass through)
-- [ ] ShopContainer displays prototype inventory correctly
-- [ ] Items spawn correctly from prototypes on purchase
-- [ ] Merchant templates apply stats and personality correctly
-- [ ] Pricing calculations work (room's upsell factor)
-- [ ] Vending machines work with slot-based purchases
-- [ ] Buy command works with and without "from" syntax
-- [ ] Buy command requires merchant present (unless allows_unmanned_sales set)
-- [ ] Shop appears "closed" when merchant is absent
-- [ ] Looking at containers shows their inventory
-- [ ] Builders can easily set up shops via @py commands
+### Hands System Integration
+
+Purchased items auto-wield in hands if available:
+
+```python
+# In CmdBuy._give_item_to_buyer()
+if hasattr(buyer, 'wield_item'):
+    buyer.wield_item(item)  # Automatically equips in hands
+else:
+    # Fallback if no hands system
+    item.location = buyer
+```
+
+## Testing Checklist - Phase 1 (ACTUAL)
+
+### Core Functionality
+- [x] Currency system works (tokens AttributeProperty with default 0)
+- [x] ShopContainer displays prototype inventory correctly
+- [x] Items spawn correctly from prototypes on purchase
+- [x] Pricing uses prototype value attributes
+- [x] Buy command works with fuzzy item name matching
+- [x] Dynamic display names work (cans use aerosol_contents)
+- [x] Purchased items appear in hands system
+- [x] Purchase messages are customizable per container
+- [x] Token deduction works correctly
+
+### Merchant System
+- [x] Holographic merchants are invulnerable (attacks pass through)
+- [x] Merchants spawn from regular prototypes (@spawn HOLOGRAPHIC_MERCHANT)
+- [x] is_merchant and is_holographic flags work via AttributeProperties
+- [x] Combat system respects holographic protection
+
+### Builder Workflow
+- [x] Can create shops with @create and @py commands
+- [x] Can add items with shop.add_prototype(key, price)
+- [x] Can customize purchase messages
+- [x] Can spawn merchants with @spawn
+- [x] Can give tokens with char.tokens = amount
+- [x] Look at shop shows formatted inventory
+
+### Edge Cases
+- [x] Handles None vs 0 tokens correctly (AttributeProperty default)
+- [x] Items spawn to correct location (explicit item.location = buyer)
+- [x] Wield integration works correctly
+- [x] Multiple items with same base name distinguished (cans)
+- [x] Free items (0₮) display correctly
+
+### NOT Implemented in Phase 1
+- [ ] Room-based shop configuration (original spec)
+- [ ] MerchantTemplate system (original spec)
+- [ ] Merchant respawning (original spec)
+- [ ] Vending machines (original spec)
+- [ ] Limited stock mode (infinite only)
+- [ ] Dynamic pricing/haggling
+- [ ] Marketplace mazes
+- [ ] Player-owned shops
+
+## Future Phases (NOT IMPLEMENTED)
 
 ### Phase 2 - Marketplaces (Future)
 - [ ] Marketplace rooms reconfigure on timers
