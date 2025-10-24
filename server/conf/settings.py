@@ -61,6 +61,12 @@ CSRF_TRUSTED_ORIGINS = ['https://gel.monster', 'https://play.gel.monster', 'http
 # the websocket one.
 WEBCLIENT_ENABLED = True
 
+# Websocket client port (default 4002)
+WEBSOCKET_CLIENT_PORT = 4002
+
+# Force secure websocket in production (wss:// instead of ws://)
+WEBSOCKET_CLIENT_URL = "wss://gel.monster:4002"
+
 # Default exit typeclass
 DEFAULT_EXIT_TYPECLASS = "typeclasses.exits.Exit"
 
