@@ -7,7 +7,7 @@ services:
     ports:
       - "23:23"
       - "80:4001"
-      - "4002:4002"
+      - "8443:4002"
     volumes:
       - /home/ubuntu/gel.monster/gelatinous:/usr/src/game
       - evennia_db:/usr/src/evennia/game/server
