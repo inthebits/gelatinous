@@ -182,12 +182,15 @@ class ShopContainer(DefaultObject):
         Returns:
             str: Display name for the item
         """
-        # Special handling for known dynamic-name items
-        # This avoids expensive spawning operations
-        if prototype_key == "spraypaint_can":
-            return "can of spraypaint"
-        elif prototype_key == "solvent_can":
-            return "can of solvent"
+        # Special handling for aerosol cans (spray/solvent)
+        # Check if prototype has aerosol_contents attribute
+        attrs = prototype.get("attrs", [])
+        for attr in attrs:
+            if isinstance(attr, tuple) and len(attr) >= 2:
+                attr_name, attr_value = attr[0], attr[1]
+                if attr_name == "aerosol_contents":
+                    # Build name from contents: "can of spraypaint", "can of solvent"
+                    return f"can of {attr_value}"
         
         # For most items, just use the key from prototype
         return prototype.get("key", prototype_key)
