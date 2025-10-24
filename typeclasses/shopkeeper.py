@@ -200,8 +200,24 @@ class ShopContainer(DefaultObject):
                 continue
             prototype = prototype[0]
             
-            # Get item name and description
-            item_name = prototype.get("key", prototype_key)
+            # Get item name - check if typeclass has get_display_name
+            # For items like cans that build their name dynamically
+            typeclass_path = prototype.get("typeclass")
+            item_name = None
+            
+            if typeclass_path:
+                # Try to spawn a temporary instance to get display name
+                from evennia.prototypes.spawner import spawn
+                temp_obj = spawn(prototype)[0]
+                if hasattr(temp_obj, 'get_display_name'):
+                    item_name = temp_obj.get_display_name(viewer)
+                else:
+                    item_name = temp_obj.key
+                temp_obj.delete()
+            
+            # Fallback to prototype key
+            if not item_name:
+                item_name = prototype.get("key", prototype_key)
             
             # Check stock status
             if self.db.is_infinite:
