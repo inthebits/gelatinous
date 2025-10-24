@@ -87,10 +87,22 @@ class CmdBuy(Command):
         # Give item to buyer using proper hands integration
         self._give_item_to_buyer(caller, item)
         
+        # Get custom messages from shop or use defaults
+        msg_buyer = container.db.purchase_msg_buyer or "You purchase {item} for {price}."
+        msg_room = container.db.purchase_msg_room or "{buyer} purchases {item} from {shop}."
+        
+        # Format messages with placeholders
+        format_data = {
+            "buyer": caller.get_display_name(caller),
+            "item": item.get_display_name(caller),
+            "price": format_currency(price),
+            "shop": container.get_display_name(caller)
+        }
+        
         # Success messages
-        caller.msg(f"You purchase {item.get_display_name(caller)} for {format_currency(price)}.")
+        caller.msg(msg_buyer.format(**format_data))
         caller.location.msg_contents(
-            f"{caller.get_display_name(caller)} purchases {item.get_display_name(caller)} from {container.get_display_name(caller)}.",
+            msg_room.format(**format_data),
             exclude=caller
         )
         
