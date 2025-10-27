@@ -402,25 +402,9 @@ class DeathProgressionScript(DefaultScript):
         # Apply final death state (if not already done)
         if hasattr(character, 'apply_final_death_state'):
             character.apply_final_death_state()
-            
-        # Clean up medical script since character is permanently dead
-        try:
-            medical_scripts = character.scripts.get("medical_script")
-            if medical_scripts:
-                for script in medical_scripts:
-                    script.stop()
-                    script.delete()
-                try:
-                    splattercast = ChannelDB.objects.get_channel("Splattercast")
-                    splattercast.msg(f"FINAL_DEATH_CLEANUP: Deleted medical script for {character.key}")
-                except:
-                    pass
-        except Exception as e:
-            try:
-                splattercast = ChannelDB.objects.get_channel("Splattercast")
-                splattercast.msg(f"FINAL_DEATH_CLEANUP_ERROR: Failed to delete medical script for {character.key}: {e}")
-            except:
-                pass
+        
+        # Note: Medical script cleanup now happens in _complete_death_progression
+        # before teleport to prevent hook spam
             
         # Complete death progression - corpse creation and character transition
         self._handle_corpse_creation_and_transition(character)
@@ -589,6 +573,35 @@ class DeathProgressionScript(DefaultScript):
         
         # Note: death_count will be incremented by archive_character() below
         # We don't increment here to avoid double-counting
+        
+        # Stop and delete medical scripts BEFORE teleport to prevent hook spam
+        try:
+            from evennia.scripts.models import ScriptDB
+            medical_scripts = ScriptDB.objects.filter(
+                db_obj=character,
+                db_key="medical_script"
+            )
+            for script in medical_scripts:
+                try:
+                    script.stop()
+                    script.delete()
+                    try:
+                        splattercast = ChannelDB.objects.get_channel("Splattercast")
+                        splattercast.msg(f"DEATH_MEDICAL_CLEANUP: Stopped and deleted medical script for {character.key}")
+                    except:
+                        pass
+                except Exception as e:
+                    try:
+                        splattercast = ChannelDB.objects.get_channel("Splattercast")
+                        splattercast.msg(f"DEATH_MEDICAL_CLEANUP_ERROR: {character.key} - {e}")
+                    except:
+                        pass
+        except Exception as e:
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"DEATH_MEDICAL_CLEANUP_FAIL: {character.key} - {e}")
+            except:
+                pass
         
         # Move character to limbo/OOC room (Evennia's default limbo is #2)
         # Use move_hooks=False to prevent medical script spam on teleport
