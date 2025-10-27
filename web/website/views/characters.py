@@ -249,7 +249,7 @@ class CharacterCreateView(EvenniaCharacterCreateView):
             
         except Exception as e:
             messages.error(request, f"Sleeve decantation failed: {str(e)}")
-            return HttpResponseRedirect(request.path)
+            return HttpResponseRedirect(self.success_url)
     
     def form_valid(self, form):
         """
