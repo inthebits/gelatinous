@@ -692,3 +692,28 @@ STAT_TIER_RANGES = [
     (73, 78), (67, 72), (61, 66), (55, 60), (49, 54), (43, 48),
     (37, 42), (31, 36), (25, 30), (19, 24), (13, 18), (7, 12), (1, 6), (0, 0)
 ]
+
+# ===================================================================
+# DEATH SYSTEM CONSTANTS
+# ===================================================================
+
+# Death progression timing
+# Total duration before permanent death (in seconds)
+# Default: 360 seconds (6 minutes) - provides RP and revival window
+# For testing: Can be reduced to 60 (1 minute) or 120 (2 minutes) for faster iteration
+DEATH_PROGRESSION_DURATION = 90
+
+# How often to check and send progression messages (in seconds)
+# Messages will be distributed evenly across the total duration
+DEATH_PROGRESSION_CHECK_INTERVAL = 30
+
+# Number of progression messages to send during death window
+# Messages will be spaced evenly: DURATION / NUM_MESSAGES
+DEATH_PROGRESSION_MESSAGE_COUNT = 11
+
+# Decay system timing for corpses (in seconds)
+CORPSE_DECAY_FRESH = 3600      # < 1 hour - fresh corpse
+CORPSE_DECAY_EARLY = 86400     # < 1 day - early decomposition
+CORPSE_DECAY_MODERATE = 259200 # < 3 days - moderate decomposition
+CORPSE_DECAY_ADVANCED = 604800 # < 1 week - advanced decomposition
+CORPSE_DECAY_COMPLETE = 1209600 # 2 weeks - complete decay and cleanup

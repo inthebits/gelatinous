@@ -242,6 +242,47 @@ def _strip_color_codes(text):
 
 ---
 
+## Death Progression Configuration
+
+The death system consists of two parts: the death curtain animation (~5-10 seconds) followed by a configurable death progression timer.
+
+### Configuration Constants
+
+All death progression timing is controlled in `world/combat/constants.py`:
+
+```python
+# Death progression timing
+DEATH_PROGRESSION_DURATION = 90           # Total time before permanent death (seconds)
+DEATH_PROGRESSION_CHECK_INTERVAL = 30     # How often to check and send messages (seconds)
+DEATH_PROGRESSION_MESSAGE_COUNT = 11      # Number of progression messages to send
+```
+
+### Common Configurations
+
+**Production (Default):**
+```python
+DEATH_PROGRESSION_DURATION = 360          # 6 minutes - full dramatic experience
+```
+
+**Testing:**
+```python
+DEATH_PROGRESSION_DURATION = 90           # 90 seconds - faster iteration
+DEATH_PROGRESSION_DURATION = 60           # 60 seconds - very fast testing
+```
+
+### How It Works
+
+1. **Death Curtain** → Animation plays (~5-10 seconds)
+2. **Death Progression** → Timer begins with periodic messages
+3. **Medical Window** → Characters can attempt revival during this time
+4. **Final Death** → After duration expires, permanent death occurs
+
+Messages are automatically distributed evenly across the total duration. For example, with 90 seconds and 11 messages, they appear every ~8 seconds.
+
+To apply changes: Edit constants, then `@reload` or restart the server.
+
+---
+
 ## Future Enhancements
 
 - **Multiple Sea Characters**: Different background patterns for different death types
