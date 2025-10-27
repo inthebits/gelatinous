@@ -26,6 +26,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, HttpResponseRedirect
 from django.views.decorators.http import require_http_methods
 
+import logging
+logger = logging.getLogger(__name__)
 
 def get_discourse_sso_secret():
     """Get the SSO secret from settings."""
@@ -108,7 +110,8 @@ def discourse_sso(request):
         decoded_payload = base64.b64decode(payload).decode('utf-8')
         params = parse_qs(decoded_payload)
     except Exception as e:
-        return HttpResponseBadRequest(f"Invalid payload: {e}")
+        logger.exception("Failed to decode or parse SSO payload")
+        return HttpResponseBadRequest("Invalid payload")
     
     # Extract nonce (required by Discourse)
     nonce = params.get('nonce', [None])[0]
