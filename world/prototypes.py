@@ -131,7 +131,7 @@ STICKY_GRENADE = {
     "key": "SPDR M9 grenade",
     "aliases": ["spdr", "spider grenade", "m9", "sticky grenade", "sticky"],
     "desc": "A SPDR M9 'Spider' - originally designed for breaching and clearing metallic ore deposits in asteroid mining operations. A compact black sphere bristling with eight telescoping articulated legs that extend on deployment. The moment it's thrown, tiny servos activate and the legs begin seeking ferrous metal surfaces with the single-minded purpose of industrial demolition equipment. Once proximity is achieved, powerful electromagnets pulse through the leg tips, causing them to skitter and latch onto the target with frightening precision. The magnetic adhesion is so strong that removing the stuck surface is the only way to separate yourself from the device. A soft blue LED pulses faster as detonation approaches. What was once a tool for breaking apart ore-rich asteroids has found a darker purpose in combat scenarios.",
-    "fuse_time": 6,  # Shorter fuse for tactical use
+    "fuse_time": 10,  # Longer fuse for tactical use
     "blast_damage": 30,
     "dud_chance": 0.02,  # Industrial reliability standards
     "damage_type": "laceration",
