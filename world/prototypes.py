@@ -548,6 +548,15 @@ Phase 1 & 2 COMPLETE: Core infrastructure with dynamic styling and appearance in
 - Coverage-based visibility masking of longdesc locations
 - Inventory integration showing style states
 
+LAYERING SYSTEM:
+Layer 0: Direct skin contact (underwear, thin socks)
+Layer 1: Base clothing (t-shirts, tactical undergarments)
+Layer 2: Regular clothing (jeans, hoodies, regular shirts)
+Layer 3: Footwear (boots, shoes - doesn't conflict with pants)
+Layer 4: Light armor (plate carriers, kevlar vests)
+Layer 5: Heavy armor (future: full plate, power armor)
+Layer 6: Outer layers (future: coats, cloaks, ponchos)
+
 FUTURE EXPANSION POSSIBILITIES:
 - Phase 3: Advanced layer conflict resolution, staff targeting commands
 - Material Physics: Durability, weather resistance, cleaning requirements
@@ -572,7 +581,7 @@ CODER_SOCKS = {
         # Basic clothing attributes
         ("coverage", ["left_foot", "right_foot", "left_shin", "right_shin", "left_thigh", "right_thigh"]),
         ("worn_desc", "Electric {color}rainbow|n coding socks stretching up {their} thighs, {their} prismatic patterns pulsing with soft bioluminescent threads that seem to respond to neural activity"),
-        ("layer", 1),  # Undergarment layer
+        ("layer", 0),  # Direct skin contact layer (underwear, thin socks)
         ("color", "bright_magenta"),
         ("material", "synthetic"),
         ("weight", 0.2),  # Very light
@@ -625,7 +634,7 @@ DEV_HOODIE = {
         # Clothing attributes
         ("coverage", ["chest", "back", "abdomen", "left_arm", "right_arm"]),
         ("worn_desc", "A menacing {color}black|n developer hoodie draped loose and open, the cryptic green 'rm -rf /' text glowing with malevolent promise while embedded LED threads create subtle data-stream patterns across {their} fabric"),
-        ("layer", 2),  # Base clothing
+        ("layer", 2),  # Regular clothing layer
         ("color", "black"),
         ("material", "cotton"),
         ("weight", 1.8),  # Moderate weight
@@ -678,7 +687,7 @@ BLUE_JEANS = {
         ("category", "clothing"),
         ("worn_desc", "Battle-tested {color}denim|n jeans that cling to {their} form with urban authority, {their} faded indigo surface scarred by countless encounters with concrete and circumstance"),
         ("coverage", ["groin", "left_thigh", "right_thigh", "left_shin", "right_shin"]),
-        ("layer", 2),
+        ("layer", 2),  # Regular clothing layer
         ("color", "blue"),
         ("material", "denim"),
         ("weight", 1.5),  # Moderate weight
@@ -730,7 +739,7 @@ COTTON_TSHIRT = {
         ("category", "clothing"),
         ("worn_desc", "A deceptively simple {color}white|n cotton t-shirt that seems to absorb and reflect the ambient light of {their} urban environment, its clean lines and perfect fit suggesting either careful maintenance or recent acquisition"),
         ("coverage", ["chest", "back", "abdomen"]),
-        ("layer", 2),
+        ("layer", 1),  # Base clothing layer (worn under hoodies/jackets)
         ("color", "white"),
         ("material", "cotton"),
         ("weight", 0.4),  # Light weight
@@ -771,7 +780,7 @@ COMBAT_BOOTS = {
         ("category", "clothing"),
         ("worn_desc", "Imposing {color}black leather|n combat boots laced with military precision, {their} steel-reinforced toes and deep-tread soles speaking of {their} owner's serious intent while weathered leather tells stories of urban warfare and late-night foot chases"),
         ("coverage", ["left_foot", "right_foot", "left_shin", "right_shin"]),
-        ("layer", 2),
+        ("layer", 3),  # Footwear layer (doesn't conflict with pants)
         ("color", "black"),
         ("material", "leather"),
         
@@ -818,7 +827,7 @@ TACTICAL_JUMPSUIT = {
         # Clothing attributes
         ("coverage", ["chest", "back", "abdomen", "groin", "left_arm", "right_arm", "left_thigh", "right_thigh", "left_shin", "right_shin", "left_foot", "right_foot"]),
         ("worn_desc", "A sleek {color}black|n tactical jumpsuit that hugs their form like a second skin, its reinforced synthetic weave providing minimal protection while prioritizing mobility and tactical flexibility"),
-        ("layer", 1),  # Base layer
+        ("layer", 1),  # Base clothing layer (worn under armor)
         ("color", "black"),
         ("material", "synthetic"),
         ("weight", 1.8),  # Lightweight
@@ -846,7 +855,7 @@ TACTICAL_PANTS = {
         # Clothing attributes
         ("coverage", ["groin", "left_thigh", "right_thigh", "left_shin", "right_shin"]),
         ("worn_desc", "Durable {color}black|n tactical pants with reinforced knees and cargo pockets, their ripstop fabric providing minimal protection while maintaining tactical functionality"),
-        ("layer", 1),  # Base layer
+        ("layer", 1),  # Base clothing layer (worn under armor)
         ("color", "black"),
         ("material", "synthetic"),
         ("weight", 1.2),
@@ -874,7 +883,7 @@ TACTICAL_SHIRT = {
         # Clothing attributes
         ("coverage", ["chest", "back", "abdomen", "left_arm", "right_arm"]),
         ("worn_desc", "A practical {color}black|n tactical shirt with moisture-wicking fabric, its reinforced shoulders and minimal protection designed to serve as a foundation for armor systems"),
-        ("layer", 1),  # Base layer
+        ("layer", 1),  # Base clothing layer (worn under armor)
         ("color", "black"),
         ("material", "synthetic"),
         ("weight", 0.8),
@@ -906,7 +915,7 @@ PLATE_CARRIER = {
         # Clothing attributes
         ("coverage", ["chest", "back", "abdomen"]),
         ("worn_desc", "A professional {color}tan|n plate carrier with tactical webbing and modular plate pockets, its adjustable straps and MOLLE system creating a foundation for serious ballistic protection"),
-        ("layer", 3),  # Outer armor layer
+        ("layer", 4),  # Light armor layer
         ("color", "tan"),
         ("material", "nylon"),
         ("weight", 2.5),  # Just the carrier itself
@@ -1078,7 +1087,7 @@ KEVLAR_VEST = {
         # Clothing attributes
         ("coverage", ["chest", "back", "abdomen"]),
         ("worn_desc", "A professional {color}black|n kevlar vest with trauma plates, its tactical webbing and ballistic panels speaking of serious protection against projectile threats"),
-        ("layer", 3),  # Outer armor layer
+        ("layer", 4),  # Light armor layer
         ("color", "black"),
         ("material", "kevlar"),
         ("weight", 4.5),  # Moderate weight
@@ -1096,6 +1105,101 @@ KEVLAR_VEST = {
         # Sticky grenade properties (kevlar with steel trauma plates)
         ("metal_level", 7),      # High metal (embedded steel plates)
         ("magnetic_level", 6),   # High magnetic (steel trauma plates)
+    ],
+}
+
+# =============================================================================
+# BEE HIVE ARMORED COVERALL - Swarm-Themed Tactical Armor
+# =============================================================================
+
+BEE_HIVE_COVERALL = {
+    "key": "HIVE-MIND Mark VII coverall",
+    "aliases": ["hive coverall", "bee armor", "hive-mind", "swarm suit", "bee suit"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": (
+        "A HIVE-MIND Mark VII tactical coverall that defies conventional armor design philosophy with its revolutionary bio-mimetic approach. "
+        "The entire surface is covered in thousands of hexagonal ceramic composite cells arranged in a perfect honeycomb lattice, each cell "
+        "independently articulated on microscopic servo-actuators that create a constantly shifting, organic movement across the armor's surface. "
+        "The base color is a deep amber-gold that seems to glow from within, overlaid with bold black striping patterns that flow across the torso, "
+        "arms, and legs in asymmetric warning coloration that triggers primal recognition responses in observers.\n\n"
+        "Embedded bioluminescent fibers pulse gently beneath the hexagonal cells, creating the illusion of thousands of worker bees moving just "
+        "beneath the surface—an effect that becomes more pronounced in low light, where the entire suit seems to writhe with insectile life. "
+        "The collar area features raised ridges that mimic the segmented thorax of a bee, while the back incorporates subtle wing-like panels "
+        "that serve both aesthetic and heat-dissipation purposes.\n\n"
+        "Most unsettling are the micro-speakers distributed throughout the suit's surface, which emit a constant low-frequency buzz that can be "
+        "felt in the bones more than heard—a psychological warfare tool that triggers instinctive flight responses in those nearby. The manufacturer's "
+        "documentation suggests this 'harmonic resonance system' was inspired by defensive bee swarm behavior, creating an auditory territoriality "
+        "field that makes opponents unconsciously maintain distance.\n\n"
+        "The armor's smart-material construction allows the hexagonal cells to lock rigid on impact, distributing force across the entire lattice "
+        "structure like a hive distributing the workload among workers. Each cell can also independently adjust its angle to deflect incoming "
+        "projectiles, creating a surface that seems to flow and redirect attacks rather than simply absorb them. The overall effect is of wearing "
+        "a living colony—beautiful, alien, and deeply disturbing in its implication that the wearer has merged with the swarm."
+    ),
+    "attrs": [
+        # Clothing attributes - full body coverage like jumpsuit
+        ("coverage", ["chest", "back", "abdomen", "groin", "left_arm", "right_arm", "left_thigh", "right_thigh", "left_shin", "right_shin"]),
+        ("worn_desc", (
+            "A mesmerizing HIVE-MIND Mark VII coverall coating {their} form in thousands of articulating hexagonal amber-and-black cells "
+            "that ripple and shift like a living bee colony, the constant low-frequency buzz emanating from its surface making the air "
+            "itself seem to vibrate with barely-contained aggression while bioluminescent patterns pulse beneath the honeycomb lattice "
+            "like worker bees moving through dark corridors"
+        )),
+        ("layer", 4),  # Light armor layer (same as plate carrier/kevlar)
+        ("color", "amber"),  # Amber-gold primary color
+        ("material", "ceramic_composite"),  # Advanced materials
+        ("weight", 6.8),  # Heavier than kevlar, lighter than steel plate
+        
+        # Armor attributes - excellent distributed protection
+        ("armor_rating", 7),        # Very good protection (between kevlar and steel)
+        ("armor_type", "ceramic"),  # Ceramic composite - excellent vs projectiles
+        ("armor_durability", 140),  # Rating * 20
+        ("max_armor_durability", 140),
+        ("base_armor_rating", 7),
+        
+        # Combat stats - the hexagonal lattice has interesting properties
+        ("deflection_bonus", 0.15),  # +3 to deflection (cells redirect impacts!)
+        
+        # Sticky grenade properties (ceramic composite with minimal metal framework)
+        ("metal_level", 3),      # Low metal (internal framework only)
+        ("magnetic_level", 0),   # Non-magnetic (ceramic/titanium construction)
+        
+        # Style system for bee armor
+        ("style_configs", {
+            "adjustable": {
+                "normal": {
+                    "coverage_mod": [],
+                    "desc_mod": ""  # Use base worn_desc
+                },
+                "rolled": {
+                    "coverage_mod": ["-left_shin", "-right_shin"],
+                    "desc_mod": (
+                        "A mesmerizing HIVE-MIND Mark VII coverall with lower sections rolled up to expose {their} calves, "
+                        "the exposed hexagonal cells at the roll line still pulsing with bioluminescent patterns as if "
+                        "the hive extends beyond what's visible, worker bees still toiling in phantom corridors"
+                    )
+                }
+            },
+            "closure": {
+                "zipped": {
+                    "coverage_mod": [],
+                    "desc_mod": ""  # Use base worn_desc - sealed and buzzing
+                },
+                "unzipped": {
+                    "coverage_mod": ["-chest", "-abdomen"],
+                    "desc_mod": (
+                        "A mesmerizing HIVE-MIND Mark VII coverall hanging partially open to reveal {their} torso beneath, "
+                        "the separated hexagonal cells along the zipper line reorganizing themselves in real-time like "
+                        "a hive adapting to structural damage, their golden bioluminescence dimmed but still pulsing "
+                        "with patient, insectile purpose"
+                    )
+                }
+            }
+        }),
+        
+        ("style_properties", {
+            "adjustable": "normal",
+            "closure": "zipped"  # Fully sealed for maximum swarm effect
+        })
     ],
 }
 
