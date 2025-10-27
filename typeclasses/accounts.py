@@ -229,6 +229,21 @@ class Account(DefaultAccount):
             try:
                 from commands.charcreate import start_character_creation
                 
+                # Restore last_character if it's missing but we have archived characters
+                # This handles cases where last_character was cleared or lost
+                if not self.db.last_character:
+                    # Find most recently archived character
+                    archived_chars = []
+                    for char in all_characters:
+                        if getattr(char.db, 'archived', False) is True:
+                            archived_date = getattr(char.db, 'archived_date', 0)
+                            archived_chars.append((archived_date, char))
+                    
+                    # Sort by archive date (most recent first) and use the newest
+                    if archived_chars:
+                        archived_chars.sort(reverse=True, key=lambda x: x[0])
+                        self.db.last_character = archived_chars[0][1]
+                
                 # Check if they have a last_character (from death or manual archival)
                 # If so, use respawn flow with flash clone + template options
                 is_respawn = bool(self.db.last_character)
