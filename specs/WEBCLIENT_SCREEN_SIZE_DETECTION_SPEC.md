@@ -1110,7 +1110,7 @@ Base: 1.0em = ~10px character width
 **Related Documents:**
 - `AGENTS.md` - G.R.I.M. Combat System architecture reference
 - `PROJECT_OVERVIEW.md` - Overall project context
-- `COMBAT_SYSTEM.md` - Combat system user documentation
+- `specs/COMBAT_SYSTEM.md` - Combat system user documentation
 - Evennia Documentation: [Web Client](https://www.evennia.com/docs/latest/Components/Webclient.html)
 - Evennia Documentation: [Inputfuncs](https://www.evennia.com/docs/latest/Components/Inputfuncs.html)
 - RFC 1073: [Telnet NAWS Protocol](https://www.ietf.org/rfc/rfc1073.txt)

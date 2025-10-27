@@ -31,7 +31,7 @@
 - Comprehensive project documentation suite
 - `PROJECT_OVERVIEW.md` - Main project documentation
 - `ARCHITECTURE.md` - File structure and architectural decisions
-- `COMBAT_SYSTEM.md` - G.R.I.M. combat system documentation
+- `specs/COMBAT_SYSTEM.md` - G.R.I.M. combat system documentation
 - `DEVELOPMENT_GUIDE.md` - Developer guidelines and best practices
 - Security exclusions to `.gitignore` for sensitive configuration files
 - **Complete Throw Command System** - Production-ready throwing mechanics

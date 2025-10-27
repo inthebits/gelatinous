@@ -437,7 +437,7 @@ class CombatEventBus:
 ### Project-Specific Documentation
 - `PROJECT_OVERVIEW.md` - Project overview and philosophy
 - `ARCHITECTURE.md` - File structure and architectural decisions
-- `COMBAT_SYSTEM.md` - Combat system documentation
+- `specs/COMBAT_SYSTEM.md` - Combat system documentation
 - Module-specific README files
 
 ---

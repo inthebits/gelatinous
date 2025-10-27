@@ -147,7 +147,7 @@ class CmdFreeHands(Command):
     """
 
     key = "freehands"
-    aliases = ["free hands"]
+    aliases = ["fh"]
 
     def func(self):
         caller = self.caller
@@ -183,7 +183,7 @@ class CmdInventory(Command):
     """
 
     key = "inventory"
-    aliases = ["inv"]
+    aliases = ["inv", "i"]
 
     def func(self):
         caller = self.caller
