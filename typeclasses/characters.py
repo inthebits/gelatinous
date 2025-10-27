@@ -1249,7 +1249,8 @@ class Character(ObjectParent, DefaultCharacter):
             return "You can't wield something you're wearing. Remove it first."
 
         hands[hand] = item
-        item.location = None
+        # Keep item.location = self (wielded items stay in inventory location-wise)
+        # They're just tracked separately in the hands dict
         self.hands = hands  # Save updated hands dict
         return f"You wield {item.get_display_name(self)} in your {hand} hand."
     
