@@ -34,6 +34,15 @@ class CmdWear(Command):
         
         # Find the item in inventory
         item = caller.search(self.args.strip(), location=caller, quiet=True)
+        
+        # If not found in inventory, check hands (wielded items)
+        if not item:
+            hands = getattr(caller, 'hands', {})
+            for hand, held_item in hands.items():
+                if held_item and held_item.key.lower() == self.args.strip().lower():
+                    item = held_item
+                    break
+        
         if not item:
             caller.msg(f"You don't have '{self.args.strip()}'.")
             return

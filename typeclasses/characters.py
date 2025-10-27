@@ -1232,6 +1232,14 @@ class Character(ObjectParent, DefaultCharacter):
 
         if hands[hand]:
             return f"You're already holding something in your {hand}."
+        
+        # Check if item is already in another hand
+        for other_hand, held_item in hands.items():
+            if held_item == item:
+                if other_hand == hand:
+                    return f"You're already wielding {item.get_display_name(self)} in your {hand} hand."
+                else:
+                    return f"You're already wielding {item.get_display_name(self)} in your {other_hand} hand."
 
         if item.location != self:
             return "You're not carrying that item."
