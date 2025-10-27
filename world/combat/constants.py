@@ -703,13 +703,15 @@ STAT_TIER_RANGES = [
 # For testing: Can be reduced to 60 (1 minute) or 120 (2 minutes) for faster iteration
 DEATH_PROGRESSION_DURATION = 90
 
-# How often to check and send progression messages (in seconds)
-# Messages will be distributed evenly across the total duration
-DEATH_PROGRESSION_CHECK_INTERVAL = 30
-
 # Number of progression messages to send during death window
 # Messages will be spaced evenly: DURATION / NUM_MESSAGES
 DEATH_PROGRESSION_MESSAGE_COUNT = 11
+
+# How often to check and send progression messages (in seconds)
+# Auto-calculated to be ~60% of message spacing for accurate timing
+# This ensures messages appear at the right time regardless of duration
+_message_spacing = DEATH_PROGRESSION_DURATION // DEATH_PROGRESSION_MESSAGE_COUNT
+DEATH_PROGRESSION_CHECK_INTERVAL = max(1, int(_message_spacing * 0.6))
 
 # Decay system timing for corpses (in seconds)
 CORPSE_DECAY_FRESH = 3600      # < 1 hour - fresh corpse

@@ -587,19 +587,15 @@ class DeathProgressionScript(DefaultScript):
         # Get account reference before unpuppeting
         account = character.account
         
-        # Increment death count - this is the definitive point of permanent death
-        character.death_count += 1
-        try:
-            splattercast = ChannelDB.objects.get_channel("Splattercast")
-            splattercast.msg(f"DEATH_COUNT_INCREMENT: {character.key} death_count now {character.death_count}")
-        except:
-            pass
+        # Note: death_count will be incremented by archive_character() below
+        # We don't increment here to avoid double-counting
         
         # Move character to limbo/OOC room (Evennia's default limbo is #2)
+        # Use move_hooks=False to prevent medical script spam on teleport
         try:
             limbo_room = search_object("#2")[0]  # Limbo room
             old_location = character.location
-            character.move_to(limbo_room, quiet=True)
+            character.move_to(limbo_room, quiet=True, move_hooks=False)
             
             # Debug logging for successful teleportation
             try:
