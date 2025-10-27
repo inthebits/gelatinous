@@ -20,6 +20,7 @@ import base64
 import hmac
 import hashlib
 from urllib.parse import parse_qs, urlencode, unquote
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -153,6 +154,12 @@ def discourse_sso(request):
     if not return_sso_url:
         return HttpResponseBadRequest("Missing return_sso_url in payload")
     
+    # Validate the return URL to prevent open redirect attacks
+    # (If you control the Discourse domain, you can specify it; else, this allows only relative URLs by default)
+    if not url_has_allowed_host_and_scheme(return_sso_url, allowed_hosts=None):
+        logger.warning("Unsafe or unallowed return_sso_url: %s", return_sso_url)
+        return HttpResponseBadRequest("Unsafe return_sso_url")
+
     # Build redirect URL with signed response
     redirect_url = f"{unquote(return_sso_url)}?sso={response_payload}&sig={response_signature}"
     
