@@ -155,8 +155,16 @@ def discourse_sso(request):
         return HttpResponseBadRequest("Missing return_sso_url in payload")
     
     # Validate the return URL to prevent open redirect attacks
-    # (If you control the Discourse domain, you can specify it; else, this allows only relative URLs by default)
-    if not url_has_allowed_host_and_scheme(return_sso_url, allowed_hosts=None):
+    # Extract allowed hosts from DISCOURSE_URL setting
+    discourse_url = getattr(settings, 'DISCOURSE_URL', '')
+    allowed_hosts = None
+    if discourse_url:
+        from urllib.parse import urlparse
+        parsed = urlparse(discourse_url)
+        if parsed.hostname:
+            allowed_hosts = [parsed.hostname]
+    
+    if not url_has_allowed_host_and_scheme(return_sso_url, allowed_hosts=allowed_hosts):
         logger.warning("Unsafe or unallowed return_sso_url: %s", return_sso_url)
         return HttpResponseBadRequest("Unsafe return_sso_url")
 
