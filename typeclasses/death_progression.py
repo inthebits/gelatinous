@@ -288,9 +288,18 @@ class DeathProgressionScript(DefaultScript):
         remaining = self.db.total_duration - elapsed
         minutes_remaining = int(remaining / 60)
         
-        # Select message based on interval
-        messages = self._get_progression_messages()
-        message_data = messages.get(interval, messages[330])  # Default to final message
+        # Calculate which message index to use based on interval position
+        # This ensures messages scale with duration
+        try:
+            message_index = self.db.message_intervals.index(interval)
+        except (ValueError, AttributeError):
+            message_index = len(self.db.message_intervals) - 1  # Default to last message
+        
+        # Get all messages as a list
+        messages_list = self._get_progression_messages()
+        
+        # Use modulo to ensure we don't exceed available messages
+        message_data = messages_list[message_index % len(messages_list)]
         
         # Send message to dying character with death progression script as from_obj
         character.msg(message_data["dying"], from_obj=self)
@@ -300,58 +309,58 @@ class DeathProgressionScript(DefaultScript):
         # Log progression
         try:
             splattercast = ChannelDB.objects.get_channel("Splattercast")
-            splattercast.msg(f"DEATH_PROGRESSION: {character.key} at {interval}s - {minutes_remaining}m remaining")
+            splattercast.msg(f"DEATH_PROGRESSION: {character.key} at {interval}s (msg {message_index + 1}/{len(messages_list)}) - {minutes_remaining}m remaining")
         except:
             pass
             
     def _get_progression_messages(self):
-        """Get the progression messages for different time intervals."""
-        return {
-            30: {  # 30 seconds - 5.5 minutes left
+        """Get the progression messages as an ordered list."""
+        return [
+            {  # Message 0 - First progression message
                 "dying": "|nTime becomes elastic, like chewing gum stretched between your teeth, and the fluorescent lights are humming a song you remember from childhood but can't quite place. The edges of everything are soft now, melting like crayons left in a hot car, and you're floating in this warm red soup that tastes like copper pennies and your mother's disappointment. The clock on the wall is ticking backwards and each second is a small death, a tiny funeral for the person you were just a moment ago. You can taste colors now, hear the weight of silence, feel the texture of your own heartbeat as it stumbles through its final choreography. Someone is playing a violin made of broken dreams in the distance, and the melody sounds suspiciously like that hold music from the unemployment office. Your teeth feel loose in your skull, like Chiclets rattling in a box that someone keeps shaking just to hear the sound.|n\n",
                 "observer": "|n{name}'s eyes roll back, showing only whites.|n"
             },
-            60: {  # 1 minute - 5 minutes left
+            {  # Message 1
                 "dying": "|nYou're sinking through the floor now, through layers of concrete and earth and forgotten promises, and the voices above sound like they're speaking underwater. Everything tastes like iron and regret. Your body feels like it belongs to someone else, some stranger whose story you heard in a bar once but never really believed. The pain has become philosophical, an abstract concept that your meat vessel is interpreting through nerve endings that no longer quite remember their job. You're watching your life insurance policy come to life, literally, walking around the room in a three-piece suit made of your own skin, calculating actuarial tables with your dying breath. The wallpaper is breathing now, in and out, like the lungs of some massive beast that swallowed your apartment whole. Your fingernails taste like the metal part of pencil erasers, and somewhere a cash register is tallying up the cost of your accumulated mistakes.|n\n",
                 "observer": "|n{name}'s breathing becomes shallow and erratic.|n"
             },
-            90: {  # 1.5 minutes - 4.5 minutes left
+            {  # Message 2
                 "dying": "|nThe world is a television with bad reception and someone keeps changing the channels. Static. Your grandmother's kitchen. Static. That time you nearly drowned. Static. The taste of blood and birthday cake and the sound of someone crying who might be you but probably isn't, because you're somewhere else now, somewhere darker. Your consciousness is a drunk driver careening through memories it doesn't own anymore, sideswiping moments that belonged to other people, other versions of yourself that died small deaths every day until this final, grand production. The static tastes like Saturday mornings and broken promises. The remote control is made of your own ribs, and every channel change cracks another bone in your chest. Your eyeballs feel like they're dissolving into television snow, white noise with a hint of desperation and the aftertaste of commercial jingles.|n\n",
                 "observer": "|n{name} makes a low, rattling sound in their throat.|n"
             },
-            120: {  # 2 minutes - 4 minutes left
+            {  # Message 3
                 "dying": "|nYou're watching yourself from the ceiling corner like a security camera recording the most boring crime ever committed. That body down there, that meat puppet with your face, is leaking life like a punctured water balloon. And you're thinking, this is it? This is the grand finale? This wet, messy, disappointing finale? Your ghost is already filling out paperwork in triplicate, applying for unemployment benefits in the afterlife, wondering if death comes with dental coverage. The irony tastes like pennies and pharmaceutical advertisements. The ceiling tiles are counting down in languages you've never heard, and your soul is doing inventory on a warehouse full of unused potential. Your shadow is packing its bags, ready to find employment with someone who might actually cast an interesting silhouette.|n\n",
                 "observer": "|n{name}'s skin takes on a waxy, gray pallor.|n"
             },
-            150: {  # 2.5 minutes - 3.5 minutes left
+            {  # Message 4
                 "dying": "|nMemory becomes a kaleidoscope where every piece is broken glass and every turn cuts deeper. You taste the last cigarette you ever smoked, feel the first hand you ever held, hear the last lie you ever told, and it's all happening simultaneously in this carnival of consciousness where the rides are broken and the music is playing backward. Your neurons are firing their final clearance sale—everything must go, rock-bottom prices on experiences you can't even remember having. The carousel horses are bleeding carousel blood and the cotton candy tastes like regret. The funhouse mirrors are showing you every version of yourself you never became, and they're all pointing and laughing at the version you did. Your thoughts are circus peanuts dissolving on your tongue, artificially flavored and ultimately disappointing.|n\n",
                 "observer": "|n{name}'s fingers twitch spasmodically.|n"
             },
-            180: {  # 3 minutes - 3 minutes left
+            {  # Message 5
                 "dying": "|nThe darkness isn't dark anymore; it's every color that doesn't have a name, every sound that was never made, every word that was never spoken. You're dissolving into the spaces between seconds, becoming the pause between heartbeats, the silence between screams. And it's beautiful and terrible and completely, utterly ordinary. Your soul is a closing-time bar where the lights have come on and everyone can see exactly how pathetic they really are, but the bartender is Death and she's not calling last call — she's calling first call for the next shift. The jukebox is playing your theme song, but it's off-key and the record keeps skipping on the part where you were supposed to matter. Your consciousness is a newspaper blowing down an empty street at 3 AM, full of yesterday's problems and tomorrow's disappointments.|n\n",
                 "observer": "|n{name}'s body convulses once, violently.|n"
             },
-            210: {  # 3.5 minutes - 2.5 minutes left
+            {  # Message 6
                 "dying": "|nYou're a radio losing signal, static eating away at the song of yourself until there's nothing left but the spaces between the notes. The pain is gone now, replaced by this vast emptiness that feels like Sunday afternoons and unfinished conversations and all the things you meant to say but never did. Your thoughts are evaporating like water on hot asphalt, leaving behind these weird mineral deposits of memory that taste like childhood and smell like hospitals. The static between radio stations sounds like your mother's voice reading you the phone book. Your bones are tuning forks that no longer vibrate at the right frequency, and your blood has become elevator music for a building that's being demolished. The antenna of your soul is bent and rusty, receiving only test patterns from a broadcasting system that went off the air decades ago.|n\n",
                 "observer": "|n{name} lies perfectly still except for the barely perceptible rise and fall of their chest.|n"
             },
-            240: {  # 4 minutes - 2 minutes left
+            {  # Message 7
                 "dying": "|nYou're becoming weather now, becoming the wind that carries other people's secrets, the rain that washes away their sins. You're evaporating into stories that will never be told, jokes that will never be finished, dreams that will never be dreamed. And it's okay. It's all okay. Everything is okay in this place between places. Your consciousness is a going-out-of-business sale where everything is marked down 90%, but nobody wants to buy your used thoughts, your secondhand emotions, your clearance-rack dreams. The clouds are made of your exhaled words, and it's starting to rain all the conversations you never had. Your temperature is dropping to match the ambient disappointment of the universe, and your pulse is keeping time with a metronome that's winding down like a broken music box.|n\n",
                 "observer": "|n{name}'s breathing has become so faint it's almost imperceptible.|n"
             },
-            270: {  # 4.5 minutes - 1.5 minutes left
+            {  # Message 8
                 "dying": "|nThe last thoughts are like photographs burning in a fire, curling at the edges before disappearing into ash. You remember everything and nothing. You are everyone and no one. The boundary between self and not-self becomes as meaningless as the difference between Tuesday and the color blue. Your identity is melting like ice cream in hell—sweet and messy and ultimately disappointing, leaving behind sticky residue that attracts flies and regret. The photographs in your memory are developing in reverse, turning back into silver and chemicals and possibility. Your name tastes like alphabet soup that's gone cold, and your fingerprints are evaporating off your fingers like steam from a cup of coffee nobody wants to drink. The mirror in your mind has cracked down the middle, and both halves are reflecting someone you've never met.|n\n",
                 "observer": "|n{name}'s lips have turned blue.|n"
             },
-            300: {  # 5 minutes - 1 minute left
+            {  # Message 9
                 "dying": "|nYou're the echo of an echo, the shadow of a shadow, the dream that someone else is forgetting. The darkness isn't coming for you anymore because you ARE the darkness, you are the silence, you are the space where something used to be. And in this final moment of dissolution, you understand everything and nothing at all. Your last coherent thought is wondering if this is how mayonnaise feels when it expires—this slow dissolution into component parts that never really belonged together anyway. The universe is yawning, and you're the sound it makes between sleeping and waking, the pause before the snooze button gets hit for the final time. Your existence is a receipt from a store that went out of business, crumpled in the pocket of a coat you never liked but wore anyway because it was practical.|n\n",
                 "observer": "|n{name} doesn't appear to be breathing anymore.|n"
             },
-            330: {  # 5.5 minutes - 30 seconds left
+            {  # Message 10 - Final progression message
                 "dying": "|n...so tired... ...so very... ...tired... ...the light is... ...warm... ...like being... ...held... ...you can hear... ...laughter... ...from somewhere... ...safe... ...you're not... ...scared anymore... ...just... ...tired... ...tell them... ...tell them... ...you tried... ...but... ...so tired... ...|n\n",
                 "observer": "|n{name} lies motionless, their body completely still.|n"
             }
-        }
+        ]
         
     def _complete_death_progression(self):
         """Complete the death progression - character is now permanently dead."""
