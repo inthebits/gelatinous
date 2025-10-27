@@ -1370,16 +1370,18 @@ class Character(ObjectParent, DefaultCharacter):
         if not item.is_wearable():
             return False, "That item can't be worn."
         
-        # Validate item is in inventory
-        if item.location != self:
-            return False, "You're not carrying that item."
-        
-        # Auto-unwield if currently held
+        # Auto-unwield if currently held (move to inventory)
         hands = getattr(self, 'hands', {})
         for hand, held_item in hands.items():
             if held_item == item:
                 hands[hand] = None
+                item.location = self  # Move to inventory
+                self.hands = hands    # Save updated hands
                 break
+        
+        # Validate item is in inventory (now that we've unwielded if needed)
+        if item.location != self:
+            return False, "You're not carrying that item."
         
         # Get item's current coverage (accounting for style states)
         item_coverage = item.get_current_coverage()
