@@ -1,14 +1,18 @@
 """
 Death Progression Script - Time-Delayed Death System
 
-This script creates a dramatic 6-minute window between death and final death,
+This script creates a dramatic window between death and final death,
 allowing for medical intervention and creating suspenseful RP opportunities.
 
 The system works as follows:
 1. Character "dies" - death curtain plays, they enter dying state
-2. 6-minute timer begins with periodic messages
+2. Timer begins with periodic progression messages
 3. Other characters can attempt revival during this window
-4. After 6 minutes, final death occurs (permanent until manual revival)
+4. After time expires, final death occurs (permanent until manual revival)
+
+Duration is configurable via DEATH_PROGRESSION_DURATION in world/combat/constants.py:
+- Default: 360 seconds (6 minutes) - provides RP and revival window
+- Testing: Can be reduced to 60 (1 minute) or 120 (2 minutes) for faster iteration
 
 This creates urgency for medical response while making death less instantaneous.
 """
@@ -16,6 +20,11 @@ This creates urgency for medical response while making death less instantaneous.
 from evennia import DefaultScript
 from evennia.utils import delay
 from evennia.comms.models import ChannelDB
+from world.combat.constants import (
+    DEATH_PROGRESSION_DURATION,
+    DEATH_PROGRESSION_CHECK_INTERVAL,
+    DEATH_PROGRESSION_MESSAGE_COUNT
+)
 import random
 import time
 import re
@@ -88,20 +97,32 @@ class DeathProgressionScript(DefaultScript):
         self.persistent = True
         self.autostart = True  # Can use autostart since we'll use self.obj
         
-        # Death progression timing (6 minutes total)
-        self.db.total_duration = 360  # 6 minutes in seconds
-        self.db.message_intervals = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330]  # Every 30 seconds
+        # Death progression timing - now configurable via constants
+        self.db.total_duration = DEATH_PROGRESSION_DURATION
+        
+        # Calculate message intervals dynamically based on duration and message count
+        # This ensures messages are evenly distributed regardless of total duration
+        interval_spacing = DEATH_PROGRESSION_DURATION // DEATH_PROGRESSION_MESSAGE_COUNT
+        self.db.message_intervals = [
+            interval_spacing * i for i in range(1, DEATH_PROGRESSION_MESSAGE_COUNT + 1)
+        ]
+        
         self.db.start_time = time.time()
         self.db.messages_sent = []
         self.db.can_be_revived = True
         
-        # Start the progression interval
-        self.interval = 30  # Check every 30 seconds
+        # Start the progression interval - use configurable check interval
+        self.interval = DEATH_PROGRESSION_CHECK_INTERVAL
         
         # Debug logging
         try:
             splattercast = ChannelDB.objects.get_channel("Splattercast")
-            splattercast.msg(f"DEATH_PROGRESSION: Script at_script_creation for {self.obj.key}")
+            splattercast.msg(
+                f"DEATH_PROGRESSION: Script at_script_creation for {self.obj.key} "
+                f"(duration: {DEATH_PROGRESSION_DURATION}s, "
+                f"interval: {DEATH_PROGRESSION_CHECK_INTERVAL}s, "
+                f"messages: {DEATH_PROGRESSION_MESSAGE_COUNT})"
+            )
         except:
             pass
         
@@ -112,10 +133,14 @@ class DeathProgressionScript(DefaultScript):
             self.stop()
             return
             
-        # Log start of death progression
+        # Log start of death progression with configurable duration
         try:
             splattercast = ChannelDB.objects.get_channel("Splattercast")
-            splattercast.msg(f"DEATH_PROGRESSION: Started for {character.key} - 6 minute revival window")
+            duration_minutes = DEATH_PROGRESSION_DURATION / 60
+            splattercast.msg(
+                f"DEATH_PROGRESSION: Started for {character.key} - "
+                f"{duration_minutes:.1f} minute revival window"
+            )
         except:
             pass
             
