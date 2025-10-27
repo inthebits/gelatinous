@@ -1741,3 +1741,211 @@ CORNERSTORE_MERCHANT = {
     ],
 }
 
+# =============================================================================
+# SHOP CONTAINER PROTOTYPES
+# =============================================================================
+
+# Base shop container template
+SHOP_CONTAINER_BASE = {
+    "prototype_key": "shop_container_base",
+    "typeclass": "typeclasses.shopkeeper.ShopContainer",
+    "locks": "get:false();puppet:false()",
+    "attrs": [
+        ("is_infinite", True),
+        ("markup_percent", 0),
+        ("shop_name", "Shop"),
+        ("container_type", "shelf"),
+        ("prototype_inventory", {}),
+        ("item_inventory", {}),
+    ],
+}
+
+# Weapons shop shelf
+WEAPONS_SHELF = {
+    "prototype_parent": "shop_container_base",
+    "key": "weapons rack",
+    "desc": "A sturdy metal weapons rack displaying various implements of violence. Everything from blades to firearms.",
+    "attrs": [
+        ("shop_name", "Armory"),
+        ("container_type", "rack"),
+        ("markup_percent", 15),  # 15% markup on weapons
+        ("prototype_inventory", {
+            "KATANA": 500,
+            "SWORD": 250,
+            "DAGGER": 80,
+            "CHAINSAW": 800,
+            "STAFF": 150,
+            "BASEBALL_BAT": 60,
+            "TENNIS_RACKET": 120,
+        }),
+    ],
+}
+
+# Explosives shop crate
+EXPLOSIVES_CRATE = {
+    "prototype_parent": "shop_container_base",
+    "key": "reinforced crate",
+    "desc": "A heavily reinforced military crate with warning labels. Contains various explosive devices - handle with extreme care.",
+    "attrs": [
+        ("shop_name", "Demolitions Supply"),
+        ("container_type", "crate"),
+        ("markup_percent", 25),  # 25% markup on dangerous goods
+        ("prototype_inventory", {
+            "FRAG_GRENADE": 150,
+            "TACTICAL_GRENADE": 200,
+            "DEMO_CHARGE": 500,
+            "FLASHBANG": 100,
+            "SMOKE_GRENADE": 75,
+            "STICKY_GRENADE": 300,
+            "REMOTE_DETONATOR": 250,
+        }),
+    ],
+}
+
+# Armor shop display
+ARMOR_DISPLAY = {
+    "prototype_parent": "shop_container_base",
+    "key": "armor display",
+    "desc": "A professional display stand showcasing various protective gear and tactical equipment.",
+    "attrs": [
+        ("shop_name", "Tactical Outfitters"),
+        ("container_type", "display"),
+        ("markup_percent", 20),  # 20% markup on armor
+        ("prototype_inventory", {
+            "KEVLAR_VEST": 800,
+            "PLATE_CARRIER": 600,
+            "PLATE_MAIL": 1500,
+            "ARMORED_LEATHER_JACKET": 400,
+            "COMBAT_HELMET": 350,
+            "LIGHTWEIGHT_PLATE": 200,
+            "STANDARD_PLATE": 350,
+            "REINFORCED_PLATE": 600,
+            "CERAMIC_PLATES": 500,
+            "BEE_HIVE_COVERALL": 1200,  # Premium exotic armor
+        }),
+    ],
+}
+
+# Clothing shop rack
+CLOTHING_RACK = {
+    "prototype_parent": "shop_container_base",
+    "key": "clothing rack",
+    "desc": "A sleek chrome clothing rack displaying various garments from tactical to casual wear.",
+    "attrs": [
+        ("shop_name", "Street Fashion"),
+        ("container_type", "rack"),
+        ("markup_percent", 10),  # 10% markup on clothing
+        ("prototype_inventory", {
+            "CODER_SOCKS": 50,
+            "DEV_HOODIE": 80,
+            "BLUE_JEANS": 60,
+            "COTTON_TSHIRT": 25,
+            "COMBAT_BOOTS": 120,
+            "TACTICAL_JUMPSUIT": 150,
+            "TACTICAL_PANTS": 70,
+            "TACTICAL_SHIRT": 50,
+        }),
+        # Integration settings - embeds shop in room description
+        ("integrate", True),
+        ("integration_desc", "A sleek chrome clothing rack displays various street fashion items, from coding socks to tactical gear."),
+        ("integration_priority", 2),
+    ],
+}
+
+# Medical supplies cabinet
+MEDICAL_CABINET = {
+    "prototype_parent": "shop_container_base",
+    "key": "medical supply cabinet",
+    "desc": "A sterile white medical cabinet with glass doors. Stocked with various emergency medical supplies.",
+    "attrs": [
+        ("shop_name", "Medical Supplies"),
+        ("container_type", "cabinet"),
+        ("markup_percent", 30),  # 30% markup on medical (premium)
+        ("prototype_inventory", {
+            "BLOOD_BAG": 200,
+            "PAINKILLER": 80,
+            "GAUZE_BANDAGES": 30,
+            "SPLINT": 100,
+            "SURGICAL_KIT": 500,
+            "STIMPAK": 150,
+            "ANTISEPTIC": 40,
+            "OXYGEN_TANK": 250,
+            "STIMPAK_INHALER": 120,
+            "ANESTHETIC_GAS": 180,
+            "MEDICINAL_HERB": 60,
+            "PAIN_RELIEF_CIGARETTE": 20,
+        }),
+    ],
+}
+
+# General goods shelf
+GENERAL_SHELF = {
+    "prototype_parent": "shop_container_base",
+    "key": "general goods shelf",
+    "desc": "A well-stocked shelf with a variety of useful items and miscellaneous supplies.",
+    "attrs": [
+        ("shop_name", "General Store"),
+        ("container_type", "shelf"),
+        ("markup_percent", 5),  # 5% markup on general goods
+        ("prototype_inventory", {
+            "SPRAYPAINT_CAN": 25,
+            "SOLVENT_CAN": 30,
+            "KEYRING": 10,
+            "ROCK": 1,
+            "BOTTLE": 5,
+            "SEWING_KIT": 50,
+            "METALWORK_TOOLS": 150,
+            "BALLISTIC_REPAIR_KIT": 100,
+            "CERAMIC_REPAIR_COMPOUND": 200,
+            "GENERIC_TOOL_KIT": 75,
+        }),
+    ],
+}
+
+# Ranged weapons locker
+FIREARMS_LOCKER = {
+    "prototype_parent": "shop_container_base",
+    "key": "firearms locker",
+    "desc": "A secure firearms locker with reinforced steel construction. Contains various ranged weapons under lock and key.",
+    "attrs": [
+        ("shop_name", "Gun Shop"),
+        ("container_type", "locker"),
+        ("markup_percent", 20),  # 20% markup on firearms
+        ("prototype_inventory", {
+            "PISTOL": 300,
+            "SHOTGUN": 500,
+            "SNIPER_RIFLE": 1200,
+            "BOLT_RIFLE": 800,
+            "ANTI_MATERIAL_RIFLE": 2500,
+            "ASSAULT_RIFLE": 900,
+            "SMG": 600,
+            "THROWING_KNIFE": 40,
+            "THROWING_AXE": 60,
+            "SHURIKEN": 25,
+        }),
+    ],
+}
+
+# Limited stock example - corner store cooler
+CORNER_STORE_COOLER = {
+    "prototype_parent": "shop_container_base",
+    "key": "refrigerated cooler",
+    "desc": "A humming refrigerated cooler with glass doors. The stock looks somewhat limited.",
+    "attrs": [
+        ("shop_name", "Juan's Corner Store"),
+        ("container_type", "cooler"),
+        ("markup_percent", 50),  # 50% markup - corner store convenience tax!
+        ("is_infinite", False),  # Limited stock!
+        ("prototype_inventory", {
+            "BLOOD_BAG": 500,      # Expensive emergency supply
+            "STIMPAK": 350,        # Premium healing
+            "PAINKILLER": 150,     # Pain relief
+        }),
+        ("item_inventory", {
+            "BLOOD_BAG": 2,        # Only 2 in stock
+            "STIMPAK": 5,          # Only 5 in stock
+            "PAINKILLER": 3,       # Only 3 in stock
+        }),
+    ],
+}
+

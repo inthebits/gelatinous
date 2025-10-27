@@ -281,11 +281,12 @@ class Room(ObjectParent, DefaultRoom):
             integrated_objects.append((priority, obj, True))
         
         for obj in self.contents:
-            # Check objects for integration - currently supports Items, GraffitiObjects, and BloodPools
+            # Check objects for integration - currently supports Items, GraffitiObjects, BloodPools, and ShopContainers
             # TODO: Consider expanding to other object types or using a more generic approach
             if not (obj.is_typeclass("typeclasses.items.Item") or 
                     obj.is_typeclass("typeclasses.objects.GraffitiObject") or 
-                    obj.is_typeclass("typeclasses.objects.BloodPool")):
+                    obj.is_typeclass("typeclasses.objects.BloodPool") or
+                    obj.is_typeclass("typeclasses.shopkeeper.ShopContainer")):
                 continue
             
             # Skip if already added as flying object
