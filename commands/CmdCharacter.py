@@ -946,12 +946,9 @@ class CmdSkintone(Command):
     This creates visual distinction between your character's body/skin
     descriptions and clothing descriptions.
 
-    Available tones:
-      Goth/Pale: porcelain, ivory, ash, cool, warm
-      Natural: fair, light, medium, olive, tan, brown, dark, deep
+    Available tones: porcelain, pale, fair, light, medium, olive, tan, brown, dark, deep
 
     Examples:
-      @skintone ivory
       @skintone tan
       @skintone list
       @skintone clear
