@@ -194,9 +194,4 @@ def discourse_sso(request):
     redirect_params = urlencode({'sso': response_payload, 'sig': response_signature})
     final_redirect_url = f"{base_url}{separator}{redirect_params}"
     
-    # Validate that the redirect URL is safe
-    if url_has_allowed_host_and_scheme(final_redirect_url, allowed_hosts=None):
-        return HttpResponseRedirect(final_redirect_url)
-    else:
-        # Unsafe redirect target - send user to home page instead
-        return HttpResponseRedirect("/")
+    return HttpResponseRedirect(final_redirect_url)
