@@ -124,11 +124,12 @@ class CrowdSystem:
             category_messages = crowd_messages[selected_category]
             if category_messages:
                 selected_message = random.choice(category_messages)
-                # Ensure message ends with period and format with color
+                # Ensure message ends with period
                 formatted_message = selected_message.capitalize()
                 if not formatted_message.endswith('.'):
                     formatted_message += '.'
-                return f"|W{formatted_message}|n"
+                # Return without color codes - let the client handle display
+                return formatted_message
         
         return ""
     
