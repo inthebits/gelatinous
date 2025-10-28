@@ -153,9 +153,6 @@ def discourse_sso(request):
     return_sso_url = params.get('return_sso_url', [None])[0]
     if not return_sso_url:
         return HttpResponseBadRequest("Missing return_sso_url in payload")
-
-    # Sanitize return_sso_url - remove backslashes to prevent bypass attacks
-    sanitized_url = return_sso_url.replace('\\', '')
     
     # Validate the return URL to prevent open redirect attacks
     discourse_url = getattr(settings, 'DISCOURSE_URL', '')
@@ -163,34 +160,38 @@ def discourse_sso(request):
         logger.error("DISCOURSE_URL not configured - SSO redirect blocked for security")
         return HttpResponseBadRequest("SSO not properly configured")
     
+    # Parse both URLs to validate
     parsed_discourse = urlparse(discourse_url)
+    parsed_return = urlparse(return_sso_url)
+    
     if not parsed_discourse.hostname:
         logger.error("Invalid DISCOURSE_URL configuration - SSO redirect blocked")
         return HttpResponseBadRequest("SSO not properly configured")
     
-    allowed_hosts = [parsed_discourse.hostname]
+    # Strict hostname validation - only allow exact match to configured Discourse host
+    if parsed_return.hostname != parsed_discourse.hostname:
+        logger.warning("SSO redirect to unauthorized host blocked. Expected: %s, Got: %s", 
+                      parsed_discourse.hostname, parsed_return.hostname)
+        return HttpResponseBadRequest("Invalid return URL - host mismatch")
     
-    # Validate URL against allowlist - Django's recommended approach for preventing open redirects
-    if not url_has_allowed_host_and_scheme(sanitized_url, allowed_hosts=allowed_hosts, require_https=False):
-        logger.warning("SSO redirect to unauthorized host blocked: %s", sanitized_url)
-        return HttpResponseBadRequest("Invalid return URL")
-
-    # Parse and reconstruct the validated URL to break taint flow
-    parsed_return_url = urlparse(sanitized_url)
-    
-    # Rebuild URL from validated components only
-    safe_base_url = urlunparse((
-        parsed_return_url.scheme,
-        parsed_return_url.netloc,
-        parsed_return_url.path,
-        parsed_return_url.params,
-        parsed_return_url.query,
-        parsed_return_url.fragment
-    ))
+    # Validate scheme is http or https
+    if parsed_return.scheme not in ('http', 'https'):
+        logger.warning("SSO redirect with invalid scheme blocked: %s", parsed_return.scheme)
+        return HttpResponseBadRequest("Invalid return URL - invalid scheme")
     
     # Build redirect URL with SSO response parameters
-    separator = '&' if '?' in safe_base_url else '?'
+    # Reconstruct from validated components to ensure no injection
+    base_url = urlunparse((
+        parsed_return.scheme,
+        parsed_discourse.hostname,  # Use the trusted hostname from settings
+        parsed_return.path,
+        '',  # No params
+        parsed_return.query,
+        ''   # No fragment
+    ))
+    
+    separator = '&' if parsed_return.query else '?'
     redirect_params = urlencode({'sso': response_payload, 'sig': response_signature})
-    final_redirect_url = f"{safe_base_url}{separator}{redirect_params}"
+    final_redirect_url = f"{base_url}{separator}{redirect_params}"
     
     return HttpResponseRedirect(final_redirect_url)
