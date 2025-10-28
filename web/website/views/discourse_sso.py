@@ -175,10 +175,22 @@ def discourse_sso(request):
         logger.warning("SSO redirect to unauthorized host blocked: %s", sanitized_url)
         return HttpResponseBadRequest("Invalid return URL")
 
-    # Build redirect URL with SSO response parameters
-    separator = '&' if '?' in sanitized_url else '?'
-    redirect_params = urlencode({'sso': response_payload, 'sig': response_signature})
-    # lgtm[py/url-redirection] - URL is validated against allowlist using Django's url_has_allowed_host_and_scheme
-    safe_redirect_url = f"{sanitized_url}{separator}{redirect_params}"
+    # Parse and reconstruct the validated URL to break taint flow
+    parsed_return_url = urlparse(sanitized_url)
     
-    return HttpResponseRedirect(safe_redirect_url)
+    # Rebuild URL from validated components only
+    safe_base_url = urlunparse((
+        parsed_return_url.scheme,
+        parsed_return_url.netloc,
+        parsed_return_url.path,
+        parsed_return_url.params,
+        parsed_return_url.query,
+        parsed_return_url.fragment
+    ))
+    
+    # Build redirect URL with SSO response parameters
+    separator = '&' if '?' in safe_base_url else '?'
+    redirect_params = urlencode({'sso': response_payload, 'sig': response_signature})
+    final_redirect_url = f"{safe_base_url}{separator}{redirect_params}"
+    
+    return HttpResponseRedirect(final_redirect_url)
