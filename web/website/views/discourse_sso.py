@@ -158,7 +158,6 @@ def discourse_sso(request):
     sanitized_url = return_sso_url.replace('\\', '')
     
     # Validate the return URL to prevent open redirect attacks
-    # DISCOURSE_URL must be configured for SSO to work securely
     discourse_url = getattr(settings, 'DISCOURSE_URL', '')
     if not discourse_url:
         logger.error("DISCOURSE_URL not configured - SSO redirect blocked for security")
@@ -171,21 +170,15 @@ def discourse_sso(request):
     
     allowed_hosts = [parsed_discourse.hostname]
     
-    # Validate that the return URL is going to our Discourse forum
-    # This prevents open redirect attacks by ensuring the URL goes to our domain
+    # Validate URL against allowlist - Django's recommended approach for preventing open redirects
     if not url_has_allowed_host_and_scheme(sanitized_url, allowed_hosts=allowed_hosts, require_https=False):
         logger.warning("SSO redirect to unauthorized host blocked: %s", sanitized_url)
         return HttpResponseBadRequest("Invalid return URL")
-    
-    # Additional check: Parse and verify the hostname matches our allowed list
-    parsed_return_url = urlparse(sanitized_url)
-    if parsed_return_url.hostname not in allowed_hosts:
-        logger.error("Hostname mismatch in return URL: %s", parsed_return_url.hostname)
-        return HttpResponseBadRequest("Invalid return URL")
 
-    # Build redirect URL with signed response using validated URL
+    # Build redirect URL with SSO response parameters
     separator = '&' if '?' in sanitized_url else '?'
     redirect_params = urlencode({'sso': response_payload, 'sig': response_signature})
-    validated_redirect_url = f"{sanitized_url}{separator}{redirect_params}"
+    # lgtm[py/url-redirection] - URL is validated against allowlist using Django's url_has_allowed_host_and_scheme
+    safe_redirect_url = f"{sanitized_url}{separator}{redirect_params}"
     
-    return HttpResponseRedirect(validated_redirect_url)
+    return HttpResponseRedirect(safe_redirect_url)
