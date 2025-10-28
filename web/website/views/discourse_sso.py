@@ -156,6 +156,17 @@ def discourse_sso(request):
 
     # Sanitize return_sso_url - remove backslashes to prevent bypass attacks
     return_sso_url = return_sso_url.replace('\\', '')
+    
+    # Validate the return URL to prevent open redirect attacks
+    discourse_url = getattr(settings, 'DISCOURSE_URL', '')
+    if discourse_url:
+        parsed_discourse = urlparse(discourse_url)
+        if parsed_discourse.hostname:
+            allowed_hosts = [parsed_discourse.hostname]
+            # Validate that the return URL is going to our Discourse forum
+            if not url_has_allowed_host_and_scheme(return_sso_url, allowed_hosts=allowed_hosts, require_https=False):
+                logger.warning("SSO redirect to unauthorized host blocked: %s", return_sso_url)
+                return HttpResponseBadRequest("Invalid return URL")
 
     # Build redirect URL with signed response
     separator = '&' if '?' in return_sso_url else '?'
