@@ -156,25 +156,25 @@ def discourse_sso(request):
 
     # Sanitize return_sso_url for safe redirection
     # Remove any backslashes, which can allow bypass of validation in some browsers
-    return_sso_url = return_sso_url.replace('\\', '')
+    # Also unquote the URL to handle percent-encoded characters before validation
+    from urllib.parse import urlparse, urlunparse, urlencode, unquote
+    return_sso_url = unquote(return_sso_url.replace('\\', ''))
     
     # Validate the return URL to prevent open redirect attacks
     # Extract allowed hosts from DISCOURSE_URL setting
     discourse_url = getattr(settings, 'DISCOURSE_URL', '')
     allowed_hosts = None
     if discourse_url:
-        from urllib.parse import urlparse
         parsed = urlparse(discourse_url)
         if parsed.hostname:
             allowed_hosts = [parsed.hostname]
     
-    if not url_has_allowed_host_and_scheme(return_sso_url, allowed_hosts=allowed_hosts):
+    if not url_has_allowed_host_and_scheme(return_sso_url, allowed_hosts=allowed_hosts, require_https=False):
         logger.warning("Unsafe or unallowed return_sso_url: %s", return_sso_url)
         return HttpResponseBadRequest("Unsafe return_sso_url")
 
     # Build redirect URL with signed response
-    from urllib.parse import urlparse, urlunparse, urlencode, unquote
-    parsed_url = urlparse(unquote(return_sso_url))
+    parsed_url = urlparse(return_sso_url)
     redirect_query = urlencode({'sso': response_payload, 'sig': response_signature})
     safe_redirect_url = urlunparse((
         parsed_url.scheme,
