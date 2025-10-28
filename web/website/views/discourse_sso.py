@@ -155,7 +155,7 @@ def discourse_sso(request):
         return HttpResponseBadRequest("Missing return_sso_url in payload")
 
     # Sanitize return_sso_url - remove backslashes to prevent bypass attacks
-    return_sso_url = return_sso_url.replace('\\', '')
+    sanitized_url = return_sso_url.replace('\\', '')
     
     # Validate the return URL to prevent open redirect attacks
     # DISCOURSE_URL must be configured for SSO to work securely
@@ -172,13 +172,20 @@ def discourse_sso(request):
     allowed_hosts = [parsed_discourse.hostname]
     
     # Validate that the return URL is going to our Discourse forum
-    if not url_has_allowed_host_and_scheme(return_sso_url, allowed_hosts=allowed_hosts, require_https=False):
-        logger.warning("SSO redirect to unauthorized host blocked: %s", return_sso_url)
+    # This prevents open redirect attacks by ensuring the URL goes to our domain
+    if not url_has_allowed_host_and_scheme(sanitized_url, allowed_hosts=allowed_hosts, require_https=False):
+        logger.warning("SSO redirect to unauthorized host blocked: %s", sanitized_url)
+        return HttpResponseBadRequest("Invalid return URL")
+    
+    # Additional check: Parse and verify the hostname matches our allowed list
+    parsed_return_url = urlparse(sanitized_url)
+    if parsed_return_url.hostname not in allowed_hosts:
+        logger.error("Hostname mismatch in return URL: %s", parsed_return_url.hostname)
         return HttpResponseBadRequest("Invalid return URL")
 
-    # Build redirect URL with signed response
-    separator = '&' if '?' in return_sso_url else '?'
+    # Build redirect URL with signed response using validated URL
+    separator = '&' if '?' in sanitized_url else '?'
     redirect_params = urlencode({'sso': response_payload, 'sig': response_signature})
-    redirect_url = f"{return_sso_url}{separator}{redirect_params}"
+    validated_redirect_url = f"{sanitized_url}{separator}{redirect_params}"
     
-    return HttpResponseRedirect(redirect_url)
+    return HttpResponseRedirect(validated_redirect_url)
