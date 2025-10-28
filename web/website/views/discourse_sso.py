@@ -173,7 +173,7 @@ def discourse_sso(request):
         return HttpResponseBadRequest("Unsafe return_sso_url")
 
     # Build redirect URL with signed response
-    from urllib.parse import urlparse, urlunparse, urlencode
+    from urllib.parse import urlparse, urlunparse, urlencode, unquote
     parsed_url = urlparse(unquote(return_sso_url))
     redirect_query = urlencode({'sso': response_payload, 'sig': response_signature})
     safe_redirect_url = urlunparse((
