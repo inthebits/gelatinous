@@ -483,9 +483,7 @@ class Room(ObjectParent, DefaultRoom):
                 else:
                     sightings.append(f"You see a group of people standing to the {direction}.")
         
-        if sightings:
-            return "|w" + " ".join(sightings) + "|n"
-        return ""
+        return " ".join(sightings)
     
     def get_display_things(self, looker, **kwargs):
         """
@@ -550,10 +548,11 @@ class Room(ObjectParent, DefaultRoom):
         ]
         
         # Format each item group with appropriate quantifier
+        # Wrap item names in |w for bold white highlighting
         formatted_items = []
         for item_name, count in item_counts.items():
             if count == 1:
-                formatted_items.append(f"a {item_name}")
+                formatted_items.append(f"a |w{item_name}|n")
             elif count <= 50:
                 quantity = quantity_words[count]
                 # Handle plural forms - simple approach for now
@@ -567,29 +566,29 @@ class Room(ObjectParent, DefaultRoom):
                     plural_name = item_name[:-2] + "ves"
                 else:
                     plural_name = item_name + "s"
-                formatted_items.append(f"{quantity} {plural_name}")
+                formatted_items.append(f"{quantity} |w{plural_name}|n")
             else:
                 # Use random euphemism for large quantities
                 euphemism = random.choice(euphemisms)
                 if "{}" in euphemism:
                     # Handle template euphemisms like "more {} than you know what to do with"
                     plural_name = item_name + "s" if not item_name.endswith('s') else item_name
-                    formatted_items.append(euphemism.format(plural_name))
+                    formatted_items.append(euphemism.format(f"|w{plural_name}|n"))
                 else:
                     # Handle direct euphemisms like "a shitload of"
                     plural_name = item_name + "s" if not item_name.endswith('s') else item_name
-                    formatted_items.append(f"{euphemism} {plural_name}")
+                    formatted_items.append(f"{euphemism} |w{plural_name}|n")
         
         # Format using natural language similar to character placement
-        # Wrap in bold white for ambient item display
+        # Item names are already wrapped in |w...|n from above
         if len(formatted_items) == 1:
-            return f"|wYou see {formatted_items[0]}.|n"
+            return f"You see {formatted_items[0]}."
         elif len(formatted_items) == 2:
-            return f"|wYou see {formatted_items[0]} and {formatted_items[1]}.|n"
+            return f"You see {formatted_items[0]} and {formatted_items[1]}."
         else:
             # Handle 3+ item groups: "You see: A, B, and C"
             all_but_last = ", ".join(formatted_items[:-1])
-            return f"|wYou see {all_but_last}, and {formatted_items[-1]}.|n"
+            return f"You see {all_but_last}, and {formatted_items[-1]}."
     
     def get_display_footer(self, looker, **kwargs):
         """
