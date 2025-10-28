@@ -194,4 +194,10 @@ def discourse_sso(request):
     redirect_params = urlencode({'sso': response_payload, 'sig': response_signature})
     final_redirect_url = f"{base_url}{separator}{redirect_params}"
     
+    # Final validation with explicit allowlist before redirect
+    allowed_hosts = [parsed_discourse.hostname]
+    if not url_has_allowed_host_and_scheme(final_redirect_url, allowed_hosts=allowed_hosts, require_https=True):
+        logger.error("Final redirect validation failed for URL: %s", final_redirect_url)
+        return HttpResponseBadRequest("Invalid redirect URL")
+    
     return HttpResponseRedirect(final_redirect_url)
