@@ -509,10 +509,11 @@ class Room(ObjectParent, DefaultRoom):
                 continue
             
             # Skip @integrate items - they're handled in room description  
-            # Check Items, GraffitiObjects, and BloodPools for integration
+            # Check Items, GraffitiObjects, BloodPools, and ShopContainers for integration
             if ((obj.is_typeclass("typeclasses.items.Item") or 
                  obj.is_typeclass("typeclasses.objects.GraffitiObject") or 
-                 obj.is_typeclass("typeclasses.objects.BloodPool")) and 
+                 obj.is_typeclass("typeclasses.objects.BloodPool") or
+                 obj.is_typeclass("typeclasses.shopkeeper.ShopContainer")) and 
                 getattr(obj.db, "integrate", False)):
                 continue
             
