@@ -483,7 +483,9 @@ class Room(ObjectParent, DefaultRoom):
                 else:
                     sightings.append(f"You see a group of people standing to the {direction}.")
         
-        return " ".join(sightings)
+        if sightings:
+            return "|w" + " ".join(sightings) + "|n"
+        return ""
     
     def get_display_things(self, looker, **kwargs):
         """
@@ -579,14 +581,15 @@ class Room(ObjectParent, DefaultRoom):
                     formatted_items.append(f"{euphemism} {plural_name}")
         
         # Format using natural language similar to character placement
+        # Wrap in bold white for ambient item display
         if len(formatted_items) == 1:
-            return f"You see {formatted_items[0]}."
+            return f"|wYou see {formatted_items[0]}.|n"
         elif len(formatted_items) == 2:
-            return f"You see {formatted_items[0]} and {formatted_items[1]}."
+            return f"|wYou see {formatted_items[0]} and {formatted_items[1]}.|n"
         else:
             # Handle 3+ item groups: "You see: A, B, and C"
             all_but_last = ", ".join(formatted_items[:-1])
-            return f"You see {all_but_last}, and {formatted_items[-1]}."
+            return f"|wYou see {all_but_last}, and {formatted_items[-1]}.|n"
     
     def get_display_footer(self, looker, **kwargs):
         """

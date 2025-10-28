@@ -128,8 +128,8 @@ class CrowdSystem:
                 formatted_message = selected_message.capitalize()
                 if not formatted_message.endswith('.'):
                     formatted_message += '.'
-                # Return without color codes - let the client handle display
-                return formatted_message
+                # Wrap in bold white for ambient atmosphere
+                return f"|w{formatted_message}|n"
         
         return ""
     

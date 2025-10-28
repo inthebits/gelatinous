@@ -69,9 +69,9 @@ class WeatherSystem:
         if not formatted_messages:
             return ""
             
-        # Combine messages with space separator
+        # Combine messages with space separator and wrap in bold white
         combined = " ".join(formatted_messages)
-        return combined
+        return f"|w{combined}|n"
         
     def get_sensory_messages(self, weather_key, looker):
         """
