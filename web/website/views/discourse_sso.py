@@ -153,6 +153,10 @@ def discourse_sso(request):
     return_sso_url = params.get('return_sso_url', [None])[0]
     if not return_sso_url:
         return HttpResponseBadRequest("Missing return_sso_url in payload")
+
+    # Sanitize return_sso_url for safe redirection
+    # Remove any backslashes, which can allow bypass of validation in some browsers
+    return_sso_url = return_sso_url.replace('\\', '')
     
     # Validate the return URL to prevent open redirect attacks
     # Extract allowed hosts from DISCOURSE_URL setting
