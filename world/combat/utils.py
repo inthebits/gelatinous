@@ -1535,7 +1535,7 @@ def get_outermost_armor_at_location(character, hit_location):
         
         # Check if item covers this location
         coverage = getattr(item.db, 'coverage', [])
-        if hit_location not in coverage:
+        if not coverage or hit_location not in coverage:
             continue
         
         # Check layer

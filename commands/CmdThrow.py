@@ -1886,6 +1886,10 @@ def notify_adjacent_rooms_of_explosion(explosion_room):
 
 def check_rigged_grenade(character, exit_obj):
     """Check if character triggers a rigged grenade. Character should already be at destination."""
+    # Initialize Splattercast for debug logging
+    from evennia.comms.models import ChannelDB
+    splattercast = ChannelDB.objects.get_channel("Splattercast")
+    
     # Check if there's a rigged grenade on this exit
     rigged_grenade = getattr(exit_obj.db, 'rigged_grenade', None)
     
