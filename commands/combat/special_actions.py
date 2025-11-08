@@ -72,8 +72,9 @@ class CmdGrapple(Command):
         candidates = caller.location.contents
         matches = [
             obj for obj in candidates
-            if search_name in obj.key.lower()
-            or any(search_name in alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else []))
+            if obj != caller and  # Exclude caller from potential targets (defense-in-depth)
+               (search_name in obj.key.lower()
+                or any(search_name in alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else [])))
         ]
 
         if not matches:

@@ -117,6 +117,7 @@ class CmdAttack(Command):
         potential_targets = [
             obj for obj in target_room.contents
             if inherits_from(obj, "typeclasses.characters.Character") and
+               obj != caller and  # Exclude caller from potential targets (defense-in-depth)
                (target_search_name.lower() in obj.key.lower() or
                 any(target_search_name.lower() in alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else [])))
         ]
