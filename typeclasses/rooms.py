@@ -855,3 +855,115 @@ class Room(ObjectParent, DefaultRoom):
             # Handle 3+ directions: "north, south, and east"
             all_but_last = ", ".join(directions[:-1])
             return f"{all_but_last}, and {directions[-1]}"
+
+
+# =============================================================================
+# Specialized Room Types for Grid Building
+# =============================================================================
+
+class StreetRoom(Room):
+    """
+    A standard street room in the colony crater.
+    Outdoor, crowded public space.
+    
+    Usage:
+        @tunnel north = Hadley Corridor:typeclasses.rooms.StreetRoom
+    """
+    
+    def at_object_creation(self):
+        """Set default attributes for street rooms."""
+        super().at_object_creation()
+        self.db.crowd_base_level = 3
+        self.db.outside = True
+        self.db.is_sky_room = False
+        self.db.type = "street"
+
+
+class IndoorRoom(Room):
+    """
+    An interior room (building, shop, warehouse, etc.).
+    Indoor, moderate crowd levels.
+    
+    Usage:
+        @tunnel east = Warehouse:typeclasses.rooms.IndoorRoom
+    """
+    
+    def at_object_creation(self):
+        """Set default attributes for indoor rooms."""
+        super().at_object_creation()
+        self.db.crowd_base_level = 2
+        self.db.outside = False
+        self.db.is_sky_room = False
+        self.db.type = "interior"
+
+
+class BridgeRoom(Room):
+    """
+    A bridge or elevated walkway spanning between areas.
+    Outdoor, moderate crowd levels.
+    
+    Usage:
+        @tunnel north = Central Span:typeclasses.rooms.BridgeRoom
+    """
+    
+    def at_object_creation(self):
+        """Set default attributes for bridge rooms."""
+        super().at_object_creation()
+        self.db.crowd_base_level = 2
+        self.db.outside = True
+        self.db.is_sky_room = False
+        self.db.type = "bridge"
+
+
+class SkyRoom(Room):
+    """
+    An open sky area (rooftop, balcony, catwalk, etc.).
+    Outdoor, low crowd levels, elevated.
+    
+    Usage:
+        @tunnel up = Rooftop:typeclasses.rooms.SkyRoom
+    """
+    
+    def at_object_creation(self):
+        """Set default attributes for sky rooms."""
+        super().at_object_creation()
+        self.db.crowd_base_level = 1
+        self.db.outside = True
+        self.db.is_sky_room = True
+        self.db.type = "sky"
+
+
+class AlleyRoom(Room):
+    """
+    A narrow alley or side street.
+    Outdoor, low to moderate crowd levels.
+    
+    Usage:
+        @tunnel west = Dark Alley:typeclasses.rooms.AlleyRoom
+    """
+    
+    def at_object_creation(self):
+        """Set default attributes for alley rooms."""
+        super().at_object_creation()
+        self.db.crowd_base_level = 1
+        self.db.outside = True
+        self.db.is_sky_room = False
+        self.db.type = "alley"
+
+
+class CorridorRoom(Room):
+    """
+    An interior corridor or hallway.
+    Indoor, low crowd levels.
+    
+    Usage:
+        @tunnel south = Long Corridor:typeclasses.rooms.CorridorRoom
+    """
+    
+    def at_object_creation(self):
+        """Set default attributes for corridor rooms."""
+        super().at_object_creation()
+        self.db.crowd_base_level = 1
+        self.db.outside = False
+        self.db.is_sky_room = False
+        self.db.type = "corridor"
