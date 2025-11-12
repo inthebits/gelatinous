@@ -575,14 +575,15 @@ class MedicalState:
         Args:
             condition: MedicalCondition instance
         """
-        # Don't add conditions if character is dead
-        if self.is_dead():
+        # Don't add conditions if character is archived (permanently dead)
+        # Dying characters can still be resuscitated, so they should keep conditions
+        character = self._get_character_reference()
+        if character and getattr(character.db, 'archived', False):
             try:
                 from world.combat.constants import SPLATTERCAST_CHANNEL
                 splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
-                character = self._get_character_reference()
                 char_name = character.key if character else "unknown"
-                splattercast.msg(f"ADD_CONDITION: {char_name} is dead, not adding {condition.condition_type}")
+                splattercast.msg(f"ADD_CONDITION: {char_name} is archived, not adding {condition.condition_type}")
             except:
                 pass
             return
@@ -716,8 +717,9 @@ class MedicalState:
                     condition = MedicalCondition.from_dict(condition_dict)
                 
                 medical_state.conditions.append(condition)
-                # Re-start condition ticker if character is available
-                if character:
+                # Re-start condition ticker if character is available and not archived
+                # Archived characters are permanently dead; dying characters can still be resuscitated
+                if character and not getattr(character.db, 'archived', False):
                     condition.start_condition(character)
                     
             except Exception as e:
