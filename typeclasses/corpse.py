@@ -511,6 +511,19 @@ class Corpse(Item):
         # Base physical description
         base_desc = self.db.physical_description or "A lifeless body."
         
+        # Update corpse name/key to match decay stage
+        decay_names = {
+            "fresh": "fresh corpse",
+            "early": "pale corpse", 
+            "moderate": "decomposing remains",
+            "advanced": "putrid remains",
+            "skeletal": "skeletal remains"
+        }
+        
+        new_name = decay_names.get(stage, 'corpse')
+        if self.key != new_name:
+            self.key = new_name
+        
         # Stage-specific description modifications
         decay_descriptions = {
             "fresh": f"A recently deceased human body. {base_desc} "
