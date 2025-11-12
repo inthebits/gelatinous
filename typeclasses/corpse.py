@@ -522,12 +522,17 @@ class Corpse(Item):
         
         stage_name = decay_names.get(stage, 'corpse')
         # Update aliases to include the current decay stage name
-        self.aliases.clear()
-        self.aliases.add(stage_name)
-        # Add generic aliases that work for all stages
-        self.aliases.add("corpse")
-        self.aliases.add("remains")
-        self.aliases.add("body")
+        # Don't use clear() as it wipes out Evennia's multi-match tracking
+        # Instead, get current aliases and add our decay-related ones
+        current_aliases = set(self.aliases.all())
+        
+        # Define the aliases we want for this decay stage
+        desired_aliases = {stage_name, "corpse", "remains", "body"}
+        
+        # Add any missing aliases
+        for alias in desired_aliases:
+            if alias not in current_aliases:
+                self.aliases.add(alias)
         
         # Stage-specific description modifications
         decay_descriptions = {
