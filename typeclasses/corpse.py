@@ -511,7 +511,7 @@ class Corpse(Item):
         # Base physical description
         base_desc = self.db.physical_description or "A lifeless body."
         
-        # Update corpse name/key to match decay stage
+        # Update aliases to match decay stage so players can reference the corpse correctly
         decay_names = {
             "fresh": "fresh corpse",
             "early": "pale corpse", 
@@ -520,9 +520,14 @@ class Corpse(Item):
             "skeletal": "skeletal remains"
         }
         
-        new_name = decay_names.get(stage, 'corpse')
-        if self.key != new_name:
-            self.key = new_name
+        stage_name = decay_names.get(stage, 'corpse')
+        # Update aliases to include the current decay stage name
+        self.aliases.clear()
+        self.aliases.add(stage_name)
+        # Add generic aliases that work for all stages
+        self.aliases.add("corpse")
+        self.aliases.add("remains")
+        self.aliases.add("body")
         
         # Stage-specific description modifications
         decay_descriptions = {
