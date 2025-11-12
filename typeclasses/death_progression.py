@@ -90,6 +90,25 @@ class DeathProgressionScript(DefaultScript):
     Provides a window for medical intervention and creates dramatic tension.
     """
     
+    def at_msg_send(self, msg, to_obj=None, **kwargs):
+        """
+        Called when this script sends a message to someone via msg().
+        
+        This hook is required for scripts that are passed as from_obj to character.msg().
+        Since we send death progression messages with from_obj=self, Evennia calls this
+        method to allow the script to intercept or modify outgoing messages.
+        
+        Args:
+            msg: The message being sent
+            to_obj: The object receiving the message
+            **kwargs: Additional message parameters
+            
+        Returns:
+            None - allows message to be sent normally
+        """
+        # We don't need to intercept or modify messages, just allow them to pass through
+        pass
+    
     def at_script_creation(self):
         """Initialize the death progression script."""
         self.key = "death_progression"
@@ -581,25 +600,47 @@ class DeathProgressionScript(DefaultScript):
                 db_obj=character,
                 db_key="medical_script"
             )
+            
+            script_count = medical_scripts.count()
+            try:
+                splattercast = ChannelDB.objects.get_channel("Splattercast")
+                splattercast.msg(f"DEATH_MEDICAL_CLEANUP: Found {script_count} medical scripts for {character.key}")
+            except:
+                pass
+            
             for script in medical_scripts:
                 try:
+                    script_id = script.id
+                    # Stop the script first
                     script.stop()
+                    # Force delete from database
                     script.delete()
+                    
+                    # Verify deletion
+                    still_exists = ScriptDB.objects.filter(id=script_id).exists()
+                    
                     try:
                         splattercast = ChannelDB.objects.get_channel("Splattercast")
-                        splattercast.msg(f"DEATH_MEDICAL_CLEANUP: Stopped and deleted medical script for {character.key}")
+                        if still_exists:
+                            splattercast.msg(f"DEATH_MEDICAL_CLEANUP_FAIL: Script #{script_id} for {character.key} still exists after delete!")
+                        else:
+                            splattercast.msg(f"DEATH_MEDICAL_CLEANUP: Successfully deleted script #{script_id} for {character.key}")
                     except:
                         pass
                 except Exception as e:
                     try:
                         splattercast = ChannelDB.objects.get_channel("Splattercast")
                         splattercast.msg(f"DEATH_MEDICAL_CLEANUP_ERROR: {character.key} - {e}")
+                        import traceback
+                        splattercast.msg(f"DEATH_MEDICAL_CLEANUP_TRACE: {traceback.format_exc()}")
                     except:
                         pass
         except Exception as e:
             try:
                 splattercast = ChannelDB.objects.get_channel("Splattercast")
                 splattercast.msg(f"DEATH_MEDICAL_CLEANUP_FAIL: {character.key} - {e}")
+                import traceback
+                splattercast.msg(f"DEATH_MEDICAL_CLEANUP_TRACE: {traceback.format_exc()}")
             except:
                 pass
         

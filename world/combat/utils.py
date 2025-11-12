@@ -1006,6 +1006,30 @@ def get_character_dbref(char):
     return char.id if char else None
 
 
+def get_combatants_safe(handler):
+    """
+    Safely retrieve the combatants list from a handler, ensuring it's never None.
+    
+    This handles edge cases where DB_COMBATANTS might be explicitly set to None
+    rather than just missing, which can cause 'NoneType' object is not iterable errors.
+    
+    Args:
+        handler: The combat handler instance
+        
+    Returns:
+        list: The combatants list, or an empty list if None/missing
+    """
+    from .constants import DB_COMBATANTS, SPLATTERCAST_CHANNEL, DEBUG_PREFIX_HANDLER
+    
+    combatants = getattr(handler.db, DB_COMBATANTS, [])
+    if combatants is None:
+        splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_WARNING: {DB_COMBATANTS} was None for handler {handler.key}, initializing to empty list.")
+        combatants = []
+        setattr(handler.db, DB_COMBATANTS, combatants)
+    return combatants
+
+
 def get_character_by_dbref(dbref):
     """
     Get character object by DBREF.

@@ -37,7 +37,7 @@ from .utils import (
     get_weapon_damage, add_combatant, remove_combatant, cleanup_combatant_state,
     cleanup_all_combatants, get_combatant_target, get_combatant_grappling_target,
     get_combatant_grappled_by, get_character_dbref, get_character_by_dbref,
-    resolve_bonus_attack
+    resolve_bonus_attack, get_combatants_safe
 )
 from .grappling import (
     break_grapple, establish_grapple, resolve_grapple_initiate,
@@ -418,11 +418,11 @@ class CombatHandler(DefaultScript):
 
         # Convert SaverList to regular list to avoid corruption during modifications
         combatants_list = []
-        if getattr(self.db, DB_COMBATANTS, None):
-            for entry in getattr(self.db, DB_COMBATANTS):
-                # Convert each entry to a regular dict to avoid SaverList issues
-                regular_entry = dict(entry)
-                combatants_list.append(regular_entry)
+        db_combatants = get_combatants_safe(self)
+        for entry in db_combatants:
+            # Convert each entry to a regular dict to avoid SaverList issues
+            regular_entry = dict(entry)
+            combatants_list.append(regular_entry)
         splattercast.msg(f"AT_REPEAT_DEBUG: Converted SaverList to regular list with {len(combatants_list)} entries")
         
         # Set up active list tracking for set_target to work during round processing
@@ -436,7 +436,7 @@ class CombatHandler(DefaultScript):
                 splattercast.msg(f"AT_REPEAT_TARGET_DEBUG: {char.key} has target_dbref: {target_dbref}")
         
         # Debug: Also show what's actually in the database
-        db_combatants_debug = getattr(self.db, DB_COMBATANTS, [])
+        db_combatants_debug = get_combatants_safe(self)
         for entry in db_combatants_debug:
             char = entry.get(DB_CHAR)
             target_dbref = entry.get(DB_TARGET_DBREF)
@@ -452,7 +452,7 @@ class CombatHandler(DefaultScript):
         if orphaned_chars:
             # Re-fetch combatants list after orphan removal
             combatants_list = []
-            db_combatants = getattr(self.db, DB_COMBATANTS, [])
+            db_combatants = get_combatants_safe(self)
             for entry in db_combatants:
                 regular_entry = dict(entry)
                 combatants_list.append(regular_entry)
