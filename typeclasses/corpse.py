@@ -47,6 +47,21 @@ class Corpse(Item):
             "skeletal": float('inf')  # > 1 week
         }
     
+    def at_init(self):
+        """
+        Called when object is loaded from database.
+        Ensures corpse has minimum required aliases (fixes broken corpses from old clear() bug).
+        """
+        super().at_init()
+        
+        # Only fix if corpse has NO aliases at all (affected by the old clear() bug)
+        current_aliases = set(self.aliases.all())
+        if not current_aliases:
+            # Restore minimal aliases - full update happens in _update_decay_descriptions
+            self.aliases.add("corpse")
+            self.aliases.add("remains")
+            self.aliases.add("body")
+    
     def get_decay_stage(self):
         """Calculate current decay stage based on time elapsed."""
         elapsed = time.time() - self.db.creation_time
