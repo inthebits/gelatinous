@@ -277,4 +277,4 @@ class ShopContainer(DefaultObject):
         # Add inventory display
         inventory_display = self.get_browse_display(looker)
         
-        return f"{desc}\n{inventory_display}"
+        return f"{desc}\n\n{inventory_display}"
