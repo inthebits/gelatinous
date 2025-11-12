@@ -111,16 +111,27 @@ class CmdBuy(Command):
     
     def _find_prototype_key(self, container, item_name):
         """
-        Find prototype key by exact match or fuzzy name match.
+        Find prototype key by number, exact match, or fuzzy name match.
         
         Args:
             container: ShopContainer to search
-            item_name: Name to search for
+            item_name: Name or number to search for (supports: "#2", "002", "2")
             
         Returns:
             str or None: Matching prototype key, or None if not found
         """
         from evennia.prototypes.prototypes import search_prototype
+        
+        # Check if item_name is a number (with or without # prefix)
+        # Handle: "2", "002", "#2", "#002"
+        search_term = item_name.lstrip('#').strip()
+        if search_term.isdigit():
+            item_number = int(search_term)
+            # Check if container has item number mapping (from recent look)
+            if hasattr(container.ndb, 'item_number_map') and container.ndb.item_number_map:
+                prototype_key = container.ndb.item_number_map.get(item_number)
+                if prototype_key:
+                    return prototype_key
         
         # Get available prototypes
         available_keys = container.db.prototype_inventory.keys()

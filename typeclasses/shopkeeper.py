@@ -216,13 +216,22 @@ class ShopContainer(DefaultObject):
         from evennia.prototypes.prototypes import search_prototype
         
         lines = []
-        lines.append(f"\n|c{self.db.shop_name}|n - Items on the {self.db.container_type}:")
-        lines.append("|w" + "-" * 70 + "|n")
         
         # Sort items by price
         items = sorted(self.db.prototype_inventory.items(), key=lambda x: x[1])
         
+        # Build number-to-prototype mapping for purchase by number
+        # Store as ndb (non-persistent) since it's regenerated on each look
+        item_map = {}
+        item_number = 1
+        
         for prototype_key, price in items:
+            # Skip out-of-stock items in limited inventory mode
+            if not self.db.is_infinite:
+                quantity = self.db.item_inventory.get(prototype_key, 0)
+                if quantity <= 0:
+                    continue
+            
             # Get prototype for display info
             prototype = search_prototype(prototype_key)
             if not prototype:
@@ -232,21 +241,23 @@ class ShopContainer(DefaultObject):
             # Get display name efficiently
             item_name = self.get_display_name_for_prototype(prototype_key, prototype)
             
-            # Check stock status
-            if self.db.is_infinite:
-                stock = "|gIn Stock|n"
-            else:
-                quantity = self.db.item_inventory.get(prototype_key, 0)
-                if quantity > 0:
-                    stock = f"|g({quantity} left)|n"
-                else:
-                    stock = "|rOut of Stock|n"
+            # Add to item map
+            item_map[item_number] = prototype_key
             
-            # Format line
-            lines.append(f"  |w{item_name:40s}|n {format_currency(price):>8s}  {stock}")
+            # Format line with 3-digit number prefix
+            lines.append(f"  [{item_number:03d}] {item_name:40s} {format_currency(price):>8s}")
+            item_number += 1
         
-        lines.append("|w" + "-" * 70 + "|n")
-        lines.append(f"Use |wbuy <item> from {self.key}|n to purchase.")
+        # If no items were added (all out of stock), show empty message
+        if not item_map:
+            return f"The {self.db.container_type} is empty."
+        
+        # Store the item map for use by buy command
+        self.ndb.item_number_map = item_map
+        
+        # TODO: Reimplement when newbie flag system is added
+        # Footer instruction for new players:
+        # lines.append(f"\nUse |wbuy <item> from {self.key}|n to purchase.")
         
         return "\n".join(lines)
     
