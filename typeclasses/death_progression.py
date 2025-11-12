@@ -90,7 +90,7 @@ class DeathProgressionScript(DefaultScript):
     Provides a window for medical intervention and creates dramatic tension.
     """
     
-    def at_msg_send(self, msg, to_obj=None, **kwargs):
+    def at_msg_send(self, text=None, to_obj=None, **kwargs):
         """
         Called when this script sends a message to someone via msg().
         
@@ -99,7 +99,7 @@ class DeathProgressionScript(DefaultScript):
         method to allow the script to intercept or modify outgoing messages.
         
         Args:
-            msg: The message being sent
+            text: The message text being sent
             to_obj: The object receiving the message
             **kwargs: Additional message parameters
             
