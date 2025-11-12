@@ -108,6 +108,13 @@ def get_or_create_combat(location):
         obj=location, # New handler is "hosted" by this location
         persistent=True,
     )
+    
+    # Ensure the script is saved to the database before returning
+    # This is critical because attributes cannot be set on unsaved objects
+    if not new_script.id:
+        new_script.save()
+        splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_GET: Saved new CombatHandler {new_script.key} to database (id={new_script.id}).")
+    
     splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_GET: Created new CombatHandler {new_script.key} on {location.key}.")
     return new_script
 

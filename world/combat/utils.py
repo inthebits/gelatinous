@@ -1026,7 +1026,12 @@ def get_combatants_safe(handler):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_WARNING: {DB_COMBATANTS} was None for handler {handler.key}, initializing to empty list.")
         combatants = []
-        setattr(handler.db, DB_COMBATANTS, combatants)
+        # Only set the attribute if the handler has been saved to the database
+        # Otherwise we get "needs to have a value for field 'id'" errors
+        if hasattr(handler, 'id') and handler.id:
+            setattr(handler.db, DB_COMBATANTS, combatants)
+        else:
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_WARNING: Handler {handler.key} not yet saved to DB, cannot set {DB_COMBATANTS}.")
     return combatants
 
 
