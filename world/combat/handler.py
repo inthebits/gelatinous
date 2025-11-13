@@ -241,8 +241,10 @@ class CombatHandler(DefaultScript):
                     try:
                         self.stop()
                         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Successfully stopped handler {self.key}.")
+                        return  # Don't continue if stop() succeeded - handler may be in invalid state
                     except Exception as e2:
                         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Error stopping handler {self.key}: {e2}. Leaving as-is.")
+                        return  # Don't continue if both delete() and stop() failed
             else:
                 splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} was not saved to database, skipping all database operations.")
                 return
