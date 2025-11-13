@@ -68,9 +68,9 @@ EXPLOSIVE_BASE = {
 # Standard fragmentation grenade
 FRAG_GRENADE = {
     "prototype_parent": "EXPLOSIVE_BASE",
-    "key": "frag grenade",
-    "aliases": ["grenade", "frag"],
-    "desc": "A standard military fragmentation grenade. Pull the pin and throw within 8 seconds or take cover!",
+    "key": "HDG M67 fragmentation grenade",
+    "aliases": ["grenade", "frag", "m67", "hdg grenade", "frag grenade"],
+    "desc": "A Helios Defense Group M67 fragmentation grenade - the standard-issue antipersonnel explosive used by military forces across human space. The body is a sphere of notched steel designed to fragment into hundreds of lethal shards upon detonation, encased in an olive drab coating. A spoon-style safety lever is held down by a pin that must be pulled to arm the fuse. Once the pin is pulled and the spoon released, you have approximately 8 seconds before detonation - enough time to throw it, not enough time to reconsider. The M67's blast radius extends fifteen meters, with the fragmentation pattern deadly within five. HDG has manufactured this design unchanged for over a century because some problems require the same solution regardless of the era: aggressive, indiscriminate violence delivered by a sphere you can hold in your hand.",
     "fuse_time": 8,
     "blast_damage": 25,
 }
@@ -89,9 +89,9 @@ TACTICAL_GRENADE = {
 # High-damage demo charge
 DEMO_CHARGE = {
     "prototype_parent": "EXPLOSIVE_BASE",
-    "key": "demo charge", 
-    "aliases": ["charge", "demo", "c4"],
-    "desc": "A powerful demolition charge. Devastating blast with a 10-second timer.",
+    "key": "HDG DX-15 demolition charge", 
+    "aliases": ["charge", "demo", "dx-15", "dx15", "hdg demo", "demo charge", "c4"],
+    "desc": "A Helios Defense Group DX-15 demolition charge - military-grade plastic explosive in a standardized one-kilogram block. The putty-like compound is stable enough to survive drops, fire, and even small-arms fire, but detonates with devastating force when triggered by the integrated electric blasting cap. The tan-colored explosive can be molded to fit against structural weak points, and the adhesive backing ensures it stays exactly where you place it. A digital timer/detonator is embedded in the block, offering settings from 10 seconds to 24 hours - though combat engineers rarely use anything longer than the minimum. When absolute structural destruction is required, whether it's breaching reinforced doors, collapsing tunnels, or eliminating hardened positions, the DX-15 delivers predictable, overwhelming force. HDG's technical documentation carefully avoids mentioning that this is the same compound used in shaped charges, improvised devices, and enough war crimes to fill a database.",
     "fuse_time": 10,
     "blast_damage": 40,
     "dud_chance": 0.01,  # Very reliable
@@ -352,9 +352,9 @@ RANGED_WEAPON_BASE = {
 # Light pistol (existing message type)
 LIGHT_PISTOL = {
     "prototype_parent": "RANGED_WEAPON_BASE",
-    "key": "light pistol",
-    "aliases": ["pistol", "handgun", "9mm"],
-    "desc": "A compact semi-automatic pistol. Lightweight and easy to conceal, perfect for close-quarters combat.",
+    "key": "PAM Model 6 pistol",
+    "aliases": ["pistol", "model 9", "m9", "pam pistol", "pam m9", "handgun", "9mm"],
+    "desc": "A Pioneer Arms Manufacturing Model 6 pistol in 6mm - the ubiquitous sidearm of frontier colonies across human space. The polymer frame keeps weight down while the slide is precision-machined steel with a corrosion-resistant finish that stands up to harsh planetary environments. Fixed three-dot sights are robust and simple, requiring no batteries or adjustment. The trigger is heavy but predictable, designed for reliability over refinement. No frills, no unnecessary features - just a working person's pistol that starts every time and keeps running through dust, mud, and neglect. You'll find Model 9s in the holsters of security guards, cargo haulers, and frontier marshals across a thousand worlds. It's not the best pistol ever made, but it might be the most common.",
     "damage": 12,
     "attrs": [
         ("weapon_type", "light_pistol"),
@@ -366,9 +366,9 @@ LIGHT_PISTOL = {
 # Heavy pistol (existing message type) 
 HEAVY_PISTOL = {
     "prototype_parent": "RANGED_WEAPON_BASE",
-    "key": "heavy pistol",
-    "aliases": ["magnum", ".44", "revolver"],
-    "desc": "A powerful heavy-caliber pistol. This hand cannon delivers devastating stopping power with thunderous reports.",
+    "key": "HDG M88 tactical pistol",
+    "aliases": ["M88", "m88", "hdg pistol", "tactical pistol", "heavy pistol", "magnum"],
+    "desc": "A Helios Defense Group M88 tactical pistol chambered in 10mm caseless - maintaining ammunition commonality across HDG's entire product line. Unlike the compact VP9 or battle rifle M4RA, the M88 is built as a dedicated sidearm with refined ergonomics. The slide is machined from stainless steel with aggressive forward serrations and a loaded chamber indicator. The polymer frame features interchangeable backstraps and an integrated accessory rail. The match-grade barrel extends slightly beyond the slide, housed in a subtle compensator that controls muzzle rise during rapid fire. Night sights come standard, and the trigger breaks clean at four pounds. While the 10mm caseless round is somewhat overpowered for a pistol platform, the M88's robust construction handles it without complaint - and when you need a sidearm that hits like a rifle, HDG delivers.",
     "damage": 18,
     "attrs": [
         ("weapon_type", "heavy_pistol"),
@@ -380,9 +380,9 @@ HEAVY_PISTOL = {
 # Pump-action shotgun (existing message type)
 PUMP_SHOTGUN = {
     "prototype_parent": "RANGED_WEAPON_BASE", 
-    "key": "pump-action shotgun",
-    "aliases": ["shotgun", "pump", "scattergun"],
-    "desc": "A reliable pump-action shotgun. The distinctive *chk-chk* of the pump action strikes fear into enemies at close range.",
+    "key": "PAM Defender shotgun",
+    "aliases": ["shotgun", "pump", "defender", "pam shotgun", "scattergun"],
+    "desc": "A Pioneer Arms Manufacturing Defender pump-action shotgun in 12-gauge - found in homesteads, outposts, and frontier settlements galaxy-wide. The action is smooth and forgiving, designed to cycle even with cheap ammunition or light hand loads. The barrel is chrome-lined and the receiver is a single piece of investment-cast steel that could probably survive re-entry. Wood furniture shows honest wear, and the corn-cob forend fits hands in work gloves as easily as bare skin. An extended magazine tube holds seven shells, and the distinctive *chk-chk* of the pump is a sound that says 'property defended' in any language. Whether it's hostile wildlife, claim jumpers, or something worse in the dark, the Defender has protected three generations of colonists.",
     "damage": 20,
     "attrs": [
         ("weapon_type", "pump-action_shotgun"),
@@ -393,9 +393,9 @@ PUMP_SHOTGUN = {
 # Break-action shotgun (existing message type)
 BREAK_SHOTGUN = {
     "prototype_parent": "RANGED_WEAPON_BASE",
-    "key": "break-action shotgun", 
-    "aliases": ["double-barrel", "sawed-off", "coach gun"],
-    "desc": "A classic break-action double-barrel shotgun. Simple, reliable, and devastatingly effective at close range.",
+    "key": "PAM Reaper shotgun", 
+    "aliases": ["reaper", "double-barrel", "coach gun", "pam reaper", "break shotgun", "boomstick"],
+    "desc": "A Pioneer Arms Manufacturing Reaper - the double-barrel 12-gauge that earned its name in blood across a hundred frontier wars. The design is over four centuries old and hasn't needed improvement since. Two barrels, two triggers, two shells - everything else is just luxury. The barrels are chromed and the action is precisely fitted, breaking open with a satisfying mechanical *clack* and ejecting spent shells with authority. Checkered walnut stock and forend show the patina of hard use and generational transfer. At close range, both barrels fired simultaneously will stop anything that walks, crawls, or flies - and the Reaper has proven it against claim jumpers, pirates, hostile fauna, and things with too many limbs to count. When colonists need a last line of defense, they reach for the Reaper. The name isn't marketing - it's a reputation earned in the dirt.",
     "damage": 25,
     "attrs": [
         ("weapon_type", "break-action_shotgun"),
@@ -406,9 +406,9 @@ BREAK_SHOTGUN = {
 # Bolt-action rifle (existing message type)
 BOLT_RIFLE = {
     "prototype_parent": "RANGED_WEAPON_BASE",
-    "key": "bolt-action rifle",
-    "aliases": ["rifle", "sniper", "bolt-action"],
-    "desc": "A precision bolt-action rifle. Excellent accuracy and range make this ideal for long-distance engagements.",
+    "key": "PAM Pathfinder rifle",
+    "aliases": ["rifle", "pathfinder", "pam rifle", "bolt-action", "bolt rifle"],
+    "desc": "A Pioneer Arms Manufacturing Pathfinder bolt-action rifle chambered in 7.62x51mm - the working rifle of choice for frontier scouts, hunters, and anyone who needs to reach out past the fence line. The action is a controlled-feed design that's smooth as glass and utterly reliable. The barrel is free-floated and cold-hammer-forged, capable of sub-MOA accuracy with quality ammunition. The synthetic stock is textured for grip and impervious to weather, while the steel receiver wears a matte finish that won't glare in harsh sunlight. A detachable box magazine holds five rounds, and the trigger adjusts from two to four pounds. Whether you're harvesting local fauna, defending livestock from predators, or putting down threats at distance, the Pathfinder delivers first-shot hits when it counts.",
     "damage": 22,
     "attrs": [
         ("weapon_type", "bolt-action_rifle"),
@@ -419,9 +419,9 @@ BOLT_RIFLE = {
 # Anti-material rifle (existing message type)  
 ANTI_MATERIAL_RIFLE = {
     "prototype_parent": "RANGED_WEAPON_BASE",
-    "key": "anti-material rifle",
-    "aliases": ["AMR", "sniper rifle", ".50 cal"],
-    "desc": "A massive anti-material rifle chambered in .50 BMG. This beast can punch through armor, vehicles, and walls with devastating effect.",
+    "key": "HDG M82A3 anti-material rifle",
+    "aliases": ["AMR", "M82A3", "anti-material rifle", "m82a3", "hdg amr"],
+    "desc": "A Helios Defense Group M82A3 anti-material rifle chambered in 12.7x99mm. This massive weapon features a fluted bull barrel with an integrated muzzle brake that redirects gases upward to reduce felt recoil. The upper receiver is machined from a single billet of aircraft-grade aluminum, with a full-length Picatinny rail mounting a variable-power optic. A heavy-duty bipod clamps to the reinforced front rail section, and the buttstock incorporates a hydraulic recoil buffer and adjustable cheek rest. The entire system weighs nearly thirty pounds unloaded, and the carrying handle suggests HDG knows this weapon spends more time being transported than fired. Built to eliminate light vehicles, hardened positions, and targets at extreme range.",
     "damage": 35,
     "attrs": [
         ("weapon_type", "anti-material_rifle"),
@@ -433,9 +433,9 @@ ANTI_MATERIAL_RIFLE = {
 # Assault rifle (if you have assault rifle messages)
 ASSAULT_RIFLE = {
     "prototype_parent": "RANGED_WEAPON_BASE",
-    "key": "assault rifle", 
-    "aliases": ["rifle", "AR", "automatic"],
-    "desc": "A modern selective-fire assault rifle. Versatile and deadly, with both semi-auto and full-auto capabilities.",
+    "key": "HDG M4RA pulse rifle", 
+    "aliases": ["rifle", "M4RA", "pulse rifle", "pulse", "m4ra", "hdg"],
+    "desc": "A Helios Defense Group M4RA pulse rifle chambered in 10mm caseless. The weapon's distinctive profile features a long barrel shroud with integrated electronic ammunition counter displaying in crisp amber numerals. The receiver is matte black composite with aggressive texturing, while the skeletal stock telescopes for compact carry. A charging handle protrudes from the right side of the upper receiver, and the trigger guard has been enlarged for gloved operation. The foregrip is ribbed polymer with heat-dissipation vents running along its length. Rail systems run along the top and sides of the handguard, currently mounting only iron sights but capable of accepting various optics and accessories. The whole assembly has the brutal, utilitarian aesthetic of military hardware designed for reliability under the worst possible conditions.",
     "damage": 15,
     "attrs": [
         ("weapon_type", "assault_rifle"),  # May need to create message file
@@ -446,9 +446,9 @@ ASSAULT_RIFLE = {
 # SMG/Submachine gun
 SMG = {
     "prototype_parent": "RANGED_WEAPON_BASE",
-    "key": "submachine gun",
-    "aliases": ["SMG", "machine pistol", "auto"],
-    "desc": "A compact submachine gun. High rate of fire and manageable recoil make it perfect for close-quarters combat.",
+    "key": "HDG VP9 submachine gun",
+    "aliases": ["SMG", "VP9", "vp9", "hdg smg", "submachine gun", "machine pistol"],
+    "desc": "A Helios Defense Group VP9 submachine gun in 10mm caseless - the same ammunition as the M4RA rifle, allowing for simplified logistics in the field. The weapon is built around a compact bullpup design that keeps overall length minimal while maintaining a full-length barrel for accuracy. The polymer chassis is reinforced with internal steel rails, and the top-mounted charging handle can be swapped for left or right-hand operation. A folding vertical foregrip provides control during full-auto bursts, while the collapsible wire stock locks into three positions. The fire selector offers semi-auto, three-round burst, and full-auto modes. Compact, reliable, and sharing ammunition with half of HDG's product line - the VP9 excels in close-quarters engagements.",
     "damage": 10,
     "attrs": [
         ("weapon_type", "smg"),  # May need to create message file
