@@ -204,17 +204,13 @@ class CombatHandler(DefaultScript):
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
         combat_was_running = getattr(self.db, DB_COMBAT_RUNNING, False)
-        setattr(self.db, DB_COMBAT_RUNNING, False)
         
         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} stopping combat logic. Was running: {combat_was_running}, cleanup_combatants: {cleanup_combatants}")
 
         if cleanup_combatants:
             self._cleanup_all_combatants()
-            
-        # Reset round counter
-        self.db.round = 0
         
-        # Determine if we should delete the script
+        # Determine if we should delete the script BEFORE modifying db attributes
         combatants = getattr(self.db, DB_COMBATANTS, [])
         should_delete_script = False
         if not combatants and self.pk:
@@ -222,14 +218,17 @@ class CombatHandler(DefaultScript):
             should_delete_script = True
         
         if should_delete_script:
+            # CRITICAL: Delete handler BEFORE setting db attributes
+            # After delete(), self.pk becomes None and db attribute access will crash
+            # See: COMBAT_HANDLER_DELETION_ANALYSIS.md
             splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Preparing to delete handler script {self.key}.")
-            # Only delete if the handler has been saved to the database
             if hasattr(self, 'id') and self.id:
                 try:
-                    # Ensure we're fully saved before attempting deletion
                     self.save()
                     self.delete()
                     splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Successfully deleted handler {self.key}.")
+                    # Early return - handler is deleted, no further cleanup needed
+                    return
                 except Exception as e:
                     splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Error deleting handler {self.key}: {e}. Trying stop().")
                     try:
@@ -239,16 +238,22 @@ class CombatHandler(DefaultScript):
                         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Error stopping handler {self.key}: {e2}. Leaving as-is.")
             else:
                 splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} was not saved to database, skipping all database operations.")
+                return
+        
+        # Only reach here if handler was NOT deleted
+        # Now it's safe to modify db attributes (self.pk is still valid)
+        setattr(self.db, DB_COMBAT_RUNNING, False)
+        self.db.round = 0
+        
+        # Stop the ticker if the script is saved to the database
+        if hasattr(self, 'id') and self.id:
+            try:
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} is not being deleted. Calling self.stop() to halt ticker.")
+                self.stop()
+            except Exception as e:
+                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Error stopping handler {self.key}: {e}. Leaving as-is.")
         else:
-            # Stop the ticker if the script is saved to the database
-            if hasattr(self, 'id') and self.id:
-                try:
-                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} is not being deleted. Calling self.stop() to halt ticker.")
-                    self.stop()
-                except Exception as e:
-                    splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Error stopping handler {self.key}: {e}. Leaving as-is.")
-            else:
-                splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} is not saved to database, skipping stop() call.")
+            splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Handler {self.key} is not saved to database, skipping stop() call.")
         
         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_{DEBUG_CLEANUP}: Combat logic stopped for {self.key}. Round reset to 0.")
 
