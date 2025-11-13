@@ -201,6 +201,12 @@ class CombatHandler(DefaultScript):
         Args:
             cleanup_combatants (bool): Whether to remove all combatants and clean state
         """
+        # CRITICAL: Check if handler has already been deleted
+        # This can happen when remove_combatant() calls stop_combat_logic() on a handler
+        # that was already deleted by a previous call
+        if not self.pk:
+            return
+        
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         
         combat_was_running = getattr(self.db, DB_COMBAT_RUNNING, False)
