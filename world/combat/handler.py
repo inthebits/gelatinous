@@ -201,10 +201,11 @@ class CombatHandler(DefaultScript):
         Args:
             cleanup_combatants (bool): Whether to remove all combatants and clean state
         """
-        # CRITICAL: Check if handler has already been deleted
-        # This can happen when remove_combatant() calls stop_combat_logic() on a handler
-        # that was already deleted by a previous call
-        if not self.pk:
+        # CRITICAL: Check if handler has been deleted or never saved
+        # This can happen when:
+        # 1. remove_combatant() calls stop_combat_logic() on already-deleted handler
+        # 2. Handler was created but never saved to database
+        if not self.pk or not self.id:
             return
         
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
@@ -279,6 +280,11 @@ class CombatHandler(DefaultScript):
         Performs cleanup of all combatant state when the handler is stopped,
         unless a merge is in progress.
         """
+        # CRITICAL: Prevent recursive calls when delete() triggers at_stop()
+        # If handler is already deleted, don't try to clean up again
+        if not self.pk or not self.id:
+            return
+        
         splattercast = ChannelDB.objects.get_channel(SPLATTERCAST_CHANNEL)
         splattercast.msg(f"{DEBUG_PREFIX_HANDLER}_STOP: Handler {self.key} at_stop() called. Cleaning up combat state.")
         
