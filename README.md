@@ -39,7 +39,7 @@ These attributes drive contested rolls, skill checks, and combat resolution thro
 
 **Connect**: [https://gel.monster](https://gel.monster) or `telnet play.gel.monster 23`
 
-**Local Development**: Requires [Evennia](https://www.evennia.com/docs/latest/Setup/Installation.html). Standard `evennia migrate` and `evennia start` workflow.
+**Local Development**: Requires [Evennia](https://www.evennia.com/docs/latest/Setup/Installation.html). Standard `evennia migrate` and `evennia start` workflow. (Gelatinous does currently make extensive use of a channel called Splattercast which requires manual creation at this time.)
 
 ## For Developers
 
