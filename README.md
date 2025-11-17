@@ -1,138 +1,171 @@
-# Welcome to the G.E.L. M.O.N.S.T.E.R. Program
+# Gelatinous
 
-## *Genetic Engineering Laboratory - Manufactured Organism for Nuclear/Synthetic Testing and Experimental Research*
+A text-based multiplayer game built on the [Evennia](https://www.evennia.com/) MUD framework. Gelatinous implements a tactical turn-based combat system with proximity mechanics, grappling, medical trauma simulation, and messaging systems designed to prioritize storytelling.
 
-**Congratulations, Subject!** You've been selected to participate in our cutting-edge text-based multiplayer *experience* built on the Evennia platform. Our scientists assure us this experiment in tactical combat, roleplay mechanics, and atmospheric storytelling is completely voluntary and mostly safe.*
+**Live Instance**: [https://gel.monster](https://gel.monster)  
+**Telnet**: play.gel.monster:23
 
-*\*Side effects may include existential dread, spontaneous combat encounters, and an inexplicable urge to check your inventory repeatedly.*
+## Overview
 
-## 🧪 Join Our Elite Test Facility (Currently Decontaminating During Pre-Alpha)
+Gelatinous is a pre-alpha MUD (Multi-User Dungeon) that explores tactical combat design with a focus on narrative depth. The game features the G.R.I.M. system (Grit, Resonance, Intellect, Motorics) - a four-attribute framework governing character capabilities in combat, social interactions, and skill resolution.
 
-**Live Testing Environment**: [play.gel.monster](https://gel.monster) Port 23  
-*Temporarily offline while our research team "figures things out." No subjects were harmed in the making of this downtime.*
+### Core Features
 
-Connect with any MUD client when our containment protocols are restored!
+- **Turn-Based Tactical Combat**: Initiative-driven combat system with 6-second rounds
+- **Proximity System**: Melee/ranged positioning with tactical movement commands (advance, retreat, charge, flee)
+- **Grappling Mechanics**: Multi-participant restraint system with contested rolls, dragging, and human shield functionality
+- **Medical Simulation**: Wound tracking, bleeding mechanics, pain management, and recovery systems
+- **Projectile Physics**: Cross-room throwing with flight timing, trajectory calculation, and interception mechanics
+- **Environmental Interaction**: Trap rigging, graffiti system, crowd dynamics, and weather effects
+- **Equipment Systems**: Layered clothing with armor values, weapon wielding, and inventory consolidation
+- **Shop System**: Prototype-based shops with infinite/limited inventory and merchant NPCs
+- **Death & Corpses**: Death progression system with forensic corpses and decay mechanics
+- **Object Interaction**: Wrest command for contested item acquisition, frisk for searching
+- **Consumption System**: Eating, drinking, and substance effects
+- **Bug Reporting**: In-game bug reporting command
+- **Natural Language Processing**: Ordinal number recognition and flexible command parsing
+- **Atmospheric Messaging**: 95+ weapon-specific message templates with three-perspective combat narration
 
-## 🧬 The G.R.I.M. Enhancement Protocol
+### G.R.I.M. Attribute System
 
-*Our proprietary enhancement system* based on four rigorously tested metrics:
+- **Grit**: Physical toughness, endurance, and raw strength
+- **Resonance**: Social awareness, empathy, and interpersonal skills
+- **Intellect**: Mental acuity, tactical thinking, and problem-solving
+- **Motorics**: Physical coordination, dexterity, and reflexes
 
-- **Grit**: Physical toughness and endurance *(Warning: May cause stubborn behavior)*
-- **Resonance**: Social awareness and empathy *(Side effects include caring about others)*
-- **Intellect**: Mental acuity and tactical thinking *(Subjects may experience "smart mouth syndrome")*
-- **Motorics**: Physical coordination and dexterity *(Reduces likelihood of walking into walls)*
+These attributes drive contested rolls, skill checks, and combat resolution throughout the game.
 
-### Laboratory Testing Features (Recently Enhanced):
-- Turn-based encounter simulations with initiative protocols
-- **Advanced Proximity System** - Close-quarters vs ranged engagement with tactical movement
-- **Complete Grappling Protocols** - Multi-participant restraint with contest mechanics, dragging, and human shield functionality  
-- **Medical Trauma System** - Wound tracking, bleeding, pain management, and recovery protocols
-- **Projectile Research Division** - Cross-room throwing mechanics with flight timing and interception
-- **Environmental Trapping** - Exit rigging with defusal mechanics and chain reactions
-- **Object Wrestling** - Grit-based contests for equipment acquisition
-- **Clothing Integration** - Layered equipment system with armor mechanics
-- **Consumption Protocols** - Substance intake and metabolic effects
-- Multi-room tactical movement evaluations with proximity inheritance
-- Peaceful resolution yielding mechanics *(Our legal department insists we mention this)*
-- Natural language command processing with ordinal number recognition ("get 2nd chainsaw")
-- Inventory consolidation algorithms for identical test materials
-- Persistent targeting system with visual feedback indicators
-- **Environmental Documentation** - Graffiti system for facility wall writings
+## Quick Start
 
-*Results may vary. The G.E.L. facility is not responsible for any unintended mutations, tactical disadvantages, medical complications, or existential crises resulting from participation in our enhanced testing protocols.*
+**Connect**: [https://gel.monster](https://gel.monster) or `telnet play.gel.monster 23`
 
-## 🔬 For Our Distinguished Research Partners & Code Archaeologists
+**Local Development**: Requires [Evennia](https://www.evennia.com/docs/latest/Setup/Installation.html). Standard `evennia migrate` and `evennia start` workflow.
 
-**CLASSIFIED NOTICE**: Before conducting any modifications to our combat testing protocols, consult [`AGENTS.md`](AGENTS.md) - it contains vital containment procedures and approved research methodologies.
+## For Developers
 
-*Unauthorized tampering with the combat system may result in unexpected subject behavior, facility-wide incidents, or strongly worded memos from management.*
+### Architecture Overview
 
-### Research Quick Access
-- [Combat Testing Architecture](AGENTS.md#system-architecture)
-- [Approved Research Patterns](AGENTS.md#common-patterns)
-- [Incident Response Procedures](AGENTS.md#troubleshooting)
-
-### Facility Features & Amenities
-- Meticulously engineered separation of concerns across combat, medical, and environmental systems
-- **Comprehensive Medical Division** - Trauma tracking, bleeding mechanics, pain management, and healing protocols
-- **Advanced Combat Architecture** - Multi-participant grappling, proximity systems, and tactical positioning
-- **Projectile Ballistics Lab** - Cross-room throwing with flight physics and interception mechanics
-- 50+ centralized constants to eliminate "magic values" *(Our accounting department loves this)*
-- State-of-the-art debug infrastructure *(Success rate improving with recent proximity fixes)*
-- Roleplay-first design philosophy *(Subject immersion is our priority)*
-- Atmospheric three-perspective combat messaging system *(Witnesses included at no extra charge)*
-- Universal ordinal number support for intuitive command processing *(Because "get sword" is so primitive)*
-- **Environmental Systems** - Weather effects, crowd dynamics, and facility documentation protocols
-
-### New Researcher Orientation
-For facility setup, constructing your own testing environment, or contributing to the Evennia research foundation, consult the [official Evennia documentation](https://github.com/evennia/evennia).
-
-*The G.E.L. facility recommends all researchers complete proper safety training before handling experimental subjects.*
-
-### Facility Architecture *(Actual Directory Structure)*
+The codebase follows Evennia's standard structure with custom extensions for combat, medical, and environmental systems:
 
 ```
 gelatinous/
-├── commands/          # Subject command interface (various operational states)
-│   ├── combat/       # Combat testing commands (grapple, advance, flee, aim, etc.)
-│   ├── CmdInventory.py # Enhanced inventory with consolidation protocols
-│   ├── CmdCharacter.py # Subject evaluation and statistics
-│   ├── CmdThrow.py   # Projectile research mechanics (complete system)
-│   ├── CmdMedical.py # Medical intervention and treatment protocols
-│   ├── CmdClothing.py # Equipment layering and armor systems
-│   ├── CmdConsumption.py # Substance intake and metabolic protocols
-│   └── CmdGraffiti.py # Environmental documentation system
-├── typeclasses/      # Experimental organism definitions
-│   ├── objects.py    # Base protocols with ordinal number processing
-│   ├── characters.py # Subject profiles and G.R.I.M. modifications
-│   ├── items.py      # Research materials and interaction behaviors
-│   └── rooms.py      # Testing environments and chamber features
-├── world/            # Core facility operations
-│   ├── combat/       # G.R.I.M. testing engine modules
-│   │   ├── handler.py    # Combat state coordination
-│   │   ├── constants.py  # Testing parameters
-│   │   ├── messages/     # 95+ atmospheric interaction message files
-│   │   ├── proximity.py  # Tactical positioning systems
-│   │   ├── grappling.py  # Restraint and contest mechanics
-│   │   └── utils.py      # Combat support algorithms
-│   ├── medical/      # Trauma and recovery systems
-│   │   ├── core.py       # Medical state management
-│   │   ├── conditions.py # Wound and status tracking
-│   │   ├── script.py     # Automated medical processes
-│   │   └── wounds/       # Injury classification and effects
-│   ├── crowd/        # Population dynamics simulation
-│   └── weather/      # Environmental controls and atmospheric effects
-├── server/           # Administrative configuration (Evennia)
-├── specs/            # Research proposals and expansion plans (20+ detailed specs)
-└── docs/             # Comprehensive facility documentation
+├── commands/          # Command implementations
+│   ├── combat/       # Combat commands (attack, grapple, flee, aim, etc.)
+│   ├── CmdInventory.py   # Wield, get, drop, give, wrest, frisk
+│   ├── CmdCharacter.py   # Character sheet and stats
+│   ├── CmdThrow.py       # Projectile throwing
+│   ├── CmdMedical.py     # Medical treatment commands
+│   ├── CmdMedicalItems.py # Medical item management
+│   ├── CmdClothing.py    # Clothing and armor
+│   ├── CmdArmor.py       # Armor-specific commands
+│   ├── CmdConsumption.py # Eating and drinking
+│   ├── CmdGraffiti.py    # Environmental writing
+│   ├── CmdSpawnMob.py    # NPC spawning (admin)
+│   ├── CmdBug.py         # Bug reporting
+│   ├── shop.py           # Shop interaction commands
+│   └── charcreate.py     # Character creation menu
+├── typeclasses/      # Game object definitions
+│   ├── objects.py         # Base object with ordinal number support
+│   ├── characters.py      # Character typeclass with G.R.I.M. stats
+│   ├── items.py           # Weapons, armor, consumables
+│   ├── rooms.py           # Room features and environmental systems
+│   ├── corpse.py          # Corpse with forensic data and decay
+│   ├── shopkeeper.py      # Shop containers and merchants
+│   ├── death_progression.py # Death state management
+│   └── exits.py           # Custom exit functionality
+├── world/            # Game systems and handlers
+│   ├── combat/       # Combat system modules
+│   │   ├── handler.py     # CombatHandler script
+│   │   ├── constants.py   # System constants
+│   │   ├── messages/      # 95+ weapon-specific message templates
+│   │   ├── proximity.py   # Tactical positioning
+│   │   ├── grappling.py   # Restraint mechanics
+│   │   └── utils.py       # Utility functions
+│   ├── medical/      # Medical trauma simulation
+│   │   ├── core.py        # Medical state management
+│   │   ├── conditions.py  # Status effects and wounds
+│   │   ├── script.py      # Automated processes (bleeding, healing)
+│   │   ├── constants.py   # Medical system constants
+│   │   └── wounds/        # Wound type definitions
+│   ├── shop/         # Shop system
+│   │   └── utils.py       # Shop pricing and inventory
+│   ├── utils/        # Shared utilities
+│   │   └── boxtable.py    # Table formatting
+│   ├── crowd/        # Crowd simulation
+│   └── weather/      # Weather and environmental effects
+├── server/           # Evennia configuration
+│   └── conf/         # Game settings
+├── specs/            # Design documents and specifications
+└── docs/             # Project documentation
 ```
 
-## � Research Documentation & Safety Manuals
+### Key Systems
 
-### Documentation Suite
-- **[Project Overview](PROJECT_OVERVIEW.md)** - Design philosophy and core concepts
-- **[Architecture Guide](ARCHITECTURE.md)** - File structure and system organization
-- **[Combat Testing Protocols](specs/COMBAT_SYSTEM.md)** - Comprehensive G.R.I.M. methodology
-- **[Development Procedures](DEVELOPMENT_GUIDE.md)** - Approved research practices
+**Combat**: Turn-based Script-driven handler with initiative order, opposed rolls, and 6-second rounds. See [`AGENTS.md`](AGENTS.md) for comprehensive architecture.
 
-### Current Project Status
-- 🧪 **Combat Response System** - Message protocols converted *(Performance within acceptable parameters)*
-- 🧪 **Advanced Grappling Protocols** - Multi-participant restraint with contest mechanics *(Recently enhanced)*
-- 🩸 **Medical Trauma Division** - Wound tracking, bleeding, and recovery systems *(Operational)*
-- 💉 **Projectile Ballistics Lab** - Complete throwing system with flight physics *(Production ready)*
-- 🔒 **Proximity Enforcement** - Tactical positioning with recent bypass vulnerability patches *(Security enhanced)*
-- 🧠 **Natural Language Processing** - Ordinal number recognition *(Subjects report improved usability)*
-- 📦 **Equipment Organization** - Identical item consolidation with clothing layers *(Storage efficiency optimized)*
-- 🎯 **Targeting Enhancement** - Persistent visual feedback systems *(Accuracy metrics improving)*
-- ⚠️ **Environmental Expansion** - See [Research Proposals](specs/) for 20+ ambitious development plans
+**Proximity**: Tactical positioning distinguishing melee/ranged engagement with movement commands (advance, retreat, charge, flee).
 
-*Quality assurance ongoing. Individual results may vary. Recent security patches have eliminated proximity bypass exploits.*
+**Grappling**: Multi-participant restraint with contested rolls, dragging, takeover mechanics, and human shield functionality.
 
----
+**Medical**: Wound severity tracking, bleeding accumulation, pain effects, and treatment requirements.
 
-**DISCLAIMER**: *The G.E.L. M.O.N.S.T.E.R. Program is an experimental research initiative. Participation is voluntary and subjects are free to leave at any time.* 
+**Messages**: 95+ weapon-specific templates with three-perspective narration (attacker, victim, observer) and dynamic content loading.
 
-*\*Facility exit procedures may require completion of standard decontamination protocols. Management is not responsible for any lingering effects of genetic modification or tactical combat training. For questions, complaints, or mutation reports, please contact our Customer Relations department at your earliest convenience.*
+**Death & Corpses**: Death progression system managing unconsciousness, death state, and corpse creation with forensic data preservation and just-in-time decay calculations.
 
-**WARNING**: *This facility is a work in progress and our research team is one troubleshooter who has no idea what they are doing.*
+**Shops**: Prototype-based shop system supporting infinite/limited inventory, dynamic pricing with markup, and merchant NPC integration.
+
+## Documentation
+
+- **[AGENTS.md](AGENTS.md)** - Combat system architecture and patterns
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Project structure overview
+- **[PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)** - Design philosophy
+- **[specs/](specs/)** - 20+ detailed specifications for implemented and planned features
+
+## Project Status
+
+**Current Phase**: Pre-Alpha Development
+
+### Implemented Systems
+
+- ✅ Turn-based combat with initiative
+- ✅ G.R.I.M. attribute system
+- ✅ Proximity and tactical positioning
+- ✅ Multi-participant grappling with contests
+- ✅ Medical trauma and wound tracking
+- ✅ Cross-room throwing mechanics
+- ✅ Equipment and clothing systems with armor
+- ✅ Shop system with prototype-based inventory
+- ✅ Death progression and corpse forensics
+- ✅ Object wresting and contested acquisition
+- ✅ Consumption system (eating/drinking)
+- ✅ Medical item management system
+- ✅ Bug reporting system
+- ✅ Natural language command parsing
+- ✅ Atmospheric combat messaging (95+ templates)
+- ✅ Environmental systems (graffiti, crowds, weather)
+- ✅ Character creation menu system
+
+### In Development
+
+- 🚧 Additional weapon types and combat moves
+- 🚧 Expanded medical conditions and treatments
+- 🚧 Economic systems and trade
+- 🚧 Quest and narrative frameworks
+- 🚧 Character progression systems
+
+### Planned Features
+
+See `specs/` directory for 20+ detailed specifications of planned expansions including advanced environmental interactions, crafting systems, social mechanics, and faction systems.
+
+## Contributing
+
+Personal project in active development. Open an issue or visit the game to discuss contributions.
+
+## Built With
+
+[Evennia](https://www.evennia.com/) - Python MUD/MU* framework | [Documentation](https://www.evennia.com/docs/latest/) | [GitHub](https://github.com/evennia/evennia)
+
+
+
 
