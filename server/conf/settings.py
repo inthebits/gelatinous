@@ -83,7 +83,9 @@ AUTO_CREATE_CHARACTER_WITH_ACCOUNT = False  # We'll handle this custom
 AUTO_PUPPET_ON_LOGIN = False  # Let at_post_login handle character selection/creation
 
 # Default starting location for new characters
-START_LOCATION = "#1989"
+# Override in secret_settings.py for your specific deployment
+# If not set, defaults to Limbo (#2)
+# START_LOCATION = "#2"  # Example: set to your spawn room
 
 # Use our custom email-based login system
 CMDSET_UNLOGGEDIN = "commands.unloggedin_email.UnloggedinEmailCmdSet"
