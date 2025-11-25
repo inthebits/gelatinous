@@ -255,7 +255,7 @@ DAGGER = {
 }
 
 # Tessen (iron war fan)
-TESSEN = {
+FIGHTING_FAN = {
     "prototype_parent": "MELEE_WEAPON_BASE",
     "key": "fighting fan",
     "aliases": ["tessen", "iron fan", "fighting fan", "battle fan"],
