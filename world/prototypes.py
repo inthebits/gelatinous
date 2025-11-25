@@ -257,8 +257,8 @@ DAGGER = {
 # Tessen (iron war fan)
 TESSEN = {
     "prototype_parent": "MELEE_WEAPON_BASE",
-    "key": "tessen",
-    "aliases": ["war fan", "iron fan", "fighting fan", "battle fan"],
+    "key": "fighting fan",
+    "aliases": ["tessen", "iron fan", "fighting fan", "battle fan"],
     "desc": "A tessen war fan - deceptively elegant with its iron ribs concealed beneath decorative lacquer and silk panels. What appears to be a courtly accessory unfolds into a bladed weapon, each metal spine sharpened along its edge. The hinged ribs lock into position with a practiced snap, transforming ornament into armament. Favored by those who understood that the deadliest weapons are the ones your opponent doesn't see coming.",
     "damage": 7,
     "deflection_bonus": 0.15,  # +3 to deflection threshold (good defensive weapon)
