@@ -4,19 +4,137 @@
 
 This document serves as a comprehensive reference for AI agents working on the G.R.I.M. (Grit, Resonance, Intellect, Motorics) combat system in Evennia. It provides detailed technical information about the architecture, components, and interactions within the combat system.
 
+---
+
+## Quick Reference
+
+### Project Context
+
+**Gelatinous** is a flexible RPG codebase built on Evennia, designed to be setting-agnostic. The current MUD implementation is a sci-fi setting on an offworld colony.
+
+The G.R.I.M. system uses four stats:
+- **Grit** - Physical toughness, health, endurance
+- **Resonance** - Empathy, social influence, willpower
+- **Intellect** - Knowledge, crafting, problem-solving
+- **Motorics** - Agility, combat skill, reflexes
+
+Core player experiences: exploration, tactical combat, grappling/restraint mechanics, character death with corpse/decay systems.
+
+### Do's and Don'ts
+
+| ✅ Do | ❌ Don't |
+|-------|----------|
+| Use `obj.db.attr is None` to check attributes | Use `hasattr(obj.db, "attr")` |
+| Use `hasattr()` for `obj.ndb` attributes | Use `hasattr()` for `obj.db` attributes |
+| Check `evennia.utils` before writing helpers | Reinvent utility functions |
+| Use constants from `world/combat/constants.py` | Use magic strings |
+| Clean up NDB state when combat ends | Leave stale references |
+| Run `evennia test path.to.module` | Run Django's test runner |
+| Use prototypes for data variation | Create new typeclasses for data |
+
+### File → Concept Quick Reference
+
+| I need to... | Look in... |
+|--------------|------------|
+| Modify combat flow/turns | `world/combat/handler.py` |
+| Change melee range rules | `world/combat/proximity.py` |
+| Fix grappling mechanics | `world/combat/grappling.py` |
+| Add/change combat constants | `world/combat/constants.py` |
+| Modify attack/damage logic | `world/combat/utils.py` |
+| Change combat messages | `world/combat/messages/*.py` |
+| Modify attack command | `commands/combat/core_actions.py` |
+| Add movement commands | `commands/combat/movement.py` |
+| Add special actions | `commands/combat/special_actions.py` |
+| Change character stats/behavior | `typeclasses/characters.py` |
+| Modify items/weapons | `typeclasses/items.py` |
+| Work on death/corpses | `typeclasses/corpse.py`, `typeclasses/deathscroll.py` |
+| Change room behavior | `typeclasses/rooms.py` |
+| Find object prototypes | `world/prototypes.py` |
+| Understand a system before implementing | `specs/*.md` |
+
+### When Stuck
+
+1. **Check the Splattercast channel** - Debug output goes here
+2. **Grep for the constant** - Most strings are in `constants.py`
+3. **Trace from command** - Commands in `commands/combat/` call handler methods
+4. **Check NDB state** - Many bugs are stale `char.ndb.*` references
+5. **Read Evennia docs** - `evennia info <topic>` or https://www.evennia.com/docs/latest/
+
+---
+
 ## Table of Contents
 
-1. [System Architecture](#system-architecture)
-2. [Core Components](#core-components)
-3. [Combat Flow](#combat-flow)
-4. [Data Structures](#data-structures)
-5. [Command System](#command-system)
-6. [State Management](#state-management)
-7. [Message System](#message-system)
-8. [Debugging & Logging](#debugging--logging)
-9. [Extension Points](#extension-points)
-10. [Common Patterns](#common-patterns)
-11. [Troubleshooting](#troubleshooting)
+1. [Evennia Fundamentals](#evennia-fundamentals)
+2. [System Architecture](#system-architecture)
+3. [Core Components](#core-components)
+4. [Combat Flow](#combat-flow)
+5. [Data Structures](#data-structures)
+6. [Command System](#command-system)
+7. [State Management](#state-management)
+8. [Message System](#message-system)
+9. [Debugging & Logging](#debugging--logging)
+10. [Extension Points](#extension-points)
+11. [Common Patterns](#common-patterns)
+12. [Troubleshooting](#troubleshooting)
+
+---
+
+## Evennia Fundamentals
+
+### Documentation Resources
+
+**Primary Documentation:**
+- **Official Docs**: https://www.evennia.com/docs/latest/ - Comprehensive reference for all Evennia systems
+- **GitHub Wiki**: https://github.com/evennia/evennia/wiki - Community guides and tutorials
+- **API Reference**: https://www.evennia.com/docs/latest/api/ - Full API documentation
+
+**CLI Documentation Access:**
+```bash
+# Get info about any Evennia component
+evennia info <topic>
+
+# Examples:
+evennia info typeclasses
+evennia info commands
+evennia info scripts
+evennia info attributes
+```
+
+**Key Documentation Sections:**
+- [Typeclasses](https://www.evennia.com/docs/latest/Components/Typeclasses.html) - Core inheritance system
+- [Attributes](https://www.evennia.com/docs/latest/Components/Attributes.html) - Data storage (`obj.db` vs `obj.ndb`)
+- [Commands](https://www.evennia.com/docs/latest/Components/Commands.html) - Player interaction
+- [Scripts](https://www.evennia.com/docs/latest/Components/Scripts.html) - Timed/persistent code (combat handler uses this)
+- [Prototypes](https://www.evennia.com/docs/latest/Components/Prototypes.html) - Object spawning templates
+- [Utilities](https://www.evennia.com/docs/latest/api/evennia.utils.html) - Built-in helper functions
+
+**Before writing new code, always check:**
+1. `evennia.utils` - Has many helper functions already implemented
+2. The official docs for the relevant component
+3. Evennia's source code on GitHub for implementation examples
+
+### Critical Patterns (Evennia-Specific)
+
+**Attribute Access** - The most common mistake:
+```python
+# CORRECT - attributes return None if they don't exist
+if obj.db.attrname is None:
+    print("No 'attrname' attribute")
+
+# WRONG - never use hasattr/getattr/setattr on db
+if hasattr(obj.db, "attrname"):  # DON'T DO THIS
+    ...
+```
+
+**NDB vs DB:**
+- `obj.db` - Persistent, survives restarts. Check with `is None`.
+- `obj.ndb` - Temporary, lost on restart. Use `hasattr()` here.
+
+**Testing:**
+```bash
+# Use Evennia's test runner, NOT Django's
+evennia test path.to.module
+```
 
 ---
 
@@ -1064,11 +1182,40 @@ This document provides a comprehensive reference for working with the G.R.I.M. c
 
 ### Best Practices
 
+**Evennia-Specific:**
+- **NEVER** use `hasattr`, `getattr`, or `setattr` on `obj.db` - always use `obj.db.attrname is None`
+- **DO** use `hasattr` on `obj.ndb` - these are regular Python attributes
+- Check `evennia.utils` before writing utility functions
+- Use prototypes for data variation, typeclasses for behavior
+- Run tests with `evennia test path.to.module`, not Django's test runner
+
+**G.R.I.M. Combat-Specific:**
 - Always use constants instead of magic strings
 - Clean up state when characters leave combat
 - Validate handler references before use
 - Use debug logging for complex operations
 - Follow established patterns for new features
+
+### Common Anti-Patterns to Avoid
+
+```python
+# WRONG: Using hasattr on db attributes
+if hasattr(char.db, "health"):
+    ...
+
+# CORRECT: Check for None
+if char.db.health is not None:
+    ...
+
+# WRONG: Creating new model classes for game objects
+class SpecialItem(models.Model):
+    ...
+
+# CORRECT: Use typeclasses with db attributes
+class SpecialItem(Object):
+    def at_object_creation(self):
+        self.db.special_property = True
+```
 
 ---
 
