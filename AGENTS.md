@@ -54,11 +54,12 @@ Core player experiences: exploration, tactical combat, grappling/restraint mecha
 
 ### When Stuck
 
-1. **Check the Splattercast channel** - Debug output goes here
-2. **Grep for the constant** - Most strings are in `constants.py`
-3. **Trace from command** - Commands in `commands/combat/` call handler methods
-4. **Check NDB state** - Many bugs are stale `char.ndb.*` references
-5. **Read Evennia docs** - `evennia info <topic>` or https://www.evennia.com/docs/latest/
+1. **Check `server/logs/server.log`** - Tracebacks and errors go here
+2. **Check the Splattercast channel** - Combat debug output goes here
+3. **Grep for the constant** - Most strings are in `constants.py`
+4. **Trace from command** - Commands in `commands/combat/` call handler methods
+5. **Check NDB state** - Many bugs are stale `char.ndb.*` references
+6. **Read Evennia docs** - `evennia info <topic>` or https://www.evennia.com/docs/latest/
 
 ---
 
