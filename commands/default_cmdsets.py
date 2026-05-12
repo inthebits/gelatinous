@@ -187,6 +187,10 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdForget())
         self.add(CmdRecall())
         self.add(CmdMemory())
+        self.add(CmdCharacter.CmdAppear())
+        self.add(CmdCharacter.CmdStopAppearing())
+        self.add(CmdCharacter.CmdPersonas())
+        self.add(CmdCharacter.CmdPersona())
 
         # Add identity-aware communication commands (override Evennia defaults)
         self.add(CmdSay())

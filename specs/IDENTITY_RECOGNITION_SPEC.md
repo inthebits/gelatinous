@@ -497,31 +497,47 @@ The composed sdesc descriptor (`gaunt`, `burly`, etc.) is recomputed from the ov
 - Voice (deferred to future communication-system integration)
 - The character's real `sleeve_uid` (the underlying body identity)
 
-### Bookmarks — Player-Facing Persona Recall
+### Personas — Player-Facing Persona Recall
 
-Because the identity engine is purely emergent from current state, players need an ergonomic layer to **remember and restore** disguise combinations they have discovered and want to reuse. Bookmarks fill this role.
+Because the identity engine is purely emergent from current state, players need an ergonomic layer to **remember and restore** disguise combinations they have discovered and want to reuse. Personas fill this role.
 
-A bookmark is a **player-private snapshot** of a disguise combination, captured at the moment of bookmarking and restorable later. Bookmarks are designed in parallel to the planned identity/contact system — same recall, annotation, and (future) web-UI patterns.
+A persona is a **player-private snapshot** of presentation overrides, captured at the moment of saving and restorable later. Personas are designed in parallel to the planned identity/contact system — same recall, annotation, and (future) web-UI patterns.
 
-**A bookmark stores:**
-- A **player-chosen name** (1–32 chars, case-insensitive lookup, case-preserving display, player-private — never visible to other characters)
-- The **override values** active at bookmark time (height, build, keyword)
-- The **types of essential disguise items** equipped at bookmark time
-- A **freeform notes field** for player annotations (e.g., *"met Marcus at the docks, he thinks I work for Diaz"*)
-- A **created-at timestamp**
+> **Status (current PR — `appear-persona-cluster`):** The surface verbs (`appear`, `stop appearing`, `personas`, `persona`, `remember me as <name>`, `forget <persona>`) and the persona storage schema are shipped. The signature engine, Apparent UID derivation, essential-item integration, and `get_sdesc()` consumption of overrides are deferred to follow-up Phase 3 PRs. Until those land, override axes are written to character DB but do not yet affect what observers perceive.
 
-**Bookmarks do NOT generate identities.** They are pure recall aids. When a player restores a bookmark, the system applies the captured overrides and notifies the player which essential items they need to equip (or are missing). The resulting Apparent UID is derived by the engine from the restored state, not from the bookmark itself. Two bookmarks with identical override + item-type composition yield the same Apparent UID — they are just labels in the player's memory.
+**A persona stores:**
+- A **player-chosen name** (case-insensitive lookup, case-preserving display, player-private — never visible to other characters)
+- The **override values** active at save time (height, build, keyword) — `None` for axes that were unset
+- The **types of essential disguise items** equipped at save time *(reserved field, populated when the engine PR lands; written empty in the foundation cut)*
+- A **freeform notes field** for player annotations *(reserved field, currently always empty)*
+- A **created-at timestamp** and the **room name** where it was saved
 
-**Bookmark cap:** `min(Resonance × 2, 10)`. (Tunable; this gating is ergonomic, not load-bearing — expected to change.) Players at cap must delete a bookmark before saving a new one. Existing bookmarks remain usable if Resonance drops below the threshold; only new saves are blocked.
+**Personas do NOT generate identities.** They are pure recall aids. When a player adopts a persona, the system applies the captured overrides as a **clean swap** — overwriting all three axes including any unset axes (so adoption produces an exact replay of the saved state, never a merge). The resulting Apparent UID, once the engine PR lands, will be derived from the restored state, not from the persona itself. Two personas with identical overrides + item-type composition will yield the same Apparent UID — they are just labels in the player's memory.
 
-**Operations** (exact syntax to be settled in a future commands discussion):
-- Save current state as a bookmark
-- List bookmarks (player-private; never visible to others)
-- Restore a bookmark (apply overrides + report missing items)
-- Annotate a bookmark with notes
-- Delete a bookmark
+**Cap:** No cap in the surface PR. The previously-floated `min(Resonance × 2, 10)` gating is held for the engine PR or later balance pass.
 
-**Bookmark name collision** within a single character is rejected. Players must delete an existing bookmark before reusing the name. (`appear edit`-style in-place modification is deferred to a future iteration.)
+**Player surface (current grammar — locked):**
+- `appear` — show current overrides + active persona
+- `appear taller | shorter` — nudge perceived height one step on the `HEIGHTS` scale; refuses at the extremes (an unreachable axis value is itself a tell)
+- `appear thinner | fatter` — same on the `BUILDS` scale
+- `appear <keyword>` — present as the given keyword; validated against the full keyword catalog (gender filter does not apply to disguise). New keywords are introduced via `@shortdesc`, not via `appear`.
+- `appear <persona name>` — restore a saved persona (clean swap)
+- `stop appearing` — clear all overrides and any adopted-persona pointer; the only canonical clear verb (no aliases)
+- `remember me as <persona name>` — snapshot current overrides as a persona; allowed even with no axes set (intentional — supports saving a baseline)
+- `forget <persona name>` — delete a persona; if it was the currently-adopted persona, also clears all overrides
+- `personas` — list saved personas, recency-sorted (newest first); the active persona, if any, is marked with `*`
+- `persona <name>` — inspect a single persona's snapshot
+
+**Resolution order for `appear <arg>`:** persona name → axis nudge keyword (`taller`/`shorter`/`thinner`/`fatter`) → keyword catalog. Persona names take precedence so a player can always reach their own personas; cross-namespace uniqueness (below) prevents real ambiguity.
+
+**Manual axis change after persona adoption** dissociates the active-persona pointer (with an explicit message) but leaves the persona definition intact. The player can re-adopt it later with `appear <name>`.
+
+**Cross-namespace uniqueness** is enforced when saving a persona name *or* assigning a recognition name via `remember <target> as <name>`. A name is rejected if it collides with:
+- the keyword catalog (so `appear <name>` stays unambiguous)
+- any of the caller's existing recognition `assigned_name`s (so `forget <name>` stays unambiguous)
+- any of the caller's existing persona names
+
+The collision check is case-insensitive and presents the offending namespace in the error message.
 
 ### Disguise Items
 
@@ -551,15 +567,15 @@ A disguise's effectiveness scales with the player's investment:
 
 ### Disguise Persistence
 
-Override and bookmark state lives in DB attributes — persists across server restarts, reloads, and crashes. There is no "session" concept; a character who logs out mid-disguise logs back in still disguised.
+Override and persona state lives in DB attributes — persists across server restarts, reloads, and crashes. There is no "session" concept; a character who logs out mid-disguise logs back in still disguised.
 
-Bookmarks persist indefinitely until explicitly deleted, regardless of whether the character is currently using their overrides.
+Personas persist indefinitely until explicitly deleted, regardless of whether the character is currently using their overrides.
 
 ### Breaking and Degrading Disguise
 
 Because disguise is continuous, "breaking" simply means changing signature inputs.
 
-**Voluntary `appear reset`:** Clears all overrides. If no essential items are equipped, the Apparent UID returns to the real `sleeve_uid` and observers who know the real identity auto-recognize. If essential items are still equipped, the signature still differs from real — only the override contribution is removed.
+**Voluntary `stop appearing`:** Clears all overrides and any active-persona pointer. If no essential items are equipped, the Apparent UID returns to the real `sleeve_uid` and observers who know the real identity auto-recognize. If essential items are still equipped, the signature still differs from real — only the override contribution is removed.
 
 **Death:** All active overrides clear; the corpse stores both `real_sleeve_uid` and a snapshot of the identity signature active at time of death (for forensic gameplay — investigators can reconstruct what the character looked like when they died).
 
@@ -582,7 +598,7 @@ A disguised character (overrides: `tall man` + essential cowl + non-essential ca
 3. The Apparent UID recomputes to a new value.
 4. The observer's recognition no longer auto-resolves: "Batman" was tagged against the *previous* UID. They now see the new sdesc as a stranger — `"a tall man in a black cape"` — and may deduce the connection from context, but the system does not auto-link the two identities.
 5. If the cowl is re-equipped, the signature returns to its prior value and the observer's "Batman" tag fires again.
-6. If the disguised character then does `appear reset`, both overrides and the cowl effect are discarded — the Apparent UID returns to the real `sleeve_uid` (or wherever the remaining signature inputs lead). Observers who knew the real identity may now auto-recognize the character.
+6. If the disguised character then does `stop appearing`, both overrides and the active-persona pointer are cleared — the Apparent UID returns to the real `sleeve_uid` (or wherever the remaining signature inputs lead, modulo any still-equipped essential items). Observers who knew the real identity may now auto-recognize the character.
 
 ### Recognition Interactions
 
@@ -629,7 +645,7 @@ These are designed into the architecture but not implemented yet:
 - **Pharmaceutical / biomod items**: Consumable or implanted modifications that override `@longdesc` and contribute to the identity signature (extending the signature function with body-mod inputs). Closes the last gap: with body mods, even direct `look` reveals a different person. Pharmaceuticals would be temporary (wears off over time), potentially expensive/rare, and could carry side effects (stat penalties, addiction).
 - **Photos / identity artifacts**: Captured signature snapshots usable as recipes (own personas) or investigation tools (others'). Salt-acquisition mechanics enable true impersonation gameplay. Ties into Phase 4 (cybernetics) where digital identity data becomes hackable and forgeable.
 - **Voice modulation**: Integration with say/whisper/communication so voice becomes part of the identity signature for observers who can hear but not see (or in addition to visual identification).
-- **Web UI integration**: Bookmarks designed to mirror the planned identity/contact archive system; eventual web UI surface for managing bookmarks, photos, and contact memory in one place.
+- **Web UI integration**: Personas designed to mirror the planned identity/contact archive system; eventual web UI surface for managing personas, photos, and contact memory in one place.
 - **Salt-acquisition mechanics for true impersonation**: Stolen contact cards, hacked digital identities, and other adversarial means by which an impostor can acquire the original's salt and become auto-recognized as them.
 
 ---
@@ -938,30 +954,33 @@ Players should be prompted to customize their sdesc on next login if defaults we
 
 ### Phase 3 — Disguise (Foundation)
 
-**Scope:** Identity signature engine, the `appear` command (per-axis overrides), disguise item flags, bookmark layer, and lifecycle integration.
+**Scope:** Identity signature engine, the `appear` / persona verb cluster (per-axis overrides + persona snapshots), disguise item flags, and lifecycle integration. Shipped incrementally across multiple PRs.
 
 **Build in Phase 3:**
 - Identity signature tuple: `(real_sleeve_uid, height_override, build_override, keyword_override, sorted(essential_item_types))`
 - Apparent UID derivation: `hash(real_sleeve_uid + override_signature)` — deterministic, recomputed on access (no caching in foundation cut)
-- Per-axis `appear` command grammar: `appear taller/shorter/average`, `appear bulkier/leaner/athletic`, `appear man/woman/[keyword]`, `appear reset`, bare `appear` (status)
+- Per-axis `appear` command grammar — **shipped (`appear-persona-cluster`)**:
+  - `appear` (status), `appear taller | shorter`, `appear thinner | fatter`, `appear <keyword>`, `appear <persona name>`
+  - `stop appearing` (clears all overrides + active-persona pointer)
 - Sdesc descriptor recomposition via existing `get_physical_descriptor(height, build)` table
 - Resonance check stub on each axis override (always succeeds; call point exists for Phase 5 tuning)
-- DB attributes for active overrides (height/build/keyword override fields on character)
-- `db.disguise_essential` flag on items — contributes to identity signature when worn
-- `db.is_disguise_item` flag on items — Phase 5 perception bonus hook (defined but inert in Phase 3)
-- Hook `get_sdesc()` / `get_display_name()` to use Apparent UID
-- Full keyword catalog available regardless of character gender (override bypasses gender filter)
+- DB attributes for active overrides on character — **shipped**: `db.height_override`, `db.build_override`, `db.keyword_override`, `db.active_persona`, `db.personas`
+- `db.disguise_essential` flag on items — contributes to identity signature when worn *(deferred)*
+- `db.is_disguise_item` flag on items — Phase 5 perception bonus hook (defined but inert in Phase 3) *(deferred)*
+- Hook `get_sdesc()` / `get_display_name()` to consume override axes and Apparent UID *(deferred — overrides are written but not yet rendered)*
+- Full keyword catalog available regardless of character gender (override bypasses gender filter) — **shipped via `appear <keyword>` validation**
 - Available to **all characters** (no access level restriction)
-- Bookmark layer (player-private ergonomics):
-  - `appear bookmark <name>` — capture current overrides + essential item types + freeform notes + timestamp
-  - `appear as <bookmark>` — apply captured overrides (does not auto-equip items; notes which essentials are missing)
-  - `appear bookmarks` — list saved bookmarks
-  - `appear forget <bookmark>` — delete bookmark
-  - Cap: `min(Resonance × 2, 10)` (placeholder fluff, will retune)
-  - Name collision: rejected (no `appear edit` in foundation)
-- Lifecycle integration:
+- Persona layer (player-private ergonomics) — **shipped (`appear-persona-cluster`)**:
+  - `remember me as <name>` — capture current overrides as a persona (verb-symmetric with `remember <target> as <name>`)
+  - `appear <persona name>` — adopt a persona (clean swap; overwrites all axes including unset ones)
+  - `personas` — list saved personas, recency-sorted; active persona marked with `*`
+  - `persona <name>` — inspect a single persona
+  - `forget <persona name>` — delete a persona; clears overrides if it was active
+  - Cross-namespace uniqueness enforced (keyword catalog ∩ recognition names ∩ persona names)
+  - No cap (deferred to engine PR / balance pass)
+- Lifecycle integration *(deferred to engine PR)*:
   - Death: clears overrides; corpse stores `real_sleeve_uid` + `last_active_signature` snapshot
-  - Sleeve swap (flash clone / resleeving): salt is `real_sleeve_uid`, so personas don't carry across bodies; bookmarks remain on the player
+  - Sleeve swap (flash clone / resleeving): salt is `real_sleeve_uid`, so personas don't carry across bodies; persona records remain on the player
   - Item destruction: removing/destroying essential item changes signature → Apparent UID changes → observers see stranger
 - No observer-side disguise metadata — recognition system stays transparent to disguise mechanics
 - No auto-equip / auto-remove on persona swap — disguise emerges from observable state
@@ -976,8 +995,8 @@ Players should be prompted to customize their sdesc on next login if defaults we
 - Forcible strip via grapple (needs grapple system integration)
 - Photo / recording mechanic (capture full signature for later impersonation; future phase)
 - Pharma / voice-modulation override axes (future phase)
-- `appear edit <bookmark>` (deferred)
-- Web-UI maximal bookmark capture (deferred)
+- `appear edit <persona>` (deferred — players currently delete + re-save)
+- Web-UI maximal persona capture (deferred)
 
 ### Phase 3.5 — Disguise Item Taxonomy
 

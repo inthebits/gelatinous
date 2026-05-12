@@ -861,3 +861,609 @@ class TestLogCustomKeyword(TestCase):
                 log_custom_keyword("wraith", "Bob")
 
         self.assertEqual(mock_create.call_count, 2)
+
+
+# ===================================================================
+# Disguise — appear / persona cluster helpers
+# ===================================================================
+
+
+def _make_disguise_character(**overrides):
+    """``_make_character`` plus pre-zeroed disguise/persona ``db`` attrs.
+
+    The new commands rely on ``caller.db.height_override is None`` style
+    checks; bare ``MagicMock`` access would yield a child mock instead
+    of ``None``.  We seed the relevant ``db`` slots and the ``personas``
+    dict so each test starts from a clean baseline.
+    """
+    db_overrides = overrides.pop("db_attrs", {})
+    char = _make_character(**overrides)
+
+    # Persona/override storage attrs default to None / empty dict.
+    defaults = {
+        "height_override": None,
+        "build_override": None,
+        "keyword_override": None,
+        "active_persona": None,
+        "personas": None,
+    }
+    defaults.update(db_overrides)
+    for attr, value in defaults.items():
+        setattr(char.db, attr, value)
+    return char
+
+
+# ===================================================================
+# CmdAppear — bare status display
+# ===================================================================
+
+
+class TestCmdAppearStatus(TestCase):
+    """``appear`` with no args renders current overrides + persona."""
+
+    def _run(self, caller):
+        from commands.CmdCharacter import CmdAppear
+
+        cmd = CmdAppear()
+        cmd.caller = caller
+        cmd.args = ""
+        cmd.func()
+        return caller.msg.call_args[0][0]
+
+    def test_no_overrides_reports_clean_state(self):
+        caller = _make_disguise_character(
+            height="tall", build="lean", sdesc_keyword="man"
+        )
+        msg = self._run(caller)
+        self.assertIn("tall", msg)
+        self.assertIn("lean", msg)
+        self.assertIn("man", msg)
+        self.assertIn("No presentation overrides active", msg)
+
+    def test_active_persona_appears_in_status(self):
+        caller = _make_disguise_character(
+            height="tall", build="lean", sdesc_keyword="man",
+            db_attrs={
+                "height_override": "average",
+                "active_persona": "Hooded Wanderer",
+            },
+        )
+        msg = self._run(caller)
+        self.assertIn("average", msg)
+        self.assertIn("Hooded Wanderer", msg)
+        self.assertIn("real:", msg)
+
+
+# ===================================================================
+# CmdAppear — axis nudges
+# ===================================================================
+
+
+class TestCmdAppearAxes(TestCase):
+    """``appear taller/shorter/thinner/fatter`` step the axis."""
+
+    def _run(self, caller, args):
+        from commands.CmdCharacter import CmdAppear
+
+        cmd = CmdAppear()
+        cmd.caller = caller
+        cmd.args = args
+        cmd.func()
+
+    def test_taller_steps_height_up(self):
+        from world.identity import HEIGHTS
+
+        caller = _make_disguise_character(height="average")
+        self._run(caller, "taller")
+        expected = HEIGHTS[HEIGHTS.index("average") + 1]
+        self.assertEqual(caller.db.height_override, expected)
+
+    def test_shorter_steps_height_down(self):
+        from world.identity import HEIGHTS
+
+        caller = _make_disguise_character(height="average")
+        self._run(caller, "shorter")
+        expected = HEIGHTS[HEIGHTS.index("average") - 1]
+        self.assertEqual(caller.db.height_override, expected)
+
+    def test_taller_at_max_refuses(self):
+        from world.identity import HEIGHTS
+
+        caller = _make_disguise_character(height=HEIGHTS[-1])
+        self._run(caller, "taller")
+        self.assertIsNone(caller.db.height_override)
+        msg = caller.msg.call_args[0][0]
+        self.assertIn("can't appear any taller", msg)
+
+    def test_fatter_steps_build_up(self):
+        from world.identity import BUILDS
+
+        caller = _make_disguise_character(build="average")
+        self._run(caller, "fatter")
+        expected = BUILDS[BUILDS.index("average") + 1]
+        self.assertEqual(caller.db.build_override, expected)
+
+    def test_thinner_steps_build_down(self):
+        from world.identity import BUILDS
+
+        caller = _make_disguise_character(build="average")
+        self._run(caller, "thinner")
+        expected = BUILDS[BUILDS.index("average") - 1]
+        self.assertEqual(caller.db.build_override, expected)
+
+
+# ===================================================================
+# CmdAppear — keyword override
+# ===================================================================
+
+
+class TestCmdAppearKeyword(TestCase):
+    """``appear <keyword>`` validates against the catalog."""
+
+    def _run(self, caller, args):
+        from commands.CmdCharacter import CmdAppear
+
+        cmd = CmdAppear()
+        cmd.caller = caller
+        cmd.args = args
+        cmd.func()
+
+    def test_valid_keyword_sets_override(self):
+        caller = _make_disguise_character()
+        with patch(
+            "world.identity.get_all_keywords",
+            return_value=frozenset({"man", "droog", "person"}),
+        ):
+            self._run(caller, "droog")
+        self.assertEqual(caller.db.keyword_override, "droog")
+
+    def test_unknown_keyword_rejected(self):
+        caller = _make_disguise_character()
+        with patch(
+            "world.identity.get_all_keywords",
+            return_value=frozenset({"man", "person"}),
+        ):
+            self._run(caller, "wraith")
+        self.assertIsNone(caller.db.keyword_override)
+        msg = caller.msg.call_args[0][0]
+        self.assertIn("isn't a recognized keyword", msg)
+        self.assertIn("@shortdesc", msg)
+
+
+# ===================================================================
+# CmdAppear — persona resolution
+# ===================================================================
+
+
+class TestCmdAppearPersona(TestCase):
+    """``appear <persona name>`` adopts a saved snapshot."""
+
+    def test_persona_overrides_keyword_resolution(self):
+        from commands.CmdCharacter import CmdAppear
+
+        persona_entry = {
+            "name": "Hooded Wanderer",
+            "height_override": "tall",
+            "build_override": None,
+            "keyword_override": "wanderer",
+            "saved_at": 1000.0,
+            "saved_in": "Bar",
+            "essential_item_types": [],
+            "notes": "",
+        }
+        caller = _make_disguise_character(
+            db_attrs={"personas": {"Hooded Wanderer": persona_entry}},
+        )
+
+        cmd = CmdAppear()
+        cmd.caller = caller
+        cmd.args = "hooded wanderer"  # case-insensitive
+        cmd.func()
+
+        self.assertEqual(caller.db.height_override, "tall")
+        self.assertIsNone(caller.db.build_override)
+        self.assertEqual(caller.db.keyword_override, "wanderer")
+        self.assertEqual(caller.db.active_persona, "Hooded Wanderer")
+
+    def test_persona_adoption_clears_unset_axes(self):
+        """Adoption is a clean swap, not a merge."""
+        from commands.CmdCharacter import CmdAppear
+
+        persona_entry = {
+            "name": "Plain",
+            "height_override": None,
+            "build_override": None,
+            "keyword_override": None,
+            "saved_at": 1000.0,
+            "saved_in": "Bar",
+            "essential_item_types": [],
+            "notes": "",
+        }
+        caller = _make_disguise_character(
+            db_attrs={
+                "height_override": "tall",
+                "build_override": "fat",
+                "keyword_override": "droog",
+                "personas": {"Plain": persona_entry},
+            },
+        )
+
+        cmd = CmdAppear()
+        cmd.caller = caller
+        cmd.args = "Plain"
+        cmd.func()
+
+        self.assertIsNone(caller.db.height_override)
+        self.assertIsNone(caller.db.build_override)
+        self.assertIsNone(caller.db.keyword_override)
+        self.assertEqual(caller.db.active_persona, "Plain")
+
+
+# ===================================================================
+# CmdAppear — manual change clears active persona
+# ===================================================================
+
+
+class TestCmdAppearManualClearsPersona(TestCase):
+    """Manual axis change after adoption dissociates from the persona."""
+
+    def test_height_nudge_clears_active_persona(self):
+        from commands.CmdCharacter import CmdAppear
+
+        caller = _make_disguise_character(
+            height="average",
+            db_attrs={"active_persona": "Hooded Wanderer"},
+        )
+        cmd = CmdAppear()
+        cmd.caller = caller
+        cmd.args = "taller"
+        cmd.func()
+
+        self.assertIsNone(caller.db.active_persona)
+        # Two msgs sent: persona-break and confirmation.
+        all_msgs = " ".join(
+            call_args[0][0] for call_args in caller.msg.call_args_list
+        )
+        self.assertIn("Hooded Wanderer", all_msgs)
+        self.assertIn("Manual change", all_msgs)
+
+    def test_keyword_override_clears_active_persona(self):
+        from commands.CmdCharacter import CmdAppear
+
+        caller = _make_disguise_character(
+            db_attrs={"active_persona": "Hooded Wanderer"},
+        )
+        with patch(
+            "world.identity.get_all_keywords",
+            return_value=frozenset({"droog"}),
+        ):
+            cmd = CmdAppear()
+            cmd.caller = caller
+            cmd.args = "droog"
+            cmd.func()
+
+        self.assertIsNone(caller.db.active_persona)
+        self.assertEqual(caller.db.keyword_override, "droog")
+
+
+# ===================================================================
+# CmdStopAppearing
+# ===================================================================
+
+
+class TestCmdStopAppearing(TestCase):
+    """``stop appearing`` clears overrides and persona pointer."""
+
+    def _run(self, caller):
+        from commands.CmdCharacter import CmdStopAppearing
+
+        cmd = CmdStopAppearing()
+        cmd.caller = caller
+        cmd.args = ""
+        cmd.func()
+
+    def test_clears_all_axes(self):
+        caller = _make_disguise_character(
+            db_attrs={
+                "height_override": "tall",
+                "build_override": "fat",
+                "keyword_override": "droog",
+                "active_persona": "Hooded Wanderer",
+            },
+        )
+        self._run(caller)
+        self.assertIsNone(caller.db.height_override)
+        self.assertIsNone(caller.db.build_override)
+        self.assertIsNone(caller.db.keyword_override)
+        self.assertIsNone(caller.db.active_persona)
+
+    def test_no_overrides_reports_no_op(self):
+        caller = _make_disguise_character()
+        self._run(caller)
+        msg = caller.msg.call_args[0][0]
+        self.assertIn("aren't presenting", msg)
+
+
+# ===================================================================
+# CmdPersonas — list view
+# ===================================================================
+
+
+class TestCmdPersonas(TestCase):
+    """``personas`` lists saved personas, recency-sorted."""
+
+    def _run(self, caller, args=""):
+        from commands.CmdCharacter import CmdPersonas
+
+        cmd = CmdPersonas()
+        cmd.caller = caller
+        cmd.args = args
+        cmd.func()
+        return caller.msg.call_args[0][0]
+
+    def test_empty_state_explains_remember_me_as(self):
+        caller = _make_disguise_character()
+        msg = self._run(caller)
+        self.assertIn("haven't saved any personas", msg)
+        self.assertIn("remember me as", msg)
+
+    def test_lists_personas_recency_sorted(self):
+        caller = _make_disguise_character(
+            db_attrs={
+                "personas": {
+                    "Old": {
+                        "name": "Old",
+                        "height_override": "tall",
+                        "build_override": None,
+                        "keyword_override": None,
+                        "saved_at": 100.0,
+                        "saved_in": "X",
+                    },
+                    "New": {
+                        "name": "New",
+                        "height_override": "short",
+                        "build_override": None,
+                        "keyword_override": None,
+                        "saved_at": 2000.0,
+                        "saved_in": "Y",
+                    },
+                },
+            },
+        )
+        msg = self._run(caller)
+        self.assertIn("Old", msg)
+        self.assertIn("New", msg)
+        self.assertLess(msg.index("New"), msg.index("Old"))
+
+    def test_active_persona_marked_with_asterisk(self):
+        caller = _make_disguise_character(
+            db_attrs={
+                "active_persona": "Hooded",
+                "personas": {
+                    "Hooded": {
+                        "name": "Hooded",
+                        "height_override": None,
+                        "build_override": None,
+                        "keyword_override": "wanderer",
+                        "saved_at": 100.0,
+                        "saved_in": "Bar",
+                    },
+                },
+            },
+        )
+        msg = self._run(caller)
+        self.assertIn("*", msg)
+        self.assertIn("Hooded", msg)
+
+    def test_rejects_arguments(self):
+        caller = _make_disguise_character()
+        msg = self._run(caller, args="something")
+        self.assertIn("Usage: personas", msg)
+
+
+# ===================================================================
+# CmdPersona — single inspect
+# ===================================================================
+
+
+class TestCmdPersona(TestCase):
+    """``persona <name>`` inspects one saved persona."""
+
+    def _run(self, caller, args):
+        from commands.CmdCharacter import CmdPersona
+
+        cmd = CmdPersona()
+        cmd.caller = caller
+        cmd.args = args
+        cmd.func()
+        return caller.msg.call_args[0][0]
+
+    def test_no_args_shows_usage(self):
+        caller = _make_disguise_character()
+        msg = self._run(caller, "")
+        self.assertIn("Usage: persona", msg)
+
+    def test_unknown_persona_rejected(self):
+        caller = _make_disguise_character()
+        msg = self._run(caller, "Ghost")
+        self.assertIn("don't have a persona named 'Ghost'", msg)
+
+    def test_known_persona_renders(self):
+        caller = _make_disguise_character(
+            db_attrs={
+                "personas": {
+                    "Hooded Wanderer": {
+                        "name": "Hooded Wanderer",
+                        "height_override": "tall",
+                        "build_override": None,
+                        "keyword_override": "wanderer",
+                        "saved_at": 100.0,
+                        "saved_in": "The Grit",
+                    },
+                },
+            },
+        )
+        msg = self._run(caller, "hooded wanderer")  # case-insensitive
+        self.assertIn("Hooded Wanderer", msg)
+        self.assertIn("tall", msg)
+        self.assertIn("wanderer", msg)
+        self.assertIn("The Grit", msg)
+
+
+# ===================================================================
+# CmdRemember — `me as <name>` persona snapshot
+# ===================================================================
+
+
+class TestCmdRememberMeAs(TestCase):
+    """``remember me as <name>`` saves a persona snapshot."""
+
+    def _run(self, caller, args):
+        from commands.CmdCharacter import CmdRemember
+
+        cmd = CmdRemember()
+        cmd.caller = caller
+        cmd.args = args
+        cmd.func()
+
+    def test_saves_snapshot_of_current_overrides(self):
+        caller = _make_disguise_character(
+            db_attrs={
+                "height_override": "tall",
+                "keyword_override": "wanderer",
+            },
+        )
+        with patch(
+            "world.identity.get_all_keywords",
+            return_value=frozenset({"man", "wanderer"}),
+        ):
+            self._run(caller, "me as Hooded Wanderer")
+
+        personas = caller.db.personas
+        self.assertIn("Hooded Wanderer", personas)
+        entry = personas["Hooded Wanderer"]
+        self.assertEqual(entry["height_override"], "tall")
+        self.assertEqual(entry["keyword_override"], "wanderer")
+        self.assertIsNone(entry["build_override"])
+        self.assertIn("essential_item_types", entry)
+        self.assertEqual(entry["essential_item_types"], [])
+
+    def test_allowed_with_no_active_overrides(self):
+        """Per locked decision: allowed even with no axes set."""
+        caller = _make_disguise_character()
+        with patch(
+            "world.identity.get_all_keywords",
+            return_value=frozenset({"man"}),
+        ):
+            self._run(caller, "me as Empty")
+        self.assertIn("Empty", caller.db.personas)
+
+    def test_collides_with_keyword_rejected(self):
+        caller = _make_disguise_character()
+        with patch(
+            "world.identity.get_all_keywords",
+            return_value=frozenset({"droog"}),
+        ):
+            self._run(caller, "me as droog")
+        self.assertTrue(
+            caller.db.personas is None or "droog" not in (caller.db.personas or {})
+        )
+        msg = caller.msg.call_args[0][0]
+        self.assertIn("reserved keyword", msg)
+
+    def test_collides_with_existing_persona_rejected(self):
+        caller = _make_disguise_character(
+            db_attrs={
+                "personas": {
+                    "Hooded": {
+                        "name": "Hooded",
+                        "height_override": None,
+                        "build_override": None,
+                        "keyword_override": None,
+                        "saved_at": 100.0,
+                        "saved_in": "X",
+                    },
+                },
+            },
+        )
+        with patch(
+            "world.identity.get_all_keywords", return_value=frozenset()
+        ):
+            self._run(caller, "me as hooded")
+        # Still only the original entry.
+        self.assertEqual(len(caller.db.personas), 1)
+        msg = caller.msg.call_args[0][0]
+        self.assertIn("already have a persona", msg)
+
+
+# ===================================================================
+# CmdForget — persona fallback
+# ===================================================================
+
+
+class TestCmdForgetPersona(TestCase):
+    """``forget <persona name>`` deletes a persona; clears overrides if active."""
+
+    def _run(self, caller, args):
+        from commands.CmdCharacter import CmdForget
+
+        cmd = CmdForget()
+        cmd.caller = caller
+        cmd.args = args
+        # caller.search returns nothing so we fall through to persona path.
+        caller.search = MagicMock(return_value=None)
+        cmd.func()
+
+    def test_inactive_persona_deleted(self):
+        caller = _make_disguise_character(
+            db_attrs={
+                "personas": {
+                    "Hooded": {
+                        "name": "Hooded",
+                        "height_override": "tall",
+                        "build_override": None,
+                        "keyword_override": None,
+                        "saved_at": 100.0,
+                        "saved_in": "X",
+                    },
+                },
+            },
+        )
+        self._run(caller, "Hooded")
+        self.assertEqual(caller.db.personas, {})
+        # Overrides were never set on caller; nothing to clear.
+        self.assertIsNone(caller.db.height_override)
+        msg = caller.msg.call_args[0][0]
+        self.assertIn("Forgot persona", msg)
+
+    def test_active_persona_clears_overrides(self):
+        caller = _make_disguise_character(
+            db_attrs={
+                "active_persona": "Hooded",
+                "height_override": "tall",
+                "keyword_override": "wanderer",
+                "personas": {
+                    "Hooded": {
+                        "name": "Hooded",
+                        "height_override": "tall",
+                        "build_override": None,
+                        "keyword_override": "wanderer",
+                        "saved_at": 100.0,
+                        "saved_in": "X",
+                    },
+                },
+            },
+        )
+        self._run(caller, "Hooded")
+        self.assertEqual(caller.db.personas, {})
+        self.assertIsNone(caller.db.height_override)
+        self.assertIsNone(caller.db.keyword_override)
+        self.assertIsNone(caller.db.active_persona)
+        msg = caller.msg.call_args[0][0]
+        self.assertIn("It was active", msg)
+
+    def test_unknown_name_falls_through_to_error(self):
+        caller = _make_disguise_character()
+        self._run(caller, "Nobody")
+        msg = caller.msg.call_args[0][0]
+        self.assertIn("don't remember anyone", msg)
