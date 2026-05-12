@@ -397,17 +397,17 @@ The grammar engine must handle:
 
 ## Disguise System
 
-Disguise is a **performance** — the character is acting a role. The `appear` command activates a **named persona** — a persistent disguise identity with its own fake `sleeve_uid`. The performance is a skill-based action informed by Resonance. Disguise items (special clothing/equipment) make the act more convincing and harder to see through. Pharmaceutical items (future) can alter the character's `@longdesc` for deeper transformation. The system is available to **all characters**.
+Disguise is a **continuous performance** — a character is always being perceived as whatever combination of presentation overrides and worn items currently apply. There is no "starting" or "stopping" a disguise; identity flows organically from observable state. The system is available to **all characters**.
 
-### Three Layers of Disguise
+### Three Architectural Layers
 
-Disguise operates on independent but complementary layers:
+Disguise has three independent layers, each controllable on its own and combining to form the final observable identity:
 
-| Layer | Controlled by | What it affects | Persistent? |
-|-------|--------------|-----------------|-------------|
-| **Persona override** | `appear` command | sdesc descriptor + keyword, fake `sleeve_uid` | DB — until reset |
-| **Disguise items** | Equipping/removing objects | Distinguishing feature, disguise robustness | As long as worn |
-| **Pharmaceuticals** | Consumable items (future) | `@longdesc` (detailed physical description) | Temporary — wears off |
+| Layer | Controlled by | What it affects |
+|-------|--------------|-----------------|
+| **Presentation overrides** | `appear` command | Per-axis: height, build, keyword, (future) voice |
+| **Disguise items** | Equipping/removing tagged clothing | Distinguishing feature + identity signature (when essential) |
+| **Body modification** (future) | Pharmaceuticals / cybernetics | `@longdesc` + identity signature |
 
 The **sdesc** is always composed the same way regardless of disguise state:
 
@@ -415,175 +415,199 @@ The **sdesc** is always composed the same way regardless of disguise state:
 "{physical_descriptor} {keyword} {distinguishing_feature}"
 ```
 
-- `appear` overrides descriptor + keyword (the first two components)
-- Disguise items contribute to the distinguishing feature through the existing clothing auto-derivation system (same as normal clothing)
-- The three layers combine to form the full observable persona
+- Presentation overrides change the components going into descriptor and keyword
+- Items contribute to the distinguishing feature via the existing auto-derivation system (essential items additionally contribute to the identity signature)
+- The layers combine into the full observable identity
 
-### `appear` Command
+### Identity Signature & Apparent UID
 
-```
-appear create <name> <physical_descriptor> <keyword>
-appear as <name>
-appear reset
-appear list
-appear delete <name>
-```
+The recognition system needs a stable identifier for "this disguised person" so observers can tag and re-recognize them across encounters. This identifier is the **Apparent UID**, derived deterministically from an **identity signature** computed from:
 
-Creates and manages **named personas** — persistent disguise identities that a character can adopt and reuse. Each persona has its own stable fake `sleeve_uid`, allowing others to recognize and remember a specific persona across sessions.
-
-The `appear` command is a skill-based action: it requires a Resonance check to determine whether the character can convincingly pull off the performance. Exact thresholds and roll mechanics are deferred (see "Future Hooks" below), but the check point exists in the code.
+1. The character's **real `sleeve_uid`** (acts as a per-character salt — the body's bones, gait, mannerisms, and bearing are part of how the character is perceived)
+2. The character's **active presentation overrides** (height, build, keyword)
+3. The set of **essential disguise items** currently equipped (by item type, not specific instance)
 
 ```
-> appear create Natasha short woman
-Persona "Natasha" created: you will appear as "a short woman" to strangers.
-Remember: your clothing and hair are still visible in your description.
-
-> appear as Natasha
-You now appear as "a short woman in a leather jacket" to strangers.
-Your physical disguise is active.
-
-> appear list
-Personas:
-  Natasha    — short woman    [active]
-  Mr. Grey   — tall man
-
-> appear reset
-You drop your disguise and revert to your true appearance.
+identity_signature = (real_sleeve_uid, height_override, build_override,
+                      keyword_override, sorted(essential_item_types))
+apparent_uid = deterministic_uuid_from(identity_signature)
 ```
 
-**What `appear` changes:**
-- `sdesc_physical` (overridden to the persona's descriptor)
-- `sdesc_keyword` (overridden — full keyword catalog available regardless of character gender)
-- `apparent_sleeve_uid` (the persona's stored fake UUID)
+**Key properties:**
+
+- Same character + same overrides + same essential items → **same Apparent UID, every time.** Observers who tagged this combination before will auto-recognize it again. This is the *organic recurring identity* property.
+- Change any signature input → **different Apparent UID.** Observers who tagged the prior signature see a stranger. This is the *unmasking* property.
+- Two different characters wearing the same overrides + items → **different Apparent UIDs** (different salt). Visual collision but no recognition collision. Impersonation is *visual*, not *systemic*.
+- Items reference by **type**, not instance. Replacing a destroyed balaclava with another balaclava of the same type preserves the signature.
+
+**Tradecraft as gameplay:**
+
+Because the signature emerges from observable state — not from a player declaration — disguise discipline becomes a real player skill. Always wearing the same balaclava? Always overriding to the same height? Frequenting the same locations in the same look? A persistent observer with a good memory builds a recognition tag on that signature, and a "secret" identity becomes trackable. Mixing up overrides, varying essential items, and avoiding repetition is how a character stays anonymous. **Bad tradecraft is mechanically punished; good tradecraft is mechanically rewarded.**
+
+### `appear` Command — Presentation Overrides
+
+The `appear` command is the player's interface to presentation overrides. Each override is a **per-axis** change applied independently:
+
+```
+appear taller / shorter / average           — height axis
+appear bulkier / leaner / athletic          — build axis
+appear man / woman / [keyword]              — keyword axis
+appear reset                                — clear all overrides
+appear                                       — show current overrides
+```
+
+(Exact command grammar is subject to iteration; this is the working syntax for the foundation cut.)
+
+Each override is a **skill-based performance** — using the `appear` verb triggers a Resonance check for that axis. The check is a stub in the foundation cut (always succeeds) but the call point exists in code for future tuning. Per-axis difficulty modeling is deferred.
+
+The composed sdesc descriptor (`gaunt`, `burly`, etc.) is recomputed from the overridden height + build values via the existing `get_physical_descriptor(height, build)` table. Players override the **components**; the system composes the descriptor.
+
+**What `appear` overrides change:**
+- The signature inputs for the affected axes
+- The composed sdesc descriptor and/or keyword visible to observers
+- The Apparent UID (since signature inputs changed)
+- The full keyword catalog is available regardless of the character's real gender
 
 **What `appear` does NOT change:**
-- Distinguishing feature (auto-derived from actual clothing/hair — always truthful)
-- Longdesc (looking directly at the character reveals physical details)
-- Voice (future: communication system could reveal identity)
+- Distinguishing feature (auto-derived from worn items + hair)
+- `@longdesc` (looking directly reveals real physical detail until body-mod layers exist)
+- Voice (deferred to future communication-system integration)
+- The character's real `sleeve_uid` (the underlying body identity)
 
-This is deliberate: true disguise requires effort. If you `appear as Natasha` but you're wearing your signature red power armor that everyone in the sector knows, the sdesc reads `"a short woman in red power armor"` — observant characters will connect the dots. Full disguise means changing clothes, covering hair, and adopting your persona.
+### Bookmarks — Player-Facing Persona Recall
 
-### Named Personas
+Because the identity engine is purely emergent from current state, players need an ergonomic layer to **remember and restore** disguise combinations they have discovered and want to reuse. Bookmarks fill this role.
 
-A persona is an explicitly created disguise identity with three stored components:
+A bookmark is a **player-private snapshot** of a disguise combination, captured at the moment of bookmarking and restorable later. Bookmarks are designed in parallel to the planned identity/contact system — same recall, annotation, and (future) web-UI patterns.
 
-1. **Name** — player-chosen label for managing the persona (e.g., "Natasha", "Batman"). This name is private to the player and never visible to other characters.
-2. **Descriptor + keyword** — the physical override applied to the sdesc (e.g., "short" + "woman").
-3. **Fake `sleeve_uid`** — a random UUID generated at creation time and stored permanently.
+**A bookmark stores:**
+- A **player-chosen name** (1–32 chars, case-insensitive lookup, case-preserving display, player-private — never visible to other characters)
+- The **override values** active at bookmark time (height, build, keyword)
+- The **types of essential disguise items** equipped at bookmark time
+- A **freeform notes field** for player annotations (e.g., *"met Marcus at the docks, he thinks I work for Diaz"*)
+- A **created-at timestamp**
 
-**Why named personas instead of descriptor+keyword hashing:**
+**Bookmarks do NOT generate identities.** They are pure recall aids. When a player restores a bookmark, the system applies the captured overrides and notifies the player which essential items they need to equip (or are missing). The resulting Apparent UID is derived by the engine from the restored state, not from the bookmark itself. Two bookmarks with identical override + item-type composition yield the same Apparent UID — they are just labels in the player's memory.
 
-A character may want multiple distinct personas that share the same descriptor and keyword. For example:
-- **"Natasha"**: a `short woman` in a black cape with a cowl
-- **"Dr. Vasquez"**: a `short woman` in a lab coat with surgical mask
+**Bookmark cap:** `min(Resonance × 2, 10)`. (Tunable; this gating is ergonomic, not load-bearing — expected to change.) Players at cap must delete a bookmark before saving a new one. Existing bookmarks remain usable if Resonance drops below the threshold; only new saves are blocked.
 
-Both are `short woman` in terms of the `appear` override, but they're intended to be entirely different people. Named personas give each a unique UUID, so the recognition system treats them as separate identities. The clothing and longdesc are the player's responsibility to match — the system just ensures the UUID is stable per persona.
+**Operations** (exact syntax to be settled in a future commands discussion):
+- Save current state as a bookmark
+- List bookmarks (player-private; never visible to others)
+- Restore a bookmark (apply overrides + report missing items)
+- Annotate a bookmark with notes
+- Delete a bookmark
 
-**Stored personas:** Personas are stored in `db.personas` as a dict mapping persona name → `{descriptor, keyword, sleeve_uid}`. They persist indefinitely across sessions, restarts, and disguise changes. Dropping a disguise with `appear reset` doesn't delete any personas — they remain available for reuse.
-
-**Deleting a persona:** `appear delete <name>` permanently removes a persona. Anyone who had tagged that persona's UUID will never auto-recognize it again — the UUID is gone. This is the "burn a compromised identity" escape hatch.
-
-**Disguise items do NOT affect the fake UUID.** The UUID is purely a function of the named persona. This means:
-- "Batman with cowl" and "Batman without cowl" have the same fake `sleeve_uid`
-- If someone removes Batman's cowl, observers who tagged Batman still see their assigned name — but the visual doesn't match (the cowl is gone, real hair visible)
-- This is the "unmasking" scenario: recognition says "I know this persona" but the appearance has changed, which is itself interesting information
+**Bookmark name collision** within a single character is rejected. Players must delete an existing bookmark before reusing the name. (`appear edit`-style in-place modification is deferred to a future iteration.)
 
 ### Disguise Items
 
-Disguise items are **regular clothing items** with the `db.is_disguise_item` flag set. They contribute to disguise in two ways:
+A disguise item is a clothing/equipment item with two declarative properties:
 
-1. **Visual identity**: Like all clothing, they contribute to the sdesc's distinguishing feature through the existing auto-derivation system. A cowl, mask, or prosthetic face becomes part of what observers see.
+- **`is_disguise_item`** (`bool`): marks the item as belonging to the disguise taxonomy. Disguise items provide a future Phase 5 perception-roll bonus to the disguiser.
+- **`disguise_essential`** (`bool`): marks the item as identity-essential. Essential items contribute to the identity signature (their type is hashed into the Apparent UID); non-essential items contribute only visually through the existing distinguishing-feature derivation.
 
-2. **Disguise robustness**: Disguise items make a disguise harder to see through. In future Resonance-based perception checks (Phase 5), each equipped disguise item provides a bonus to the disguiser's opposed roll.
+Examples:
+- **Essential**: balaclava, full mask, cowl, wig, contacts, prosthetic face, voice modulator (when voice integration lands)
+- **Non-essential**: gloves, scarf, signature jacket, distinguishing hat
 
-Examples of disguise items:
-- **Masks/cowls** — hide face, iconic visual element
-- **Contacts** (colored lenses) — change apparent eye color
-- **Prosthetics** — alter apparent build, scars, facial features
-- **Voice modulators** — future, alter voice identity in communication
-
-Disguise items are not *required* for `appear` to function — a character can perform the `appear` override with just body language, posture, and mannerisms (pure Resonance). But without disguise items, the performance is more fragile and easier to see through.
+The item taxonomy itself (which items exist, their categories, quality tiers) is designed in **Phase 3.5**, a separate cut after the foundation lands. The foundation only needs the two flags to function correctly with zero defined disguise items.
 
 ### Disguise Completeness
 
-A disguise is only as good as the effort invested:
+A disguise's effectiveness scales with the player's investment:
 
-| What you change | What observers see |
+| Effort | Result |
 |---|---|
-| `appear` only | Different descriptor/keyword, same clothing/hair |
-| `appear` + disguise items | Different descriptor/keyword, disguise items visible, harder to see through |
-| `appear` + disguise items + change clothes | Fully different sdesc, hard to connect to original |
-| `appear` + disguise items + change clothes + cover hair | Near-complete visual transformation |
-| All of the above + pharmaceutical longdesc override | Full transformation — even `look` reveals a different person |
-| All of the above + avoid known associates | Near-complete anonymity |
+| Override one axis (`appear taller`) | Subtle change; observers may notice the same person looking different |
+| Override all axes (height, build, keyword) | Strong visual difference; recognition tags from prior signature don't apply |
+| Add one essential item (e.g., balaclava) | Signature changes; "unmasking" possible if removed |
+| Full ensemble (all axes + multiple essentials) | Distinct identity; harder for observers to connect to real you |
+| All of the above + change non-essential clothing | Visual distinguishing feature also changes |
+| All of the above + body mod (future) | `@longdesc` no longer reveals the truth on close inspection |
 
 ### Disguise Persistence
 
-Disguise state is stored in **DB attributes** — it persists across server restarts and reloads. A character who disguises themselves stays disguised until an explicit breaking condition is met. Stored personas in `db.personas` persist indefinitely, even when no disguise is active.
+Override and bookmark state lives in DB attributes — persists across server restarts, reloads, and crashes. There is no "session" concept; a character who logs out mid-disguise logs back in still disguised.
+
+Bookmarks persist indefinitely until explicitly deleted, regardless of whether the character is currently using their overrides.
 
 ### Breaking and Degrading Disguise
 
-Disguise is not binary — it can **degrade** without fully breaking. The `appear` override and equipped disguise items are independent; losing one doesn't necessarily lose the other.
+Because disguise is continuous, "breaking" simply means changing signature inputs.
 
-**Full disguise drop** (reverts to real identity):
-- **Voluntary**: `appear reset` — drops the physical override; stored personas preserved for reuse
-- **Death**: Corpse reverts to real identity (all overrides cleared)
-- **Admin/GM intervention**: Staff can strip disguise entirely
+**Voluntary `appear reset`:** Clears all overrides. If no essential items are equipped, the Apparent UID returns to the real `sleeve_uid` and observers who know the real identity auto-recognize. If essential items are still equipped, the signature still differs from real — only the override contribution is removed.
 
-**Partial reveal** (`appear` override persists, but visual changes):
-- **Disguise item removed voluntarily**: Player takes off cowl — the `appear` override (descriptor + keyword + fake UUID) remains active, but the distinguishing feature auto-updates to reflect actual visible state. Observers who tagged this persona still auto-recognize via UUID, but the visual is different — the "unmasking" moment.
-- **Disguise item removed forcibly**: Another character removes a disguise item (e.g., via grapple). Same effect as voluntary removal — partial reveal.
-- **Disguise item destroyed**: Item destroyed in combat or by other means. Same effect — distinguishing feature updates, disguise robustness decreases.
-- **Clothing change**: Swapping non-disguise clothing changes the distinguishing feature but doesn't affect the `appear` override or fake UUID.
+**Death:** All active overrides clear; the corpse stores both `real_sleeve_uid` and a snapshot of the identity signature active at time of death (for forensic gameplay — investigators can reconstruct what the character looked like when they died).
 
-> **Design note:** Direct combat damage (e.g., head wounds) does not break disguise on its own. The disguise system is decoupled from the damage system. Combat affects disguise *indirectly* by destroying or removing disguise items.
+**Admin / GM strip:** Staff command clears all overrides on a target. Equipped items are unaffected (use existing strip commands for those).
+
+**Essential item removed (voluntary or forcible):** Signature changes → Apparent UID changes → observers who tagged the prior signature see a stranger. The "unmasking" moment is mechanical: the signature change *is* the reveal. Equipping the same item type again restores the signature and the recognition.
+
+**Essential item destroyed:** Same effect as removal. If a unique-instance item is destroyed, the player must acquire another item *of the same type* to recover the signature. (Hence: items hash by type, not dbref — buying a new balaclava restores the "balaclava-wearing" identity.)
+
+**Non-disguise clothing changes:** Affect distinguishing feature visually but NOT the signature. Putting on or removing a regular jacket doesn't change who the character appears to be in the recognition system; it just changes the description text.
+
+> **Design note:** Direct combat damage (e.g., head wounds) does not break disguise on its own. The disguise system is decoupled from the damage system. Combat affects disguise *indirectly* by destroying or removing essential items.
 
 **The "unmasking" scenario in detail:**
 
-Batman (`appear as Batman` — persona configured as `short man` + cowl + cape) is in a room. An observer has tagged this persona as "Batman."
+A disguised character (overrides: `tall man` + essential cowl + non-essential cape) is in a room. An observer has tagged this signature as "Batman."
 
-1. Someone rips off Batman's cowl (forcible removal)
-2. The `appear` override persists: still `short man`, still the same fake `sleeve_uid`
-3. The sdesc auto-updates: `"a short man in a black cape"` → distinguishing feature changes from cowl-based to cape-based
-4. The observer's recognition still resolves: they see `"Batman"` (UUID matches)
-5. But if they `look`, the visual is different — cowl is gone, real hair/face visible
-6. If Batman then does `appear reset`, the real `sleeve_uid` is revealed. The observer may or may not recognize the person underneath, depending on whether they've ever met the real identity.
+1. Someone rips off the cowl (forcible removal).
+2. The signature changes: cowl is no longer in the essential-items set.
+3. The Apparent UID recomputes to a new value.
+4. The observer's recognition no longer auto-resolves: "Batman" was tagged against the *previous* UID. They now see the new sdesc as a stranger — `"a tall man in a black cape"` — and may deduce the connection from context, but the system does not auto-link the two identities.
+5. If the cowl is re-equipped, the signature returns to its prior value and the observer's "Batman" tag fires again.
+6. If the disguised character then does `appear reset`, both overrides and the cowl effect are discarded — the Apparent UID returns to the real `sleeve_uid` (or wherever the remaining signature inputs lead). Observers who knew the real identity may now auto-recognize the character.
 
-### Disguise and Recognition Interaction
+### Recognition Interactions
 
-- If you're disguised, others see your fake sdesc and the persona's fake `apparent_sleeve_uid`
-- Someone who knew your real sleeve sees your fake sdesc — no auto-recognition (different UUID)
-- If someone `assign`s a name to your disguised identity, that name is stored against the persona's fake `sleeve_uid`, not your real one — dropping the disguise with `appear reset` makes you a stranger again to that person (unless they also know your real sleeve)
-- Resuming the same persona later (`appear as <name>`) reactivates the same fake UUID — anyone who tagged that persona will auto-recognize you again
-- Two different characters can create personas with the same descriptor and keyword, but they'll have different UUIDs — the recognition system treats them as different people
-- Resonance-based perception checks (Phase 5) could see through disguises: opposed Resonance roll, disguiser vs. observer, with disguise items providing a bonus to the disguiser
+- **Stranger meets disguised character:** Observer sees the disguised sdesc; no auto-recognition. Observer can `assign` a name, which binds to the current Apparent UID.
+- **Observer who knew real identity meets the disguised character:** Observer's recognition memory is keyed on the *real* `sleeve_uid`; the disguise has a different Apparent UID; no auto-recognition. The observer sees the disguised sdesc as a stranger.
+- **Observer meets the same disguised character a second time, same signature:** Auto-recognition fires (same Apparent UID); observer sees the previously-assigned name.
+- **Observer meets the same disguised character a second time, different signature** (e.g., one essential item swapped): Different Apparent UID; observer sees a stranger.
+- **Two characters wearing identical overrides + items:** Visual collision (sdesc strings match), but Apparent UIDs differ (different salts). Each observer's recognition is per-UID; impersonation is *visual*, not *systemic*. An impostor *looks* the same but does not auto-resolve to the original's assigned name. Successful name-fooling requires either acquiring the original's salt (future adversarial-identity mechanic — e.g., through stolen contact cards) or the observer manually `assign`ing the same name to the impostor's distinct UID.
 
 ### Impersonation
 
 Impersonation is **emergent**, not mechanical. The system does not detect or prevent it.
 
-Two characters can create personas with identical descriptors, keywords, and similar clothing — they will look the same in the sdesc but have different UUIDs. This means:
+Two characters can create overrides + ensembles with identical descriptors, keywords, and similar clothing — they will look the same in the sdesc but have different Apparent UIDs (different salts). This means:
 
-- **Strangers** seeing both personas at different times would have no way to distinguish them visually. A character who met "Natasha" on Monday and meets a different "short woman in a black cape" on Friday would naturally assume it's the same person — until they `assign` a name and discover the recognition system creates a *new* entry instead of matching the old one.
-- **People who tagged the real persona** will not be fooled — the UUIDs don't match. The impostor appears as a stranger who happens to look similar.
-- **Investigation gameplay** emerges naturally: if a witness meets two different UUIDs with matching sdescs, that's a clue that one of them is an impostor. Which one is real requires further investigation.
+- **Strangers** seeing both at different times would have no way to distinguish them visually. A character who met "Natasha" on Monday and meets a different `short woman in a black cape` on Friday would naturally assume it's the same person — until they `assign` a name and discover the recognition system creates a *new* entry instead of matching the old one.
+- **People who tagged the original signature** are not fooled by a visual look-alike — the UIDs don't match. The impostor appears as a stranger who happens to look similar.
+- **Investigation gameplay** emerges naturally: if a witness meets two different UIDs with matching sdescs, that's a clue that one of them is an impostor. Which one is "real" requires further investigation.
 
-Building a reputation — having many people tag your persona — is itself a form of identity security. The more people who "know" a persona, the harder it is for an impostor to operate in those social circles.
+Building a reputation — having many people tag a recognized signature — is itself a form of identity security. The more people who "know" a signature, the harder it is for a visual impostor to operate in those social circles.
 
-> **Design note:** No mechanical impersonation detection in Phase 3. Active detection (e.g., "this person reminds you of someone...") is deferred to Phase 5 alongside other Resonance-based perception mechanics.
+> **Design note:** No mechanical impersonation detection in the foundation cut. Active detection (e.g., "this person reminds you of someone...") is deferred to Phase 5 alongside other Resonance-based perception mechanics.
 
-### Future Hooks (Not Phase 3)
+### Photos & Forensic Artifacts (Forward Hooks)
 
-These mechanics are designed into the architecture but not implemented in Phase 3:
+The salt-based design makes photos and other identity artifacts naturally expressive in future phases. A photo captures the identity signature at a moment in time, including the subject's real `sleeve_uid`.
 
-- **Resonance check on `appear`**: Currently always succeeds. Future: opposed or threshold roll, with failure meaning the disguise is unconvincing.
-- **Clothing coverage gating**: Currently no coverage requirement. Future: `appear` requires minimum body coverage to be plausible — you can't convincingly `appear as massive man` while naked. Boots/shoes can sell height changes, bulky clothing can sell build changes. Non-disguise items count for coverage; disguise items provide the bonus.
-- **Disguise item quality tiers**: Not all disguise items are equal. A cheap rubber mask vs. a high-tech prosthetic face. Quality affects the robustness bonus in perception checks.
-- **Perception checks (Phase 5)**: Opposed Resonance rolls to see through disguise. Disguise items add to the disguiser's roll. Familiarity with the real identity could provide a bonus to the observer.
-- **Active impersonation detection (Phase 5)**: Resonance-based perception hints when a persona's visual description closely matches a known identity in the observer's memory (e.g., "this person reminds you of someone...").
-- **Forcible strip via grapple**: Requires grapple system integration to allow removing items from a grappled character.
-- **Pharmaceutical / biomod items**: Consumable or temporary items (e.g., a Clayface-style morphic substance) that allow overriding `@longdesc` — the detailed physical description visible when someone `look`s directly at the character. This closes the last gap in disguise depth: `appear` fakes the sdesc, disguise items alter the visual features, and pharmaceuticals fake the body underneath. Pharmaceuticals would be temporary (wears off over time), potentially expensive/rare, and could carry side effects (stat penalties, addiction). This creates an economic dimension to deep disguise.
-- **Photos / identity artifacts**: Physical objects that capture identity data at a point in time — the `sleeve_uid` (real or fake) active when the photo was taken, the sdesc, and potentially a snapshot of longdesc/appearance. Photos serve a dual purpose: **investigation tools** (compare a photo's stored UUID against a person to verify identity) and **impersonation vectors** (study a photo to build a matching persona). High-tech digital photos might encode more identity data than a low-tech polaroid, creating a spectrum of information fidelity. This ties into Phase 4 (cybernetics) where digital identity data becomes hackable and forgeable.
+- A character finding a photo of *their own* past disguise gets a recipe to rebuild it (overrides + essential item types). Their salt matches → they can become that past signature again.
+- A character finding a photo of *someone else's* disguise gets the recipe but not the salt. They can *visually* impersonate but not be auto-recognized as the original.
+- An investigator with a photo can compare its signature to a person they meet to verify "is this the person in the photo" — including across disguise changes if essential elements match.
+
+These mechanics are not implemented in the foundation cut; they are noted to confirm the architecture supports them.
+
+### Future Hooks (Not in Foundation Cut)
+
+These are designed into the architecture but not implemented yet:
+
+- **Per-axis Resonance checks on `appear`**: Currently always succeeds. Future: per-axis difficulty, opposed or threshold rolls, with failure meaning the override doesn't take effect or appears unconvincing.
+- **Clothing coverage gating**: No coverage requirement for now. Future: certain overrides require minimum body coverage to be plausible (e.g., can't `appear bulkier` while shirtless because there's no padding to sell it). Boots/shoes can sell height changes; bulky clothing can sell build changes.
+- **Disguise item quality tiers**: All disguise items equal in foundation. Future: cheap rubber mask vs. high-tech prosthetic affects perception bonuses.
+- **Perception checks (Phase 5)**: Opposed Resonance rolls to see through disguise. Disguise items add to disguiser's roll. Familiarity bonus for observers who know the real identity well.
+- **Active impersonation detection (Phase 5)**: Resonance-based hints when a disguised signature closely matches a known identity (e.g., *"this person reminds you of someone..."*).
+- **Forcible item removal via grapple**: Requires grapple-system integration for stripping equipment from a grappled character.
+- **Pharmaceutical / biomod items**: Consumable or implanted modifications that override `@longdesc` and contribute to the identity signature (extending the signature function with body-mod inputs). Closes the last gap: with body mods, even direct `look` reveals a different person. Pharmaceuticals would be temporary (wears off over time), potentially expensive/rare, and could carry side effects (stat penalties, addiction).
+- **Photos / identity artifacts**: Captured signature snapshots usable as recipes (own personas) or investigation tools (others'). Salt-acquisition mechanics enable true impersonation gameplay. Ties into Phase 4 (cybernetics) where digital identity data becomes hackable and forgeable.
+- **Voice modulation**: Integration with say/whisper/communication so voice becomes part of the identity signature for observers who can hear but not see (or in addition to visual identification).
+- **Web UI integration**: Bookmarks designed to mirror the planned identity/contact archive system; eventual web UI surface for managing bookmarks, photos, and contact memory in one place.
+- **Salt-acquisition mechanics for true impersonation**: Stolen contact cards, hacked digital identities, and other adversarial means by which an impostor can acquire the original's salt and become auto-recognized as them.
 
 ---
 
@@ -889,30 +913,57 @@ Players should be prompted to customize their sdesc on next login if defaults we
 - `sdesc_short` attribute on items
 - Distinguishing feature auto-derivation from worn items
 
-### Phase 3 — Disguise
+### Phase 3 — Disguise (Foundation)
 
-**Scope:** Named personas, the `appear` command, disguise items, and disguise mechanics.
+**Scope:** Identity signature engine, the `appear` command (per-axis overrides), disguise item flags, bookmark layer, and lifecycle integration.
 
 **Build in Phase 3:**
-- Named persona system: `appear create <name> <desc> <keyword>` / `appear as <name>` / `appear reset` / `appear list` / `appear delete <name>`
-- DB attributes for disguise state (`db.personas` dict, active persona override fields)
-- Random UUID generated per persona at creation time, stored in `db.personas`
-- `db.is_disguise_item` flag on clothing items
-- Hook `get_sdesc()` / `get_display_name()` to check disguise state
-- Full keyword catalog available regardless of character gender
+- Identity signature tuple: `(real_sleeve_uid, height_override, build_override, keyword_override, sorted(essential_item_types))`
+- Apparent UID derivation: `hash(real_sleeve_uid + override_signature)` — deterministic, recomputed on access (no caching in foundation cut)
+- Per-axis `appear` command grammar: `appear taller/shorter/average`, `appear bulkier/leaner/athletic`, `appear man/woman/[keyword]`, `appear reset`, bare `appear` (status)
+- Sdesc descriptor recomposition via existing `get_physical_descriptor(height, build)` table
+- Resonance check stub on each axis override (always succeeds; call point exists for Phase 5 tuning)
+- DB attributes for active overrides (height/build/keyword override fields on character)
+- `db.disguise_essential` flag on items — contributes to identity signature when worn
+- `db.is_disguise_item` flag on items — Phase 5 perception bonus hook (defined but inert in Phase 3)
+- Hook `get_sdesc()` / `get_display_name()` to use Apparent UID
+- Full keyword catalog available regardless of character gender (override bypasses gender filter)
 - Available to **all characters** (no access level restriction)
-- Breaking conditions: voluntary reset, death revert, admin strip
-- Partial reveal: disguise item removal updates distinguishing feature, `appear` override persists
-- Disguise interaction with recognition pipeline (persona UUID → no auto-recognition of real identity)
-- Impersonation is emergent — no mechanical detection
+- Bookmark layer (player-private ergonomics):
+  - `appear bookmark <name>` — capture current overrides + essential item types + freeform notes + timestamp
+  - `appear as <bookmark>` — apply captured overrides (does not auto-equip items; notes which essentials are missing)
+  - `appear bookmarks` — list saved bookmarks
+  - `appear forget <bookmark>` — delete bookmark
+  - Cap: `min(Resonance × 2, 10)` (placeholder fluff, will retune)
+  - Name collision: rejected (no `appear edit` in foundation)
+- Lifecycle integration:
+  - Death: clears overrides; corpse stores `real_sleeve_uid` + `last_active_signature` snapshot
+  - Sleeve swap (flash clone / resleeving): salt is `real_sleeve_uid`, so personas don't carry across bodies; bookmarks remain on the player
+  - Item destruction: removing/destroying essential item changes signature → Apparent UID changes → observers see stranger
+- No observer-side disguise metadata — recognition system stays transparent to disguise mechanics
+- No auto-equip / auto-remove on persona swap — disguise emerges from observable state
 
 **Stub / defer to later phases:**
-- Resonance check on `appear` (always succeeds for now, but check point exists in code)
+- Apparent UID caching + perf optimization (measure first; add only if needed)
+- Per-axis Resonance difficulty tuning (Phase 5)
 - Clothing coverage gating (no coverage requirement for now)
 - Perception checks to see through disguise (Phase 5)
 - Active impersonation detection (Phase 5)
-- Disguise item quality tiers
+- Disguise item quality tiers (Phase 3.5 / 5)
 - Forcible strip via grapple (needs grapple system integration)
+- Photo / recording mechanic (capture full signature for later impersonation; future phase)
+- Pharma / voice-modulation override axes (future phase)
+- `appear edit <bookmark>` (deferred)
+- Web-UI maximal bookmark capture (deferred)
+
+### Phase 3.5 — Disguise Item Taxonomy
+
+**Scope:** Concrete disguise item catalog and prototypes built atop the Phase 3 foundation.
+
+- Specific essential-item prototypes (balaclava, hood, cowl, mask, etc.) with appropriate `disguise_essential` and `is_disguise_item` flags
+- Tagging conventions for "same type" matching (so a replacement balaclava restores signature)
+- Distinguishing-feature interaction with disguise items (which items suppress which features)
+- Item-driven sdesc fragment contributions (cohesion with `sdesc_short` from Phase 2)
 - Pharmaceutical / biomod items for `@longdesc` override
 - Photos / identity artifacts
 
