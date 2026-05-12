@@ -1260,6 +1260,7 @@ class CmdRemember(Command):
 
     Usage:
       remember <target> as <name>
+      remember me as <persona name>
 
     When you encounter someone for the first time, you see their short
     description (e.g. "a lanky man in a Black Trenchcoat").  Use this
@@ -1269,6 +1270,11 @@ class CmdRemember(Command):
     You can remember people by false or partial names.  Other characters
     won't know what name you've chosen.
 
+    The |wremember me as <name>|n form saves your *current* presentation
+    overrides (height, build, keyword) as a named persona that you can
+    restore later via |wappear <name>|n.  See also |wpersonas|n and
+    |wpersona <name>|n.
+
     To change an existing name, simply remember them again.
     To clear a remembered name, use the |wforget|n command.
 
@@ -1276,6 +1282,7 @@ class CmdRemember(Command):
       remember man as Jorge
       remember woman as Sketchy Lady
       remember 2nd man as Big J
+      remember me as Hooded Wanderer
     """
 
     key = "remember"
@@ -1302,6 +1309,11 @@ class CmdRemember(Command):
             caller.msg("What name do you want to remember them by?")
             return
 
+        # "remember me as <name>" branch — save a persona snapshot.
+        if target_str.lower() == "me":
+            self._remember_self_as_persona(caller, name)
+            return
+
         # Find the target
         target = caller.search(target_str)
         if not target:
@@ -1324,8 +1336,38 @@ class CmdRemember(Command):
             caller.msg("You can't remember that character.")
             return
 
+        # Cross-namespace uniqueness: a remembered name for someone else
+        # must not collide with one of our own persona names or a valid
+        # keyword (which would shadow `appear <keyword>`).
+        taken, reason = _name_is_taken(caller, name, allow_assigned_uid=sleeve_uid)
+        if taken:
+            caller.msg(reason)
+            return
+
         # Apply the assignment
         self._remember_target(caller, target, sleeve_uid, name)
+
+    def _remember_self_as_persona(self, caller, name):
+        """Save the caller's current overrides as a named persona."""
+        taken, reason = _name_is_taken(caller, name)
+        if taken:
+            caller.msg(reason)
+            return
+
+        personas = caller.db.personas
+        if personas is None:
+            personas = {}
+
+        entry = _build_persona_entry(caller, name)
+        personas[name] = entry
+        caller.db.personas = personas
+
+        # Echo a summary so the player can see what got captured.
+        summary = _persona_summary_line(entry)
+        caller.msg(
+            f"Saved persona |w{name}|n: {summary}\n"
+            f"Restore later with |wappear {name}|n."
+        )
 
     def _remember_target(self, caller, target, sleeve_uid, name):
         """Store a name assignment in the caller's recognition memory."""
@@ -1457,10 +1499,11 @@ def _format_relative_time(iso_timestamp):
 
 class CmdForget(Command):
     """
-    Forget the name you remembered for someone.
+    Forget the name you remembered for someone, or delete a saved persona.
 
     Usage:
       forget <target>
+      forget <persona name>
 
     Clears the name you assigned to someone.  They will appear as their
     description again until you remember them by a new name.
@@ -1469,9 +1512,15 @@ class CmdForget(Command):
     pass either their current description or the name you remembered
     them by.
 
+    If the argument matches one of your saved personas (see |wpersonas|n)
+    instead of a remembered person, the persona is deleted.  If that
+    persona is currently adopted, all your presentation overrides are
+    cleared at the same time (equivalent to |wstop appearing|n).
+
     Examples:
       forget man
       forget Jorge
+      forget Hooded Wanderer
     """
 
     key = "forget"
@@ -1506,11 +1555,45 @@ class CmdForget(Command):
 
         # Fall back to remembered-name lookup
         sleeve_uid, entry = _find_remembered_uid_by_name(caller, args)
-        if sleeve_uid is None:
-            caller.msg("You don't remember anyone by that name.")
+        if sleeve_uid is not None:
+            self._forget_remembered(caller, sleeve_uid, entry)
             return
 
-        self._forget_remembered(caller, sleeve_uid, entry)
+        # Final fallback: persona lookup.
+        if self._forget_persona(caller, args):
+            return
+
+        caller.msg("You don't remember anyone — or any persona — by that name.")
+
+    def _forget_persona(self, caller, name):
+        """Delete a saved persona by name.  Returns True on success."""
+        personas = caller.db.personas
+        if not personas:
+            return False
+
+        # Case-insensitive lookup; preserve stored casing for the message.
+        match_key = None
+        needle = name.lower()
+        for key in personas:
+            if key.lower() == needle:
+                match_key = key
+                break
+        if match_key is None:
+            return False
+
+        was_active = (caller.db.active_persona == match_key)
+        del personas[match_key]
+        caller.db.personas = personas
+
+        if was_active:
+            _clear_all_overrides(caller)
+            caller.msg(
+                f"Forgot persona |w{match_key}|n. "
+                f"It was active — your presentation overrides have been cleared."
+            )
+        else:
+            caller.msg(f"Forgot persona |w{match_key}|n.")
+        return True
 
     def _forget_visible(self, caller, target, sleeve_uid):
         """Forget a target who is currently present."""
@@ -1702,3 +1785,506 @@ class CmdMemory(Command):
             )
 
         caller.msg(str(table))
+
+
+# ===================================================================
+# appear / stop appearing / personas / persona — disguise surface
+# ===================================================================
+#
+# Foundation cut for Phase 3 (Disguise System).  This layer ships the
+# *command surface* and *persistent storage* for presentation overrides
+# and saved personas only.  The signature engine, Apparent UID
+# derivation, sdesc-render consumption, item flags, and lifecycle hooks
+# all live in subsequent PRs — overrides set here are persisted but not
+# yet rendered into the sdesc.  See ``specs/IDENTITY_RECOGNITION_SPEC.md``
+# for the full Disguise System design.
+
+
+# -- Persona / override helpers ---------------------------------------
+
+
+def _override_axes(caller):
+    """Return the caller's three override axes as a dict."""
+    return {
+        "height_override": caller.db.height_override,
+        "build_override": caller.db.build_override,
+        "keyword_override": caller.db.keyword_override,
+    }
+
+
+def _has_any_override(caller):
+    """True if the caller has at least one active override axis."""
+    axes = _override_axes(caller)
+    return any(value is not None for value in axes.values())
+
+
+def _clear_all_overrides(caller):
+    """Wipe all override axes and the active-persona pointer."""
+    caller.db.height_override = None
+    caller.db.build_override = None
+    caller.db.keyword_override = None
+    caller.db.active_persona = None
+
+
+def _build_persona_entry(caller, name):
+    """Snapshot the caller's current overrides into a persona dict.
+
+    The shape matches the persona schema documented in the disguise
+    spec; ``essential_item_types`` and ``notes`` are reserved for the
+    Phase 3 engine PR but written empty now so the schema is stable.
+    """
+    import time
+
+    location_name = caller.location.key if caller.location else "unknown"
+    return {
+        "name": name,
+        "height_override": caller.db.height_override,
+        "build_override": caller.db.build_override,
+        "keyword_override": caller.db.keyword_override,
+        "saved_at": time.time(),
+        "saved_in": location_name,
+        "essential_item_types": [],
+        "notes": "",
+    }
+
+
+def _persona_summary_line(entry):
+    """Single-line summary of a persona's three axes for list/save echoes."""
+    parts = []
+    height = entry.get("height_override")
+    build = entry.get("build_override")
+    keyword = entry.get("keyword_override")
+    if height:
+        parts.append(f"height={height}")
+    if build:
+        parts.append(f"build={build}")
+    if keyword:
+        parts.append(f"keyword={keyword}")
+    if not parts:
+        return "(no overrides)"
+    return ", ".join(parts)
+
+
+def _format_relative_unixtime(unix_ts):
+    """Human-friendly 'X ago' string for a unix timestamp."""
+    import time
+    from evennia.utils.utils import time_format
+
+    if not unix_ts:
+        return "unknown"
+    try:
+        delta = time.time() - float(unix_ts)
+        if delta < 1:
+            return "just now"
+        return f"{time_format(int(delta), 4)} ago"
+    except (ValueError, TypeError):
+        return "unknown"
+
+
+def _name_is_taken(caller, name, allow_assigned_uid=None):
+    """Check whether *name* collides with any reserved identity namespace.
+
+    A persona name (or a remembered-as name) must be unique against:
+
+    * the keyword catalog (so ``appear <name>`` is unambiguous),
+    * the caller's recognition_memory ``assigned_name`` values
+      (so ``forget <name>`` is unambiguous), and
+    * the caller's existing persona names.
+
+    Args:
+        caller: The character whose namespaces are being checked.
+        name: The candidate name (case-insensitive).
+        allow_assigned_uid: When checking a remembered-as assignment,
+            the existing recognition entry for *that* sleeve_uid does
+            not count as a collision (re-naming the same person).
+
+    Returns:
+        Tuple ``(taken: bool, reason: str)``.  *reason* is a
+        player-facing message; empty string when ``taken`` is False.
+    """
+    from world.identity import get_all_keywords
+
+    needle = name.strip().lower()
+    if not needle:
+        return True, "Name cannot be blank."
+
+    if needle in {kw.lower() for kw in get_all_keywords()}:
+        return True, (
+            f"|r'{name}' is a reserved keyword.|n  Pick a different name "
+            f"so |wappear {name}|n stays unambiguous."
+        )
+
+    memory = caller.recognition_memory or {}
+    for uid, entry in memory.items():
+        assigned = (entry.get("assigned_name") or "").strip().lower()
+        if assigned and assigned == needle and uid != allow_assigned_uid:
+            return True, (
+                f"|rYou already remember someone else as '{name}'.|n  "
+                f"Pick a different name."
+            )
+
+    personas = caller.db.personas or {}
+    for persona_name in personas:
+        if persona_name.lower() == needle:
+            return True, (
+                f"|rYou already have a persona named '{persona_name}'.|n  "
+                f"Forget it first or pick a different name."
+            )
+
+    return False, ""
+
+
+def _nudge_axis(values, current, real, direction):
+    """Return the next axis value one step from current toward direction.
+
+    Args:
+        values: Ordered tuple of valid values (e.g. ``HEIGHTS``).
+        current: The current override value, or ``None`` to use *real*.
+        real: The character's real (un-overridden) axis value.
+        direction: ``+1`` (e.g. taller / fatter) or ``-1`` (shorter /
+            thinner).
+
+    Returns:
+        The new axis value, or ``None`` if the nudge would step off
+        either end of the scale.
+    """
+    base = current if current is not None else real
+    if base not in values:
+        return None
+    idx = values.index(base) + direction
+    if idx < 0 or idx >= len(values):
+        return None
+    return values[idx]
+
+
+def _describe_appearance(caller):
+    """Render the bare ``appear`` status display for the caller."""
+    real_height = caller.height
+    real_build = caller.build
+    real_keyword = caller.sdesc_keyword
+
+    h_over = caller.db.height_override
+    b_over = caller.db.build_override
+    k_over = caller.db.keyword_override
+    active = caller.db.active_persona
+
+    def _row(label, real, override):
+        if override is None:
+            return f"  {label:<8} {real or '(unset)'}"
+        return f"  {label:<8} |w{override}|n  |x(real: {real or 'unset'})|n"
+
+    lines = ["|cYour current appearance:|n"]
+    lines.append(_row("Height:", real_height, h_over))
+    lines.append(_row("Build:", real_build, b_over))
+    lines.append(_row("Keyword:", real_keyword, k_over))
+
+    if not _has_any_override(caller):
+        lines.append("")
+        lines.append("|xNo presentation overrides active.|n")
+    if active:
+        lines.append("")
+        lines.append(f"|y(Persona: {active})|n")
+    return "\n".join(lines)
+
+
+def _render_persona(entry):
+    """Multi-line render of a single persona entry for ``persona <name>``."""
+    name = entry.get("name", "(unnamed)")
+    when = _format_relative_unixtime(entry.get("saved_at"))
+    where = entry.get("saved_in") or "unknown"
+
+    lines = [f"|cPersona: |w{name}|n"]
+
+    h = entry.get("height_override")
+    b = entry.get("build_override")
+    k = entry.get("keyword_override")
+    lines.append(f"  Height:   {h if h is not None else '|x(unchanged)|n'}")
+    lines.append(f"  Build:    {b if b is not None else '|x(unchanged)|n'}")
+    lines.append(f"  Keyword:  {k if k is not None else '|x(unchanged)|n'}")
+    lines.append(f"  Saved:    {when} in {where}")
+    return "\n".join(lines)
+
+
+# -- Commands ---------------------------------------------------------
+
+
+class CmdAppear(Command):
+    """
+    Adopt a presentation override, restore a saved persona, or check status.
+
+    Usage:
+      appear                          - show current overrides and persona
+      appear taller | shorter         - nudge perceived height one step
+      appear thinner | fatter         - nudge perceived build one step
+      appear <keyword>                - present as the given keyword
+      appear <persona name>           - restore a saved persona
+
+    The |wappear|n command is your interface to *presentation overrides* —
+    per-axis changes to how others perceive you.  Each override stays
+    in effect until you change it, replace it, or use |wstop appearing|n.
+
+    Height and build nudges step one notch on a fixed scale.  If you're
+    already at the extreme of the scale in that direction, the command
+    refuses (some descriptors are simply unreachable for your real
+    sleeve — that's a tell).
+
+    A keyword override accepts any keyword from the full catalog
+    (gender restrictions don't apply to disguise).  Use |w@shortdesc|n
+    to introduce new keywords to the catalog.
+
+    A persona is a previously saved snapshot of all three override axes
+    (see |wremember me as <name>|n).  Adopting a persona overwrites all
+    three axes — including clearing axes the persona doesn't set.
+
+    Manually changing an axis after adopting a persona dissociates from
+    that persona; the persona itself is left intact.
+
+    Examples:
+      appear taller
+      appear thinner
+      appear droog
+      appear Hooded Wanderer
+    """
+
+    key = "appear"
+    locks = "cmd:all()"
+    help_category = "Character"
+
+    def func(self):
+        caller = self.caller
+        args = self.args.strip()
+
+        if not args:
+            caller.msg(_describe_appearance(caller))
+            return
+
+        # Resolution order: persona name > axis nudge > keyword.
+        personas = caller.db.personas or {}
+        for persona_name in personas:
+            if persona_name.lower() == args.lower():
+                self._adopt_persona(caller, persona_name, personas[persona_name])
+                return
+
+        lower = args.lower()
+        if lower in ("taller", "shorter"):
+            self._nudge_height(caller, +1 if lower == "taller" else -1)
+            return
+        if lower in ("thinner", "fatter"):
+            self._nudge_build(caller, +1 if lower == "fatter" else -1)
+            return
+
+        # Keyword override.
+        self._set_keyword_override(caller, args)
+
+    # -- axis handlers ---------------------------------------------------
+
+    def _nudge_height(self, caller, direction):
+        from world.identity import HEIGHTS
+
+        new = _nudge_axis(
+            HEIGHTS, caller.db.height_override, caller.height, direction
+        )
+        if new is None:
+            word = "taller" if direction > 0 else "shorter"
+            caller.msg(
+                f"You can't appear any {word} than that — your real frame "
+                f"won't sell it."
+            )
+            return
+        self._maybe_break_persona(caller)
+        caller.db.height_override = new
+        caller.msg(f"You now carry yourself as |w{new}|n.")
+
+    def _nudge_build(self, caller, direction):
+        from world.identity import BUILDS
+
+        new = _nudge_axis(
+            BUILDS, caller.db.build_override, caller.build, direction
+        )
+        if new is None:
+            word = "bulkier" if direction > 0 else "leaner"
+            caller.msg(
+                f"You can't appear any {word} than that — your real frame "
+                f"won't sell it."
+            )
+            return
+        self._maybe_break_persona(caller)
+        caller.db.build_override = new
+        caller.msg(f"You now carry yourself as |w{new}|n.")
+
+    def _set_keyword_override(self, caller, raw_keyword):
+        from world.identity import get_all_keywords
+
+        keyword = raw_keyword.lower()
+        if keyword not in {kw.lower() for kw in get_all_keywords()}:
+            caller.msg(
+                f"|r'{raw_keyword}' isn't a recognized keyword or persona.|n  "
+                f"Use |w@shortdesc|n to introduce new keywords to the "
+                f"catalog first."
+            )
+            return
+        self._maybe_break_persona(caller)
+        caller.db.keyword_override = keyword
+        caller.msg(f"You now present yourself as a |w{keyword}|n.")
+
+    # -- persona adoption ------------------------------------------------
+
+    def _adopt_persona(self, caller, name, entry):
+        """Clean swap: overwrite all three axes from the persona snapshot."""
+        caller.db.height_override = entry.get("height_override")
+        caller.db.build_override = entry.get("build_override")
+        caller.db.keyword_override = entry.get("keyword_override")
+        caller.db.active_persona = name
+
+        summary = _persona_summary_line(entry)
+        caller.msg(
+            f"You adopt the persona |w{name}|n.\n  {summary}"
+        )
+
+    def _maybe_break_persona(self, caller):
+        """Manual axis change dissociates from any active persona."""
+        active = caller.db.active_persona
+        if active:
+            caller.db.active_persona = None
+            caller.msg(
+                f"|x(Manual change — no longer presenting as persona "
+                f"'{active}'.)|n"
+            )
+
+
+class CmdStopAppearing(Command):
+    """
+    Drop all presentation overrides and return to your real appearance.
+
+    Usage:
+      stop appearing
+
+    Clears every active override (height, build, keyword) and any
+    adopted persona pointer.  You will be perceived as your real sleeve
+    again, modulo any disguise items you have equipped (those are
+    handled separately by the items themselves).
+
+    To delete a saved persona instead of just stepping out of it, use
+    |wforget <persona name>|n.
+    """
+
+    key = "stop appearing"
+    locks = "cmd:all()"
+    help_category = "Character"
+
+    def func(self):
+        caller = self.caller
+
+        if not _has_any_override(caller) and not caller.db.active_persona:
+            caller.msg("You aren't presenting as anything but yourself.")
+            return
+
+        _clear_all_overrides(caller)
+        caller.msg(
+            "You drop the act and present yourself as you really are."
+        )
+
+
+class CmdPersonas(Command):
+    """
+    List the personas you've saved.
+
+    Usage:
+      personas
+
+    Shows every persona you've stored via |wremember me as <name>|n,
+    most-recently-saved first.  An asterisk marks the persona you are
+    currently adopting (if any).
+
+    Use |wpersona <name>|n to inspect a single persona, |wappear <name>|n
+    to adopt one, and |wforget <name>|n to delete one.
+    """
+
+    key = "personas"
+    locks = "cmd:all()"
+    help_category = "Character"
+
+    def func(self):
+        caller = self.caller
+        if self.args.strip():
+            caller.msg("Usage: personas  (no arguments)")
+            return
+
+        personas = caller.db.personas or {}
+        if not personas:
+            caller.msg(
+                "You haven't saved any personas yet.  Use "
+                "|wremember me as <name>|n to save your current "
+                "presentation overrides as a persona."
+            )
+            return
+
+        # Recency sort, newest first.  Missing timestamps sort last.
+        ordered = sorted(
+            personas.items(),
+            key=lambda pair: pair[1].get("saved_at") or 0,
+            reverse=True,
+        )
+
+        active = caller.db.active_persona
+
+        from evennia.utils.evtable import EvTable
+
+        table = EvTable(
+            "|wPersona|n",
+            "|wOverrides|n",
+            "|wSaved|n",
+            border="cells",
+        )
+        for name, entry in ordered:
+            marker = "|g*|n " if name == active else "  "
+            table.add_row(
+                f"{marker}{name}",
+                _persona_summary_line(entry),
+                _format_relative_unixtime(entry.get("saved_at")),
+            )
+
+        caller.msg(str(table))
+
+
+class CmdPersona(Command):
+    """
+    Inspect a single saved persona.
+
+    Usage:
+      persona <name>
+
+    Shows the height/build/keyword overrides captured in the persona
+    and where/when it was saved.
+
+    Use |wpersonas|n to list every persona you've saved.
+    """
+
+    key = "persona"
+    locks = "cmd:all()"
+    help_category = "Character"
+
+    def func(self):
+        caller = self.caller
+        args = self.args.strip()
+
+        if not args:
+            caller.msg("Usage: persona <name>")
+            return
+
+        personas = caller.db.personas or {}
+        match = None
+        for name, entry in personas.items():
+            if name.lower() == args.lower():
+                match = (name, entry)
+                break
+
+        if match is None:
+            caller.msg(
+                f"You don't have a persona named '{args}'.  "
+                f"Try |wpersonas|n to see what you've saved."
+            )
+            return
+
+        caller.msg(_render_persona(match[1]))
+
