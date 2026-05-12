@@ -1254,32 +1254,31 @@ def _apply_keyword(caller, keyword):
     return None  # Exit menu after setting
 
 
-class CmdAssign(Command):
+class CmdRemember(Command):
     """
-    Assign a name to someone you can see.
+    Remember someone you can see by a name of your choosing.
 
     Usage:
-      assign <target> as <name>
+      remember <target> as <name>
 
     When you encounter someone for the first time, you see their short
     description (e.g. "a lanky man in a Black Trenchcoat").  Use this
-    command to assign them a name — any name you choose.  From then on
-    you'll see that name instead of their sdesc.
+    command to remember them by a name — any name you choose.  From then
+    on you'll see that name instead of their sdesc.
 
-    You can assign false or partial names.  Other characters won't know
-    what name you've assigned.
+    You can remember people by false or partial names.  Other characters
+    won't know what name you've chosen.
 
-    To change an existing assignment, simply assign again.
-    To clear an assignment, use:  assign <target> as clear
+    To change an existing name, simply remember them again.
+    To clear a remembered name, use the |wforget|n command.
 
     Examples:
-      assign man as Jorge
-      assign woman as Sketchy Lady
-      assign 2nd man as Big J
-      assign jorge as clear
+      remember man as Jorge
+      remember woman as Sketchy Lady
+      remember 2nd man as Big J
     """
 
-    key = "assign"
+    key = "remember"
     locks = "cmd:all()"
     help_category = "Character"
 
@@ -1288,7 +1287,7 @@ class CmdAssign(Command):
         args = self.args.strip()
 
         if not args or " as " not in args:
-            caller.msg("Usage: assign <target> as <name>")
+            caller.msg("Usage: remember <target> as <name>")
             return
 
         # Split on first " as " to allow names with spaces
@@ -1297,10 +1296,10 @@ class CmdAssign(Command):
         name = parts[1].strip()
 
         if not target_str:
-            caller.msg("Who do you want to assign a name to?")
+            caller.msg("Who do you want to remember?")
             return
         if not name:
-            caller.msg("What name do you want to assign?")
+            caller.msg("What name do you want to remember them by?")
             return
 
         # Find the target
@@ -1311,10 +1310,10 @@ class CmdAssign(Command):
         # Must be a character (not an item/exit)
         from typeclasses.characters import Character
         if not isinstance(target, Character):
-            caller.msg("You can only assign names to characters.")
+            caller.msg("You can only remember characters by name.")
             return
 
-        # Can't assign a name to yourself
+        # Can't remember yourself by another name
         if target is caller:
             caller.msg("You already know your own name.")
             return
@@ -1322,18 +1321,13 @@ class CmdAssign(Command):
         # Target must have a sleeve_uid
         sleeve_uid = target.sleeve_uid
         if sleeve_uid is None:
-            caller.msg("You can't assign a name to that character.")
-            return
-
-        # Handle "clear" to remove assignment
-        if name.lower() == "clear":
-            self._clear_assignment(caller, target, sleeve_uid)
+            caller.msg("You can't remember that character.")
             return
 
         # Apply the assignment
-        self._set_assignment(caller, target, sleeve_uid, name)
+        self._remember_target(caller, target, sleeve_uid, name)
 
-    def _set_assignment(self, caller, target, sleeve_uid, name):
+    def _remember_target(self, caller, target, sleeve_uid, name):
         """Store a name assignment in the caller's recognition memory."""
         import time
 
@@ -1392,7 +1386,11 @@ class CmdAssign(Command):
             )
 
     def _clear_assignment(self, caller, target, sleeve_uid):
-        """Remove a name assignment from recognition memory."""
+        """Remove a name assignment from recognition memory.
+
+        Retained for backward-compatible internal use; player-facing clear
+        is now the |wforget|n command (:class:`CmdForget`).
+        """
         memory = caller.recognition_memory
         if not memory or sleeve_uid not in memory:
             caller.msg("You don't have a name assigned to them.")
@@ -1411,3 +1409,296 @@ class CmdAssign(Command):
             )
         else:
             caller.msg("No name was assigned to clear.")
+
+
+# ===================================================================
+# forget / recall / memory — observer-memory verb cluster
+# ===================================================================
+
+
+def _find_remembered_uid_by_name(caller, name):
+    """Look up a sleeve_uid in caller's recognition_memory by assigned_name.
+
+    Case-insensitive match against ``assigned_name``.  Returns the first
+    matching ``(sleeve_uid, entry)`` tuple, or ``(None, None)`` if no
+    match.
+    """
+    memory = caller.recognition_memory
+    if not memory:
+        return None, None
+    needle = name.lower()
+    for uid, entry in memory.items():
+        assigned = (entry.get("assigned_name") or "").lower()
+        if assigned and assigned == needle:
+            return uid, entry
+    return None, None
+
+
+def _format_relative_time(iso_timestamp):
+    """Return a human-friendly 'X ago' string for an ISO timestamp.
+
+    Falls back to the raw timestamp if parsing fails.
+    """
+    import time
+    from datetime import datetime
+    from evennia.utils.utils import time_format
+
+    if not iso_timestamp:
+        return "unknown"
+    try:
+        then = datetime.strptime(iso_timestamp, "%Y-%m-%dT%H:%M:%S")
+        delta = time.time() - then.timestamp()
+        if delta < 1:
+            return "just now"
+        return f"{time_format(int(delta), 4)} ago"
+    except (ValueError, TypeError):
+        return iso_timestamp
+
+
+class CmdForget(Command):
+    """
+    Forget the name you remembered for someone.
+
+    Usage:
+      forget <target>
+
+    Clears the name you assigned to someone.  They will appear as their
+    description again until you remember them by a new name.
+
+    You can forget someone whether or not they're currently present —
+    pass either their current description or the name you remembered
+    them by.
+
+    Examples:
+      forget man
+      forget Jorge
+    """
+
+    key = "forget"
+    locks = "cmd:all()"
+    help_category = "Character"
+
+    def func(self):
+        caller = self.caller
+        args = self.args.strip()
+
+        if not args:
+            caller.msg("Forget who?")
+            return
+
+        from typeclasses.characters import Character
+
+        # Try visible-target resolution first (silent on failure so we can
+        # fall back to remembered-name lookup).
+        target = caller.search(args, quiet=True)
+        if target:
+            # caller.search with quiet=True returns a list
+            if isinstance(target, list):
+                target = target[0] if target else None
+
+        if target and isinstance(target, Character):
+            sleeve_uid = target.sleeve_uid
+            if sleeve_uid is None:
+                caller.msg("You can't forget that character.")
+                return
+            self._forget_visible(caller, target, sleeve_uid)
+            return
+
+        # Fall back to remembered-name lookup
+        sleeve_uid, entry = _find_remembered_uid_by_name(caller, args)
+        if sleeve_uid is None:
+            caller.msg("You don't remember anyone by that name.")
+            return
+
+        self._forget_remembered(caller, sleeve_uid, entry)
+
+    def _forget_visible(self, caller, target, sleeve_uid):
+        """Forget a target who is currently present."""
+        memory = caller.recognition_memory
+        if not memory or sleeve_uid not in memory:
+            caller.msg("You don't have a name remembered for them.")
+            return
+
+        old_name = memory[sleeve_uid].get("assigned_name", "")
+        if not old_name:
+            caller.msg("You don't have a name remembered for them.")
+            return
+
+        memory[sleeve_uid]["assigned_name"] = ""
+        caller.recognition_memory = memory
+
+        caller.msg(
+            f"You forget the name '{old_name}'. "
+            f"They will now appear as their description."
+        )
+
+    def _forget_remembered(self, caller, sleeve_uid, entry):
+        """Forget someone by remembered name; they may not be present."""
+        old_name = entry.get("assigned_name", "")
+        sdesc = entry.get("sdesc_at_last_encounter", "someone")
+        location = entry.get("location_last_seen", "somewhere")
+        last_seen = entry.get("last_seen", "")
+        when = _format_relative_time(last_seen)
+
+        memory = caller.recognition_memory
+        memory[sleeve_uid]["assigned_name"] = ""
+        caller.recognition_memory = memory
+
+        caller.msg(
+            f"You forget the name '{old_name}'. "
+            f"(Last seen: {sdesc} in {location}, {when}.)"
+        )
+
+
+class CmdRecall(Command):
+    """
+    Recall what you remember about someone.
+
+    Usage:
+      recall <target>
+
+    Shows the name you remembered them by, what they looked like when
+    you first met them, where, when, and how many times you've seen
+    them.
+
+    The target may be someone currently present (by description or by
+    remembered name) or someone you've remembered before but isn't
+    here now (by remembered name).
+
+    To see everyone you've remembered, use the |wmemory|n command.
+
+    Examples:
+      recall man
+      recall Jorge
+    """
+
+    key = "recall"
+    locks = "cmd:all()"
+    help_category = "Character"
+
+    def func(self):
+        caller = self.caller
+        args = self.args.strip()
+
+        if not args:
+            caller.msg("Recall who? (Try |wmemory|n to see everyone you remember.)")
+            return
+
+        from typeclasses.characters import Character
+
+        # Try visible-target resolution first
+        target = caller.search(args, quiet=True)
+        if target:
+            if isinstance(target, list):
+                target = target[0] if target else None
+
+        sleeve_uid = None
+        entry = None
+
+        if target and isinstance(target, Character):
+            sleeve_uid = target.sleeve_uid
+            if sleeve_uid is None:
+                caller.msg("You can't recall anything about that character.")
+                return
+            memory = caller.recognition_memory or {}
+            entry = memory.get(sleeve_uid)
+        else:
+            # Fall back to remembered-name lookup
+            sleeve_uid, entry = _find_remembered_uid_by_name(caller, args)
+
+        if entry is None:
+            caller.msg("You don't recognize that person.")
+            return
+
+        self._render_entry(caller, entry)
+
+    def _render_entry(self, caller, entry):
+        """Format and send a recognition_memory entry to the caller."""
+        assigned_name = entry.get("assigned_name", "")
+        sdesc_first = entry.get("sdesc_at_first_encounter", "(unknown)")
+        location_first = entry.get("location_first_seen", "(unknown)")
+        first_seen = entry.get("first_seen", "")
+        times_seen = entry.get("times_seen", 0)
+
+        when = _format_relative_time(first_seen)
+
+        if assigned_name:
+            header = f"You remember them as: |w{assigned_name}|n"
+        else:
+            header = (
+                "You've encountered them before but don't have a "
+                "name for them."
+            )
+
+        lines = [
+            header,
+            f"First seen: {sdesc_first}",
+            f"Location: {location_first}",
+            f"When: {when} (seen {times_seen} time{'s' if times_seen != 1 else ''})",
+        ]
+        caller.msg("\n".join(lines))
+
+
+class CmdMemory(Command):
+    """
+    List everyone you remember by name.
+
+    Usage:
+      memory
+
+    Shows a table of every person you've remembered, sorted by who
+    you've seen most recently.  People you've forgotten (cleared with
+    |wforget|n) are not listed, even though their record is preserved.
+
+    Use |wrecall <name>|n to inspect a specific entry.
+    """
+
+    key = "memory"
+    locks = "cmd:all()"
+    help_category = "Character"
+
+    def func(self):
+        caller = self.caller
+        args = self.args.strip()
+
+        if args:
+            caller.msg("Usage: memory  (no arguments)")
+            return
+
+        memory = caller.recognition_memory or {}
+
+        # Filter to entries with a non-blank assigned_name
+        named = [
+            (uid, entry)
+            for uid, entry in memory.items()
+            if (entry.get("assigned_name") or "").strip()
+        ]
+
+        if not named:
+            caller.msg("You don't remember anyone yet.")
+            return
+
+        # Sort by last_seen descending (recency).  Missing values sort last.
+        named.sort(
+            key=lambda pair: pair[1].get("last_seen") or "",
+            reverse=True,
+        )
+
+        from evennia.utils.evtable import EvTable
+
+        table = EvTable(
+            "|wName|n",
+            "|wLast seen as|n",
+            "|wWhere|n",
+            "|wWhen|n",
+            border="cells",
+        )
+        for _uid, entry in named:
+            table.add_row(
+                entry.get("assigned_name", ""),
+                entry.get("sdesc_at_last_encounter", "(unknown)"),
+                entry.get("location_last_seen", "(unknown)"),
+                _format_relative_time(entry.get("last_seen", "")),
+            )
+
+        caller.msg(str(table))

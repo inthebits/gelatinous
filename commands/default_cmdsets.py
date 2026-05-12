@@ -36,7 +36,7 @@ from commands.CmdExplosives import (
 )
 from commands.CmdGraffiti import CmdGraffiti, CmdPress
 from commands.CmdCharacter import CmdLongdesc, CmdSkintone
-from commands.CmdCharacter import CmdShortdesc, CmdAssign
+from commands.CmdCharacter import CmdShortdesc, CmdRemember, CmdForget, CmdRecall, CmdMemory
 from commands.CmdCommunication import CmdSay, CmdWhisper, CmdEmote, CmdDotPose
 from world.emote_templates import SOCIAL_COMMANDS
 from commands.CmdArmor import CmdArmor, CmdArmorRepair, CmdSlot, CmdUnslot
@@ -183,7 +183,10 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         
         # Add identity system commands
         self.add(CmdShortdesc())
-        self.add(CmdAssign())
+        self.add(CmdRemember())
+        self.add(CmdForget())
+        self.add(CmdRecall())
+        self.add(CmdMemory())
 
         # Add identity-aware communication commands (override Evennia defaults)
         self.add(CmdSay())
