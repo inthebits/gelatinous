@@ -253,31 +253,54 @@ recognition_memory = {
 
 This is stored as a db attribute on the brain organ, keyed by `sleeve_uid`. The `recent_interactions` list should be capped (e.g., last 20 interactions per entry) to prevent unbounded growth, with older interactions eligible for summarization or archival.
 
-### Assigning Names
+### Remembering Names
 
-**`assign` command:**
-
-```
-assign <target> as <name>
-assign <target> = <name>
-```
-
-Stores the name in the assigner's brain recognition memory for the target's apparent `sleeve_uid`. Any name is valid — false names are always possible. Reassignment overwrites.
+**`remember` command:**
 
 ```
-> assign tall man as Jorge
-You will now remember this person as "Jorge".
-
-> assign 2nd lanky dude as Sketchy Pete
-You will now remember this person as "Sketchy Pete".
+remember <target> as <name>
 ```
 
-If the target is already recognized under a different name:
+Stores the name in the rememberer's brain recognition memory for the target's apparent `sleeve_uid`. Any name is valid — false names are always possible. Re-remembering overwrites.
 
 ```
-> assign Jorge as Johnny Twoshoes
-You update your memory: the person you knew as "Jorge" is now "Johnny Twoshoes".
+> remember tall man as Jorge
+You will now recognize a tall lanky man as Jorge.
+
+> remember 2nd lanky dude as Sketchy Pete
+You will now recognize a lanky man with a leather jacket as Sketchy Pete.
 ```
+
+If the target is already remembered under a different name:
+
+```
+> remember Jorge as Johnny Twoshoes
+You now know Jorge (previously 'Jorge') as Johnny Twoshoes.
+```
+
+**`forget` command:**
+
+```
+forget <target>
+```
+
+Clears the assigned name on a recognition entry. The entry itself is preserved (sdesc snapshots, locations, `times_seen`, etc.) so future `remember` calls extend the existing history rather than starting fresh. Targets resolve against currently-visible characters first, then against previously-remembered names — you can `forget` someone who isn't present.
+
+**`recall` command:**
+
+```
+recall <target>
+```
+
+Inspects a single recognition entry: assigned name (if any), what they looked like at first encounter, where, when, and how many times you've seen them. Same target resolution as `forget`.
+
+**`memory` command:**
+
+```
+memory
+```
+
+Lists every person you've remembered by name, sorted by recency (most recently seen first). Forgotten entries are not listed even though their record is preserved.
 
 **Digital ID exchange (Phase 4 — Cybernetics):**
 
@@ -296,7 +319,7 @@ Recognition data lives on the brain organ object (`world/medical/constants.py` d
 **Storage:** A new db attribute on the brain organ: `db.recognition_memory` (dict).
 
 **Properties:**
-- Populated by explicit player action (`assign` command)
+- Populated by explicit player action (`remember` command)
 - Future: auto-populated by Resonance-driven proximity detection
 - Lost if the brain is destroyed (brain destruction = death, so this is moot for the current character, but matters for brain transplant scenarios)
 - Brain damage (non-fatal) carries a risk of partial memory loss — individual entries can be degraded or lost. This is a future enhancement once the memory pool is rich enough to make partial loss meaningful.
@@ -563,11 +586,11 @@ A disguised character (overrides: `tall man` + essential cowl + non-essential ca
 
 ### Recognition Interactions
 
-- **Stranger meets disguised character:** Observer sees the disguised sdesc; no auto-recognition. Observer can `assign` a name, which binds to the current Apparent UID.
+- **Stranger meets disguised character:** Observer sees the disguised sdesc; no auto-recognition. Observer can `remember` them by a name, which binds to the current Apparent UID.
 - **Observer who knew real identity meets the disguised character:** Observer's recognition memory is keyed on the *real* `sleeve_uid`; the disguise has a different Apparent UID; no auto-recognition. The observer sees the disguised sdesc as a stranger.
 - **Observer meets the same disguised character a second time, same signature:** Auto-recognition fires (same Apparent UID); observer sees the previously-assigned name.
 - **Observer meets the same disguised character a second time, different signature** (e.g., one essential item swapped): Different Apparent UID; observer sees a stranger.
-- **Two characters wearing identical overrides + items:** Visual collision (sdesc strings match), but Apparent UIDs differ (different salts). Each observer's recognition is per-UID; impersonation is *visual*, not *systemic*. An impostor *looks* the same but does not auto-resolve to the original's assigned name. Successful name-fooling requires either acquiring the original's salt (future adversarial-identity mechanic — e.g., through stolen contact cards) or the observer manually `assign`ing the same name to the impostor's distinct UID.
+- **Two characters wearing identical overrides + items:** Visual collision (sdesc strings match), but Apparent UIDs differ (different salts). Each observer's recognition is per-UID; impersonation is *visual*, not *systemic*. An impostor *looks* the same but does not auto-resolve to the original's assigned name. Successful name-fooling requires either acquiring the original's salt (future adversarial-identity mechanic — e.g., through stolen contact cards) or the observer manually `remember`ing the same name onto the impostor's distinct UID.
 
 ### Impersonation
 
@@ -575,7 +598,7 @@ Impersonation is **emergent**, not mechanical. The system does not detect or pre
 
 Two characters can create overrides + ensembles with identical descriptors, keywords, and similar clothing — they will look the same in the sdesc but have different Apparent UIDs (different salts). This means:
 
-- **Strangers** seeing both at different times would have no way to distinguish them visually. A character who met "Natasha" on Monday and meets a different `short woman in a black cape` on Friday would naturally assume it's the same person — until they `assign` a name and discover the recognition system creates a *new* entry instead of matching the old one.
+- **Strangers** seeing both at different times would have no way to distinguish them visually. A character who met "Natasha" on Monday and meets a different `short woman in a black cape` on Friday would naturally assume it's the same person — until they `remember` them by a name and discover the recognition system creates a *new* entry instead of matching the old one.
 - **People who tagged the original signature** are not fooled by a visual look-alike — the UIDs don't match. The impostor appears as a stranger who happens to look similar.
 - **Investigation gameplay** emerges naturally: if a witness meets two different UIDs with matching sdescs, that's a clue that one of them is an impostor. Which one is "real" requires further investigation.
 
@@ -892,7 +915,7 @@ Players should be prompted to customize their sdesc on next login if defaults we
 - `recognition_memory` on brain organ
 - `Character.get_display_name(looker)` override
 - `@shortdesc` command
-- `assign` command
+- `remember` / `forget` / `recall` / `memory` commands
 - Grammar engine (articles, possessive, objective, self-perception)
 - Chargen updates
 - Flash clone `sleeve_uid` inheritance
