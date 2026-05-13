@@ -2040,3 +2040,79 @@ class TestGetLookHeader(TestCase):
         # Sanity: sdesc collapses to key.
         self.assertEqual(target.get_sdesc(), "Newbie")
         self.assertEqual(target.get_look_header(looker), "Friend")
+
+
+# ===================================================================
+# Magic-keyword regressions: forget me / recall me
+# ===================================================================
+
+
+class TestForgetRecallMeAreHarmless(TestCase):
+    """Regression tests for the ``me``/``self``/``here`` shortcut.
+
+    After the shortcut, ``caller.search('me', quiet=True)`` returns
+    ``[caller]`` instead of ``[]`` — which routes ``forget me`` and
+    ``recall me`` into the visible-Character branch of those commands
+    where they previously fell through to the remembered-name path.
+
+    Both endpoints must remain harmless: no state mutation, a sensible
+    user-facing message, no exception.
+
+    See ``specs/IDENTITY_RECOGNITION_SPEC.md`` §Target Resolution
+    (Magic Keywords).
+    """
+
+    def _bind_search(self, char):
+        """Wire ``char.search`` to call the real Character.search."""
+        from typeclasses.characters import Character
+
+        char.search = lambda *a, **kw: Character.search(char, *a, **kw)
+        char.check_permstring = MagicMock(return_value=False)
+
+    def test_forget_me_is_harmless(self):
+        """``forget me`` reports no-name-remembered, mutates nothing."""
+        from commands.CmdCharacter import CmdForget
+
+        caller = _make_character(
+            key="Observer",
+            sleeve_uid="uid-observer",
+        )
+        self._bind_search(caller)
+
+        before = dict(caller.recognition_memory)
+
+        cmd = CmdForget()
+        cmd.caller = caller
+        cmd.args = "me"
+        cmd.func()
+
+        # No state corruption
+        self.assertEqual(caller.recognition_memory, before)
+        # Some message was emitted (no exception)
+        caller.msg.assert_called()
+
+    def test_recall_me_is_harmless(self):
+        """``recall me`` emits a 'don't recognize' message, no exception."""
+        from commands.CmdCharacter import CmdRecall
+
+        caller = _make_character(
+            key="Observer",
+            sleeve_uid="uid-observer",
+        )
+        self._bind_search(caller)
+
+        cmd = CmdRecall()
+        cmd.caller = caller
+        cmd.args = "me"
+        cmd.func()
+
+        caller.msg.assert_called()
+        msg_text = caller.msg.call_args[0][0]
+        # Either "don't recognize" (entry None branch) or
+        # "can't recall anything" (None apparent_uid branch).
+        # Both are acceptable harmless outcomes.
+        self.assertTrue(
+            "don't recognize" in msg_text
+            or "can't recall" in msg_text,
+            f"Unexpected message: {msg_text!r}",
+        )
