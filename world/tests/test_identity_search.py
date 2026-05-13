@@ -703,3 +703,115 @@ class TestParseOrdinalEvennia(TestCase):
         self.assertTrue(
             is_identity_match(searcher, jorge, "1.man")
         )
+
+
+# ===================================================================
+# Tests: Magic keyword shortcuts (me / self / here)
+# ===================================================================
+
+
+class TestCharacterSearchMagicKeywords(TestCase):
+    """Verify ``me``/``self``/``here`` short-circuit before identity filter.
+
+    Regression coverage for the latent bug where non-Builder characters
+    got ``Could not find 'me'.`` from ``look me`` because the identity
+    filter stripped them from their own search results.
+
+    See ``specs/IDENTITY_RECOGNITION_SPEC.md`` §Target Resolution
+    (Magic Keywords).
+    """
+
+    def setUp(self):
+        """Build a searcher with a real bound Character.search."""
+        from typeclasses.characters import Character
+
+        self.searcher = _make_character(
+            key="Alice Smith",
+            sex="female",
+            sleeve_uid="uid-searcher",
+        )
+
+        self.room = MagicMock()
+        self.room.contents = [self.searcher]
+        self.searcher.location = self.room
+
+        self.searcher.search = (
+            lambda *a, **kw: Character.search(self.searcher, *a, **kw)
+        )
+        self.searcher.msg = MagicMock()
+        # Default: not a builder (the bug only manifests for non-builders)
+        self.searcher.check_permstring = MagicMock(return_value=False)
+
+    # -- "me" --
+
+    def test_search_me_returns_self(self):
+        """``search('me')`` returns the caller (non-quiet scalar)."""
+        result = self.searcher.search("me")
+        self.assertIs(result, self.searcher)
+
+    def test_search_me_quiet_returns_list_with_self(self):
+        """``search('me', quiet=True)`` returns ``[caller]``."""
+        result = self.searcher.search("me", quiet=True)
+        self.assertEqual(result, [self.searcher])
+
+    def test_search_me_case_insensitive(self):
+        """``ME``/``Me`` resolve identically to ``me``."""
+        self.assertIs(self.searcher.search("ME"), self.searcher)
+        self.assertIs(self.searcher.search("Me"), self.searcher)
+
+    def test_search_me_strips_whitespace(self):
+        """``'  me  '`` still resolves to caller."""
+        self.assertIs(self.searcher.search("  me  "), self.searcher)
+
+    # -- "self" --
+
+    def test_search_self_returns_self(self):
+        """``search('self')`` returns the caller."""
+        result = self.searcher.search("self")
+        self.assertIs(result, self.searcher)
+
+    def test_search_self_case_insensitive(self):
+        """``SELF`` resolves to caller."""
+        self.assertIs(self.searcher.search("SELF"), self.searcher)
+
+    # -- "here" --
+
+    def test_search_here_returns_location(self):
+        """``search('here')`` returns the caller's location."""
+        result = self.searcher.search("here")
+        self.assertIs(result, self.room)
+
+    def test_search_here_quiet_returns_list_with_location(self):
+        """``search('here', quiet=True)`` returns ``[location]``."""
+        result = self.searcher.search("here", quiet=True)
+        self.assertEqual(result, [self.room])
+
+    def test_search_here_when_no_location_quiet_returns_empty_list(self):
+        """No location + quiet → ``[]`` (matches Evennia search contract)."""
+        self.searcher.location = None
+        result = self.searcher.search("here", quiet=True)
+        self.assertEqual(result, [])
+
+    def test_search_here_when_no_location_nonquiet_returns_none(self):
+        """No location + non-quiet → ``None``."""
+        self.searcher.location = None
+        result = self.searcher.search("here")
+        self.assertIsNone(result)
+
+    # -- Regression: the original bug --
+
+    def test_me_works_for_non_builder(self):
+        """Regression: non-Builder ``look me`` must NOT return None.
+
+        Previously the identity filter stripped the caller from
+        ``super().search('me')`` results because
+        ``is_identity_match(self, self, 'me')`` returns False, and
+        only Builders bypassed that filter.  This test guards against
+        that regression.
+        """
+        # Explicitly assert we're testing the non-builder path
+        self.assertFalse(self.searcher.check_permstring("Builder"))
+        result = self.searcher.search("me")
+        self.assertIs(result, self.searcher)
+        # No "Could not find" message should fire
+        self.searcher.msg.assert_not_called()

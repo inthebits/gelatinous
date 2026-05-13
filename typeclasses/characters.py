@@ -1192,6 +1192,10 @@ class Character(
           - ``candidates`` or ``location`` is explicitly provided
           - ``attribute_name`` is set
 
+        **Magic keywords** (always short-circuit, all permissions):
+          - ``me`` / ``self`` → the caller
+          - ``here`` → the caller's location
+
         **Identity pipeline** (local room search):
           1. Try identity matching (assigned names → sdescs) against
              room occupants.
@@ -1207,6 +1211,26 @@ class Character(
         """
         from world.combat.constants import PERM_BUILDER
         from world.search import identity_match_characters, is_identity_match
+
+        # ----------------------------------------------------------
+        # Magic keyword shortcut: ``me`` / ``self`` / ``here``
+        # ----------------------------------------------------------
+        # Evennia's DefaultObject.search resolves these tokens to the
+        # caller / caller.location.  Our identity filter would then
+        # strip the caller (because ``is_identity_match(self, self,
+        # "me")`` is False) and return ``Could not find 'me'.`` for
+        # any non-Builder.  Short-circuit before the identity pipeline
+        # so these tokens always resolve, regardless of permissions.
+        # See ``specs/IDENTITY_RECOGNITION_SPEC.md`` §Target Resolution.
+        if isinstance(searchdata, str):
+            stripped = searchdata.strip().lower()
+            if stripped in ("me", "self"):
+                return [self] if quiet else self
+            if stripped == "here":
+                loc = self.location
+                if quiet:
+                    return [loc] if loc else []
+                return loc
 
         # ----------------------------------------------------------
         # Bypass: let Evennia handle non-local or privileged searches

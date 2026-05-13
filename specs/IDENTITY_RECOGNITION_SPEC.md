@@ -895,10 +895,11 @@ Currently, players type character names to target them. With the recognition sys
 
 When a player types a targeting string (e.g., `attack jorge` or `attack tall man`):
 
-1. **Assigned names** — Check the player's recognition memory for any character in the room whose assigned name matches the input
-2. **sdescs** — Match against visible characters' sdescs (partial matching, case-insensitive)
-3. **Ordinals** — `"2nd tall man"` uses the existing ordinal system (`get_search_query_replacement`)
-4. **Real keys** — Fall through to standard Evennia search (matches `.key` and aliases)
+1. **Magic keywords** — `me` / `self` resolve to the caller; `here` resolves to the caller's location. These short-circuit *before* the identity filter so they always work, regardless of permissions. (Without this shortcut the identity filter strips the caller from `super().search('me')` results because `is_identity_match(self, self, 'me')` is False, breaking `look me` for non-Builders.)
+2. **Assigned names** — Check the player's recognition memory for any character in the room whose assigned name matches the input
+3. **sdescs** — Match against visible characters' sdescs (partial matching, case-insensitive)
+4. **Ordinals** — `"2nd tall man"` uses the existing ordinal system (`get_search_query_replacement`)
+5. **Real keys** — Fall through to standard Evennia search (matches `.key` and aliases)
 
 ### Implementation Approach
 
