@@ -1777,3 +1777,131 @@ class TestCmdForgetPersona(TestCase):
         self._run(caller, "Nobody")
         msg = caller.msg.call_args[0][0]
         self.assertIn("don't remember anyone", msg)
+
+
+# ===================================================================
+# Passive recognition recency on room entry
+# ===================================================================
+
+
+class TestPassiveRecencyOnMove(TestCase):
+    """Walking into a room with a known target refreshes recency.
+
+    Exercises ``Character._refresh_recognition_recency`` end-to-end:
+    iterates the room's contents, computes Apparent UIDs, and calls
+    :func:`world.identity.bump_recognition_recency` for known UIDs.
+    """
+
+    def _bind_refresh(self, observer):
+        """Bind the real _refresh_recognition_recency to a mock character."""
+        from typeclasses.characters import Character
+
+        observer._refresh_recognition_recency = (
+            lambda: Character._refresh_recognition_recency(observer)
+        )
+
+    def _make_room(self, contents):
+        """Build a stand-in location with the given contents list."""
+        room = MagicMock()
+        room.key = "Plaza"
+        room.contents = contents
+        return room
+
+    def test_entry_with_known_target_bumps_recency(self):
+        """Known UID in room → last_seen advances after refresh."""
+        from datetime import datetime, timedelta
+        from world.identity import RECOGNITION_BUMP_THROTTLE_SECONDS
+
+        target = _make_character(
+            key="Jorge", sleeve_uid="uid-jorge"
+        )
+        target_uid = apparent_uid_for(target)
+
+        stale = datetime.utcnow() - timedelta(
+            seconds=RECOGNITION_BUMP_THROTTLE_SECONDS + 60
+        )
+        stale_iso = stale.strftime("%Y-%m-%dT%H:%M:%S")
+        memory = {
+            target_uid: {
+                "assigned_name": "Jorge",
+                "last_seen": stale_iso,
+                "times_seen": 1,
+                "location_last_seen": "OldRoom",
+                "sdesc_at_last_encounter": "old sdesc",
+                "lost_contact": False,
+            },
+        }
+        observer = _make_character(
+            key="Watcher",
+            sleeve_uid="uid-watcher",
+            recognition_memory=memory,
+        )
+        observer.location = self._make_room([observer, target])
+        self._bind_refresh(observer)
+
+        observer._refresh_recognition_recency()
+
+        self.assertNotEqual(memory[target_uid]["last_seen"], stale_iso)
+        self.assertEqual(memory[target_uid]["location_last_seen"], "Plaza")
+        # times_seen unchanged — this is passive perception, not remember.
+        self.assertEqual(memory[target_uid]["times_seen"], 1)
+
+    def test_entry_with_unknown_target_does_not_create_memory(self):
+        """Stranger in room → memory dict unchanged."""
+        target = _make_character(
+            key="Stranger", sleeve_uid="uid-stranger"
+        )
+        observer = _make_character(
+            key="Watcher",
+            sleeve_uid="uid-watcher",
+            recognition_memory={},
+        )
+        observer.location = self._make_room([observer, target])
+        self._bind_refresh(observer)
+
+        observer._refresh_recognition_recency()
+
+        self.assertEqual(observer.recognition_memory, {})
+
+    def test_disguised_target_does_not_bump_stale_uid(self):
+        """Target whose Apparent UID changed → no bump on the old UID."""
+        from datetime import datetime, timedelta
+        from world.identity import RECOGNITION_BUMP_THROTTLE_SECONDS
+
+        # We remember the target under an old UID, but their current
+        # Apparent UID is different (e.g. they put on a hood).
+        target = _make_character(
+            key="Jorge", sleeve_uid="uid-jorge"
+        )
+        current_uid = apparent_uid_for(target)
+        old_uid = "uid-jorge-undisguised-different"
+        self.assertNotEqual(current_uid, old_uid)
+
+        stale = datetime.utcnow() - timedelta(
+            seconds=RECOGNITION_BUMP_THROTTLE_SECONDS + 60
+        )
+        stale_iso = stale.strftime("%Y-%m-%dT%H:%M:%S")
+        memory = {
+            old_uid: {
+                "assigned_name": "Jorge",
+                "last_seen": stale_iso,
+                "times_seen": 1,
+                "location_last_seen": "OldRoom",
+                "sdesc_at_last_encounter": "old sdesc",
+                "lost_contact": False,
+            },
+        }
+        observer = _make_character(
+            key="Watcher",
+            sleeve_uid="uid-watcher",
+            recognition_memory=memory,
+        )
+        observer.location = self._make_room([observer, target])
+        self._bind_refresh(observer)
+
+        observer._refresh_recognition_recency()
+
+        # Old UID untouched — current sighting doesn't match it.
+        self.assertEqual(memory[old_uid]["last_seen"], stale_iso)
+        # Current UID was not added — helper never creates entries.
+        self.assertNotIn(current_uid, memory)

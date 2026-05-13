@@ -1062,3 +1062,105 @@ def mark_lost_contact_entries(
     return flipped
 
 
+#: Minimum seconds between passive recency bumps for the same Apparent UID
+#: per observer.  Prevents room ping-pong (or extended co-location across
+#: many ``at_post_move`` calls) from spamming AttributeProperty writes.
+#: 300s = 5 minutes; tunable in a balance pass.
+RECOGNITION_BUMP_THROTTLE_SECONDS: int = 300
+
+
+def bump_recognition_recency(
+    observer: Any,
+    target: Any,
+    apparent_uid: Any,
+    *,
+    now: Any = None,
+) -> bool:
+    """Refresh the recency fields on an existing recognition entry.
+
+    Passive perception model: when ``observer`` perceives ``target``
+    (currently invoked from ``Character.at_post_move`` for everyone in
+    the new room), this helper updates the *recency* fields on the
+    matching ``recognition_memory`` entry so ``memory`` / ``recall``
+    reflect the latest sighting and so
+    :func:`mark_lost_contact_entries` compares against last actual
+    sighting rather than last explicit ``remember`` invocation.
+
+    **Strictly opt-in for already-remembered UIDs.**  If
+    ``apparent_uid`` is not already a key in
+    ``observer.recognition_memory`` this helper is a no-op; it never
+    creates entries.  Entry creation remains the exclusive
+    responsibility of
+    :meth:`commands.CmdCharacter.CmdRemember._remember_target`.  This
+    guards against a target whom the observer has never named ever
+    appearing in their memory by way of passive perception.
+
+    Throttle: writes are skipped when the existing ``last_seen`` is
+    less than :data:`RECOGNITION_BUMP_THROTTLE_SECONDS` ago.  Missing
+    or malformed ``last_seen`` is treated as stale and the entry is
+    bumped immediately (with a warning logged for the malformed
+    case).
+
+    Fields written on a successful bump:
+
+    * ``last_seen`` — current ISO timestamp
+    * ``location_last_seen`` — observer's current room key
+    * ``sdesc_at_last_encounter`` — fresh snapshot of ``target.get_sdesc()``
+    * ``lost_contact`` — cleared to ``False`` (re-sighting clears the flag)
+
+    The ``times_seen`` counter is intentionally **not** incremented;
+    it tracks explicit ``remember`` invocations only — see the
+    spec's data-model block for the field-by-field semantics.
+
+    Args:
+        observer: Character whose ``recognition_memory`` is updated.
+        target: Character being perceived; used to snapshot the fresh
+            sdesc.
+        apparent_uid: Apparent UID computed for ``target`` from the
+            observer's vantage point.
+        now: Optional :class:`datetime.datetime` for tests; defaults
+            to ``datetime.utcnow()`` when omitted.
+
+    Returns:
+        ``True`` when the entry was bumped; ``False`` when the helper
+        was a no-op (UID not in memory, or throttle window not
+        elapsed).
+    """
+    from datetime import datetime
+
+    memory = getattr(observer, "recognition_memory", None) or {}
+    entry = memory.get(apparent_uid)
+    if entry is None:
+        return False
+
+    now_dt = now if now is not None else datetime.utcnow()
+    last_seen_iso = entry.get("last_seen") or ""
+    if last_seen_iso:
+        try:
+            then = datetime.strptime(
+                last_seen_iso, _RECOGNITION_TIMESTAMP_FMT
+            )
+        except ValueError:
+            logger.log_warn(
+                f"recognition_memory entry on {observer!r} "
+                f"(uid={apparent_uid}) has unparseable "
+                f"last_seen={last_seen_iso!r}; bumping anyway."
+            )
+        else:
+            elapsed = (now_dt - then).total_seconds()
+            if elapsed < RECOGNITION_BUMP_THROTTLE_SECONDS:
+                return False
+
+    location_name = (
+        observer.location.key if observer.location is not None else "unknown"
+    )
+
+    entry["last_seen"] = now_dt.strftime(_RECOGNITION_TIMESTAMP_FMT)
+    entry["location_last_seen"] = location_name
+    entry["sdesc_at_last_encounter"] = target.get_sdesc()
+    entry["lost_contact"] = False
+
+    # Reassign so the AttributeProperty persists the in-place mutation.
+    observer.recognition_memory = memory
+    return True
+

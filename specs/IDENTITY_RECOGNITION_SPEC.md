@@ -230,17 +230,26 @@ recognition_memory = {
 
         # Temporal context
         "first_seen": str,              # ISO timestamp of first encounter
-        "last_seen": str,               # ISO timestamp of most recent encounter
-        "times_seen": int,              # Total encounter count
+        "last_seen": str,               # ISO timestamp of most recent perception.
+                                        # Bumped passively on room entry (see
+                                        # §Memory Architecture) and on every
+                                        # explicit `remember`. Throttled to one
+                                        # write per RECOGNITION_BUMP_THROTTLE_SECONDS
+                                        # per UID per observer.
+        "times_seen": int,              # Count of explicit `remember` invocations
+                                        # for this entry. Does NOT track passive
+                                        # perception — see `last_seen` for recency.
 
         # Spatial context
         "location_first_seen": str,     # Room name/key where first encountered
-        "location_last_seen": str,      # Room name/key where last seen
+        "location_last_seen": str,      # Room name/key where last perceived
+                                        # (passive bump on room entry + explicit `remember`)
         "locations_seen": [str],        # All locations where encountered
 
         # Appearance snapshot
         "sdesc_at_first_encounter": str,  # What they looked like initially
         "sdesc_at_last_encounter": str,   # What they looked like most recently
+                                          # (passive bump on room entry + explicit `remember`)
 
         # Player-authored
         "notes": str,                   # Free-text notes (player-written)
@@ -269,7 +278,9 @@ recognition_memory = {
 
 This is stored as a db attribute on the Character (`recognition_memory` AttributeProperty), keyed by **Apparent UID**. See §Memory Architecture for the storage-location rationale and the planned migration to brain-organ storage. The `recent_interactions` list should be capped (e.g., last 20 interactions per entry) to prevent unbounded growth, with older interactions eligible for summarization or archival.
 
-**Orphaned entries (`lost_contact`):** A recognition entry whose Apparent UID has not matched any observable character within a configurable window (deferred to balance pass; provisional default: 30 in-game days, defined as `LOST_CONTACT_THRESHOLD_SECONDS` in `world/identity.py`) is marked `lost_contact = True`. The entry stays visible in `memory` and `recall` (player-authored notes are valuable lore even when the trail goes cold) and is rendered with a "(lost contact)" annotation. The flip is performed lazily at render time by `world/identity.py:mark_lost_contact_entries`, invoked from the `memory` and `recall` commands via `commands/CmdCharacter._refresh_lost_contact` immediately before iterating recognition memory; there is no background scan. The inverse — clearing the flag back to `False` on re-meet — is handled by the recognition writer in `_remember_target`. A future player command may allow explicit pruning of lost-contact entries; auto-pruning is intentionally **not** done.
+**Orphaned entries (`lost_contact`):** A recognition entry whose Apparent UID has not matched any observable character within a configurable window (deferred to balance pass; provisional default: 30 in-game days, defined as `LOST_CONTACT_THRESHOLD_SECONDS` in `world/identity.py`) is marked `lost_contact = True`. The entry stays visible in `memory` and `recall` (player-authored notes are valuable lore even when the trail goes cold) and is rendered with a "(lost contact)" annotation. The flip is performed lazily at render time by `world/identity.py:mark_lost_contact_entries`, invoked from the `memory` and `recall` commands via `commands/CmdCharacter._refresh_lost_contact` immediately before iterating recognition memory; there is no background scan. The inverse — clearing the flag back to `False` on re-meet — is handled by `world/identity.py:bump_recognition_recency` (passive perception path) and by the recognition writer in `_remember_target` (explicit `remember` path). A future player command may allow explicit pruning of lost-contact entries; auto-pruning is intentionally **not** done.
+
+**Passive recency on perception:** Recency fields on existing recognition entries (`last_seen`, `location_last_seen`, `sdesc_at_last_encounter`) are refreshed without an explicit `remember` whenever the observer perceives a target whose Apparent UID is already in their memory. This is implemented by `world/identity.py:bump_recognition_recency`, invoked from `Character.at_post_move` via `_refresh_recognition_recency`: on every room entry the observer scans the new room's contents and bumps each known UID. Writes are throttled to one bump per `RECOGNITION_BUMP_THROTTLE_SECONDS` (provisional 300s = 5 minutes) per UID per observer, so extended co-location does not spam AttributeProperty writes. The helper is **strictly opt-in for already-remembered UIDs** — it never creates entries; entry creation remains the exclusive responsibility of the `remember` command. The `times_seen` counter is intentionally **not** incremented by passive perception; it counts explicit `remember` invocations only. Stealth/sneaking/hidden mechanics are a known future delta — when those land, they will need to suppress this hook for hidden targets.
 
 ### Remembering Names
 
@@ -1138,7 +1149,8 @@ Players should be prompted to customize their sdesc on next login if defaults we
 - `db.is_disguise_item` flag on items — Phase 5 perception bonus hook (defined but inert in Phase 3) — **shipped (flag schema only)**
 - Hook `get_sdesc()` / `get_display_name()` to consume override axes and Apparent UID — **shipped** (`typeclasses/characters.py:946,989`)
 - Recognition memory re-keyed on Apparent UID — **shipped**
-- Orphaned-entry handling: `lost_contact` boolean flag + render annotation in `memory` / `recall`; never auto-pruned — **shipped**. Lazy evaluation at render time: `world/identity.py:mark_lost_contact_entries` is invoked by `commands/CmdCharacter._refresh_lost_contact` from `CmdMemory.func` and `CmdRecall.func`, flipping `lost_contact = True` for entries whose Apparent UID is not currently visible and whose `last_seen` is older than `LOST_CONTACT_THRESHOLD_SECONDS` (`world/identity.py`; provisional 30 in-game days, balance-pass tuning value). The inverse — clearing back to `False` — is handled by the existing recognition writer in `_remember_target` on re-meet. Render annotation `|y(lost contact)|n` appears next to the assigned name in both `memory` (table cell) and `recall` (entry header).
+- Orphaned-entry handling: `lost_contact` boolean flag + render annotation in `memory` / `recall`; never auto-pruned — **shipped**. Lazy evaluation at render time: `world/identity.py:mark_lost_contact_entries` is invoked by `commands/CmdCharacter._refresh_lost_contact` from `CmdMemory.func` and `CmdRecall.func`, flipping `lost_contact = True` for entries whose Apparent UID is not currently visible and whose `last_seen` is older than `LOST_CONTACT_THRESHOLD_SECONDS` (`world/identity.py`; provisional 30 in-game days, balance-pass tuning value). The inverse — clearing back to `False` — is handled by the existing recognition writer in `_remember_target` on re-meet **and** by the passive recency bumper `world/identity.py:bump_recognition_recency` whenever a remembered observer perceives a remembered target. Render annotation `|y(lost contact)|n` appears next to the assigned name in both `memory` (table cell) and `recall` (entry header).
+- Passive recognition recency on perception — **shipped**. `world/identity.py:bump_recognition_recency` refreshes `last_seen` / `location_last_seen` / `sdesc_at_last_encounter` (but not `times_seen`) for already-remembered targets, throttled by `RECOGNITION_BUMP_THROTTLE_SECONDS` (300s). Wired into `typeclasses/characters.py:Character.at_post_move` via `_refresh_recognition_recency`, which iterates the new room's `Character` contents and bumps each remembered target. Stealth/sneaking/hidden suppression is a known future-work delta.
 - Full keyword catalog available regardless of character gender (override bypasses gender filter) — **shipped via `appear <keyword>` validation**
 - Available to **all characters** (no access level restriction)
 - Persona layer (player-private ergonomics) — **shipped (`appear-persona-cluster`)**:
