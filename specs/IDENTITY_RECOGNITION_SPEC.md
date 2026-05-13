@@ -635,7 +635,6 @@ Adjective selection is implemented in `world/identity.py:get_disguise_adjective`
 | `hooded` | 4 |
 | `goggled` | 5 |
 | `veiled` | 6 |
-| `wigged` | 7 |
 
 Adjectives missing from the priority table are admitted at rank 999 with an alphabetical tiebreak — authors can ship new disguise types via item attribute alone, without editing the priority table.
 
