@@ -703,7 +703,6 @@ _DISGUISE_ADJECTIVE_PRIORITY: dict[str, int] = {
     "hooded": 4,
     "goggled": 5,
     "veiled": 6,
-    "wigged": 7,
 }
 
 #: Sentinel rank for adjectives missing from the priority table.
