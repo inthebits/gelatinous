@@ -726,6 +726,130 @@ class TestMemoryCommand(TestCase):
 
 
 # ===================================================================
+# lost_contact render annotation
+# ===================================================================
+
+
+class TestLostContactRenderAnnotation(TestCase):
+    """Verify ``(lost contact)`` annotation appears in memory/recall.
+
+    The flip itself is exercised by
+    :class:`world.tests.test_identity.TestMarkLostContactEntries`;
+    these tests only assert the render layer surfaces the flag.
+    """
+
+    def test_recall_annotates_lost_contact_named_entry(self):
+        """recall on a stale named entry surfaces the |y(lost contact)|n tag."""
+        from commands.CmdCharacter import CmdRecall
+
+        memory = _seed_memory()
+        memory["uid-target"]["lost_contact"] = True
+        caller = _make_character(
+            key="Observer",
+            sleeve_uid="uid-observer",
+            recognition_memory=memory,
+        )
+
+        cmd = CmdRecall()
+        cmd.caller = caller
+        cmd._render_entry(caller, memory["uid-target"])
+
+        msg_text = caller.msg.call_args[0][0]
+        self.assertIn("Big J", msg_text)
+        self.assertIn("(lost contact)", msg_text)
+
+    def test_recall_annotates_lost_contact_unnamed_entry(self):
+        """The 'no name' header also gains the annotation when stale."""
+        from commands.CmdCharacter import CmdRecall
+
+        memory = _seed_memory()
+        memory["uid-target"]["assigned_name"] = ""
+        memory["uid-target"]["lost_contact"] = True
+        caller = _make_character(
+            key="Observer",
+            sleeve_uid="uid-observer",
+            recognition_memory=memory,
+        )
+
+        cmd = CmdRecall()
+        cmd.caller = caller
+        cmd._render_entry(caller, memory["uid-target"])
+
+        msg_text = caller.msg.call_args[0][0]
+        self.assertIn("don't have a name", msg_text)
+        self.assertIn("(lost contact)", msg_text)
+
+    def test_recall_no_annotation_when_flag_false(self):
+        """Fresh entries do not gain the annotation."""
+        from commands.CmdCharacter import CmdRecall
+
+        memory = _seed_memory()
+        # lost_contact already False from _seed_memory
+        caller = _make_character(
+            key="Observer",
+            sleeve_uid="uid-observer",
+            recognition_memory=memory,
+        )
+
+        cmd = CmdRecall()
+        cmd.caller = caller
+        cmd._render_entry(caller, memory["uid-target"])
+
+        msg_text = caller.msg.call_args[0][0]
+        self.assertNotIn("(lost contact)", msg_text)
+
+    def test_memory_annotates_lost_contact_entry(self):
+        """memory table appends the tag to the |wName|n cell for stale rows."""
+        from commands.CmdCharacter import CmdMemory
+
+        caller = _make_character(
+            key="Observer",
+            sleeve_uid="uid-observer",
+            recognition_memory={
+                "uid-stale": {
+                    "assigned_name": "Ghost",
+                    "last_seen": "2026-01-01T00:00:00",
+                    "sdesc_at_last_encounter": "a faded face",
+                    "location_last_seen": "Old Bar",
+                    "lost_contact": True,
+                },
+                "uid-fresh": {
+                    "assigned_name": "Pal",
+                    "last_seen": "2026-05-12T00:00:00",
+                    "sdesc_at_last_encounter": "a friend",
+                    "location_last_seen": "Bar",
+                    "lost_contact": False,
+                },
+            },
+        )
+        # Suppress _refresh_lost_contact's room scan — we want to assert
+        # the render annotation in isolation, with flags as seeded.
+        with patch(
+            "commands.CmdCharacter._refresh_lost_contact",
+            lambda _caller: None,
+        ):
+            cmd = CmdMemory()
+            cmd.caller = caller
+            cmd.args = ""
+            cmd.func()
+
+        msg_text = caller.msg.call_args[0][0]
+        self.assertIn("Ghost", msg_text)
+        # EvTable inserts ANSI codes / line wraps inside the cell, so the
+        # literal "(lost contact)" substring won't be contiguous.  Assert
+        # both tokens land in the Ghost row but neither in the Pal row.
+        ghost_line = next(
+            line for line in msg_text.splitlines() if "Ghost" in line
+        )
+        self.assertIn("lost", ghost_line)
+        self.assertIn("contact)", ghost_line)
+        for line in msg_text.splitlines():
+            if "Pal" in line and "Ghost" not in line:
+                self.assertNotIn("lost", line)
+                self.assertNotIn("contact)", line)
+
+
+# ===================================================================
 # @shortdesc — custom keyword acceptance
 # ===================================================================
 

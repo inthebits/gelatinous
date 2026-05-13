@@ -1513,6 +1513,31 @@ def _format_relative_time(iso_timestamp):
         return iso_timestamp
 
 
+def _refresh_lost_contact(caller):
+    """Flip ``lost_contact`` on stale recognition entries before rendering.
+
+    Lazy, render-time pattern (see
+    :func:`world.identity.mark_lost_contact_entries`).  Gathers the
+    Apparent UIDs currently visible in the caller's room so the helper
+    can skip entries whose subjects are right in front of the caller.
+
+    Safe to call when ``caller`` has no location or no recognition
+    memory; the underlying helper short-circuits cleanly.
+    """
+    from world.identity import get_apparent_uid, mark_lost_contact_entries
+    from typeclasses.characters import Character
+
+    location = getattr(caller, "location", None)
+    current_uids = set()
+    if location is not None:
+        for obj in location.contents:
+            if isinstance(obj, Character) and obj is not caller:
+                uid = get_apparent_uid(obj)
+                if uid is not None:
+                    current_uids.add(uid)
+    mark_lost_contact_entries(caller, current_uids)
+
+
 class CmdForget(Command):
     """
     Forget the name you remembered for someone, or delete a saved persona.
@@ -1696,6 +1721,12 @@ class CmdRecall(Command):
 
         from typeclasses.characters import Character
 
+        # Lazy lost-contact evaluation: flip the flag on stale entries
+        # before any rendering so the (lost contact) annotation is
+        # current at display time.  Re-meets clear the flag separately
+        # via the recognition writer; this helper only flips True.
+        _refresh_lost_contact(caller)
+
         # Try visible-target resolution first
         target = caller.search(args, quiet=True)
         if target:
@@ -1786,6 +1817,9 @@ class CmdMemory(Command):
         if args:
             caller.msg("Usage: memory  (no arguments)")
             return
+
+        # Lazy lost-contact evaluation — see CmdRecall.func.
+        _refresh_lost_contact(caller)
 
         memory = caller.recognition_memory or {}
 

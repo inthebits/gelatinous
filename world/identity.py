@@ -964,3 +964,101 @@ def get_apparent_gender(char: Any) -> str:
         return GENDER_MAP.get(sex_value, "neutral")
     return "neutral"
 
+
+# ---------------------------------------------------------------------
+# Lost-contact orphan marking
+# ---------------------------------------------------------------------
+
+#: Inactivity threshold for marking recognition entries as ``lost_contact``.
+#: Provisional 30 in-game days; this is a balance-pass tuning value and
+#: lives here (the recognition domain) rather than in
+#: ``world/combat/constants.py``.
+LOST_CONTACT_THRESHOLD_SECONDS: int = 30 * 24 * 60 * 60
+
+#: Format used by ``recognition_memory`` entries for ``first_seen`` /
+#: ``last_seen`` timestamps; defined alongside the recognition writers
+#: in :mod:`commands.CmdCharacter`.
+_RECOGNITION_TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%S"
+
+
+def mark_lost_contact_entries(
+    observer: Any,
+    current_room_uids: Any,
+    *,
+    now: Any = None,
+) -> int:
+    """Flip ``lost_contact`` on stale recognition entries.
+
+    Lazy evaluation pattern: callers invoke this from the
+    ``memory`` / ``recall`` command renderers (or any other surface
+    that displays recognition data) immediately before iterating
+    the observer's ``recognition_memory``.  No background script;
+    no per-look hook; the flag only updates when the player would
+    notice it.
+
+    Marking rule: an entry is marked ``lost_contact = True`` when
+
+    * its Apparent UID is **not** in ``current_room_uids`` (no one
+      currently visible matches that signature), AND
+    * its ``last_seen`` timestamp is older than
+      :data:`LOST_CONTACT_THRESHOLD_SECONDS` ago.
+
+    The inverse — clearing the flag back to ``False`` on re-meet —
+    is handled by the recognition writer in
+    :meth:`commands.CmdCharacter.CmdRemember._remember_target`,
+    which always writes ``lost_contact = False`` when it updates
+    an existing entry.  This helper therefore does not need to
+    reset the flag itself; it only flips True.
+
+    Args:
+        observer: Character whose ``recognition_memory`` is scanned.
+        current_room_uids: Iterable of Apparent UIDs currently visible
+            in the observer's room (or any view; the helper is
+            indifferent to the source).
+        now: Optional :class:`datetime.datetime` for tests; defaults
+            to ``datetime.utcnow()`` when omitted.
+
+    Returns:
+        Number of entries newly flipped to ``True``.  Returns ``0``
+        when ``observer`` has no memory or the memory is empty.
+    """
+    from datetime import datetime
+
+    memory = getattr(observer, "recognition_memory", None) or {}
+    if not memory:
+        return 0
+
+    current = set(current_room_uids or ())
+    now = now if now is not None else datetime.utcnow()
+    threshold_seconds = LOST_CONTACT_THRESHOLD_SECONDS
+
+    flipped = 0
+    for uid, entry in memory.items():
+        # Visible right now → skip; the re-meet path clears the flag.
+        if uid in current:
+            continue
+        # Already flagged → no-op, don't double-count.
+        if entry.get("lost_contact", False):
+            continue
+        last_seen_iso = entry.get("last_seen") or ""
+        if not last_seen_iso:
+            continue
+        try:
+            then = datetime.strptime(
+                last_seen_iso, _RECOGNITION_TIMESTAMP_FMT
+            )
+        except ValueError:
+            # Malformed timestamp — leave the entry alone, log a hint.
+            logger.log_warn(
+                f"recognition_memory entry on {observer!r} (uid={uid}) "
+                f"has unparseable last_seen={last_seen_iso!r}; skipping "
+                f"lost_contact evaluation."
+            )
+            continue
+        if (now - then).total_seconds() > threshold_seconds:
+            entry["lost_contact"] = True
+            flipped += 1
+
+    return flipped
+
+
