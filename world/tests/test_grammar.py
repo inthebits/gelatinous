@@ -17,8 +17,10 @@ from world.grammar import (
     capitalize_first,
     conjugate_third_person,
     get_article,
+    is_pluralia_tantum,
     possessive,
     transform_pronoun,
+    with_article,
 )
 
 
@@ -168,6 +170,84 @@ class TestArticles(TestCase):
 
     def test_definite_ignores_phonetics(self) -> None:
         self.assertEqual(get_article("athletic dame", definite=True), "the")
+
+
+# -----------------------------------------------------------------------
+# Pluralia-Tantum Detection
+# -----------------------------------------------------------------------
+
+
+class TestIsPluraliaTantum(TestCase):
+    """Tests for ``is_pluralia_tantum``."""
+
+    def test_pluralia_tantum_jeans(self) -> None:
+        self.assertTrue(is_pluralia_tantum("blue jeans"))
+
+    def test_pluralia_tantum_boots(self) -> None:
+        self.assertTrue(is_pluralia_tantum("black leather combat boots"))
+
+    def test_pluralia_tantum_glasses(self) -> None:
+        self.assertTrue(is_pluralia_tantum("aviator sunglasses"))
+
+    def test_pluralia_tantum_scissors(self) -> None:
+        self.assertTrue(is_pluralia_tantum("scissors"))
+
+    def test_not_pluralia_tantum_trenchcoat(self) -> None:
+        self.assertFalse(is_pluralia_tantum("Black Trenchcoat"))
+
+    def test_pluralia_tantum_ignores_prep_phrase(self) -> None:
+        """Head noun is the wearer, not the garment."""
+        self.assertFalse(is_pluralia_tantum("stocky droog in blue jeans"))
+
+    def test_pluralia_tantum_case_insensitive(self) -> None:
+        self.assertTrue(is_pluralia_tantum("Blue JEANS"))
+
+
+# -----------------------------------------------------------------------
+# Article Composition
+# -----------------------------------------------------------------------
+
+
+class TestWithArticle(TestCase):
+    """Tests for ``with_article``."""
+
+    def test_with_article_pluralia_tantum_indefinite(self) -> None:
+        """Pluralia-tantum nouns receive no indefinite article."""
+        self.assertEqual(with_article("blue jeans"), "blue jeans")
+
+    def test_with_article_pluralia_tantum_definite(self) -> None:
+        self.assertEqual(
+            with_article("blue jeans", definite=True), "the blue jeans"
+        )
+
+    def test_with_article_singular_a(self) -> None:
+        self.assertEqual(
+            with_article("Black Trenchcoat"), "a Black Trenchcoat"
+        )
+
+    def test_with_article_singular_an(self) -> None:
+        self.assertEqual(
+            with_article("Orange Jumpsuit"), "an Orange Jumpsuit"
+        )
+
+    def test_with_article_definite(self) -> None:
+        self.assertEqual(
+            with_article("Black Trenchcoat", definite=True),
+            "the Black Trenchcoat",
+        )
+
+    def test_with_article_full_sdesc_with_garment(self) -> None:
+        """Regression: look-header sdesc with prep-phrase still gets 'a'."""
+        self.assertEqual(
+            with_article("stocky droog in blue jeans"),
+            "a stocky droog in blue jeans",
+        )
+
+    def test_with_article_starts_with_vowel_pluralia_tantum(self) -> None:
+        """Pluralia tantum overrides phoneme-based 'an' selection."""
+        self.assertEqual(
+            with_article("orange overalls"), "orange overalls"
+        )
 
 
 # -----------------------------------------------------------------------

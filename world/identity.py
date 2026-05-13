@@ -21,7 +21,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from evennia.scripts.scripts import DefaultScript
 from evennia.utils import logger
 
-from world.grammar import GENDER_MAP, get_article
+from world.grammar import GENDER_MAP, with_article
 
 if TYPE_CHECKING:
     from evennia.accounts.models import AccountDB
@@ -566,8 +566,7 @@ def format_wielded_feature(item_name: str) -> str:
     Returns:
         Feature clause, e.g. ``"wielding a Kitchen Knife"``.
     """
-    article = get_article(item_name)
-    return f"wielding {article} {item_name}"
+    return f"wielding {with_article(item_name)}"
 
 
 def format_clothing_feature(item_name: str) -> str:
@@ -579,8 +578,7 @@ def format_clothing_feature(item_name: str) -> str:
     Returns:
         Feature clause, e.g. ``"in a Black Trenchcoat"``.
     """
-    article = get_article(item_name)
-    return f"in {article} {item_name}"
+    return f"in {with_article(item_name)}"
 
 
 def format_hair_feature(
