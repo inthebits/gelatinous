@@ -1308,3 +1308,160 @@ class TestGetApparentGender(TestCase):
         )
         self.assertEqual(get_apparent_gender(char), "neutral")
 
+
+
+# ===================================================================
+# mark_lost_contact_entries — lazy orphan marking
+# ===================================================================
+
+
+class TestMarkLostContactEntries(TestCase):
+    """Stale recognition entries get ``lost_contact = True`` lazily."""
+
+    def _make_observer(self, memory):
+        """Build a stand-in observer with a ``recognition_memory`` dict."""
+        observer = MagicMock()
+        observer.recognition_memory = memory
+        return observer
+
+    def _entry(self, *, last_seen, lost_contact=False):
+        """Minimal recognition entry shaped like production writes."""
+        return {
+            "assigned_name": "Spartacus",
+            "last_seen": last_seen,
+            "lost_contact": lost_contact,
+        }
+
+    def test_flips_stale_entry_not_in_room(self):
+        """UID not visible + last_seen older than threshold → flipped."""
+        from datetime import datetime, timedelta
+        from world.identity import (
+            LOST_CONTACT_THRESHOLD_SECONDS,
+            mark_lost_contact_entries,
+        )
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        stale = now - timedelta(seconds=LOST_CONTACT_THRESHOLD_SECONDS + 60)
+        memory = {
+            "uid-stale": self._entry(
+                last_seen=stale.strftime("%Y-%m-%dT%H:%M:%S")
+            ),
+        }
+        observer = self._make_observer(memory)
+
+        flipped = mark_lost_contact_entries(observer, set(), now=now)
+
+        self.assertEqual(flipped, 1)
+        self.assertTrue(memory["uid-stale"]["lost_contact"])
+
+    def test_does_not_flip_recent_entry(self):
+        """Entry within threshold → no flip even when not visible."""
+        from datetime import datetime, timedelta
+        from world.identity import (
+            LOST_CONTACT_THRESHOLD_SECONDS,
+            mark_lost_contact_entries,
+        )
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        fresh = now - timedelta(seconds=LOST_CONTACT_THRESHOLD_SECONDS - 60)
+        memory = {
+            "uid-fresh": self._entry(
+                last_seen=fresh.strftime("%Y-%m-%dT%H:%M:%S")
+            ),
+        }
+        observer = self._make_observer(memory)
+
+        flipped = mark_lost_contact_entries(observer, set(), now=now)
+
+        self.assertEqual(flipped, 0)
+        self.assertFalse(memory["uid-fresh"]["lost_contact"])
+
+    def test_does_not_flip_visible_entry(self):
+        """Even an ancient entry stays unflagged when its UID is visible."""
+        from datetime import datetime, timedelta
+        from world.identity import (
+            LOST_CONTACT_THRESHOLD_SECONDS,
+            mark_lost_contact_entries,
+        )
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        ancient = now - timedelta(
+            seconds=LOST_CONTACT_THRESHOLD_SECONDS * 10
+        )
+        memory = {
+            "uid-here": self._entry(
+                last_seen=ancient.strftime("%Y-%m-%dT%H:%M:%S")
+            ),
+        }
+        observer = self._make_observer(memory)
+
+        flipped = mark_lost_contact_entries(
+            observer, {"uid-here"}, now=now
+        )
+
+        self.assertEqual(flipped, 0)
+        self.assertFalse(memory["uid-here"]["lost_contact"])
+
+    def test_already_flagged_entry_not_double_counted(self):
+        """Re-running on a flagged entry is a no-op return value."""
+        from datetime import datetime, timedelta
+        from world.identity import (
+            LOST_CONTACT_THRESHOLD_SECONDS,
+            mark_lost_contact_entries,
+        )
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        stale = now - timedelta(seconds=LOST_CONTACT_THRESHOLD_SECONDS + 60)
+        memory = {
+            "uid-already": self._entry(
+                last_seen=stale.strftime("%Y-%m-%dT%H:%M:%S"),
+                lost_contact=True,
+            ),
+        }
+        observer = self._make_observer(memory)
+
+        flipped = mark_lost_contact_entries(observer, set(), now=now)
+
+        self.assertEqual(flipped, 0)
+        # State preserved.
+        self.assertTrue(memory["uid-already"]["lost_contact"])
+
+    def test_empty_memory_returns_zero(self):
+        from world.identity import mark_lost_contact_entries
+
+        observer = self._make_observer({})
+        self.assertEqual(mark_lost_contact_entries(observer, set()), 0)
+
+    def test_observer_without_memory_attr_returns_zero(self):
+        from world.identity import mark_lost_contact_entries
+
+        observer = MagicMock()
+        observer.recognition_memory = None
+        self.assertEqual(mark_lost_contact_entries(observer, set()), 0)
+
+    def test_unparseable_timestamp_skipped(self):
+        """Malformed last_seen is skipped, not flipped."""
+        from world.identity import mark_lost_contact_entries
+
+        memory = {
+            "uid-bad": self._entry(last_seen="not-a-timestamp"),
+        }
+        observer = self._make_observer(memory)
+
+        flipped = mark_lost_contact_entries(observer, set())
+
+        self.assertEqual(flipped, 0)
+        self.assertFalse(memory["uid-bad"]["lost_contact"])
+
+    def test_missing_last_seen_skipped(self):
+        from world.identity import mark_lost_contact_entries
+
+        memory = {
+            "uid-empty": {"assigned_name": "X", "lost_contact": False},
+        }
+        observer = self._make_observer(memory)
+
+        flipped = mark_lost_contact_entries(observer, set())
+
+        self.assertEqual(flipped, 0)
+        self.assertFalse(memory["uid-empty"]["lost_contact"])
