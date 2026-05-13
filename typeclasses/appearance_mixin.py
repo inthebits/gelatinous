@@ -360,7 +360,7 @@ class AppearanceMixin:
         parts = []
 
         # 1. Character name (header) + main description (no blank line between)
-        name_and_desc = [self.get_display_name(looker)]
+        name_and_desc = [self.get_look_header(looker)]
         if self.db.desc:
             # Initial description should NOT have skintone applied
             processed_desc = self._process_description_variables(

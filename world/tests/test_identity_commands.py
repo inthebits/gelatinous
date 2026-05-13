@@ -1905,3 +1905,138 @@ class TestPassiveRecencyOnMove(TestCase):
         self.assertEqual(memory[old_uid]["last_seen"], stale_iso)
         # Current UID was not added — helper never creates entries.
         self.assertNotIn(current_uid, memory)
+
+
+class TestGetLookHeader(TestCase):
+    """``Character.get_look_header`` enriches the appearance header line.
+
+    Adds a ``"({article} {sdesc})"`` parenthetical when the looker has a
+    name to attach to it (own real name when looking at self, or an
+    assigned recognition name for the target's Apparent UID).  Strangers
+    delegate to ``get_display_name`` to avoid duplication.
+    """
+
+    def _bind_look_header(self, char):
+        """Bind the real ``get_look_header`` to a mock character."""
+        from typeclasses.characters import Character
+
+        char.get_look_header = (
+            lambda looker=None, **kw: Character.get_look_header(
+                char, looker, **kw
+            )
+        )
+
+    def test_no_looker_returns_key(self):
+        char = _make_character(key="Jorge", sleeve_uid="uid-jorge")
+        self._bind_look_header(char)
+        self.assertEqual(char.get_look_header(None), "Jorge")
+
+    def test_self_look_includes_own_sdesc(self):
+        char = _make_character(
+            key="Daiimus",
+            sex="male",
+            sleeve_uid="uid-d",
+            height="tall",
+            build="lean",
+        )
+        self._bind_look_header(char)
+        header = char.get_look_header(char)
+        self.assertTrue(header.startswith("Daiimus ("))
+        self.assertTrue(header.endswith(")"))
+        # Sdesc body should appear inside the parens.
+        sdesc = char.get_sdesc()
+        self.assertIn(sdesc, header)
+
+    def test_self_look_falls_back_when_sdesc_is_key(self):
+        """Pre-chargen (no height/build) → no parenthetical."""
+        char = _make_character(
+            key="Newbie",
+            sleeve_uid="uid-newbie",
+            height=None,
+            build=None,
+        )
+        self._bind_look_header(char)
+        # Sanity: get_sdesc collapses to key here.
+        self.assertEqual(char.get_sdesc(), "Newbie")
+        self.assertEqual(char.get_look_header(char), "Newbie")
+
+    def test_recognized_target_includes_assigned_name_and_sdesc(self):
+        target = _make_character(
+            key="Jorge Jackson",
+            sex="male",
+            sleeve_uid="uid-jorge",
+            height="tall",
+            build="lean",
+        )
+        self._bind_look_header(target)
+        target_uid = apparent_uid_for(target)
+        memory = {
+            target_uid: {
+                "assigned_name": "Batman",
+                "last_seen": "2025-01-01T00:00:00",
+                "times_seen": 1,
+                "location_last_seen": "Cave",
+                "sdesc_at_last_encounter": "tall man",
+                "lost_contact": False,
+            },
+        }
+        looker = _make_character(
+            key="Watcher",
+            sleeve_uid="uid-watcher",
+            recognition_memory=memory,
+        )
+        header = target.get_look_header(looker)
+        self.assertTrue(header.startswith("Batman ("))
+        self.assertTrue(header.endswith(")"))
+        self.assertIn(target.get_sdesc(), header)
+
+    def test_unrecognized_target_returns_plain_sdesc(self):
+        """Stranger → exact same string as ``get_display_name``."""
+        target = _make_character(
+            key="Stranger",
+            sex="male",
+            sleeve_uid="uid-stranger",
+            height="tall",
+            build="lean",
+        )
+        self._bind_look_header(target)
+        looker = _make_character(
+            key="Watcher",
+            sleeve_uid="uid-watcher",
+            recognition_memory={},
+        )
+        self.assertEqual(
+            target.get_look_header(looker),
+            target.get_display_name(looker),
+        )
+        # And no parenthetical was tacked on.
+        self.assertNotIn("(", target.get_look_header(looker))
+
+    def test_recognized_target_omits_parenthetical_when_sdesc_is_key(self):
+        """Recognized but pre-chargen target → just the assigned name."""
+        target = _make_character(
+            key="Newbie",
+            sleeve_uid="uid-newbie",
+            height=None,
+            build=None,
+        )
+        self._bind_look_header(target)
+        target_uid = apparent_uid_for(target)
+        memory = {
+            target_uid: {
+                "assigned_name": "Friend",
+                "last_seen": "2025-01-01T00:00:00",
+                "times_seen": 1,
+                "location_last_seen": "Plaza",
+                "sdesc_at_last_encounter": "Newbie",
+                "lost_contact": False,
+            },
+        }
+        looker = _make_character(
+            key="Watcher",
+            sleeve_uid="uid-watcher",
+            recognition_memory=memory,
+        )
+        # Sanity: sdesc collapses to key.
+        self.assertEqual(target.get_sdesc(), "Newbie")
+        self.assertEqual(target.get_look_header(looker), "Friend")
