@@ -1042,6 +1042,69 @@ class Character(
         article = get_article(sdesc)
         return f"{article} {sdesc}"
 
+    def get_look_header(self, looker=None, **kwargs):
+        """Return the appearance-header form of this character's name.
+
+        Used by ``return_appearance`` to render the first line of a
+        ``look <character>`` output.  Richer than
+        :meth:`get_display_name` because it appends the composed sdesc
+        in parentheses when there is a name to attach it to:
+
+        - ``looker is None`` → ``self.key`` (no observer context).
+        - ``looker is self`` → ``"{key} ({article} {sdesc})"`` so the
+          player sees their own current sdesc when looking at
+          themselves.
+        - looker has an assigned name for our Apparent UID →
+          ``"{assigned} ({article} {sdesc})"``.
+        - Otherwise → identical to :meth:`get_display_name` (just the
+          articled sdesc; strangers don't get a redundant parenthetical).
+
+        The parenthetical is omitted whenever :meth:`get_sdesc` falls
+        back to ``self.key`` (pre-chargen characters with no
+        height/build) so we don't render ``Name (Name)``.
+
+        Args:
+            looker: The character observing this character, or ``None``.
+            **kwargs: Reserved for future expansion / hook symmetry.
+
+        Returns:
+            Display header string for the appearance pipeline.
+        """
+        if looker is None:
+            return self.key
+
+        sdesc = self.get_sdesc()
+
+        # Determine the leading name token.
+        if looker is self:
+            name = self.key
+        else:
+            from world.identity import get_apparent_uid
+
+            name = None
+            apparent_uid = get_apparent_uid(self)
+            if apparent_uid is not None and hasattr(
+                looker, "recognition_memory"
+            ):
+                memory = looker.recognition_memory
+                if memory and apparent_uid in memory:
+                    assigned = memory[apparent_uid].get("assigned_name")
+                    if assigned:
+                        name = assigned
+            # Stranger: defer to the standard display name (article + sdesc)
+            # without a parenthetical to avoid noisy duplication.
+            if name is None:
+                return self.get_display_name(looker, **kwargs)
+
+        # If sdesc collapsed to self.key (pre-chargen), don't duplicate.
+        if sdesc == self.key:
+            return name
+
+        from world.grammar import get_article
+
+        article = get_article(sdesc)
+        return f"{name} ({article} {sdesc})"
+
     def at_post_move(self, source_location, **kwargs):
         """Hook called after this character lands in a new location.
 
