@@ -1465,3 +1465,259 @@ class TestMarkLostContactEntries(TestCase):
 
         self.assertEqual(flipped, 0)
         self.assertFalse(memory["uid-empty"]["lost_contact"])
+
+
+# ===================================================================
+# bump_recognition_recency — passive perception recency refresh
+# ===================================================================
+
+
+class TestBumpRecognitionRecency(TestCase):
+    """Passive perception updates recency fields on existing entries."""
+
+    TS_FMT = "%Y-%m-%dT%H:%M:%S"
+
+    def _make_observer(self, memory, *, location_key="Plaza"):
+        observer = MagicMock()
+        observer.recognition_memory = memory
+        observer.location.key = location_key
+        return observer
+
+    def _make_target(self, *, sdesc="a tall lean droog"):
+        target = MagicMock()
+        target.get_sdesc.return_value = sdesc
+        return target
+
+    def _entry(self, *, last_seen, lost_contact=False, sdesc="old sdesc"):
+        return {
+            "assigned_name": "Spartacus",
+            "last_seen": last_seen,
+            "times_seen": 3,
+            "location_last_seen": "OldRoom",
+            "sdesc_at_last_encounter": sdesc,
+            "lost_contact": lost_contact,
+        }
+
+    def test_bump_updates_recency_fields(self):
+        from datetime import datetime, timedelta
+        from world.identity import (
+            RECOGNITION_BUMP_THROTTLE_SECONDS,
+            bump_recognition_recency,
+        )
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        stale = now - timedelta(
+            seconds=RECOGNITION_BUMP_THROTTLE_SECONDS + 60
+        )
+        memory = {
+            "uid-known": self._entry(last_seen=stale.strftime(self.TS_FMT)),
+        }
+        observer = self._make_observer(memory, location_key="NewRoom")
+        target = self._make_target(sdesc="a tall lean masked droog")
+
+        result = bump_recognition_recency(
+            observer, target, "uid-known", now=now
+        )
+
+        self.assertTrue(result)
+        entry = memory["uid-known"]
+        self.assertEqual(entry["last_seen"], now.strftime(self.TS_FMT))
+        self.assertEqual(entry["location_last_seen"], "NewRoom")
+        self.assertEqual(
+            entry["sdesc_at_last_encounter"], "a tall lean masked droog"
+        )
+        self.assertFalse(entry["lost_contact"])
+
+    def test_bump_clears_lost_contact_flag(self):
+        from datetime import datetime, timedelta
+        from world.identity import (
+            RECOGNITION_BUMP_THROTTLE_SECONDS,
+            bump_recognition_recency,
+        )
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        stale = now - timedelta(
+            seconds=RECOGNITION_BUMP_THROTTLE_SECONDS + 60
+        )
+        memory = {
+            "uid-lost": self._entry(
+                last_seen=stale.strftime(self.TS_FMT), lost_contact=True
+            ),
+        }
+        observer = self._make_observer(memory)
+        target = self._make_target()
+
+        bump_recognition_recency(observer, target, "uid-lost", now=now)
+
+        self.assertFalse(memory["uid-lost"]["lost_contact"])
+
+    def test_bump_does_not_increment_times_seen(self):
+        """times_seen counts explicit `remember`, not perceptions."""
+        from datetime import datetime, timedelta
+        from world.identity import (
+            RECOGNITION_BUMP_THROTTLE_SECONDS,
+            bump_recognition_recency,
+        )
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        stale = now - timedelta(
+            seconds=RECOGNITION_BUMP_THROTTLE_SECONDS + 60
+        )
+        memory = {
+            "uid-known": self._entry(last_seen=stale.strftime(self.TS_FMT)),
+        }
+        observer = self._make_observer(memory)
+        target = self._make_target()
+
+        bump_recognition_recency(observer, target, "uid-known", now=now)
+
+        self.assertEqual(memory["uid-known"]["times_seen"], 3)
+
+    def test_throttle_blocks_recent_bump(self):
+        """Bump within throttle window is a no-op."""
+        from datetime import datetime, timedelta
+        from world.identity import (
+            RECOGNITION_BUMP_THROTTLE_SECONDS,
+            bump_recognition_recency,
+        )
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        recent = now - timedelta(
+            seconds=RECOGNITION_BUMP_THROTTLE_SECONDS - 60
+        )
+        recent_iso = recent.strftime(self.TS_FMT)
+        memory = {
+            "uid-known": self._entry(last_seen=recent_iso),
+        }
+        observer = self._make_observer(memory, location_key="NewRoom")
+        target = self._make_target(sdesc="changed sdesc")
+
+        result = bump_recognition_recency(
+            observer, target, "uid-known", now=now
+        )
+
+        self.assertFalse(result)
+        # Fields preserved exactly.
+        self.assertEqual(memory["uid-known"]["last_seen"], recent_iso)
+        self.assertEqual(memory["uid-known"]["location_last_seen"], "OldRoom")
+        self.assertEqual(
+            memory["uid-known"]["sdesc_at_last_encounter"], "old sdesc"
+        )
+
+    def test_unknown_uid_is_noop_and_does_not_create_entry(self):
+        """Helper never creates entries — guards against retroactive memory."""
+        from datetime import datetime
+        from world.identity import bump_recognition_recency
+
+        memory = {"uid-known": self._entry(last_seen="2025-01-01T00:00:00")}
+        before = dict(memory)
+        observer = self._make_observer(memory)
+        target = self._make_target()
+
+        result = bump_recognition_recency(
+            observer,
+            target,
+            "uid-stranger",
+            now=datetime(2026, 1, 1, 12, 0, 0),
+        )
+
+        self.assertFalse(result)
+        self.assertEqual(memory, before)
+        self.assertNotIn("uid-stranger", memory)
+
+    def test_empty_memory_is_noop(self):
+        from datetime import datetime
+        from world.identity import bump_recognition_recency
+
+        observer = MagicMock()
+        observer.recognition_memory = {}
+        target = self._make_target()
+
+        result = bump_recognition_recency(
+            observer, target, "uid-anything", now=datetime(2026, 1, 1)
+        )
+
+        self.assertFalse(result)
+        self.assertEqual(observer.recognition_memory, {})
+
+    def test_observer_without_memory_attr_is_noop(self):
+        from datetime import datetime
+        from world.identity import bump_recognition_recency
+
+        observer = MagicMock()
+        observer.recognition_memory = None
+        target = self._make_target()
+
+        result = bump_recognition_recency(
+            observer, target, "uid-anything", now=datetime(2026, 1, 1)
+        )
+
+        self.assertFalse(result)
+
+    def test_missing_last_seen_bumps_immediately(self):
+        """No prior timestamp → treat as stale, bump now."""
+        from datetime import datetime
+        from world.identity import bump_recognition_recency
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        memory = {
+            "uid-known": {
+                "assigned_name": "X",
+                "times_seen": 1,
+                "lost_contact": False,
+            },
+        }
+        observer = self._make_observer(memory)
+        target = self._make_target()
+
+        result = bump_recognition_recency(
+            observer, target, "uid-known", now=now
+        )
+
+        self.assertTrue(result)
+        self.assertEqual(
+            memory["uid-known"]["last_seen"], now.strftime(self.TS_FMT)
+        )
+
+    def test_malformed_last_seen_logs_warning_and_bumps(self):
+        from datetime import datetime
+        from world.identity import bump_recognition_recency
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        memory = {
+            "uid-bad": self._entry(last_seen="not-a-timestamp"),
+        }
+        observer = self._make_observer(memory)
+        target = self._make_target()
+
+        with patch("world.identity.logger") as mock_logger:
+            result = bump_recognition_recency(
+                observer, target, "uid-bad", now=now
+            )
+
+        self.assertTrue(result)
+        self.assertEqual(
+            memory["uid-bad"]["last_seen"], now.strftime(self.TS_FMT)
+        )
+        mock_logger.log_warn.assert_called_once()
+
+    def test_observer_without_location_uses_unknown(self):
+        from datetime import datetime
+        from world.identity import bump_recognition_recency
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        memory = {
+            "uid-known": {
+                "assigned_name": "X",
+                "times_seen": 1,
+                "lost_contact": False,
+            },
+        }
+        observer = MagicMock()
+        observer.recognition_memory = memory
+        observer.location = None
+        target = self._make_target()
+
+        bump_recognition_recency(observer, target, "uid-known", now=now)
+
+        self.assertEqual(memory["uid-known"]["location_last_seen"], "unknown")

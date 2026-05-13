@@ -1042,6 +1042,61 @@ class Character(
         article = get_article(sdesc)
         return f"{article} {sdesc}"
 
+    def at_post_move(self, source_location, **kwargs):
+        """Hook called after this character lands in a new location.
+
+        Extends the default Evennia behavior with a passive recognition
+        recency pass so that walking into a room with someone whose
+        Apparent UID is already in our memory refreshes their
+        ``last_seen`` (and friends).  See
+        :func:`world.identity.bump_recognition_recency` for the
+        per-target contract.
+
+        Args:
+            source_location: Location we just left (may be ``None``).
+            **kwargs: Forwarded to the parent hook (e.g. ``move_type``).
+        """
+        super().at_post_move(source_location, **kwargs)
+        self._refresh_recognition_recency()
+
+    def _refresh_recognition_recency(self):
+        """Bump recognition recency for every visible character we know.
+
+        Iterates the current room's contents, computes each
+        character's Apparent UID, and calls
+        :func:`world.identity.bump_recognition_recency`.  The helper
+        is a no-op for UIDs we have never explicitly remembered, so
+        this method only mutates entries that already exist.
+
+        Per-target failures are caught and logged — a single bad
+        recognition entry must never break room entry.
+        """
+        if self.location is None:
+            return
+        memory = self.recognition_memory
+        if not memory:
+            return
+
+        from evennia.utils import logger
+
+        from world.identity import bump_recognition_recency, get_apparent_uid
+
+        for obj in self.location.contents:
+            if obj is self:
+                continue
+            if not isinstance(obj, Character):
+                continue
+            try:
+                apparent_uid = get_apparent_uid(obj)
+                if apparent_uid is None:
+                    continue
+                bump_recognition_recency(self, obj, apparent_uid)
+            except (AttributeError, TypeError, ValueError):
+                logger.log_trace(
+                    f"Recognition recency bump failed for "
+                    f"observer={self!r} target={obj!r}; continuing."
+                )
+
     def search(
         self,
         searchdata,
