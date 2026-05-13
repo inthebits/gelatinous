@@ -9,7 +9,7 @@ This is a standalone utility module with no Evennia dependencies in its
 core functions. It is imported by the emote system, the identity system,
 and any future system that needs English grammar processing.
 
-See specs/EMOTE_POSE_SPEC.md §Grammar Engine for the full specification.
+See specs/GRAMMAR_ENGINE_SPEC.md for the full specification.
 """
 
 from __future__ import annotations
@@ -110,6 +110,94 @@ def get_article(noun_phrase: str, definite: bool = False) -> str:
         return "the"
     result = _engine.a(noun_phrase)  # e.g. "a lanky man" or "an athletic dame"
     return result.split(" ", 1)[0]   # Extract just the article
+
+
+#: Pluralia-tantum nouns: English nouns that exist only (or idiomatically)
+#: in plural form and therefore reject the indefinite article "a/an".
+#: A bare noun phrase ("blue jeans") is grammatical; "*a blue jeans" is not.
+#:
+#: Categories:
+#:   - True pluralia tantum garments (jeans, trousers, ...)
+#:   - Paired-noun garments idiomatically referenced as plurals in sdescs
+#:     (boots, gloves, ...)
+#:   - Eyewear (glasses, goggles, ...)
+#:   - Two-bladed/handled tools (scissors, pliers, ...)
+_PLURALIA_TANTUM_NOUNS: frozenset[str] = frozenset({
+    # garments (true pluralia tantum)
+    "jeans", "pants", "trousers", "shorts", "briefs", "leggings",
+    "tights", "overalls", "pyjamas", "pajamas", "knickers",
+    "bloomers", "slacks", "chaps", "dungarees", "coveralls",
+    # paired-noun garments
+    "boots", "shoes", "gloves", "socks", "sneakers", "sandals",
+    "slippers", "heels", "loafers", "moccasins", "mittens",
+    # eyewear
+    "glasses", "goggles", "spectacles", "binoculars",
+    "sunglasses", "shades",
+    # tools
+    "scissors", "pliers", "tweezers", "tongs", "shears", "clippers",
+    # other
+    "trunks",
+})
+
+#: Prepositions that introduce a non-head modifier in a noun phrase.
+#: When detecting whether a noun phrase is pluralia tantum we only
+#: inspect the head phrase preceding the first such break — so
+#: ``"stocky droog in blue jeans"`` is judged on ``"stocky droog"``.
+_PREP_BREAKS: tuple[str, ...] = (
+    " in ", " with ", " wielding ", " wearing ", " holding ",
+)
+
+
+def is_pluralia_tantum(noun_phrase: str) -> bool:
+    """Return ``True`` if the head noun of *noun_phrase* is pluralia tantum.
+
+    The head noun is the last token of the phrase preceding the first
+    prepositional break (``" in "``, ``" with "``, etc.).  This means
+    sdesc-style phrases such as ``"stocky droog in blue jeans"`` are
+    judged on the wearer ("droog"), not on the garment ("jeans").
+
+    Args:
+        noun_phrase: A noun phrase such as ``"blue jeans"``,
+            ``"Black Trenchcoat"``, or ``"stocky droog in blue jeans"``.
+
+    Returns:
+        ``True`` if the head noun is in :data:`_PLURALIA_TANTUM_NOUNS`,
+        ``False`` otherwise.
+    """
+    lower = noun_phrase.strip().lower()
+    for prep in _PREP_BREAKS:
+        idx = lower.find(prep)
+        if idx >= 0:
+            lower = lower[:idx]
+            break
+    tokens = lower.split()
+    return bool(tokens) and tokens[-1] in _PLURALIA_TANTUM_NOUNS
+
+
+def with_article(noun_phrase: str, definite: bool = False) -> str:
+    """Return *noun_phrase* prefixed with the appropriate article.
+
+    Pluralia-tantum nouns receive no indefinite article — ``"blue jeans"``
+    is returned bare, never ``"*a blue jeans"``.  The definite article
+    ``"the"`` is grammatical with both singular and plural nouns and is
+    applied uniformly when *definite* is ``True``.
+
+    Args:
+        noun_phrase: A noun phrase to which an article should be
+            prepended (e.g. ``"Black Trenchcoat"``, ``"blue jeans"``).
+        definite: If ``True``, prepend ``"the"``.  If ``False``,
+            prepend ``"a"``/``"an"`` for singular nouns and nothing for
+            pluralia tantum.
+
+    Returns:
+        The noun phrase with its article (or bare, for indefinite
+        pluralia tantum).
+    """
+    if definite:
+        return f"the {noun_phrase}"
+    if is_pluralia_tantum(noun_phrase):
+        return noun_phrase
+    return f"{get_article(noun_phrase)} {noun_phrase}"
 
 
 # ---------------------------------------------------------------------------

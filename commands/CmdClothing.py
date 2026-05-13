@@ -16,7 +16,7 @@ from world.combat.constants import (
     STYLE_STATE_UNZIPPED,
     STYLE_STATE_ZIPPED,
 )
-from world.grammar import get_article
+from world.grammar import with_article
 from world.identity_utils import msg_room_identity
 
 
@@ -56,8 +56,12 @@ def _snapshot_actor_names(caller, char_refs):
 
 
 def _articled(item_key: str) -> str:
-    """Return ``"a black balaclava"`` / ``"an axe handle"`` for *item_key*."""
-    return f"{get_article(item_key)} {item_key}"
+    """Return ``"a black balaclava"`` / ``"blue jeans"`` for *item_key*.
+
+    Pluralia-tantum nouns (``"blue jeans"``) are returned bare; all
+    other nouns receive the appropriate indefinite article.
+    """
+    return with_article(item_key)
 
 
 class CmdWear(Command):

@@ -505,6 +505,13 @@ class TestFormatWieldedFeature(TestCase):
             "wielding an Assault Rifle",
         )
 
+    def test_pluralia_tantum_scissors(self) -> None:
+        """Pluralia-tantum tools wield bare, no indefinite article."""
+        self.assertEqual(
+            format_wielded_feature("scissors"),
+            "wielding scissors",
+        )
+
 
 class TestFormatClothingFeature(TestCase):
     """Tests for ``format_clothing_feature``."""
@@ -519,6 +526,19 @@ class TestFormatClothingFeature(TestCase):
         self.assertEqual(
             format_clothing_feature("Orange Jumpsuit"),
             "in an Orange Jumpsuit",
+        )
+
+    def test_pluralia_tantum_jeans(self) -> None:
+        """Pluralia-tantum garments worn bare, no indefinite article."""
+        self.assertEqual(
+            format_clothing_feature("blue jeans"),
+            "in blue jeans",
+        )
+
+    def test_pluralia_tantum_boots(self) -> None:
+        self.assertEqual(
+            format_clothing_feature("black leather combat boots"),
+            "in black leather combat boots",
         )
 
 

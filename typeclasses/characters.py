@@ -1033,14 +1033,13 @@ class Character(
                     return assigned
 
         # Fall back to sdesc with indefinite article
-        from world.grammar import get_article
+        from world.grammar import with_article
 
         sdesc = self.get_sdesc()
         # If sdesc fell back to self.key, return it as-is (no article)
         if sdesc == self.key:
             return self.key
-        article = get_article(sdesc)
-        return f"{article} {sdesc}"
+        return with_article(sdesc)
 
     def get_look_header(self, looker=None, **kwargs):
         """Return the appearance-header form of this character's name.
@@ -1100,10 +1099,9 @@ class Character(
         if sdesc == self.key:
             return name
 
-        from world.grammar import get_article
+        from world.grammar import with_article
 
-        article = get_article(sdesc)
-        return f"{name} ({article} {sdesc})"
+        return f"{name} ({with_article(sdesc)})"
 
     def at_post_move(self, source_location, **kwargs):
         """Hook called after this character lands in a new location.

@@ -359,151 +359,19 @@ Multiple speech blocks are each tokenized independently. The language system hoo
 
 ---
 
-## Grammar Engine (`world/grammar.py`)
+## Grammar Engine
 
-A standalone utility module with no Evennia dependencies in its core functions. Imported by the emote system, the identity system, and any future system that needs English grammar processing.
+Verb conjugation, article handling (including pluralia tantum),
+pronoun transformation, possessive forms, capitalization, and
+default sdesc keywords are defined in their own dedicated
+specification:
 
-### Verb Conjugation
+- See [`GRAMMAR_ENGINE_SPEC.md`](GRAMMAR_ENGINE_SPEC.md) for the full
+  grammar engine specification.
 
-Converts base-form verbs to third-person singular present tense.
-
-```python
-def conjugate_third_person(verb: str) -> str:
-    """Convert base-form verb to third-person singular present.
-
-    Args:
-        verb: Base form ("lean", "catch", "try").
-
-    Returns:
-        Conjugated form ("leans", "catches", "tries").
-    """
-```
-
-**Irregular table** (checked first):
-
-| Base Form | Third Person |
-|---|---|
-| be | is |
-| have | has |
-
-**Regular rules** (applied in order after irregular table check):
-
-| # | Rule | Pattern | Example |
-|---|---|---|---|
-| 1 | Sibilant | Ends in -s, -sh, -ch, -x, -z | pass → passes, push → pushes, catch → catches, fix → fixes, buzz → buzzes |
-| 2 | -O ending | Ends in -o | go → goes, do → does, echo → echoes |
-| 3 | Consonant + Y | Ends in [consonant] + y | try → tries, carry → carries, fly → flies |
-| 4 | Default | Everything else | lean → leans, run → runs, play → plays, say → says |
-
-The function checks the irregular table first, then applies regular rules in order. Unknown words always receive regular treatment — the system never refuses to conjugate.
-
-The irregular table is intentionally minimal. English third-person singular present tense is remarkably regular — only `be` and `have` are truly irregular for this conjugation. The table is easily extensible if edge cases emerge.
-
-### Article Handling
-
-Uses the `inflect` library for phoneme-aware article selection:
-
-```python
-import inflect
-
-_engine = inflect.engine()
-
-def get_article(noun_phrase: str, definite: bool = False) -> str:
-    """Get the appropriate article for a noun phrase.
-
-    Args:
-        noun_phrase: The noun phrase ("lanky man", "athletic dame").
-        definite: If True, return "the". If False, return "a"/"an".
-
-    Returns:
-        Article string: "a", "an", or "the".
-    """
-    if definite:
-        return "the"
-    result = _engine.a(noun_phrase)  # Returns "a lanky man" or "an athletic dame"
-    return result.split(" ", 1)[0]   # Extract just the article
-```
-
-**Context rules** (applied by the rendering pipeline, not the grammar engine):
-
-- **Indefinite** (default for sdescs): `"a lanky man"`, `"an athletic dame"`
-- **Definite** (for targeting / repeated reference): `"the lanky man"`
-- **None** (for assigned names and "You"): `"Jorge"` — no article
-
-### Pronoun Transformation
-
-```python
-def transform_pronoun(
-    pronoun: str,
-    target_person: str,
-    gender: str = "neutral",
-) -> str:
-    """Transform a first-person pronoun to the target perspective.
-
-    Args:
-        pronoun: First-person pronoun ("I", "me", "my", "mine", "myself").
-        target_person: "second" (actor self-view) or "third" (observer view).
-        gender: "male", "female", or "neutral". Only used for third person.
-
-    Returns:
-        Transformed pronoun string.
-    """
-```
-
-**Gender mapping** from character `sex` attribute:
-
-```python
-GENDER_MAP = {
-    "male": "male",
-    "female": "female",
-    "ambiguous": "neutral",
-    "neutral": "neutral",
-    "nonbinary": "neutral",
-    "other": "neutral",
-}
-```
-
-See Appendix B for the complete transformation tables.
-
-### Possessive and Objective Forms
-
-For display names used by the identity system and emote rendering:
-
-```python
-def possessive(name: str) -> str:
-    """Form the possessive of a name or noun phrase.
-
-    Args:
-        name: "Jorge", "a lanky man", "you".
-
-    Returns:
-        "Jorge's", "a lanky man's", "your".
-    """
-```
-
-| Input | Output | Notes |
-|---|---|---|
-| `"Jorge"` | `"Jorge's"` | Standard possessive |
-| `"a lanky man"` | `"a lanky man's"` | Sdesc possessive |
-| `"you"` | `"your"` | Pronoun — lookup table |
-| `"he"` | `"his"` | Pronoun — lookup table |
-| `"she"` | `"her"` | Pronoun — lookup table |
-| `"they"` | `"their"` | Pronoun — lookup table |
-
-Pronoun possessives are handled by a lookup table. All other inputs receive `'s` appended.
-
-### Subject-Verb Agreement
-
-The conjugation function pairs with the subject reference:
-
-| Subject | Verb Form | Example |
-|---|---|---|
-| "You" (actor self-view) | Base form | "You lean back." |
-| Named character | Third-person singular | "Jorge leans back." |
-| Sdesc (singular) | Third-person singular | "A lanky man leans back." |
-
-The rendering pipeline handles this: if the observer is the actor, use the base form; otherwise, use `conjugate_third_person()`.
-
+The pronoun transformation tables are still listed in Appendix B of
+this document for convenient reference from the rendering pipeline
+below.
 ---
 
 ## Per-Observer Rendering Pipeline
