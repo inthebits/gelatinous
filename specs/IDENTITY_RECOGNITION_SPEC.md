@@ -790,6 +790,17 @@ Observers or targets without a `dbref` are not cached and re-roll on every call 
 
 **dbref recycling.** Cache entries for deleted targets are dead weight but cannot misfire: Evennia/Django primary keys are monotonically allocated and never reused, so a freshly-created object will never collide with a stale entry. No prune-on-delete hook is wired; entries accumulate at the rate the observer encounters distinct presentations, bounded in practice by their social surface. If pruning becomes warranted (very long-lived observers + churn-heavy NPC populations), the right place to add it is an `at_object_delete` broadcast on the target side mirroring the unmasking-moment pipeline.
 
+**Tunables.** Recognition/disguise balance constants, all defined in `world/identity.py`:
+
+| Constant | Default | Effect |
+|---|---|---|
+| `DISGUISE_PIERCE_VECTOR_PENALTY` | `1` | Per-vector roll penalty added to the target's effective total in `attempt_disguise_pierce`. |
+| `DISGUISE_PIERCE_FAMILIARITY_CAP` | `5` | Ceiling on the `times_seen` bonus added to the observer's effective total. |
+| `LOST_CONTACT_THRESHOLD_SECONDS` | 30 in-game days | Inactivity window before `mark_lost_contact_entries` flips an entry to `lost_contact = True`. |
+| `RECOGNITION_BUMP_THROTTLE_SECONDS` | `300` | Per-`(observer, uid)` write throttle on passive recency bumps via `bump_recognition_recency`. |
+
+All four are balance-pass provisional. The pierce constants tune roll difficulty; the recency constants tune memory hygiene.
+
 **Surface.** On success, the looker sees the bare-face entry's `assigned_name` in place of the articled sdesc — same surface as ordinary recognition. The `get_look_header` path further attaches the *current* (disguised) sdesc in parentheses, so the looker sees `"Bruce (a tall figure in a black coat)"` rather than the stranger fallback.
 
 **No auto-link.** Piercing surfaces a name but does **not** write `linked_to` on the disguised presentation's entry — there is no entry to link, by definition. If the looker subsequently runs `remember <pierced name>`, the `_remember_target` builder auto-links the freshly-created entry to the first other-presentation entry it finds for the same `real_sleeve_uid` (insertion order, mirroring `attempt_display_pierce`'s candidate selection). The look chain therefore reads new → bare-face, the same shape `recall` / `memory` already render for unmasking-witnessed transitions.
@@ -836,6 +847,28 @@ These are designed into the architecture but not implemented yet:
 - **Explicit `gender_override` axis**: Phase 3 derives pronouns from `keyword_override` against the catalog's gender lists, so a player who wants gendered pronouns picks a gendered keyword. A future explicit override axis would let a player pair a custom (`@shortdesc`) keyword with a chosen pronoun set without forcing them through a catalog keyword. Deferred until a real player need surfaces.
 - **Forensic linking of multiple Apparent UIDs to one real identity**: Investigation gameplay where a sufficiently-resourced investigator can correlate multiple recognition entries (different Apparent UIDs) and infer they refer to the same underlying `sleeve_uid`. Requires evidence-system integration (Phase 5+).
 - **Player-initiated lost-contact pruning**: A `forget --lost` (or similar) command letting players explicitly drop entries the system has marked `lost_contact`. Auto-pruning is deliberately not done; this gives the player the choice.
+
+### Testing Notes
+
+The identity test suite mixes two patterns:
+
+- **Fast unit tests** (`world/tests/test_identity.py`, `test_identity_commands.py`, `test_unmasking.py`, `test_character_identity.py`, `test_corpse_identity.py`) use `unittest.TestCase` with fake observer/target/room objects defined per-module. Most pierce/unmasking/recognition logic is covered this way for speed and isolation. Shared schema helpers live in `world/tests/_identity_helpers.py` (notably `make_recognition_entry`, which keeps fake entries in sync with the production schema).
+- **End-to-end integration tests** (`world/tests/test_pierce_integration.py`, `test_unmasking_integration.py`) use `evennia.utils.test_resources.EvenniaTest` with real `Character` typeclasses, real `recognition_memory`, and real persistent attributes. These catch regressions that mock-based suites cannot — typeclass wiring, `AttributeProperty` round-trips, and hooks like `at_post_move` that depend on real Evennia object lifecycle.
+
+**`evennia test` uses the live development database.** Tests that touch the keyword catalog must patch `world.identity._get_keyword_manager` to return a deterministic stub; otherwise they pick up live `KeywordEvent` rows and become non-reproducible. The `attempt_disguise_pierce` path performs a local import of `world.combat.dice.opposed_roll` — patches must target `world.combat.dice.opposed_roll`, not `world.identity.opposed_roll`.
+
+Run a single module:
+
+```
+docker exec gelatinous evennia test --settings settings.py \
+    world.tests.test_identity
+```
+
+Run the full identity surface:
+
+```
+docker exec gelatinous evennia test --settings settings.py world.tests
+```
 
 ---
 
