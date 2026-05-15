@@ -1382,7 +1382,7 @@ class CmdRemember(Command):
         a different disguise produces a different Apparent UID and
         gets its own recognition entry.
         """
-        import time
+        from world.identity import _recognition_now_iso
 
         memory = caller.recognition_memory
         if memory is None:
@@ -1392,7 +1392,7 @@ class CmdRemember(Command):
         old_name = old_entry.get("assigned_name", "")
 
         # Build/update the recognition entry
-        now = time.strftime("%Y-%m-%dT%H:%M:%S")
+        now = _recognition_now_iso()
         location_name = caller.location.key if caller.location else "unknown"
 
         if apparent_uid in memory:
@@ -1495,17 +1495,24 @@ def _find_remembered_uid_by_name(caller, name):
 def _format_relative_time(iso_timestamp):
     """Return a human-friendly 'X ago' string for an ISO timestamp.
 
+    The stored ISO string is interpreted as **naive UTC** (the
+    convention enforced by :func:`world.identity._recognition_now_iso`);
+    the delta is computed against the matching naive-UTC "now" so the
+    result is independent of the server's local timezone.
+
     Falls back to the raw timestamp if parsing fails.
     """
-    import time
-    from datetime import datetime
     from evennia.utils.utils import time_format
+    from world.identity import (
+        _parse_recognition_timestamp,
+        _recognition_utcnow,
+    )
 
     if not iso_timestamp:
         return "unknown"
     try:
-        then = datetime.strptime(iso_timestamp, "%Y-%m-%dT%H:%M:%S")
-        delta = time.time() - then.timestamp()
+        then = _parse_recognition_timestamp(iso_timestamp)
+        delta = (_recognition_utcnow() - then).total_seconds()
         if delta < 1:
             return "just now"
         return f"{time_format(int(delta), 4)} ago"

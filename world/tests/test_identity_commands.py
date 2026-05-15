@@ -2220,3 +2220,120 @@ class TestForgetRecallMeAreHarmless(TestCase):
             or "can't recall" in msg_text,
             f"Unexpected message: {msg_text!r}",
         )
+
+
+# ===================================================================
+# Timezone-correctness: writer / reader contract
+# ===================================================================
+
+
+class FormatRelativeTimeTests(TestCase):
+    """``_format_relative_time`` must interpret stored ISO strings as UTC.
+
+    Regression coverage for the bug where the renderer parsed naive UTC
+    timestamps then called ``datetime.timestamp()``, which treats the
+    naive datetime as **local** time — yielding a "X ago" value off by
+    the server's UTC offset (e.g. 7 hours on a PDT host).
+
+    The fix routes both the writer and the reader through the
+    ``_recognition_*`` helpers in :mod:`world.identity`, which use
+    naive UTC throughout.
+    """
+
+    def test_round_trip_is_recent(self):
+        """Writing now + reading immediately yields a sub-minute delta."""
+        from commands.CmdCharacter import _format_relative_time
+        from world.identity import _recognition_now_iso
+
+        rendered = _format_relative_time(_recognition_now_iso())
+        # Must be either "just now" or "Xs ago" — never hours/days off.
+        self.assertTrue(
+            rendered == "just now" or rendered.endswith("s ago"),
+            f"Round-trip should be sub-minute, got {rendered!r}",
+        )
+
+    def test_one_hour_old_renders_as_hour(self):
+        """An entry stamped 1h ago must render with 'h' (hours) units."""
+        from datetime import timedelta
+
+        from commands.CmdCharacter import _format_relative_time
+        from world.identity import (
+            _RECOGNITION_TIMESTAMP_FMT,
+            _recognition_utcnow,
+        )
+
+        one_hour_ago = _recognition_utcnow() - timedelta(hours=1)
+        iso = one_hour_ago.strftime(_RECOGNITION_TIMESTAMP_FMT)
+        rendered = _format_relative_time(iso)
+        # Should mention an hour, not a different unit; this is the
+        # tightest assertion we can make without coupling to the exact
+        # phrasing of evennia.utils.time_format.
+        self.assertIn("h", rendered)
+        self.assertTrue(rendered.endswith("ago"))
+
+    def test_empty_input_returns_unknown(self):
+        from commands.CmdCharacter import _format_relative_time
+
+        self.assertEqual(_format_relative_time(""), "unknown")
+        self.assertEqual(_format_relative_time(None), "unknown")
+
+    def test_malformed_input_returns_raw(self):
+        from commands.CmdCharacter import _format_relative_time
+
+        self.assertEqual(
+            _format_relative_time("not-an-iso-timestamp"),
+            "not-an-iso-timestamp",
+        )
+
+
+class RecognitionTimestampHelperTests(TestCase):
+    """The canonical recognition-timestamp helpers must agree with each other.
+
+    ``_recognition_now_iso`` and ``_parse_recognition_timestamp`` form a
+    round-trip; ``_recognition_utcnow`` is the naive-UTC "now" both
+    sides share for elapsed-delta math.  Any drift here re-introduces
+    the local-vs-UTC bug.
+    """
+
+    def test_round_trip_preserves_seconds(self):
+        from world.identity import (
+            _parse_recognition_timestamp,
+            _recognition_now_iso,
+        )
+
+        iso = _recognition_now_iso()
+        parsed = _parse_recognition_timestamp(iso)
+        # Re-format must yield the original string (no precision loss).
+        from world.identity import _RECOGNITION_TIMESTAMP_FMT
+
+        self.assertEqual(parsed.strftime(_RECOGNITION_TIMESTAMP_FMT), iso)
+
+    def test_now_helper_returns_naive_datetime(self):
+        from world.identity import _recognition_utcnow
+
+        now = _recognition_utcnow()
+        # Contract: stored timestamps are naive — comparisons against
+        # tz-aware datetimes raise TypeError.  We require naive.
+        self.assertIsNone(now.tzinfo)
+
+    def test_helper_matches_utc_within_one_second(self):
+        """The helper must return UTC, not local time."""
+        from datetime import datetime, timezone
+
+        from world.identity import _recognition_utcnow
+
+        helper_now = _recognition_utcnow()
+        aware_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+        delta_seconds = abs((aware_utc - helper_now).total_seconds())
+        self.assertLess(
+            delta_seconds,
+            2,
+            "Recognition 'now' helper diverges from UTC; "
+            "local-vs-UTC bug has regressed.",
+        )
+
+    def test_malformed_parse_raises_valueerror(self):
+        from world.identity import _parse_recognition_timestamp
+
+        with self.assertRaises(ValueError):
+            _parse_recognition_timestamp("nope")
