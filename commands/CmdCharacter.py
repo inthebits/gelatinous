@@ -1432,6 +1432,27 @@ class CmdRemember(Command):
                 "recent_interactions": [],
                 "real_sleeve_uid": real_sleeve_uid,
             }
+            # Auto-link this fresh entry to any *other* presentation of
+            # the same underlying sleeve the caller has already
+            # remembered.  This closes the pierce-then-remember loop
+            # promised in spec §Disguise Piercing: if the looker
+            # pierced a disguise and then `remember`s the pierced name,
+            # the new entry chains back to the bare-face entry so
+            # `recall` / `memory` render the aka-line correctly.
+            #
+            # First match (insertion order) wins, mirroring
+            # `attempt_display_pierce`.  No-op when no prior
+            # presentation exists, when the sleeve is unknown, or when
+            # an unmasking hook has already populated `linked_to`.
+            if real_sleeve_uid and entry.get("linked_to") is None:
+                from world.identity import find_entries_by_real_sleeve_uid
+
+                for other_uid, _other_entry in (
+                    find_entries_by_real_sleeve_uid(caller, real_sleeve_uid)
+                ):
+                    if other_uid != apparent_uid:
+                        entry["linked_to"] = other_uid
+                        break
 
         memory[apparent_uid] = entry
         caller.recognition_memory = memory

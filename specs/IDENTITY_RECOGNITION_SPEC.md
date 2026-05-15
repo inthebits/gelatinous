@@ -789,7 +789,7 @@ Observers or targets without a `dbref` are not cached and re-roll on every call 
 
 **Surface.** On success, the looker sees the bare-face entry's `assigned_name` in place of the articled sdesc — same surface as ordinary recognition. The `get_look_header` path further attaches the *current* (disguised) sdesc in parentheses, so the looker sees `"Bruce (a tall figure in a black coat)"` rather than the stranger fallback.
 
-**No auto-link.** Piercing surfaces a name but does **not** write `linked_to` on the disguised presentation's entry — there is no entry to link, by definition. If the looker subsequently runs `remember <pierced name>`, that command's normal flow creates a new entry for the disguised UID and (because the cell-D mirror in `_remember_target` runs) links it to the bare-face entry the looker matched against.
+**No auto-link.** Piercing surfaces a name but does **not** write `linked_to` on the disguised presentation's entry — there is no entry to link, by definition. If the looker subsequently runs `remember <pierced name>`, the `_remember_target` builder auto-links the freshly-created entry to the first other-presentation entry it finds for the same `real_sleeve_uid` (insertion order, mirroring `attempt_display_pierce`'s candidate selection). The look chain therefore reads new → bare-face, the same shape `recall` / `memory` already render for unmasking-witnessed transitions.
 
 ### Impersonation
 
