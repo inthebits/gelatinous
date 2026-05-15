@@ -51,6 +51,33 @@ What the recognition pipeline actually resolves against. Three distinct concepts
 
 The sdesc is overridable through `appear`, but the distinguishing feature always reflects actual visible state — true disguise requires changing your clothes (or destroying / acquiring essential items).
 
+**The full pipeline at a glance.**
+
+```mermaid
+graph LR
+    Sleeve["Sleeve<br/>(physical body)<br/>+ sleeve_uid"]
+    Over["Presentation overrides<br/>(appear command)"]
+    Items["Essential disguise items<br/>(worn equipment)"]
+    Sig["Identity signature<br/>(tuple)"]
+    UID["Apparent UID<br/>(blake2b hex)"]
+    Mem["Observer's recognition_memory<br/>{uid: entry}"]
+    Name["Displayed name<br/>(assigned_name or sdesc)"]
+    Sleeve --> Sig
+    Over --> Sig
+    Items --> Sig
+    Sig -->|hash| UID
+    UID -->|lookup| Mem
+    Mem -->|hit| Name
+    Mem -.->|miss → §Disguise Piercing| Name
+```
+
+> **Worked example — Bruce Wayne, two signatures, one observer.** Alfred has been with Bruce for decades; his `recognition_memory` holds two entries for the same `sleeve_uid`:
+>
+> - Entry A: Apparent UID for *bare Bruce* (no overrides, no essential items) → `assigned_name = "Bruce"`.
+> - Entry B: Apparent UID for *Batman* (height='tall', build='stocky', keyword='figure' + cowl/cape/armor) → `assigned_name = "Batman"`, `linked_to = <Entry A uid>` (cell D from a prior unmasking moment).
+>
+> When Bruce walks into the Batcave in a tux, `get_display_name(Alfred)` hashes the bare signature, hits Entry A, returns `"Bruce"`. When he steps out in the suit, the same code hashes the costumed signature, hits Entry B, returns `"Batman"`. Alfred's `recall` surfaces "Batman, also known as Bruce" via `get_linked_aliases`. A stranger watching the same scene sees `"a tall figure in dark armor"` either way — no entries in their memory, no linkage, the sdesc renderer takes over.
+
 ---
 
 ## Short Description (sdesc) System
@@ -518,6 +545,44 @@ apparent_uid = hashlib.blake2b(signature_bytes, digest_size=8).hexdigest()
 # 16-character lowercase hex string, e.g. "a3f1c92b08e4d7f6"
 ```
 
+**Signature anatomy.**
+
+```mermaid
+flowchart TD
+    subgraph Inputs["Identity signature inputs (observable state)"]
+        Salt["real sleeve_uid<br/>(per-body salt, immutable)"]
+        H["height_override<br/>str | None"]
+        B["build_override<br/>str | None"]
+        K["keyword_override<br/>str | None"]
+        Items["sorted tuple of<br/>essential item type IDs"]
+    end
+    Sig["identity_signature tuple"]
+    Bytes["repr().encode('utf-8')"]
+    Hash["blake2b digest_size=8"]
+    UID["Apparent UID<br/>16-char hex"]
+    Salt --> Sig
+    H --> Sig
+    B --> Sig
+    K --> Sig
+    Items --> Sig
+    Sig --> Bytes --> Hash --> UID
+    UID --> Mem["recognition_memory[uid] lookup"]
+```
+
+> **Worked example — Peter Parker, two presentations.**
+>
+> | Input | Bare Peter | Spider-Man |
+> |---|---|---|
+> | `real_sleeve_uid` | `peter-uuid` | `peter-uuid` (same — same body) |
+> | `height_override` | `None` | `None` |
+> | `build_override` | `None` | `None` |
+> | `keyword_override` | `None` | `"vigilante"` |
+> | essential item types | `()` | `("mask-red", "suit-spandex")` |
+> | identity_signature | `("peter-uuid", None, None, None, ())` | `("peter-uuid", None, None, "vigilante", ("mask-red","suit-spandex"))` |
+> | Apparent UID | `4f2c…a901` | `8b13…7e6d` *(different)* |
+>
+> Same body, two distinct UIDs — observers tag each independently. The salt (`peter-uuid`) being shared is what later lets the §Disguise Piercing path correlate the two: a familiar observer can pierce *from* the Spider-Man UID *to* the Peter entry because both rows in their `recognition_memory` carry the same `real_sleeve_uid`.
+
 **Hash choice rationale:** `blake2b` with `digest_size=8` is fast, deterministic across processes (unlike Python's builtin `hash()`, which is salted per-process via `PYTHONHASHSEED`), and produces a 16-character hex digest with a 64-bit collision space — comfortable for the per-observer recognition-memory dict, where collisions only matter within a single character's memory and population is bounded by encounter count.
 
 **Key properties:**
@@ -603,6 +668,25 @@ A persona is a **player-private snapshot** of presentation overrides, captured a
 
 **Personas do NOT generate identities.** They are pure recall aids. When a player adopts a persona, the system applies the captured overrides as a **clean swap** — overwriting all three axes including any unset axes (so adoption produces an exact replay of the saved state, never a merge). The resulting Apparent UID is derived from the restored state, not from the persona itself. Two personas with identical overrides + item-type composition will yield the same Apparent UID — they are just labels in the player's memory.
 
+**Why personas don't carry identity.**
+
+```mermaid
+graph LR
+    P["persona 'batman'<br/>(player-private label)"]
+    S["captured overrides<br/>height='tall', build='stocky',<br/>keyword='figure'<br/>+ essential item types"]
+    Sig["identity_signature<br/>(real_sleeve_uid, overrides, items)"]
+    UID["Apparent UID<br/>blake2b digest"]
+    Mem["observer recognition_memory<br/>keyed on Apparent UID"]
+    P -->|adopt: clean swap| S
+    S -->|flow into| Sig
+    Sig -->|hash| UID
+    UID -->|lookup| Mem
+    style P fill:#444,stroke:#888,color:#fff
+    style UID fill:#226,stroke:#88f,color:#fff
+```
+
+> **Worked example — Bruce's two personas, one batsuit.** Bruce saves `"batman"` (height=tall, build=stocky, keyword=figure, items={cowl, cape, armor}) and `"dark-knight"` with the exact same overrides + items. Adopting either produces the same identity signature, the same Apparent UID, and therefore the same recognition tag on every observer. Alfred sees "Batman" whether Bruce ran `appear batman` or `appear dark-knight` — the label is private to Bruce. Conversely, if Bruce saves `"batman-stealth"` with one item swapped (matte cowl instead of standard cowl), the signature differs, the UID differs, and to Alfred he is a stranger until Alfred re-`remember`s him.
+
 **Adoption-time essential-item advisory.** When the player runs `appear <persona>`, the system diffs the persona's saved `essential_item_types` against the player's currently-equipped essential disguise items and emits a yellow heads-up listing missing and extra type IDs when they diverge. Adoption is **not refused** — the player can choose to proceed and accept the resulting Apparent UID divergence. The advisory exists because unlike real life, it's easy in-game to forget which items pair with which persona; the warning is a recall aid, not a gate. This may be revisited later as the player grows more accustomed to the disguise system.
 
 **Cap:** No cap in the surface PR. The previously-floated `min(Resonance × 2, 10)` gating is held for the engine PR or later balance pass.
@@ -678,6 +762,36 @@ A disguise's effectiveness scales with the player's investment:
 | Full ensemble (all axes + multiple essentials) | Distinct identity; harder for observers to connect to real you |
 | All of the above + change non-essential clothing | Visual distinguishing feature also changes |
 | All of the above + body mod (future) | `@longdesc` no longer reveals the truth on close inspection |
+
+**Vector math — how completeness translates into pierce penalty.**
+
+```mermaid
+graph LR
+    subgraph Clark["Clark Kent — minimal disguise"]
+        C1["glasses<br/>essential, weight=1"]
+        C2["keyword_override<br/>'reporter'"]
+        C1 --> CSum["vectors = 1 + 1 = 2"]
+        C2 --> CSum
+        CSum --> CPen["penalty = 2 × DISGUISE_PIERCE_VECTOR_PENALTY<br/>= +2 to target's roll"]
+    end
+    subgraph Batman["Batman — heavy concealment"]
+        B1["cowl<br/>essential, weight=3"]
+        B2["cape<br/>essential, weight=1"]
+        B3["body armor<br/>essential, weight=2"]
+        B4["height_override 'tall'"]
+        B5["build_override 'stocky'"]
+        B6["keyword_override 'figure'"]
+        B1 --> BSum["vectors = 3+1+2 + 1+1+1 = 9"]
+        B2 --> BSum
+        B3 --> BSum
+        B4 --> BSum
+        B5 --> BSum
+        B6 --> BSum
+        BSum --> BPen["penalty = 9 × DISGUISE_PIERCE_VECTOR_PENALTY<br/>= +9 to target's roll"]
+    end
+```
+
+> **Worked example — disguise weight scales effort, not items.** Clark's "disguise" is famously thin: glasses (weight 1) plus a single keyword override. Two vectors, +2 to his Resonance side of the pierce roll. Batman's cowl is heavy concealment — `disguise_weight=3` on the cowl item triples its contribution without inflating the visible item count. Combined with cape, body armor, and a full override sweep, Batman's penalty hits +9. A would-be piercer needs to beat that gap *and* have rolled up familiarity through prior encounters; with `DISGUISE_PIERCE_FAMILIARITY_CAP=5`, even a Robin-grade analyst maxes out a +5 bonus.
 
 ### Disguise Persistence
 
@@ -764,6 +878,36 @@ This is the bridge that keeps disguise legible after the fact. Without it, a sig
 
 Cell D falls back to the shorter `"You realize that {old_sdesc} and {new_sdesc} are the same person."` template if either `assigned_name` is blank (defensive — cell D by definition has both, but a future code path that drops one should still produce coherent prose). Cell B suppresses the message entirely if either sdesc is missing, rather than ship a malformed line.
 
+**Unmasking matrix in motion.**
+
+```mermaid
+sequenceDiagram
+    participant Peter as Peter Parker
+    participant CM as apply_signature_change
+    participant Coll as _collect_unmasking_observers
+    participant Bcast as _broadcast_unmasking
+    participant MJ as MJ (knew Spider-Man only)
+    participant May as Aunt May (knew Peter only)
+    participant Ned as Ned (knew both)
+
+    Peter->>CM: __enter__ → snapshot old_uid (Spider-Man signature)
+    Peter->>Peter: remove_item(mask) [essential, disguise_essential=True]
+    Peter->>CM: __exit__ → compute new_uid (Peter signature)
+    CM->>CM: old_uid != new_uid → proceed
+    CM->>Coll: collect observers in room
+    Coll-->>CM: [MJ, May, Ned] (conscious, in-room, not self)
+    CM->>Bcast: broadcast(old_uid, new_uid, observers)
+    par per-observer cell decision
+        Bcast->>MJ: knew old(Spider-Man), no new → cell B<br/>flip Spider-Man entry lost_contact=True<br/>auto-create stub for new_uid, linked_to=Spider-Man uid<br/>msg "Peter steps into view where Spider-Man stood..."
+    and
+        Bcast->>May: no old, knew new(Peter) → cell C<br/>refresh Peter entry last_seen<br/>silent
+    and
+        Bcast->>Ned: knew old AND new → cell D<br/>flip Spider-Man entry lost_contact=True<br/>refresh Peter entry; set linked_to=Spider-Man uid (only if None)<br/>msg "You realize Spider-Man... and Peter... are the same person."
+    end
+```
+
+> **Worked example — Peter unmasks in front of three observers.** Peter Parker (real `sleeve_uid = peter-uuid`) has been operating with `keyword_override="vigilante"` plus an essential mask. **MJ** has only ever met "Spider-Man" — she knows the masked Apparent UID. **Aunt May** has only ever met "Peter" — she knows the bare Apparent UID. **Ned** has met both presentations on separate occasions and tagged each. Peter pulls off the mask inside `apply_signature_change`. The old UID (Spider-Man) and new UID (Peter) differ, so `_broadcast_unmasking` walks the room: MJ hits **cell B** (new auto-stub linked to her Spider-Man entry, lost-contact flag on the old, narrative prose), May hits **cell C** (her Peter entry just gets a `last_seen` refresh, no prose), Ned hits **cell D** (both entries refreshed, link forged new→old, prose calling out the realization by name). All three observers now hold a forward chain `Peter UID → Spider-Man UID`, and `get_linked_aliases` will surface "Also known as Spider-Man" in MJ's and Ned's `recall` output.
+
 ### Disguise Piercing
 
 When an observer sees a character whose current Apparent UID is **not** in their recognition memory, the display-name pipeline gives them one more chance: if they've previously remembered the same underlying sleeve under a *different* presentation (the "bare-face entry"), an opposed Intellect-vs-Resonance roll decides whether they see through the disguise.
@@ -800,6 +944,34 @@ Observers or targets without a `dbref` are not cached and re-roll on every call 
 | `RECOGNITION_BUMP_THROTTLE_SECONDS` | `300` | Per-`(observer, uid)` write throttle on passive recency bumps via `bump_recognition_recency`. |
 
 All four are balance-pass provisional. The pierce constants tune roll difficulty; the recency constants tune memory hygiene.
+
+**Pierce flow at a glance.**
+
+```mermaid
+sequenceDiagram
+    participant Lois as Lois (observer)
+    participant Disp as get_display_name
+    participant Pierce as attempt_display_pierce
+    participant Roll as attempt_disguise_pierce
+    participant Dice as world.combat.dice.opposed_roll
+
+    Lois->>Disp: looks at "a tall man in glasses"
+    Disp->>Disp: recognition_memory[apparent_uid] → miss
+    Disp->>Pierce: try pierce(looker, target, apparent_uid)
+    Pierce->>Pierce: find_entries_by_real_sleeve_uid(Clark.sleeve_uid)
+    Note over Pierce: 1 candidate: "Superman" entry<br/>(different apparent_uid)
+    Pierce->>Roll: attempt_disguise_pierce(Lois, Clark, uid, bare_entry)
+    Roll->>Dice: opposed_roll(Lois.Intellect, Clark.Resonance)
+    Dice-->>Roll: observer_total=12, target_total=9
+    Note over Roll: +familiarity = min(times_seen, 5) = 4<br/>+penalty = vectors × DISGUISE_PIERCE_VECTOR_PENALTY<br/>vectors: glasses(1) + keyword "reporter"(1) = 2
+    Roll-->>Roll: 12+4=16 > 9+2=11 → pierce!
+    Roll->>Roll: cache[(Clark.dbref, uid)] = True
+    Roll-->>Pierce: "Superman"
+    Pierce-->>Disp: "Superman"
+    Disp-->>Lois: "Superman (a tall man in glasses)"
+```
+
+> **Worked example — Lois Lane scrutinises Clark Kent.** Lois has tagged Clark's *Superman* presentation (no glasses, no "reporter" keyword) and seen him fly four times (`times_seen = 4`). When she runs into "a tall man in glasses" at the Daily Planet, the disguised Apparent UID misses her memory; the pierce path finds her Superman entry as the sole candidate. Opposed roll: Lois rolls **12** on Intellect; Clark rolls **9** on Resonance. Add Lois's familiarity bonus (**+4**, under the cap of 5) and subtract Clark's disguise penalty (**+2** to his side: glasses essential item of weight 1, plus one keyword override). Final: **16 > 11**, pierce succeeds, outcome cached on Lois — she now sees `"Superman (a tall man in glasses)"` and will keep seeing it until Clark changes his signature.
 
 **Surface.** On success, the looker sees the bare-face entry's `assigned_name` in place of the articled sdesc — same surface as ordinary recognition. The `get_look_header` path further attaches the *current* (disguised) sdesc in parentheses, so the looker sees `"Bruce (a tall figure in a black coat)"` rather than the stranger fallback.
 
