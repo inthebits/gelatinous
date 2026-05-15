@@ -191,23 +191,36 @@ class ClothingMixin:
 
             return False, error_msg
 
-        # No conflicts - proceed with wearing
-        for location in item_coverage:
-            if location not in self.worn_items:
-                self.worn_items[location] = []
+        # No conflicts - proceed with wearing.  If the item contributes to
+        # the identity signature, wrap the mutation so observers in the
+        # room get an unmasking-moment broadcast for any UID transition.
+        from world.identity import apply_signature_change
 
-            # Add item to location, maintaining layer order (outer first)
-            location_items = self.worn_items[location]
+        is_essential = getattr(item, "disguise_essential", False)
 
-            # Find insertion point based on layer
-            insert_index = 0
-            for i, worn_item in enumerate(location_items):
-                if item.layer <= worn_item.layer:
-                    insert_index = i + 1
-                else:
-                    break
+        def _do_wear():
+            for location in item_coverage:
+                if location not in self.worn_items:
+                    self.worn_items[location] = []
 
-            location_items.insert(insert_index, item)
+                # Add item to location, maintaining layer order (outer first)
+                location_items = self.worn_items[location]
+
+                # Find insertion point based on layer
+                insert_index = 0
+                for i, worn_item in enumerate(location_items):
+                    if item.layer <= worn_item.layer:
+                        insert_index = i + 1
+                    else:
+                        break
+
+                location_items.insert(insert_index, item)
+
+        if is_essential:
+            with apply_signature_change(self, source="wear_item"):
+                _do_wear()
+        else:
+            _do_wear()
 
         return True, f"You put on {with_article(item.key)}."
 
@@ -279,14 +292,26 @@ class ClothingMixin:
 
             return False, error_msg
 
-        # No blocking - proceed with removal
-        if self.worn_items:
-            for location, items in list(self.worn_items.items()):
-                if item in items:
-                    items.remove(item)
-                    # Clean up empty lists
-                    if not items:
-                        del self.worn_items[location]
+        # No blocking - proceed with removal.  Wrap signature-contributing
+        # items so the unmasking-moment broadcast fires for observers.
+        from world.identity import apply_signature_change
+
+        is_essential = getattr(item, "disguise_essential", False)
+
+        def _do_remove():
+            if self.worn_items:
+                for location, items in list(self.worn_items.items()):
+                    if item in items:
+                        items.remove(item)
+                        # Clean up empty lists
+                        if not items:
+                            del self.worn_items[location]
+
+        if is_essential:
+            with apply_signature_change(self, source="remove_item"):
+                _do_remove()
+        else:
+            _do_remove()
 
         return True, f"You remove {with_article(item.key)}."
 

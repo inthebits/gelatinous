@@ -1161,3 +1161,372 @@ def bump_recognition_recency(
     observer.recognition_memory = memory
     return True
 
+
+# =========================================================================
+# Unmasking Moments — Apparent UID transition broadcast
+# =========================================================================
+#
+# The "unmasking moment" is the event of a character's Apparent UID
+# shifting (puts on or removes a disguise-essential item, applies an
+# override, etc.) while other characters can perceive them.  For each
+# in-room conscious observer, the broadcast pipeline updates their
+# recognition memory according to a 4-cell matrix keyed on whether
+# they previously knew the old UID, the new UID, both, or neither.
+#
+# See specs/IDENTITY_RECOGNITION_SPEC.md (Unmasking Moments) for the
+# end-to-end behavioural contract.
+
+#: Hard cap on link-chain traversal to bound work on malformed data.
+#: Linked chains are uncapped per design (no per-chain user-facing
+#: limit), but the walker still terminates if it visits this many
+#: distinct UIDs without exhausting the chain — a safety net against
+#: corrupted entries, not a UX constraint.
+_LINKED_CHAIN_MAX_HOPS: int = 64
+
+
+def _build_link_entry(
+    *,
+    target: Any,
+    observer: Any,
+    linked_to: str | None,
+    now_iso: str,
+    location_name: str,
+) -> dict:
+    """Build a fresh recognition-memory entry for an auto-linked sighting.
+
+    Mirrors the shape written by
+    :meth:`commands.CmdCharacter.CmdRemember._remember_target` but with
+    ``assigned_name=""`` (the observer has not chosen to name this
+    presentation) and ``linked_to`` pointing at the prior UID we just
+    saw transition away from.
+
+    Pulled out as a helper so the broadcast pipeline and the test suite
+    agree on entry shape; the field set must stay in lock-step with
+    ``_identity_helpers.make_recognition_entry`` and the production
+    ``_remember_target``.
+
+    Args:
+        target: The character whose UID just transitioned.
+        observer: The character whose memory is being updated.
+        linked_to: Apparent UID of the prior presentation, or ``None``.
+        now_iso: ISO timestamp string to stamp ``first_seen`` /
+            ``last_seen``.
+        location_name: Room key for ``location_first_seen`` /
+            ``location_last_seen``.
+
+    Returns:
+        Recognition-memory entry dict ready to be stored under the new
+        Apparent UID.
+    """
+    del observer  # reserved for future per-observer customisation
+    sdesc = target.get_sdesc() if hasattr(target, "get_sdesc") else ""
+    return {
+        "assigned_name": "",
+        "first_seen": now_iso,
+        "last_seen": now_iso,
+        "times_seen": 1,
+        "location_first_seen": location_name,
+        "location_last_seen": location_name,
+        "locations_seen": [location_name],
+        "sdesc_at_first_encounter": sdesc,
+        "sdesc_at_last_encounter": sdesc,
+        "notes": "",
+        "tags": [],
+        "confidence": 1.0,
+        "relationship_valence": "neutral",
+        "lost_contact": False,
+        "recent_interactions": [],
+        "linked_to": linked_to,
+    }
+
+
+def _collect_unmasking_observers(char: Any) -> list:
+    """Return the list of characters eligible to witness an unmasking.
+
+    Filters in this order:
+
+    1. Must share ``char.location`` (visual perception is room-local).
+    2. Must not be ``char`` themselves (you don't witness your own
+       unmasking through recognition memory — you know who you are).
+    3. Must have a ``recognition_memory`` attribute (excludes items,
+       exits, mobs without the identity surface).
+    4. Must not be unconscious — perception requires awareness.
+
+    Characters lacking :meth:`is_unconscious` are treated as conscious
+    (matches the conservative default used elsewhere in the codebase).
+
+    Args:
+        char: The character whose unmasking is being broadcast.
+
+    Returns:
+        List of observer characters, in iteration order of
+        ``char.location.contents`` (stable per Evennia's storage).
+    """
+    location = getattr(char, "location", None)
+    if location is None:
+        return []
+    contents = getattr(location, "contents", None) or []
+
+    observers: list = []
+    for candidate in contents:
+        if candidate is char:
+            continue
+        if not hasattr(candidate, "recognition_memory"):
+            continue
+        is_unconscious = getattr(candidate, "is_unconscious", None)
+        if callable(is_unconscious):
+            try:
+                if is_unconscious():
+                    continue
+            except (AttributeError, TypeError, ValueError):
+                # Defensive: a broken medical surface should not stop
+                # the broadcast for everyone in the room.
+                logger.log_trace(
+                    f"is_unconscious() raised for {candidate!r}; "
+                    f"treating as conscious for unmasking broadcast."
+                )
+        observers.append(candidate)
+    return observers
+
+
+def _send_unmasking_message(observer: Any, char: Any, cell: str) -> None:
+    """Stub hook for per-cell narrative observer messages.
+
+    PR 3 ships the recognition-memory bookkeeping only.  Narrative
+    flavor text ("Someone's features shift subtly", etc.) is intentionally
+    deferred to a follow-up PR once the engine is observed in play.
+
+    Call sites pass the matrix cell label (``"B"`` / ``"C"`` / ``"D"``)
+    so the future implementation can branch on what the observer knew
+    going in.  Cell ``"A"`` never reaches this hook (no-op short-circuit
+    in :func:`_broadcast_unmasking`).
+    """
+    del observer, char, cell  # TODO(disguise/flavor): write per-cell messages
+
+
+def _broadcast_unmasking(
+    char: Any,
+    old_uid: str | None,
+    new_uid: str | None,
+    source: str | None = None,
+) -> None:
+    """Update every eligible observer's recognition memory for a UID flip.
+
+    Implements the 4-cell matrix:
+
+    * **A** (knew neither): no-op.
+    * **B** (knew old, not new): old entry → ``lost_contact=True``;
+      auto-create new entry with ``linked_to=old_uid``.
+    * **C** (not old, knew new): refresh new entry's ``last_seen`` and
+      clear ``lost_contact``; no link formed (we never met the old
+      presentation, so there's nothing to chain).
+    * **D** (knew both): old entry → ``lost_contact=True``; new entry
+      refreshed; ``linked_to`` set on the new entry (if not already)
+      pointing at ``old_uid``.  Existing ``assigned_name`` on either
+      side is preserved untouched.
+
+    ``old_uid`` or ``new_uid`` being ``None`` (pre-chargen, missing
+    sleeve_uid) short-circuits the entire broadcast — there is nothing
+    meaningful to record.
+
+    Args:
+        char: The character whose UID just changed.
+        old_uid: Apparent UID before the mutation.
+        new_uid: Apparent UID after the mutation.
+        source: Free-form provenance tag (``"wear:balaclava"`` etc.)
+            forwarded to the flavor-text hook for future use.
+    """
+    if old_uid is None or new_uid is None:
+        return
+    if old_uid == new_uid:
+        return
+
+    import time
+
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%S")
+
+    for observer in _collect_unmasking_observers(char):
+        memory = getattr(observer, "recognition_memory", None)
+        if memory is None:
+            memory = {}
+
+        knew_old = old_uid in memory
+        knew_new = new_uid in memory
+        location_name = (
+            observer.location.key
+            if getattr(observer, "location", None) is not None
+            else "unknown"
+        )
+
+        if not knew_old and not knew_new:
+            # Cell A — stranger remains a stranger.
+            continue
+
+        if knew_old and not knew_new:
+            # Cell B — old presentation just left view; new presentation
+            # arrives as a fresh sighting linked back to the old one.
+            memory[old_uid]["lost_contact"] = True
+            memory[new_uid] = _build_link_entry(
+                target=char,
+                observer=observer,
+                linked_to=old_uid,
+                now_iso=now_iso,
+                location_name=location_name,
+            )
+            observer.recognition_memory = memory
+            _send_unmasking_message(observer, char, "B")
+            continue
+
+        if not knew_old and knew_new:
+            # Cell C — we never met the old presentation; just refresh
+            # the new one as we would on any re-sighting.
+            entry = memory[new_uid]
+            entry["last_seen"] = now_iso
+            entry["location_last_seen"] = location_name
+            entry["lost_contact"] = False
+            if hasattr(char, "get_sdesc"):
+                entry["sdesc_at_last_encounter"] = char.get_sdesc()
+            observer.recognition_memory = memory
+            _send_unmasking_message(observer, char, "C")
+            continue
+
+        # Cell D — observer knew both presentations independently.
+        # Refresh both, link new → old if not already linked, but never
+        # rewrite assigned_name (player-authored data is sacrosanct).
+        memory[old_uid]["lost_contact"] = True
+        new_entry = memory[new_uid]
+        new_entry["last_seen"] = now_iso
+        new_entry["location_last_seen"] = location_name
+        new_entry["lost_contact"] = False
+        if hasattr(char, "get_sdesc"):
+            new_entry["sdesc_at_last_encounter"] = char.get_sdesc()
+        if new_entry.get("linked_to") is None:
+            new_entry["linked_to"] = old_uid
+        observer.recognition_memory = memory
+        _send_unmasking_message(observer, char, "D")
+
+    del source  # reserved for future debug/flavor routing
+
+
+class apply_signature_change:
+    """Context manager wrapping any mutation of a character's identity signature.
+
+    Captures the Apparent UID on enter, yields to the caller for the
+    mutation, then captures the post-mutation UID on exit and fires
+    :func:`_broadcast_unmasking` if it changed.
+
+    Use at every site that writes a signature input:
+
+    * ``db.height_override`` / ``db.build_override`` / ``db.keyword_override``
+    * Wearing or removing a ``disguise_essential`` item
+    * Bulk persona application
+
+    Exceptions raised inside the ``with`` block propagate normally and
+    suppress the broadcast — a failed mutation should not pretend the
+    UID changed.
+
+    Usage::
+
+        with apply_signature_change(char, source="override:height"):
+            char.db.height_override = "tall"
+
+    Args:
+        char: The character whose signature is being mutated.
+        source: Optional free-form tag describing the mutation, passed
+            through to the flavor-text hook (currently unused).
+    """
+
+    def __init__(self, char: Any, source: str | None = None) -> None:
+        self.char = char
+        self.source = source
+        self._old_uid: str | None = None
+
+    def __enter__(self) -> "apply_signature_change":
+        self._old_uid = get_apparent_uid(self.char)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
+        if exc_type is not None:
+            # Mutation failed; do not broadcast.
+            return False
+        new_uid = get_apparent_uid(self.char)
+        _broadcast_unmasking(
+            self.char, self._old_uid, new_uid, source=self.source
+        )
+        return False
+
+
+def walk_linked_chain(
+    memory: dict, start_uid: str, max_hops: int = _LINKED_CHAIN_MAX_HOPS
+) -> list[str]:
+    """Walk a recognition-memory ``linked_to`` chain from ``start_uid``.
+
+    Returns the list of UIDs reachable from (and including)
+    ``start_uid``, in traversal order, with cycle detection.  A UID
+    encountered twice terminates the walk silently — corrupted data
+    must not hang the engine.
+
+    The ``max_hops`` cap is a defensive safety net against pathological
+    data only; per design there is no user-facing chain-length limit.
+
+    Args:
+        memory: A ``recognition_memory`` dict.
+        start_uid: UID to begin the walk from.  Returns ``[]`` if not
+            present in ``memory``.
+        max_hops: Defensive cap on distinct UIDs visited.
+
+    Returns:
+        List of UIDs visited in walk order, starting with ``start_uid``.
+    """
+    if start_uid not in memory:
+        return []
+    chain: list[str] = []
+    seen: set = set()
+    current: str | None = start_uid
+    while current is not None and current in memory:
+        if current in seen:
+            logger.log_warn(
+                f"recognition_memory linked_to cycle detected at "
+                f"uid={current!r}; truncating chain walk."
+            )
+            break
+        seen.add(current)
+        chain.append(current)
+        if len(chain) >= max_hops:
+            break
+        current = memory[current].get("linked_to")
+    return chain
+
+
+def get_linked_aliases(memory: dict, uid: str) -> list[str]:
+    """Return assigned names from entries linked to ``uid`` (excluding self).
+
+    Walks the chain via :func:`walk_linked_chain`, skips the starting
+    UID, and collects non-blank ``assigned_name`` values from every
+    other entry in the chain.
+
+    Used by ``recall`` / ``memory`` to render "Also known as: …" lines
+    so the player can see when the engine has observed a body
+    transition between two named presentations.
+
+    Args:
+        memory: A ``recognition_memory`` dict.
+        uid: The starting UID whose chain is inspected.
+
+    Returns:
+        List of assigned names found on linked entries (excluding the
+        entry at ``uid`` itself), in traversal order.  Blank names are
+        omitted.
+    """
+    aliases: list[str] = []
+    for chain_uid in walk_linked_chain(memory, uid):
+        if chain_uid == uid:
+            continue
+        entry = memory.get(chain_uid)
+        if entry is None:
+            continue
+        name = (entry.get("assigned_name") or "").strip()
+        if name:
+            aliases.append(name)
+    return aliases
+

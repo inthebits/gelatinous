@@ -73,14 +73,16 @@ def make_recognition_entry(
     last_seen: str | None = None,
     times_seen: int = 1,
     lost_contact: bool = False,
+    linked_to: str | None = None,
 ) -> dict:
     """Build a recognition_memory entry dict matching the production schema.
 
     Defaults mirror what :meth:`commands.CmdCharacter.CmdRemember._remember_target`
     writes for a fresh first-meet, including the ``lost_contact`` field
-    introduced by the disguise engine PR.  Tests that need a particular
-    field shape pass the relevant kwargs; everything else takes a
-    sensible default.
+    introduced by the disguise engine PR and the ``linked_to`` chain
+    pointer added by the unmasking-moments broadcast (PR 3).  Tests that
+    need a particular field shape pass the relevant kwargs; everything
+    else takes a sensible default.
     """
     return {
         "assigned_name": assigned_name,
@@ -100,4 +102,5 @@ def make_recognition_entry(
         "last_seen": last_seen if last_seen is not None else first_seen,
         "times_seen": times_seen,
         "lost_contact": lost_contact,
+        "linked_to": linked_to,
     }

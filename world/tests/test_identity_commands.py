@@ -854,7 +854,111 @@ class TestLostContactRenderAnnotation(TestCase):
 # ===================================================================
 
 
-class TestShortdescCustomKeyword(TestCase):
+class TestAlsoKnownAsRendering(TestCase):
+    """``recall`` and ``memory`` surface linked-chain aliases (PR 3)."""
+
+    def _seed_linked_pair(self, observer):
+        """Seed two linked entries on *observer*'s memory.
+
+        ``uid-hood`` (named "The Hood") links back to ``uid-jorge``
+        (named "Jorge") — the shape produced by Cell D / Cell B of the
+        unmasking broadcast.
+        """
+        observer.recognition_memory = {
+            "uid-jorge": {
+                "assigned_name": "Jorge",
+                "first_seen": "2026-01-01T00:00:00",
+                "last_seen": "2026-01-01T00:00:00",
+                "times_seen": 3,
+                "location_first_seen": "Plaza",
+                "location_last_seen": "Plaza",
+                "locations_seen": ["Plaza"],
+                "sdesc_at_first_encounter": "a tall lean man",
+                "sdesc_at_last_encounter": "a tall lean man",
+                "notes": "",
+                "tags": [],
+                "confidence": 1.0,
+                "relationship_valence": "neutral",
+                "recent_interactions": [],
+                "lost_contact": True,
+                "linked_to": None,
+            },
+            "uid-hood": {
+                "assigned_name": "The Hood",
+                "first_seen": "2026-01-02T00:00:00",
+                "last_seen": "2026-01-02T00:00:00",
+                "times_seen": 1,
+                "location_first_seen": "Alley",
+                "location_last_seen": "Alley",
+                "locations_seen": ["Alley"],
+                "sdesc_at_first_encounter": "a hooded figure",
+                "sdesc_at_last_encounter": "a hooded figure",
+                "notes": "",
+                "tags": [],
+                "confidence": 1.0,
+                "relationship_valence": "neutral",
+                "recent_interactions": [],
+                "lost_contact": False,
+                "linked_to": "uid-jorge",
+            },
+        }
+
+    def test_recall_renders_also_known_as_for_linked_entry(self):
+        from commands.CmdCharacter import CmdRecall
+
+        caller = _make_character(key="Observer", sleeve_uid="uid-observer")
+        self._seed_linked_pair(caller)
+
+        cmd = CmdRecall()
+        cmd.caller = caller
+        cmd._render_entry(
+            caller, caller.recognition_memory["uid-hood"], "uid-hood"
+        )
+
+        msg_text = caller.msg.call_args[0][0]
+        self.assertIn("Also known as", msg_text)
+        self.assertIn("Jorge", msg_text)
+
+    def test_recall_omits_also_known_as_when_no_chain(self):
+        from commands.CmdCharacter import CmdRecall
+
+        caller = _make_character(
+            key="Observer",
+            sleeve_uid="uid-observer",
+            recognition_memory=_seed_memory(),
+        )
+
+        cmd = CmdRecall()
+        cmd.caller = caller
+        cmd._render_entry(
+            caller, caller.recognition_memory["uid-target"], "uid-target"
+        )
+
+        msg_text = caller.msg.call_args[0][0]
+        self.assertNotIn("Also known as", msg_text)
+
+    def test_memory_table_shows_aka_for_linked_entries(self):
+        from commands.CmdCharacter import CmdMemory
+
+        caller = _make_character(key="Observer", sleeve_uid="uid-observer")
+        self._seed_linked_pair(caller)
+
+        cmd = CmdMemory()
+        cmd.caller = caller
+        cmd.args = ""
+        cmd.func()
+
+        msg_text = caller.msg.call_args[0][0]
+        # The Hood row should annotate Jorge as a linked alias.  The
+        # table cell wraps "(aka Jorge)" across whitespace, so assert
+        # on both fragments independently rather than the joined string.
+        self.assertIn("aka", msg_text)
+        self.assertIn("Jorge", msg_text)
+        # And the Hood entry itself should still be present.
+        self.assertIn("The Hood", msg_text)
+
+
+
     """Test that @shortdesc accepts arbitrary valid custom keywords."""
 
     def test_custom_keyword_accepted(self):
