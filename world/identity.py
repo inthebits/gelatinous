@@ -906,6 +906,62 @@ def get_apparent_uid(char: Any) -> str | None:
     ).hexdigest()
 
 
+# Decay stages at which a corpse's body-identity axis (``sleeve_uid``) is
+# no longer recoverable by an unaided observer.  Stages strictly listed
+# here cause :func:`get_apparent_uid_for_decay` to blank the sleeve_uid
+# in the signature tuple, producing a UID that no living-character
+# memory will match — natural recognition fails, only forensic recovery
+# (see :meth:`typeclasses.corpse.Corpse._attempt_forensic_recognition`)
+# can restore the original match.
+#
+# Earlier stages (fresh, early) leave the signature untouched.  The
+# ``skeletal`` stage is handled separately as a hard cutoff in
+# :meth:`Corpse.get_display_name` — no recognition path returns a name
+# for a skeleton, with or without forensics.
+_DECAY_SUPPRESS_SLEEVE_UID_STAGES = frozenset({"moderate", "advanced"})
+
+
+def get_apparent_uid_for_decay(char: Any, stage: str) -> str | None:
+    """Compute the Apparent UID a decayed body presents to an unaided observer.
+
+    Same hashing pipeline as :func:`get_apparent_uid`, but with the
+    body-identity axis (``sleeve_uid``) blanked when the decay stage is
+    advanced enough that an unaided observer cannot resolve the face /
+    build / skin signature.  The non-body axes (overrides, worn items)
+    are preserved so a recognizable disguise / costume still contributes
+    to a partial match — but partial-match UIDs will not collide with
+    memory entries written from the fresh, sleeve-keyed presentation.
+
+    Callers compare the result against the observer's recognition memory
+    first; if it misses, they may fall back to the un-degraded
+    :func:`get_apparent_uid` and gate the recovery on a forensic skill
+    check (see :meth:`typeclasses.corpse.Corpse._attempt_forensic_recognition`).
+
+    Args:
+        char: The decaying character / corpse.
+        stage: One of ``"fresh"``, ``"early"``, ``"moderate"``,
+            ``"advanced"``, ``"skeletal"`` (matches
+            :meth:`typeclasses.corpse.Corpse.get_decay_stage`).  Unknown
+            stages are treated as ``"fresh"`` (no suppression) to fail
+            safe toward recognition rather than silently break it.
+
+    Returns:
+        16-character hex digest, or ``None`` when the underlying
+        signature has no real ``sleeve_uid`` to hash (matching the
+        ``None`` semantics of :func:`get_apparent_uid`).
+    """
+    signature = get_identity_signature(char)
+    if signature[0] is None:
+        return None
+    if stage in _DECAY_SUPPRESS_SLEEVE_UID_STAGES:
+        # Blank the sleeve_uid axis; preserve overrides and worn items.
+        signature = (None,) + signature[1:]
+    signature_bytes = repr(signature).encode("utf-8")
+    return hashlib.blake2b(
+        signature_bytes, digest_size=_APPARENT_UID_DIGEST_BYTES
+    ).hexdigest()
+
+
 def get_apparent_gender(char: Any) -> str:
     """Return the grammar gender presented by a character's current look.
 

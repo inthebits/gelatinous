@@ -1047,7 +1047,27 @@ Corpses already preserve forensic data (original name, dbref, physical descripti
 - `sleeve_uid` is propagated to the corpse — **shipped** (PR #133).
 - Looking at a corpse: investigator sees recognized name or sdesc based on their memory — **shipped**. The corpse's `get_display_name` routes through the observer's recognition memory keyed on the corpse's apparent UID (derived from `sleeve_uid` plus whatever the corpse is still wearing).
 - Worn-item changes on the corpse re-derive the apparent presentation — **shipped** via `at_object_leave` invalidation, so stripping a body changes its signature exactly like stripping a live character.
-- Corpse decay interacts with recognition: at advanced decay, the physical features become unrecognizable (already described in existing decay stage text). Wiring decay stage into the apparent-UID pipeline is **pending** — the hook exists; the policy for "when does decay break recognition" has not been chosen.
+- Corpse decay interacts with recognition via the **decay-aware recognition** policy below — **shipped** (PR B).
+
+#### Decay-Aware Recognition
+
+`Corpse.get_display_name` runs a two-pass lookup against the observer's recognition memory, gated by the corpse's current decay stage:
+
+| Stage | Threshold | Body axis (`sleeve_uid`) | Natural recognition | Forensic recovery |
+|---|---|---|---|---|
+| `fresh` | < 1 h | preserved | Works | n/a |
+| `early` | < 1 d | preserved | Works | n/a |
+| `moderate` | < 3 d | blanked | Fails | Intellect ≥ 3 |
+| `advanced` | < 1 w | blanked | Fails | Intellect ≥ 5 |
+| `skeletal` | ≥ 1 w | n/a | Blocked | Blocked |
+
+**Pass 1 — natural recognition.** `world.identity.get_apparent_uid_for_decay(corpse, stage)` mirrors `get_apparent_uid` but blanks the `sleeve_uid` axis at `moderate` and `advanced`. Worn items and override axes are preserved, so a recognizable jacket continues to anchor the signature through light decay; a fresh memory keyed to `(sleeve_uid + jacket)` simply no longer matches once the body axis is blanked. At `fresh` and `early` the degraded UID equals the fresh UID, so ordinary recognition works.
+
+**Pass 2 — forensic recovery.** If the degraded lookup misses but `get_apparent_uid(corpse)` (the fresh-equivalent UID) is in memory, the looker rolls Intellect (`world.combat.dice.roll_stat(looker, "intellect", default=1)`) against the stage DC. On success the assigned name is returned; on failure the decay name is returned. The roll outcome is cached permanently in `corpse.db.forensic_recognition_cache = {looker.dbref: bool}` — a single careful examination per `(observer, corpse)` pair determines the verdict, which prevents re-roll abuse on every `look`. Anonymous lookers (no dbref) are not cached and re-roll on each call.
+
+**Skeletal hard cutoff.** The skeletal stage short-circuits both passes and returns the decay name even with a guaranteed-pass roll. Programmatic `sleeve_uid` queries (admin commands, future forensic tooling) continue to work — only the display-name path is blocked.
+
+**Disguise persistence.** Worn-item axes contribute to the signature at all non-skeletal stages, so looting a disguise-essential item (e.g. a balaclava) silently breaks both recognition paths just as it does for a living character.
 
 ### Evidence and Investigation (Future)
 
