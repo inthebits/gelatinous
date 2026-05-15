@@ -1314,6 +1314,193 @@ def find_entries_by_real_sleeve_uid(
 
 
 # =========================================================================
+# Disguise Piercing — Opposed recognition roll
+# =========================================================================
+#
+# When an observer looks at a target whose current Apparent UID is not in
+# their recognition memory, but the target's underlying ``sleeve_uid``
+# matches a *different* presentation they previously remembered (the
+# "bare-face entry"), the observer rolls Intellect against the target's
+# Resonance to "see through" the disguise.
+#
+# Modelled on the corpse-forensic-recovery pattern
+# (``typeclasses/corpse.py:_attempt_forensic_recognition``):
+# permanent per-``(observer, target, apparent_uid)`` cache so a single
+# careful look determines the verdict for that specific presentation;
+# entering a new disguise rolls again.
+#
+# Familiarity (``times_seen`` on the bare-face entry) buffs the
+# observer's roll; the number of disguise vectors the target is using
+# (worn ``disguise_essential`` items + active overrides) penalises it.
+
+#: Per-disguise-vector penalty applied to the observer's roll.
+DISGUISE_PIERCE_VECTOR_PENALTY = 1
+
+#: Soft cap on familiarity bonus (``min(times_seen, CAP)``) — keeps a
+#: grizzled veteran from auto-piercing every disguise on Earth.
+DISGUISE_PIERCE_FAMILIARITY_CAP = 5
+
+
+def _count_disguise_vectors(target: Any) -> int:
+    """Return the count of active disguise vectors on *target*.
+
+    A "vector" is anything that perturbs the Apparent UID away from the
+    bare sleeve: each worn ``disguise_essential`` item counts once, and
+    each of the three string overrides (``height_override``,
+    ``build_override``, ``keyword_override``) counts once when set.
+
+    Used by :func:`compute_disguise_pierce` to penalise the observer's
+    roll: heavier disguises are harder to see through.
+    """
+    vectors = 0
+    get_worn = getattr(target, "get_worn_items", None)
+    if callable(get_worn):
+        try:
+            worn = get_worn() or []
+        except (AttributeError, TypeError):
+            worn = []
+        vectors += sum(
+            1 for item in worn if getattr(item, "disguise_essential", False)
+        )
+    db = getattr(target, "db", None)
+    if db is not None:
+        for field in ("height_override", "build_override", "keyword_override"):
+            if getattr(db, field, None):
+                vectors += 1
+    return vectors
+
+
+def attempt_disguise_pierce(
+    observer: Any, target: Any, apparent_uid: str, bare_entry: dict
+) -> bool:
+    """Resolve (and cache) a disguise-piercing recognition roll.
+
+    Permanent per-``(observer, target, apparent_uid)`` cache stored on
+    ``observer.db.disguise_pierce_cache`` as
+    ``{(target.dbref, apparent_uid): bool}``.  An observer who fails to
+    pierce a specific presentation will keep failing until that
+    presentation changes; success sticks for that presentation.  This
+    mirrors the corpse forensic-recovery contract: one careful look
+    determines the verdict, no re-roll abuse on every ``look``.
+    Observers or targets without a ``dbref`` are not cached and re-roll
+    on every call (keeps the cache bounded, no junk keys for tooling).
+    Anonymous targets (no ``apparent_uid``) are likewise un-cached.
+
+    The roll is opposed ``Intellect`` (observer) vs ``Resonance``
+    (target), with:
+
+      * **Familiarity bonus** added to the observer: ``min(times_seen,
+        DISGUISE_PIERCE_FAMILIARITY_CAP)`` from the bare-face entry.
+      * **Disguise penalty** subtracted from the observer:
+        ``DISGUISE_PIERCE_VECTOR_PENALTY * count_of_active_vectors``
+        (worn ``disguise_essential`` items + active overrides).
+
+    Ties favour the target (the disguise holds).
+
+    Args:
+        observer: Character attempting recognition.
+        target: Character being observed (must have a ``sleeve_uid``).
+        apparent_uid: The target's *current* Apparent UID — the
+            disguised presentation being pierced.  Used as the cache
+            key so each new disguise gets a fresh roll.
+        bare_entry: The previously-remembered recognition entry for
+            this sleeve (from :func:`find_entries_by_real_sleeve_uid`);
+            its ``times_seen`` feeds the familiarity bonus.
+
+    Returns:
+        ``True`` if the observer pierces the disguise (caller should
+        surface the bare entry's ``assigned_name``), ``False`` otherwise.
+    """
+    from world.combat.dice import opposed_roll
+
+    observer_dbref = getattr(observer, "dbref", None)
+    target_dbref = getattr(target, "dbref", None)
+    cacheable = (
+        observer_dbref is not None
+        and target_dbref is not None
+        and bool(apparent_uid)
+    )
+
+    if cacheable:
+        cache = observer.db.disguise_pierce_cache
+        if cache is None:
+            cache = {}
+        key = (target_dbref, apparent_uid)
+        if key in cache:
+            return bool(cache[key])
+    else:
+        cache = None
+        key = None
+
+    obs_roll, tgt_roll, _ = opposed_roll(
+        observer, target, "intellect", "resonance"
+    )
+
+    familiarity = min(
+        int(bare_entry.get("times_seen", 0) or 0),
+        DISGUISE_PIERCE_FAMILIARITY_CAP,
+    )
+    penalty = _count_disguise_vectors(target) * DISGUISE_PIERCE_VECTOR_PENALTY
+
+    success = (obs_roll + familiarity) > (tgt_roll + penalty)
+
+    if cacheable:
+        cache[key] = success
+        observer.db.disguise_pierce_cache = cache
+
+    return success
+
+
+def attempt_display_pierce(
+    looker: Any, target: Any, apparent_uid: str | None
+) -> str | None:
+    """High-level pierce wrapper for the display-name pipeline.
+
+    Called from :meth:`Character.get_display_name` and
+    :meth:`Character.get_look_header` when the looker does not already
+    recognise the target's current Apparent UID.  Finds candidate
+    bare-face entries via reverse sleeve lookup, then defers to
+    :func:`attempt_disguise_pierce` for the actual opposed roll.
+
+    The first candidate (insertion order) wins; this corresponds to
+    "the earliest presentation the looker remembered for this sleeve".
+    The current (disguised) presentation is filtered out so we never
+    pierce a presentation against itself.
+
+    Args:
+        looker: The observer.
+        target: The character being looked at.
+        apparent_uid: ``target``'s current Apparent UID.
+
+    Returns:
+        The pierced ``assigned_name`` on success, or ``None`` when no
+        pierce occurs (missing memory, missing sleeve, no candidates,
+        or failed roll).
+    """
+    if looker is None or looker is target or not apparent_uid:
+        return None
+    memory = getattr(looker, "recognition_memory", None)
+    if not memory:
+        return None
+    real_sleeve = getattr(target, "sleeve_uid", None)
+    if not real_sleeve:
+        return None
+
+    candidates = [
+        (uid, entry)
+        for uid, entry in find_entries_by_real_sleeve_uid(looker, real_sleeve)
+        if uid != apparent_uid and entry.get("assigned_name")
+    ]
+    if not candidates:
+        return None
+
+    _bare_uid, bare_entry = candidates[0]
+    if attempt_disguise_pierce(looker, target, apparent_uid, bare_entry):
+        return bare_entry.get("assigned_name")
+    return None
+
+
+# =========================================================================
 # Unmasking Moments — Apparent UID transition broadcast
 # =========================================================================
 #

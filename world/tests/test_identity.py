@@ -1946,3 +1946,325 @@ class TestFindEntriesByRealSleeveUid(TestCase):
         self.assertEqual(
             find_entries_by_real_sleeve_uid(observer, "sleeve-bruce"), []
         )
+
+
+class TestAttemptDisguisePierce(TestCase):
+    """Opposed Intellect-vs-Resonance roll with cache.
+
+    The cache is keyed on ``(target.dbref, apparent_uid)`` and stored
+    on ``observer.db.disguise_pierce_cache``.  Cached outcomes short-
+    circuit before the dice are touched.
+    """
+
+    def _make_observer(self):
+        observer = MagicMock()
+        observer.dbref = "#10"
+        observer.db.disguise_pierce_cache = None
+        return observer
+
+    def _make_target(self, with_overrides=False, worn_items=None):
+        target = MagicMock()
+        target.dbref = "#20"
+        target.db.height_override = "tall" if with_overrides else None
+        target.db.build_override = None
+        target.db.keyword_override = None
+        target.get_worn_items = MagicMock(return_value=worn_items or [])
+        return target
+
+    def test_cache_hit_true_short_circuits(self):
+        from world.identity import attempt_disguise_pierce
+
+        observer = self._make_observer()
+        target = self._make_target()
+        observer.db.disguise_pierce_cache = {("#20", "uid-cape"): True}
+        bare = {"times_seen": 0}
+
+        with patch("world.combat.dice.opposed_roll") as roll:
+            result = attempt_disguise_pierce(observer, target, "uid-cape", bare)
+
+        self.assertTrue(result)
+        roll.assert_not_called()
+
+    def test_cache_hit_false_short_circuits(self):
+        from world.identity import attempt_disguise_pierce
+
+        observer = self._make_observer()
+        target = self._make_target()
+        observer.db.disguise_pierce_cache = {("#20", "uid-cape"): False}
+        bare = {"times_seen": 99}
+
+        with patch("world.combat.dice.opposed_roll") as roll:
+            result = attempt_disguise_pierce(observer, target, "uid-cape", bare)
+
+        self.assertFalse(result)
+        roll.assert_not_called()
+
+    def test_success_caches_outcome(self):
+        from world.identity import attempt_disguise_pierce
+
+        observer = self._make_observer()
+        target = self._make_target()
+        bare = {"times_seen": 0}
+
+        with patch(
+            "world.combat.dice.opposed_roll", return_value=(10, 1, True)
+        ):
+            result = attempt_disguise_pierce(observer, target, "uid-cape", bare)
+
+        self.assertTrue(result)
+        self.assertEqual(
+            observer.db.disguise_pierce_cache, {("#20", "uid-cape"): True}
+        )
+
+    def test_failure_caches_outcome(self):
+        from world.identity import attempt_disguise_pierce
+
+        observer = self._make_observer()
+        target = self._make_target()
+        bare = {"times_seen": 0}
+
+        with patch(
+            "world.combat.dice.opposed_roll", return_value=(1, 10, False)
+        ):
+            result = attempt_disguise_pierce(observer, target, "uid-cape", bare)
+
+        self.assertFalse(result)
+        self.assertEqual(
+            observer.db.disguise_pierce_cache, {("#20", "uid-cape"): False}
+        )
+
+    def test_familiarity_bonus_lets_observer_win(self):
+        from world.identity import attempt_disguise_pierce
+
+        observer = self._make_observer()
+        target = self._make_target()
+        # Tie on raw rolls — observer's familiarity bonus should
+        # push them over the top.
+        bare = {"times_seen": 3}
+
+        with patch(
+            "world.combat.dice.opposed_roll", return_value=(5, 5, False)
+        ):
+            result = attempt_disguise_pierce(observer, target, "uid-cape", bare)
+
+        self.assertTrue(result)
+
+    def test_disguise_vectors_penalise_observer(self):
+        from world.identity import attempt_disguise_pierce
+
+        observer = self._make_observer()
+        item = MagicMock()
+        item.disguise_essential = True
+        target = self._make_target(with_overrides=True, worn_items=[item])
+        # Observer rolls 4, target rolls 2; vectors=2 (override + item)
+        # penalises observer's effective total to 2 vs target's 4. Fail.
+        bare = {"times_seen": 0}
+
+        with patch(
+            "world.combat.dice.opposed_roll", return_value=(4, 2, True)
+        ):
+            result = attempt_disguise_pierce(observer, target, "uid-cape", bare)
+
+        self.assertFalse(result)
+
+    def test_uncacheable_when_observer_lacks_dbref(self):
+        from world.identity import attempt_disguise_pierce
+
+        observer = self._make_observer()
+        observer.dbref = None
+        target = self._make_target()
+        bare = {"times_seen": 0}
+
+        with patch(
+            "world.combat.dice.opposed_roll", return_value=(10, 1, True)
+        ):
+            result = attempt_disguise_pierce(observer, target, "uid-cape", bare)
+
+        self.assertTrue(result)
+        # Cache must not have been written.
+        self.assertIsNone(observer.db.disguise_pierce_cache)
+
+    def test_familiarity_bonus_capped(self):
+        from world.identity import (
+            DISGUISE_PIERCE_FAMILIARITY_CAP,
+            attempt_disguise_pierce,
+        )
+
+        observer = self._make_observer()
+        target = self._make_target()
+        # Times_seen far above the cap — bonus must clip.  Set target's
+        # roll just above (observer_roll + CAP) so the observer fails
+        # even with bonus saturated.
+        bare = {"times_seen": 999}
+
+        with patch(
+            "world.combat.dice.opposed_roll",
+            return_value=(1, 1 + DISGUISE_PIERCE_FAMILIARITY_CAP + 1, False),
+        ):
+            result = attempt_disguise_pierce(observer, target, "uid-cape", bare)
+
+        self.assertFalse(result)
+
+
+class TestAttemptDisplayPierce(TestCase):
+    """End-to-end pierce wrapper used by Character.get_display_name."""
+
+    def _make_observer(self, memory=None):
+        observer = MagicMock()
+        observer.dbref = "#10"
+        observer.recognition_memory = memory or {}
+        observer.db.disguise_pierce_cache = None
+        return observer
+
+    def _make_target(self, sleeve_uid="sleeve-bruce"):
+        target = MagicMock()
+        target.dbref = "#20"
+        target.sleeve_uid = sleeve_uid
+        target.db.height_override = None
+        target.db.build_override = None
+        target.db.keyword_override = None
+        target.get_worn_items = MagicMock(return_value=[])
+        return target
+
+    def test_returns_none_when_looker_is_target(self):
+        from world.identity import attempt_display_pierce
+
+        target = self._make_target()
+        self.assertIsNone(attempt_display_pierce(target, target, "uid-cape"))
+
+    def test_returns_none_when_apparent_uid_missing(self):
+        from world.identity import attempt_display_pierce
+
+        observer = self._make_observer()
+        target = self._make_target()
+        self.assertIsNone(attempt_display_pierce(observer, target, None))
+
+    def test_returns_none_when_memory_empty(self):
+        from world.identity import attempt_display_pierce
+
+        observer = self._make_observer()
+        target = self._make_target()
+        self.assertIsNone(
+            attempt_display_pierce(observer, target, "uid-cape")
+        )
+
+    def test_returns_none_when_target_has_no_sleeve(self):
+        from world.identity import attempt_display_pierce
+
+        observer = self._make_observer(
+            memory={
+                "uid-bare": {
+                    "assigned_name": "Bruce",
+                    "real_sleeve_uid": "sleeve-bruce",
+                }
+            }
+        )
+        target = self._make_target(sleeve_uid=None)
+        self.assertIsNone(
+            attempt_display_pierce(observer, target, "uid-cape")
+        )
+
+    def test_returns_none_when_no_other_presentation_known(self):
+        from world.identity import attempt_display_pierce
+
+        # Only entry the looker has for this sleeve IS the current
+        # apparent_uid — nothing to pierce against.
+        observer = self._make_observer(
+            memory={
+                "uid-cape": {
+                    "assigned_name": "the Bat",
+                    "real_sleeve_uid": "sleeve-bruce",
+                }
+            }
+        )
+        target = self._make_target()
+        self.assertIsNone(
+            attempt_display_pierce(observer, target, "uid-cape")
+        )
+
+    def test_success_returns_bare_face_name(self):
+        from world.identity import attempt_display_pierce
+
+        observer = self._make_observer(
+            memory={
+                "uid-bare": {
+                    "assigned_name": "Bruce",
+                    "real_sleeve_uid": "sleeve-bruce",
+                    "times_seen": 3,
+                }
+            }
+        )
+        target = self._make_target()
+        with patch(
+            "world.combat.dice.opposed_roll", return_value=(10, 1, True)
+        ):
+            result = attempt_display_pierce(observer, target, "uid-cape")
+        self.assertEqual(result, "Bruce")
+
+    def test_failure_returns_none(self):
+        from world.identity import attempt_display_pierce
+
+        observer = self._make_observer(
+            memory={
+                "uid-bare": {
+                    "assigned_name": "Bruce",
+                    "real_sleeve_uid": "sleeve-bruce",
+                    "times_seen": 0,
+                }
+            }
+        )
+        target = self._make_target()
+        with patch(
+            "world.combat.dice.opposed_roll", return_value=(1, 10, False)
+        ):
+            result = attempt_display_pierce(observer, target, "uid-cape")
+        self.assertIsNone(result)
+
+    def test_picks_first_candidate_when_multiple_match(self):
+        from world.identity import attempt_display_pierce
+
+        # Dict insertion order preserved by Python 3.7+; bare-face
+        # entry comes first.
+        observer = self._make_observer(
+            memory={
+                "uid-bare": {
+                    "assigned_name": "Bruce",
+                    "real_sleeve_uid": "sleeve-bruce",
+                    "times_seen": 1,
+                },
+                "uid-shades": {
+                    "assigned_name": "creep in shades",
+                    "real_sleeve_uid": "sleeve-bruce",
+                    "times_seen": 1,
+                },
+            }
+        )
+        target = self._make_target()
+        with patch(
+            "world.combat.dice.opposed_roll", return_value=(10, 1, True)
+        ):
+            result = attempt_display_pierce(observer, target, "uid-cape")
+        self.assertEqual(result, "Bruce")
+
+    def test_skips_candidates_without_assigned_name(self):
+        from world.identity import attempt_display_pierce
+
+        observer = self._make_observer(
+            memory={
+                "uid-anon": {
+                    "assigned_name": None,
+                    "real_sleeve_uid": "sleeve-bruce",
+                },
+                "uid-bare": {
+                    "assigned_name": "Bruce",
+                    "real_sleeve_uid": "sleeve-bruce",
+                    "times_seen": 1,
+                },
+            }
+        )
+        target = self._make_target()
+        with patch(
+            "world.combat.dice.opposed_roll", return_value=(10, 1, True)
+        ):
+            result = attempt_display_pierce(observer, target, "uid-cape")
+        self.assertEqual(result, "Bruce")

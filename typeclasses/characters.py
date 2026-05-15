@@ -1032,6 +1032,16 @@ class Character(
                 if assigned:
                     return assigned
 
+        # Disguise piercing: looker doesn't know this presentation, but
+        # may have previously remembered the underlying sleeve under a
+        # different presentation.  Opposed Intellect-vs-Resonance roll
+        # (cached per presentation) decides whether they see through.
+        from world.identity import attempt_display_pierce
+
+        pierced_name = attempt_display_pierce(looker, self, apparent_uid)
+        if pierced_name is not None:
+            return pierced_name
+
         # Fall back to sdesc with indefinite article
         from world.grammar import with_article
 
@@ -1090,6 +1100,11 @@ class Character(
                     assigned = memory[apparent_uid].get("assigned_name")
                     if assigned:
                         name = assigned
+            # Disguise piercing — if not yet recognised, see through?
+            if name is None:
+                from world.identity import attempt_display_pierce
+
+                name = attempt_display_pierce(looker, self, apparent_uid)
             # Stranger: defer to the standard display name (article + sdesc)
             # without a parenthetical to avoid noisy duplication.
             if name is None:
