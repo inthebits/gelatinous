@@ -264,6 +264,14 @@ recognition_memory = {
                                         # transition into a new signature ("unmasking").
                                         # Entry remains visible in `memory` and `recall`
                                         # but is annotated as out of contact.
+        "real_sleeve_uid": str | None,  # The target's actual `sleeve_uid` at the
+                                        # moment of writing. Written once per entry
+                                        # (sleeves don't change) and lazily backfilled
+                                        # by `bump_recognition_recency` and the
+                                        # unmasking-moments hook when missing. Enables
+                                        # `find_entries_by_real_sleeve_uid` reverse
+                                        # lookup used by the disguise-piercing
+                                        # recognition roll (see §Disguise Piercing).
         "linked_to": str | None,        # Apparent UID of a prior presentation the
                                         # observer witnessed transitioning into this one.
                                         # Populated by the unmasking-moments hook (see

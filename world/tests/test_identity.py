@@ -1741,3 +1741,208 @@ class TestBumpRecognitionRecency(TestCase):
         bump_recognition_recency(observer, target, "uid-known", now=now)
 
         self.assertEqual(memory["uid-known"]["location_last_seen"], "unknown")
+
+    def test_bump_backfills_real_sleeve_uid_when_missing(self):
+        """Bump path backfills `real_sleeve_uid` on legacy entries.
+
+        Pre-schema entries (written before PR-X2) lack the
+        ``real_sleeve_uid`` field; the bump path opportunistically
+        backfills it from ``target.sleeve_uid`` so the entry becomes
+        eligible for disguise-piercing reverse lookup.
+        """
+        from datetime import datetime, timedelta
+        from world.identity import (
+            RECOGNITION_BUMP_THROTTLE_SECONDS,
+            bump_recognition_recency,
+        )
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        stale = now - timedelta(
+            seconds=RECOGNITION_BUMP_THROTTLE_SECONDS + 60
+        )
+        memory = {
+            "uid-known": self._entry(
+                last_seen=stale.strftime(self.TS_FMT)
+            ),
+        }
+        # Note: legacy entry has no `real_sleeve_uid` key.
+        self.assertNotIn("real_sleeve_uid", memory["uid-known"])
+
+        observer = self._make_observer(memory)
+        target = self._make_target()
+        target.sleeve_uid = "sleeve-jorge-123"
+
+        bumped = bump_recognition_recency(
+            observer, target, "uid-known", now=now
+        )
+
+        self.assertTrue(bumped)
+        self.assertEqual(
+            memory["uid-known"]["real_sleeve_uid"], "sleeve-jorge-123"
+        )
+
+    def test_bump_preserves_existing_real_sleeve_uid(self):
+        """Bump must not overwrite an already-set `real_sleeve_uid`."""
+        from datetime import datetime, timedelta
+        from world.identity import (
+            RECOGNITION_BUMP_THROTTLE_SECONDS,
+            bump_recognition_recency,
+        )
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        stale = now - timedelta(
+            seconds=RECOGNITION_BUMP_THROTTLE_SECONDS + 60
+        )
+        memory = {
+            "uid-known": {
+                **self._entry(last_seen=stale.strftime(self.TS_FMT)),
+                "real_sleeve_uid": "sleeve-original",
+            },
+        }
+        observer = self._make_observer(memory)
+        target = self._make_target()
+        # Even if target reports a different sleeve_uid, the stored
+        # field must not change (it never changes for a given body).
+        target.sleeve_uid = "sleeve-different-somehow"
+
+        bump_recognition_recency(observer, target, "uid-known", now=now)
+
+        self.assertEqual(
+            memory["uid-known"]["real_sleeve_uid"], "sleeve-original"
+        )
+
+    def test_bump_handles_missing_target_sleeve_uid(self):
+        """No backfill when target has no sleeve_uid (pre-chargen)."""
+        from datetime import datetime, timedelta
+        from world.identity import (
+            RECOGNITION_BUMP_THROTTLE_SECONDS,
+            bump_recognition_recency,
+        )
+
+        now = datetime(2026, 1, 1, 12, 0, 0)
+        stale = now - timedelta(
+            seconds=RECOGNITION_BUMP_THROTTLE_SECONDS + 60
+        )
+        memory = {
+            "uid-known": self._entry(
+                last_seen=stale.strftime(self.TS_FMT)
+            ),
+        }
+        observer = self._make_observer(memory)
+        target = self._make_target()
+        target.sleeve_uid = None
+
+        bump_recognition_recency(observer, target, "uid-known", now=now)
+
+        # No real_sleeve_uid added because target has none.
+        self.assertIsNone(memory["uid-known"].get("real_sleeve_uid"))
+
+
+class TestFindEntriesByRealSleeveUid(TestCase):
+    """Reverse-lookup helper used by disguise-piercing recognition.
+
+    Walks ``observer.recognition_memory`` and returns every entry
+    whose ``real_sleeve_uid`` matches.  Multiple matches are expected
+    in the disguise-piercing case (one body, many presentations).
+    Pre-schema entries (no field set) are silently skipped.
+    """
+
+    def test_returns_all_matching_entries(self):
+        from world.identity import find_entries_by_real_sleeve_uid
+
+        memory = {
+            "uid-bare": {
+                "assigned_name": "Bruce Wayne",
+                "real_sleeve_uid": "sleeve-bruce",
+            },
+            "uid-cape": {
+                "assigned_name": "the Bat",
+                "real_sleeve_uid": "sleeve-bruce",
+            },
+            "uid-shades": {
+                "assigned_name": "creep in shades",
+                "real_sleeve_uid": "sleeve-bruce",
+            },
+            "uid-other": {
+                "assigned_name": "Alfred",
+                "real_sleeve_uid": "sleeve-alfred",
+            },
+        }
+        observer = MagicMock()
+        observer.recognition_memory = memory
+
+        matches = find_entries_by_real_sleeve_uid(observer, "sleeve-bruce")
+
+        self.assertEqual(len(matches), 3)
+        uids = {uid for uid, _ in matches}
+        self.assertEqual(uids, {"uid-bare", "uid-cape", "uid-shades"})
+
+    def test_returns_empty_when_no_match(self):
+        from world.identity import find_entries_by_real_sleeve_uid
+
+        observer = MagicMock()
+        observer.recognition_memory = {
+            "uid-a": {"real_sleeve_uid": "sleeve-other"},
+        }
+
+        self.assertEqual(
+            find_entries_by_real_sleeve_uid(observer, "sleeve-missing"),
+            [],
+        )
+
+    def test_skips_entries_without_real_sleeve_uid(self):
+        """Legacy entries (pre-schema) are silently ignored."""
+        from world.identity import find_entries_by_real_sleeve_uid
+
+        observer = MagicMock()
+        observer.recognition_memory = {
+            "uid-legacy": {"assigned_name": "Old Entry"},  # no field
+            "uid-fresh": {
+                "assigned_name": "New Entry",
+                "real_sleeve_uid": "sleeve-bruce",
+            },
+        }
+
+        matches = find_entries_by_real_sleeve_uid(observer, "sleeve-bruce")
+
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0][0], "uid-fresh")
+
+    def test_empty_real_sleeve_uid_returns_empty(self):
+        """Empty/None lookup keys short-circuit immediately."""
+        from world.identity import find_entries_by_real_sleeve_uid
+
+        observer = MagicMock()
+        observer.recognition_memory = {
+            "uid-a": {"real_sleeve_uid": ""},
+        }
+
+        self.assertEqual(find_entries_by_real_sleeve_uid(observer, ""), [])
+        self.assertEqual(
+            find_entries_by_real_sleeve_uid(observer, None), []
+        )
+
+    def test_observer_without_memory_returns_empty(self):
+        from world.identity import find_entries_by_real_sleeve_uid
+
+        observer = MagicMock()
+        observer.recognition_memory = None
+
+        self.assertEqual(
+            find_entries_by_real_sleeve_uid(observer, "sleeve-x"), []
+        )
+
+    def test_does_not_match_on_apparent_uid(self):
+        """Match must be against `real_sleeve_uid` field, not the dict key."""
+        from world.identity import find_entries_by_real_sleeve_uid
+
+        observer = MagicMock()
+        observer.recognition_memory = {
+            "sleeve-bruce": {"real_sleeve_uid": "sleeve-other"},
+        }
+
+        # The dict key happens to equal what we're looking for, but the
+        # field value doesn't — must not match.
+        self.assertEqual(
+            find_entries_by_real_sleeve_uid(observer, "sleeve-bruce"), []
+        )
