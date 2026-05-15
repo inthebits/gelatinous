@@ -724,6 +724,324 @@ BALACLAVA = {
     ],
 }
 
+# =========================================================================
+# Disguise Catalog — Phase 3.5
+# =========================================================================
+#
+# See specs/IDENTITY_RECOGNITION_SPEC.md §"Disguise Item Taxonomy".
+#
+# Two classes of disguise items:
+#
+# Class A — Visibly-obfuscating: carry a non-empty ``disguise_adjective``
+#   that is injected into the wearer's sdesc as a red-flag prefix
+#   ("masked", "hooded"). Observers see the disguise itself.
+#
+# Class B — Silent obfuscators: carry ``disguise_adjective=""`` so they
+#   shift the Apparent UID without announcing themselves in the sdesc.
+#   Wigs, contacts, and sunglasses fall here — disguise works precisely
+#   because it does not call attention to itself.
+#
+# Both classes share ``is_disguise_item=True`` and
+# ``disguise_essential=True``; the per-type ``disguise_type_id`` ensures
+# same-type swaps (BALACLAVA ↔ SKI_MASK) do not shift the Apparent UID
+# while cross-type swaps do.
+
+# --- Class A: Visibly-obfuscating ----------------------------------------
+
+# A second balaclava variant; shares ``disguise_type_id="balaclava"`` so
+# swapping a BALACLAVA for a SKI_MASK is invisible to observers.
+SKI_MASK = {
+    "prototype_key": "SKI_MASK",
+    "key": "wool ski mask",
+    "aliases": ["ski mask", "mask", "balaclava"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A pull-on ski mask of coarse charcoal wool with three cut-outs — two for the eyes and one for the mouth — leaving everything between in featureless shadow. The weave is dense enough to obscure hair colour and jawline alike.",
+    "attrs": [
+        ("coverage", ["head", "face"]),
+        ("worn_desc", "A coarse {color}charcoal|n ski mask drawn tight over {their} head, three ragged cut-outs the only break in featureless wool"),
+        ("layer", 2),
+        ("color", "charcoal"),
+        ("material", "wool"),
+        ("weight", 0.2),
+
+        ("is_disguise_item", True),
+        ("disguise_essential", True),
+        ("disguise_type_id", "balaclava"),
+        ("disguise_adjective", "masked"),
+        ("worn_sdesc_short", "wool ski mask"),
+        ("covers_hair", True),
+    ],
+}
+
+# Pale-blue surgical mask — covers nose and mouth, leaves eyes and hair
+# untouched.
+SURGICAL_MASK = {
+    "prototype_key": "SURGICAL_MASK",
+    "key": "pale-blue surgical mask",
+    "aliases": ["surgical mask", "mask", "medical mask"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A standard pleated surgical mask in pale clinic-blue, looped over the ears with thin elastic. The pleats expand to cover nose, mouth and chin, leaving only the eyes and brow exposed.",
+    "attrs": [
+        ("coverage", ["face"]),
+        ("worn_desc", "A pleated {color}pale-blue|n surgical mask hooked over {their} ears, smothering nose and mouth in clinical fabric"),
+        ("layer", 2),
+        ("color", "pale-blue"),
+        ("material", "polypropylene"),
+        ("weight", 0.05),
+
+        ("is_disguise_item", True),
+        ("disguise_essential", True),
+        ("disguise_type_id", "face_mask"),
+        ("disguise_adjective", "masked"),
+        ("worn_sdesc_short", "surgical mask"),
+        ("covers_hair", False),
+    ],
+}
+
+# Industrial half-face respirator — heavy rubber and twin filter cans.
+RESPIRATOR = {
+    "prototype_key": "RESPIRATOR",
+    "key": "industrial respirator",
+    "aliases": ["respirator", "gas mask", "mask"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A bulky half-face respirator moulded from matte-black rubber, twin filter cans jutting from the cheeks like stubby tusks. The harness straps cinch tight across the back of the skull and around the crown.",
+    "attrs": [
+        ("coverage", ["face"]),
+        ("worn_desc", "A bulky {color}black|n industrial respirator strapped to {their} face, twin filter cans jutting like stubby tusks"),
+        ("layer", 2),
+        ("color", "black"),
+        ("material", "rubber"),
+        ("weight", 0.6),
+
+        ("is_disguise_item", True),
+        ("disguise_essential", True),
+        ("disguise_type_id", "respirator"),
+        ("disguise_adjective", "masked"),
+        ("worn_sdesc_short", "industrial respirator"),
+        ("covers_hair", False),
+    ],
+}
+
+# Slim domino mask — covers the eyes only, classic costume-party shape.
+DOMINO_MASK = {
+    "prototype_key": "DOMINO_MASK",
+    "key": "black domino mask",
+    "aliases": ["domino mask", "mask", "eye mask"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A slim domino mask cut from black satin, shaped to cover the brow and the upper cheeks while leaving the lower face entirely free. A thin elastic loops behind the head; two almond-shaped slits frame the eyes.",
+    "attrs": [
+        ("coverage", ["left_eye", "right_eye"]),
+        ("worn_desc", "A slim {color}black|n satin domino mask hugging the upper half of {their} face, two almond slits framing {their} eyes"),
+        ("layer", 2),
+        ("color", "black"),
+        ("material", "satin"),
+        ("weight", 0.05),
+
+        ("is_disguise_item", True),
+        ("disguise_essential", True),
+        ("disguise_type_id", "domino_mask"),
+        ("disguise_adjective", "masked"),
+        ("worn_sdesc_short", "domino mask"),
+        ("covers_hair", False),
+    ],
+}
+
+# Bandana worn outlaw-style across the lower face.
+FACE_BANDANA = {
+    "prototype_key": "FACE_BANDANA",
+    "key": "red face bandana",
+    "aliases": ["bandana", "face bandana", "kerchief"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A square of red cotton bandana, knotted outlaw-style across the lower face. The triangle of cloth covers nose, mouth and chin; the knot bunches behind the ears at the nape.",
+    "attrs": [
+        ("coverage", ["face"]),
+        ("worn_desc", "A {color}red|n cotton bandana knotted outlaw-style across the lower half of {their} face"),
+        ("layer", 2),
+        ("color", "red"),
+        ("material", "cotton"),
+        ("weight", 0.1),
+
+        ("is_disguise_item", True),
+        ("disguise_essential", True),
+        ("disguise_type_id", "face_bandana"),
+        ("disguise_adjective", "masked"),
+        ("worn_sdesc_short", "face bandana"),
+        ("covers_hair", False),
+    ],
+}
+
+# A standalone hood worn raised — separate from the DEV_HOODIE garment so
+# the disguise hook can fire on a discrete wear/remove cycle without
+# requiring a full hoodie style transition.
+HOODIE_HOOD_UP = {
+    "prototype_key": "HOODIE_HOOD_UP",
+    "key": "drawn hood",
+    "aliases": ["hood", "drawn hood"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A loose dark-grey hood, deep enough to swallow most of the wearer's face in shadow when raised. The drawstrings hang loose against the chest, and the lining is unbleached cotton softened by long use.",
+    "attrs": [
+        ("coverage", ["head"]),
+        ("worn_desc", "A loose {color}dark-grey|n hood drawn forward over {their} head, casting {their} face into shadow"),
+        ("layer", 3),
+        ("color", "dark-grey"),
+        ("material", "cotton"),
+        ("weight", 0.3),
+
+        ("is_disguise_item", True),
+        ("disguise_essential", True),
+        ("disguise_type_id", "hood"),
+        ("disguise_adjective", "hooded"),
+        ("worn_sdesc_short", "drawn hood"),
+        ("covers_hair", True),
+    ],
+}
+
+# --- Class B: Silent obfuscators -----------------------------------------
+#
+# These items shift the wearer's Apparent UID — making them unrecognisable
+# to observers who only know the bare-faced form — but contribute no
+# adjective to the rendered sdesc.  See PR #129 for the wig precedent.
+
+BLACK_WIG = {
+    "prototype_key": "BLACK_WIG",
+    "key": "black wig",
+    "aliases": ["wig", "black wig"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A shoulder-length wig of glossy jet-black synthetic hair, cut to a blunt fringe. The mesh cap is fine enough to pass for a natural hairline at conversational distance.",
+    "attrs": [
+        ("coverage", ["head"]),
+        ("worn_desc", "A glossy {color}black|n shoulder-length wig with a blunt fringe"),
+        ("layer", 2),
+        ("color", "black"),
+        ("material", "synthetic"),
+        ("weight", 0.15),
+
+        ("is_disguise_item", True),
+        ("disguise_essential", True),
+        ("disguise_type_id", "wig"),
+        ("disguise_adjective", ""),
+        ("worn_sdesc_short", "black wig"),
+        ("covers_hair", True),
+    ],
+}
+
+BLOND_WIG = {
+    "prototype_key": "BLOND_WIG",
+    "key": "blond wig",
+    "aliases": ["wig", "blond wig", "blonde wig"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A chin-length blond wig in honey-gold synthetic fibre, layered for volume. The cap is mesh-lined and the parting has been hand-stitched to mimic a real scalp.",
+    "attrs": [
+        ("coverage", ["head"]),
+        ("worn_desc", "A honey-{color}blond|n chin-length wig layered for volume"),
+        ("layer", 2),
+        ("color", "gold"),
+        ("material", "synthetic"),
+        ("weight", 0.15),
+
+        ("is_disguise_item", True),
+        ("disguise_essential", True),
+        ("disguise_type_id", "wig"),
+        ("disguise_adjective", ""),
+        ("worn_sdesc_short", "blond wig"),
+        ("covers_hair", True),
+    ],
+}
+
+BROWN_WIG = {
+    "prototype_key": "BROWN_WIG",
+    "key": "brown wig",
+    "aliases": ["wig", "brown wig"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A mid-length brown wig in walnut-toned synthetic fibre, parted off-centre. The cap is a soft stretch mesh and the ends have been heat-set into a loose wave.",
+    "attrs": [
+        ("coverage", ["head"]),
+        ("worn_desc", "A walnut-{color}brown|n mid-length wig parted off-centre with loose waves"),
+        ("layer", 2),
+        ("color", "brown"),
+        ("material", "synthetic"),
+        ("weight", 0.15),
+
+        ("is_disguise_item", True),
+        ("disguise_essential", True),
+        ("disguise_type_id", "wig"),
+        ("disguise_adjective", ""),
+        ("worn_sdesc_short", "brown wig"),
+        ("covers_hair", True),
+    ],
+}
+
+# Cosmetic contact lenses — change apparent eye colour silently.
+COLORED_CONTACTS = {
+    "prototype_key": "COLORED_CONTACTS",
+    "key": "colored contact lenses",
+    "aliases": ["contacts", "lenses", "contact lenses"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A blister-pack pair of cosmetic contact lenses in vivid emerald green. The pigment ring covers the iris completely; pupils show through unaltered.",
+    "attrs": [
+        ("coverage", ["left_eye", "right_eye"]),
+        ("worn_desc", "Cosmetic contact lenses tinting {their} eyes vivid emerald"),
+        ("layer", 1),
+        ("color", "emerald"),
+        ("material", "hydrogel"),
+        ("weight", 0.01),
+
+        ("is_disguise_item", True),
+        ("disguise_essential", True),
+        ("disguise_type_id", "contacts"),
+        ("disguise_adjective", ""),
+        ("worn_sdesc_short", "colored contacts"),
+        ("covers_hair", False),
+    ],
+}
+
+# Mirrorshade aviators — opaque chrome lenses, classic shape.
+MIRRORSHADES = {
+    "prototype_key": "MIRRORSHADES",
+    "key": "chrome mirrorshades",
+    "aliases": ["mirrorshades", "shades", "sunglasses", "glasses"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A pair of mirrorshade aviators with a chrome-coated finish so dense the lenses throw back the room as a warped silver pane. The frames are thin gunmetal wire, the bridge a single arched bar.",
+    "attrs": [
+        ("coverage", ["left_eye", "right_eye"]),
+        ("worn_desc", "A pair of {color}chrome|n mirrorshades reflecting the room as a warped silver pane"),
+        ("layer", 2),
+        ("color", "chrome"),
+        ("material", "metal"),
+        ("weight", 0.08),
+
+        ("is_disguise_item", True),
+        ("disguise_essential", True),
+        ("disguise_type_id", "mirrorshades"),
+        ("disguise_adjective", ""),
+        ("worn_sdesc_short", "mirrorshades"),
+        ("covers_hair", False),
+    ],
+}
+
+AVIATOR_SUNGLASSES = {
+    "prototype_key": "AVIATOR_SUNGLASSES",
+    "key": "aviator sunglasses",
+    "aliases": ["aviators", "sunglasses", "glasses", "shades"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A pair of aviator sunglasses with teardrop-shaped smoke-tinted lenses and a thin gold frame. The lenses are dark enough to obscure the eyes but translucent enough to read intent through.",
+    "attrs": [
+        ("coverage", ["left_eye", "right_eye"]),
+        ("worn_desc", "A pair of {color}gold|n-framed aviator sunglasses with teardrop smoke-tinted lenses"),
+        ("layer", 2),
+        ("color", "gold"),
+        ("material", "metal"),
+        ("weight", 0.08),
+
+        ("is_disguise_item", True),
+        ("disguise_essential", True),
+        ("disguise_type_id", "sunglasses"),
+        ("disguise_adjective", ""),
+        ("worn_sdesc_short", "aviator sunglasses"),
+        ("covers_hair", False),
+    ],
+}
+
 # Classic blue jeans with functional styling
 BLUE_JEANS = {
     "prototype_key": "BLUE_JEANS",
