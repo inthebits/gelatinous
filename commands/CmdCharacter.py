@@ -1394,6 +1394,7 @@ class CmdRemember(Command):
         # Build/update the recognition entry
         now = _recognition_now_iso()
         location_name = caller.location.key if caller.location else "unknown"
+        real_sleeve_uid = getattr(target, "sleeve_uid", None)
 
         if apparent_uid in memory:
             entry = memory[apparent_uid]
@@ -1406,6 +1407,12 @@ class CmdRemember(Command):
             entry["sdesc_at_last_encounter"] = target.get_sdesc()
             # Re-encountering this UID clears any stale lost-contact flag.
             entry["lost_contact"] = False
+            # Lazy backfill: schema gained `real_sleeve_uid` for reverse
+            # lookup; pre-schema entries don't have it.  Set when missing,
+            # leave alone when present (sleeve_uid never changes for a
+            # given underlying character).
+            if entry.get("real_sleeve_uid") is None and real_sleeve_uid:
+                entry["real_sleeve_uid"] = real_sleeve_uid
         else:
             entry = {
                 "assigned_name": name,
@@ -1423,6 +1430,7 @@ class CmdRemember(Command):
                 "relationship_valence": "neutral",
                 "lost_contact": False,
                 "recent_interactions": [],
+                "real_sleeve_uid": real_sleeve_uid,
             }
 
         memory[apparent_uid] = entry

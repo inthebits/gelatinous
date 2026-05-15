@@ -1254,9 +1254,63 @@ def bump_recognition_recency(
     entry["sdesc_at_last_encounter"] = target.get_sdesc()
     entry["lost_contact"] = False
 
+    # Lazy backfill of `real_sleeve_uid` for entries that pre-date the
+    # schema add (see :func:`_remember_target`).  Bump paths are the
+    # primary backfill surface because they run on every visible
+    # re-encounter; entries the observer never sees again retain their
+    # legacy shape (and are silently ineligible for disguise-piercing
+    # reverse lookup, which is acceptable per the pre-alpha decision).
+    if entry.get("real_sleeve_uid") is None:
+        real_sleeve_uid = getattr(target, "sleeve_uid", None)
+        if real_sleeve_uid:
+            entry["real_sleeve_uid"] = real_sleeve_uid
+
     # Reassign so the AttributeProperty persists the in-place mutation.
     observer.recognition_memory = memory
     return True
+
+
+def find_entries_by_real_sleeve_uid(
+    observer: Any, real_sleeve_uid: str
+) -> list[tuple[str, dict]]:
+    """Return all recognition entries belonging to a given underlying sleeve.
+
+    Reverse lookup over ``observer.recognition_memory``: returns the
+    list of ``(apparent_uid, entry)`` pairs whose ``real_sleeve_uid``
+    field matches the supplied value.  Used by disguise-piercing
+    recognition (PR-X3) to discover "have I previously remembered this
+    physical person under any presentation?" without walking every
+    entry by-hand at each call site.
+
+    Pre-schema entries (those without a ``real_sleeve_uid`` field —
+    see :func:`bump_recognition_recency` lazy backfill) are silently
+    skipped: they cannot be reverse-keyed by definition.  This is the
+    accepted cost of the lazy-backfill strategy (pre-alpha; legacy
+    entries simply remain pierce-ineligible until the observer re-
+    encounters the target through any writer path).
+
+    A ``real_sleeve_uid`` of ``None`` or empty string returns ``[]``
+    immediately; the caller must have already resolved the target's
+    actual sleeve to a non-empty value.
+
+    Args:
+        observer: Character whose recognition memory is searched.
+        real_sleeve_uid: The underlying sleeve UID to match against.
+
+    Returns:
+        List of ``(apparent_uid, entry)`` pairs in insertion order;
+        empty when no entries match or the observer has no memory.
+    """
+    if not real_sleeve_uid:
+        return []
+    memory = getattr(observer, "recognition_memory", None) or {}
+    if not memory:
+        return []
+    return [
+        (uid, entry)
+        for uid, entry in memory.items()
+        if entry.get("real_sleeve_uid") == real_sleeve_uid
+    ]
 
 
 # =========================================================================
@@ -1317,6 +1371,7 @@ def _build_link_entry(
     """
     del observer  # reserved for future per-observer customisation
     sdesc = target.get_sdesc() if hasattr(target, "get_sdesc") else ""
+    real_sleeve_uid = getattr(target, "sleeve_uid", None)
     return {
         "assigned_name": "",
         "first_seen": now_iso,
@@ -1334,6 +1389,7 @@ def _build_link_entry(
         "lost_contact": False,
         "recent_interactions": [],
         "linked_to": linked_to,
+        "real_sleeve_uid": real_sleeve_uid,
     }
 
 
@@ -1557,6 +1613,11 @@ def _broadcast_unmasking(
             entry["lost_contact"] = False
             if hasattr(char, "get_sdesc"):
                 entry["sdesc_at_last_encounter"] = char.get_sdesc()
+            # Lazy backfill of `real_sleeve_uid` (see _remember_target).
+            if entry.get("real_sleeve_uid") is None:
+                real_sleeve_uid = getattr(char, "sleeve_uid", None)
+                if real_sleeve_uid:
+                    entry["real_sleeve_uid"] = real_sleeve_uid
             observer.recognition_memory = memory
             _send_unmasking_message(
                 observer, char, "C", old_uid=old_uid, new_uid=new_uid
@@ -1575,6 +1636,14 @@ def _broadcast_unmasking(
             new_entry["sdesc_at_last_encounter"] = char.get_sdesc()
         if new_entry.get("linked_to") is None:
             new_entry["linked_to"] = old_uid
+        # Lazy backfill of `real_sleeve_uid` on both entries; cell D
+        # touches both, so backfill both opportunistically.
+        real_sleeve_uid = getattr(char, "sleeve_uid", None)
+        if real_sleeve_uid:
+            if new_entry.get("real_sleeve_uid") is None:
+                new_entry["real_sleeve_uid"] = real_sleeve_uid
+            if memory[old_uid].get("real_sleeve_uid") is None:
+                memory[old_uid]["real_sleeve_uid"] = real_sleeve_uid
         observer.recognition_memory = memory
         _send_unmasking_message(
             observer, char, "D", old_uid=old_uid, new_uid=new_uid
