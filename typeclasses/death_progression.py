@@ -510,9 +510,28 @@ class DeathProgressionScript(DefaultScript):
         corpse.db.death_time = time.time()
         corpse.db.physical_description = character.db.desc if character.db.desc is not None else 'A person.'
         
-        # Store identity data for identity-aware corpse description
-        corpse.db.sleeve_uid = character.db.sleeve_uid
+        # Store identity data for identity-aware corpse description.
+        # ``sleeve_uid`` is an AttributeProperty under category="identity", so
+        # ``character.db.sleeve_uid`` is always None — must read the property.
+        corpse.db.sleeve_uid = character.sleeve_uid
         corpse.db.sdesc_at_death = character.get_sdesc() if hasattr(character, 'get_sdesc') else character.key
+
+        # Snapshot the wearer's identity-signature axes at the moment of
+        # death so the corpse's Apparent UID matches the disguise the
+        # character died in.  Worn items move to ``corpse.contents`` via
+        # the normal drop/transfer hooks and are re-evaluated lazily by
+        # :meth:`Corpse.get_worn_items` whenever the signature is read.
+        corpse.db.height_override = character.db.height_override
+        corpse.db.build_override = character.db.build_override
+        corpse.db.keyword_override = character.db.keyword_override
+        # Record the original Apparent UID so observers who recognised
+        # the deceased can still match the corpse before any loot
+        # disturbs its presentation.
+        try:
+            from world.identity import get_apparent_uid
+            corpse.db.apparent_uid_at_death = get_apparent_uid(character)
+        except (AttributeError, TypeError, ValueError):
+            corpse.db.apparent_uid_at_death = None
         
         # Preserve character appearance data for proper corpse display
         corpse.db.original_gender = getattr(character, 'gender', 'neutral')

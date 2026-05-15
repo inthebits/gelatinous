@@ -63,19 +63,102 @@ class Corpse(Item):
         return min(1.0, elapsed / max_decay_time)
     
     def get_display_name(self, looker, **kwargs):
-        """Update display name based on current decay stage."""
+        """Return a display name, preferring recognition memory.
+
+        Looters and bystanders who already remember the deceased should
+        continue to see the assigned name on the corpse, exactly as
+        they would on the living character.  The lookup mirrors
+        :meth:`typeclasses.characters.Character.get_display_name`:
+
+        * ``looker is None`` (system context) → decay-stage fallback.
+        * Looker has an entry under this corpse's current Apparent UID
+          → return the entry's ``assigned_name``.
+        * Otherwise → decay-stage name (``"fresh corpse"`` etc.).
+
+        Disguise loss after death is handled by re-reading the
+        signature on every call (no cache): once a disguise-essential
+        item is looted, :func:`world.identity.get_apparent_uid`
+        recomputes against the corpse's remaining ``get_worn_items()``
+        contents and the recognition match silently falls away.
+        """
+        decay_name = self._decay_display_name()
+
+        if looker is None:
+            return decay_name
+
+        try:
+            from world.identity import get_apparent_uid
+            apparent_uid = get_apparent_uid(self)
+        except (AttributeError, TypeError, ValueError):
+            apparent_uid = None
+
+        if apparent_uid is not None and hasattr(looker, "recognition_memory"):
+            memory = looker.recognition_memory
+            if memory and apparent_uid in memory:
+                assigned = memory[apparent_uid].get("assigned_name")
+                if assigned:
+                    return assigned
+
+        return decay_name
+
+    def _decay_display_name(self):
+        """Return the decay-stage name used when no recognition matches."""
         stage = self.get_decay_stage()
-        
         decay_names = {
             "fresh": "fresh corpse",
-            "early": "pale corpse", 
+            "early": "pale corpse",
             "moderate": "decomposing remains",
             "advanced": "putrid remains",
-            "skeletal": "skeletal remains"
+            "skeletal": "skeletal remains",
         }
-        
         return decay_names.get(stage, 'corpse')
-    
+
+    # ------------------------------------------------------------------
+    # Disguise / identity signature surface
+    # ------------------------------------------------------------------
+
+    @property
+    def sleeve_uid(self):
+        """Expose the deceased's sleeve UID via the property surface.
+
+        :func:`world.identity.get_apparent_uid` reads
+        ``getattr(char, "sleeve_uid", None)`` rather than ``char.db.*``;
+        mirroring the Character property here lets the corpse flow
+        through the same identity pipeline without a separate code
+        path.
+        """
+        return self.db.sleeve_uid
+
+    def get_worn_items(self, location=None):
+        """Return disguise-essential items still on the corpse.
+
+        Corpses do not maintain a separate ``worn_items`` map — when a
+        character dies, their kit drops into ``corpse.contents`` (and is
+        treated as "still worn" for coverage purposes by
+        :meth:`_build_corpse_clothing_coverage_map`).  Mirroring
+        :meth:`typeclasses.clothing_mixin.ClothingMixin.get_worn_items`
+        here lets :func:`world.identity.get_essential_item_type_ids`
+        recompute the signature naturally as items are looted.
+
+        Only items flagged ``disguise_essential`` are returned — that is
+        all the signature pipeline consumes, and it avoids accidentally
+        treating loose loot in the corpse's inventory as worn clothing.
+
+        Args:
+            location: Accepted for signature parity with the mixin;
+                ignored because corpses have no per-location worn map.
+
+        Returns:
+            List of disguise-essential items currently in
+            ``self.contents``.
+        """
+        del location  # parity with ClothingMixin.get_worn_items signature
+        return [
+            item
+            for item in self.contents
+            if getattr(item, "disguise_essential", False)
+        ]
+
     def _get_preserved_longdesc_descriptions(self):
         """Get visible longdesc descriptions with clothing integration, like living characters."""
         if not self.db.longdesc_data:
@@ -501,8 +584,19 @@ class Corpse(Item):
         # Clear any cached appearance data since contents changed
         if hasattr(self.ndb, 'cached_appearance'):
             delattr(self.ndb, 'cached_appearance')
-        
-        # Debug logging removed to reduce noise
+
+        # If a disguise-essential item was looted, the corpse's
+        # signature has shifted: the previously-snapshot
+        # ``apparent_uid_at_death`` is now stale and observers who only
+        # remember the disguised UID should silently stop recognising
+        # the corpse.  We do *not* recompute and store a new UID here:
+        # :func:`world.identity.get_apparent_uid` re-derives lazily from
+        # the live ``get_worn_items()`` view on every display, so a
+        # stored value would only drift.  Clearing the snapshot is
+        # enough to signal "the death-time presentation is gone".
+        if getattr(moved_obj, "disguise_essential", False):
+            if self.db.apparent_uid_at_death is not None:
+                self.db.apparent_uid_at_death = None
     
     def _update_decay_descriptions(self):
         """Update descriptions based on current decay stage."""
