@@ -25,6 +25,7 @@ from world.identity import (
     _build_link_entry,
     _collect_unmasking_observers,
     _LINKED_CHAIN_MAX_HOPS,
+    _send_unmasking_message,
     apply_signature_change,
     get_linked_aliases,
     walk_linked_chain,
@@ -70,6 +71,7 @@ class _FakeObserver:
         )
         self._unconscious = unconscious
         self._is_unconscious_raises = is_unconscious_raises
+        self.messages: list[str] = []
         if location is not None:
             location.contents.append(self)
 
@@ -77,6 +79,11 @@ class _FakeObserver:
         if self._is_unconscious_raises:
             raise AttributeError("simulated broken medical surface")
         return self._unconscious
+
+    def msg(self, text: str = "", **kwargs) -> None:
+        # Capture for assertions; ignore kwargs (type, etc.).
+        del kwargs
+        self.messages.append(text)
 
 
 class _FakeTarget:
@@ -344,6 +351,170 @@ class TestBroadcastCellD(TestCase):
             self.observer.recognition_memory["uid-new"]["linked_to"],
             "uid-other",
         )
+
+
+# ---------------------------------------------------------------------------
+# _send_unmasking_message — per-cell narrative prose
+# ---------------------------------------------------------------------------
+
+
+class TestUnmaskingMessageCellA(TestCase):
+    """Cell A never reaches the hook; the matrix short-circuits upstream.
+
+    These tests guard the broader broadcast: when neither presentation
+    is in memory, no message reaches the observer at all.
+    """
+
+    def test_stranger_observer_receives_no_message(self) -> None:
+        room = _FakeRoom("Plaza")
+        target = _FakeTarget(location=room, sdesc="a hooded figure")
+        observer = _FakeObserver(location=room)  # empty memory
+        _broadcast_unmasking(target, "uid-old", "uid-new")
+        self.assertEqual(observer.messages, [])
+
+
+class TestUnmaskingMessageCellB(TestCase):
+    """Cell B (knew old only) — recognition-gained prose."""
+
+    def setUp(self) -> None:
+        self.room = _FakeRoom("Alley")
+        self.target = _FakeTarget(
+            location=self.room, sdesc="a hooded figure"
+        )
+        self.observer = _FakeObserver(
+            location=self.room,
+            recognition_memory={
+                "uid-old": make_recognition_entry(
+                    assigned_name="Jorge",
+                    sdesc_at_last_encounter="a tall lean man",
+                )
+            },
+        )
+
+    def test_message_uses_new_and_old_sdescs(self) -> None:
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        self.assertEqual(len(self.observer.messages), 1)
+        msg = self.observer.messages[0]
+        self.assertIn("a hooded figure", msg)
+        self.assertIn("a tall lean man", msg)
+        self.assertIn("steps into view", msg)
+
+    def test_missing_old_sdesc_suppresses_message(self) -> None:
+        # Defensive path: a malformed memory entry without the snapshot
+        # should not produce broken prose.
+        self.observer.recognition_memory["uid-old"][
+            "sdesc_at_last_encounter"
+        ] = ""
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        self.assertEqual(self.observer.messages, [])
+
+
+class TestUnmaskingMessageCellC(TestCase):
+    """Cell C is silent per design — observer already knew the new face."""
+
+    def test_no_message_emitted(self) -> None:
+        room = _FakeRoom("Bar")
+        target = _FakeTarget(location=room, sdesc="a tall lean man")
+        observer = _FakeObserver(
+            location=room,
+            recognition_memory={
+                "uid-new": make_recognition_entry(assigned_name="Jorge")
+            },
+        )
+        _broadcast_unmasking(target, "uid-old", "uid-new")
+        # Bookkeeping must still have fired (refresh), but no prose.
+        self.assertEqual(observer.messages, [])
+        self.assertEqual(
+            observer.recognition_memory["uid-new"]["sdesc_at_last_encounter"],
+            "a tall lean man",
+        )
+
+
+class TestUnmaskingMessageCellD(TestCase):
+    """Cell D (knew both) — verbose link-discovered prose."""
+
+    def setUp(self) -> None:
+        self.room = _FakeRoom("Dock")
+        self.target = _FakeTarget(
+            location=self.room, sdesc="a hooded figure"
+        )
+        self.observer = _FakeObserver(
+            location=self.room,
+            recognition_memory={
+                "uid-old": make_recognition_entry(
+                    assigned_name="Jorge",
+                    sdesc_at_last_encounter="a tall lean man",
+                ),
+                "uid-new": make_recognition_entry(
+                    assigned_name="The Hood",
+                    sdesc_at_last_encounter="a hooded figure",
+                ),
+            },
+        )
+
+    def test_message_names_both_presentations(self) -> None:
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        self.assertEqual(len(self.observer.messages), 1)
+        msg = self.observer.messages[0]
+        self.assertIn("a tall lean man", msg)
+        self.assertIn("a hooded figure", msg)
+        self.assertIn("Jorge", msg)
+        self.assertIn("The Hood", msg)
+        self.assertIn("are the same person", msg)
+
+    def test_falls_back_to_sdesc_when_name_missing(self) -> None:
+        # Defensive: if one side's assigned_name was somehow blank, the
+        # shorter sdesc-only template should be used instead.
+        self.observer.recognition_memory["uid-new"]["assigned_name"] = ""
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        msg = self.observer.messages[0]
+        self.assertIn("a tall lean man", msg)
+        self.assertIn("a hooded figure", msg)
+        self.assertNotIn("who you call", msg)
+        self.assertIn("are the same person", msg)
+
+
+class TestUnmaskingMessageObserverFiltering(TestCase):
+    """The eligibility filter governs who can receive a message at all."""
+
+    def test_unconscious_observer_receives_no_message(self) -> None:
+        room = _FakeRoom("Vault")
+        target = _FakeTarget(location=room, sdesc="a hooded figure")
+        observer = _FakeObserver(
+            location=room,
+            unconscious=True,
+            recognition_memory={
+                "uid-old": make_recognition_entry(
+                    assigned_name="Jorge",
+                    sdesc_at_last_encounter="a tall lean man",
+                )
+            },
+        )
+        _broadcast_unmasking(target, "uid-old", "uid-new")
+        self.assertEqual(observer.messages, [])
+
+    def test_subject_does_not_message_themselves(self) -> None:
+        # The collector excludes ``char`` from observers; ensure no
+        # message reaches the subject even if they have a memory dict.
+        room = _FakeRoom("Mirror")
+        target = _FakeTarget(location=room, sdesc="a hooded figure")
+        # Bolt a memory dict onto the target so the collector would
+        # otherwise consider them — the same-as-char filter must drop.
+        target.recognition_memory = {
+            "uid-old": make_recognition_entry(
+                assigned_name="Self",
+                sdesc_at_last_encounter="a tall lean man",
+            )
+        }
+        target.messages = []  # type: ignore[attr-defined]
+
+        def _msg(text: str = "", **kwargs) -> None:
+            del kwargs
+            target.messages.append(text)  # type: ignore[attr-defined]
+
+        target.msg = _msg  # type: ignore[attr-defined]
+        _broadcast_unmasking(target, "uid-old", "uid-new")
+        self.assertEqual(target.messages, [])  # type: ignore[attr-defined]
 
 
 # ---------------------------------------------------------------------------

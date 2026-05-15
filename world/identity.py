@@ -1289,19 +1289,93 @@ def _collect_unmasking_observers(char: Any) -> list:
     return observers
 
 
-def _send_unmasking_message(observer: Any, char: Any, cell: str) -> None:
-    """Stub hook for per-cell narrative observer messages.
+def _send_unmasking_message(
+    observer: Any,
+    char: Any,
+    cell: str,
+    old_uid: str | None = None,
+    new_uid: str | None = None,
+) -> None:
+    """Send per-cell narrative observer message for an unmasking moment.
 
-    PR 3 ships the recognition-memory bookkeeping only.  Narrative
-    flavor text ("Someone's features shift subtly", etc.) is intentionally
-    deferred to a follow-up PR once the engine is observed in play.
+    Routed as a direct per-observer ``.msg()`` call rather than through
+    :func:`world.identity_utils.msg_room_identity`, because the recipient
+    list is already narrowed by :func:`_collect_unmasking_observers` and
+    the prose is tailored to what *this* observer knew going in.
 
-    Call sites pass the matrix cell label (``"B"`` / ``"C"`` / ``"D"``)
-    so the future implementation can branch on what the observer knew
-    going in.  Cell ``"A"`` never reaches this hook (no-op short-circuit
-    in :func:`_broadcast_unmasking`).
+    Cell semantics (see :func:`_broadcast_unmasking`):
+
+    * **A** — never reaches this hook (short-circuited upstream).
+    * **B** (knew old only) — recognition gained: a familiar presentation
+      just walked out of view and a new one arrived in its place.
+    * **C** (knew new only) — silent.  The observer already knew the new
+      presentation; there is nothing to learn from the transition.
+    * **D** (knew both) — link discovered: the observer realises that
+      two presentations they had been tracking independently belong to
+      the same person.
+
+    The cell-B and cell-D prose follow the same noir, recognition-
+    centric voice used by the wear/remove emote pipeline.
+
+    Args:
+        observer: The character receiving the message.
+        char: The character whose apparent UID just changed.
+        cell: Matrix cell label (``"B"`` / ``"C"`` / ``"D"``).
+        old_uid: Pre-mutation apparent UID, used to look up the old
+            presentation's stored sdesc / assigned name.
+        new_uid: Post-mutation apparent UID, used to look up the new
+            presentation's assigned name (its sdesc is the live one).
     """
-    del observer, char, cell  # TODO(disguise/flavor): write per-cell messages
+    if cell == "C":
+        # Silent: the observer already knew the new presentation;
+        # the transition carries no new information for them.
+        return
+
+    memory = getattr(observer, "recognition_memory", None) or {}
+
+    new_sdesc = char.get_sdesc() if hasattr(char, "get_sdesc") else ""
+
+    old_entry = memory.get(old_uid) if old_uid else None
+    old_sdesc = ""
+    if old_entry is not None:
+        old_sdesc = old_entry.get("sdesc_at_last_encounter") or ""
+
+    if cell == "B":
+        # Recognition gained — the familiar face has shifted to a new
+        # presentation in front of the observer.
+        if not old_sdesc or not new_sdesc:
+            # Defensive: missing sdescs would render an ugly message.
+            # Skip rather than ship broken prose.
+            return
+        observer.msg(
+            f"{new_sdesc} steps into view where {old_sdesc} "
+            f"stood a moment ago."
+        )
+        return
+
+    if cell == "D":
+        # Link discovered — the observer realises two tracked
+        # presentations are the same person.
+        new_entry = memory.get(new_uid) if new_uid else None
+        old_name = (old_entry or {}).get("assigned_name") or ""
+        new_name = (new_entry or {}).get("assigned_name") or ""
+        if not old_sdesc or not new_sdesc:
+            return
+        if old_name and new_name:
+            observer.msg(
+                f"You realize that {old_sdesc}, who you call "
+                f"{old_name}, and {new_sdesc}, who you call "
+                f"{new_name}, are the same person."
+            )
+        else:
+            # Defensive fallback: cell D should always have both names
+            # set, but if a future code path drops one we still emit
+            # something coherent.
+            observer.msg(
+                f"You realize that {old_sdesc} and {new_sdesc} "
+                f"are the same person."
+            )
+        return
 
 
 def _broadcast_unmasking(
@@ -1374,7 +1448,9 @@ def _broadcast_unmasking(
                 location_name=location_name,
             )
             observer.recognition_memory = memory
-            _send_unmasking_message(observer, char, "B")
+            _send_unmasking_message(
+                observer, char, "B", old_uid=old_uid, new_uid=new_uid
+            )
             continue
 
         if not knew_old and knew_new:
@@ -1387,7 +1463,9 @@ def _broadcast_unmasking(
             if hasattr(char, "get_sdesc"):
                 entry["sdesc_at_last_encounter"] = char.get_sdesc()
             observer.recognition_memory = memory
-            _send_unmasking_message(observer, char, "C")
+            _send_unmasking_message(
+                observer, char, "C", old_uid=old_uid, new_uid=new_uid
+            )
             continue
 
         # Cell D — observer knew both presentations independently.
@@ -1403,7 +1481,9 @@ def _broadcast_unmasking(
         if new_entry.get("linked_to") is None:
             new_entry["linked_to"] = old_uid
         observer.recognition_memory = memory
-        _send_unmasking_message(observer, char, "D")
+        _send_unmasking_message(
+            observer, char, "D", old_uid=old_uid, new_uid=new_uid
+        )
 
     del source  # reserved for future debug/flavor routing
 
