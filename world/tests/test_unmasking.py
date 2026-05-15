@@ -1,0 +1,658 @@
+"""Tests for the unmasking-moments broadcast pipeline.
+
+Covers the engine added in PR 3:
+
+* :class:`world.identity.apply_signature_change` — context manager that
+  detects UID transitions and dispatches :func:`_broadcast_unmasking`.
+* :func:`_broadcast_unmasking` — the 4-cell A/B/C/D matrix that updates
+  in-room observers' recognition memory.
+* :func:`_collect_unmasking_observers` — same-room, conscious, has-memory
+  filter.
+* :func:`walk_linked_chain` / :func:`get_linked_aliases` — chain
+  traversal helpers (with cycle and max-hops defenses).
+
+These tests exercise the engine directly without going through CmdSets;
+wiring tests live alongside the relevant command/mixin modules.
+"""
+
+from __future__ import annotations
+
+from unittest import TestCase
+from unittest.mock import patch
+
+from world.identity import (
+    _broadcast_unmasking,
+    _build_link_entry,
+    _collect_unmasking_observers,
+    _LINKED_CHAIN_MAX_HOPS,
+    apply_signature_change,
+    get_linked_aliases,
+    walk_linked_chain,
+)
+from world.tests._identity_helpers import make_recognition_entry
+
+
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+
+class _FakeRoom:
+    """Minimal stand-in for a location with ``contents`` and a ``key``."""
+
+    def __init__(self, key: str = "Test Room") -> None:
+        self.key = key
+        self.contents: list = []
+
+
+class _FakeObserver:
+    """Stand-in for an in-room character that can observe an unmasking.
+
+    Mirrors the duck-typed surface read by
+    :func:`_collect_unmasking_observers` (``recognition_memory``,
+    ``is_unconscious``, ``location``) and the broadcast pipeline
+    (``recognition_memory`` writeback).
+    """
+
+    def __init__(
+        self,
+        *,
+        key: str = "Observer",
+        location: _FakeRoom | None = None,
+        recognition_memory: dict | None = None,
+        unconscious: bool = False,
+        is_unconscious_raises: bool = False,
+    ) -> None:
+        self.key = key
+        self.location = location
+        self.recognition_memory = (
+            recognition_memory if recognition_memory is not None else {}
+        )
+        self._unconscious = unconscious
+        self._is_unconscious_raises = is_unconscious_raises
+        if location is not None:
+            location.contents.append(self)
+
+    def is_unconscious(self) -> bool:
+        if self._is_unconscious_raises:
+            raise AttributeError("simulated broken medical surface")
+        return self._unconscious
+
+
+class _FakeTarget:
+    """The character whose Apparent UID transitions.
+
+    Implements just enough surface for the broadcast pipeline:
+    ``location``, ``get_sdesc``, ``key``.
+    """
+
+    def __init__(
+        self,
+        *,
+        key: str = "Jorge",
+        location: _FakeRoom | None = None,
+        sdesc: str = "a tall lean man",
+    ) -> None:
+        self.key = key
+        self.location = location
+        self._sdesc = sdesc
+        if location is not None:
+            location.contents.append(self)
+
+    def get_sdesc(self) -> str:
+        return self._sdesc
+
+
+class _FakeNonCharacter:
+    """An item-like object in the room: no ``recognition_memory`` attr."""
+
+    def __init__(self, location: _FakeRoom) -> None:
+        self.key = "rock"
+        location.contents.append(self)
+
+
+# ---------------------------------------------------------------------------
+# _collect_unmasking_observers
+# ---------------------------------------------------------------------------
+
+
+class TestCollectUnmaskingObservers(TestCase):
+    """Eligibility filter for in-room observers."""
+
+    def test_returns_empty_when_target_has_no_location(self) -> None:
+        target = _FakeTarget(location=None)
+        self.assertEqual(_collect_unmasking_observers(target), [])
+
+    def test_excludes_self(self) -> None:
+        room = _FakeRoom()
+        target = _FakeTarget(location=room)
+        target.recognition_memory = {}  # self has memory too
+        self.assertEqual(_collect_unmasking_observers(target), [])
+
+    def test_excludes_objects_without_recognition_memory(self) -> None:
+        room = _FakeRoom()
+        target = _FakeTarget(location=room)
+        _FakeNonCharacter(room)
+        self.assertEqual(_collect_unmasking_observers(target), [])
+
+    def test_excludes_unconscious_observers(self) -> None:
+        room = _FakeRoom()
+        target = _FakeTarget(location=room)
+        awake = _FakeObserver(location=room, key="awake")
+        _FakeObserver(location=room, key="asleep", unconscious=True)
+        observers = _collect_unmasking_observers(target)
+        self.assertEqual(observers, [awake])
+
+    def test_treats_broken_is_unconscious_as_conscious(self) -> None:
+        """A raising ``is_unconscious`` must not nuke the broadcast."""
+        room = _FakeRoom()
+        target = _FakeTarget(location=room)
+        broken = _FakeObserver(
+            location=room, key="broken", is_unconscious_raises=True
+        )
+        observers = _collect_unmasking_observers(target)
+        self.assertEqual(observers, [broken])
+
+    def test_returns_multiple_in_iteration_order(self) -> None:
+        room = _FakeRoom()
+        target = _FakeTarget(location=room)
+        a = _FakeObserver(location=room, key="a")
+        b = _FakeObserver(location=room, key="b")
+        c = _FakeObserver(location=room, key="c")
+        self.assertEqual(_collect_unmasking_observers(target), [a, b, c])
+
+
+# ---------------------------------------------------------------------------
+# _broadcast_unmasking — 4-cell matrix
+# ---------------------------------------------------------------------------
+
+
+class TestBroadcastUnmaskingShortCircuits(TestCase):
+    """Pre-matrix bailouts: ``None`` UIDs and unchanged UIDs."""
+
+    def _setup_observer_with_known(self, old_uid: str) -> _FakeObserver:
+        room = _FakeRoom()
+        target = _FakeTarget(location=room)
+        observer = _FakeObserver(
+            location=room,
+            recognition_memory={
+                old_uid: make_recognition_entry(assigned_name="Jorge")
+            },
+        )
+        self.target = target
+        return observer
+
+    def test_none_old_uid_short_circuits(self) -> None:
+        observer = self._setup_observer_with_known("uid-old")
+        before = dict(observer.recognition_memory)
+        _broadcast_unmasking(self.target, None, "uid-new")
+        self.assertEqual(observer.recognition_memory, before)
+
+    def test_none_new_uid_short_circuits(self) -> None:
+        observer = self._setup_observer_with_known("uid-old")
+        before = dict(observer.recognition_memory)
+        _broadcast_unmasking(self.target, "uid-old", None)
+        self.assertEqual(observer.recognition_memory, before)
+
+    def test_unchanged_uid_short_circuits(self) -> None:
+        observer = self._setup_observer_with_known("uid-same")
+        before_entry = dict(observer.recognition_memory["uid-same"])
+        _broadcast_unmasking(self.target, "uid-same", "uid-same")
+        self.assertEqual(
+            observer.recognition_memory["uid-same"], before_entry
+        )
+
+
+class TestBroadcastCellA(TestCase):
+    """Observer knew neither old nor new UID — no-op."""
+
+    def test_strangers_remain_strangers(self) -> None:
+        room = _FakeRoom()
+        target = _FakeTarget(location=room)
+        observer = _FakeObserver(location=room, recognition_memory={})
+        _broadcast_unmasking(target, "uid-old", "uid-new")
+        self.assertEqual(observer.recognition_memory, {})
+
+
+class TestBroadcastCellB(TestCase):
+    """Observer knew old only — mark lost, auto-create linked new entry."""
+
+    def setUp(self) -> None:
+        self.room = _FakeRoom("Alley")
+        self.target = _FakeTarget(location=self.room, sdesc="a hooded figure")
+        self.observer = _FakeObserver(
+            location=self.room,
+            recognition_memory={
+                "uid-old": make_recognition_entry(
+                    assigned_name="Jorge",
+                    sdesc_at_first_encounter="a tall lean man",
+                )
+            },
+        )
+
+    def test_old_entry_marked_lost_contact(self) -> None:
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        self.assertTrue(
+            self.observer.recognition_memory["uid-old"]["lost_contact"]
+        )
+
+    def test_new_entry_created_with_link_back(self) -> None:
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        new_entry = self.observer.recognition_memory["uid-new"]
+        self.assertEqual(new_entry["linked_to"], "uid-old")
+        self.assertEqual(new_entry["assigned_name"], "")
+        self.assertEqual(new_entry["sdesc_at_last_encounter"], "a hooded figure")
+        self.assertEqual(new_entry["location_first_seen"], "Alley")
+
+    def test_assigned_name_on_old_preserved(self) -> None:
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        self.assertEqual(
+            self.observer.recognition_memory["uid-old"]["assigned_name"],
+            "Jorge",
+        )
+
+
+class TestBroadcastCellC(TestCase):
+    """Observer knew new only — refresh, no link."""
+
+    def setUp(self) -> None:
+        self.room = _FakeRoom("Bar")
+        self.target = _FakeTarget(location=self.room, sdesc="a tall lean man")
+        self.observer = _FakeObserver(
+            location=self.room,
+            recognition_memory={
+                "uid-new": make_recognition_entry(
+                    assigned_name="Jorge",
+                    location_first_seen="Plaza",
+                    location_last_seen="Plaza",
+                    lost_contact=True,
+                )
+            },
+        )
+
+    def test_lost_contact_cleared(self) -> None:
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        self.assertFalse(
+            self.observer.recognition_memory["uid-new"]["lost_contact"]
+        )
+
+    def test_last_seen_refreshed(self) -> None:
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        entry = self.observer.recognition_memory["uid-new"]
+        self.assertEqual(entry["location_last_seen"], "Bar")
+        self.assertEqual(entry["sdesc_at_last_encounter"], "a tall lean man")
+
+    def test_no_link_formed(self) -> None:
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        self.assertIsNone(
+            self.observer.recognition_memory["uid-new"]["linked_to"]
+        )
+
+    def test_old_uid_not_added(self) -> None:
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        self.assertNotIn("uid-old", self.observer.recognition_memory)
+
+
+class TestBroadcastCellD(TestCase):
+    """Observer knew both — link new→old, refresh new, mark old lost."""
+
+    def setUp(self) -> None:
+        self.room = _FakeRoom("Dock")
+        self.target = _FakeTarget(location=self.room, sdesc="a hooded figure")
+        self.observer = _FakeObserver(
+            location=self.room,
+            recognition_memory={
+                "uid-old": make_recognition_entry(assigned_name="Jorge"),
+                "uid-new": make_recognition_entry(
+                    assigned_name="The Hood",
+                    lost_contact=True,
+                ),
+            },
+        )
+
+    def test_both_assigned_names_preserved(self) -> None:
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        self.assertEqual(
+            self.observer.recognition_memory["uid-old"]["assigned_name"],
+            "Jorge",
+        )
+        self.assertEqual(
+            self.observer.recognition_memory["uid-new"]["assigned_name"],
+            "The Hood",
+        )
+
+    def test_old_marked_lost_new_refreshed(self) -> None:
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        self.assertTrue(
+            self.observer.recognition_memory["uid-old"]["lost_contact"]
+        )
+        self.assertFalse(
+            self.observer.recognition_memory["uid-new"]["lost_contact"]
+        )
+
+    def test_link_set_when_absent(self) -> None:
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        self.assertEqual(
+            self.observer.recognition_memory["uid-new"]["linked_to"],
+            "uid-old",
+        )
+
+    def test_existing_link_not_overwritten(self) -> None:
+        self.observer.recognition_memory["uid-new"]["linked_to"] = "uid-other"
+        _broadcast_unmasking(self.target, "uid-old", "uid-new")
+        self.assertEqual(
+            self.observer.recognition_memory["uid-new"]["linked_to"],
+            "uid-other",
+        )
+
+
+# ---------------------------------------------------------------------------
+# apply_signature_change context manager
+# ---------------------------------------------------------------------------
+
+
+class TestApplySignatureChange(TestCase):
+    """Context manager dispatch correctness."""
+
+    def test_no_broadcast_when_uid_unchanged(self) -> None:
+        target = _FakeTarget(location=_FakeRoom())
+        with patch(
+            "world.identity.get_apparent_uid", side_effect=["uid-x", "uid-x"]
+        ), patch("world.identity._broadcast_unmasking") as bc:
+            with apply_signature_change(target, source="test"):
+                pass
+        bc.assert_called_once_with(target, "uid-x", "uid-x", source="test")
+
+    def test_broadcast_called_with_old_and_new(self) -> None:
+        target = _FakeTarget(location=_FakeRoom())
+        with patch(
+            "world.identity.get_apparent_uid",
+            side_effect=["uid-old", "uid-new"],
+        ), patch("world.identity._broadcast_unmasking") as bc:
+            with apply_signature_change(target, source="wear:hood"):
+                pass
+        bc.assert_called_once_with(
+            target, "uid-old", "uid-new", source="wear:hood"
+        )
+
+    def test_exception_suppresses_broadcast(self) -> None:
+        target = _FakeTarget(location=_FakeRoom())
+        with patch(
+            "world.identity.get_apparent_uid",
+            side_effect=["uid-old", "uid-new"],
+        ), patch("world.identity._broadcast_unmasking") as bc:
+            with self.assertRaises(RuntimeError):
+                with apply_signature_change(target):
+                    raise RuntimeError("mutation failed")
+        bc.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# walk_linked_chain / get_linked_aliases
+# ---------------------------------------------------------------------------
+
+
+class TestWalkLinkedChain(TestCase):
+    """Chain traversal with cycle and max-hops defenses."""
+
+    def test_missing_start_returns_empty(self) -> None:
+        self.assertEqual(walk_linked_chain({}, "uid-missing"), [])
+
+    def test_single_entry_returns_just_self(self) -> None:
+        memory = {"uid-1": make_recognition_entry(linked_to=None)}
+        self.assertEqual(walk_linked_chain(memory, "uid-1"), ["uid-1"])
+
+    def test_multi_link_walk(self) -> None:
+        memory = {
+            "uid-3": make_recognition_entry(linked_to="uid-2"),
+            "uid-2": make_recognition_entry(linked_to="uid-1"),
+            "uid-1": make_recognition_entry(linked_to=None),
+        }
+        self.assertEqual(
+            walk_linked_chain(memory, "uid-3"),
+            ["uid-3", "uid-2", "uid-1"],
+        )
+
+    def test_cycle_terminates(self) -> None:
+        memory = {
+            "uid-a": make_recognition_entry(linked_to="uid-b"),
+            "uid-b": make_recognition_entry(linked_to="uid-a"),
+        }
+        chain = walk_linked_chain(memory, "uid-a")
+        self.assertEqual(chain, ["uid-a", "uid-b"])
+
+    def test_max_hops_caps_walk(self) -> None:
+        memory = {}
+        for i in range(_LINKED_CHAIN_MAX_HOPS + 10):
+            memory[f"uid-{i}"] = make_recognition_entry(
+                linked_to=f"uid-{i + 1}"
+            )
+        # Last entry: dangling pointer to a uid not in memory — ensures
+        # walk terminates by max_hops, not by missing-link fallthrough.
+        chain = walk_linked_chain(memory, "uid-0")
+        self.assertEqual(len(chain), _LINKED_CHAIN_MAX_HOPS)
+
+    def test_dangling_link_terminates_silently(self) -> None:
+        memory = {
+            "uid-1": make_recognition_entry(linked_to="uid-missing"),
+        }
+        self.assertEqual(walk_linked_chain(memory, "uid-1"), ["uid-1"])
+
+
+class TestGetLinkedAliases(TestCase):
+    """Chain-derived alias names for ``Also known as`` rendering."""
+
+    def test_no_chain_returns_empty(self) -> None:
+        memory = {"uid-1": make_recognition_entry(assigned_name="Jorge")}
+        self.assertEqual(get_linked_aliases(memory, "uid-1"), [])
+
+    def test_excludes_starting_entry_name(self) -> None:
+        memory = {
+            "uid-2": make_recognition_entry(
+                assigned_name="The Hood", linked_to="uid-1"
+            ),
+            "uid-1": make_recognition_entry(assigned_name="Jorge"),
+        }
+        # Starting from uid-2 (named "The Hood"), we should see Jorge but
+        # not "The Hood" itself.
+        self.assertEqual(get_linked_aliases(memory, "uid-2"), ["Jorge"])
+
+    def test_skips_blank_assigned_names(self) -> None:
+        memory = {
+            "uid-3": make_recognition_entry(
+                assigned_name="Outer", linked_to="uid-2"
+            ),
+            "uid-2": make_recognition_entry(
+                assigned_name="", linked_to="uid-1"
+            ),
+            "uid-1": make_recognition_entry(assigned_name="Inner"),
+        }
+        self.assertEqual(get_linked_aliases(memory, "uid-3"), ["Inner"])
+
+
+# ---------------------------------------------------------------------------
+# _build_link_entry
+# ---------------------------------------------------------------------------
+
+
+class TestBuildLinkEntry(TestCase):
+    """Auto-created link-entry shape parity with ``make_recognition_entry``."""
+
+    def test_required_fields_present(self) -> None:
+        target = _FakeTarget(sdesc="a hooded figure")
+        observer = _FakeObserver()
+        entry = _build_link_entry(
+            target=target,
+            observer=observer,
+            linked_to="uid-prev",
+            now_iso="2025-01-02T03:04:05",
+            location_name="Alley",
+        )
+        for field in (
+            "assigned_name",
+            "first_seen",
+            "last_seen",
+            "times_seen",
+            "location_first_seen",
+            "location_last_seen",
+            "sdesc_at_first_encounter",
+            "sdesc_at_last_encounter",
+            "lost_contact",
+            "linked_to",
+        ):
+            self.assertIn(field, entry, f"missing field: {field}")
+
+    def test_assigned_name_starts_blank(self) -> None:
+        target = _FakeTarget(sdesc="a hooded figure")
+        observer = _FakeObserver()
+        entry = _build_link_entry(
+            target=target,
+            observer=observer,
+            linked_to=None,
+            now_iso="2025-01-02T03:04:05",
+            location_name="Alley",
+        )
+        self.assertEqual(entry["assigned_name"], "")
+
+    def test_linked_to_passed_through(self) -> None:
+        target = _FakeTarget(sdesc="a hooded figure")
+        observer = _FakeObserver()
+        entry = _build_link_entry(
+            target=target,
+            observer=observer,
+            linked_to="uid-prev",
+            now_iso="2025-01-02T03:04:05",
+            location_name="Alley",
+        )
+        self.assertEqual(entry["linked_to"], "uid-prev")
+
+
+# ---------------------------------------------------------------------------
+# Wiring tests — confirm apply_signature_change is invoked at each site
+# ---------------------------------------------------------------------------
+
+
+class _WiringMixinHost:
+    """Minimal host for :class:`ClothingMixin` exercising wear/remove only.
+
+    The mixin reads ``self.worn_items`` (dict mapping location → list of
+    items) and ``self.hands`` (dict mapping hand → held item).  We don't
+    need an Evennia Character — just the duck-typed surface.
+    """
+
+    def __init__(self) -> None:
+        self.worn_items: dict = {}
+        self.hands: dict = {}
+        self.location = None  # broadcast no-ops when no location
+
+
+class _WiringFakeItem:
+    """Wearable item stand-in for clothing-mixin wiring tests."""
+
+    def __init__(
+        self,
+        *,
+        disguise_essential: bool,
+        layer: int = 2,
+        coverage: tuple[str, ...] = ("torso",),
+        key: str = "fake-garment",
+    ) -> None:
+        self.disguise_essential = disguise_essential
+        self.layer = layer
+        self._coverage = coverage
+        self.key = key
+        self.location = None
+
+    def is_wearable(self) -> bool:
+        return True
+
+    def get_current_coverage(self) -> tuple[str, ...]:
+        return self._coverage
+
+    def move_to(self, *_args, **_kwargs) -> None:
+        return None
+
+
+class TestClothingMixinWiring(TestCase):
+    """``wear_item`` / ``remove_item`` invoke broadcast only for essentials."""
+
+    def _build_host_with_item(self, item: _WiringFakeItem):
+        from typeclasses.clothing_mixin import ClothingMixin
+
+        class _Host(_WiringMixinHost, ClothingMixin):
+            pass
+
+        host = _Host()
+        item.location = host  # treat as in inventory
+        return host
+
+    def test_wear_essential_invokes_broadcast(self) -> None:
+        item = _WiringFakeItem(disguise_essential=True, key="balaclava")
+        host = self._build_host_with_item(item)
+        with patch(
+            "world.identity.get_apparent_uid",
+            side_effect=["uid-bare", "uid-masked"],
+        ), patch("world.identity._broadcast_unmasking") as bc:
+            ok, _msg = host.wear_item(item)
+        self.assertTrue(ok)
+        bc.assert_called_once()
+
+    def test_wear_non_essential_skips_broadcast(self) -> None:
+        item = _WiringFakeItem(disguise_essential=False, key="shirt")
+        host = self._build_host_with_item(item)
+        with patch("world.identity._broadcast_unmasking") as bc:
+            ok, _msg = host.wear_item(item)
+        self.assertTrue(ok)
+        bc.assert_not_called()
+
+    def test_remove_essential_invokes_broadcast(self) -> None:
+        item = _WiringFakeItem(disguise_essential=True, key="balaclava")
+        host = self._build_host_with_item(item)
+        host.wear_item(item)  # establish worn state without patches
+        with patch(
+            "world.identity.get_apparent_uid",
+            side_effect=["uid-masked", "uid-bare"],
+        ), patch("world.identity._broadcast_unmasking") as bc:
+            ok, _msg = host.remove_item(item)
+        self.assertTrue(ok)
+        bc.assert_called_once()
+
+    def test_remove_non_essential_skips_broadcast(self) -> None:
+        item = _WiringFakeItem(disguise_essential=False, key="shirt")
+        host = self._build_host_with_item(item)
+        host.wear_item(item)
+        with patch("world.identity._broadcast_unmasking") as bc:
+            ok, _msg = host.remove_item(item)
+        self.assertTrue(ok)
+        bc.assert_not_called()
+
+
+class TestOverrideHelperWiring(TestCase):
+    """``_clear_all_overrides`` runs the mutation inside the context manager."""
+
+    def test_clear_all_overrides_uses_context_manager(self) -> None:
+        from commands.CmdCharacter import _clear_all_overrides
+
+        class _DB:
+            height_override = "tall"
+            build_override = "lean"
+            keyword_override = "hood"
+            active_persona = "Bandit"
+
+        class _Caller:
+            db = _DB()
+            location = None
+
+        caller = _Caller()
+        with patch(
+            "world.identity.get_apparent_uid",
+            side_effect=["uid-disguised", "uid-real"],
+        ), patch("world.identity._broadcast_unmasking") as bc:
+            _clear_all_overrides(caller)
+
+        # All four axes wiped.
+        self.assertIsNone(caller.db.height_override)
+        self.assertIsNone(caller.db.build_override)
+        self.assertIsNone(caller.db.keyword_override)
+        self.assertIsNone(caller.db.active_persona)
+        bc.assert_called_once()

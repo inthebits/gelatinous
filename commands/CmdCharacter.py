@@ -1746,21 +1746,28 @@ class CmdRecall(Command):
             entry = memory.get(apparent_uid)
         else:
             # Fall back to remembered-name lookup
-            _apparent_uid, entry = _find_remembered_uid_by_name(caller, args)
+            apparent_uid, entry = _find_remembered_uid_by_name(caller, args)
 
         if entry is None:
             caller.msg("You don't recognize that person.")
             return
 
-        self._render_entry(caller, entry)
+        self._render_entry(caller, entry, apparent_uid)
 
-    def _render_entry(self, caller, entry):
+    def _render_entry(self, caller, entry, apparent_uid=None):
         """Format and send a recognition_memory entry to the caller.
 
         Adds a ``(lost contact)`` annotation when the stored entry's
         ``lost_contact`` flag is True (set by the periodic prune scan;
         cleared on re-encounter).  Old entries that predate the flag
         default to False.
+
+        When ``apparent_uid`` is provided and the entry is part of a
+        linked-presentation chain (built up by the unmasking-moments
+        broadcast), an ``Also known as: ...`` line lists the assigned
+        names of every other named presentation in the chain — letting
+        the player see at a glance which of their remembered names refer
+        to the same underlying sleeve.
         """
         assigned_name = entry.get("assigned_name", "")
         sdesc_first = entry.get("sdesc_at_first_encounter", "(unknown)")
@@ -1789,6 +1796,17 @@ class CmdRecall(Command):
             f"Location: {location_first}",
             f"When: {when} (seen {times_seen} time{'s' if times_seen != 1 else ''})",
         ]
+
+        if apparent_uid is not None:
+            from world.identity import get_linked_aliases
+
+            memory = caller.recognition_memory or {}
+            aliases = get_linked_aliases(memory, apparent_uid)
+            if aliases:
+                lines.append(
+                    f"Also known as: |w{'|n, |w'.join(aliases)}|n"
+                )
+
         caller.msg("\n".join(lines))
 
 
@@ -1841,6 +1859,7 @@ class CmdMemory(Command):
         )
 
         from evennia.utils.evtable import EvTable
+        from world.identity import get_linked_aliases
 
         table = EvTable(
             "|wName|n",
@@ -1849,10 +1868,13 @@ class CmdMemory(Command):
             "|wWhen|n",
             border="cells",
         )
-        for _uid, entry in named:
+        for uid, entry in named:
             name_cell = entry.get("assigned_name", "")
             if entry.get("lost_contact", False):
                 name_cell = f"{name_cell} |y(lost contact)|n"
+            aliases = get_linked_aliases(memory, uid)
+            if aliases:
+                name_cell = f"{name_cell}\n|x(aka {', '.join(aliases)})|n"
             table.add_row(
                 name_cell,
                 entry.get("sdesc_at_last_encounter", "(unknown)"),
@@ -1896,10 +1918,13 @@ def _has_any_override(caller):
 
 def _clear_all_overrides(caller):
     """Wipe all override axes and the active-persona pointer."""
-    caller.db.height_override = None
-    caller.db.build_override = None
-    caller.db.keyword_override = None
-    caller.db.active_persona = None
+    from world.identity import apply_signature_change
+
+    with apply_signature_change(caller, source="stop_appearing"):
+        caller.db.height_override = None
+        caller.db.build_override = None
+        caller.db.keyword_override = None
+        caller.db.active_persona = None
 
 
 def _build_persona_entry(caller, name):
@@ -2160,7 +2185,7 @@ class CmdAppear(Command):
     # -- axis handlers ---------------------------------------------------
 
     def _nudge_height(self, caller, direction):
-        from world.identity import HEIGHTS
+        from world.identity import HEIGHTS, apply_signature_change
 
         new = _nudge_axis(
             HEIGHTS, caller.db.height_override, caller.height, direction
@@ -2173,11 +2198,12 @@ class CmdAppear(Command):
             )
             return
         self._maybe_break_persona(caller)
-        caller.db.height_override = new
+        with apply_signature_change(caller, source="override:height"):
+            caller.db.height_override = new
         caller.msg(f"You now carry yourself as |w{new}|n.")
 
     def _nudge_build(self, caller, direction):
-        from world.identity import BUILDS
+        from world.identity import BUILDS, apply_signature_change
 
         new = _nudge_axis(
             BUILDS, caller.db.build_override, caller.build, direction
@@ -2190,11 +2216,12 @@ class CmdAppear(Command):
             )
             return
         self._maybe_break_persona(caller)
-        caller.db.build_override = new
+        with apply_signature_change(caller, source="override:build"):
+            caller.db.build_override = new
         caller.msg(f"You now carry yourself as |w{new}|n.")
 
     def _set_keyword_override(self, caller, raw_keyword):
-        from world.identity import get_all_keywords
+        from world.identity import apply_signature_change, get_all_keywords
 
         keyword = raw_keyword.lower()
         if keyword not in {kw.lower() for kw in get_all_keywords()}:
@@ -2205,7 +2232,8 @@ class CmdAppear(Command):
             )
             return
         self._maybe_break_persona(caller)
-        caller.db.keyword_override = keyword
+        with apply_signature_change(caller, source="override:keyword"):
+            caller.db.keyword_override = keyword
         caller.msg(f"You now present yourself as a |w{keyword}|n.")
 
     # -- persona adoption ------------------------------------------------
@@ -2219,7 +2247,10 @@ class CmdAppear(Command):
         override swap.  Adoption is not refused — the player can choose
         to proceed and accept the resulting Apparent UID divergence.
         """
-        from world.identity import get_essential_item_type_ids
+        from world.identity import (
+            apply_signature_change,
+            get_essential_item_type_ids,
+        )
 
         saved = tuple(entry.get("essential_item_types") or ())
         current = get_essential_item_type_ids(caller)
@@ -2244,10 +2275,11 @@ class CmdAppear(Command):
             )
             caller.msg("\n".join(advisory_lines))
 
-        caller.db.height_override = entry.get("height_override")
-        caller.db.build_override = entry.get("build_override")
-        caller.db.keyword_override = entry.get("keyword_override")
-        caller.db.active_persona = name
+        with apply_signature_change(caller, source=f"persona:{name}"):
+            caller.db.height_override = entry.get("height_override")
+            caller.db.build_override = entry.get("build_override")
+            caller.db.keyword_override = entry.get("keyword_override")
+            caller.db.active_persona = name
 
         summary = _persona_summary_line(entry)
         caller.msg(
