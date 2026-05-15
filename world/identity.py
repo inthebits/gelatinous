@@ -1034,6 +1034,55 @@ LOST_CONTACT_THRESHOLD_SECONDS: int = 30 * 24 * 60 * 60
 _RECOGNITION_TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%S"
 
 
+def _recognition_utcnow():
+    """Return ``datetime.utcnow()``-equivalent as a naive UTC datetime.
+
+    Centralizes the "now in naive UTC" convention used by every
+    recognition-memory writer and reader.  Using
+    :func:`datetime.datetime.now` with ``tz=timezone.utc`` and then
+    stripping the tzinfo preserves the on-disk schema (naive ISO
+    strings interpreted as UTC) while sidestepping the
+    ``datetime.utcnow()`` deprecation in Python 3.12+.
+
+    Every recognition timestamp in the codebase — writer or reader —
+    MUST flow through this helper (or ``_recognition_now_iso``) to
+    keep the comparison frame consistent across processes and
+    timezones.
+    """
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def _recognition_now_iso() -> str:
+    """Return current UTC time formatted per :data:`_RECOGNITION_TIMESTAMP_FMT`.
+
+    Convenience wrapper around :func:`_recognition_utcnow` for
+    callers that need the canonical ISO string for storage in a
+    ``recognition_memory`` entry.
+    """
+    return _recognition_utcnow().strftime(_RECOGNITION_TIMESTAMP_FMT)
+
+
+def _parse_recognition_timestamp(iso_string: str):
+    """Parse a stored recognition ISO string back to a naive UTC datetime.
+
+    Symmetric inverse of :func:`_recognition_now_iso`.  Returns the
+    naive :class:`datetime.datetime` carrying the same UTC wall time
+    that was originally captured; callers that need to compute an
+    elapsed delta against "now" should obtain the comparison time
+    from :func:`_recognition_utcnow` so both sides share the naive
+    UTC frame.
+
+    Raises :class:`ValueError` on malformed input (same contract as
+    :meth:`datetime.datetime.strptime`); callers are expected to
+    handle that path explicitly rather than swallow it here.
+    """
+    from datetime import datetime
+
+    return datetime.strptime(iso_string, _RECOGNITION_TIMESTAMP_FMT)
+
+
 def mark_lost_contact_entries(
     observer: Any,
     current_room_uids: Any,
@@ -1069,20 +1118,18 @@ def mark_lost_contact_entries(
             in the observer's room (or any view; the helper is
             indifferent to the source).
         now: Optional :class:`datetime.datetime` for tests; defaults
-            to ``datetime.utcnow()`` when omitted.
+            to :func:`_recognition_utcnow` (naive UTC) when omitted.
 
     Returns:
         Number of entries newly flipped to ``True``.  Returns ``0``
         when ``observer`` has no memory or the memory is empty.
     """
-    from datetime import datetime
-
     memory = getattr(observer, "recognition_memory", None) or {}
     if not memory:
         return 0
 
     current = set(current_room_uids or ())
-    now = now if now is not None else datetime.utcnow()
+    now = now if now is not None else _recognition_utcnow()
     threshold_seconds = LOST_CONTACT_THRESHOLD_SECONDS
 
     flipped = 0
@@ -1097,9 +1144,7 @@ def mark_lost_contact_entries(
         if not last_seen_iso:
             continue
         try:
-            then = datetime.strptime(
-                last_seen_iso, _RECOGNITION_TIMESTAMP_FMT
-            )
+            then = _parse_recognition_timestamp(last_seen_iso)
         except ValueError:
             # Malformed timestamp — leave the entry alone, log a hint.
             logger.log_warn(
@@ -1172,27 +1217,23 @@ def bump_recognition_recency(
         apparent_uid: Apparent UID computed for ``target`` from the
             observer's vantage point.
         now: Optional :class:`datetime.datetime` for tests; defaults
-            to ``datetime.utcnow()`` when omitted.
+            to :func:`_recognition_utcnow` (naive UTC) when omitted.
 
     Returns:
         ``True`` when the entry was bumped; ``False`` when the helper
         was a no-op (UID not in memory, or throttle window not
         elapsed).
     """
-    from datetime import datetime
-
     memory = getattr(observer, "recognition_memory", None) or {}
     entry = memory.get(apparent_uid)
     if entry is None:
         return False
 
-    now_dt = now if now is not None else datetime.utcnow()
+    now_dt = now if now is not None else _recognition_utcnow()
     last_seen_iso = entry.get("last_seen") or ""
     if last_seen_iso:
         try:
-            then = datetime.strptime(
-                last_seen_iso, _RECOGNITION_TIMESTAMP_FMT
-            )
+            then = _parse_recognition_timestamp(last_seen_iso)
         except ValueError:
             logger.log_warn(
                 f"recognition_memory entry on {observer!r} "
@@ -1471,9 +1512,7 @@ def _broadcast_unmasking(
     if old_uid == new_uid:
         return
 
-    import time
-
-    now_iso = time.strftime("%Y-%m-%dT%H:%M:%S")
+    now_iso = _recognition_now_iso()
 
     for observer in _collect_unmasking_observers(char):
         memory = getattr(observer, "recognition_memory", None)
