@@ -259,9 +259,19 @@ recognition_memory = {
         "confidence": float,            # 0.0-1.0, Resonance-influenced recognition certainty
         "relationship_valence": str,    # "hostile", "neutral", "friendly", "unknown"
         "lost_contact": bool,           # True once the entry's UID has not matched any
-                                        # observable character for an extended period;
-                                        # entry remains visible in `memory` and `recall`
+                                        # observable character for an extended period,
+                                        # OR once the observer witnessed the presentation
+                                        # transition into a new signature ("unmasking").
+                                        # Entry remains visible in `memory` and `recall`
                                         # but is annotated as out of contact.
+        "linked_to": str | None,        # Apparent UID of a prior presentation the
+                                        # observer witnessed transitioning into this one.
+                                        # Populated by the unmasking-moments hook (see
+                                        # §Unmasking Moments). Forms a one-direction
+                                        # chain new → old; walked by
+                                        # `get_linked_aliases` to render the
+                                        # "Also known as" line in `recall` and the
+                                        # "(aka ...)" annotation in `memory`.
 
         # Interaction log (capped, rolling window)
         "recent_interactions": [
@@ -278,7 +288,14 @@ recognition_memory = {
 
 This is stored as a db attribute on the Character (`recognition_memory` AttributeProperty), keyed by **Apparent UID**. See §Memory Architecture for the storage-location rationale and the planned migration to brain-organ storage. The `recent_interactions` list should be capped (e.g., last 20 interactions per entry) to prevent unbounded growth, with older interactions eligible for summarization or archival.
 
-**Orphaned entries (`lost_contact`):** A recognition entry whose Apparent UID has not matched any observable character within a configurable window (deferred to balance pass; provisional default: 30 in-game days, defined as `LOST_CONTACT_THRESHOLD_SECONDS` in `world/identity.py`) is marked `lost_contact = True`. The entry stays visible in `memory` and `recall` (player-authored notes are valuable lore even when the trail goes cold) and is rendered with a "(lost contact)" annotation. The flip is performed lazily at render time by `world/identity.py:mark_lost_contact_entries`, invoked from the `memory` and `recall` commands via `commands/CmdCharacter._refresh_lost_contact` immediately before iterating recognition memory; there is no background scan. The inverse — clearing the flag back to `False` on re-meet — is handled by `world/identity.py:bump_recognition_recency` (passive perception path) and by the recognition writer in `_remember_target` (explicit `remember` path). A future player command may allow explicit pruning of lost-contact entries; auto-pruning is intentionally **not** done.
+**Orphaned entries (`lost_contact`):** A recognition entry whose Apparent UID has not matched any observable character within a configurable window (deferred to balance pass; provisional default: 30 in-game days, defined as `LOST_CONTACT_THRESHOLD_SECONDS` in `world/identity.py`) is marked `lost_contact = True`. The entry stays visible in `memory` and `recall` (player-authored notes are valuable lore even when the trail goes cold) and is rendered with a "(lost contact)" annotation. The flag has **two writers**:
+
+1. **Lazy staleness scan** — `world/identity.py:mark_lost_contact_entries`, invoked from the `memory` and `recall` commands via `commands/CmdCharacter._refresh_lost_contact` immediately before iterating recognition memory. No background scan; the flag only updates when a surface would render it.
+2. **Unmasking-moments hook** — `world/identity.py:_broadcast_unmasking` (cells B and D of the broadcast matrix, see §Unmasking Moments) flips the *old* entry's `lost_contact` to `True` synchronously when an observer witnesses a signature change. This is an eyewitness fact, not an inference: the prior presentation is provably gone from this sleeve.
+
+The flag therefore carries a mild dual semantic — "this presentation hasn't been observed in a long time" *or* "this presentation was directly observed to transition away." Both render the same `|y(lost contact)|n` annotation; the player-facing string is intentionally agnostic.
+
+The inverse — clearing the flag back to `False` on re-meet — is handled by `world/identity.py:bump_recognition_recency` (passive perception path), by the recognition writer in `_remember_target` (explicit `remember` path), and by cells C and D of the unmasking broadcast (refreshing the new entry). A future player command may allow explicit pruning of lost-contact entries; auto-pruning is intentionally **not** done.
 
 **Passive recency on perception:** Recency fields on existing recognition entries (`last_seen`, `location_last_seen`, `sdesc_at_last_encounter`) are refreshed without an explicit `remember` whenever the observer perceives a target whose Apparent UID is already in their memory. This is implemented by `world/identity.py:bump_recognition_recency`, invoked from `Character.at_post_move` via `_refresh_recognition_recency`: on every room entry the observer scans the new room's contents and bumps each known UID. Writes are throttled to one bump per `RECOGNITION_BUMP_THROTTLE_SECONDS` (provisional 300s = 5 minutes) per UID per observer, so extended co-location does not spam AttributeProperty writes. The helper is **strictly opt-in for already-remembered UIDs** — it never creates entries; entry creation remains the exclusive responsibility of the `remember` command. The `times_seen` counter is intentionally **not** incremented by passive perception; it counts explicit `remember` invocations only. Stealth/sneaking/hidden mechanics are a known future delta — when those land, they will need to suppress this hook for hidden targets.
 
@@ -565,7 +582,7 @@ Because the identity engine is purely emergent from current state, players need 
 
 A persona is a **player-private snapshot** of presentation overrides, captured at the moment of saving and restorable later. Personas are designed in parallel to the planned identity/contact system — same recall, annotation, and (future) web-UI patterns.
 
-> **Status:** The surface verbs (`appear`, `stop appearing`, `personas`, `persona`, `remember me as <name>`, `forget <persona>`), the persona storage schema, the signature engine, Apparent UID derivation, `get_sdesc()` consumption of overrides, pronoun derivation under disguise via `get_apparent_gender`, recognition-memory keying on Apparent UID, the persona `essential_item_types` snapshot + adoption-time advisory, and the `lost_contact` orphan-marking flag with its `memory` / `recall` render annotation are all **shipped**.
+> **Status:** The surface verbs (`appear`, `stop appearing`, `personas`, `persona`, `remember me as <name>`, `forget <persona>`), the persona storage schema, the signature engine, Apparent UID derivation, `get_sdesc()` consumption of overrides, pronoun derivation under disguise via `get_apparent_gender`, recognition-memory keying on Apparent UID, the persona `essential_item_types` snapshot + adoption-time advisory, the `lost_contact` orphan-marking flag with its `memory` / `recall` render annotation, the unmasking-moments hook (`apply_signature_change` + `_broadcast_unmasking` + `linked_to` chains + "Also known as" / "(aka ...)" rendering — see §Unmasking Moments), and corpse apparent-UID propagation are all **shipped**.
 
 **A persona stores:**
 - A **player-chosen name** (case-insensitive lookup, case-preserving display, player-private — never visible to other characters)
@@ -696,6 +713,38 @@ A disguised character (overrides: `tall man` + essential cowl + non-essential ca
 - **Observer meets the same disguised character a second time, different signature** (e.g., one essential item swapped): Different Apparent UID; observer sees a stranger.
 - **Two characters wearing identical overrides + items:** Visual collision (sdesc strings match), but Apparent UIDs differ (different salts). Each observer's recognition is per-UID; impersonation is *visual*, not *systemic*. An impostor *looks* the same but does not auto-resolve to the original's assigned name. Successful name-fooling requires either acquiring the original's salt (future adversarial-identity mechanic — e.g., through stolen contact cards) or the observer manually `remember`ing the same name onto the impostor's distinct UID.
 - **Observer meets a previously-tagged disguise that has since been abandoned and never re-presented:** The recognition entry is preserved but its Apparent UID never matches anyone in the room. After a configurable inactivity window (deferred to balance pass), the entry is marked `lost_contact = True` and rendered with a "(lost contact)" annotation in `memory` and `recall`. The entry is never auto-pruned — player notes and lore on the entry remain valuable even when the trail has gone cold.
+
+### Unmasking Moments
+
+When a character's identity signature changes in a populated room, the observers in that room are *eyewitnesses* to the transition. The recognition system captures this synchronously through the **unmasking-moments hook**: a single broadcast pass over the room's conscious observers that updates each observer's recognition memory based on what they already knew about the old and new signatures.
+
+This is the bridge that keeps disguise legible after the fact. Without it, a signature change would silently produce a new stranger UID with no link to the prior presentation — observers would have no in-system way to know that "the masked figure" and "the bareheaded woman" are the same body. With it, observers who watched the change get an explicit linkage (`linked_to`) plus a `lost_contact` flag on the prior presentation, and the "Also known as" rendering surfaces the connection in `recall` and `memory`.
+
+**Implementation surface:**
+
+- **`apply_signature_change`** (`world/identity.py`) — a context manager that wraps any mutation that may change the actor's identity signature. Captures observers + old signature *before* the mutation, then dispatches `_broadcast_unmasking` *after*, but only if the signature actually changed.
+- **Wrapped mutation sites:**
+  - `commands/CmdCharacter.py`: `_clear_all_overrides` (source `stop_appearing`), `_nudge_height` (`override:height`), `_nudge_build` (`override:build`), `_set_keyword_override` (`override:keyword`), `_adopt_persona` (`persona:<name>`).
+  - `typeclasses/clothing_mixin.py`: `wear_item` (`wear_item`) and `remove_item` (`remove_item`) — guarded so the wrap is skipped unless the item has `disguise_essential = True`.
+- **Observer collection** — `_collect_unmasking_observers` walks the actor's room, filters to `Character` instances excluding the actor, and drops anyone whose `is_unconscious()` returns truthy (defensive `AttributeError` handling treats failure as conscious).
+
+**Broadcast matrix.** For each observer, the hook evaluates whether the observer's recognition memory contains the old UID, the new UID, both, or neither, and writes accordingly:
+
+| Cell | Observer knew old? | Observer knew new? | Action |
+|---|---|---|---|
+| **A** | No | No | No-op. Observer has no recognition tag for either presentation. |
+| **B** | Yes | No | Flip old entry's `lost_contact = True`. Auto-create a new entry under the new UID with `linked_to = old_uid` and a blank `assigned_name` so the observer can later `remember` the new presentation and the link is preserved. |
+| **C** | No | Yes | Refresh the new entry's `last_seen` / `location_last_seen` / `sdesc_at_last_encounter`; clear its `lost_contact`. No link formed — the observer never met the old presentation, so there is nothing to chain. |
+| **D** | Yes | Yes | Flip old entry's `lost_contact = True`. Refresh the new entry as in cell C. Set `linked_to = old_uid` on the new entry *only if* it is currently `None` (never overwrite an existing chain link). Both `assigned_name` values are preserved. |
+
+**Chain semantics.**
+
+- `linked_to` forms a **one-directional chain** new → old. Walking the chain (`world/identity.py:walk_linked_chain`) terminates on `None`, on a cycle (logged and broken), or on `_LINKED_CHAIN_MAX_HOPS = 64` (defensive guard).
+- `get_linked_aliases(memory, current_uid)` walks the chain from `current_uid` and returns the list of non-empty `assigned_name`s from prior presentations. The renderer uses this to emit `Also known as: |w<name1>|n, |w<name2>|n` in `recall` and `\n|x(aka <names>)|n` in the `memory` table.
+- The chain is *not* bidirectional — viewing an old entry does not currently surface the new presentation's name. Forward-only walk was chosen for simplicity and is sufficient for the "Also known as" UX. If a future need arises (e.g. "this name was later replaced by..."), the inverse walk can be added without schema change.
+- **Forget interaction:** Forgetting the *old* entry leaves the new entry's `linked_to` pointing at a missing UID; `get_linked_aliases` silently terminates the walk via `memory.get(next_uid)`. No dangling-reference error.
+
+**Stub: per-cell narrative flavor.** `_send_unmasking_message` is currently a no-op. Per-observer flavor text (e.g. *"Someone's features shift subtly"*) was deferred — the engine and bookkeeping ship now; narrative copy waits until live play surfaces what cell-specific messages should say.
 
 ### Impersonation
 
@@ -986,9 +1035,10 @@ Blood pools currently store the character's name. With recognition:
 ### Corpses (`typeclasses/corpse.py`)
 
 Corpses already preserve forensic data (original name, dbref, physical description, longdesc, skintone, gender). With recognition:
-- Add `sleeve_uid` to corpse forensic data
-- Looking at a corpse: investigator sees recognized name or sdesc based on their memory
-- Corpse decay interacts with recognition: at advanced decay, the physical features become unrecognizable (already described in existing decay stage text)
+- `sleeve_uid` is propagated to the corpse — **shipped** (PR #133).
+- Looking at a corpse: investigator sees recognized name or sdesc based on their memory — **shipped**. The corpse's `get_display_name` routes through the observer's recognition memory keyed on the corpse's apparent UID (derived from `sleeve_uid` plus whatever the corpse is still wearing).
+- Worn-item changes on the corpse re-derive the apparent presentation — **shipped** via `at_object_leave` invalidation, so stripping a body changes its signature exactly like stripping a live character.
+- Corpse decay interacts with recognition: at advanced decay, the physical features become unrecognizable (already described in existing decay stage text). Wiring decay stage into the apparent-UID pipeline is **pending** — the hook exists; the policy for "when does decay break recognition" has not been chosen.
 
 ### Evidence and Investigation (Future)
 
@@ -1100,6 +1150,19 @@ Players should be prompted to customize their sdesc on next login if defaults we
 
 ## Phased Implementation
 
+**Current status (high-level):**
+
+| Phase | Scope | Status |
+|---|---|---|
+| 1 | Foundation (sdesc, recognition, chargen, grammar) | ✅ Shipped |
+| 2 | Per-observer rendering consistency | ✅ Shipped |
+| 3 | Disguise foundation (signature engine, `appear`, personas, unmasking) | ✅ Shipped |
+| 3.5 | Disguise item taxonomy | 🟡 Partially shipped — prototypes live, cohesion polish pending |
+| 4 | Cybernetics (digital memory, ID exchange) | ⛔ Not started (gated on cyberware system) |
+| 5 | Resonance mechanics (decay, perception, social reads) | ⛔ Not started (gated on Phase 4) |
+
+Per-phase detail below.
+
 ### Phase 1 — Foundation
 
 **Scope:** sdesc system, recognition storage, manual assignment, `get_display_name` override, chargen updates.
@@ -1163,10 +1226,12 @@ Players should be prompted to customize their sdesc on next login if defaults we
   - Cross-namespace uniqueness enforced (keyword catalog ∩ recognition names ∩ persona names)
   - No cap (deferred to balance pass)
   - Persona `essential_item_types` snapshot + adoption-time advisory — **shipped** (`commands/CmdCharacter.py:_build_persona_entry,_adopt_persona`); `_build_persona_entry` captures `get_essential_item_type_ids(caller)` at save time, and `_adopt_persona` emits a yellow advisory when the saved composition diverges from currently-equipped essentials. Adoption proceeds regardless.
-- Lifecycle integration *(future)*:
-  - Death: clears overrides; corpse stores `real_sleeve_uid` + `last_active_signature` snapshot
-  - Sleeve swap (flash clone / resleeving): salt is `real_sleeve_uid`, so personas don't carry across bodies; persona records remain on the player
-  - Item destruction: removing/destroying essential item changes signature → Apparent UID changes → observers see stranger
+- Unmasking-moments hook — **shipped** (PR #134). `world/identity.py:apply_signature_change` context manager wraps every mutation that may change the actor's identity signature (`_clear_all_overrides`, `_nudge_height`, `_nudge_build`, `_set_keyword_override`, `_adopt_persona`, and `ClothingMixin.wear_item` / `remove_item` for `disguise_essential` items). When a signature actually changes, `_broadcast_unmasking` walks the room's conscious observers and updates their recognition memory according to the A/B/C/D matrix in §Unmasking Moments — flipping `lost_contact` on prior presentations, refreshing the new presentation's recency, and forming `linked_to` chains. `get_linked_aliases` walks the chain forward and surfaces aliases in `recall` (`Also known as: ...`) and `memory` (`(aka ...)`). Per-cell narrative flavor text (`_send_unmasking_message`) is currently a no-op stub.
+- Corpse apparent-UID propagation — **shipped** (PR #133). `typeclasses/corpse.py` carries `sleeve_uid`, `get_worn_items()`, a recognition-aware `get_display_name`, and `at_object_leave` invalidation so worn-item removal from a corpse re-derives its apparent presentation. Observers who tagged the deceased under a particular signature continue to auto-recognize the body under that same signature; stripping the body changes the signature and breaks the recognition tag, mirroring the live-character semantics.
+- Lifecycle integration *(partially shipped)*:
+  - Death: clears overrides; corpse stores `real_sleeve_uid` + `last_active_signature` snapshot — **partially shipped**: corpse `sleeve_uid` propagation and presentation-aware recognition shipped in PR #133 (see "Corpse apparent-UID propagation" above). Explicit override-clear on death and the `last_active_signature` snapshot field are pending follow-up.
+  - Sleeve swap (flash clone / resleeving): salt is `real_sleeve_uid`, so personas don't carry across bodies; persona records remain on the player — *behavior holds today by virtue of `sleeve_uid` inheritance + persona storage on the Character; no explicit flash-clone-aware code path exists yet.*
+  - Item destruction: removing/destroying essential item changes signature → Apparent UID changes → observers see stranger — **shipped** (covered by the unmasking-moments wiring on `remove_item`; destruction routes through removal).
 - No observer-side disguise metadata — recognition system stays transparent to disguise mechanics
 - No auto-equip / auto-remove on persona swap — disguise emerges from observable state
 
@@ -1187,12 +1252,14 @@ Players should be prompted to customize their sdesc on next login if defaults we
 
 **Scope:** Concrete disguise item catalog and prototypes built atop the Phase 3 foundation.
 
-- Specific essential-item prototypes (balaclava, hood, cowl, mask, etc.) with appropriate `disguise_essential` and `is_disguise_item` flags
-- Tagging conventions for "same type" matching (so a replacement balaclava restores signature)
-- Distinguishing-feature interaction with disguise items (which items suppress which features)
-- Item-driven sdesc fragment contributions (cohesion with `sdesc_short` from Phase 2)
-- Pharmaceutical / biomod items for `@longdesc` override
-- Photos / identity artifacts
+**Status:** Partially shipped. Initial prototype catalog and `disguise_type_id` keying live; cohesion polish and biomod / artifact items are still pending.
+
+- Specific essential-item prototypes (balaclava, hood, cowl, mask, etc.) with appropriate `disguise_essential` and `is_disguise_item` flags — **shipped** (PR #132). BALACLAVA plus 12 Phase 3.5 prototypes in `world/prototypes.py`.
+- Tagging conventions for "same type" matching (so a replacement balaclava restores signature) — **shipped at the engine level**: `disguise_type_id` is the keying field consumed by `get_essential_item_type_ids`. Per-prototype audit (ensuring every essential prototype has a deliberate, swap-equivalent `disguise_type_id`) is still **pending** — currently best-effort by prototype author.
+- Distinguishing-feature interaction with disguise items (which items suppress which features) — **partially shipped**: `covers_hair` is honoured by the distinguishing-feature chain (`typeclasses/characters.py:920–944`); broader suppression conventions (e.g. mask-suppresses-face, cowl-suppresses-hair-plus-ears) are **pending** a cohesion pass over the prototype catalog.
+- Item-driven sdesc fragment contributions (cohesion with `sdesc_short` from Phase 2) — **pending audit**: the wiring exists; whether each Phase 3.5 prototype sets `sdesc_short` / `worn_sdesc_short` deliberately and consistently has not been reviewed.
+- Pharmaceutical / biomod items for `@longdesc` override — **deferred** (depends on body-mod system; tracked under Future Hooks).
+- Photos / identity artifacts — **deferred** (tracked under Future Hooks).
 
 ### Phase 4 — Cybernetics
 
@@ -1232,7 +1299,7 @@ For reference, the existing forensic data preserved by the system:
 
 **Corpses** (`typeclasses/corpse.py`): original character name/dbref, account dbref, death time, cause of death, medical conditions, wounds at death, physical description, longdesc data, skintone, gender. Decay stages: fresh (<1h), early (<1d), moderate (<3d), advanced (<1w), skeletal (>1w).
 
-Both need `sleeve_uid` added to their forensic data for integration with the recognition system.
+`sleeve_uid` has been added to corpse forensic data (PR #133) — corpses participate in the recognition pipeline. Blood pool integration is still pending.
 
 ---
 
