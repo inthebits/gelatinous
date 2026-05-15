@@ -763,6 +763,34 @@ This is the bridge that keeps disguise legible after the fact. Without it, a sig
 
 Cell D falls back to the shorter `"You realize that {old_sdesc} and {new_sdesc} are the same person."` template if either `assigned_name` is blank (defensive — cell D by definition has both, but a future code path that drops one should still produce coherent prose). Cell B suppresses the message entirely if either sdesc is missing, rather than ship a malformed line.
 
+### Disguise Piercing
+
+When an observer sees a character whose current Apparent UID is **not** in their recognition memory, the display-name pipeline gives them one more chance: if they've previously remembered the same underlying sleeve under a *different* presentation (the "bare-face entry"), an opposed Intellect-vs-Resonance roll decides whether they see through the disguise.
+
+This is the standing complement to the eyewitness Unmasking Moments hook (§Unmasking Moments). Unmasking handles the case where the observer *witnesses* a transition; piercing handles the case where the observer encounters a familiar sleeve already wearing a disguise they did not see go on.
+
+**Trigger.** `Character.get_display_name(looker)` (and its richer sibling `get_look_header`) first try a direct `recognition_memory[apparent_uid]` lookup. On miss, they call `world.identity.attempt_display_pierce(looker, self, apparent_uid)` before falling back to the articled sdesc. The pierce wrapper:
+
+1. Calls `find_entries_by_real_sleeve_uid(looker, self.sleeve_uid)` to gather every entry the looker has for this underlying sleeve.
+2. Filters out the current `apparent_uid` (the disguised presentation can't pierce itself) and any candidate without an `assigned_name`.
+3. Returns `None` if no candidates remain.
+4. Picks the **first** candidate (insertion order — corresponds to the earliest presentation the looker remembered for this sleeve) and defers to `attempt_disguise_pierce` for the roll.
+
+**The roll.** `attempt_disguise_pierce(observer, target, apparent_uid, bare_entry)` rolls opposed `Intellect` (observer) vs `Resonance` (target) via `world.combat.dice.opposed_roll`, with:
+
+- **Familiarity bonus** added to the observer's effective total: `min(bare_entry["times_seen"], DISGUISE_PIERCE_FAMILIARITY_CAP)`. The cap (default 5) keeps a grizzled veteran from auto-piercing every disguise on Earth.
+- **Disguise penalty** added to the target's effective total: `DISGUISE_PIERCE_VECTOR_PENALTY * count_of_active_vectors`. Vectors are worn `disguise_essential` items plus the three string overrides (`height_override`, `build_override`, `keyword_override`); each contributes 1. Heavier disguises are harder to see through.
+
+Success condition: `(observer_roll + familiarity) > (target_roll + penalty)`. Ties favour the target (the disguise holds).
+
+**Caching.** The outcome is cached permanently per `(observer, target, apparent_uid)` triple on `observer.db.disguise_pierce_cache = {(target.dbref, apparent_uid): bool}`. This mirrors the corpse forensic-recovery contract (`typeclasses/corpse.py:_attempt_forensic_recognition`): one careful look determines the verdict, no re-roll abuse on every `look`. The cache key includes `apparent_uid` so changing the disguise (puts on a hat, swaps a coat) re-rolls; the previous presentation's cached outcome is irrelevant to the new one.
+
+Observers or targets without a `dbref` are not cached and re-roll on every call (keeps the cache bounded; no junk keys for tooling that walks characters without a real observer). The cache survives reloads (it's on `db`, not `ndb`) and persists across sessions — by design: a player who has decided "I do not recognise this person" should not be magically reset to undecided on a server restart.
+
+**Surface.** On success, the looker sees the bare-face entry's `assigned_name` in place of the articled sdesc — same surface as ordinary recognition. The `get_look_header` path further attaches the *current* (disguised) sdesc in parentheses, so the looker sees `"Bruce (a tall figure in a black coat)"` rather than the stranger fallback.
+
+**No auto-link.** Piercing surfaces a name but does **not** write `linked_to` on the disguised presentation's entry — there is no entry to link, by definition. If the looker subsequently runs `remember <pierced name>`, that command's normal flow creates a new entry for the disguised UID and (because the cell-D mirror in `_remember_target` runs) links it to the bare-face entry the looker matched against.
+
 ### Impersonation
 
 Impersonation is **emergent**, not mechanical. The system does not detect or prevent it.
