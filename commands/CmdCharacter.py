@@ -1,5 +1,6 @@
 from evennia import Command
 from evennia.utils.search import search_object
+from commands._identity_targeting import resolve_admin_target
 from world.combat.constants import (
     PERM_BUILDER, PERM_DEVELOPER,
     BOX_TOP_LEFT, BOX_TOP_RIGHT, BOX_BOTTOM_LEFT, BOX_BOTTOM_RIGHT,
@@ -615,41 +616,14 @@ class CmdLongdesc(Command):
         remaining_args = args
 
         if caller.locks.check_lockstring(caller, f"dummy:perm({PERM_BUILDER}) or perm_above({PERM_BUILDER})"):
-            # Staff can target other characters
+            # Staff can target other characters via identity-aware lookup
+            # (same-room sdesc/recognition match) with global key fallback.
             parts = args.split(None, 1)
             if len(parts) >= 1:
-                # Try different search approaches
-                potential_target = caller.search(parts[0], global_search=True, quiet=True)
-                
-                if not potential_target:
-                    # Try searching without global_search
-                    potential_target = caller.search(parts[0], quiet=True)
-                
-                if not potential_target:
-                    # Try searching in the same location as the caller
-                    if caller.location:
-                        potential_target = caller.location.search(parts[0], quiet=True)
-                        
-                        # If not found in location, try searching the location's contents more broadly
-                        if not potential_target:
-                            for obj in caller.location.contents:
-                                if obj.key.lower() == parts[0].lower():
-                                    potential_target = obj
-                                    break
-                
-                if potential_target:
-                    # If it's a list, get the first item
-                    if isinstance(potential_target, list):
-                        if potential_target:
-                            actual_target = potential_target[0]
-                        else:
-                            actual_target = None
-                    else:
-                        actual_target = potential_target
-                    
-                    if actual_target and hasattr(actual_target, 'longdesc'):
-                        target_char = actual_target
-                        remaining_args = parts[1] if len(parts) > 1 else ""
+                actual_target = resolve_admin_target(caller, parts[0])
+                if actual_target and hasattr(actual_target, 'longdesc'):
+                    target_char = actual_target
+                    remaining_args = parts[1] if len(parts) > 1 else ""
 
         if not target_char:
             target_char = caller
@@ -739,8 +713,7 @@ class CmdLongdesc(Command):
         if caller.locks.check_lockstring(caller, f"dummy:perm({PERM_BUILDER}) or perm_above({PERM_BUILDER})"):
             parts = args.split(None, 1)
             if len(parts) >= 1:
-                # Use quiet=True to prevent "Could not find" messages
-                potential_target = caller.search(parts[0], global_search=True, quiet=True)
+                potential_target = resolve_admin_target(caller, parts[0])
                 if potential_target and hasattr(potential_target, 'longdesc'):
                     target_char = potential_target
                     location = parts[1] if len(parts) > 1 else ""
@@ -1010,22 +983,12 @@ class CmdSkintone(Command):
             target.msg(f"{caller.name} has cleared your skintone setting.")
 
     def _find_character(self, caller, character_name):
-        """Find a character by name for staff targeting"""
-        # Use Evennia's search system to find the character
-        results = search_object(character_name, typeclass="typeclasses.characters.Character")
-        
-        if not results:
-            return None
-        elif len(results) > 1:
-            # Multiple matches - try to find exact match
-            exact_matches = [obj for obj in results if obj.name.lower() == character_name.lower()]
-            if len(exact_matches) == 1:
-                return exact_matches[0]
-            else:
-                caller.msg(f"Multiple characters match '{character_name}': {', '.join(obj.name for obj in results)}")
-                return None
-        else:
-            return results[0]
+        """Find a character by name for staff targeting.
+
+        Uses the identity-aware admin lookup: local sdesc/recognition
+        match in caller's room first, then global key search fallback.
+        """
+        return resolve_admin_target(caller, character_name)
 
 
 # ===================================================================
