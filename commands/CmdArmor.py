@@ -14,6 +14,7 @@ from world.combat.constants import (
     ANATOMICAL_DISPLAY_ORDER,
     ARMOR_EFFECTIVENESS_MATRIX,
 )
+from world.identity_utils import msg_room_identity
 
 
 def _get_center_headers(caller):
@@ -1456,9 +1457,13 @@ class CmdSlot(Command):
 
         # Location message
         if caller.location:
-            caller.location.msg_contents(
-                f"{caller.key} installs an armor plate into"
-                f" their {carrier.key}.",
+            msg_room_identity(
+                location=caller.location,
+                template=(
+                    f"{{actor}} installs an armor plate into"
+                    f" their {carrier.key}."
+                ),
+                char_refs={"actor": caller},
                 exclude=[caller],
             )
 
@@ -1511,9 +1516,13 @@ class CmdSlot(Command):
 
         # Location message
         if caller.location:
-            caller.location.msg_contents(
-                f"{caller.key} removes an armor plate from"
-                f" their {carrier.key}.",
+            msg_room_identity(
+                location=caller.location,
+                template=(
+                    f"{{actor}} removes an armor plate from"
+                    f" their {carrier.key}."
+                ),
+                char_refs={"actor": caller},
                 exclude=[caller],
             )
 
@@ -1560,9 +1569,13 @@ class CmdSlot(Command):
 
         # Location message
         if caller.location:
-            caller.location.msg_contents(
-                f"{caller.key} performs a tactical plate swap on"
-                f" their {old_carrier.key}.",
+            msg_room_identity(
+                location=caller.location,
+                template=(
+                    f"{{actor}} performs a tactical plate swap on"
+                    f" their {old_carrier.key}."
+                ),
+                char_refs={"actor": caller},
                 exclude=[caller],
             )
 
@@ -1805,7 +1818,11 @@ class CmdUnslot(Command):
             f" slot of your {carrier.key}."
         )
         if caller.location:
-            caller.location.msg_contents(
-                f"{caller.key} removes a plate from their {carrier.key}.",
+            msg_room_identity(
+                location=caller.location,
+                template=(
+                    f"{{actor}} removes a plate from their {carrier.key}."
+                ),
+                char_refs={"actor": caller},
                 exclude=[caller],
             )

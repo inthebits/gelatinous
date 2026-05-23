@@ -1,0 +1,300 @@
+"""
+Tests for Phase 2 per-observer rendering in CmdSlot / CmdUnslot.
+
+Verifies the plate install / remove / swap / unslot flows route their
+room broadcasts through :func:`msg_room_identity` so each observer sees
+the actor rendered according to their own recognition memory.
+
+Tool-degradation broadcasts in ``CmdArmorRepair`` are intentionally
+*not* converted: those strings reference only the tool's ``.key`` (no
+character) and add no value under per-observer rendering.
+
+Run via::
+
+    evennia test world.tests.test_armor_rendering
+
+Aligns with ``specs/IDENTITY_RECOGNITION_SPEC.md`` §"Phase 2 —
+Consistency" Conversion Status.
+"""
+
+from contextlib import ExitStack
+from unittest import TestCase
+from unittest.mock import MagicMock, PropertyMock, patch
+
+from world.tests._identity_helpers import (
+    apparent_uid_for,
+    prepare_mock_for_apparent_uid,
+)
+
+
+# ===================================================================
+# Mock builders
+# ===================================================================
+
+
+def _make_character(
+    *,
+    key,
+    sex="male",
+    height="tall",
+    build="lean",
+    sdesc_keyword="man",
+    sleeve_uid,
+    recognition_memory=None,
+):
+    from typeclasses.characters import Character
+
+    char = MagicMock(spec=Character)
+    char.key = key
+    char.sex = sex
+    char.height = height
+    char.build = build
+    char.sdesc_keyword = sdesc_keyword
+    char.hair_color = None
+    char.hair_style = None
+    char.sleeve_uid = sleeve_uid
+    char.recognition_memory = (
+        recognition_memory if recognition_memory is not None else {}
+    )
+    char.hands = {"left": None, "right": None}
+    char.worn_items = {}
+    char._build_clothing_coverage_map = lambda: {}
+
+    char.get_distinguishing_feature = (
+        lambda: Character.get_distinguishing_feature(char)
+    )
+    char.get_sdesc = lambda: Character.get_sdesc(char)
+    char.get_display_name = (
+        lambda looker=None, **kw: Character.get_display_name(
+            char, looker, **kw
+        )
+    )
+
+    sex_val = (sex or "ambiguous").lower().strip()
+    if sex_val in ("male", "man", "masculine", "m"):
+        type(char).gender = PropertyMock(return_value="male")
+    elif sex_val in ("female", "woman", "feminine", "f"):
+        type(char).gender = PropertyMock(return_value="female")
+    else:
+        type(char).gender = PropertyMock(return_value="neutral")
+
+    prepare_mock_for_apparent_uid(char)
+    return char
+
+
+def _make_room(contents):
+    room = MagicMock()
+    room.contents = contents
+    return room
+
+
+def _make_carrier(key="plate carrier", slots=("front", "back")):
+    carrier = MagicMock(spec=["key", "is_plate_carrier", "plate_slots",
+                              "installed_plates"])
+    carrier.key = key
+    carrier.is_plate_carrier = True
+    carrier.plate_slots = list(slots)
+    carrier.installed_plates = {}
+    return carrier
+
+
+def _make_plate(key="ceramic plate"):
+    plate = MagicMock(spec=["key", "aliases", "is_armor_plate", "move_to"])
+    plate.key = key
+    plate.is_armor_plate = True
+    plate.aliases = MagicMock()
+    plate.aliases.all = lambda: []
+    plate.move_to = MagicMock()
+    return plate
+
+
+# ===================================================================
+# Helpers
+# ===================================================================
+
+
+def _observer_text(observer):
+    if not observer.msg.call_args:
+        return ""
+    args = observer.msg.call_args
+    return args.kwargs.get("text") or (args.args[0] if args.args else "")
+
+
+# ===================================================================
+# Tests
+# ===================================================================
+
+
+class TestArmorPerObserverRendering(TestCase):
+    """CmdSlot / CmdUnslot broadcasts render per-observer."""
+
+    def setUp(self):
+        self.actor = _make_character(
+            key="Jorge Jackson",
+            sleeve_uid="uid-jorge",
+            height="tall",
+            build="lean",
+            sdesc_keyword="man",
+        )
+        self.knower = _make_character(
+            key="Alice",
+            sex="female",
+            sleeve_uid="uid-alice",
+            recognition_memory={
+                apparent_uid_for(self.actor): {"assigned_name": "Jorge"},
+            },
+        )
+        self.stranger = _make_character(
+            key="Bob",
+            sleeve_uid="uid-bob",
+            recognition_memory={},
+        )
+
+        self.room = _make_room([self.actor, self.knower, self.stranger])
+        self.actor.location = self.room
+
+        self.carrier = _make_carrier(key="plate carrier")
+        self.plate = _make_plate(key="ceramic plate")
+
+    def _make_cmd(self, cls):
+        cmd = cls()
+        cmd.caller = self.actor
+        return cmd
+
+    # ---- install --------------------------------------------------
+
+    def test_install_plate_broadcast(self):
+        from commands.CmdArmor import CmdSlot
+
+        cmd = self._make_cmd(CmdSlot)
+        with ExitStack() as stack:
+            stack.enter_context(
+                patch.object(cmd, "_find_plate_by_name",
+                             return_value=self.plate)
+            )
+            stack.enter_context(
+                patch.object(cmd, "_find_carrier_by_name",
+                             return_value=self.carrier)
+            )
+            stack.enter_context(
+                patch(
+                    "commands.CmdArmor._calculate_total_carrier_rating",
+                    return_value=5,
+                )
+            )
+            cmd._install_plate(self.actor, "ceramic", "carrier", None)
+
+        ktext = _observer_text(self.knower)
+        self.assertIn("Jorge", ktext)
+        self.assertIn("plate carrier", ktext)
+        self.assertIn("installs", ktext)
+        stext = _observer_text(self.stranger)
+        self.assertIn("gaunt man", stext)
+        self.assertIn("plate carrier", stext)
+
+    # ---- remove ---------------------------------------------------
+
+    def test_remove_plate_broadcast(self):
+        from commands.CmdArmor import CmdSlot
+
+        # Pre-install plate so _remove_plate can find it
+        self.carrier.installed_plates = {"front": self.plate}
+
+        cmd = self._make_cmd(CmdSlot)
+        with ExitStack() as stack:
+            stack.enter_context(
+                patch.object(cmd, "_find_carrier_by_name",
+                             return_value=self.carrier)
+            )
+            stack.enter_context(
+                patch(
+                    "commands.CmdArmor._calculate_total_carrier_rating",
+                    return_value=0,
+                )
+            )
+            cmd._remove_plate(self.actor, "ceramic", "carrier")
+
+        ktext = _observer_text(self.knower)
+        self.assertIn("Jorge", ktext)
+        self.assertIn("plate carrier", ktext)
+        self.assertIn("removes", ktext)
+        stext = _observer_text(self.stranger)
+        self.assertIn("gaunt man", stext)
+
+    # ---- swap -----------------------------------------------------
+
+    def test_swap_plates_broadcast(self):
+        from commands.CmdArmor import CmdSlot
+
+        new_plate = _make_plate(key="steel plate")
+        self.carrier.installed_plates = {"front": self.plate}
+
+        cmd = self._make_cmd(CmdSlot)
+        with ExitStack() as stack:
+            stack.enter_context(
+                patch.object(
+                    cmd, "_find_installed_plate",
+                    return_value=(self.plate, self.carrier, "front"),
+                )
+            )
+            stack.enter_context(
+                patch.object(cmd, "_find_plate_by_name",
+                             return_value=new_plate)
+            )
+            stack.enter_context(
+                patch(
+                    "commands.CmdArmor._calculate_total_carrier_rating",
+                    return_value=5,
+                )
+            )
+            cmd._swap_plates(self.actor, "ceramic", "steel")
+
+        ktext = _observer_text(self.knower)
+        self.assertIn("Jorge", ktext)
+        self.assertIn("plate carrier", ktext)
+        self.assertIn("tactical plate swap", ktext)
+        stext = _observer_text(self.stranger)
+        self.assertIn("gaunt man", stext)
+
+    # ---- unslot ---------------------------------------------------
+
+    def test_unslot_broadcast(self):
+        from commands.CmdArmor import CmdUnslot
+
+        cmd = self._make_cmd(CmdUnslot)
+        cmd._do_remove_plate(
+            self.actor, self.plate, self.carrier, "front"
+        )
+
+        ktext = _observer_text(self.knower)
+        self.assertIn("Jorge", ktext)
+        self.assertIn("plate carrier", ktext)
+        self.assertIn("removes", ktext)
+        stext = _observer_text(self.stranger)
+        self.assertIn("gaunt man", stext)
+
+    # ---- caller exclusion ----------------------------------------
+
+    def test_actor_excluded_from_broadcast(self):
+        """Actor receives only first-person msgs, not the room broadcast."""
+        from commands.CmdArmor import CmdUnslot
+
+        cmd = self._make_cmd(CmdUnslot)
+        cmd._do_remove_plate(
+            self.actor, self.plate, self.carrier, "front"
+        )
+
+        actor_texts = [
+            (c.args[0] if c.args else c.kwargs.get("text", ""))
+            for c in self.actor.msg.call_args_list
+        ]
+        # Actor's first-person message uses "You remove"
+        self.assertTrue(
+            any("You remove" in t for t in actor_texts),
+            f"Actor missing first-person remove msg: {actor_texts}",
+        )
+        # Actor must NOT receive the third-person broadcast
+        self.assertFalse(
+            any("Jorge Jackson removes a plate" in t for t in actor_texts),
+            f"Actor unexpectedly received broadcast: {actor_texts}",
+        )

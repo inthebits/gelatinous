@@ -1531,7 +1531,7 @@ The helper and most rendering surfaces shipped in earlier work; a per-surface au
 | Φ | Scope | Files | Status |
 |---|---|---|---|
 | Φ₁ | Consumption verbs (inject / apply / bandage / eat / drink / inhale / smoke) | `commands/CmdConsumption.py` (14 sites) | ✅ Shipped |
-| Φ₂ | Armor put-on / take-off / repair | `commands/CmdArmor.py` (~7 sites) | 🟡 Pending |
+| Φ₂ | Armor put-on / take-off / repair | `commands/CmdArmor.py` (~7 sites) | ✅ Shipped |
 | Φ₃ | Movement + jump announcements | `commands/combat/movement.py` (~5), `commands/combat/jump.py` (~2) | 🟡 Pending |
 | Φ₄ | Capstone: throw, shop, spawnmob, explosives | `commands/CmdThrow.py`, `commands/shop.py`, `commands/CmdSpawnMob.py`, `commands/CmdExplosives.py`, `commands/explosion_utils.py`, `world/combat/explosives.py` (~11 sites) | 🟡 Pending |
 
