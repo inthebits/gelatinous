@@ -20,6 +20,7 @@ from world.combat.constants import (
 )
 from world.combat.utils import roll_stat, roll_with_disadvantage
 from world.identity_utils import msg_room_identity
+from commands._identity_targeting import resolve_character_target
 
 class CmdWield(Command):
     """
@@ -624,10 +625,11 @@ class CmdGive(Command):
             caller.msg("Usage: give <item> to <target> or give <item> <target>")
             return
 
-        # Find target in the same room
-        target = caller.search(self.target_name, location=caller.location)
+        # Find target in the same room via the identity pipeline.
+        target = resolve_character_target(caller, self.target_name)
         if not target:
-            return  # Error message already sent by search
+            caller.msg(f"You don't see '{self.target_name}' here.")
+            return
 
         # Check if caller has hands
         if not hasattr(caller, 'hands'):
@@ -849,11 +851,8 @@ class CmdWrest(Command):
         return None
 
     def _find_target_in_room(self):
-        """Find target character in the same room."""
-        # Search for target in current room using caller's search method
-        target = self.caller.search(self.target_name, location=self.caller.location)
-        
-        # Check if target is a character with hands
+        """Find target character in the same room via identity pipeline."""
+        target = resolve_character_target(self.caller, self.target_name)
         if target and hasattr(target, 'hands'):
             return target
         return None
