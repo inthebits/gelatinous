@@ -1,6 +1,7 @@
 from evennia import Command
 from evennia.utils.search import search_object
 from evennia.utils import delay
+from commands._identity_targeting import resolve_admin_target
 from world.combat.messages import get_combat_message
 from evennia.comms.models import ChannelDB
 from world.weather import weather_system
@@ -117,12 +118,11 @@ class CmdHeal(Command):
             targets = [char]
             target_desc = char.key
         else:
-            # Normal name search
-            matches = search_object(target_name)
-            if not matches:
+            # Identity-aware lookup with admin global fallback.
+            target = resolve_admin_target(caller, target_name)
+            if not target:
                 caller.msg(f"|rNo character named '{target_name}' found.|n")
                 return
-            target = matches[0]
             targets = [target]
             target_desc = target.key
 
@@ -302,7 +302,7 @@ class CmdTestDeath(Command):
         
         # Determine target
         if target_name:
-            target = caller.search(target_name, global_search=True)
+            target = resolve_admin_target(caller, target_name)
             if not target:
                 caller.msg(f"Could not find '{target_name}'.")
                 return
@@ -524,7 +524,7 @@ class CmdTestUnconscious(Command):
         
         # Determine target
         if target_name:
-            target = caller.search(target_name, global_search=True)
+            target = resolve_admin_target(caller, target_name)
             if not target:
                 caller.msg(f"Could not find '{target_name}'.")
                 return
@@ -856,10 +856,11 @@ class CmdResetMedical(Command):
             
         else:
             # Reset specific character
-            target = caller.search(args, global_search=True)
+            target = resolve_admin_target(caller, args)
             if not target:
+                caller.msg(f"|rCould not find '{args}'.|n")
                 return
-                
+
             if hasattr(target, '_medical_state'):
                 delattr(target, '_medical_state')
             if target.db.medical_state:
