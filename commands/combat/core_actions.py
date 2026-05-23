@@ -25,6 +25,7 @@ from world.combat.constants import (
     NDB_PROXIMITY, NDB_COMBAT_HANDLER, NDB_AIMING_AT, NDB_AIMED_AT_BY,
     NDB_AIMING_DIRECTION, SPLATTERCAST_CHANNEL,
 )
+from commands._identity_targeting import resolve_character_target
 from world.combat.handler import get_or_create_combat
 from world.combat.messages import get_combat_message
 from world.combat.proximity import establish_proximity
@@ -112,15 +113,14 @@ class CmdAttack(Command):
 
         potential_targets = [
             obj for obj in target_room.contents
-            if inherits_from(obj, "typeclasses.characters.Character") and
-               obj != caller and  # Exclude caller from potential targets (defense-in-depth)
-               (target_search_name.lower() in obj.key.lower() or
-                any(target_search_name.lower() in alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else [])))
+            if inherits_from(obj, "typeclasses.characters.Character")
         ]
-        if not potential_targets:
+        target = resolve_character_target(
+            caller, target_search_name, candidates=potential_targets
+        )
+        if not target:
             caller.msg(f"You don't see '{target_search_name}' {(f'in the {aiming_direction} direction' if aiming_direction else 'here')}.")
             return
-        target = potential_targets[0]
 
         if target == caller:
             caller.msg(MSG_SELF_TARGET)

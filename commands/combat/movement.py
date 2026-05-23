@@ -35,6 +35,7 @@ from world.combat.constants import (
 # Re-export CmdJump and apply_gravity_to_items for backward compatibility.
 # Canonical location: commands.combat.jump
 from commands.combat.jump import CmdJump, apply_gravity_to_items  # noqa: F401
+from commands._identity_targeting import resolve_character_in_rooms
 from world.combat.utils import (
     get_highest_opponent_stat, get_numeric_stat, filter_valid_opponents,
     standard_roll, clear_aim_state,
@@ -522,39 +523,16 @@ class CmdAdvance(Command):
         # Determine target
         target = None
         if args:
-            target = caller.search(args, location=caller.location, quiet=True)
-            # Handle case where search returns a list
-            if isinstance(target, list):
-                if len(target) == 1:
-                    target = target[0]
-                elif len(target) > 1:
-                    caller.msg(f"Multiple targets match '{args}'. Please be more specific.")
-                    return
-                else:
-                    target = None
-                    
-            if not target:
-                # Try searching in adjacent combat rooms
-                managed_rooms = handler.db.managed_rooms or []
-                for room in managed_rooms:
-                    if room != caller.location:
-                        potential_target = caller.search(args, location=room, quiet=True)
-                        # Handle list results for adjacent rooms too
-                        if isinstance(potential_target, list):
-                            if len(potential_target) == 1:
-                                target = potential_target[0]
-                                break
-                            elif len(potential_target) > 1:
-                                caller.msg(f"Multiple targets match '{args}' in {room.key}. Please be more specific.")
-                                return
-                        elif potential_target:
-                            target = potential_target
-                            break
-                            
+            managed_rooms = handler.db.managed_rooms or []
+            rooms_to_scan = [caller.location] + [
+                r for r in managed_rooms if r and r != caller.location
+            ]
+            target = resolve_character_in_rooms(caller, args, rooms_to_scan)
+
             if not target:
                 caller.msg(f"You cannot find '{args}' to advance on.")
                 return
-                
+
             if target == caller:
                 caller.msg(MSG_ADVANCE_SELF_TARGET)
                 return
@@ -635,35 +613,14 @@ class CmdCharge(Command):
         if grappling_victim_obj:
             if args:
                 # Caller specified a target while grappling
-                target_search = caller.search(args, location=caller.location, quiet=True)
-                # Handle case where search returns a list
-                if isinstance(target_search, list):
-                    if len(target_search) == 1:
-                        target_search = target_search[0]
-                    elif len(target_search) > 1:
-                        caller.msg(f"Multiple targets match '{args}'. Please be more specific.")
-                        return
-                    else:
-                        target_search = None
-                        
-                if not target_search:
-                    # Try searching in adjacent combat rooms
-                    managed_rooms = handler.db.managed_rooms or []
-                    for room in managed_rooms:
-                        if room != caller.location:
-                            potential_target = caller.search(args, location=room, quiet=True)
-                            # Handle list results for adjacent rooms too
-                            if isinstance(potential_target, list):
-                                if len(potential_target) == 1:
-                                    target_search = potential_target[0]
-                                    break
-                                elif len(potential_target) > 1:
-                                    caller.msg(f"Multiple targets match '{args}' in {room.key}. Please be more specific.")
-                                    return
-                            elif potential_target:
-                                target_search = potential_target
-                                break
-                
+                managed_rooms = handler.db.managed_rooms or []
+                rooms_to_scan = [caller.location] + [
+                    r for r in managed_rooms if r and r != caller.location
+                ]
+                target_search = resolve_character_in_rooms(
+                    caller, args, rooms_to_scan
+                )
+
                 if target_search == grappling_victim_obj:
                     # Trying to charge the person they're grappling
                     caller.msg(f"You cannot charge {grappling_victim_obj.get_display_name(caller)} while you are grappling them! Release the grapple first or choose a different target.")
@@ -687,39 +644,16 @@ class CmdCharge(Command):
         # Determine target
         target = None
         if args:
-            target = caller.search(args, location=caller.location, quiet=True)
-            # Handle case where search returns a list
-            if isinstance(target, list):
-                if len(target) == 1:
-                    target = target[0]
-                elif len(target) > 1:
-                    caller.msg(f"Multiple targets match '{args}'. Please be more specific.")
-                    return
-                else:
-                    target = None
-                    
-            if not target:
-                # Try searching in adjacent combat rooms
-                managed_rooms = handler.db.managed_rooms or []
-                for room in managed_rooms:
-                    if room != caller.location:
-                        potential_target = caller.search(args, location=room, quiet=True)
-                        # Handle list results for adjacent rooms too
-                        if isinstance(potential_target, list):
-                            if len(potential_target) == 1:
-                                target = potential_target[0]
-                                break
-                            elif len(potential_target) > 1:
-                                caller.msg(f"Multiple targets match '{args}' in {room.key}. Please be more specific.")
-                                return
-                        elif potential_target:
-                            target = potential_target
-                            break
-                            
+            managed_rooms = handler.db.managed_rooms or []
+            rooms_to_scan = [caller.location] + [
+                r for r in managed_rooms if r and r != caller.location
+            ]
+            target = resolve_character_in_rooms(caller, args, rooms_to_scan)
+
             if not target:
                 caller.msg(f"You cannot find '{args}' to charge.")
                 return
-                
+
             if target == caller:
                 caller.msg(MSG_CHARGE_SELF_TARGET)
                 return
