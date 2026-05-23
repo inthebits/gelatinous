@@ -1209,6 +1209,62 @@ Override `Character.get_search_candidates()` (already exists at `characters.py:5
 
 The existing `CmdAttack` manual substring search (`core_actions.py:110-120`) must be updated to search against assigned names and sdescs, not just `.key`.
 
+### Command Authoring Rule
+
+When a command resolves a **character** target from player input, it MUST go through the identity pipeline. There are exactly two acceptable paths:
+
+1. **Plain caller search** — `caller.search(name)` with **no** scope-narrowing kwargs (no `global_search=`, no `candidates=`, no `location=`, no `attribute_name=`). The `Character.search` override (`typeclasses/characters.py:1176`) applies the identity filter only on this code path. Any scope kwarg causes Evennia's base `ObjectDB.search` to be called and the filter is bypassed (documented at `characters.py:1201–1206`, bypass at `:1251`).
+2. **Explicit identity helper** — `world.search.identity_match_characters(searcher, query, candidates)` when you must pre-narrow the candidate set (e.g. cross-room scans, combat handler-managed rooms, victim resolution within a grapple). Validate a single candidate with `world.search.is_identity_match(searcher, target, query)`.
+
+A thin wrapper, `commands._identity_targeting.resolve_character_target(caller, query, candidates=None)`, encapsulates the common cases (same-room targeting with Builder-by-key fallback, ambiguity messaging) and SHOULD be preferred by new commands.
+
+#### Anti-patterns (forbidden for character targets)
+
+```python
+# WRONG — manual key/name substring loops bypass recognition entirely.
+for char in caller.location.contents:
+    if name.lower() in char.key.lower():
+        target = char
+        break
+
+# WRONG — passing candidates= or location= bypasses the identity filter.
+target = caller.search(name, candidates=caller.location.contents)
+target = caller.search(name, location=room)
+
+# WRONG — global_search=True bypasses the filter and exposes real keys.
+target = caller.search(name, global_search=True)
+```
+
+#### Correct usage
+
+```python
+# Same-room character target — plain search runs the identity filter.
+target = caller.search(name)
+
+# Pre-narrowed candidate set (e.g. combatants, victims of a grapple).
+from world.search import identity_match_characters
+matches = identity_match_characters(caller, name, candidates)
+
+# Validate a single known candidate against a query.
+from world.search import is_identity_match
+if is_identity_match(caller, victim, name):
+    ...
+```
+
+#### Admin commands
+
+Staff commands that need cross-room reach (`@longdesc`, `@heal`, `@testdeath`, etc.) follow a **dual-path** convention: try `identity_match_characters` against the caller's room first (so disguised neighbors resolve via identity, not real key), then fall back to `evennia.search_object(query)` filtered to characters for global key matching. `commands._identity_targeting.resolve_admin_target(caller, query)` provides this pattern.
+
+Item targets (inventory, weapons, room objects) are out of scope for this rule — items do not participate in the identity system, so `caller.search(name, candidates=inventory)` and `caller.search(name, location=caller)` remain correct for item lookups.
+
+#### Canonical examples
+
+- **Same-room combat**: `commands/combat/core_actions.py` (`CmdAttack`)
+- **Same-room inventory exchange**: `commands/CmdInventory.py` (`CmdGive`)
+- **Same-room medical**: `commands/CmdConsumption.py` (`CmdInject`)
+- **Cross-room combat target**: `commands/combat/movement.py` (`CmdAdvance`, `CmdCharge`)
+- **Admin dual-path**: `commands/CmdCharacter.py` (`@longdesc`)
+
 ### Ambiguity Resolution
 
 If multiple characters match the same target string:
