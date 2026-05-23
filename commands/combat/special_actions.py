@@ -16,6 +16,7 @@ import random
 
 from evennia import Command
 from evennia.comms.models import ChannelDB
+from evennia.utils.utils import inherits_from
 
 from world.combat.constants import (
     MSG_GRAPPLE_WHO, MSG_GRAPPLE_NO_TARGET, MSG_CANNOT_GRAPPLE_SELF, MSG_CANNOT_GRAPPLE_TARGET,
@@ -37,6 +38,7 @@ from world.combat.constants import (
 from world.combat.utils import log_combat_action, initialize_proximity_ndb, get_display_name_safe
 from world.grammar import capitalize_first
 from world.identity_utils import msg_room_identity
+from commands._identity_targeting import resolve_character_target
 
 
 class CmdGrapple(Command):
@@ -75,22 +77,14 @@ class CmdGrapple(Command):
             return
         # --- END SELF-TARGET CHECK ---
 
-        # --- Target searching (similar to CmdAttack) ---
-        search_name = self.args.strip().lower()
-        candidates = caller.location.contents
-        matches = [
-            obj for obj in candidates
-            if obj != caller and  # Exclude caller from potential targets (defense-in-depth)
-               (search_name in obj.key.lower()
-                or any(search_name in alias.lower() for alias in (obj.aliases.all() if hasattr(obj.aliases, "all") else [])))
-        ]
+        # --- Target searching (identity-aware) ---
+        search_name = self.args.strip()
+        target = resolve_character_target(caller, search_name)
 
-        if not matches:
+        if not target:
             caller.msg(MSG_GRAPPLE_NO_TARGET)
             log_combat_action(caller, "grapple_fail", details=f"tried to grapple '{search_name}' but found no valid target in the room")
             return
-
-        target = matches[0]
 
         if target == caller:
             caller.msg(MSG_CANNOT_GRAPPLE_SELF)
@@ -449,26 +443,30 @@ class CmdAim(Command):
             # Clear directional aim override_place
             caller.override_place = ""
 
-        # Try to find target in current room first
-        target = caller.search(args, location=caller.location, quiet=True)
-        
-        # Debug: Show what search found
-        splattercast.msg(f"AIM_DEBUG: caller.search('{args}') returned: {target} (type: {type(target)})")
-        
-        # Handle search results - caller.search can return None, empty list, or list with objects
-        if target:
-            # If search returns a list, take the first match
-            if isinstance(target, (list, tuple)):
-                if len(target) > 0:
-                    target = target[0]
-                    splattercast.msg(f"AIM_DEBUG: Found target from list: {target.key}")
+        # Try to find target in current room.  Character targets resolve
+        # via the identity pipeline (assigned names + sdescs); if nothing
+        # matches, fall back to a scoped search so exits remain detectable
+        # for direction-aim mode.
+        target = resolve_character_target(caller, args)
+
+        if target is None:
+            exit_search = caller.search(args, location=caller.location, quiet=True)
+            if exit_search:
+                if isinstance(exit_search, (list, tuple)):
+                    target = exit_search[0] if exit_search else None
                 else:
+                    target = exit_search
+                # Reject characters from this fallback — identity already
+                # had its chance and rejected them.  Only exits / non-char
+                # objects should slip through.
+                if target is not None and inherits_from(
+                    target, "typeclasses.characters.Character"
+                ):
                     target = None
-                    splattercast.msg(f"AIM_DEBUG: Empty list returned, no target")
-            else:
-                splattercast.msg(f"AIM_DEBUG: Found single target: {target.key}")
-        else:
-            splattercast.msg(f"AIM_DEBUG: No target found by search")
+
+        splattercast.msg(
+            f"AIM_DEBUG: target resolution for '{args}' returned: {target}"
+        )
         
         if target and hasattr(target, 'key'):
             # Check if the "target" is actually an exit - if so, treat as direction aiming
