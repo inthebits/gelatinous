@@ -6,6 +6,7 @@ Implements the universal consumption system with inject, apply, bandage, etc.
 """
 
 from evennia import Command
+from commands._identity_targeting import resolve_character_target
 from world.medical.utils import (
     is_medical_item, can_be_used, get_medical_type, get_stat_requirement,
     calculate_treatment_success, apply_medical_effects, use_item
@@ -73,14 +74,13 @@ class ConsumptionCommand(Command):
             if target_name.lower() in ["me", "myself", "self"]:
                 result["target"] = caller
             else:
-                target = caller.search(target_name, location=caller.location, quiet=True)
+                # Identity-aware target lookup. The helper handles
+                # disambiguation messaging and returns None on no/many.
+                target = resolve_character_target(caller, target_name)
                 if not target:
                     result["errors"].append(f"Cannot find '{target_name}'.")
                     return result
-                elif len(target) > 1:
-                    result["errors"].append(f"Multiple people match '{target_name}'. Be more specific.")
-                    return result
-                result["target"] = target[0]
+                result["target"] = target
                 
         # Parse body location (for commands that support it)
         if allow_body_location and len(parts) > 2:
@@ -350,9 +350,14 @@ class CmdApply(ConsumptionCommand):
                 caller.msg("Surgery on whom? Usage: surgery <target>")
                 return
                 
-            # Get target
-            target = caller.search(self.args.strip(), location=caller.location)
+            # Get target via identity pipeline (allow self via me/self/myself).
+            target_name = self.args.strip()
+            if target_name.lower() in ("me", "myself", "self"):
+                target = caller
+            else:
+                target = resolve_character_target(caller, target_name)
             if not target:
+                caller.msg(f"Cannot find '{target_name}'.")
                 return
                 
             item = surgical_kit
@@ -491,14 +496,13 @@ class CmdBandage(ConsumptionCommand):
             
         # Find target
         if self.target_name:
-            target = caller.search(self.target_name, location=caller.location, quiet=True)
-            if not target:
-                caller.msg(f"Cannot find '{self.target_name}'.")
-                return
-            elif len(target) > 1:
-                caller.msg(f"Multiple people match '{self.target_name}'. Be more specific.")
-                return
-            target = target[0]
+            if self.target_name.lower() in ("me", "myself", "self"):
+                target = caller
+            else:
+                target = resolve_character_target(caller, self.target_name)
+                if not target:
+                    caller.msg(f"Cannot find '{self.target_name}'.")
+                    return
         else:
             target = caller
             
