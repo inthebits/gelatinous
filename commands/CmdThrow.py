@@ -89,6 +89,7 @@ from world.combat.handler import get_or_create_combat
 from world.combat.utils import get_display_name_safe
 from world.grammar import capitalize_first
 from world.identity_utils import msg_room_identity
+from commands._identity_targeting import resolve_character_target
 
 
 class CmdThrow(Command):
@@ -349,27 +350,29 @@ class CmdThrow(Command):
         
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: Looking for target '{self.target_name}' in {self.caller.location}(#{self.caller.location.id})")
         
-        # First check current room
-        target_search = self.caller.search(self.target_name, location=self.caller.location, quiet=True)
-        target = target_search[0] if target_search else None
+        # First check current room (identity-aware character resolution)
+        target = resolve_character_target(self.caller, self.target_name)
         target_hands = getattr(target, 'hands', None) if target else None
-        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: search result = {target_search}, target = {target}, has_hands = {target_hands is not None}")
-        
+        splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: identity-resolved target = {target}, has_hands = {target_hands is not None}")
+
         if target and target_hands is not None:  # Is a character with hands attribute
             splattercast.msg(f"{DEBUG_PREFIX_THROW}_SUCCESS: find_target: Found valid character target: {target}")
             return target
-        
+
         # Check aimed room for cross-room targeting
         aim_direction = getattr(self.caller.ndb, NDB_AIMING_DIRECTION, None)
         splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: aim_direction = {aim_direction}")
-        
+
         if aim_direction:
             destination = self.get_destination_room(aim_direction)
             if destination:
-                target_search = self.caller.search(self.target_name, location=destination, quiet=True)
-                target = target_search[0] if target_search else None
+                target = resolve_character_target(
+                    self.caller,
+                    self.target_name,
+                    candidates=destination.contents,
+                )
                 target_hands = getattr(target, 'hands', None) if target else None
-                splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: cross-room search result = {target_search}, target = {target}, has_hands = {target_hands is not None}")
+                splattercast.msg(f"{DEBUG_PREFIX_THROW}_TEMPLATE: find_target: cross-room identity-resolved target = {target}, has_hands = {target_hands is not None}")
                 if target and target_hands is not None:
                     return target
         else:
