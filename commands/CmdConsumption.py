@@ -7,6 +7,7 @@ Implements the universal consumption system with inject, apply, bandage, etc.
 
 from evennia import Command
 from commands._identity_targeting import resolve_character_target
+from world.identity_utils import msg_room_identity
 from world.medical.utils import (
     is_medical_item, can_be_used, get_medical_type, get_stat_requirement,
     calculate_treatment_success, apply_medical_effects, use_item
@@ -283,16 +284,20 @@ class CmdInject(ConsumptionCommand):
         # Execute injection
         if is_self:
             caller.msg(f"You inject {item.get_display_name(caller)} into your arm.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} injects {item.get_display_name()}.",
-                exclude=caller
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} injects {item.key}.",
+                char_refs={"actor": caller},
+                exclude=[caller],
             )
         else:
             caller.msg(f"You inject {item.get_display_name(caller)} into {target.get_display_name(caller)}.")
             target.msg(f"{caller.get_display_name(target)} injects {item.get_display_name(target)} into you.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} injects {item.get_display_name()} into {target.get_display_name()}.",
-                exclude=[caller, target]
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} injects {item.key} into {{target}}.",
+                char_refs={"actor": caller, "target": target},
+                exclude=[caller, target],
             )
             
         # Apply treatment effects
@@ -391,16 +396,20 @@ class CmdApply(ConsumptionCommand):
         # Execute application
         if is_self:
             caller.msg(f"You carefully apply {item.get_display_name(caller)} to your wounds.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} applies {item.get_display_name()} to their wounds.",
-                exclude=caller
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} applies {item.key} to their wounds.",
+                char_refs={"actor": caller},
+                exclude=[caller],
             )
         else:
             caller.msg(f"You carefully apply {item.get_display_name(caller)} to {target.get_display_name(caller)}'s wounds.")
             target.msg(f"{caller.get_display_name(target)} applies {item.get_display_name(target)} to your wounds.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} applies {item.get_display_name()} to {target.get_display_name()}'s wounds.",
-                exclude=[caller, target]
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} applies {item.key} to {{target}}'s wounds.",
+                char_refs={"actor": caller, "target": target},
+                exclude=[caller, target],
             )
             
         # Apply treatment effects
@@ -518,16 +527,20 @@ class CmdBandage(ConsumptionCommand):
         location_desc = f" {self.body_location}" if self.body_location else ""
         if is_self:
             caller.msg(f"You bandage your{location_desc} wounds with {item.get_display_name(caller)}.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} bandages their{location_desc} wounds.",
-                exclude=caller
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} bandages their{location_desc} wounds.",
+                char_refs={"actor": caller},
+                exclude=[caller],
             )
         else:
             caller.msg(f"You bandage {target.get_display_name(caller)}'s{location_desc} wounds with {item.get_display_name(caller)}.")
             target.msg(f"{caller.get_display_name(target)} bandages your{location_desc} wounds.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} bandages {target.get_display_name()}'s{location_desc} wounds.",
-                exclude=[caller, target]
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} bandages {{target}}'s{location_desc} wounds.",
+                char_refs={"actor": caller, "target": target},
+                exclude=[caller, target],
             )
             
         # Apply treatment effects with body location
@@ -589,16 +602,20 @@ class CmdEat(ConsumptionCommand):
         # Execute eating
         if is_self:
             caller.msg(f"You swallow {item.get_display_name(caller)}.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} swallows {item.get_display_name()}.",
-                exclude=caller
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} swallows {item.key}.",
+                char_refs={"actor": caller},
+                exclude=[caller],
             )
         else:
             caller.msg(f"You help {target.get_display_name(caller)} swallow {item.get_display_name(caller)}.")
             target.msg(f"{caller.get_display_name(target)} helps you swallow {item.get_display_name(target)}.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} helps {target.get_display_name()} swallow {item.get_display_name()}.",
-                exclude=[caller, target]
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} helps {{target}} swallow {item.key}.",
+                char_refs={"actor": caller, "target": target},
+                exclude=[caller, target],
             )
             
         # Apply effects
@@ -664,16 +681,20 @@ class CmdDrink(ConsumptionCommand):
         # Execute drinking
         if is_self:
             caller.msg(f"You drink {item.get_display_name(caller)}.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} drinks {item.get_display_name()}.",
-                exclude=caller
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} drinks {item.key}.",
+                char_refs={"actor": caller},
+                exclude=[caller],
             )
         else:
             caller.msg(f"You help {target.get_display_name(caller)} drink {item.get_display_name(caller)}.")
             target.msg(f"{caller.get_display_name(target)} helps you drink {item.get_display_name(target)}.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} helps {target.get_display_name()} drink {item.get_display_name()}.",
-                exclude=[caller, target]
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} helps {{target}} drink {item.key}.",
+                char_refs={"actor": caller, "target": target},
+                exclude=[caller, target],
             )
             
         # Apply effects
@@ -746,16 +767,20 @@ class CmdInhale(ConsumptionCommand):
         # Execute inhalation
         if is_self:
             caller.msg(f"You breathe in {item.get_display_name(caller)} deeply.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} inhales {item.get_display_name()}.",
-                exclude=caller
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} inhales {item.key}.",
+                char_refs={"actor": caller},
+                exclude=[caller],
             )
         else:
             caller.msg(f"You help {target.get_display_name(caller)} inhale {item.get_display_name(caller)}.")
             target.msg(f"{caller.get_display_name(target)} helps you inhale {item.get_display_name(target)}.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} helps {target.get_display_name()} inhale {item.get_display_name()}.",
-                exclude=[caller, target]
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} helps {{target}} inhale {item.key}.",
+                char_refs={"actor": caller, "target": target},
+                exclude=[caller, target],
             )
             
         # Apply treatment effects
@@ -824,16 +849,20 @@ class CmdSmoke(ConsumptionCommand):
         # Execute smoking
         if is_self:
             caller.msg(f"You light and smoke {item.get_display_name(caller)}, inhaling the medicinal smoke.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} lights and smokes {item.get_display_name()}, creating aromatic smoke.",
-                exclude=caller
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} lights and smokes {item.key}, creating aromatic smoke.",
+                char_refs={"actor": caller},
+                exclude=[caller],
             )
         else:
             caller.msg(f"You help {target.get_display_name(caller)} smoke {item.get_display_name(caller)}.")
             target.msg(f"{caller.get_display_name(target)} helps you smoke {item.get_display_name(target)}.")
-            caller.location.msg_contents(
-                f"{caller.get_display_name()} helps {target.get_display_name()} smoke {item.get_display_name()}.",
-                exclude=[caller, target]
+            msg_room_identity(
+                location=caller.location,
+                template=f"{{actor}} helps {{target}} smoke {item.key}.",
+                char_refs={"actor": caller, "target": target},
+                exclude=[caller, target],
             )
             
         # Apply treatment effects

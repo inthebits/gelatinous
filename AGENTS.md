@@ -590,6 +590,45 @@ class CmdExample(Command):
             self.send_failure_messages(caller, target)
 ```
 
+### Per-Observer Rendering
+
+Any room broadcast that names a character (actor, target, or both) **must**
+route through `world.identity_utils.msg_room_identity` instead of
+`location.msg_contents()`. This ensures each observer sees the actor /
+target rendered according to **their own recognition memory** — assigned
+names for known characters, sdesc fallback for strangers — rather than
+the raw `.key`.
+
+**Use `msg_room_identity` when** the broadcast string references a
+character. Pre-interpolate non-character tokens (item names, body parts)
+into the template via f-string; the helper's `char_refs` dict is
+character-only.
+
+```python
+from world.identity_utils import msg_room_identity
+
+# First-person to actor (caller IS the observer — get_display_name is fine)
+caller.msg(f"You inject {item.get_display_name(caller)} into "
+           f"{target.get_display_name(caller)}.")
+target.msg(f"{caller.get_display_name(target)} injects "
+           f"{item.get_display_name(target)} into you.")
+
+# Third-party broadcast: per-observer rendering
+msg_room_identity(
+    location=caller.location,
+    template=f"{{actor}} injects {item.key} into {{target}}.",
+    char_refs={"actor": caller, "target": target},
+    exclude=[caller, target],
+)
+```
+
+**Skip the helper when** the broadcast contains **only** non-character
+text (e.g. `"A {item.key} falls to the ground."`, constant ambient
+prose). Per-observer rendering adds no value there.
+
+See `specs/IDENTITY_RECOGNITION_SPEC.md` §"Per-Observer Rendering" and
+§"Phase 2 — Consistency" Conversion Status for the active sweep.
+
 ### Command Integration Points
 
 **Handler Interaction:**

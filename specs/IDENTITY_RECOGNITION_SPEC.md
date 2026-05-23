@@ -1484,7 +1484,7 @@ Players should be prompted to customize their sdesc on next login if defaults we
 | Phase | Scope | Status |
 |---|---|---|
 | 1 | Foundation (sdesc, recognition, chargen, grammar) | ✅ Shipped |
-| 2 | Per-observer rendering consistency | ✅ Shipped |
+| 2 | Per-observer rendering consistency | 🟡 In progress — helper shipped; per-surface `msg_contents()` → `msg_room_identity` sweep underway (Φ₁ Consumption ✅; Φ₂ Armor, Φ₃ Movement+Jump, Φ₄ Misc pending) |
 | 3 | Disguise foundation (signature engine, `appear`, personas, unmasking) | ✅ Shipped |
 | 3.5 | Disguise item taxonomy | 🟡 Partially shipped — prototypes live, cohesion polish pending |
 | 4 | Cybernetics (digital memory, ID exchange) | ⛔ Not started (gated on cyberware system) |
@@ -1523,6 +1523,19 @@ Per-phase detail below.
 - Target resolution with sdescs, assigned names, and ordinals
 - `sdesc_short` attribute on items
 - Distinguishing feature auto-derivation from worn items
+
+**Conversion Status — `msg_contents()` → `msg_room_identity()` sweep:**
+
+The helper and most rendering surfaces shipped in earlier work; a per-surface audit identified 14 command-layer files still emitting raw `msg_contents()` broadcasts with character `.key` references. Conversion is split across four PRs:
+
+| Φ | Scope | Files | Status |
+|---|---|---|---|
+| Φ₁ | Consumption verbs (inject / apply / bandage / eat / drink / inhale / smoke) | `commands/CmdConsumption.py` (14 sites) | ✅ Shipped |
+| Φ₂ | Armor put-on / take-off / repair | `commands/CmdArmor.py` (~7 sites) | 🟡 Pending |
+| Φ₃ | Movement + jump announcements | `commands/combat/movement.py` (~5), `commands/combat/jump.py` (~2) | 🟡 Pending |
+| Φ₄ | Capstone: throw, shop, spawnmob, explosives | `commands/CmdThrow.py`, `commands/shop.py`, `commands/CmdSpawnMob.py`, `commands/CmdExplosives.py`, `commands/explosion_utils.py`, `world/combat/explosives.py` (~11 sites) | 🟡 Pending |
+
+Sites that broadcast **only** non-character text (item names, constant prose) are intentionally left as raw `msg_contents` since per-observer rendering adds no value. The roadmap row flips back to ✅ Shipped when Φ₄ lands.
 
 ### Phase 3 — Disguise (Foundation)
 
