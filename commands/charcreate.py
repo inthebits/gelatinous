@@ -21,7 +21,6 @@ from world.identity import (
     BUILDS,
     HAIR_COLORS,
     HAIR_STYLES,
-    get_valid_keywords,
 )
 
 

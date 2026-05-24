@@ -1452,16 +1452,28 @@ Several systems route through `get_display_name(looker)` or `msg_room_identity` 
 
 ## Character Creation Updates
 
-Character creation (both in-game `create` and web-based) must be updated to include identity attribute selection:
+Character creation (both in-game `create` and web-based) includes a
+short identity-attribute selection block between sex selection and
+G.R.I.M. distribution:
 
-### New Chargen Steps
+### Chargen Identity Steps
 
 1. **Height selection** — short, below-average, average, above-average, tall
 2. **Build selection** — slight, lean, athletic, average, stocky, heavyset
 3. **Hair color selection** — from approved list, or bald/none
 4. **Hair style selection** — from approved list (contextual based on color choice), or bald/none
-5. **Keyword selection** — gender-gated list from the keyword table
-6. **Preview** — Show the assembled sdesc: `"You will appear as 'a lanky man with red dreadlocks' to strangers."`
+5. **Preview** — confirmation screen showing the assembled sdesc, e.g. `"You will appear as 'a lanky man with red dreadlocks' to strangers."`
+
+**Sdesc keyword is _not_ chosen during chargen.** New characters get a
+gender-appropriate default (`DEFAULT_SDESC_KEYWORDS[gender]` —
+`"man"` / `"woman"` / `"person"`) via the lazy fallback in
+`Character.get_sdesc()` (`typeclasses/characters.py`). Players
+customize their keyword at any time post-chargen via the
+`@shortdesc` command, which presents the gender-gated approved list
+and accepts custom alpha-only keywords (logged as
+`KeywordEvent(event_type="custom_set")`). This keeps the chargen
+flow short and defers a writing decision until the player has
+context for what a keyword is.
 
 ### Sleeve UID Assignment
 
