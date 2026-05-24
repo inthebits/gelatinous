@@ -635,7 +635,7 @@ Pronouns must follow the disguise. A character presenting as "a woman" should be
 
 **Derivation rule:**
 
-1. If the character has an active `keyword_override`, look the override up in the runtime keyword catalog (`KeywordManager` script's `db.feminine_keywords` / `db.masculine_keywords` / `db.neutral_keywords`, falling back to the `_DEFAULT_FEMININE_KEYWORDS` / `_DEFAULT_MASCULINE_KEYWORDS` / `_DEFAULT_NEUTRAL_KEYWORDS` frozensets in `world/identity.py` when the script is unavailable).
+1. If the character has an active `keyword_override`, look the override up in the runtime keyword catalog (`ServerConfig` entries under keys `identity.feminine_keywords` / `identity.masculine_keywords` / `identity.neutral_keywords`, falling back to the `_DEFAULT_FEMININE_KEYWORDS` / `_DEFAULT_MASCULINE_KEYWORDS` / `_DEFAULT_NEUTRAL_KEYWORDS` frozensets in `world/identity.py` when a key is unset).
    - Match in the feminine list → render as `she/her/hers`.
    - Match in the masculine list → render as `he/him/his`.
    - Match in the neutral list, **or no match anywhere** (e.g. a custom `@shortdesc` keyword such as `ronin` or `wraith`, which carries no gender metadata in `KeywordEvent`) → render as `they/them/theirs` (singular they).
@@ -1027,7 +1027,7 @@ The identity test suite mixes two patterns:
 - **Fast unit tests** (`world/tests/test_identity.py`, `test_identity_commands.py`, `test_unmasking.py`, `test_character_identity.py`, `test_corpse_identity.py`) use `unittest.TestCase` with fake observer/target/room objects defined per-module. Most pierce/unmasking/recognition logic is covered this way for speed and isolation. Shared schema helpers live in `world/tests/_identity_helpers.py` (notably `make_recognition_entry`, which keeps fake entries in sync with the production schema).
 - **End-to-end integration tests** (`world/tests/test_pierce_integration.py`, `test_unmasking_integration.py`) use `evennia.utils.test_resources.EvenniaTest` with real `Character` typeclasses, real `recognition_memory`, and real persistent attributes. These catch regressions that mock-based suites cannot — typeclass wiring, `AttributeProperty` round-trips, and hooks like `at_post_move` that depend on real Evennia object lifecycle.
 
-**`evennia test` uses the live development database.** Tests that touch the keyword catalog must patch `world.identity._get_keyword_manager` to return a deterministic stub; otherwise they pick up live `KeywordEvent` rows and become non-reproducible. The `attempt_disguise_pierce` path performs a local import of `world.combat.dice.opposed_roll` — patches must target `world.combat.dice.opposed_roll`, not `world.identity.opposed_roll`.
+**`evennia test` uses the live development database.** Tests that touch the keyword catalog must patch `world.identity.ServerConfig.objects.conf` to return a deterministic value (typically `None` to force the default-frozenset fallback); otherwise they pick up live `KeywordEvent` rows and become non-reproducible. The `attempt_disguise_pierce` path performs a local import of `world.combat.dice.opposed_roll` — patches must target `world.combat.dice.opposed_roll`, not `world.identity.opposed_roll`.
 
 Run a single module:
 
@@ -1559,7 +1559,7 @@ Sites that broadcast **only** non-character text (item names, constant prose) ar
   - `appear` (status), `appear taller | shorter`, `appear thinner | fatter | bulkier | leaner`, `appear <keyword>`, `appear <persona name>`
   - `stop appearing` (clears all overrides + active-persona pointer)
 - Sdesc descriptor recomposition via existing `get_physical_descriptor(height, build)` table — **shipped** (wired into `typeclasses/characters.py:get_sdesc`)
-- Pronoun derivation under disguise via `get_apparent_gender(char)` helper consulting `keyword_override` against `KeywordManager` gender lists — **shipped** (`world/identity.py:get_apparent_gender`; consumed in `world/emote.py`)
+- Pronoun derivation under disguise via `get_apparent_gender(char)` helper consulting `keyword_override` against the `ServerConfig`-backed gender lists — **shipped** (`world/identity.py:get_apparent_gender`; consumed in `world/emote.py`)
 - DB attributes for active overrides on character — **shipped**: `db.height_override`, `db.build_override`, `db.keyword_override`, `db.active_persona`, `db.personas`
 - `db.disguise_essential` flag on items — contributes to identity signature when worn — **shipped** (signature wiring in `world/identity.py:get_essential_item_type_ids`; concrete item prototypes ship in Phase 3.5)
 - `db.is_disguise_item` flag on items — Phase 5 perception bonus hook (defined but inert in Phase 3) — **shipped (flag schema only)**

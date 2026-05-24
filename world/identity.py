@@ -6,7 +6,8 @@ physical descriptor lookup, keyword validation, hair options, distinguishing
 feature formatting, and short description (sdesc) composition.
 
 This module has no Evennia dependencies in its core functions (except for
-:class:`KeywordManager`, which is an Evennia Script, and
+the runtime keyword list storage, which is backed by Evennia's
+:class:`~evennia.server.models.ServerConfig`, and
 :class:`~world.models.KeywordEvent`, a Django model).
 
 See specs/IDENTITY_RECOGNITION_SPEC.md for the full specification.
@@ -17,8 +18,7 @@ from __future__ import annotations
 import hashlib
 from typing import TYPE_CHECKING, Any
 
-from django.core.exceptions import ObjectDoesNotExist
-from evennia.scripts.scripts import DefaultScript
+from evennia.server.models import ServerConfig
 from evennia.utils import logger
 
 from world.grammar import GENDER_MAP, with_article
@@ -130,8 +130,9 @@ def get_physical_descriptor(height: str, build: str) -> str:
 # Keyword Lists
 # =========================================================================
 
-#: Default feminine keywords — seeds for the :class:`KeywordManager` script.
-#: At runtime, use :func:`get_feminine_keywords` instead.
+#: Default feminine keywords — seeds the ``identity.feminine_keywords``
+#: :class:`ServerConfig` entry on first mutation.  At runtime, use
+#: :func:`get_feminine_keywords` instead.
 _DEFAULT_FEMININE_KEYWORDS: frozenset[str] = frozenset({
     "female", "girl", "lass", "woman", "matron", "grandma", "hag", "granny",
     "madam", "tomboy", "chick", "gal", "chica", "vixen",
@@ -139,8 +140,9 @@ _DEFAULT_FEMININE_KEYWORDS: frozenset[str] = frozenset({
     "chola", "devotchka",
 })
 
-#: Default masculine keywords — seeds for the :class:`KeywordManager` script.
-#: At runtime, use :func:`get_masculine_keywords` instead.
+#: Default masculine keywords — seeds the ``identity.masculine_keywords``
+#: :class:`ServerConfig` entry on first mutation.  At runtime, use
+#: :func:`get_masculine_keywords` instead.
 _DEFAULT_MASCULINE_KEYWORDS: frozenset[str] = frozenset({
     "male", "boy", "lad", "man", "patron", "grandpa", "geezer", "gramps",
     "gentleman", "guy", "fellow", "dude", "playa",
@@ -148,8 +150,9 @@ _DEFAULT_MASCULINE_KEYWORDS: frozenset[str] = frozenset({
     "cholo", "droog",
 })
 
-#: Default neutral keywords — seeds for the :class:`KeywordManager` script.
-#: At runtime, use :func:`get_neutral_keywords` instead.
+#: Default neutral keywords — seeds the ``identity.neutral_keywords``
+#: :class:`ServerConfig` entry on first mutation.  At runtime, use
+#: :func:`get_neutral_keywords` instead.
 _DEFAULT_NEUTRAL_KEYWORDS: frozenset[str] = frozenset({
     "person", "kid", "urchin", "human", "citizen", "elder", "fossil",
     "fleshbag", "denizen", "neut", "snack", "walker", "chum",
@@ -243,125 +246,83 @@ def validate_custom_keyword(keyword: str) -> tuple[bool, str]:
 
 
 # =========================================================================
-# KeywordManager Script  (runtime keyword list storage)
+# Approved Keyword Storage  (backed by ServerConfig)
 # =========================================================================
 
-_KEYWORD_MANAGER_KEY = "keyword_manager"
+#: ServerConfig keys for the three runtime-mutable keyword lists.  Stored
+#: as picklable :class:`set` of lowercase strings.  When unset (fresh
+#: install, test environment), the getters fall back to the module-level
+#: ``_DEFAULT_*`` frozensets.
+_SERVERCONFIG_KEY_FEMININE = "identity.feminine_keywords"
+_SERVERCONFIG_KEY_MASCULINE = "identity.masculine_keywords"
+_SERVERCONFIG_KEY_NEUTRAL = "identity.neutral_keywords"
+
+_GENDER_LIST_TO_KEY: dict[str, str] = {
+    "feminine": _SERVERCONFIG_KEY_FEMININE,
+    "masculine": _SERVERCONFIG_KEY_MASCULINE,
+    "neutral": _SERVERCONFIG_KEY_NEUTRAL,
+}
 
 
-def _get_keyword_manager() -> "KeywordManager":
-    """Return the singleton :class:`KeywordManager` script.
+def _read_keyword_set(conf_key: str, default: frozenset[str]) -> frozenset[str]:
+    """Read a keyword set from :class:`ServerConfig`, falling back to default.
 
-    Looks up the script by key in the database.  Evennia's
-    ``GLOBAL_SCRIPTS`` registry (configured in
-    ``server/conf/settings.py``) guarantees the script exists at
-    server startup and recreates it if it is ever deleted.
+    Args:
+        conf_key: ServerConfig key (see ``_SERVERCONFIG_KEY_*``).
+        default: Frozenset returned when the key is unset.
 
     Returns:
-        The keyword manager script instance.
-
-    Raises:
-        ``ScriptDB.DoesNotExist``: If the script has not been created
-            yet (e.g. during unit tests that bypass server startup).
+        Frozenset of keyword strings.
     """
-    from evennia.scripts.models import ScriptDB
-
-    return ScriptDB.objects.get(db_key=_KEYWORD_MANAGER_KEY)
-
-
-class KeywordManager(DefaultScript):
-    """Global script that stores the approved keyword lists.
-
-    Managed by Evennia's ``GLOBAL_SCRIPTS`` registry (configured in
-    ``server/conf/settings.py``).  Access via :func:`_get_keyword_manager`.
-    Stores three mutable sets on ``db`` attributes:
-
-    * ``db.feminine_keywords`` — :class:`set` of feminine keywords
-    * ``db.masculine_keywords`` — :class:`set` of masculine keywords
-    * ``db.neutral_keywords`` — :class:`set` of neutral keywords
-
-    These are seeded from the module-level ``_DEFAULT_*`` frozensets on
-    first creation and may be modified at runtime via
-    :func:`add_approved_keyword` / :func:`remove_approved_keyword`.
-    """
-
-    def at_script_creation(self) -> None:
-        self.key = _KEYWORD_MANAGER_KEY
-        self.persistent = True
-        self.db.feminine_keywords = set(_DEFAULT_FEMININE_KEYWORDS)  # type: ignore[attr-defined]
-        self.db.masculine_keywords = set(_DEFAULT_MASCULINE_KEYWORDS)  # type: ignore[attr-defined]
-        self.db.neutral_keywords = set(_DEFAULT_NEUTRAL_KEYWORDS)  # type: ignore[attr-defined]
+    stored = ServerConfig.objects.conf(conf_key)
+    if stored is None:
+        return default
+    return frozenset(stored)
 
 
 # =========================================================================
-# Keyword Getters  (read from KeywordManager, fall back to defaults)
+# Keyword Getters  (read from ServerConfig, fall back to defaults)
 # =========================================================================
 
 
 def get_feminine_keywords() -> frozenset[str]:
     """Return the current set of approved feminine keywords.
 
-    Reads from the :class:`KeywordManager` script via
-    ``GLOBAL_SCRIPTS``.  Falls back to
-    :data:`_DEFAULT_FEMININE_KEYWORDS` during tests or early startup.
+    Reads from :class:`~evennia.server.models.ServerConfig` under key
+    ``identity.feminine_keywords``.  Falls back to
+    :data:`_DEFAULT_FEMININE_KEYWORDS` when the key is unset (fresh
+    install or test environment).
 
     Returns:
         Frozenset of feminine keyword strings.
     """
-    try:
-        mgr = _get_keyword_manager()
-        kws: set[str] | None = mgr.db.feminine_keywords
-        if kws is not None:
-            return frozenset(kws)
-    except ObjectDoesNotExist:
-        pass
-    except Exception:
-        logger.log_trace("Unexpected error reading KeywordManager")
-    return _DEFAULT_FEMININE_KEYWORDS
+    return _read_keyword_set(_SERVERCONFIG_KEY_FEMININE, _DEFAULT_FEMININE_KEYWORDS)
 
 
 def get_masculine_keywords() -> frozenset[str]:
     """Return the current set of approved masculine keywords.
 
-    Reads from the :class:`KeywordManager` script via
-    ``GLOBAL_SCRIPTS``.  Falls back to
-    :data:`_DEFAULT_MASCULINE_KEYWORDS` during tests or early startup.
+    Reads from :class:`~evennia.server.models.ServerConfig` under key
+    ``identity.masculine_keywords``.  Falls back to
+    :data:`_DEFAULT_MASCULINE_KEYWORDS` when the key is unset.
 
     Returns:
         Frozenset of masculine keyword strings.
     """
-    try:
-        mgr = _get_keyword_manager()
-        kws: set[str] | None = mgr.db.masculine_keywords
-        if kws is not None:
-            return frozenset(kws)
-    except ObjectDoesNotExist:
-        pass
-    except Exception:
-        logger.log_trace("Unexpected error reading KeywordManager")
-    return _DEFAULT_MASCULINE_KEYWORDS
+    return _read_keyword_set(_SERVERCONFIG_KEY_MASCULINE, _DEFAULT_MASCULINE_KEYWORDS)
 
 
 def get_neutral_keywords() -> frozenset[str]:
     """Return the current set of approved neutral keywords.
 
-    Reads from the :class:`KeywordManager` script via
-    ``GLOBAL_SCRIPTS``.  Falls back to
-    :data:`_DEFAULT_NEUTRAL_KEYWORDS` during tests or early startup.
+    Reads from :class:`~evennia.server.models.ServerConfig` under key
+    ``identity.neutral_keywords``.  Falls back to
+    :data:`_DEFAULT_NEUTRAL_KEYWORDS` when the key is unset.
 
     Returns:
         Frozenset of neutral keyword strings.
     """
-    try:
-        mgr = _get_keyword_manager()
-        kws: set[str] | None = mgr.db.neutral_keywords
-        if kws is not None:
-            return frozenset(kws)
-    except ObjectDoesNotExist:
-        pass
-    except Exception:
-        logger.log_trace("Unexpected error reading KeywordManager")
-    return _DEFAULT_NEUTRAL_KEYWORDS
+    return _read_keyword_set(_SERVERCONFIG_KEY_NEUTRAL, _DEFAULT_NEUTRAL_KEYWORDS)
 
 
 def get_all_keywords() -> frozenset[str]:
@@ -409,6 +370,26 @@ def log_custom_keyword(
     )
 
 
+def _load_gender_keyword_set(gender_list: str) -> set[str]:
+    """Return a fresh mutable :class:`set` of the current keywords for *gender_list*.
+
+    Reads the live :class:`~evennia.server.models.ServerConfig` value, or
+    seeds from the module-level defaults when unset.  The returned set is
+    a fresh copy — mutating it does not affect storage until written back
+    via ``ServerConfig.objects.conf(key, new_set)``.
+    """
+    defaults = {
+        "feminine": _DEFAULT_FEMININE_KEYWORDS,
+        "masculine": _DEFAULT_MASCULINE_KEYWORDS,
+        "neutral": _DEFAULT_NEUTRAL_KEYWORDS,
+    }[gender_list]
+    conf_key = _GENDER_LIST_TO_KEY[gender_list]
+    stored = ServerConfig.objects.conf(conf_key)
+    if stored is None:
+        return set(defaults)
+    return set(stored)
+
+
 def add_approved_keyword(
     keyword: str,
     gender_list: str,
@@ -417,8 +398,8 @@ def add_approved_keyword(
     """Add a keyword to an approved gender list.
 
     Creates a :class:`~world.models.KeywordEvent` with event type
-    ``admin_add`` and adds the keyword to the :class:`KeywordManager`
-    script's set for the given gender list.
+    ``admin_add`` and persists the updated keyword set via
+    :class:`~evennia.server.models.ServerConfig`.
 
     Args:
         keyword: Keyword to add (lowercase).
@@ -429,24 +410,15 @@ def add_approved_keyword(
     Returns:
         ``(True, "")`` on success, or ``(False, reason)`` on failure.
     """
-    attr_map = {
-        "feminine": "feminine_keywords",
-        "masculine": "masculine_keywords",
-        "neutral": "neutral_keywords",
-    }
-    attr_name = attr_map.get(gender_list)
-    if attr_name is None:
+    if gender_list not in _GENDER_LIST_TO_KEY:
         return False, f"Invalid gender list {gender_list!r}."
 
-    mgr = _get_keyword_manager()
-    kw_set: set[str] | None = getattr(mgr.db, attr_name)
-    if kw_set is None:
-        kw_set = set()
+    kw_set = _load_gender_keyword_set(gender_list)
     if keyword in kw_set:
         return False, f"'{keyword}' is already in the {gender_list} list."
 
     kw_set.add(keyword)
-    setattr(mgr.db, attr_name, kw_set)
+    ServerConfig.objects.conf(_GENDER_LIST_TO_KEY[gender_list], kw_set)
 
     from world.models import KeywordEvent
 
@@ -467,8 +439,8 @@ def remove_approved_keyword(
     """Remove a keyword from an approved gender list.
 
     Creates a :class:`~world.models.KeywordEvent` with event type
-    ``admin_remove`` and removes the keyword from the
-    :class:`KeywordManager` script's set for the given gender list.
+    ``admin_remove`` and persists the updated keyword set via
+    :class:`~evennia.server.models.ServerConfig`.
 
     Args:
         keyword: Keyword to remove (lowercase).
@@ -479,22 +451,15 @@ def remove_approved_keyword(
     Returns:
         ``(True, "")`` on success, or ``(False, reason)`` on failure.
     """
-    attr_map = {
-        "feminine": "feminine_keywords",
-        "masculine": "masculine_keywords",
-        "neutral": "neutral_keywords",
-    }
-    attr_name = attr_map.get(gender_list)
-    if attr_name is None:
+    if gender_list not in _GENDER_LIST_TO_KEY:
         return False, f"Invalid gender list {gender_list!r}."
 
-    mgr = _get_keyword_manager()
-    kw_set: set[str] | None = getattr(mgr.db, attr_name)
-    if kw_set is None or keyword not in kw_set:
+    kw_set = _load_gender_keyword_set(gender_list)
+    if keyword not in kw_set:
         return False, f"'{keyword}' is not in the {gender_list} list."
 
     kw_set.discard(keyword)
-    setattr(mgr.db, attr_name, kw_set)
+    ServerConfig.objects.conf(_GENDER_LIST_TO_KEY[gender_list], kw_set)
 
     from world.models import KeywordEvent
 
@@ -973,7 +938,7 @@ def get_apparent_gender(char: Any) -> str:
     Derivation rule:
 
     1. If the character has an active ``keyword_override``, look it up
-       in the runtime keyword catalog (KeywordManager script, falling
+       in the runtime keyword catalog (``ServerConfig`` entries, falling
        back to the module-level default frozensets).
 
        * Match in the feminine list → ``"female"``
